@@ -1,0 +1,204 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Oracle.Controls"
+             xmlns:components="using:Oracle.Components"
+             xmlns:modals="using:Oracle.Views.Modals"
+             x:Class="Oracle.Views.BalatroMainMenu"
+             Background="Transparent"
+             x:CompileBindings="False">
+
+    <UserControl.Styles>
+        <!-- Modal overlay style - semi-transparent background only -->
+        <Style Selector="Grid.modal-overlay">
+            <Setter Property="Background" Value="#00000088"/>
+        </Style>
+        
+        <!-- Blur backdrop style - this is what gets blurred -->
+        <Style Selector="Grid.blur-backdrop">
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <BlurEffect Radius="40"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Modal panel style - Balatro card style with beveled border -->
+        <Style Selector="Border.modal-panel">
+            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BoxShadow" Value="5 5 6 #80000000"/>
+        </Style>
+        
+        <!-- Inner content panel (darker) -->
+        <Style Selector="Border.inner-panel">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+        
+        <!-- Kill any weird focus/selection effects -->
+        <Style Selector="Button:focus">
+            <Setter Property="BorderBrush" Value="#E2E2E3"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="Button:focus /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <!-- Animated balatro-style background - behind everything -->
+        <controls:BalatroStyleBackground x:Name="BackgroundControl" />
+        
+        <!-- Desktop widgets layer -->
+        <Grid x:Name="DesktopCanvas" ZIndex="10">
+            <!-- Search Widget - positioned in top-left by default -->
+            <components:SearchWidget x:Name="SearchWidget" 
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="20,80,0,0"
+                                   IsVisible="False"/>
+            
+            <!-- DayLatro Widget - starts minimized in top right -->
+            <components:DayLatroWidget x:Name="DayLatroWidget"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Top"
+                                     Margin="0,20,20,0"/>
+        </Grid>
+        
+        <!-- Main content that will be blurred when modals are open -->
+        <Grid x:Name="MainContent" ZIndex="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="SEED ORACLE"
+                        FontFamily="{StaticResource BalatroFont}"
+                        FontSize="32"
+                        FontWeight="Bold"
+                        Foreground="#eac058"
+                        HorizontalAlignment="Center"
+                        Margin="0,10,0,0"/>
+
+            <!-- Control Buttons Stack -->
+            <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Margin="0,0,20,20"
+                      Spacing="10">
+                
+                <!-- Music Toggle Button -->
+                <Button x:Name="MusicToggleButton"
+                        FontSize="20"
+                        Width="40"
+                        Height="40"
+                        CornerRadius="20"
+                        Background="#4f6367"
+                        BorderBrush="#7A9E9F"
+                        BorderThickness="2"
+                        Click="OnMusicToggleClick"
+                        ToolTip.Tip="Toggle music">
+                    <TextBlock Text="🎶" 
+                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                </Button>
+                
+                <!-- Volume Control Button -->
+                <Button x:Name="VolumeButton"
+                        FontSize="20"
+                        Width="40"
+                        Height="40"
+                        CornerRadius="20"
+                        Background="#4f6367"
+                        BorderBrush="#7A9E9F"
+                        BorderThickness="2"
+                        Click="OnVolumeClick"
+                        ToolTip.Tip="Adjust volume">
+                    <TextBlock Text="🔊" 
+                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                </Button>
+                
+                <!-- Pause/Resume Animation Button -->
+                <Button x:Name="AnimationToggleButton"
+                        FontSize="20"
+                        Width="40"
+                        Height="40"
+                        CornerRadius="20"
+                        Background="#4f6367"
+                        BorderBrush="#7A9E9F"
+                        BorderThickness="2"
+                        Click="OnAnimationToggleClick"
+                        ToolTip.Tip="Pause/resume background animation">
+                    <TextBlock Text="⏸" 
+                               FontFamily="Segoe UI Symbol, Segoe UI Emoji"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                </Button>
+                
+                <!-- Theme Cycling Button -->
+                <Button x:Name="ThemeCycleButton"
+                        FontSize="20"
+                        Width="40"
+                        Height="40"
+                        CornerRadius="20"
+                        Background="#4f6367"
+                        BorderBrush="#7A9E9F"
+                        BorderThickness="2"
+                        Click="OnThemeCycleClick"
+                        ToolTip.Tip="Cycle background theme">
+                    <TextBlock Text="🎨" 
+                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                </Button>
+            </StackPanel>
+
+            <!-- Main Menu Buttons - Tight dock -->
+            <Border Grid.Row="1"
+                    Background="#4f6367"
+                    Padding="3,3"
+                    HorizontalAlignment="Center"
+                    CornerRadius="12"
+                    Margin="16"
+                    BorderBrush="#7A9E9F"
+                    BorderThickness="2"
+                    BoxShadow="4 4 8 #5e5e5e80">
+                
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Classes="oracle-btn button-color-blue"
+                            Content="SEARCH"
+                            Click="OnSearchClick"/>
+                    
+                    <Button Classes="oracle-btn button-color-yellow-orange"
+                            Content="FILTERS"
+                            Click="OnFiltersClick"/>
+                    
+                    <Button Classes="oracle-btn button-color-purple"
+                            Content="FUN RUN"
+                            Click="OnFunRunClick"/>
+
+                    <Button Classes="oracle-btn button-color-red"
+                            Content="EXIT"
+                            Click="OnExitClick"/>
+                </StackPanel>
+            </Border>
+        </Grid> <!-- End MainContent -->
+
+        <!-- Modal overlay container for code-behind modals -->
+        <Grid x:Name="ModalContainer"
+              IsVisible="False"
+              ZIndex="100"
+              Background="#3d414788"
+              VerticalAlignment="Stretch"
+              HorizontalAlignment="Stretch"
+              Margin="0"/>
+    </Grid>
+</UserControl>

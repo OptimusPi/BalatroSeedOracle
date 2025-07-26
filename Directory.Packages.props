@@ -1,0 +1,45 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Core .NET packages -->
+    <PackageVersion Include="AvaloniaEdit.TextMate" Version="11.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <!-- Database -->
+    <PackageVersion Include="DuckDB.NET.Data" Version="1.3.2" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.3.2" />
+    <!-- Command Line & Console -->
+    <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageVersion Include="Spectre.Console" Version="0.50.0" />
+    <!-- Avalonia UI -->
+    <PackageVersion Include="Avalonia" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Controls.WebView" Version="11.2.5" />
+    <PackageVersion Include="Avalonia.Controls.MediaPlayer" Version="11.2.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Skia" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
+    <PackageVersion Include="MessageBox.Avalonia" Version="3.2.0" />
+    <PackageVersion Include="ScottPlot.Avalonia" Version="5.0.55" />
+    <!-- MVVM and Reactive -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <!-- JSON Processing -->
+    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
+    <!-- Additional Dependencies -->
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" />
+    <PackageVersion Include="Motely.Core" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Avalonia UI License Key -->
+    <AvaloniaUILicenseKey Include="avln_on_key:v1:10e441a673ba4e5a9583c6af9509c8fe" />
+  </ItemGroup>
+</Project>

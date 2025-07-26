@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Controls.JokerSetDisplay">
+    
+    <UserControl.Styles>
+        <Style Selector="Border.set-container">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Height" Value="150"/>
+        </Style>
+        
+        <Style Selector="Border.set-container:pointerover">
+            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="#6a6a6a"/>
+        </Style>
+        
+        <Style Selector="TextBlock.set-name">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        
+        <Style Selector="TextBlock.set-description">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Opacity" Value="0.8"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Classes="set-container">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Set Name -->
+            <TextBlock Grid.Row="0" 
+                       Name="SetNameText"
+                       Classes="set-name"/>
+            
+            <!-- Set Description -->
+            <TextBlock Grid.Row="1" 
+                       Name="SetDescriptionText"
+                       Classes="set-description"/>
+            
+            <!-- Overlapping Joker Cards -->
+            <Canvas Grid.Row="2" 
+                    Name="JokerCanvas"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="150"
+                    Height="60"
+                    Margin="0,5"/>
+            
+            <!-- Tags -->
+            <ItemsControl Grid.Row="3"
+                         Name="TagsControl"
+                         HorizontalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#4a4a4a"
+                               CornerRadius="6"
+                               Padding="3,1"
+                               Margin="1">
+                            <TextBlock Text="{Binding}"
+                                      FontSize="8"
+                                      Foreground="#D0D0D0"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

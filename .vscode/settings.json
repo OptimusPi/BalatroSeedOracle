@@ -1,0 +1,20 @@
+{
+    "avalonia.projectPath": "./src/Oracle.csproj",
+    "avalonia.enableXamlHotReload": true,
+    "dotnet.preferCSharpExtension": true,
+    "dotnet.unitTests.enabled": true,
+    "files.associations": {
+        "*.axaml": "AXAML"
+    },
+    "xml.fileAssociations": [
+        {
+            "pattern": "**/*.axaml",
+            "systemId": "https://github.com/AvaloniaUI/Avalonia/blob/master/src/Markup/Avalonia.Markup.Xaml.Loader/AvaloniaXamlSchema.xsd"
+        }
+    ],
+    "dotnet.server.useOmnisharp": false,
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+    "terminal.integrated.gpuAcceleration": "on",
+    "editor.experimentalGpuAcceleration": "off",
+    "terminal.integrated.enableImages": true
+}

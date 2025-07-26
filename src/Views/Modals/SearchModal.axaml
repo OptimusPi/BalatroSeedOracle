@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.SearchModal">
+    
+    <UserControl.Styles>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="RowBackground" Value="#374244"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#4A5F61"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#4A5F61"/>
+        </Style>
+        
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="Foreground" Value="#FEB95F"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#4A5F61"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style Selector="DataGridRow">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="Height" Value="35"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:nth-child(2n)">
+            <Setter Property="Background" Value="#2f3e40"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:selected">
+            <Setter Property="Background" Value="#5a7a7c"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:pointerover">
+            <Setter Property="Background" Value="#4a6a6c"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="DataGridCell">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="Button.copy-button">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="MinWidth" Value="50"/>
+        </Style>
+        
+        <Style Selector="Button.copy-button:pointerover">
+            <Setter Property="Background" Value="#5BA0F2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <!-- This is just the content, StandardModal will wrap it -->
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Status Bar -->
+        <Border Grid.Row="0" 
+                Background="#2a2a2a" 
+                CornerRadius="8"
+                Padding="10"
+                Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="20">
+                    <TextBlock Text="Config:" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Name="ConfigPathTextBox" 
+                               Text="No config loaded"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Name="StatusText" 
+                               Text="Ready"
+                               Foreground="#888"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Name="ExportButton"
+                            Content="Export Results"
+                            Classes="oracle-btn button-color-blue"
+                            IsEnabled="False"
+                            Click="OnExportClick"/>
+                    <Button Name="ClearButton"
+                            Content="Clear"
+                            Classes="oracle-btn button-color-yellow-orange"
+                            Click="OnClearClick"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Results Table -->
+        <Border Grid.Row="1" 
+                Background="#2a2a2a" 
+                CornerRadius="8"
+                Padding="10">
+            <Grid>
+                <TextBlock Name="NoResultsText"
+                           Text="No seeds found yet. Start a search from the widget."
+                           FontSize="14"
+                           Foreground="#888"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           IsVisible="True"/>
+                
+                <DataGrid Name="ResultsGrid"
+                          ItemsSource="{Binding}"
+                          AutoGenerateColumns="False"
+                          CanUserResizeColumns="True"
+                          CanUserSortColumns="True"
+                          CanUserReorderColumns="True"
+                          IsReadOnly="True"
+                          SelectionMode="Extended"
+                          GridLinesVisibility="All"
+                          IsVisible="False"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" 
+                                            Binding="{Binding Index}" 
+                                            Width="50"
+                                            CanUserSort="False"/>
+                        <DataGridTextColumn Header="Seed" 
+                                            Binding="{Binding Seed}" 
+                                            Width="120"
+                                            FontFamily="Consolas, monospace"/>
+                        <DataGridTextColumn Header="Score" 
+                                            Binding="{Binding Score}" 
+                                            Width="80"/>
+                        <DataGridTextColumn Header="Details" 
+                                            Binding="{Binding Details}" 
+                                            Width="*"/>
+                        <DataGridTemplateColumn Header="Actions" Width="120" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
+                                        <Button Content="Copy"
+                                                Classes="copy-button"
+                                                Command="{Binding CopyCommand}"
+                                                CommandParameter="{Binding Seed}"
+                                                ToolTip.Tip="Copy seed to clipboard"/>
+                                        <Button Content="View"
+                                                Classes="copy-button"
+                                                Command="{Binding ViewCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="View detailed info"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+        
+        <!-- Summary -->
+        <TextBlock Grid.Row="2" 
+                   Name="SummaryText"
+                   Text="0 seeds found"
+                   FontSize="12"
+                   Foreground="#888"
+                   HorizontalAlignment="Center"
+                   Margin="0,10,0,0"/>
+    </Grid>
+</UserControl>

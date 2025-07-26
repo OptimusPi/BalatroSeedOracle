@@ -1,0 +1,324 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="clr-namespace:Oracle.Components"
+             xmlns:controls="clr-namespace:Oracle.Controls"
+             x:Class="Oracle.Views.Modals.FunRunsModal">
+    
+    <Grid>
+        <!-- 3 rows layout -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Section 1: pifreak's Curated Balatro Seeds -->
+        <Border Grid.Row="0" Background="#1a1a1a" Margin="5" CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Section Title -->
+                <TextBlock Grid.Row="0" 
+                          Text="pifreak's Curated Balatro Seeds" 
+                          FontSize="20"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Margin="0,10,0,10"/>
+                
+                <!-- Curated Seeds Grid -->
+                <ScrollViewer Grid.Row="1" 
+                             HorizontalScrollBarVisibility="Auto"
+                             VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl Name="CuratedSeedsGrid">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="fun-run-button" 
+                                        Margin="5"
+                                        Click="OnCuratedSeedClick"
+                                        Tag="{Binding}"
+                                        Background="#FE5F55"
+                                        Foreground="#FFFFFF"
+                                        CornerRadius="8"
+                                        Padding="8">
+                                    <StackPanel>
+                                        <Image Source="{Binding ImageSource}" 
+                                               Width="71" 
+                                               Height="95"
+                                               Margin="5"/>
+                                        <TextBlock Text="{Binding Name}" 
+                                                  HorizontalAlignment="Center"
+                                                  TextWrapping="Wrap"
+                                                  MaxWidth="100"
+                                                  FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding Seed}" 
+                                                  HorizontalAlignment="Center"
+                                                  FontSize="11"
+                                                  Opacity="0.8"
+                                                  Margin="0,2,0,0"/>
+                                        <ItemsControl ItemsSource="{Binding Tags}"
+                                                     HorizontalAlignment="Center"
+                                                     Margin="0,4,0,0">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#3a3a3a"
+                                                           CornerRadius="8"
+                                                           Padding="4,2"
+                                                           Margin="1">
+                                                        <TextBlock Text="{Binding}"
+                                                                  FontSize="9"
+                                                                  Foreground="#B0B0B0"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Section 2: Community Fun Runs -->
+        <Border Grid.Row="1" Background="#1a1a1a" Margin="5" CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Section Title -->
+                <TextBlock Grid.Row="0" 
+                          Text="Community Fun Runs" 
+                          FontSize="20"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Margin="0,10,0,10"/>
+                
+                <!-- Community Runs Grid -->
+                <ScrollViewer Grid.Row="1" 
+                             HorizontalScrollBarVisibility="Auto"
+                             VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl Name="CommunityRunsGrid">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="fun-run-button community-run" 
+                                        Margin="5"
+                                        Click="OnCommunityRunClick"
+                                        Tag="{Binding}">
+                                    <StackPanel>
+                                        <Border Background="#3a3a3a" 
+                                                CornerRadius="4"
+                                                Width="140" 
+                                                Height="100"
+                                                Margin="5">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Grid.Row="0" 
+                                                          Text="{Binding ConfigName}" 
+                                                          HorizontalAlignment="Center"
+                                                          TextWrapping="Wrap"
+                                                          Margin="5,5,5,0"
+                                                          FontWeight="Bold"/>
+                                                
+                                                <TextBlock Grid.Row="1"
+                                                          Text="{Binding Seed}" 
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          FontSize="18"
+                                                          FontWeight="Bold"
+                                                          Foreground="#FE5F55"/>
+                                                
+                                                <TextBlock Grid.Row="2"
+                                                          Text="{Binding Author}" 
+                                                          HorizontalAlignment="Center"
+                                                          FontSize="10"
+                                                          Opacity="0.7"
+                                                          Margin="0,0,0,5"/>
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Text="{Binding Description}" 
+                                                  HorizontalAlignment="Center"
+                                                  TextWrapping="Wrap"
+                                                  MaxWidth="140"
+                                                  FontSize="11"
+                                                  Opacity="0.8"
+                                                  Margin="0,0,0,5"/>
+                                        <ItemsControl ItemsSource="{Binding Tags}"
+                                                     HorizontalAlignment="Center"
+                                                     Margin="0,2,0,4"
+                                                     MaxWidth="140">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#4a4a4a"
+                                                           CornerRadius="6"
+                                                           Padding="3,1"
+                                                           Margin="1">
+                                                        <TextBlock Text="{Binding}"
+                                                                  FontSize="8"
+                                                                  Foreground="#D0D0D0"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <Button Content="Copy Challenge" 
+                                               HorizontalAlignment="Center"
+                                               FontSize="10"
+                                               Padding="8,4"
+                                               Click="OnCopyChallengeClick"
+                                               Tag="{Binding}"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Section 3: Add Your Own -->
+        <Border Grid.Row="2" Background="#1a1a1a" Margin="5" CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Section Title -->
+                <TextBlock Grid.Row="0" 
+                          Text="Add Your Own Fun Run" 
+                          FontSize="20"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Margin="0,10,0,10"/>
+                
+                <!-- Add Fun Run Form -->
+                <Grid Grid.Row="1" Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Filter Selection -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" 
+                              Text="Select Filter:" 
+                              VerticalAlignment="Center"
+                              Margin="0,0,10,0"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" 
+                            Name="SelectedFilterPath"
+                            IsReadOnly="True"
+                            Text="No filter selected..."
+                            Margin="0,0,10,0"/>
+                    <Button Grid.Row="0" Grid.Column="2" 
+                           Content="Browse..."
+                           Click="OnBrowseFilterClick"
+                           MinWidth="80"/>
+                    
+                    <!-- Description -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                              Text="Description:" 
+                              VerticalAlignment="Top"
+                              Margin="0,10,10,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                            Name="FunRunDescription"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            Height="60"
+                            Margin="0,10,0,0"
+                            Watermark="Enter a detailed description of your fun run..."/>
+                    
+                    <!-- Tags -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                              Text="Tags:" 
+                              VerticalAlignment="Top"
+                              Margin="0,10,10,0"/>
+                    <controls:TagEditor Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                      Name="FunRunTags"
+                                      Margin="0,10,0,0"
+                                      Height="80"/>
+                    
+                    <!-- Submit Button -->
+                    <Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+                           Name="AddFunRunButton"
+                           Content="Add Fun Run"
+                           Click="OnAddCustomFunRun"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Bottom"
+                           Margin="0,10,0,0"
+                           MinWidth="120"
+                           IsEnabled="False"
+                           Background="#4BC292"
+                           Foreground="#FFFFFF"
+                           CornerRadius="6"
+                           Height="40"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="TextBlock.copy-success">
+            <Setter Property="Foreground" Value="#4BC292"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Style.Animations>
+                <Animation Duration="0:0:2">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        
+        <Style Selector="Button.fun-run-button">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.fun-run-button:pointerover">
+            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="#6a6a6a"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

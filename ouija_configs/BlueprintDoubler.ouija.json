@@ -1,0 +1,20 @@
+{
+  "name": "BlueprintPerkeoDoubler",
+  "description": "Find a Perkeo in ante 1. Find an Ankh in Ante 1. Use showman to find 2 Blueprints for the rest of the antes. ~22:12:00 (26745 seeds/ms) on Ryzen 7 9800X3D --threads 15 2025/07/25",
+  "author": "pifreak",
+  "filter_config": {
+    "Needs": [
+        { "Type": "SoulJoker", "Value": "Perkeo", "SearchAntes": [1] },
+        { "Type": "Spectral", "Value": "Ankh", "SearchAntes": [1] },
+	    { "Type": "Joker", "Value": "Showman", "SearchAntes": [2,3] }
+    ],
+    "Wants": [
+      { "Type": "Joker", "Value": "Showman", "SearchAntes": [3], "Score": 1 },
+      { "Type": "Joker", "Value": "Blueprint", "SearchAntes": [4,5,6,7,8], "Score": 10 }
+    ],
+    "Deck": "RedDeck",
+    "Stake": "WhiteStake",
+    "ScoreNaturalNegatives": false,
+    "ScoreDesiredNegatives": false
+  }
+}

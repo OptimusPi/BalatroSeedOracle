@@ -1,0 +1,36 @@
+{
+  "name": "ExampleOuijaJSON",
+  "description": "Example Ouija JSON Configuration file!",
+  "author": "Jimbo",
+  "filter_config": {
+    "Needs": [
+      { "Type": "SoulJoker", "Value": "Bloodstone", "SearchAntes": [1] },
+      { "Type": "Joker", "Value": "OopsAll6s", "SearchAntes": [1,2,3] }
+    ],
+    "Wants": [
+      { "Type": "SoulJoker", "Value": "Perkeo",
+        "Edition": "Negative", "SearchAntes": [1,2], "Score": 10
+      },
+      { "Type": "Joker",
+        "Value": "Blueprint",
+        "Stickers": ["Perishable", "Eternal", "Rental"],
+        "Edition": "Negative",
+        "SearchAntes": [1,2,3,4,5,6,7,8], "Score": 2 },
+      { "Type": "Tarot", "Value": "TheMagician", "SearchAntes": [1,2,3,4,5,6,7,8], "Score": 1 },
+      { "Type": "Voucher", "Value": "BlankVoucher", "SearchAntes": [1,2,3,4], "Score": 1 },
+      { "Type": "Voucher", "Value": "Antimatter", "SearchAntes": [5,6,7,8], "Score": 1 },
+      { "Type": "Spectral", "Value": "Ankh", "SearchAntes": [1], "Score": 1 },
+      { "Type": "Tag", "Value": "CharmTag", "SearchAntes": [1], "Score": 1 },
+      { "Type": "Boss", "Value": "TheOx", "SearchAntes": [1], "Score": 1 },
+      { "Type": "Tag", "Value": "CharmTag", "SearchAntes": [1], "Score": 1 },
+      { "Type": "PlayingCard", "Suit": "Spades", "Rank": "Ace", "Seal": "Red",
+        "Enhancement": "Mult", "Edition": "Glass", "SearchAntes": [1], "Score": 1 }
+    ],
+    "MinSearchAnte": 1,
+    "MaxSearchAnte": 8,
+    "Deck": "GhostDeck",
+    "Stake": "BlackStake",
+    "ScoreNaturalNegatives": false,
+    "ScoreDesiredNegatives": false
+  }
+}

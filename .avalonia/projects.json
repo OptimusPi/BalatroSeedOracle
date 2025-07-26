@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "projects": [
+    {
+      "name": "Oracle",
+      "path": "src/Oracle.csproj",
+      "targetFramework": "net9.0",
+      "outputType": "Exe",
+      "isExecutable": true,
+      "previewAssembly": "src/bin/Debug/net9.0/Oracle.dll",
+      "designAssembly": "src/bin/Debug/net9.0/Oracle.dll"
+    }
+  ]
+}

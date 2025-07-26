@@ -1,0 +1,241 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Components.SearchWidget"
+             x:CompileBindings="False">
+    
+    <UserControl.Styles>
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BoxShadow" Value="4 4 8 #00000080"/>
+        </Style>
+        
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="TextBox.terminal">
+            <Setter Property="Background" Value="#000000"/>
+            <Setter Property="Foreground" Value="#00FF00"/>
+            <Setter Property="FontFamily" Value="Consolas, monospace"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="Button.widget-button">
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <!-- Minimized State - Just an icon -->
+        <Grid Name="MinimizedView" IsVisible="False">
+        <Border Classes="widget-container" 
+                Width="60" Height="60"
+                Cursor="Hand"
+                PointerPressed="OnMinimizedClick">
+            <Grid>
+                <TextBlock Text="🔍" 
+                           FontSize="24"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                <Border Name="NotificationBadge"
+                        Background="#FE5F55"
+                        CornerRadius="8"
+                        Width="16" Height="16"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,-5,-5,0"
+                        IsVisible="False">
+                    <TextBlock Name="NotificationCount"
+                               Text="0"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+    
+    <!-- Expanded State - Full widget -->
+    <Border Name="ExpandedView" 
+            Classes="widget-container"
+            Width="400" Height="500"
+            IsVisible="True">
+        <DockPanel>
+            <!-- Header with minimize/close buttons -->
+            <Border Classes="widget-header" 
+                    DockPanel.Dock="Top"
+                    Height="30">
+                <Grid>
+                    <TextBlock Text="Motely Search" 
+                               FontWeight="Bold"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Margin="10,0"/>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Spacing="2"
+                                Margin="0,0,5,0">
+                        <Button Content="_" 
+                                Width="24" Height="20"
+                                FontSize="16"
+                                Padding="0,-5,0,0"
+                                Background="Transparent"
+                                Click="OnMinimizeClick"/>
+                        <Button Content="□" 
+                                Width="24" Height="20"
+                                FontSize="14"
+                                Padding="0"
+                                Background="Transparent"
+                                Click="OnMaximizeClick"
+                                ToolTip.Tip="Maximize"/>
+                        <Button Content="✕" 
+                                Width="24" Height="20"
+                                FontSize="12"
+                                Padding="0"
+                                Background="Transparent"
+                                Click="OnCloseClick"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Content -->
+            <Grid DockPanel.Dock="Top" RowDefinitions="Auto,Auto,Auto,*,Auto">
+                <!-- Config Section -->
+                <Border Grid.Row="0" Padding="8" Margin="5">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Name="ConfigPathBox" 
+                                 IsReadOnly="True" 
+                                 Text="No config loaded"
+                                 FontSize="11"/>
+                        <Button Grid.Column="1" Name="LoadConfigButton" 
+                                Content="Load" 
+                                Classes="oracle-btn button-color-blue widget-button"
+                                Click="OnLoadConfigClick"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Settings -->
+                <Grid Grid.Row="1" Margin="8,0" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto,*">
+                    <!-- Row 1: Threads and Min Score -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" Margin="0,0,5,0"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="1" Name="ThreadCountBox" 
+                                   Minimum="1" Maximum="32" Value="8"
+                                   Height="24" FontSize="11" Margin="0,0,10,0"/>
+                    
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Min Score:" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" Margin="0,0,5,0"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="3" Name="MinScoreBox" 
+                                   Minimum="0" Maximum="10000000" Value="1"
+                                   Height="24" FontSize="11"/>
+                                   
+                    <!-- Row 2: Batch Size and Empty (for alignment) -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Batch Size:" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" Margin="0,5,5,0"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1" Name="BatchSizeBox" 
+                              Height="24" FontSize="11" Margin="0,5,10,0"
+                              SelectedIndex="3">
+                        <ComboBoxItem Tag="1">Minimal (35 seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="2">X-Small (1.2K seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="3">Small (43K seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="4">Default (1.5M seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="5">Large (53M seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="6">X-Large (1.8B seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="7">XX-Large (65B seeds)</ComboBoxItem>
+                        <ComboBoxItem Tag="8">MAX (2.3T seeds)</ComboBoxItem>
+                    </ComboBox>
+                                   
+                    <!-- Row 3: Deck and Stake -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Deck:" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" Margin="0,5,5,0"/>
+                    <ComboBox Grid.Row="2" Grid.Column="1" Name="DeckBox" 
+                              Height="24" FontSize="11" Margin="0,5,10,0"
+                              SelectedIndex="0">
+                        <ComboBoxItem>Red Deck</ComboBoxItem>
+                        <ComboBoxItem>Blue Deck</ComboBoxItem>
+                        <ComboBoxItem>Yellow Deck</ComboBoxItem>
+                        <ComboBoxItem>Green Deck</ComboBoxItem>
+                        <ComboBoxItem>Black Deck</ComboBoxItem>
+                        <ComboBoxItem>Magic Deck</ComboBoxItem>
+                        <ComboBoxItem>Nebula Deck</ComboBoxItem>
+                        <ComboBoxItem>Ghost Deck</ComboBoxItem>
+                        <ComboBoxItem>Abandoned Deck</ComboBoxItem>
+                        <ComboBoxItem>Checkered Deck</ComboBoxItem>
+                        <ComboBoxItem>Zodiac Deck</ComboBoxItem>
+                        <ComboBoxItem>Painted Deck</ComboBoxItem>
+                        <ComboBoxItem>Anaglyph Deck</ComboBoxItem>
+                        <ComboBoxItem>Plasma Deck</ComboBoxItem>
+                        <ComboBoxItem>Erratic Deck</ComboBoxItem>
+                    </ComboBox>
+                    
+                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Stake:" 
+                               VerticalAlignment="Center" 
+                               FontSize="11" Margin="0,5,5,0"/>
+                    <ComboBox Grid.Row="2" Grid.Column="3" Name="StakeBox" 
+                              Height="24" FontSize="11" Margin="0,5,0,0"
+                              SelectedIndex="0">
+                        <ComboBoxItem>White Stake</ComboBoxItem>
+                        <ComboBoxItem>Red Stake</ComboBoxItem>
+                        <ComboBoxItem>Green Stake</ComboBoxItem>
+                        <ComboBoxItem>Blue Stake</ComboBoxItem>
+                        <ComboBoxItem>Black Stake</ComboBoxItem>
+                        <ComboBoxItem>Purple Stake</ComboBoxItem>
+                        <ComboBoxItem>Orange Stake</ComboBoxItem>
+                        <ComboBoxItem>Gold Stake</ComboBoxItem>
+                    </ComboBox>
+                </Grid>
+                
+                <!-- Controls -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            Margin="5">
+                    <Button Name="StartButton" Content="Start" 
+                            Classes="oracle-btn button-color-green widget-button"
+                            Click="OnStartClick" IsEnabled="False"/>
+                    <Button Name="StopButton" Content="Stop" 
+                            Classes="oracle-btn button-color-red widget-button"
+                            Click="OnStopClick" IsEnabled="False"/>
+                    <Button Name="ClearButton" Content="Clear" 
+                            Classes="oracle-btn button-color-yellow-orange widget-button"
+                            Click="OnClearClick"/>
+                </StackPanel>
+                
+                <!-- Terminal Output -->
+                <Border Grid.Row="3" Margin="5" BorderBrush="#7A9E9F" BorderThickness="1">
+                    <ScrollViewer Name="TerminalScrollViewer" VerticalScrollBarVisibility="Auto">
+                        <TextBox Name="TerminalOutput" 
+                                 Classes="terminal" 
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Status Bar -->
+                <Border Grid.Row="4" Background="#2a2a2a" Padding="5,2">
+                    <TextBlock Name="StatusText" 
+                               Text="Ready" 
+                               FontSize="10"
+                               Foreground="#888"/>
+                </Border>
+            </Grid>
+        </DockPanel>
+    </Border>
+    </Grid>
+</UserControl>

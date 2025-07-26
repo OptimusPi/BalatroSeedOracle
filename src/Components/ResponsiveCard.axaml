@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Oracle.Components"
+             x:Class="Oracle.Components.ResponsiveCard">
+    
+    <UserControl.Styles>
+        <Style Selector="local|ResponsiveCard.selected-need Border#CardBorder">
+            <Setter Property="BorderBrush" Value="#4BC292"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="Background" Value="#1a2c2a"/>
+        </Style>
+
+        <Style Selector="local|ResponsiveCard.selected-want Border#CardBorder">
+            <Setter Property="BorderBrush" Value="#FE5F55"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="Background" Value="#2a1a1a"/>
+        </Style>
+
+        <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#CardBorder">
+            <Setter Property="BorderBrush" Value="#5FD3A3"/>
+            <Setter Property="Background" Value="#2a3c3a"/>
+        </Style>
+
+        <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#CardBorder">
+            <Setter Property="BorderBrush" Value="#FF7F75"/>
+            <Setter Property="Background" Value="#3a2a2a"/>
+        </Style>
+        
+        <!-- Soul image styles for legendary jokers -->
+        <Style Selector="Image#SoulImage">
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Name="CardBorder" 
+            Background="Transparent"
+            Padding="2" 
+            MinWidth="72"
+            MinHeight="72"
+            Cursor="Hand">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Main card container with layered images -->
+            <Grid Grid.Row="0" Margin="6" Width="64" Height="64">
+                <!-- Base card image -->
+                <Image Name="CardImage" />
+                
+                <!-- Soul/Face overlay for legendary jokers -->
+                <Image Name="SoulImage" 
+                       IsVisible="False"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <RotateTransform Angle="0"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+            </Grid>
+            
+            <TextBlock Grid.Row="1" 
+                       Name="CardName" 
+                       TextAlignment="Center" 
+                       TextWrapping="Wrap" 
+                       Foreground="White" 
+                       FontSize="11" 
+                       MaxWidth="80" 
+                       LineHeight="12"
+                       Margin="0,3,0,2" />
+        </Grid>
+    </Border>
+    
+</UserControl>

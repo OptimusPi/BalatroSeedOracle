@@ -1,0 +1,197 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Base Oracle Button Style -->
+    <Style Selector="Button.oracle-btn">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="24" /> <!-- Default size, can be overridden -->
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="MinWidth" Value="150" />
+        <Setter Property="MinHeight" Value="50" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- Drop shadow (first = behind) -->
+                        <Border Name="DropShadow"
+                                Background="#000000"
+                                Opacity="0.4"
+                                CornerRadius="8"
+                                Margin="2,3,0,0"/>
+                        <!-- Main button -->
+                        <Border Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,3,3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Hide shadow when oracle button is pressed -->
+    <Style Selector="Button.oracle-btn:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    
+    <!-- Override any default Avalonia button hover styles -->
+    <Style Selector="Button.oracle-btn:pointerover">
+        <!-- Explicitly do nothing - let color variants handle it -->
+    </Style>
+    
+    <!-- Color variants -->
+    <Style Selector="Button.button-color-blue">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-blue:pointerover">
+        <Setter Property="Background" Value="#0095f0" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-blue:pressed">
+        <Setter Property="Background" Value="#0095f0" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <Style Selector="Button.button-color-yellow-orange">
+        <Setter Property="Background" Value="{StaticResource Orange}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-yellow-orange:pointerover">
+        <Setter Property="Background" Value="#f59d00" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-yellow-orange:pressed">
+        <Setter Property="Background" Value="#f59d00" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <Style Selector="Button.button-color-purple">
+        <Setter Property="Background" Value="{StaticResource Purple}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-purple:pointerover">
+        <Setter Property="Background" Value="#82619f" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-purple:pressed">
+        <Setter Property="Background" Value="#82619f" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <Style Selector="Button.button-color-red">
+        <Setter Property="Background" Value="{StaticResource Red}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-red:pointerover">
+        <Setter Property="Background" Value="#f55a50" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-red:pressed">
+        <Setter Property="Background" Value="#f55a50" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <Style Selector="Button.button-color-green">
+        <Setter Property="Background" Value="{StaticResource Green}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-green:pointerover">
+        <Setter Property="Background" Value="#47bc8d" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-green:pressed">
+        <Setter Property="Background" Value="#47bc8d" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <Style Selector="Button.button-color-gold">
+        <Setter Property="Background" Value="{StaticResource Gold}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-gold:pointerover">
+        <Setter Property="Background" Value="#e5bb54" /> <!-- Very slightly darker -->
+    </Style>
+    
+    <Style Selector="Button.oracle-btn.button-color-gold:pressed">
+        <Setter Property="Background" Value="#e5bb54" /> <!-- Keep hover shade -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    
+    <!-- Vertical tab button style -->
+    <Style Selector="Button.vertical-tab-button">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Cursor" Value="Hand" />
+        
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="#4a5e62" /> <!-- Slightly darker than LightBlack (#4f6367) -->
+        </Style>
+        
+        <Style Selector="^:pressed">
+            <Setter Property="Background" Value="#4a5e62" /> <!-- Keep hover shade -->
+            <Setter Property="RenderTransform" Value="translateY(3px)" />
+        </Style>
+        
+        <Style Selector="^.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+            <Setter Property="BorderBrush" Value="#0088cc" />
+        </Style>
+    </Style>
+</Styles>

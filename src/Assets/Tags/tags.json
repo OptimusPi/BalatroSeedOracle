@@ -1,0 +1,170 @@
+[
+    {
+        "name": "uncommontag",
+        "pos": {
+            "x": 0,
+            "y": 0
+        }
+    },
+    {
+        "name": "raretag",
+        "pos": {
+            "x": 1,
+            "y": 0
+        }
+    },
+    {
+        "name": "negativetag",
+        "pos": {
+            "x": 2,
+            "y": 0
+        }
+    },
+    {
+        "name": "foiltag",
+        "pos": {
+            "x": 3,
+            "y": 0
+        }
+    },
+    {
+        "name": "holographictag",
+        "pos": {
+            "x": 0,
+            "y": 1
+        }
+    },
+    {
+        "name": "polychrometag",
+        "pos": {
+            "x": 1,
+            "y": 1
+        }
+    },
+    {
+        "name": "investmenttag",
+        "pos": {
+            "x": 2,
+            "y": 1
+        }
+    },
+    {
+        "name": "vouchertag",
+        "pos": {
+            "x": 3,
+            "y": 1
+        }
+    },
+    {
+        "name": "bosstag",
+        "pos": {
+            "x": 0,
+            "y": 2
+        }
+    },
+    {
+        "name": "standardtag",
+        "pos": {
+            "x": 1,
+            "y": 2
+        }
+    },
+    {
+        "name": "charmtag",
+        "pos": {
+            "x": 2,
+            "y": 2
+        }
+    },
+    {
+        "name": "meteortag",
+        "pos": {
+            "x": 3,
+            "y": 2
+        }
+    },
+    {
+        "name": "buffoontag",
+        "pos": {
+            "x": 4,
+            "y": 2
+        }
+    },
+    {
+        "name": "handytag",
+        "pos": {
+            "x": 1,
+            "y": 3
+        }
+    },
+    {
+        "name": "garbagetag",
+        "pos": {
+            "x": 2,
+            "y": 3
+        }
+    },
+    {
+        "name": "etherealtag",
+        "pos": {
+            "x": 3,
+            "y": 3
+        }
+    },
+    {
+        "name": "coupontag",
+        "pos": {
+            "x": 4,
+            "y": 0
+        }
+    },
+    {
+        "name": "doubletag",
+        "pos": {
+            "x": 5,
+            "y": 0
+        }
+    },
+    {
+        "name": "juggletag",
+        "pos": {
+            "x": 5,
+            "y": 1
+        }
+    },
+    {
+        "name": "d6tag",
+        "pos": {
+            "x": 5,
+            "y": 3
+        }
+    },
+    {
+        "name": "topuptag",
+        "pos": {
+            "x": 4,
+            "y": 1
+        }
+    },
+    {
+        "name": "speedtag",
+        "pos": {
+            "x": 0,
+            "y": 3
+        }
+    },
+    {
+        "name": "orbitaltag",
+        "pos": {
+            "x": 5,
+            "y": 2
+        }
+    },
+    {
+        "name": "economytag",
+        "pos": {
+            "x": 4,
+            "y": 3
+        }
+    }
+]

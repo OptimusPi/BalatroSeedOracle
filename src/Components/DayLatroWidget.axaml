@@ -1,0 +1,244 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Components.DayLatroWidget"
+             x:CompileBindings="False">
+    
+    <UserControl.Styles>
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BoxShadow" Value="4 4 8 #00000080"/>
+        </Style>
+        
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="TextBox.score-input">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        
+        <Style Selector="Button.submit-button">
+            <Setter Property="Background" Value="#4BC292"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        
+        <Style Selector="Button.submit-button:pointerover">
+            <Setter Property="Background" Value="#5FD3A3"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <!-- Minimized State - Calendar Icon -->
+        <Grid Name="MinimizedView" IsVisible="True">
+            <Border Classes="widget-container" 
+                    Width="120" Height="80"
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedClick">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="📅 Daily" 
+                               FontSize="16"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,5,0,0"/>
+                    <TextBlock Grid.Row="1"
+                               Name="MinimizedSeedText"
+                               Text="Loading..." 
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="#FE5F55"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,0,0,5"/>
+                    <Border Name="NewDayBadge"
+                            Background="#FE5F55"
+                            CornerRadius="8"
+                            Width="16" Height="16"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="False">
+                        <TextBlock Text="!" 
+                                   FontSize="11" 
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+        
+        <!-- Expanded State -->
+        <Border Name="ExpandedView" 
+                Classes="widget-container"
+                Width="350" Height="450"
+                IsVisible="False">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Header -->
+                <Border Grid.Row="0" Classes="widget-header">
+                    <Grid Height="32">
+                        <TextBlock Text="Daily Balatro Challenge" 
+                                   VerticalAlignment="Center" 
+                                   Margin="10,0,0,0"
+                                   FontWeight="Bold"/>
+                        <Button Content="_" 
+                                Width="24" Height="20"
+                                FontSize="14"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,5,0"
+                                Click="OnMinimizeClick"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Content -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15">
+                        <!-- Date and Seed -->
+                        <TextBlock Name="DateText" 
+                                   Text="Today's Challenge"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,5"/>
+                        
+                        <TextBlock Name="SeedText"
+                                   Text="LOADING..."
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="#FE5F55"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,15"/>
+                        
+                        <!-- Fun Run Card -->
+                        <Border Background="#2a2a2a"
+                                CornerRadius="8"
+                                Padding="10"
+                                Margin="0,0,0,15">
+                            <StackPanel>
+                                <Image Name="FunRunImage"
+                                       Width="100"
+                                       Height="130"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+                                
+                                <TextBlock Name="ThemeText"
+                                           Text="Loading theme..."
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           Margin="0,0,0,5"/>
+                                
+                                <TextBlock Name="DescriptionText"
+                                           Text="Loading description..."
+                                           FontSize="12"
+                                           Opacity="0.8"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           MaxWidth="250"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- My Score Section -->
+                        <TextBlock Text="My Best Score"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,5"/>
+                        
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Grid.Column="0"
+                                     Name="ScoreInput"
+                                     Classes="score-input"
+                                     Watermark="Enter your score..."
+                                     Margin="0,0,5,0"/>
+                            
+                            <Button Grid.Column="1"
+                                    Name="SubmitButton"
+                                    Content="Submit"
+                                    Classes="submit-button"
+                                    Click="OnSubmitScore"/>
+                        </Grid>
+                        
+                        <!-- Top Scores -->
+                        <TextBlock Text="Today's Top Score"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,10"/>
+                        
+                        <Border Background="#2a2a2a"
+                                CornerRadius="6"
+                                Padding="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0"
+                                           Text="🏆"
+                                           FontSize="20"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,10,0"/>
+                                
+                                <TextBlock Grid.Column="1"
+                                           Name="TopScorePlayer"
+                                           Text="JIMBO"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"/>
+                                
+                                <TextBlock Grid.Column="2"
+                                           Name="TopScoreValue"
+                                           Text="99999 Chips"
+                                           Foreground="#FDB462"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Copy Challenge Button -->
+                        <Button Content="Copy Challenge Link"
+                                HorizontalAlignment="Center"
+                                Margin="0,15,0,0"
+                                Click="OnCopyChallengeClick"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

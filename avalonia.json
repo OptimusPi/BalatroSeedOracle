@@ -1,0 +1,32 @@
+{
+  "name": "Oracle",
+  "version": "1.0.0",
+  "targetFramework": "net8.0",
+  "outputType": "Exe",
+  "startupObject": "Oracle.Program",
+  "projectPath": "src/Oracle.csproj",
+  "outputPath": "src/bin/Debug/net8.0/Oracle.dll",
+  "workingDirectory": "src",
+  "textEditor": {
+    "enableIntelliSense": true,
+    "enableCodeCompletion": true,
+    "enableSyntaxHighlighting": true,
+    "enableErrorSquiggles": true,
+    "enableHotReload": true,
+    "xamlIntelliSense": {
+      "enabled": true,
+      "includeBindingContext": true,
+      "includeDataTemplates": true
+    },
+    "csharpIntelliSense": {
+      "enabled": true,
+      "includeDocumentation": true,
+      "includeParameterHints": true
+    }
+  },
+  "debugging": {
+    "enableBreakpoints": true,
+    "enableStepDebugging": true,
+    "enableVariableInspection": true
+  }
+}

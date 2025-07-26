@@ -1,0 +1,88 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.App"
+             xmlns:local="using:Oracle"
+             RequestedThemeVariant="Dark">
+    
+    <Application.Resources>
+        <FontFamily x:Key="BalatroFont">avares://Oracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
+        
+        <!-- ACTUAL Balatro Colors from globals.lua -->
+        <!-- Main game colors -->
+        <SolidColorBrush x:Key="Black">#374244</SolidColorBrush>
+        <SolidColorBrush x:Key="LightBlack">#4f6367</SolidColorBrush>
+        <SolidColorBrush x:Key="Grey">#5f7377</SolidColorBrush>
+        <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
+
+        <!-- Game colors -->
+        <SolidColorBrush x:Key="Red">#FE5F55</SolidColorBrush>
+        <SolidColorBrush x:Key="Blue">#009dff</SolidColorBrush>
+        <SolidColorBrush x:Key="Green">#4BC292</SolidColorBrush>
+        <SolidColorBrush x:Key="PaleGreen">#56a887</SolidColorBrush>
+        <SolidColorBrush x:Key="Orange">#fda200</SolidColorBrush>
+        <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
+        <SolidColorBrush x:Key="Purple">#8867a5</SolidColorBrush>
+        
+        <!-- UI Colors from C.UI -->
+        <SolidColorBrush x:Key="TextLight">#FFFFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="TextDark">#4F6367</SolidColorBrush>
+        <SolidColorBrush x:Key="TextInactive">#88888899</SolidColorBrush>
+        <SolidColorBrush x:Key="Text">#FFFFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="CardBackground">#cdd9dc</SolidColorBrush>
+        <SolidColorBrush x:Key="Border">#7A9E9F</SolidColorBrush>
+        <SolidColorBrush x:Key="BackgroundLight">#B8D8D8</SolidColorBrush>
+        <SolidColorBrush x:Key="BackgroundDark">#7A9E9F</SolidColorBrush>
+        <SolidColorBrush x:Key="BackgroundInactive">#666666FF</SolidColorBrush>
+        <SolidColorBrush x:Key="OutlineLight">#D8D8D8</SolidColorBrush>
+        <SolidColorBrush x:Key="OutlineDark">#7A9E9F</SolidColorBrush>
+        <SolidColorBrush x:Key="Hover">#00000055</SolidColorBrush>
+        
+        <!-- Set colors (card backgrounds) -->
+        <SolidColorBrush x:Key="SetDefault">#cdd9dc</SolidColorBrush>
+        <SolidColorBrush x:Key="SetJoker">#424e54</SolidColorBrush>
+        <SolidColorBrush x:Key="SetTarot">#424e54</SolidColorBrush>
+        <SolidColorBrush x:Key="SetPlanet">#424e54</SolidColorBrush>
+        <SolidColorBrush x:Key="SetSpectral">#424e54</SolidColorBrush>
+        <SolidColorBrush x:Key="SetVoucher">#424e54</SolidColorBrush>
+        
+        <!-- Secondary set colors -->
+        <SolidColorBrush x:Key="SecondaryJoker">#708b91</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondaryTarot">#a782d1</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondaryPlanet">#13afce</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondarySpectral">#4584fa</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondaryVoucher">#fd682b</SolidColorBrush>
+        
+        <!-- Background -->
+        <SolidColorBrush x:Key="MainBackground">#374244</SolidColorBrush>
+        
+        <!-- Missing secondary color -->
+        <SolidColorBrush x:Key="Secondary">#eac058</SolidColorBrush>
+        <SolidColorBrush x:Key="Background">#4f6367</SolidColorBrush>
+        
+        <!-- AvaloniaEdit font size resources -->
+        <x:Double x:Key="FontSizeNormal">14</x:Double>
+        <x:Double x:Key="FontSizeSmall">12</x:Double>
+        <x:Double x:Key="FontSizeLarge">16</x:Double>
+        
+    </Application.Resources>
+
+    <Application.Styles>
+        <!-- Include base Fluent theme for ScrollViewer functionality -->
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
+        
+        <!-- Include AvaloniaEdit styles -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        
+        <!-- Load custom styles AFTER -->
+        <StyleInclude Source="avares://Oracle/Styles/BalatroModal.axaml" />
+        <StyleInclude Source="avares://Oracle/Styles/ButtonStyles.axaml" />
+        <!-- <StyleInclude Source="avares://Oracle/Styles/PixelatedButtonStyles.axaml" /> -->
+        <StyleInclude Source="avares://Oracle/Styles/TextBoxStyles.axaml" />
+        
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        </Style>
+
+    </Application.Styles>
+</Application>

@@ -1,0 +1,170 @@
+<Styles xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+        <Color x:Key="PrimaryColor">#FF6C5CE7</Color>
+        <Color x:Key="SecondaryColor">#FF2D3436</Color>
+        <SolidColorBrush x:Key="ControlForeground" Color="#FFDFE6EC" />
+        <SolidColorBrush x:Key="ControlBackground" Color="#FF2D3436" />
+    </Styles.Resources>
+    
+    <!-- Balatro Modal Card Style -->
+    <Style Selector="Border.oracle-modal-card">
+        <Setter Property="Background" Value="#181C1C"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="BorderBrush" Value="#3C4646"/>
+        <Setter Property="BorderThickness" Value="4"/>
+        <Setter Property="Padding" Value="32,24,32,24"/>
+    </Style>
+    
+    <!-- Modal TextBlock Style -->
+    <Style Selector="TextBlock.oracle-modal-text">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#FFF"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
+    
+    <!-- Modal Button Style -->
+    <Style Selector="Button.oracle-modal-btn">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="30"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Background" Value="{DynamicResource ControlBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource ControlForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}" />
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="0,8"/>
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="Margin" Value="8,0,8,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Long yellow back button - Balatro style -->
+    <Style Selector="Button.back-button">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="#fda200"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- Drop shadow (first = behind) -->
+                        <Border Name="DropShadow"
+                                Background="#000000"
+                                Opacity="0.4"
+                                CornerRadius="8"
+                                Margin="2,3,0,0"/>
+                        <!-- Main button -->
+                        <Border Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,3,3">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Content}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="Button.back-button:pointerover">
+        <Setter Property="Background" Value="#f09800"/> <!-- Slightly darker than #fda200 -->
+    </Style>
+    <Style Selector="Button.back-button:pressed">
+        <Setter Property="Background" Value="#f09800"/> <!-- Same as hover -->
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.back-button:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    
+
+    
+    <!-- Vertical Tab Button Styles -->
+    <Style Selector="Button.vertical-tab-button">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="Background" Value="#1a1a1a"/>
+        <Setter Property="BorderBrush" Value="#3C4646"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Transitions">
+            <Setter.Value>
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <ThicknessTransition Property="BorderThickness" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Vertical Tab Button Hover State -->
+    <Style Selector="Button.vertical-tab-button:pointerover">
+        <Setter Property="Background" Value="#2a2a2a"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#4C5656"/>
+    </Style>
+    
+    <!-- Vertical Tab Button Active State -->
+    <Style Selector="Button.vertical-tab-button.active">
+        <Setter Property="Background" Value="#009dff"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#0088dd"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- Vertical Tab Button Active Hover State -->
+    <Style Selector="Button.vertical-tab-button.active:pointerover">
+        <Setter Property="Background" Value="#0088dd"/>
+        <Setter Property="BorderBrush" Value="#0077cc"/>
+    </Style>
+    
+    <!-- Vertical Tab Button Pressed State -->
+    <Style Selector="Button.vertical-tab-button:pressed">
+        <Setter Property="Background" Value="#333333"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    
+    <!-- Vertical Tab Button Active Pressed State -->
+    <Style Selector="Button.vertical-tab-button.active:pressed">
+        <Setter Property="Background" Value="#0066aa"/>
+    </Style>
+    
+</Styles>
