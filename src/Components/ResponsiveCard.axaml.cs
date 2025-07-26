@@ -211,16 +211,36 @@ namespace Oracle.Components
         
         private void CheckAndLoadLegendarySoul()
         {
+            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')");
+            
             // Check if this is a legendary joker
-            if (Category == "Jokers" && BalatroData.LegendaryJokers.Contains(ItemName))
+            if (Category == "Jokers")
             {
-                // Load the soul sprite (one row below in the sprite sheet)
-                var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
-                if (soulImage != null)
+                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}");
+                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 ItemName.ToLower(): '{ItemName.ToLower()}'");
+                
+                if (BalatroData.LegendaryJokers.Contains(ItemName.ToLower()))
                 {
-                    _soulImage.Source = soulImage;
-                    _soulImage.IsVisible = true;
-                    StartSoulAnimation();
+                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' IS a legendary joker!");
+                    // Load the soul sprite (one row below in the sprite sheet)
+                    var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
+                    if (soulImage != null)
+                    {
+                        Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Soul image loaded successfully for '{ItemName}'");
+                        _soulImage.Source = soulImage;
+                        _soulImage.IsVisible = true;
+                        StartSoulAnimation();
+                    }
+                    else
+                    {
+                        Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Failed to load soul image for '{ItemName}'");
+                    }
+                }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' is NOT a legendary joker");
+                    _soulImage.IsVisible = false;
+                    StopSoulAnimation();
                 }
             }
             else

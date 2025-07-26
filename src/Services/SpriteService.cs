@@ -59,10 +59,7 @@ public class SpriteService
             tagSheet = LoadBitmap("avares://Oracle/Assets/Tags/tags.png");
             tarotSheet = LoadBitmap("avares://Oracle/Assets/Tarots/Tarots.png");
             voucherSheet = LoadBitmap("avares://Oracle/Assets/Vouchers/Vouchers.png");
-            
-            // For now, use Tarots sprite sheet for Spectrals until we have a dedicated PNG
-            // Note: Spectrals.png.svg exists but needs to be converted to PNG format
-            spectralSheet = tarotSheet; // This might be null, which is fine
+            spectralSheet = tarotSheet;
         }
         catch (Exception ex)
         {
@@ -175,9 +172,14 @@ public class SpriteService
     public IImage? GetJokerSoulImage(string name_in, int spriteWidth = UIConstants.JokerSpriteWidth, int spriteHeight = UIConstants.JokerSpriteHeight)
     {
         var name = name_in.Trim().Replace(" ", "").Replace("_", "").ToLower();
+        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'");
+        
         // For legendary jokers, the soul is one row below (y+1)
         if (jokerPositions == null || jokerSheet == null || !jokerPositions.TryGetValue(name, out var basePos))
+        {
+            Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Failed to find position for: {name}. Available positions: {string.Join(", ", jokerPositions?.Keys.Where(k => k.Contains(name.Substring(0, Math.Min(3, name.Length)))).Take(5) ?? new List<string>())}");
             return null;
+        }
             
         // Create a new position one row below
         var soulPos = new SpritePosition 
@@ -190,11 +192,17 @@ public class SpriteService
         int y = soulPos.Pos.Y * spriteHeight;
         
         // Validate coordinates
+        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Sheet dimensions: {jokerSheet.PixelSize.Width}x{jokerSheet.PixelSize.Height}");
+        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Trying to crop at ({x}, {y}) with size {spriteWidth}x{spriteHeight}");
+        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Bottom-right corner would be at ({x + spriteWidth}, {y + spriteHeight})");
+        
         if (x >= 0 && y >= 0 && x + spriteWidth <= jokerSheet.PixelSize.Width && y + spriteHeight <= jokerSheet.PixelSize.Height)
         {
+            Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}");
             return new CroppedBitmap(jokerSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
         }
         
+        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}");
         return null;
     }
 
@@ -240,25 +248,27 @@ public class SpriteService
             };
         }
 
+        // Normalize the name for lookup
+        var normalizedName = name.Trim().Replace(" ", "").Replace("_", "").ToLower();
+        
         // Check jokers first (most common)
-        if (jokerPositions.ContainsKey(name))
+        if (jokerPositions.ContainsKey(normalizedName))
             return GetJokerImage(name);
 
-
         // Check tags
-        if (tagPositions.ContainsKey(name))
+        if (tagPositions.ContainsKey(normalizedName))
             return GetTagImage(name);
 
         // Check tarots
-        if (tarotPositions.ContainsKey(name))
+        if (tarotPositions.ContainsKey(normalizedName))
             return GetTarotImage(name);
 
         // Check spectrals
-        if (spectralPositions.ContainsKey(name))
+        if (spectralPositions.ContainsKey(normalizedName))
             return GetSpectralImage(name);
 
         // Check vouchers
-        if (voucherPositions.ContainsKey(name))
+        if (voucherPositions.ContainsKey(normalizedName))
             return GetVoucherImage(name);
 
         return null;

@@ -52,6 +52,11 @@
                 <!-- Soul/Face overlay for legendary jokers -->
                 <Image Name="SoulImage" 
                        IsVisible="False"
+                       Width="64"
+                       Height="64"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
                        RenderTransformOrigin="0.5,0.5">
                     <Image.RenderTransform>
                         <TransformGroup>

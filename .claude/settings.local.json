@@ -7,7 +7,10 @@
       "Bash(git config:*)",
       "Bash(git add:*)",
       "Bash(dotnet --help)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet clean:*)"
     ],
     "deny": []
   }

@@ -28,6 +28,8 @@ namespace Oracle.Components
         private bool _isDragging = false;
         private Point _clickPoint;
         private Point _startPosition;
+        private string _currentConfigName = "";
+        private SearchParams _searchParams = new SearchParams();
         
         // Public properties for SearchModal
         public string? ConfigPath => _configPath;
@@ -180,11 +182,13 @@ namespace Oracle.Components
             try
             {
                 _configPath = configPath;
-                var configPathBox = this.FindControl<TextBox>("ConfigPathBox");
-                if (configPathBox != null)
-                    configPathBox.Text = Path.GetFileName(configPath);
                 
-                WriteToTerminal($"Loading config: {Path.GetFileName(configPath)}");
+                // Extract config name without extension
+                var filename = Path.GetFileName(configPath);
+                _currentConfigName = filename.Replace(".ouija.json", "").Replace(".json", "");
+                
+                UpdateTitle("Ready");
+                WriteToTerminal($"Loading config: {filename}");
                 
                 // Validate the config
                 var (success, message) = await _searchService.LoadConfigAsync(configPath);
@@ -192,7 +196,7 @@ namespace Oracle.Components
                 if (success)
                 {
                     WriteToTerminal($"Config loaded: {message}");
-                    UpdateStatus($"Ready - {Path.GetFileNameWithoutExtension(configPath)}");
+                    UpdateStatus($"Ready - {_currentConfigName}");
                     
                     var startButton = this.FindControl<Button>("StartButton");
                     if (startButton != null)
@@ -218,26 +222,21 @@ namespace Oracle.Components
                 _foundCount = 0;
                 UpdateNotificationBadge(0);
                 
-                // Get search parameters
-                var threadCount = (int)(this.FindControl<NumericUpDown>("ThreadCountBox")?.Value ?? 8);
-                var minScore = (int)(this.FindControl<NumericUpDown>("MinScoreBox")?.Value ?? 1);
-                
-                // Get batch size from the dropdown
-                var batchSizeBox = this.FindControl<ComboBox>("BatchSizeBox");
-                var selectedItem = batchSizeBox?.SelectedItem as ComboBoxItem;
-                var batchSize = int.Parse(selectedItem?.Tag?.ToString() ?? "4");
+                // Get search parameters from stored params or defaults
+                var threadCount = _searchParams.ThreadCount;
+                var minScore = _searchParams.MinScore;
+                var batchSize = _searchParams.BatchSize;
                 
                 // Update UI state
                 var startButton = this.FindControl<Button>("StartButton");
                 var stopButton = this.FindControl<Button>("StopButton");
-                var loadConfigButton = this.FindControl<Button>("LoadConfigButton");
                 
                 if (startButton != null) startButton.IsEnabled = false;
                 if (stopButton != null) stopButton.IsEnabled = true;
-                if (loadConfigButton != null) loadConfigButton.IsEnabled = false;
                 
                 WriteToTerminal($"Starting search...");
                 UpdateStatus("Searching...");
+                UpdateTitle("Searching...");
                 
                 // Create cancellation token
                 _searchCancellation = new CancellationTokenSource();
@@ -245,13 +244,7 @@ namespace Oracle.Components
                 // Set up progress reporting
                 var progress = new Progress<SearchProgress>(OnProgressUpdate);
                 
-                // Get deck and stake
-                var deckBox = this.FindControl<ComboBox>("DeckBox");
-                var stakeBox = this.FindControl<ComboBox>("StakeBox");
-                var deck = (deckBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Red Deck";
-                var stake = (stakeBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "White Stake";
-                
-                // Create search criteria
+                // Create search criteria with stored params
                 var criteria = new SearchCriteria
                 {
                     ConfigPath = _configPath,
@@ -259,8 +252,8 @@ namespace Oracle.Components
                     MaxSeeds = 10000000, // Fixed for widget
                     MinScore = minScore,
                     BatchSize = batchSize,
-                    Deck = deck,
-                    Stake = stake
+                    Deck = _searchParams.Deck,
+                    Stake = _searchParams.Stake
                 };
                 
                 // Start search
@@ -273,22 +266,22 @@ namespace Oracle.Components
             {
                 WriteToTerminal("Search cancelled");
                 UpdateStatus("Cancelled");
+                UpdateTitle("Paused");
             }
             catch (Exception ex)
             {
                 WriteToTerminal($"Error: {ex.Message}", isError: true);
                 UpdateStatus("Error");
+                UpdateTitle("Error");
             }
             finally
             {
                 // Reset UI state
                 var startButton = this.FindControl<Button>("StartButton");
                 var stopButton = this.FindControl<Button>("StopButton");
-                var loadConfigButton = this.FindControl<Button>("LoadConfigButton");
                 
                 if (startButton != null) startButton.IsEnabled = true;
                 if (stopButton != null) stopButton.IsEnabled = false;
-                if (loadConfigButton != null) loadConfigButton.IsEnabled = true;
                 
                 _searchCancellation?.Dispose();
                 _searchCancellation = null;
@@ -471,6 +464,24 @@ namespace Oracle.Components
             {
                 Oracle.Helpers.DebugLogger.Log("SearchWidget", $"Error stopping search: {ex.Message}");
             }
+        }
+        
+        private void UpdateTitle(string status)
+        {
+            var titleText = this.FindControl<TextBlock>("TitleText");
+            if (titleText != null && !string.IsNullOrEmpty(_currentConfigName))
+            {
+                titleText.Text = $"{_currentConfigName} ({status})";
+            }
+        }
+        
+        private class SearchParams
+        {
+            public int ThreadCount { get; set; } = 8;
+            public int MinScore { get; set; } = 1;
+            public int BatchSize { get; set; } = 4;
+            public string Deck { get; set; } = "Red Deck";
+            public string Stake { get; set; } = "White Stake";
         }
     }
 }

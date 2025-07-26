@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Input;
+using Avalonia.Styling;
 using Oracle.Constants;
 using Oracle.Helpers;
 using Oracle.Models;
@@ -31,8 +32,12 @@ public partial class FiltersModalContent : UserControl
     private readonly Dictionary<string, List<string>> _itemCategories;
     private readonly HashSet<string> _selectedNeeds = new();
     private readonly HashSet<string> _selectedWants = new();
+    private readonly Dictionary<string, ItemConfig> _itemConfigs = new();
     private string _currentCategory = "Jokers";
     private string _searchFilter = "";
+    private Popup? _configPopup;
+    private ItemConfigPopup? _configPopupContent;
+    private string? _currentConfigPath;
     private TextBox? _searchBox;
     private ScrollViewer? _mainScrollViewer;
     private Dictionary<string, TextBlock> _sectionHeaders = new();
@@ -301,17 +306,48 @@ public partial class FiltersModalContent : UserControl
                 {
                     var category = parts[0];
                     var itemName = parts[1];
-                    var key = $"{category}:{itemName}";
                     
-                    // Move from wants to needs
-                    _selectedWants.Remove(key);
-                    _selectedNeeds.Add(key);
+                    if (category == "Set" && e.Data.Contains("set-items"))
+                    {
+                        // Handle set drop
+                        var setItemsData = e.Data.Get("set-items") as string;
+                        if (!string.IsNullOrEmpty(setItemsData))
+                        {
+                            var setItems = setItemsData.Split(',');
+                            foreach (var item in setItems)
+                            {
+                                // Find the category for this item
+                                string? itemCategory = null;
+                                if (BalatroData.Jokers.ContainsKey(item)) itemCategory = "Jokers";
+                                else if (BalatroData.TarotCards.ContainsKey(item)) itemCategory = "Tarots";
+                                else if (BalatroData.SpectralCards.ContainsKey(item)) itemCategory = "Spectrals";
+                                else if (BalatroData.Vouchers.ContainsKey(item)) itemCategory = "Vouchers";
+                                
+                                if (itemCategory != null)
+                                {
+                                    var itemKey = $"{itemCategory}:{item}";
+                                    _selectedWants.Remove(itemKey);
+                                    _selectedNeeds.Add(itemKey);
+                                }
+                            }
+                            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added set '{itemName}' ({setItems.Length} items) to NEEDS");
+                        }
+                    }
+                    else
+                    {
+                        // Handle single item drop
+                        var key = $"{category}:{itemName}";
+                        
+                        // Move from wants to needs
+                        _selectedWants.Remove(key);
+                        _selectedNeeds.Add(key);
+                        
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to NEEDS");
+                    }
                     
                     UpdateDropZoneVisibility();
                     UpdatePersistentFavorites();
                     RefreshItemPalette();
-                    
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to NEEDS");
                 }
             }
         }
@@ -334,17 +370,48 @@ public partial class FiltersModalContent : UserControl
                 {
                     var category = parts[0];
                     var itemName = parts[1];
-                    var key = $"{category}:{itemName}";
                     
-                    // Move from needs to wants
-                    _selectedNeeds.Remove(key);
-                    _selectedWants.Add(key);
+                    if (category == "Set" && e.Data.Contains("set-items"))
+                    {
+                        // Handle set drop
+                        var setItemsData = e.Data.Get("set-items") as string;
+                        if (!string.IsNullOrEmpty(setItemsData))
+                        {
+                            var setItems = setItemsData.Split(',');
+                            foreach (var item in setItems)
+                            {
+                                // Find the category for this item
+                                string? itemCategory = null;
+                                if (BalatroData.Jokers.ContainsKey(item)) itemCategory = "Jokers";
+                                else if (BalatroData.TarotCards.ContainsKey(item)) itemCategory = "Tarots";
+                                else if (BalatroData.SpectralCards.ContainsKey(item)) itemCategory = "Spectrals";
+                                else if (BalatroData.Vouchers.ContainsKey(item)) itemCategory = "Vouchers";
+                                
+                                if (itemCategory != null)
+                                {
+                                    var itemKey = $"{itemCategory}:{item}";
+                                    _selectedNeeds.Remove(itemKey);
+                                    _selectedWants.Add(itemKey);
+                                }
+                            }
+                            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added set '{itemName}' ({setItems.Length} items) to WANTS");
+                        }
+                    }
+                    else
+                    {
+                        // Handle single item drop
+                        var key = $"{category}:{itemName}";
+                        
+                        // Move from needs to wants
+                        _selectedNeeds.Remove(key);
+                        _selectedWants.Add(key);
+                        
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to WANTS");
+                    }
                     
                     UpdateDropZoneVisibility();
                     UpdatePersistentFavorites();
                     RefreshItemPalette();
-                    
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to WANTS");
                 }
             }
         }
@@ -914,6 +981,20 @@ public partial class FiltersModalContent : UserControl
         return 0;
     }
 
+    private string GetDefaultConfigJson()
+    {
+        return @"{
+  ""name"": ""Example Filter"",
+  ""antes"": {
+    ""0"": {
+      ""needs"": {
+        ""jokers"": [""Joker""]
+      }
+    }
+  }
+}";
+    }
+
     private void NewConfig()
     {
         if (_jsonTextBox != null)
@@ -1076,128 +1157,6 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
-    private string GetDefaultConfigJson()
-    {
-        // Create an impressive demo config that showcases the JSON editor
-        return @"{
-  ""name"": ""Professional Balatro Seed Config"",
-  ""description"": ""Comprehensive filter for finding optimal Balatro seeds with specific requirements."",
-  ""author"": ""Oracle User"",
-  ""version"": ""1.0.0"",
-  ""keywords"": [
-    ""joker"",
-    ""negative"",
-    ""voucher"",
-    ""tarot"",
-    ""spectral""
-  ],
-  ""filter_config"": {
-    ""numNeeds"": 2,
-    ""numWants"": 3,
-    ""Needs"": [
-      {
-        ""Type"": ""Jokers"",
-        ""Value"": ""Joker"",
-        ""SearchAntes"": [1, 2, 3, 4],
-        ""Score"": 5
-      },
-      {
-        ""Type"": ""Vouchers"",
-        ""Value"": ""Overstock"",
-        ""SearchAntes"": [1, 2],
-        ""Score"": 3
-      }
-    ],
-    ""Wants"": [
-      {
-        ""Type"": ""Jokers"",
-        ""Value"": ""Blueprint"",
-        ""SearchAntes"": [2, 3, 4, 5],
-        ""Score"": 2
-      },
-      {
-        ""Type"": ""Tarots"",
-        ""Value"": ""The Fool"",
-        ""SearchAntes"": [1, 2, 3],
-        ""Score"": 1
-      },
-      {
-        ""Type"": ""Tags"",
-        ""Value"": ""Negative Tag"",
-        ""SearchAntes"": [2, 3, 4],
-        ""Score"": 4
-      }
-    ],
-    ""ScoreNaturalNegatives"": true,
-    ""ScoreDesiredNegatives"": false,
-    ""MinimumScore"": 8,
-    ""MaxSearchTime"": 300,
-    ""EnableAdvancedFiltering"": true
-  },
-  ""search_parameters"": {
-    ""max_ante"": 8,
-    ""min_ante"": 1,
-    ""stake_level"": ""Gold"",
-    ""deck_type"": ""Red Deck"",
-    ""enable_skips"": true,
-    ""priority_mode"": ""balanced""
-  },
-  ""metadata"": {
-    ""created_date"": ""2025-01-20"",
-    ""last_modified"": ""2025-01-20"",
-    ""estimated_seeds_per_hour"": 50000,
-    ""compatibility_version"": ""3.1.0""
-  }
-}";
-    }
-
-    private Control CreateSearchInterface()
-    {
-        var mainPanel = new StackPanel { Spacing = 15 };
-        
-        // Large search box
-        var searchBox = new TextBox
-        {
-            Name = "SearchModeBox",
-            Watermark = "🔍 Type to search all items...",
-            FontSize = 16,
-            Padding = new Avalonia.Thickness(12, 8),
-            Background = new SolidColorBrush(Color.Parse("#1a1a1a")),
-            Foreground = Brushes.White,
-            Margin = new Avalonia.Thickness(0, 0, 0, 10)
-        };
-        
-        // Search results container
-        var resultsContainer = new StackPanel
-        {
-            Name = "SearchResults"
-        };
-        
-        // Clear search button
-        var clearButton = new Button
-        {
-            Content = "Clear Search",
-            Classes = { "oracle-btn", "button-color-yellow-orange" },
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            FontSize = 14,
-            Padding = new Avalonia.Thickness(16, 8),
-            Margin = new Avalonia.Thickness(0, 10, 0, 0)
-        };
-        
-        // Wire up events
-        searchBox.TextChanged += OnSearchModeTextChanged;
-        clearButton.Click += (s, e) => ExitSearchMode();
-        
-        mainPanel.Children.Add(searchBox);
-        mainPanel.Children.Add(resultsContainer);
-        mainPanel.Children.Add(clearButton);
-        
-        // Focus the search box
-        searchBox.Focus();
-        
-        return mainPanel;
-    }
-    
     private void OnSearchModeTextChanged(object? sender, Avalonia.Controls.TextChangedEventArgs e)
     {
         if (sender is TextBox searchBox)
@@ -1216,18 +1175,8 @@ public partial class FiltersModalContent : UserControl
         
         resultsContainer.Children.Clear();
         
-        if (string.IsNullOrEmpty(query) || query.Length < 2)
+        if (string.IsNullOrEmpty(query) || query.Length < 1)
         {
-            var hintText = new TextBlock
-            {
-                Text = "Type at least 2 characters to search...",
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.Parse("#888888")),
-                Background = Brushes.Transparent,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Margin = new Avalonia.Thickness(0, 20)
-            };
-            resultsContainer.Children.Add(hintText);
             return;
         }
         
@@ -1247,20 +1196,7 @@ public partial class FiltersModalContent : UserControl
                 allResults[category.Key] = matches;
             }
         }
-        
-        if (!allResults.Any())
-        {
-            var noResultsText = new TextBlock
-            {
-                Text = $"No items found matching '{query}'",
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.Parse("#888888")),
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Margin = new Avalonia.Thickness(0, 20)
-            };
-            resultsContainer.Children.Add(noResultsText);
-            return;
-        }
+    
         
         // Display results grouped by category
         foreach (var categoryResults in allResults)
@@ -1709,6 +1645,13 @@ public partial class FiltersModalContent : UserControl
     
     private void NavigateToSection(string tabId)
     {
+        // Clear search when navigating to a section
+        if (_searchBox != null)
+        {
+            _searchBox.Text = "";
+        }
+        _searchFilter = "";
+        
         // If we're in favorites view, reload the main view first
         if (_currentActiveTab == "FavoritesTab" || _mainScrollViewer == null)
         {
@@ -1770,9 +1713,27 @@ public partial class FiltersModalContent : UserControl
             var setDisplay = new JokerSetDisplay
             {
                 JokerSet = set,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
+                Cursor = new Cursor(StandardCursorType.Hand)
             };
             
+            // Enable drag and drop for the set
+            setDisplay.PointerPressed += async (s, e) =>
+            {
+                if (e.GetCurrentPoint(setDisplay).Properties.IsLeftButtonPressed)
+                {
+                    e.Handled = true;
+                    
+                    // Create drag data with set indicator and items
+                    var dataObject = new DataObject();
+                    dataObject.Set("balatro-item", $"Set|{set.Name}");
+                    dataObject.Set("set-items", string.Join(",", set.Items));
+                    
+                    await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy);
+                }
+            };
+            
+            // Keep the click handler as a fallback
             setDisplay.Click += (s, e) => 
             {
                 // Add all items from the set to wants
@@ -2045,6 +2006,10 @@ public partial class FiltersModalContent : UserControl
                 if (match != null)
                 {
                     properNames.Add(match);
+                    if (subCategory == "Legendary")
+                    {
+                        Oracle.Helpers.DebugLogger.Log($"🎴 Legendary Joker found: {match} (from lowercase: {lcItem})");
+                    }
                 }
                 else
                 {
@@ -2387,68 +2352,209 @@ public partial class FiltersModalContent : UserControl
             Cursor = new Cursor(StandardCursorType.Hand),
             Width = 50,
             Height = 65,
-            Padding = new Thickness(2)
+            Padding = new Thickness(2),
+            Tag = $"{category}:{itemName}" // Store for later reference
         };
         
-        Oracle.Helpers.DebugLogger.Log($"🎴 Creating dropped item: {itemName} (category: {category})");
+        Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 DROPPED ITEM: '{itemName}' (category: '{category}')");
         
-        // Get the appropriate image for the item
-        IImage? imageSource = category switch
+        // List of the 5 legendary jokers (these have animated faces)
+        var legendaryJokers = new[] { "Canio", "Triboulet", "Yorick", "Chicot", "Perkeo" };
+        
+        // Check if this is a Soul Joker
+        bool isSoulJoker = category == "Jokers" && legendaryJokers.Any(lj => lj.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+        
+        Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Soul check result: IsSoulJoker={isSoulJoker} for item '{itemName}'");
+        
+        if (isSoulJoker)
         {
-            "Jokers" => SpriteService.Instance.GetJokerImage(itemName),
-            "Tarots" => SpriteService.Instance.GetTarotImage(itemName),
-            "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
-            "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
-            "Tags" => SpriteService.Instance.GetTagImage(itemName),
-            _ => null
-        };
-        
-        Oracle.Helpers.DebugLogger.Log($"🎴 Image found: {imageSource != null}");
-        
-        if (imageSource != null)
-        {
-            // Show the actual card image
-            var image = new Image
+            // Create stacked layout for soul joker
+            var grid = new Grid();
+            
+            // Card back image
+            var cardImage = new Image
             {
-                Source = imageSource,
+                Source = SpriteService.Instance.GetJokerImage(itemName),
                 Stretch = Stretch.Uniform,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             };
-            border.Child = image;
+            grid.Children.Add(cardImage);
+            
+            // Animated face overlay
+            var faceSource = SpriteService.Instance.GetJokerSoulImage(itemName);
+            if (faceSource != null)
+            {
+                var faceImage = new Image
+                {
+                    Source = faceSource,
+                    Stretch = Stretch.Uniform,
+                    Width = 45,
+                    Height = 45,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    RenderTransform = new RotateTransform()
+                };
+                
+                // Add wobble animation
+                var animation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromSeconds(2),
+                    IterationCount = new Avalonia.Animation.IterationCount(uint.MaxValue),
+                    Children =
+                    {
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Avalonia.Animation.Cue(0),
+                            Setters = { new Setter(RotateTransform.AngleProperty, -5.0) }
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Avalonia.Animation.Cue(0.5),
+                            Setters = { new Setter(RotateTransform.AngleProperty, 5.0) }
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Avalonia.Animation.Cue(1),
+                            Setters = { new Setter(RotateTransform.AngleProperty, -5.0) }
+                        }
+                    }
+                };
+                animation.RunAsync(faceImage);
+                
+                grid.Children.Add(faceImage);
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 FAILED to get soul image for '{itemName}'");
+            }
+            border.Child = grid;
         }
         else
         {
-            // Fallback to text if no image
-            var textBlock = new TextBlock
+            // Regular item display
+            IImage? imageSource = category switch
             {
-                Text = itemName,
-                FontSize = 8,
-                FontWeight = FontWeight.SemiBold,
-                Foreground = Brushes.White,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                TextAlignment = TextAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                "Jokers" => SpriteService.Instance.GetJokerImage(itemName),
+                "Tarots" => SpriteService.Instance.GetTarotImage(itemName),
+                "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
+                "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
+                "Tags" => SpriteService.Instance.GetTagImage(itemName),
+                _ => null
             };
-            border.Child = textBlock;
+            
+            Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Image lookup for '{itemName}' in category '{category}': {(imageSource != null ? "FOUND" : "NOT FOUND")}");
+            
+            if (imageSource != null)
+            {
+                var image = new Image
+                {
+                    Source = imageSource,
+                    Stretch = Stretch.Uniform,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                };
+                border.Child = image;
+            }
+            else
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = itemName,
+                    FontSize = 8,
+                    FontWeight = FontWeight.SemiBold,
+                    Foreground = Brushes.White,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    TextAlignment = TextAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                };
+                border.Child = textBlock;
+            }
         }
         
-        // Click to remove item
+        // Click to show config popup
         border.PointerPressed += (s, e) =>
         {
-            var key = $"{category}:{itemName}";
+            e.Handled = true;
+            ShowItemConfigPopup(border, itemName, category);
+        };
+        
+        return border;
+    }
+    
+    private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
+    {
+        var key = $"{category}:{itemName}";
+        var isInNeeds = _selectedNeeds.Contains(key);
+        _configPopupContent = new ItemConfigPopup();
+        
+        // Create popup if it doesn't exist
+        if (_configPopup == null)
+        {
+            _configPopup = new Popup
+            {
+                Placement = PlacementMode.Pointer,
+                IsLightDismissEnabled = true
+            };
+
+
+            _configPopup.Child = _configPopupContent;
+
+            // Handle events
+            _configPopupContent.ConfigApplied += OnItemConfigApplied;
+            _configPopupContent.DeleteRequested += OnItemDeleteRequested;
+            _configPopupContent.Cancelled += OnItemConfigCancelled;
+        }
+        
+        // Position popup based on whether item is in NEEDS or WANTS
+        if (isInNeeds)
+        {
+            _configPopup.Placement = PlacementMode.Bottom;
+            _configPopup.VerticalOffset = 5;
+        }
+        else
+        {
+            _configPopup.Placement = PlacementMode.Top;
+            _configPopup.VerticalOffset = -5;
+        }
+        
+        // Set popup target and data
+        _configPopup.PlacementTarget = itemBorder;
+        _configPopupContent.SetItem(key, itemName, _itemConfigs.GetValueOrDefault(key));
+        
+        // Show popup
+        _configPopup.IsOpen = true;
+    }
+    
+    private void OnItemConfigApplied(object? sender, ItemConfigEventArgs e)
+    {
+        _itemConfigs[e.Config.ItemKey] = e.Config;
+        _configPopup!.IsOpen = false;
+        Oracle.Helpers.DebugLogger.Log($"Item config updated: {e.Config.ItemKey}");
+    }
+    
+    private void OnItemDeleteRequested(object? sender, EventArgs e)
+    {
+        if (_configPopupContent != null)
+        {
+            var key = _configPopupContent.GetItem();
             _selectedNeeds.Remove(key);
             _selectedWants.Remove(key);
+            _itemConfigs.Remove(key);
             
             UpdateDropZoneVisibility();
             UpdatePersistentFavorites();
             RefreshItemPalette();
             
-            Oracle.Helpers.DebugLogger.Log($"❌ Removed {itemName} from selections");
-        };
-        
-        return border;
+            _configPopup!.IsOpen = false;
+            Oracle.Helpers.DebugLogger.Log($"Item deleted: {key}");
+        }
+    }
+    
+    private void OnItemConfigCancelled(object? sender, EventArgs e)
+    {
+        _configPopup!.IsOpen = false;
     }
     
     private void RefreshItemPalette()
@@ -2675,6 +2781,26 @@ public partial class FiltersModalContent : UserControl
                 Stretch = Stretch.Uniform
             };
             ghostContent.Children.Add(image);
+            
+            // Check if this is a legendary joker and add soul face
+            var legendaryJokers = new[] { "Canio", "Triboulet", "Yorick", "Chicot", "Perkeo" };
+            if (category == "Jokers" && legendaryJokers.Any(lj => lj.Equals(itemName, StringComparison.OrdinalIgnoreCase)))
+            {
+                var faceSource = SpriteService.Instance.GetJokerSoulImage(itemName);
+                if (faceSource != null)
+                {
+                    var faceImage = new Image
+                    {
+                        Source = faceSource,
+                        Width = 50,
+                        Height = 50,
+                        Stretch = Stretch.Uniform,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                    };
+                    ghostContent.Children.Add(faceImage);
+                }
+            }
         }
         else
         {
@@ -2827,14 +2953,7 @@ public partial class FiltersModalContent : UserControl
     
     private OuijaConfig BuildConfigFromSelections()
     {
-        // Get ante selection
-        var anteSelector = this.FindControl<ComboBox>("AnteSelector");
-        var selectedAnteIndex = anteSelector?.SelectedIndex ?? 0;
-        int[]? searchAntes = null;
-        if (selectedAnteIndex > 0) // Not "Any Ante"
-        {
-            searchAntes = new int[] { selectedAnteIndex };
-        }
+        // Ante selection is now handled per-item in popover
         
         // Get edition selection
         var editionType = GetSelectedEdition();
@@ -2842,12 +2961,18 @@ public partial class FiltersModalContent : UserControl
         // Get source selections
         var sources = GetSelectedSources();
         
+        // Use filename as config name if we have a saved path
+        string configName = _configNameBox?.Text ?? "Filter Configuration";
+        if (!string.IsNullOrEmpty(_currentConfigPath))
+        {
+            configName = Path.GetFileNameWithoutExtension(_currentConfigPath);
+        }
+        
         var config = new OuijaConfig
         {
-            name = _configNameBox?.Text ?? "Filter Configuration",
+            name = configName,
             description = _configDescriptionBox?.Text ?? $"Search for {_selectedNeeds.Count} required items and {_selectedWants.Count} optional items",
             author = "Jimbo",
-            keywords = new List<string>(),
             sources = sources,
             filter_config = new FilterConfig
             {
@@ -2865,17 +2990,16 @@ public partial class FiltersModalContent : UserControl
             var parts = need.Split(':');
             if (parts.Length == 2)
             {
-                // Add keywords based on item names
-                if (!config.keywords.Contains(parts[1].ToLower()))
-                    config.keywords.Add(parts[1].ToLower());
+                var itemKey = $"{parts[0]}:{parts[1]}";
+                var itemConfig = _itemConfigs.GetValueOrDefault(itemKey);
                 
                 config.filter_config.Needs.Add(new FilterItem
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
-                    SearchAntes = searchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
+                    SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = editionType == "negative" ? "negative" : "NoEdition"
+                    Edition = itemConfig?.Edition ?? "NoEdition"
                 });
             }
         }
@@ -2886,17 +3010,16 @@ public partial class FiltersModalContent : UserControl
             var parts = want.Split(':');
             if (parts.Length == 2)
             {
-                // Add keywords based on item names
-                if (!config.keywords.Contains(parts[1].ToLower()))
-                    config.keywords.Add(parts[1].ToLower());
+                var itemKey = $"{parts[0]}:{parts[1]}";
+                var itemConfig = _itemConfigs.GetValueOrDefault(itemKey);
                 
                 config.filter_config.Wants.Add(new FilterItem
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
-                    SearchAntes = searchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
+                    SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = editionType == "negative" ? "negative" : "NoEdition"
+                    Edition = itemConfig?.Edition ?? "NoEdition"
                 });
             }
         }
@@ -2906,45 +3029,15 @@ public partial class FiltersModalContent : UserControl
     
     private string GetSelectedEdition()
     {
-        var normalRadio = this.FindControl<RadioButton>("EditionNormal");
-        var foilRadio = this.FindControl<RadioButton>("EditionFoil");
-        var holoRadio = this.FindControl<RadioButton>("EditionHolo");
-        var polyRadio = this.FindControl<RadioButton>("EditionPoly");
-        var negativeRadio = this.FindControl<RadioButton>("EditionNegative");
-        
-        if (foilRadio?.IsChecked == true) return "foil";
-        if (holoRadio?.IsChecked == true) return "holographic";
-        if (polyRadio?.IsChecked == true) return "polychrome";
-        if (negativeRadio?.IsChecked == true) return "negative";
-        
+        // Edition is now handled per-item in popover
         return "normal";
     }
     
     private List<string> GetSelectedSources()
     {
-        var sources = new List<string>();
-        
-        var tagsCheck = this.FindControl<CheckBox>("SourceTags");
-        var packsCheck = this.FindControl<CheckBox>("SourcePacks");
-        var shopCheck = this.FindControl<CheckBox>("SourceShop");
-        var jimboCheck = this.FindControl<CheckBox>("SourceJimbo");
-        var bigBlindCheck = this.FindControl<CheckBox>("SourceBigBlind");
-        var smallBlindCheck = this.FindControl<CheckBox>("SourceSmallBlind");
-        
-        if (tagsCheck?.IsChecked == true) sources.Add("tag");
-        if (packsCheck?.IsChecked == true) sources.Add("booster");
-        if (shopCheck?.IsChecked == true) sources.Add("shop");
-        if (jimboCheck?.IsChecked == true) sources.Add("jimbo");
-        if (bigBlindCheck?.IsChecked == true) sources.Add("big_blind");
-        if (smallBlindCheck?.IsChecked == true) sources.Add("small_blind");
-        
-        // If no sources selected, default to all main sources
-        if (!sources.Any())
-        {
-            sources.AddRange(new[] { "tag", "booster", "shop" });
-        }
-        
-        return sources;
+        // Sources are now handled per-item in popover
+        // Return default sources for now
+        return new List<string> { "tag", "booster", "shop" };
     }
     
     /// <summary>
@@ -3058,6 +3151,9 @@ public partial class FiltersModalContent : UserControl
     {
         try
         {
+            // Store the current config path
+            _currentConfigPath = configPath;
+            
             // Get the main window and menu
             var window = TopLevel.GetTopLevel(this) as Window;
             var mainMenu = window?.Content as Views.BalatroMainMenu;
@@ -3129,20 +3225,41 @@ public partial class FiltersModalContent : UserControl
         Oracle.Helpers.DebugLogger.Log("FiltersModal: OnLaunchSearchClick called");
         try
         {
-            // Build config from current selections
-            var config = BuildConfigFromSelections();
+            string configPath;
             
-            // Save to temp file
-            var tempPath = Path.Combine(Path.GetTempPath(), $"temp_search_{Guid.NewGuid()}.ouija.json");
-            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions 
-            { 
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-            await File.WriteAllTextAsync(tempPath, json);
+            // If we have a saved config path, use it. Otherwise prompt to save first.
+            if (!string.IsNullOrEmpty(_currentConfigPath))
+            {
+                // Update the existing config file with current selections
+                var config = BuildConfigFromSelections();
+                var json = JsonSerializer.Serialize(config, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
+                await File.WriteAllTextAsync(_currentConfigPath, json);
+                configPath = _currentConfigPath;
+            }
+            else
+            {
+                // Prompt user to save the config first
+                Oracle.Helpers.DebugLogger.Log("No saved config - prompting user to save first");
+                OnSaveClick(sender, e);
+                
+                // If they saved, use that path
+                if (!string.IsNullOrEmpty(_currentConfigPath))
+                {
+                    configPath = _currentConfigPath;
+                }
+                else
+                {
+                    // User cancelled save
+                    return;
+                }
+            }
             
-            Oracle.Helpers.DebugLogger.Log($"FiltersModal: Created temp config at {tempPath}");
+            Oracle.Helpers.DebugLogger.Log($"FiltersModal: Using config at {configPath}");
             
             // Get the main menu reference
             var mainWindow = TopLevel.GetTopLevel(this) as Window;
@@ -3175,9 +3292,20 @@ public partial class FiltersModalContent : UserControl
                         Oracle.Helpers.DebugLogger.Log("FiltersModal: Hiding modal content");
                         mainMenu.HideModalContent();
                         
-                        // Show the search widget with the temp config
-                        Oracle.Helpers.DebugLogger.Log("FiltersModal: Showing search widget");
-                        mainMenu.ShowSearchWidget(tempPath);
+                        // Create and show the search modal directly
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal: Creating search modal");
+                        var searchModal = new SearchModal();
+                        searchModal.SetSearchService(ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService());
+                        searchModal.SetConfigPath(configPath);
+                        
+                        // Create standard modal wrapper
+                        var modal = new StandardModal("SEARCH");
+                        modal.SetContent(searchModal);
+                        modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
+                        
+                        // Show the modal
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal: Showing search modal");
+                        mainMenu.ShowModalContent(modal);
                     }
                 }
             }

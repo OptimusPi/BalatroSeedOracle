@@ -7,7 +7,7 @@ namespace Oracle.Models;
 
 /// <summary>
 /// Complete Balatro game data for ouija.json configuration
-/// Uses Motely.Core enums as the source of truth for item names
+/// Uses Motely enums as the source of truth for item names
 /// </summary>
 public static class BalatroData
 {
@@ -493,15 +493,19 @@ public static class BalatroData
 
     // Additional properties for backwards compatibility
     public static readonly List<string> LegendaryJokers = new List<string>();
+    public static readonly List<string> SoulJokers = new List<string>(); // Alias for LegendaryJokers
     public static readonly Dictionary<string, List<string>> JokersByRarity = new Dictionary<string, List<string>>();
 
     // Initialize these in the static constructor
     static void InitializeCompatibilityCollections()
     {
-        // Initialize LegendaryJokers
+        Console.WriteLine("Initializing compatibility collections...");
+        // Initialize LegendaryJokers and SoulJokers (they're the same)
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
-            LegendaryJokers.Add(joker.ToString().ToLower());
+            var jokerName = joker.ToString();
+            LegendaryJokers.Add(jokerName.ToLower());
+            SoulJokers.Add(jokerName); // Keep original casing for SoulJokers
         }
 
         // Initialize JokersByRarity

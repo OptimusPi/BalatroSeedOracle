@@ -1,0 +1,47 @@
+{
+  "name": "My Filter Config",
+  "description": "Search for specific items",
+  "author": "Jimbo",
+  "sources": [
+    "tag",
+    "booster",
+    "shop"
+  ],
+  "filter_config": {
+    "Needs": [
+      {
+        "Type": "Joker",
+        "Value": "Blueprint",
+        "SearchAntes": [
+          1
+        ],
+        "Score": 1,
+        "Edition": "Negative",
+        "Stickers": null,
+        "Suit": null,
+        "Rank": null,
+        "Seal": null,
+        "Enhancement": null
+      },
+      {
+        "Type": "Joker",
+        "Value": "AncientJoker",
+        "SearchAntes": [
+          1,
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "Stickers": null,
+        "Suit": null,
+        "Rank": null,
+        "Seal": null,
+        "Enhancement": null
+      }
+    ],
+    "Wants": [],
+    "Deck": null,
+    "Stake": null,
+    "ScoreNaturalNegatives": false,
+    "ScoreDesiredNegatives": false
+  }
+}

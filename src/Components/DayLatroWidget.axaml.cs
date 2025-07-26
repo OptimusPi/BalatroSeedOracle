@@ -83,7 +83,7 @@ namespace Oracle.Components
             // Rotate through different themes based on seed
             var themes = new[]
             {
-                ("Joker Jamboree", "Collect 5 different Jokers by Ante 3", "Joker"),
+                ("Wee Joker Fun Run", "Everybody loves Wee Joker!", "Wee Joker"),
                 ("Spectral Sprint", "Find a Spectral card before Ante 2 boss", "Soul"),
                 ("Voucher Victory", "Get 3 vouchers by Ante 4", "Overstock"),
                 ("Tag Team", "Use 5 different tags in one run", "Ethereal Tag"),
@@ -100,11 +100,12 @@ namespace Oracle.Components
             if (_descriptionText != null)
                 _descriptionText.Text = description;
             
-            // Load joker image
+            // Load joker/item image
             if (_funRunImage != null)
             {
                 var spriteService = SpriteService.Instance;
-                _funRunImage.Source = spriteService.GetJokerImage(jokerName);
+                // Use GetItemImage since some items like "Overstock" are vouchers, not jokers
+                _funRunImage.Source = spriteService.GetItemImage(jokerName);
             }
         }
         

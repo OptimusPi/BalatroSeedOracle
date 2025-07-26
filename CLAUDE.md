@@ -99,3 +99,13 @@ Game assets in `src/Assets/`:
   - Oracle project uses underscores for joker names (e.g., `Wee_Joker`)
   - Motely internally may use different conventions
   - Be aware of naming differences when working across projects
+
+## Recent Changes
+
+1. **SearchHistoryService**: Added DuckDB integration for storing search history and results
+2. **Search Widget**: Fixed button sizing issue and added maximize/minimize functionality
+3. **Filters Modal**: Added support for antes, editions, and sources in visual builder
+4. **Data Table**: Implemented sortable DataGrid for search results with formatted score display
+5. **GitHub Actions**: Simplified workflow for Windows, Linux, and macOS builds without code signing
+6. **ItemConfigPopup**: Added range slider for ante selection with drag functionality
+7. **OuijaConfig**: Removed unused 'keywords' field from JSON output - no longer generated in filters

@@ -65,6 +65,6 @@ public partial class App : Application
         services.AddSingleton<Services.MotelySearchService>();
         services.AddSingleton<Services.SpriteService>();
         services.AddSingleton<Services.FavoritesService>();
-        services.AddSingleton<Services.ClipboardService>();
+        // ClipboardService is static, no need to register
     }
 }

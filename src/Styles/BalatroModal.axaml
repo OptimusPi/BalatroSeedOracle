@@ -58,14 +58,15 @@
     <!-- Long yellow back button - Balatro style -->
     <Style Selector="Button.back-button">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="#FFFFFF"/>
         <Setter Property="Background" Value="#fda200"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="Height" Value="48"/>
+        <Setter Property="Height" Value="42"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="0,6,0,0"/>
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="Background" Duration="0:0:0.1" />
