@@ -2,3 +2,6 @@
 	path = external/Motely
 	url = https://github.com/OptimusPi/Motely.git
 	branch = Oracle
+[submodule "Motely"]
+	path = Motely
+	url = https://github.com/OptimusPi/Motely.git
