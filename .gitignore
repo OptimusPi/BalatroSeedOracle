@@ -52,5 +52,3 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-/engines
-/Balatro
