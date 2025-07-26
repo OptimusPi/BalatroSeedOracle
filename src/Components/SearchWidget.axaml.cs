@@ -89,6 +89,10 @@ namespace Oracle.Components
             
             if (mainMenu != null)
             {
+                // Hide the widget
+                this.IsVisible = false;
+                
+                // Show the full modal with current results
                 mainMenu.ShowSearchModal(this);
             }
         }
@@ -241,6 +245,12 @@ namespace Oracle.Components
                 // Set up progress reporting
                 var progress = new Progress<SearchProgress>(OnProgressUpdate);
                 
+                // Get deck and stake
+                var deckBox = this.FindControl<ComboBox>("DeckBox");
+                var stakeBox = this.FindControl<ComboBox>("StakeBox");
+                var deck = (deckBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Red Deck";
+                var stake = (stakeBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "White Stake";
+                
                 // Create search criteria
                 var criteria = new SearchCriteria
                 {
@@ -248,7 +258,9 @@ namespace Oracle.Components
                     ThreadCount = threadCount,
                     MaxSeeds = 10000000, // Fixed for widget
                     MinScore = minScore,
-                    BatchSize = batchSize
+                    BatchSize = batchSize,
+                    Deck = deck,
+                    Stake = stake
                 };
                 
                 // Start search

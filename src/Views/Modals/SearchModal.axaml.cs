@@ -100,6 +100,32 @@ public partial class SearchModal : UserControl
         {
             statusText.Text = isRunning ? $"Searching... Found {foundCount} seeds" : $"Found {foundCount} seeds";
         }
+        
+        var foundCountText = this.FindControl<TextBlock>("FoundCountText");
+        if (foundCountText != null)
+        {
+            foundCountText.Text = $"Found: {foundCount}";
+        }
+    }
+    
+    private void OnMinimizeClick(object? sender, RoutedEventArgs e)
+    {
+        // Close the modal and show the widget again
+        var mainWindow = TopLevel.GetTopLevel(this) as Window;
+        var mainMenu = mainWindow?.Content as Views.BalatroMainMenu;
+        
+        if (mainMenu != null)
+        {
+            // Hide the modal
+            mainMenu.HideModalContent();
+            
+            // Show the widget again
+            var searchWidget = mainMenu.FindControl<Components.SearchWidget>("SearchWidget");
+            if (searchWidget != null)
+            {
+                searchWidget.IsVisible = true;
+            }
+        }
     }
 
     private void InitializeComponent()
@@ -198,8 +224,11 @@ public class SearchResultViewModel : INotifyPropertyChanged
         {
             _score = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ScoreFormatted));
         }
     }
+    
+    public string ScoreFormatted => Score.ToString("N0");
     
     public string Details 
     { 

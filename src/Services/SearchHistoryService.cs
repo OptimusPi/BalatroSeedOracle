@@ -1,0 +1,281 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using DuckDB.NET.Data;
+using Oracle.Models;
+using Oracle.Helpers;
+
+namespace Oracle.Services
+{
+    public class SearchHistoryService
+    {
+        private readonly string _dbPath;
+        private readonly string _connectionString;
+
+        public SearchHistoryService()
+        {
+            // Store database in user's app data folder
+            var appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "BalatroSeedOracle"
+            );
+            
+            Directory.CreateDirectory(appDataPath);
+            _dbPath = Path.Combine(appDataPath, "search_history.duckdb");
+            _connectionString = $"Data Source={_dbPath}";
+            
+            InitializeDatabase();
+        }
+
+        private void InitializeDatabase()
+        {
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                connection.Open();
+
+                // Create searches table
+                using var createSearchesTable = connection.CreateCommand();
+                createSearchesTable.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS searches (
+                        search_id INTEGER PRIMARY KEY,
+                        config_path VARCHAR,
+                        search_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        thread_count INTEGER,
+                        min_score INTEGER,
+                        batch_size INTEGER,
+                        deck VARCHAR,
+                        stake VARCHAR,
+                        total_seeds_searched BIGINT,
+                        results_found INTEGER,
+                        duration_seconds DOUBLE
+                    )
+                ";
+                createSearchesTable.ExecuteNonQuery();
+
+                // Create results table
+                using var createResultsTable = connection.CreateCommand();
+                createResultsTable.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS search_results (
+                        result_id INTEGER PRIMARY KEY,
+                        search_id INTEGER,
+                        seed VARCHAR,
+                        score INTEGER,
+                        details TEXT,
+                        ante INTEGER,
+                        found_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (search_id) REFERENCES searches(search_id)
+                    )
+                ";
+                createResultsTable.ExecuteNonQuery();
+
+                // Create indexes for better performance
+                using var createIndexes = connection.CreateCommand();
+                createIndexes.CommandText = @"
+                    CREATE INDEX IF NOT EXISTS idx_search_date ON searches(search_date);
+                    CREATE INDEX IF NOT EXISTS idx_seed ON search_results(seed);
+                    CREATE INDEX IF NOT EXISTS idx_score ON search_results(score);
+                    CREATE INDEX IF NOT EXISTS idx_search_id ON search_results(search_id);
+                ";
+                createIndexes.ExecuteNonQuery();
+
+                DebugLogger.Log("SearchHistoryService", "Database initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to initialize database: {ex.Message}");
+            }
+        }
+
+        public async Task<long> StartNewSearchAsync(string configPath, int threadCount, int minScore, 
+            int batchSize, string deck, string stake)
+        {
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                await connection.OpenAsync();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO searches (config_path, thread_count, min_score, batch_size, deck, stake, results_found)
+                    VALUES ($1, $2, $3, $4, $5, $6, 0)
+                    RETURNING search_id
+                ";
+                
+                cmd.Parameters.Add(new DuckDBParameter("$1", configPath));
+                cmd.Parameters.Add(new DuckDBParameter("$2", threadCount));
+                cmd.Parameters.Add(new DuckDBParameter("$3", minScore));
+                cmd.Parameters.Add(new DuckDBParameter("$4", batchSize));
+                cmd.Parameters.Add(new DuckDBParameter("$5", deck));
+                cmd.Parameters.Add(new DuckDBParameter("$6", stake));
+
+                var searchId = Convert.ToInt64(await cmd.ExecuteScalarAsync());
+                DebugLogger.Log("SearchHistoryService", $"Started new search with ID: {searchId}");
+                return searchId;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to start new search: {ex.Message}");
+                return -1;
+            }
+        }
+
+        public async Task AddSearchResultAsync(long searchId, SearchResult result)
+        {
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                await connection.OpenAsync();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO search_results (search_id, seed, score, details, ante)
+                    VALUES ($1, $2, $3, $4, $5)
+                ";
+                
+                cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+                cmd.Parameters.Add(new DuckDBParameter("$2", result.Seed));
+                cmd.Parameters.Add(new DuckDBParameter("$3", result.Score));
+                cmd.Parameters.Add(new DuckDBParameter("$4", result.Details ?? ""));
+                cmd.Parameters.Add(new DuckDBParameter("$5", result.Ante));
+
+                await cmd.ExecuteNonQueryAsync();
+                
+                // Update the results count
+                using var updateCmd = connection.CreateCommand();
+                updateCmd.CommandText = @"
+                    UPDATE searches 
+                    SET results_found = results_found + 1 
+                    WHERE search_id = $1
+                ";
+                updateCmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+                await updateCmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to add search result: {ex.Message}");
+            }
+        }
+
+        public async Task CompleteSearchAsync(long searchId, long totalSeedsSearched, double durationSeconds)
+        {
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                await connection.OpenAsync();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    UPDATE searches 
+                    SET total_seeds_searched = $1, duration_seconds = $2
+                    WHERE search_id = $3
+                ";
+                
+                cmd.Parameters.Add(new DuckDBParameter("$1", totalSeedsSearched));
+                cmd.Parameters.Add(new DuckDBParameter("$2", durationSeconds));
+                cmd.Parameters.Add(new DuckDBParameter("$3", searchId));
+
+                await cmd.ExecuteNonQueryAsync();
+                DebugLogger.Log("SearchHistoryService", $"Completed search {searchId}: {totalSeedsSearched} seeds in {durationSeconds:F2}s");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to complete search: {ex.Message}");
+            }
+        }
+
+        public async Task<List<SearchHistorySummary>> GetRecentSearchesAsync(int limit = 10)
+        {
+            var results = new List<SearchHistorySummary>();
+            
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                await connection.OpenAsync();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT search_id, config_path, search_date, results_found, 
+                           total_seeds_searched, duration_seconds, deck, stake
+                    FROM searches
+                    ORDER BY search_date DESC
+                    LIMIT $1
+                ";
+                cmd.Parameters.Add(new DuckDBParameter("$1", limit));
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    results.Add(new SearchHistorySummary
+                    {
+                        SearchId = reader.GetInt64(0),
+                        ConfigPath = reader.GetString(1),
+                        SearchDate = reader.GetDateTime(2),
+                        ResultsFound = reader.GetInt32(3),
+                        TotalSeedsSearched = reader.IsDBNull(4) ? 0 : reader.GetInt64(4),
+                        DurationSeconds = reader.IsDBNull(5) ? 0 : reader.GetDouble(5),
+                        Deck = reader.GetString(6),
+                        Stake = reader.GetString(7)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to get recent searches: {ex.Message}");
+            }
+
+            return results;
+        }
+
+        public async Task<List<SearchResult>> GetSearchResultsAsync(long searchId)
+        {
+            var results = new List<SearchResult>();
+            
+            try
+            {
+                using var connection = new DuckDBConnection(_connectionString);
+                await connection.OpenAsync();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT seed, score, details, ante
+                    FROM search_results
+                    WHERE search_id = $1
+                    ORDER BY score DESC
+                ";
+                cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    results.Add(new SearchResult
+                    {
+                        Seed = reader.GetString(0),
+                        Score = reader.GetInt32(1),
+                        Details = reader.GetString(2),
+                        Ante = reader.GetInt32(3)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to get search results: {ex.Message}");
+            }
+
+            return results;
+        }
+    }
+
+    public class SearchHistorySummary
+    {
+        public long SearchId { get; set; }
+        public string ConfigPath { get; set; } = "";
+        public DateTime SearchDate { get; set; }
+        public int ResultsFound { get; set; }
+        public long TotalSeedsSearched { get; set; }
+        public double DurationSeconds { get; set; }
+        public string Deck { get; set; } = "";
+        public string Stake { get; set; } = "";
+    }
+}

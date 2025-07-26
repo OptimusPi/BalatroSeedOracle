@@ -2827,18 +2827,34 @@ public partial class FiltersModalContent : UserControl
     
     private OuijaConfig BuildConfigFromSelections()
     {
+        // Get ante selection
+        var anteSelector = this.FindControl<ComboBox>("AnteSelector");
+        var selectedAnteIndex = anteSelector?.SelectedIndex ?? 0;
+        int[]? searchAntes = null;
+        if (selectedAnteIndex > 0) // Not "Any Ante"
+        {
+            searchAntes = new int[] { selectedAnteIndex };
+        }
+        
+        // Get edition selection
+        var editionType = GetSelectedEdition();
+        
+        // Get source selections
+        var sources = GetSelectedSources();
+        
         var config = new OuijaConfig
         {
             name = _configNameBox?.Text ?? "Filter Configuration",
             description = _configDescriptionBox?.Text ?? $"Search for {_selectedNeeds.Count} required items and {_selectedWants.Count} optional items",
             author = "Jimbo",
             keywords = new List<string>(),
+            sources = sources,
             filter_config = new FilterConfig
             {
                 Needs = new List<FilterItem>(),
                 Wants = new List<FilterItem>(),
 
-                ScoreNaturalNegatives = false,
+                ScoreNaturalNegatives = editionType == "negative",
                 ScoreDesiredNegatives = false
             }
         };
@@ -2857,9 +2873,9 @@ public partial class FiltersModalContent : UserControl
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
-                    SearchAntes = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
+                    SearchAntes = searchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = "NoEdition"
+                    Edition = editionType == "negative" ? "negative" : "NoEdition"
                 });
             }
         }
@@ -2878,14 +2894,57 @@ public partial class FiltersModalContent : UserControl
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
-                    SearchAntes = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
+                    SearchAntes = searchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = "NoEdition"
+                    Edition = editionType == "negative" ? "negative" : "NoEdition"
                 });
             }
         }
         
         return config;
+    }
+    
+    private string GetSelectedEdition()
+    {
+        var normalRadio = this.FindControl<RadioButton>("EditionNormal");
+        var foilRadio = this.FindControl<RadioButton>("EditionFoil");
+        var holoRadio = this.FindControl<RadioButton>("EditionHolo");
+        var polyRadio = this.FindControl<RadioButton>("EditionPoly");
+        var negativeRadio = this.FindControl<RadioButton>("EditionNegative");
+        
+        if (foilRadio?.IsChecked == true) return "foil";
+        if (holoRadio?.IsChecked == true) return "holographic";
+        if (polyRadio?.IsChecked == true) return "polychrome";
+        if (negativeRadio?.IsChecked == true) return "negative";
+        
+        return "normal";
+    }
+    
+    private List<string> GetSelectedSources()
+    {
+        var sources = new List<string>();
+        
+        var tagsCheck = this.FindControl<CheckBox>("SourceTags");
+        var packsCheck = this.FindControl<CheckBox>("SourcePacks");
+        var shopCheck = this.FindControl<CheckBox>("SourceShop");
+        var jimboCheck = this.FindControl<CheckBox>("SourceJimbo");
+        var bigBlindCheck = this.FindControl<CheckBox>("SourceBigBlind");
+        var smallBlindCheck = this.FindControl<CheckBox>("SourceSmallBlind");
+        
+        if (tagsCheck?.IsChecked == true) sources.Add("tag");
+        if (packsCheck?.IsChecked == true) sources.Add("booster");
+        if (shopCheck?.IsChecked == true) sources.Add("shop");
+        if (jimboCheck?.IsChecked == true) sources.Add("jimbo");
+        if (bigBlindCheck?.IsChecked == true) sources.Add("big_blind");
+        if (smallBlindCheck?.IsChecked == true) sources.Add("small_blind");
+        
+        // If no sources selected, default to all main sources
+        if (!sources.Any())
+        {
+            sources.AddRange(new[] { "tag", "booster", "shop" });
+        }
+        
+        return sources;
     }
     
     /// <summary>

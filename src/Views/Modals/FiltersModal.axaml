@@ -406,13 +406,72 @@
                 <!-- RIGHT: Drag & Drop Areas -->
                 <Grid Grid.Column="2">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="10" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     
+                    <!-- Settings Panel -->
+                    <Border Grid.Row="0" Background="#333333" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                        <StackPanel Spacing="10">
+                            <!-- First Row: Ante and Edition -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Ante Selector -->
+                                <TextBlock Grid.Column="0" Text="Ante:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold" />
+                                <ComboBox Grid.Column="1" Name="AnteSelector" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem>Any Ante</ComboBoxItem>
+                                    <ComboBoxItem>Ante 1</ComboBoxItem>
+                                    <ComboBoxItem>Ante 2</ComboBoxItem>
+                                    <ComboBoxItem>Ante 3</ComboBoxItem>
+                                    <ComboBoxItem>Ante 4</ComboBoxItem>
+                                    <ComboBoxItem>Ante 5</ComboBoxItem>
+                                    <ComboBoxItem>Ante 6</ComboBoxItem>
+                                    <ComboBoxItem>Ante 7</ComboBoxItem>
+                                    <ComboBoxItem>Ante 8</ComboBoxItem>
+                                </ComboBox>
+                                
+                                <!-- Edition Selector -->
+                                <TextBlock Grid.Column="3" Text="Edition:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold" />
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="5">
+                                    <RadioButton Name="EditionNormal" Content="Normal" IsChecked="True" GroupName="Edition" />
+                                    <RadioButton Name="EditionFoil" Content="Foil" GroupName="Edition" />
+                                    <RadioButton Name="EditionHolo" Content="Holo" GroupName="Edition" />
+                                    <RadioButton Name="EditionPoly" Content="Poly" GroupName="Edition" />
+                                    <RadioButton Name="EditionNegative" Content="Negative" GroupName="Edition" />
+                                </StackPanel>
+                            </Grid>
+                            
+                            <!-- Second Row: Sources -->
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Text="Sources:" FontWeight="Bold" Margin="0,0,0,5" />
+                                <WrapPanel Grid.Row="1" Orientation="Horizontal" Spacing="10">
+                                    <CheckBox Name="SourceTags" Content="Tags" IsChecked="True" />
+                                    <CheckBox Name="SourcePacks" Content="Booster Packs" IsChecked="True" />
+                                    <CheckBox Name="SourceShop" Content="Shop" IsChecked="True" />
+                                    <CheckBox Name="SourceJimbo" Content="Jimbo" IsChecked="False" />
+                                    <CheckBox Name="SourceBigBlind" Content="Big Blind" IsChecked="False" />
+                                    <CheckBox Name="SourceSmallBlind" Content="Small Blind" IsChecked="False" />
+                                </WrapPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
                     <!-- NEEDS Panel -->
-                    <Border Grid.Row="0" Name="NeedsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone needs-zone">
+                    <Border Grid.Row="1" Name="NeedsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone needs-zone">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -449,7 +508,7 @@
                     </Border>
                     
                     <!-- WANTS Panel -->
-                    <Border Grid.Row="2" Name="WantsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone wants-zone">
+                    <Border Grid.Row="3" Name="WantsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone wants-zone">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />

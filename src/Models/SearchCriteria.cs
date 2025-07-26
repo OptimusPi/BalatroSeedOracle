@@ -12,4 +12,6 @@ public class SearchCriteria
     public long MaxSeeds { get; set; } = 10_000_000;
     public int MinScore { get; set; } = 0;
     public int BatchSize { get; set; } = 4; // Default batch size
+    public string? Deck { get; set; } = "Red Deck";
+    public string? Stake { get; set; } = "White Stake";
 }

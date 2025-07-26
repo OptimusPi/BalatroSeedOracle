@@ -62,40 +62,73 @@
     </UserControl.Styles>
     
     <!-- This is just the content, StandardModal will wrap it -->
-    <Grid RowDefinitions="Auto,*,Auto">
-        <!-- Status Bar -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Control Bar - Similar to widget -->
         <Border Grid.Row="0" 
-                Background="#2a2a2a" 
+                Background="#374244" 
+                BorderBrush="#7A9E9F"
+                BorderThickness="1"
                 CornerRadius="8"
                 Padding="10"
                 Margin="0,0,0,10">
-            <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="20">
-                    <TextBlock Text="Config:" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <TextBlock Name="ConfigPathTextBox" 
-                               Text="No config loaded"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Name="StatusText" 
+            <Grid RowDefinitions="Auto,Auto">
+                <!-- Config and status -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Config:" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock Name="ConfigPathTextBox" 
+                                   Text="No config loaded"
+                                   VerticalAlignment="Center"
+                                   Foreground="#FEB95F"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Name="StatusText" 
                                Text="Ready"
                                Foreground="#888"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                    <Button Name="ExportButton"
-                            Content="Export Results"
-                            Classes="oracle-btn button-color-blue"
-                            IsEnabled="False"
-                            Click="OnExportClick"/>
-                    <Button Name="ClearButton"
-                            Content="Clear"
-                            Classes="oracle-btn button-color-yellow-orange"
-                            Click="OnClearClick"/>
-                </StackPanel>
+                               VerticalAlignment="Center"
+                               Margin="0,0,20,0"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+                        <Button Name="MinimizeButton"
+                                Content="▼"
+                                Classes="oracle-btn button-color-yellow-orange"
+                                Width="30"
+                                Height="30"
+                                ToolTip.Tip="Back to widget"
+                                Click="OnMinimizeClick"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Live search info -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Margin="0,10,0,0">
+                    <TextBlock Grid.Column="0" Name="SeedsSearchedText" 
+                               Text="Seeds: 0"
+                               FontSize="12"/>
+                    <TextBlock Grid.Column="1" Name="FoundCountText" 
+                               Text="Found: 0"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Name="SpeedText" 
+                               Text="Speed: 0/s"
+                               FontSize="12"
+                               HorizontalAlignment="Right"/>
+                </Grid>
             </Grid>
         </Border>
         
+        <!-- Action buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,0,0,10">
+            <Button Name="ExportButton"
+                    Content="Export Results"
+                    Classes="oracle-btn button-color-blue"
+                    IsEnabled="False"
+                    Click="OnExportClick"/>
+            <Button Name="ClearButton"
+                    Content="Clear Results"
+                    Classes="oracle-btn button-color-yellow-orange"
+                    Click="OnClearClick"/>
+        </StackPanel>
+        
         <!-- Results Table -->
-        <Border Grid.Row="1" 
+        <Border Grid.Row="2" 
                 Background="#2a2a2a" 
                 CornerRadius="8"
                 Padding="10">
@@ -130,8 +163,9 @@
                                             Width="120"
                                             FontFamily="Consolas, monospace"/>
                         <DataGridTextColumn Header="Score" 
-                                            Binding="{Binding Score}" 
-                                            Width="80"/>
+                                            Binding="{Binding ScoreFormatted}" 
+                                            Width="100"
+                                            SortMemberPath="Score"/>
                         <DataGridTextColumn Header="Details" 
                                             Binding="{Binding Details}" 
                                             Width="*"/>
@@ -159,7 +193,7 @@
         </Border>
         
         <!-- Summary -->
-        <TextBlock Grid.Row="2" 
+        <TextBlock Grid.Row="3" 
                    Name="SummaryText"
                    Text="0 seeds found"
                    FontSize="12"

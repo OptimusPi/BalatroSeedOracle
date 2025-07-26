@@ -61,6 +61,10 @@ public partial class App : Application
     private void ConfigureServices(IServiceCollection services)
     {
         // Register services
+        services.AddSingleton<Services.SearchHistoryService>();
         services.AddSingleton<Services.MotelySearchService>();
+        services.AddSingleton<Services.SpriteService>();
+        services.AddSingleton<Services.FavoritesService>();
+        services.AddSingleton<Services.ClipboardService>();
     }
 }

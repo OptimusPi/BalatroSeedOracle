@@ -21,9 +21,17 @@ public class MotelySearchService : IDisposable
     private volatile bool _isRunning;
     private Motely.Filters.OuijaConfig? _currentConfig;
     private IMotelySearch? _currentSearch;
+    private readonly SearchHistoryService _historyService;
+    private long _currentSearchId = -1;
+    private DateTime _searchStartTime;
     
     public bool IsRunning => _isRunning;
     public List<Oracle.Models.SearchResult> Results { get; } = new();
+
+    public MotelySearchService()
+    {
+        _historyService = ServiceHelper.GetService<SearchHistoryService>() ?? new SearchHistoryService();
+    }
 
     /// <summary>
     /// Load a config file and validate it
@@ -75,9 +83,21 @@ public class MotelySearchService : IDisposable
         _isRunning = true;
         _cancellationTokenSource = new CancellationTokenSource();
         Results.Clear();
+        _searchStartTime = DateTime.UtcNow;
 
         try
         {
+            // Start a new search in DuckDB
+            var deck = criteria.Deck ?? "Red Deck";
+            var stake = criteria.Stake ?? "White Stake";
+            _currentSearchId = await _historyService.StartNewSearchAsync(
+                criteria.ConfigPath, 
+                criteria.ThreadCount, 
+                criteria.MinScore, 
+                criteria.BatchSize,
+                deck,
+                stake
+            );
             // Load config if needed
             if (_currentConfig == null)
             {
@@ -298,12 +318,21 @@ public class MotelySearchService : IDisposable
                     continue;
                 }
                 
-                Results.Add(new Oracle.Models.SearchResult
+                var searchResult = new Oracle.Models.SearchResult
                 {
                     Seed = result.Seed,
                     Score = result.TotalScore,
-                    Details = BuildDetailsString(result, _currentConfig!)
-                });
+                    Details = BuildDetailsString(result, _currentConfig!),
+                    Ante = 1 // TODO: Get ante from result when available
+                };
+                
+                Results.Add(searchResult);
+                
+                // Save to DuckDB
+                if (_currentSearchId > 0)
+                {
+                    await _historyService.AddSearchResultAsync(_currentSearchId, searchResult);
+                }
             }
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Collected {finalResultCount} final results, {Results.Count} total accepted");
 
@@ -311,6 +340,13 @@ public class MotelySearchService : IDisposable
             var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0;
             long finalSeeds = (long)finalBatchCount * (long)Math.Pow(35, batchSize);
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Final stats: CompletedBatchCount={finalBatchCount}, EstimatedSeeds={finalSeeds}");
+            
+            // Complete the search in DuckDB
+            if (_currentSearchId > 0)
+            {
+                var duration = (DateTime.UtcNow - _searchStartTime).TotalSeconds;
+                await _historyService.CompleteSearchAsync(_currentSearchId, finalSeeds, duration);
+            }
             
             progress?.Report(new Oracle.Models.SearchProgress
             {
@@ -341,37 +377,44 @@ public class MotelySearchService : IDisposable
     /// </summary>
     public void StopSearch()
     {
-        Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "StopSearch called - attempting to stop search");
+        Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "StopSearch called - FORCE STOPPING NOW");
         
-        // Cancel immediately
-        _cancellationTokenSource?.Cancel();
+        // IMMEDIATELY set all stop flags
         _isRunning = false;
-        
-        // Set the cancellation flag to stop enqueueing
         OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
         
-        // Clear the results queue to stop flooding
+        // Cancel the token source
+        try
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+        catch { }
+        
+        // Force stop the search engine
+        try
+        {
+            if (_currentSearch != null)
+            {
+                _currentSearch.Pause();
+                _currentSearch.Dispose();
+                _currentSearch = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Error stopping search: {ex.Message}");
+        }
+        
+        // Clear the results queue completely
         if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue != null)
         {
             while (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out _))
             {
-                // Just drain the queue
+                // Drain it
             }
         }
         
-        Task.Run(() => 
-        {
-            try
-            {
-                _currentSearch?.Pause();
-                _currentSearch?.Dispose();
-                _currentSearch = null;
-            }
-            catch (Exception ex)
-            {
-                Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Error during cleanup: {ex.Message}");
-            }
-        });
+        Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search STOPPED");
     }
 
     private string BuildDetailsString(Motely.Filters.OuijaResult result, Motely.Filters.OuijaConfig config)
