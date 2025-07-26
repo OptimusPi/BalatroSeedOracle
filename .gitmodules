@@ -1,0 +1,3 @@
+[submodule "Motely"]
+	path = external/Motely
+	url = https://github.com/OptimusPi/Motely.git

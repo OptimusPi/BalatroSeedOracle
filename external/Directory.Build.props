@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Suppress all warnings for external dependencies -->
-    <NoWarn>$(NoWarn);CS8604</NoWarn>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
-</Project>
