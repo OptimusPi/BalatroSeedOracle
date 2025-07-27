@@ -89,6 +89,16 @@ public class FilterItem
     
     [JsonPropertyName("Enhancement")]
     public string? Enhancement { get; set; }
+    
+    // Source configuration
+    [JsonPropertyName("IncludeShopStream")]
+    public bool? IncludeShopStream { get; set; }
+    
+    [JsonPropertyName("IncludeBoosterPacks")]
+    public bool? IncludeBoosterPacks { get; set; }
+    
+    [JsonPropertyName("IncludeSkipTags")]
+    public bool? IncludeSkipTags { get; set; }
 }
 
 // Legacy simple format for backward compatibility

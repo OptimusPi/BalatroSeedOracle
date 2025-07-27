@@ -140,6 +140,93 @@ namespace Oracle.Services
             }
         }
 
+        /// <summary>
+        /// Import search results from a CSV file directly into DuckDB
+        /// </summary>
+        public async Task<int> ImportFromCsvAsync(long searchId, string csvPath)
+        {
+            try
+            {
+                if (!File.Exists(csvPath))
+                {
+                    DebugLogger.LogError("SearchHistoryService", $"CSV file not found: {csvPath}");
+                    return 0;
+                }
+
+                var connection = GetConnection();
+
+                // Create a temporary table to hold the CSV data
+                using var createTempTable = connection.CreateCommand();
+                createTempTable.CommandText = @"
+                    CREATE TEMPORARY TABLE IF NOT EXISTS csv_import (
+                        seed VARCHAR,
+                        score INTEGER,
+                        details VARCHAR
+                    )
+                ";
+                await createTempTable.ExecuteNonQueryAsync();
+
+                // Import CSV data
+                using var importCmd = connection.CreateCommand();
+                importCmd.CommandText = $@"
+                    COPY csv_import FROM '{csvPath}' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+                ";
+                await importCmd.ExecuteNonQueryAsync();
+
+                // Insert into search_results with the search_id
+                using var insertCmd = connection.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO search_results (search_id, seed, score, details)
+                    SELECT $1, seed, score, details FROM csv_import
+                ";
+                insertCmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+                var rowsInserted = await insertCmd.ExecuteNonQueryAsync();
+
+                // Clean up temp table
+                using var dropCmd = connection.CreateCommand();
+                dropCmd.CommandText = "DROP TABLE csv_import";
+                await dropCmd.ExecuteNonQueryAsync();
+
+                DebugLogger.Log("SearchHistoryService", $"Imported {rowsInserted} results from CSV");
+                return rowsInserted;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to import CSV: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Export search results to a CSV file
+        /// </summary>
+        public async Task<bool> ExportToCsvAsync(long searchId, string csvPath)
+        {
+            try
+            {
+                var connection = GetConnection();
+
+                using var exportCmd = connection.CreateCommand();
+                exportCmd.CommandText = $@"
+                    COPY (
+                        SELECT seed, score, details 
+                        FROM search_results 
+                        WHERE search_id = {searchId}
+                        ORDER BY score DESC, seed
+                    ) TO '{csvPath}' (FORMAT CSV, HEADER TRUE)
+                ";
+                await exportCmd.ExecuteNonQueryAsync();
+
+                DebugLogger.Log("SearchHistoryService", $"Exported results to: {csvPath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to export CSV: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<long> StartNewSearchAsync(string configPath, int threadCount, int minScore, 
             int batchSize, string deck, string stake)
         {

@@ -64,6 +64,18 @@ public partial class SearchModal : UserControl
         _searchService = service;
     }
     
+    /// <summary>
+    /// Stops the search if it's running - called during application shutdown
+    /// </summary>
+    public void StopSearch()
+    {
+        if (_isRunning)
+        {
+            _searchService.StopSearch();
+            _isRunning = false;
+        }
+    }
+    
     public void SetConfigPath(string? configPath)
     {
         _configPath = configPath;

@@ -189,59 +189,70 @@
                         <!-- Config Section (Collapsible) -->
                         <Border Classes="config-section">
                             <StackPanel>
-                                <Button Classes="collapse-button"
-                                        Click="OnConfigToggleClick">
-                                    <Grid ColumnDefinitions="Auto,*,Auto">
-                                        <TextBlock Grid.Column="0" 
-                                                   Name="ConfigExpandIcon"
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                                    <!-- Collapse button and title -->
+                                    <Button Grid.Column="0"
+                                            Classes="collapse-button"
+                                            Click="OnConfigToggleClick"
+                                            Width="32"
+                                            Height="32"
+                                            Padding="0"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center">
+                                        <TextBlock Name="ConfigExpandIcon"
                                                    Text="▼" 
                                                    FontFamily="Segoe UI Symbol"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,8,0"/>
-                                        <TextBlock Grid.Column="1" 
-                                                   Classes="section-title"
-                                                   Text="Search Configuration"/>
-                                        <Border Grid.Column="2"
-                                                Background="{StaticResource Green}"
-                                                CornerRadius="4"
-                                                Padding="6,2"
-                                                Name="ConfigLoadedIndicator"
-                                                IsVisible="False">
-                                            <TextBlock Text="Loaded" 
-                                                       FontSize="10"
-                                                       FontWeight="Bold"
-                                                       Foreground="#000000"/>
-                                        </Border>
+                                                   FontSize="12"/>
+                                    </Button>
+                                    
+                                    <TextBlock Grid.Column="1" 
+                                               Classes="section-title"
+                                               Text="Settings"
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,16,0"/>
+                                    
+                                    <!-- Filter config input -->
+                                    <Grid Grid.Column="2" ColumnDefinitions="*,8,Auto">
+                                        <TextBox Grid.Column="0"
+                                                 Name="ConfigPathBox" 
+                                                 Text="{Binding ConfigPath}" 
+                                                 IsReadOnly="True"
+                                                 Background="#0a0a0a"
+                                                 BorderBrush="#3a4b4f"
+                                                 FontSize="11"
+                                                 Height="28"
+                                                 VerticalAlignment="Center"
+                                                 Watermark="Select filter config..."/>
+                                        <Button Grid.Column="2"
+                                                Name="LoadConfigButton" 
+                                                Content="Browse" 
+                                                Classes="btn-orange widget-btn"
+                                                Height="28"
+                                                Padding="12,0"
+                                                FontSize="11"
+                                                VerticalAlignment="Center"
+                                                Click="OnLoadConfigClick"/>
                                     </Grid>
-                                </Button>
+                                    
+                                    <!-- Config loaded indicator -->
+                                    <Border Grid.Column="3"
+                                            Background="{StaticResource Green}"
+                                            CornerRadius="4"
+                                            Padding="6,2"
+                                            Margin="8,0,0,0"
+                                            Name="ConfigLoadedIndicator"
+                                            IsVisible="False"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="Loaded" 
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="#000000"/>
+                                    </Border>
+                                </Grid>
                                 
                                 <StackPanel Name="ConfigContent" 
-                                            Margin="16,0,16,16"
+                                            Margin="16,8,16,16"
                                             Spacing="12">
-                                    <!-- Config File -->
-                                    <Grid RowDefinitions="Auto,8,Auto">
-                                        <TextBlock Text="Filter Config:" 
-                                                   FontSize="12" 
-                                                   Foreground="#aaaaaa"/>
-                                        <Grid Grid.Row="2" ColumnDefinitions="*,8,Auto">
-                                            <TextBox Grid.Column="0"
-                                                     Name="ConfigPathBox" 
-                                                     Text="{Binding ConfigPath}" 
-                                                     IsReadOnly="True"
-                                                     Background="#0a0a0a"
-                                                     BorderBrush="#3a4b4f"
-                                                     FontSize="11"
-                                                     Height="32"/>
-                                            <Button Grid.Column="2"
-                                                    Name="LoadConfigButton" 
-                                                    Content="Browse" 
-                                                    Classes="btn-orange widget-btn"
-                                                    Height="32"
-                                                    Padding="16,0"
-                                                    FontSize="12"
-                                                    Click="OnLoadConfigClick"/>
-                                        </Grid>
-                                    </Grid>
                                     
                                     <!-- Search Parameters Grid -->
                                     <Grid ColumnDefinitions="*,16,*" 

@@ -142,6 +142,13 @@ public class SpriteService
 
     public IImage? GetJokerImage(string name, int spriteWidth = UIConstants.JokerSpriteWidth, int spriteHeight = UIConstants.JokerSpriteHeight)
     {
+        // Special handling for "any" soul joker
+        if (name.ToLower() == "any")
+        {
+            // Return a special "any" icon or the first legendary joker as a placeholder
+            // For now, use Perkeo as the representative for "any" soul joker
+            return GetSpriteImage("perkeo", jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
+        }
         return GetSpriteImage(name, jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
     }
     

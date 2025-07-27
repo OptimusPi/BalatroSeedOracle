@@ -3024,7 +3024,10 @@ public partial class FiltersModalContent : UserControl
                     Value = parts[1],
                     SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = itemConfig?.Edition ?? "NoEdition"
+                    Edition = itemConfig?.Edition ?? "NoEdition",
+                    IncludeShopStream = itemConfig?.Sources?.Contains("Shop") ?? true,
+                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("Booster Packs") ?? true,
+                    IncludeSkipTags = itemConfig?.Sources?.Contains("Tags") ?? true
                 });
             }
         }
@@ -3044,7 +3047,10 @@ public partial class FiltersModalContent : UserControl
                     Value = parts[1],
                     SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = itemConfig?.Edition ?? "NoEdition"
+                    Edition = itemConfig?.Edition ?? "NoEdition",
+                    IncludeShopStream = itemConfig?.Sources?.Contains("Shop") ?? true,
+                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("Booster Packs") ?? true,
+                    IncludeSkipTags = itemConfig?.Sources?.Contains("Tags") ?? true
                 });
             }
         }

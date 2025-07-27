@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -298,6 +299,45 @@ namespace Oracle.Views
             {
                 Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "SearchWidget control not found!");
             }
+        }
+        
+        /// <summary>
+        /// Stops all running searches - called during application shutdown
+        /// </summary>
+        public async Task StopAllSearchesAsync()
+        {
+            DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
+            
+            // Find and stop the search widget
+            var searchWidget = this.FindControl<Components.SearchWidget>("SearchWidget");
+            if (searchWidget != null && searchWidget.IsRunning)
+            {
+                DebugLogger.LogImportant("BalatroMainMenu", "Stopping SearchWidget search...");
+                searchWidget.StopSearch();
+                
+                // Wait a bit for the search to stop
+                await Task.Delay(500);
+            }
+            
+            // Also check if there's a search modal open
+            if (_modalContainer != null && _modalContainer.Children.Count > 0)
+            {
+                var modal = _modalContainer.Children[0] as StandardModal;
+                if (modal != null)
+                {
+                    // Find the ModalContent presenter inside StandardModal
+                    var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
+                    var searchModal = modalContent?.Content as SearchModal;
+                    if (searchModal != null)
+                    {
+                        DebugLogger.LogImportant("BalatroMainMenu", "Stopping SearchModal search...");
+                        searchModal.StopSearch();
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            
+            DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
         }
     }
 }

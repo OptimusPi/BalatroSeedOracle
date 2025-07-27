@@ -43,6 +43,16 @@ public partial class MainWindow : Window
         {
             try
             {
+                DebugLogger.Log("MainWindow", "Starting cleanup");
+                
+                // CRITICAL: Stop any running Motely searches first
+                if (_mainMenu != null)
+                {
+                    DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");
+                    await _mainMenu.StopAllSearchesAsync();
+                    DebugLogger.LogImportant("MainWindow", "All searches stopped");
+                }
+                
                 DebugLogger.Log("MainWindow", "Starting main menu disposal");
                 
                 // Give disposal 5 seconds max (increased because Motely needs time)

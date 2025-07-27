@@ -136,7 +136,8 @@
                                            Value="4" 
                                            Minimum="1" 
                                            Maximum="32" 
-                                           Width="80"/>
+                                           Width="80"
+                                           Height="28"/>
                         </StackPanel>
                         
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -145,7 +146,8 @@
                                            Value="4" 
                                            Minimum="2" 
                                            Maximum="4" 
-                                           Width="80"/>
+                                           Width="80"
+                                           Height="28"/>
                         </StackPanel>
                     </StackPanel>
                     
@@ -158,7 +160,8 @@
                                            Value="0" 
                                            Minimum="0" 
                                            Maximum="999999" 
-                                           Width="80"/>
+                                           Width="80"
+                                           Height="28"/>
                         </StackPanel>
                         
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -167,7 +170,8 @@
                                            Value="1000" 
                                            Minimum="1" 
                                            Maximum="999999" 
-                                           Width="80"/>
+                                           Width="80"
+                                           Height="28"/>
                         </StackPanel>
                     </StackPanel>
                     
@@ -180,7 +184,8 @@
                                            Value="0" 
                                            Minimum="0" 
                                            Maximum="10000" 
-                                           Width="80"/>
+                                           Width="80"
+                                           Height="28"/>
                         </StackPanel>
                         
                         <CheckBox Name="DebugCheckBox" 
@@ -197,6 +202,7 @@
                                  Watermark="Enter 8-character seed (optional)"
                                  MaxLength="8"
                                  Width="200"
+                                 Height="28"
                                  HorizontalAlignment="Left"/>
                     </StackPanel>
                     
@@ -205,6 +211,7 @@
                         <TextBox Name="KeywordTextBox" 
                                  Watermark="Generate seeds from keyword"
                                  Width="200"
+                                 Height="28"
                                  HorizontalAlignment="Left"/>
                     </StackPanel>
                 </Grid>

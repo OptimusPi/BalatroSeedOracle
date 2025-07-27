@@ -19,7 +19,8 @@
       "Bash(dotnet nuget locals:*)",
       "Bash(cat:*)",
       "Bash(git checkout:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

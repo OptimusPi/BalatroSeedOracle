@@ -528,6 +528,8 @@ public static class BalatroData
         }
 
         JokersByRarity["Legendary"] = new List<string>();
+        // Add "any" option for soul joker searches
+        JokersByRarity["Legendary"].Add("any");
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
             JokersByRarity["Legendary"].Add(joker.ToString().ToLower());
