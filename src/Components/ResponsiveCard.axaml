@@ -35,7 +35,7 @@
     <Border Name="CardBorder" 
             Background="Transparent"
             Padding="2" 
-            MinWidth="72"
+            MinWidth="80"
             MinHeight="72"
             Cursor="Hand">
         <Grid>
@@ -45,7 +45,7 @@
             </Grid.RowDefinitions>
             
             <!-- Main card container with layered images -->
-            <Grid Grid.Row="0" Margin="6" Width="64" Height="64">
+            <Grid Grid.Row="0" Margin="6" Name="ImageContainer">
                 <!-- Base card image -->
                 <Image Name="CardImage" />
                 

@@ -8,32 +8,74 @@ using Oracle.Helpers;
 
 namespace Oracle.Services
 {
-    public class SearchHistoryService
+    public class SearchHistoryService : IDisposable
     {
-        private readonly string _dbPath;
-        private readonly string _connectionString;
+        private string _dbPath = string.Empty;
+        private string _connectionString = string.Empty;
+        private DuckDBConnection? _connection;
+        private readonly object _connectionLock = new object();
+        private string _currentFilterName = "default";
 
         public SearchHistoryService()
         {
-            // Store database in user's app data folder
-            var appDataPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "BalatroSeedOracle"
-            );
+            // Initialize with default path
+            SetFilterName("default");
+        }
+
+        public void SetFilterName(string filterPath)
+        {
+            // Extract filter name from path
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                var fileName = Path.GetFileNameWithoutExtension(filterPath);
+                // Remove .ouija if present
+                if (fileName.EndsWith(".ouija", StringComparison.OrdinalIgnoreCase))
+                    fileName = fileName.Substring(0, fileName.Length - 6);
+                _currentFilterName = fileName;
+            }
+            else
+            {
+                _currentFilterName = "default";
+            }
+
+            // Close existing connection if any
+            lock (_connectionLock)
+            {
+                _connection?.Dispose();
+                _connection = null;
+            }
+
+            // Set up new database path
+            var searchResultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
+            Directory.CreateDirectory(searchResultsDir);
             
-            Directory.CreateDirectory(appDataPath);
-            _dbPath = Path.Combine(appDataPath, "search_history.duckdb");
+            _dbPath = Path.Combine(searchResultsDir, $"{_currentFilterName}.ouija.duckdb");
             _connectionString = $"Data Source={_dbPath}";
             
+            DebugLogger.Log("SearchHistoryService", $"Database path set to: {_dbPath}");
             InitializeDatabase();
+        }
+
+        private DuckDBConnection GetConnection()
+        {
+            lock (_connectionLock)
+            {
+                if (_connection == null || _connection.State != System.Data.ConnectionState.Open)
+                {
+                    _connection?.Dispose();
+                    _connection = new DuckDBConnection(_connectionString);
+                    _connection.Open();
+                    DebugLogger.Log("SearchHistoryService", "Created new DuckDB connection");
+                }
+                return _connection;
+            }
         }
 
         private void InitializeDatabase()
         {
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                connection.Open();
+                var connection = GetConnection();
 
                 // Create searches table
                 using var createSearchesTable = connection.CreateCommand();
@@ -88,13 +130,25 @@ namespace Oracle.Services
             }
         }
 
+        public void Dispose()
+        {
+            lock (_connectionLock)
+            {
+                _connection?.Dispose();
+                _connection = null;
+                DebugLogger.Log("SearchHistoryService", "Closed DuckDB connection");
+            }
+        }
+
         public async Task<long> StartNewSearchAsync(string configPath, int threadCount, int minScore, 
             int batchSize, string deck, string stake)
         {
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                await connection.OpenAsync();
+                // Update filter name based on config path
+                SetFilterName(configPath);
+                
+                var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
@@ -125,8 +179,7 @@ namespace Oracle.Services
         {
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                await connection.OpenAsync();
+                var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
@@ -162,8 +215,7 @@ namespace Oracle.Services
         {
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                await connection.OpenAsync();
+                var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
@@ -191,8 +243,7 @@ namespace Oracle.Services
             
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                await connection.OpenAsync();
+                var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
@@ -234,8 +285,7 @@ namespace Oracle.Services
             
             try
             {
-                using var connection = new DuckDBConnection(_connectionString);
-                await connection.OpenAsync();
+                var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"

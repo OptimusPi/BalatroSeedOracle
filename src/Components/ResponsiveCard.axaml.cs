@@ -19,6 +19,7 @@ namespace Oracle.Components
         private Image _cardImage;
         private Image _soulImage;
         private TextBlock _cardName;
+        private Grid _imageContainer;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
         
@@ -79,6 +80,7 @@ namespace Oracle.Components
             _cardImage = this.FindControl<Image>("CardImage")!;
             _soulImage = this.FindControl<Image>("SoulImage")!;
             _cardName = this.FindControl<TextBlock>("CardName")!;
+            _imageContainer = this.FindControl<Grid>("ImageContainer")!;
             
             // Property change handlers
             this.PropertyChanged += OnPropertyChanged;
@@ -141,6 +143,24 @@ namespace Oracle.Components
             }
         }
         
+        private void UpdateImageSize()
+        {
+            // Adjust image container size based on category
+            switch (Category)
+            {
+                case "Tags":
+                    // Tags at 50% size for better clarity
+                    _imageContainer.Width = 27;
+                    _imageContainer.Height = 27;
+                    break;
+                default:
+                    // Standard size for other items
+                    _imageContainer.Width = 64;
+                    _imageContainer.Height = 64;
+                    break;
+            }
+        }
+        
         private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ItemNameProperty)
@@ -151,10 +171,12 @@ namespace Oracle.Components
             else if (e.Property == ImageSourceProperty)
             {
                 _cardImage.Source = ImageSource;
+                UpdateImageSize();
                 CheckAndLoadLegendarySoul();
             }
             else if (e.Property == CategoryProperty)
             {
+                UpdateImageSize();
                 CheckAndLoadLegendarySoul();
             }
             else if (e.Property == IsSelectedNeedProperty)

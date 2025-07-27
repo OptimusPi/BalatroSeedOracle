@@ -30,6 +30,11 @@ namespace Oracle.Components
         private Point _startPosition;
         private string _currentConfigName = "";
         private SearchParams _searchParams = new SearchParams();
+        private DateTime _lastUIUpdate = DateTime.MinValue;
+        private DateTime _lastTerminalUpdate = DateTime.MinValue;
+        private const int UI_UPDATE_INTERVAL_MS = 100; // Update UI max 10 times per second
+        private const int TERMINAL_UPDATE_INTERVAL_MS = 250; // Update terminal max 4 times per second
+        private bool _isConfigExpanded = true; // Start with config expanded
         
         // Public properties for SearchModal
         public string? ConfigPath => _configPath;
@@ -85,18 +90,47 @@ namespace Oracle.Components
         
         private void OnMaximizeClick(object? sender, RoutedEventArgs e)
         {
+            Oracle.Helpers.DebugLogger.Log("SearchWidget", "OnMaximizeClick called");
+            
             // Get the main menu
             var mainWindow = TopLevel.GetTopLevel(this) as Window;
-            var mainMenu = mainWindow?.Content as Views.BalatroMainMenu;
+            Oracle.Helpers.DebugLogger.Log("SearchWidget", $"MainWindow found: {mainWindow != null}");
+            
+            // The MainWindow content is a Grid, need to find BalatroMainMenu within it
+            Views.BalatroMainMenu? mainMenu = null;
+            if (mainWindow?.Content is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    if (child is Views.BalatroMainMenu menu)
+                    {
+                        mainMenu = menu;
+                        break;
+                    }
+                }
+            }
+            
+            Oracle.Helpers.DebugLogger.Log("SearchWidget", $"MainMenu found: {mainMenu != null}");
             
             if (mainMenu != null)
             {
                 // Hide the widget
                 this.IsVisible = false;
+                Oracle.Helpers.DebugLogger.Log("SearchWidget", "Widget hidden, calling ShowSearchModal");
                 
                 // Show the full modal with current results
                 mainMenu.ShowSearchModal(this);
             }
+            else
+            {
+                Oracle.Helpers.DebugLogger.Log("SearchWidget", "Cannot find main menu - maximize failed");
+            }
+        }
+        
+        private void OnMainMenuClick(object? sender, RoutedEventArgs e)
+        {
+            // Hide the widget
+            this.IsVisible = false;
         }
         
         private void OnCloseClick(object? sender, RoutedEventArgs e)
@@ -196,11 +230,20 @@ namespace Oracle.Components
                 if (success)
                 {
                     WriteToTerminal($"Config loaded: {message}");
-                    UpdateStatus($"Ready - {_currentConfigName}");
                     
-                    var startButton = this.FindControl<Button>("StartButton");
-                    if (startButton != null)
-                        startButton.IsEnabled = true;
+                    var cookButton = this.FindControl<Button>("CookButton");
+                    if (cookButton != null)
+                        cookButton.IsEnabled = true;
+                        
+                    // Update config path display
+                    var configPathBox = this.FindControl<TextBox>("ConfigPathBox");
+                    if (configPathBox != null)
+                        configPathBox.Text = _configPath;
+                        
+                    // Show loaded indicator
+                    var indicator = this.FindControl<Border>("ConfigLoadedIndicator");
+                    if (indicator != null)
+                        indicator.IsVisible = true;
                 }
                 else
                 {
@@ -213,7 +256,23 @@ namespace Oracle.Components
             }
         }
         
-        private async void OnStartClick(object? sender, RoutedEventArgs e)
+        private async void OnCookClick(object? sender, RoutedEventArgs e)
+        {
+            var cookButton = this.FindControl<Button>("CookButton");
+            
+            if (cookButton?.Content?.ToString()?.Contains("Let Jimbo Cook") == true)
+            {
+                // Start the search
+                await StartSearch();
+            }
+            else
+            {
+                // Stop the search
+                StopSearch();
+            }
+        }
+        
+        private async Task StartSearch()
         {
             if (string.IsNullOrEmpty(_configPath)) return;
             
@@ -222,21 +281,31 @@ namespace Oracle.Components
                 _foundCount = 0;
                 UpdateNotificationBadge(0);
                 
-                // Get search parameters from stored params or defaults
-                var threadCount = _searchParams.ThreadCount;
-                var minScore = _searchParams.MinScore;
-                var batchSize = _searchParams.BatchSize;
+                // Get search parameters from UI controls
+                var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
+                var batchSizeUpDown = this.FindControl<NumericUpDown>("BatchSizeUpDown");
+                var scoreMinUpDown = this.FindControl<NumericUpDown>("ScoreMinUpDown");
+                var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
                 
-                // Update UI state
-                var startButton = this.FindControl<Button>("StartButton");
-                var stopButton = this.FindControl<Button>("StopButton");
+                var threadCount = (int)(threadsUpDown?.Value ?? 4);
+                var minScore = (int)(scoreMinUpDown?.Value ?? 0);
+                var batchSize = (int)(batchSizeUpDown?.Value ?? 4);
+                var debug = debugCheckBox?.IsChecked ?? false;
                 
-                if (startButton != null) startButton.IsEnabled = false;
-                if (stopButton != null) stopButton.IsEnabled = true;
+                // Update button to stop mode
+                var cookButton = this.FindControl<Button>("CookButton");
+                if (cookButton != null)
+                {
+                    cookButton.Content = "STOP SEARCH";
+                    cookButton.Classes.Clear();
+                    cookButton.Classes.Add("oracle-btn");
+                    cookButton.Classes.Add("button-color-red");
+                    cookButton.IsEnabled = true; // Ensure button stays enabled
+                    cookButton.IsHitTestVisible = true;
+                }
                 
-                WriteToTerminal($"Starting search...");
-                UpdateStatus("Searching...");
-                UpdateTitle("Searching...");
+                WriteToTerminal($"Let Jimbo cook! Starting search...");
+                UpdateTitle("Cooking...");
                 
                 // Create cancellation token
                 _searchCancellation = new CancellationTokenSource();
@@ -244,12 +313,12 @@ namespace Oracle.Components
                 // Set up progress reporting
                 var progress = new Progress<SearchProgress>(OnProgressUpdate);
                 
-                // Create search criteria with stored params
+                // Create search criteria
                 var criteria = new SearchCriteria
                 {
                     ConfigPath = _configPath,
                     ThreadCount = threadCount,
-                    MaxSeeds = 10000000, // Fixed for widget
+                    MaxSeeds = 10000000,
                     MinScore = minScore,
                     BatchSize = batchSize,
                     Deck = _searchParams.Deck,
@@ -257,130 +326,137 @@ namespace Oracle.Components
                 };
                 
                 // Start search
-                await Task.Run(async () =>
-                {
-                    await _searchService.StartSearchAsync(criteria, progress, _searchCancellation.Token);
-                }, _searchCancellation.Token);
+                await _searchService.StartSearchAsync(criteria, progress, _searchCancellation.Token);
             }
             catch (OperationCanceledException)
             {
-                WriteToTerminal("Search cancelled");
-                UpdateStatus("Cancelled");
-                UpdateTitle("Paused");
+                WriteToTerminal("Jimbo stopped cooking (search cancelled)");
+                UpdateTitle("Stopped");
             }
             catch (Exception ex)
             {
-                WriteToTerminal($"Error: {ex.Message}", isError: true);
-                UpdateStatus("Error");
+                WriteToTerminal($"Jimbo burned the kitchen! Error: {ex.Message}", isError: true);
                 UpdateTitle("Error");
             }
             finally
             {
-                // Reset UI state
-                var startButton = this.FindControl<Button>("StartButton");
-                var stopButton = this.FindControl<Button>("StopButton");
-                
-                if (startButton != null) startButton.IsEnabled = true;
-                if (stopButton != null) stopButton.IsEnabled = false;
+                // Reset button to cook mode
+                var cookButton = this.FindControl<Button>("CookButton");
+                if (cookButton != null)
+                {
+                    cookButton.Content = "Let Jimbo Cook!";
+                    cookButton.Classes.Clear();
+                    cookButton.Classes.Add("oracle-btn");
+                    cookButton.Classes.Add("button-color-green");
+                }
                 
                 _searchCancellation?.Dispose();
                 _searchCancellation = null;
             }
         }
         
-        private async void OnStopClick(object? sender, RoutedEventArgs e)
+        public void StopSearch()
         {
-            WriteToTerminal("Stopping...");
-            
-            // Disable stop button immediately to prevent spam clicks
-            var stopButton = this.FindControl<Button>("StopButton");
-            if (stopButton != null) stopButton.IsEnabled = false;
+            // Stop messages should be immediate - no throttling
+            Dispatcher.UIThread.Post(() => 
+            {
+                WriteToTerminal("Jimbo is putting down the spatula...");
+                
+                // Keep button enabled and clickable during stop
+                var cookButton = this.FindControl<Button>("CookButton");
+                if (cookButton != null)
+                {
+                    cookButton.IsEnabled = true;
+                    cookButton.IsHitTestVisible = true;
+                }
+            });
             
             try
             {
-                // Cancel on background thread to avoid blocking UI
-                await Task.Run(() => 
+                // Cancel the token first
+                _searchCancellation?.Cancel();
+                
+                // Then stop the search service
+                _searchService.StopSearch();
+                
+                Dispatcher.UIThread.Post(() => 
                 {
-                    _searchCancellation?.Cancel();
-                    _searchService.StopSearch();
+                    WriteToTerminal("Jimbo stopped cooking");
+                    UpdateTitle("Stopped");
+                    ResetUIAfterStop();
                 });
-                
-                // Give it a moment to clean up
-                await Task.Delay(1000);
-                
-                WriteToTerminal("Search stopped");
-                UpdateStatus("Stopped");
             }
             catch (Exception ex)
             {
-                WriteToTerminal($"Stop error: {ex.Message}");
-            }
-            finally
-            {
-                // Reset UI state
-                ResetUIAfterStop();
+                Dispatcher.UIThread.Post(() => WriteToTerminal($"Stop error: {ex.Message}"));
             }
         }
         
         private void ResetUIAfterStop()
         {
-            var startButton = this.FindControl<Button>("StartButton");
-            var stopButton = this.FindControl<Button>("StopButton");
+            var cookButton = this.FindControl<Button>("CookButton");
             var loadButton = this.FindControl<Button>("LoadConfigButton");
             
-            if (startButton != null) startButton.IsEnabled = true;
-            if (stopButton != null) stopButton.IsEnabled = false; 
+            if (cookButton != null) 
+            {
+                cookButton.Content = "Let Jimbo Cook!";
+                cookButton.Classes.Clear();
+                cookButton.Classes.Add("oracle-btn");
+                cookButton.Classes.Add("button-color-green");
+                cookButton.IsEnabled = true;
+            }
             if (loadButton != null) loadButton.IsEnabled = true;
         }
         
-        private void OnClearClick(object? sender, RoutedEventArgs e)
-        {
-            _terminalBuffer.Clear();
-            _foundCount = 0;
-            UpdateNotificationBadge(0);
-            
-            var terminalOutput = this.FindControl<TextBox>("TerminalOutput");
-            if (terminalOutput != null)
-                terminalOutput.Text = "";
-            
-            UpdateStatus("Ready");
-        }
         
         private void OnProgressUpdate(SearchProgress progress)
         {
-            Dispatcher.UIThread.Post(() =>
+            var now = DateTime.Now;
+            
+            // Add any new results immediately (we always want to count them)
+            if (progress.NewResult != null)
             {
-                // Add any new results
-                if (progress.NewResult != null)
+                _foundCount++;
+                
+                // But throttle UI updates
+                if ((now - _lastUIUpdate).TotalMilliseconds >= UI_UPDATE_INTERVAL_MS)
                 {
-                    _foundCount++;
-                    UpdateNotificationBadge(_foundCount);
-                    WriteToTerminal($"Found: {progress.NewResult.Seed} ({progress.NewResult.Score:N0})");
-                    Oracle.Helpers.DebugLogger.LogImportant("SearchWidget", $">>> RESULT DISPLAYED: Seed={progress.NewResult.Seed}, Score={progress.NewResult.Score}, Total Found={_foundCount}");
+                    _lastUIUpdate = now;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        UpdateNotificationBadge(_foundCount);
+                        WriteToTerminal($"Found: {progress.NewResult.Seed} ({progress.NewResult.Score:N0})");
+                    });
                 }
-                else if (!string.IsNullOrEmpty(progress.Message))
+                Oracle.Helpers.DebugLogger.LogImportant("SearchWidget", $">>> RESULT FOUND: Seed={progress.NewResult.Seed}, Score={progress.NewResult.Score}, Total Found={_foundCount}");
+            }
+            else if (!string.IsNullOrEmpty(progress.Message))
+            {
+                // Throttle terminal messages
+                if ((now - _lastTerminalUpdate).TotalMilliseconds >= TERMINAL_UPDATE_INTERVAL_MS)
                 {
+                    _lastTerminalUpdate = now;
                     // Only show important messages in the compact terminal
                     if (progress.Message.Contains("Found") || 
                         progress.Message.Contains("complete") ||
-                        progress.SeedsSearched % 1000 == 0)
+                        progress.SeedsSearched % 10000 == 0) // Changed from 1000 to 10000 for less spam
                     {
-                        WriteToTerminal(progress.Message);
+                        Dispatcher.UIThread.Post(() => WriteToTerminal(progress.Message));
                         Oracle.Helpers.DebugLogger.Log("SearchWidget", $"Terminal message: {progress.Message}");
                     }
                 }
-                
-                // Update status
-                if (progress.IsComplete)
+            }
+            
+            // Always show completion message
+            if (progress.IsComplete)
+            {
+                Dispatcher.UIThread.Post(() =>
                 {
-                    UpdateStatus($"Complete - Found {_foundCount} seeds");
+                    UpdateNotificationBadge(_foundCount);
+                    WriteToTerminal($"Jimbo finished cooking! Found {_foundCount} seeds");
                     Oracle.Helpers.DebugLogger.LogImportant("SearchWidget", $">>> SEARCH COMPLETE: Total results found: {_foundCount}");
-                }
-                else
-                {
-                    UpdateStatus($"Searching... {progress.PercentComplete:F0}%");
-                }
-            });
+                });
+            }
         }
         
         private void WriteToTerminal(string message, bool isError = false)
@@ -388,11 +464,11 @@ namespace Oracle.Components
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
             var line = $"[{timestamp}] {message}";
             
-            // Keep terminal compact - only last 20 lines
+            // Keep terminal at 100 lines max in widget mode (was 1000)
             var lines = _terminalBuffer.ToString().Split('\n').ToList();
-            if (lines.Count > 20)
+            if (lines.Count > 100)
             {
-                lines.RemoveRange(0, lines.Count - 20);
+                lines.RemoveRange(0, lines.Count - 100);
             }
             lines.Add(line);
             
@@ -411,14 +487,6 @@ namespace Oracle.Components
             }
         }
         
-        private void UpdateStatus(string status)
-        {
-            var statusText = this.FindControl<TextBlock>("StatusText");
-            if (statusText != null)
-            {
-                statusText.Text = status;
-            }
-        }
         
         private void UpdateNotificationBadge(int count)
         {
@@ -438,40 +506,50 @@ namespace Oracle.Components
         public void StartSearchWithParams(int threadCount, int minScore, int seedsToSearch)
         {
             // Update the UI controls
-            var threadCountBox = this.FindControl<NumericUpDown>("ThreadCountBox");
-            var minScoreBox = this.FindControl<NumericUpDown>("MinScoreBox");
+            var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
+            var scoreMinUpDown = this.FindControl<NumericUpDown>("ScoreMinUpDown");
             
-            if (threadCountBox != null) threadCountBox.Value = threadCount;
-            if (minScoreBox != null) minScoreBox.Value = minScore;
+            if (threadsUpDown != null) threadsUpDown.Value = threadCount;
+            if (scoreMinUpDown != null) scoreMinUpDown.Value = minScore;
             
             // Auto-start the search
-            OnStartClick(null, new RoutedEventArgs());
-        }
-        
-        /// <summary>
-        /// Stop any running search (called during disposal)
-        /// </summary>
-        public void StopSearch()
-        {
-            Oracle.Helpers.DebugLogger.Log("SearchWidget", "StopSearch called - stopping any running search");
-            
-            try
-            {
-                _searchCancellation?.Cancel();
-                _searchService.StopSearch();
-            }
-            catch (Exception ex)
-            {
-                Oracle.Helpers.DebugLogger.Log("SearchWidget", $"Error stopping search: {ex.Message}");
-            }
+            OnCookClick(null, new RoutedEventArgs());
         }
         
         private void UpdateTitle(string status)
         {
-            var titleText = this.FindControl<TextBlock>("TitleText");
-            if (titleText != null && !string.IsNullOrEmpty(_currentConfigName))
+            var statusText = this.FindControl<TextBlock>("StatusText");
+            if (statusText != null)
             {
-                titleText.Text = $"{_currentConfigName} ({status})";
+                statusText.Text = status;
+            }
+        }
+        
+        private void OnConfigToggleClick(object? sender, RoutedEventArgs e)
+        {
+            _isConfigExpanded = !_isConfigExpanded;
+            
+            var configContent = this.FindControl<StackPanel>("ConfigContent");
+            var expandIcon = this.FindControl<TextBlock>("ConfigExpandIcon");
+            
+            if (configContent != null)
+            {
+                configContent.IsVisible = _isConfigExpanded;
+            }
+            
+            if (expandIcon != null)
+            {
+                expandIcon.Text = _isConfigExpanded ? "▼" : "▶";
+            }
+        }
+        
+        private void OnClearConsoleClick(object? sender, RoutedEventArgs e)
+        {
+            var terminalOutput = this.FindControl<TextBox>("TerminalOutput");
+            if (terminalOutput != null)
+            {
+                terminalOutput.Text = "";
+                _terminalBuffer.Clear();
             }
         }
         

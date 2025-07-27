@@ -31,6 +31,31 @@ public partial class SearchModal : UserControl
         
         // Get service from DI using helper
         _searchService = ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService();
+        
+        // Set default values for controls
+        InitializeDefaults();
+    }
+    
+    private void InitializeDefaults()
+    {
+        // Set default values based on Motely Program.cs defaults
+        var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
+        if (threadsUpDown != null) threadsUpDown.Value = Environment.ProcessorCount;
+        
+        var batchSizeUpDown = this.FindControl<NumericUpDown>("BatchSizeUpDown");
+        if (batchSizeUpDown != null) batchSizeUpDown.Value = 4;
+        
+        var startBatchUpDown = this.FindControl<NumericUpDown>("StartBatchUpDown");
+        if (startBatchUpDown != null) startBatchUpDown.Value = 0;
+        
+        var endBatchUpDown = this.FindControl<NumericUpDown>("EndBatchUpDown");
+        if (endBatchUpDown != null) endBatchUpDown.Value = 1000;
+        
+        var cutoffUpDown = this.FindControl<NumericUpDown>("CutoffUpDown");
+        if (cutoffUpDown != null) cutoffUpDown.Value = 0;
+        
+        var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
+        if (debugCheckBox != null) debugCheckBox.IsChecked = false;
     }
     
     // Methods to set state from widget
@@ -43,9 +68,17 @@ public partial class SearchModal : UserControl
     {
         _configPath = configPath;
         var configPathTextBox = this.FindControl<TextBlock>("ConfigPathTextBox");
+        var startButton = this.FindControl<Button>("StartButton");
+        
         if (configPathTextBox != null && !string.IsNullOrEmpty(configPath))
         {
             configPathTextBox.Text = Path.GetFileName(configPath);
+            if (startButton != null) startButton.IsEnabled = true;
+        }
+        else
+        {
+            if (configPathTextBox != null) configPathTextBox.Text = "No config loaded";
+            if (startButton != null) startButton.IsEnabled = false;
         }
     }
     
@@ -112,7 +145,20 @@ public partial class SearchModal : UserControl
     {
         // Close the modal and show the widget again
         var mainWindow = TopLevel.GetTopLevel(this) as Window;
-        var mainMenu = mainWindow?.Content as Views.BalatroMainMenu;
+        
+        // The MainWindow content is a Grid, need to find BalatroMainMenu within it
+        Views.BalatroMainMenu? mainMenu = null;
+        if (mainWindow?.Content is Grid grid)
+        {
+            foreach (var child in grid.Children)
+            {
+                if (child is Views.BalatroMainMenu menu)
+                {
+                    mainMenu = menu;
+                    break;
+                }
+            }
+        }
         
         if (mainMenu != null)
         {
@@ -186,6 +232,99 @@ public partial class SearchModal : UserControl
         catch (Exception ex)
         {
             Oracle.Helpers.DebugLogger.Log("SearchModal", $"Error exporting results: {ex.Message}");
+        }
+    }
+    
+    private async void OnStartClick(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_configPath))
+        {
+            var statusText = this.FindControl<TextBlock>("StatusText");
+            if (statusText != null)
+            {
+                statusText.Text = "No config loaded. Please load a filter configuration first.";
+            }
+            return;
+        }
+
+        try
+        {
+            // Get values from UI controls
+            var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
+            var batchSizeUpDown = this.FindControl<NumericUpDown>("BatchSizeUpDown");
+            var startBatchUpDown = this.FindControl<NumericUpDown>("StartBatchUpDown");
+            var endBatchUpDown = this.FindControl<NumericUpDown>("EndBatchUpDown");
+            var cutoffUpDown = this.FindControl<NumericUpDown>("CutoffUpDown");
+            var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
+            var specificSeedTextBox = this.FindControl<TextBox>("SpecificSeedTextBox");
+            var keywordTextBox = this.FindControl<TextBox>("KeywordTextBox");
+            
+            var startButton = this.FindControl<Button>("StartButton");
+            var stopButton = this.FindControl<Button>("StopButton");
+            
+            // Build search criteria from UI controls
+            var criteria = new Oracle.Models.SearchCriteria
+            {
+                ConfigPath = _configPath,
+                ThreadCount = (int)(threadsUpDown?.Value ?? 4),
+                BatchSize = (int)(batchSizeUpDown?.Value ?? 4),
+                MinScore = (int)(cutoffUpDown?.Value ?? 0)
+            };
+            
+            // Calculate MaxSeeds from batch range if specified
+            var startBatch = (int)(startBatchUpDown?.Value ?? 0);
+            var endBatch = (int)(endBatchUpDown?.Value ?? 1000);
+            criteria.MaxSeeds = (endBatch - startBatch) * (long)Math.Pow(36, criteria.BatchSize);
+
+            // Update UI state
+            _isRunning = true;
+            if (startButton != null) startButton.IsEnabled = false;
+            if (stopButton != null) stopButton.IsEnabled = true;
+            
+            var statusText = this.FindControl<TextBlock>("StatusText");
+            if (statusText != null)
+            {
+                statusText.Text = $"Starting search with {criteria.ThreadCount} threads...";
+            }
+
+            // Start the search with the criteria
+            await _searchService.StartSearchAsync(criteria);
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Error starting search: {ex.Message}");
+            
+            // Reset UI state on error
+            _isRunning = false;
+            var startButton = this.FindControl<Button>("StartButton");
+            var stopButton = this.FindControl<Button>("StopButton");
+            if (startButton != null) startButton.IsEnabled = true;
+            if (stopButton != null) stopButton.IsEnabled = false;
+        }
+    }
+    
+    private void OnStopClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _searchService.StopSearch();
+            
+            // Update UI state
+            _isRunning = false;
+            var startButton = this.FindControl<Button>("StartButton");
+            var stopButton = this.FindControl<Button>("StopButton");
+            if (startButton != null) startButton.IsEnabled = true;
+            if (stopButton != null) stopButton.IsEnabled = false;
+            
+            var statusText = this.FindControl<TextBlock>("StatusText");
+            if (statusText != null)
+            {
+                statusText.Text = "Search stopped";
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Error stopping search: {ex.Message}");
         }
     }
 }

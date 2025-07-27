@@ -5,157 +5,360 @@
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="#374244"/>
-            <Setter Property="BorderBrush" Value="#7A9E9F"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BoxShadow" Value="4 4 8 #00000080"/>
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/> <!-- Use Balatro dock grey -->
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BoxShadow" Value="0 8 24 #1e2e32"/> <!-- Use Balatro shadow -->
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
         
         <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="#4f6367"/>
-            <Setter Property="CornerRadius" Value="6,6,0,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="16,16,0,0"/>
+            <Setter Property="Height" Value="40"/>
         </Style>
         
         <Style Selector="TextBox.terminal">
-            <Setter Property="Background" Value="#000000"/>
-            <Setter Property="Foreground" Value="#00FF00"/>
-            <Setter Property="FontFamily" Value="Consolas, monospace"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Background" Value="#0a0a0a"/>
+            <Setter Property="Foreground" Value="#00ff66"/>
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="10"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="SelectionBrush" Value="#00ff6644"/>
         </Style>
         
-        <Style Selector="Button.widget-button">
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Padding" Value="6,2"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="MinWidth" Value="40"/>
+        <Style Selector="Border.config-section">
+            <Setter Property="Background" Value="{StaticResource Black}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="0,1,0,1"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Height" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.window-button">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="Background" Value="#22ffffff"/> <!-- Semi-transparent white with proper alpha -->
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#ffffff"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <!-- Override the global button template -->
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Minimize button (blue) -->
+        <Style Selector="Button.window-button.minimize:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+        
+        <!-- Maximize button (blue) -->
+        <Style Selector="Button.window-button.maximize:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+        
+        <!-- Close button (red) -->
+        <Style Selector="Button.window-button.close:pointerover">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        
+        <!-- Widget-specific button style (flat, no shadows) -->
+        <Style Selector="Button.widget-btn">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
         </Style>
     </UserControl.Styles>
     
     <Grid>
-        <!-- Minimized State - Just an icon -->
+        <!-- Minimized State -->
         <Grid Name="MinimizedView" IsVisible="False">
-        <Border Classes="widget-container" 
-                Width="60" Height="60"
-                Cursor="Hand"
-                PointerPressed="OnMinimizedClick">
-            <Grid>
-                <TextBlock Text="🔍" 
-                           FontSize="24"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-                <Border Name="NotificationBadge"
-                        Background="#FE5F55"
-                        CornerRadius="8"
-                        Width="16" Height="16"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="0,-5,-5,0"
-                        IsVisible="False">
-                    <TextBlock Name="NotificationCount"
-                               Text="0"
-                               FontSize="10"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-            </Grid>
-        </Border>
-    </Grid>
-    
-    <!-- Expanded State - Full widget -->
-    <Border Name="ExpandedView" 
-            Classes="widget-container"
-            Width="400" Height="500"
-            IsVisible="True">
-        <DockPanel>
-            <!-- Header with minimize/close buttons -->
-            <Border Classes="widget-header" 
-                    DockPanel.Dock="Top"
-                    Height="30">
+            <Border Classes="widget-container" 
+                    Width="60" Height="60"
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedClick">
                 <Grid>
-                    <TextBlock Name="TitleText"
-                               Text="Search Widget" 
-                               FontWeight="Bold"
-                               FontSize="12"
-                               VerticalAlignment="Center"
-                               Margin="10,0"/>
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Spacing="2"
-                                Margin="0,0,5,0">
-                        <Button Content="_" 
-                                Width="24" Height="20"
-                                FontSize="16"
-                                Padding="0,-5,0,0"
-                                Background="Transparent"
-                                Click="OnMinimizeClick"/>
-                        <Button Content="□" 
-                                Width="24" Height="20"
-                                FontSize="14"
-                                Padding="0"
-                                Background="Transparent"
-                                Click="OnMaximizeClick"
-                                ToolTip.Tip="Maximize"/>
-                        <Button Content="✕" 
-                                Width="24" Height="20"
-                                FontSize="12"
-                                Padding="0"
-                                Background="Transparent"
-                                Click="OnCloseClick"/>
-                    </StackPanel>
+                    <Border Background="{StaticResource DockGrey}" CornerRadius="16">
+                        <TextBlock Text="🔍" 
+                                   FontSize="24"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <Border Name="NotificationBadge"
+                            Background="{StaticResource Red}"
+                            CornerRadius="10"
+                            Width="20" Height="20"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="False">
+                        <TextBlock Name="NotificationCount"
+                                   Text="0"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </Border>
-            
-            <!-- Content -->
-            <Grid DockPanel.Dock="Top" RowDefinitions="Auto,*,Auto">
-                <!-- Controls -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" 
-                            HorizontalAlignment="Center" 
-                            Margin="5"
-                            Spacing="5">
-                    <Button Name="StartButton" Content="Start" 
-                            Classes="oracle-btn button-color-green"
-                            Height="32" FontSize="14" Padding="16,4"
-                            MinWidth="80"
-                            Click="OnStartClick" IsEnabled="False"/>
-                    <Button Name="StopButton" Content="Stop" 
-                            Classes="oracle-btn button-color-red"
-                            Height="32" FontSize="14" Padding="16,4"
-                            MinWidth="80"
-                            Click="OnStopClick" IsEnabled="False"/>
-                    <Button Name="ClearButton" Content="Clear" 
-                            Classes="oracle-btn button-color-yellow-orange"
-                            Height="32" FontSize="14" Padding="16,4"
-                            MinWidth="80"
-                            Click="OnClearClick"/>
-                </StackPanel>
-                
-                <!-- Terminal Output -->
-                <Border Grid.Row="1" Margin="5" BorderBrush="#7A9E9F" BorderThickness="1">
-                    <ScrollViewer Name="TerminalScrollViewer" VerticalScrollBarVisibility="Auto">
-                        <TextBox Name="TerminalOutput" 
-                                 Classes="terminal" 
-                                 IsReadOnly="True"
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"/>
-                    </ScrollViewer>
+        </Grid>
+        
+        <!-- Expanded State -->
+        <Border Name="ExpandedView" 
+                Classes="widget-container"
+                Width="450" 
+                MaxHeight="700"
+                IsVisible="True">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <Border Grid.Row="0" Classes="widget-header">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="🔍 Motely Search" 
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   VerticalAlignment="Center"
+                                   Foreground="#ffffff"
+                                   Margin="16,0,0,0"/>
+                        
+                        <TextBlock Grid.Column="1"
+                                   Name="StatusText"
+                                   Text=""
+                                   FontSize="12"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#aaaaaa"/>
+                        
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,8,0">
+                            <Button Classes="window-button minimize"
+                                    Content="─"
+                                    Click="OnMinimizeClick"
+                                    ToolTip.Tip="Minimize"/>
+                            <Button Classes="window-button maximize"
+                                    Content="□"
+                                    Click="OnMaximizeClick"
+                                    ToolTip.Tip="Maximize"/>
+                            <Button Classes="window-button close"
+                                    Content="✕"
+                                    Click="OnCloseClick"
+                                    ToolTip.Tip="Close"/>
+                        </StackPanel>
+                    </Grid>
                 </Border>
                 
-                <!-- Status Bar -->
-                <Border Grid.Row="2" Background="#2a2a2a" Padding="5,2">
-                    <TextBlock Name="StatusText" 
-                               Text="Ready" 
-                               FontSize="10"
-                               Foreground="#888"/>
-                </Border>
+                <!-- Content Area -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <!-- Config Section (Collapsible) -->
+                        <Border Classes="config-section">
+                            <StackPanel>
+                                <Button Classes="collapse-button"
+                                        Click="OnConfigToggleClick">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0" 
+                                                   Name="ConfigExpandIcon"
+                                                   Text="▼" 
+                                                   FontFamily="Segoe UI Symbol"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"/>
+                                        <TextBlock Grid.Column="1" 
+                                                   Classes="section-title"
+                                                   Text="Search Configuration"/>
+                                        <Border Grid.Column="2"
+                                                Background="{StaticResource Green}"
+                                                CornerRadius="4"
+                                                Padding="6,2"
+                                                Name="ConfigLoadedIndicator"
+                                                IsVisible="False">
+                                            <TextBlock Text="Loaded" 
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="#000000"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                                
+                                <StackPanel Name="ConfigContent" 
+                                            Margin="16,0,16,16"
+                                            Spacing="12">
+                                    <!-- Config File -->
+                                    <Grid RowDefinitions="Auto,8,Auto">
+                                        <TextBlock Text="Filter Config:" 
+                                                   FontSize="12" 
+                                                   Foreground="#aaaaaa"/>
+                                        <Grid Grid.Row="2" ColumnDefinitions="*,8,Auto">
+                                            <TextBox Grid.Column="0"
+                                                     Name="ConfigPathBox" 
+                                                     Text="{Binding ConfigPath}" 
+                                                     IsReadOnly="True"
+                                                     Background="#0a0a0a"
+                                                     BorderBrush="#3a4b4f"
+                                                     FontSize="11"
+                                                     Height="32"/>
+                                            <Button Grid.Column="2"
+                                                    Name="LoadConfigButton" 
+                                                    Content="Browse" 
+                                                    Classes="btn-orange widget-btn"
+                                                    Height="32"
+                                                    Padding="16,0"
+                                                    FontSize="12"
+                                                    Click="OnLoadConfigClick"/>
+                                        </Grid>
+                                    </Grid>
+                                    
+                                    <!-- Search Parameters Grid -->
+                                    <Grid ColumnDefinitions="*,16,*" 
+                                          RowDefinitions="Auto,8,Auto,8,Auto,8,Auto">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                   Text="Threads:" 
+                                                   VerticalAlignment="Center" 
+                                                   FontSize="12"
+                                                   Foreground="#aaaaaa"/>
+                                        <NumericUpDown Grid.Row="0" Grid.Column="2" 
+                                                       Name="ThreadsUpDown" 
+                                                       Value="4" Minimum="1" Maximum="32" 
+                                                       FontSize="11" Height="28"
+                                                       Background="#0a0a0a"
+                                                       BorderBrush="#3a4b4f"/>
+                                        
+                                        <TextBlock Grid.Row="2" Grid.Column="0" 
+                                                   Text="Batch Size:" 
+                                                   VerticalAlignment="Center" 
+                                                   FontSize="12"
+                                                   Foreground="#aaaaaa"/>
+                                        <NumericUpDown Grid.Row="2" Grid.Column="2" 
+                                                       Name="BatchSizeUpDown" 
+                                                       Value="4" Minimum="2" Maximum="4" 
+                                                       FontSize="11" Height="28"
+                                                       Background="#0a0a0a"
+                                                       BorderBrush="#3a4b4f"/>
+                                        
+                                        <TextBlock Grid.Row="4" Grid.Column="0" 
+                                                   Text="Min Score:" 
+                                                   VerticalAlignment="Center" 
+                                                   FontSize="12"
+                                                   Foreground="#aaaaaa"/>
+                                        <NumericUpDown Grid.Row="4" Grid.Column="2" 
+                                                       Name="ScoreMinUpDown" 
+                                                       Value="0" Minimum="0" Maximum="1000" 
+                                                       FontSize="11" Height="28"
+                                                       Background="#0a0a0a"
+                                                       BorderBrush="#3a4b4f"/>
+                                    </Grid>
+                                    
+                                    <CheckBox Name="DebugCheckBox" 
+                                              IsChecked="False" 
+                                              Content="Enable Debug Output"
+                                              FontSize="12"
+                                              Foreground="#aaaaaa"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Console Section -->
+                        <Border Background="#0a0a0a" 
+                                MinHeight="300"
+                                MaxHeight="400">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <!-- Console Header -->
+                                <Border Grid.Row="0" 
+                                        Background="{StaticResource Black}" 
+                                        Height="32">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="Console Output" 
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="#00ff66"
+                                                   Margin="12,0,0,0"/>
+                                        <StackPanel Grid.Column="2"
+                                                    Orientation="Horizontal"
+                                                    Spacing="4"
+                                                    Margin="0,0,8,0">
+                                            <Button Content="Clear" 
+                                                    Height="24"
+                                                    Padding="12,0"
+                                                    FontSize="11"
+                                                    Classes="widget-btn"
+                                                    Background="{StaticResource DockGrey}"
+                                                    Foreground="#ffffff"
+                                                    BorderThickness="0"
+                                                    CornerRadius="4"
+                                                    Click="OnClearConsoleClick"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                
+                                <!-- Terminal Output -->
+                                <ScrollViewer Grid.Row="1" 
+                                              Name="TerminalScrollViewer" 
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Auto"
+                                              MaxHeight="300">
+                                    <TextBox Name="TerminalOutput" 
+                                             Classes="terminal" 
+                                             IsReadOnly="True"
+                                             AcceptsReturn="True"
+                                             TextWrapping="NoWrap"/>
+                                </ScrollViewer>
+                                
+                                <!-- Cook Button -->
+                                <Border Grid.Row="2" 
+                                        Background="{StaticResource Black}"
+                                        Padding="12">
+                                    <Button Name="CookButton" 
+                                            Content="🔥 Let Jimbo Cook!" 
+                                            Classes="btn-green widget-btn"
+                                            Height="48" 
+                                            FontSize="18" 
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Stretch"
+                                            Click="OnCookClick" 
+                                            IsEnabled="False"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
-        </DockPanel>
-    </Border>
+        </Border>
     </Grid>
 </UserControl>

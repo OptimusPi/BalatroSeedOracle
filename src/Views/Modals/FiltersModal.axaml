@@ -267,227 +267,213 @@
         </Style>
     </UserControl.Styles>
     
-    <!-- Main Layout -->
-    <Grid Name="RootGrid" Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        
-        <!-- Top Header Row - 3 Column Layout -->
-        <Grid Grid.Row="0" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            
-            <!-- Column A: Name/Description -->
-            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBox Name="ConfigNameBox" 
-                         Text="CustomFilterName" 
-                         FontSize="14" FontWeight="Bold"
-                         Background="#333333" 
-                         BorderThickness="1" 
-                         BorderBrush="#555555"
-                         Foreground="#eac058"
-                         Padding="8,4"
-                         CornerRadius="4"
-                         Margin="0,0,0,5"
-                         Width="200"
-                         MaxWidth="300" />
-                <TextBox Name="ConfigDescriptionBox" 
-                         Text="description, a config for stuff" 
-                         FontSize="12"
-                         Background="#333333" 
-                         BorderThickness="1" 
-                         BorderBrush="#555555"
-                         Foreground="#CCCCCC"
-                         Padding="8,4"
-                         CornerRadius="4"
-                         Width="200"
-                         MaxWidth="300" />
-            </StackPanel>
-            
-            <!-- Column B: Action Buttons -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
-                <Button Name="LoadButton" Content="Load" ToolTip.Tip="Load Config" Classes="oracle-btn button-color-yellow-orange" MinWidth="64" MinHeight="24" FontSize="12" />
-                <Button Name="SaveButton" Content="Save" ToolTip.Tip="Save Config" Classes="oracle-btn button-color-blue" MinWidth="64" MinHeight="24" FontSize="12" />
-                <Button Name="SearchButton" Content="Search" ToolTip.Tip="Launch Search" Classes="oracle-btn button-color-green" MinWidth="64" MinHeight="24" FontSize="12" />
-                <Button Name="ClearAllButton" Content="Clear" ToolTip.Tip="Clear All" Classes="oracle-btn button-color-red" MinWidth="64" MinHeight="24" FontSize="12" />
-            </StackPanel>
-
-            <!-- Column C: Mode Toggle -->
-            <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                
-                <!-- Drag & Drop Mode Button -->
-                <Border Name="DragDropModeButton" Grid.Column="0" CornerRadius="6" Cursor="Hand" Classes="mode-active" Padding="15,8">
-                    <StackPanel>
-                        <TextBlock Text="Drag &amp; Drop Filter Builder" FontSize="14" FontWeight="Bold" Foreground="#2a2a2a" HorizontalAlignment="Center" />
-                        <TextBlock Text="Drag items from left → Drop zones" FontSize="10" Foreground="#2a2a2a" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-                
-                <!-- JSON Editor Mode Button -->
-                <Border Name="JsonEditorModeButton" Grid.Column="1" CornerRadius="6" Cursor="Hand" Classes="mode-inactive" Padding="15,8">
-                    <StackPanel>
-                        <TextBlock Text="JSON Editor" FontSize="14" FontWeight="Bold" Foreground="#2a2a2a" HorizontalAlignment="Center" />
-                        <TextBlock Text="Copy, Paste, and Edit filter JSON" FontSize="10" Foreground="#2a2a2a" HorizontalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Grid>
-        
-        <!-- Main Content Area -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="160" />
-                <ColumnDefinition Width="12" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            
-            <!-- Left Sidebar -->
-            <Border Grid.Column="0" Background="#2a2a2a" CornerRadius="8" Padding="8">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Spacing="3">
-                        <Button Name="FavoritesTab" Content="Favorites" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="SoulJokersTab" Content="Soul Joker" Classes="vertical-tab-button active" HorizontalAlignment="Stretch" />
-                        <Button Name="RareJokersTab" Content="Rare Joker" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="UncommonJokersTab" Content="Uncommon Joker" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="CommonJokersTab" Content="Common Joker" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="VouchersTab" Content="Vouchers" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="TarotsTab" Content="Tarots" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="SpectralsTab" Content="Spectrals" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                        <Button Name="TagsTab" Content="Tags" Classes="vertical-tab-button" HorizontalAlignment="Stretch" />
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-            
-            <!-- Main Content Area -->
-            <Grid Grid.Column="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="15" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                
-                <!-- LEFT: Item Palette -->
-                <Grid Grid.Column="0">
+    <!-- Main Layout - Clean content only, no modal styling (StandardModal handles that) -->
+    <Grid Name="RootGrid" Margin="16">
+                <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     
-                    <!-- Search Bar -->
-                    <Border Grid.Row="0" Background="#333333" CornerRadius="4" Padding="6" Margin="0,0,0,10">
-                        <Grid>
+                    <!-- Modal Title (removed - StandardModal already shows it) -->
+                    
+                    <!-- Top Header Row - 3 Column Layout -->
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Column A: Name + Description horizontally -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Top" Orientation="Horizontal" Spacing="8">
+                            <TextBox Name="ConfigNameBox" 
+                                     Text="CustomFilterName" 
+                                     FontSize="12" FontWeight="Bold"
+                                     Background="#333333" 
+                                     BorderThickness="1" 
+                                     BorderBrush="#555555"
+                                     Foreground="#eac058"
+                                     Padding="6,3"
+                                     CornerRadius="4"
+                                     Width="150"
+                                     Height="28"
+                                     VerticalContentAlignment="Center" />
+                            <TextBox Name="ConfigDescriptionBox" 
+                                     Text="description, a config for stuff" 
+                                     FontSize="11"
+                                     Background="#333333" 
+                                     BorderThickness="1" 
+                                     BorderBrush="#555555"
+                                     Foreground="#CCCCCC"
+                                     Padding="6,3"
+                                     CornerRadius="4"
+                                     Width="200"
+                                     Height="28"
+                                     VerticalContentAlignment="Center" />
+                        </StackPanel>
+                        
+                        <!-- Column B: Action Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="3">
+                            <Button Name="LoadButton" Content="Load" Classes="btn-orange" MinWidth="80" MinHeight="40" FontSize="16" />
+                            <Button Name="SaveButton" Content="Save" Classes="btn-blue" MinWidth="80" MinHeight="40" FontSize="16" />
+                            <Button Name="SearchButton" Content="Search" Classes="btn-green" MinWidth="80" MinHeight="40" FontSize="16" />
+                            <Button Name="ClearAllButton" Content="Clear" Classes="btn-red" MinWidth="80" MinHeight="40" FontSize="16" />
+                        </StackPanel>
+
+                        <!-- Column C: Simple Mode Toggle -->
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="json?" FontSize="14" VerticalAlignment="Center" Foreground="#CCCCCC"/>
+                            <ToggleSwitch Name="ModeToggle" 
+                                         IsChecked="False"
+                                         OnContent="" 
+                                         OffContent=""
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <!-- Main Content Area -->
+                    <Grid Grid.Row="2" Name="MainContentGrid">
+                    <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                        
+                        <!-- Left Sidebar - darker background -->
+                        <Border Grid.Column="0" Background="#2a2a2a" CornerRadius="8" Padding="8">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel Spacing="2">
+                                    <Button Name="FavoritesTab" Content="Favorites" Classes="nav-button" />
+                                    <Button Name="SoulJokersTab" Content="Soul Joker" Classes="nav-button active" />
+                                    <Button Name="RareJokersTab" Content="Rare Joker" Classes="nav-button" />
+                                    <Button Name="UncommonJokersTab" Content="Uncommon Joker" Classes="nav-button" />
+                                    <Button Name="CommonJokersTab" Content="Common Joker" Classes="nav-button" />
+                                    <Button Name="VouchersTab" Content="Vouchers" Classes="nav-button" />
+                                    <Button Name="TarotsTab" Content="Tarots" Classes="nav-button" />
+                                    <Button Name="SpectralsTab" Content="Spectrals" Classes="nav-button" />
+                                    <Button Name="TagsTab" Content="Tags" Classes="nav-button" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                        
+                        <!-- Main Content Area -->
+                        <Grid Grid.Column="2" Name="RightContentGrid">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="5" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="15" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             
-                            <TextBox Grid.Column="0" Name="SearchBox" Watermark="Search items..." Height="32" VerticalContentAlignment="Center" 
-                                     Classes="search-box" IsHitTestVisible="True" Focusable="True" ZIndex="10" />
-                            <Button Grid.Column="2" Name="ClearSearchButton" Content="X" ToolTip.Tip="Clear Search" Width="30" Height="30" FontSize="12" />
+                            <!-- LEFT: Item Palette -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Search Bar -->
+                                <Border Grid.Row="0" Background="#333333" CornerRadius="4" Padding="4" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="4" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Search Bar -->
+                                        <TextBox Grid.Column="0" Name="SearchBox" Watermark="Search items..." Height="26" VerticalContentAlignment="Center" 
+                                         Classes="search-box" IsHitTestVisible="True" Focusable="True" ZIndex="10" FontSize="11" />
+                                        <Button Grid.Column="2" Name="ClearSearchButton" Content="X" ToolTip.Tip="Clear Search" Width="24" Height="24" FontSize="10" Padding="0" />
+                                    </Grid>
+                                </Border>
+                                
+                                <!-- Item Palette Container - Add explicit height constraint -->
+                                <Border Grid.Row="1" Name="ItemPaletteBorder" Background="#2a2a2a" CornerRadius="8" Padding="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True">
+                                <ContentControl Name="ItemPaletteContent" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True" />
+                                </Border>
+                            </Grid>
+                            
+                            <!-- RIGHT: Drag & Drop Areas -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="6" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                
+                                <!-- NEEDS Panel -->
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="#2a2a2a" CornerRadius="8" Padding="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        
+                                        <Border Grid.Row="0" Background="#FE5F55" CornerRadius="4" Padding="6,3" Margin="0,0,0,6" HorizontalAlignment="Center">
+                                            <Grid>
+                                                <TextBlock Text="NEEDS (Required)" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0" />
+                                                <Button Name="ClearNeedsButton" Content="✕" Classes="btn-red"
+                                                        Width="18" Height="18" 
+                                                        FontWeight="Bold"
+                                                        FontSize="9"
+                                                        Padding="0"
+                                                        CornerRadius="2"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Cursor="Hand" />
+                                            </Grid>
+                                        </Border>
+                                        
+                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="100">
+                                            <Grid>
+                                                <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" FontSize="12" />
+                                                <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                    <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                
+                                <!-- WANTS Panel -->
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="#2a2a2a" CornerRadius="8" Padding="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        
+                                        <Border Grid.Row="0" Background="#009dff" CornerRadius="4" Padding="6,3" Margin="0,0,0,6" HorizontalAlignment="Center">
+                                            <Grid>
+                                                <TextBlock Text="WANTS (Bonus Points)" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0" />
+                                                <Button Name="ClearWantsButton" Content="✕" Classes="btn-red"
+                                                        Width="18" Height="18" 
+                                                        FontWeight="Bold"
+                                                        FontSize="9"
+                                                        Padding="0"
+                                                        CornerRadius="2"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Cursor="Hand" />
+                                            </Grid>
+                                        </Border>
+                                        
+                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="50">
+                                            <Grid>
+                                                <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop scoring items here" TextAlignment="Center" IsVisible="True" FontSize="12" />
+                                                <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                    <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </Grid>
                         </Grid>
-                    </Border>
-                    
-                    <!-- Item Palette Container - Add explicit height constraint -->
-                    <Border Grid.Row="1" Background="#2a2a2a" CornerRadius="8" Padding="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True">
-                        <ContentControl Name="ItemPaletteContent" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True" />
-                    </Border>
+                    </Grid>
                 </Grid>
-                
-                <!-- RIGHT: Drag & Drop Areas -->
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="10" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    
-                    <!-- NEEDS Panel -->
-                    <Border Grid.Row="0" Name="NeedsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone needs-zone">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            
-                            <Border Grid.Row="0" Background="#FE5F55" CornerRadius="4" Padding="8,4" Margin="0,0,0,8" HorizontalAlignment="Center">
-                                <Grid>
-                                    <TextBlock Text="NEEDS (Required)" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,25,0" />
-                                    <Button Name="ClearNeedsButton" Content="✕" 
-                                            Width="20" Height="20" 
-                                            Background="#CC0000" 
-                                            Foreground="White"
-                                            FontWeight="Bold"
-                                            FontSize="10"
-                                            Padding="0"
-                                            CornerRadius="2"
-                                            BorderThickness="0"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Cursor="Hand" />
-                                </Grid>
-                            </Border>
-                            
-                            <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="5" MinHeight="120">
-                                <Grid>
-                                    <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" />
-                                    <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                        <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- WANTS Panel -->
-                    <Border Grid.Row="2" Name="WantsBorder" Background="#4f6367" CornerRadius="8" Padding="10" BorderBrush="#7A9E9F" BorderThickness="2" Classes="drop-zone wants-zone">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            
-                            <Border Grid.Row="0" Background="#009dff" CornerRadius="4" Padding="8,4" Margin="0,0,0,8" HorizontalAlignment="Center">
-                                <Grid>
-                                    <TextBlock Text="WANTS (Bonus Points)" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,25,0" />
-                                    <Button Name="ClearWantsButton" Content="✕" 
-                                            Width="20" Height="20" 
-                                            Background="#CC0000" 
-                                            Foreground="White"
-                                            FontWeight="Bold"
-                                            FontSize="10"
-                                            Padding="0"
-                                            CornerRadius="2"
-                                            BorderThickness="0"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Cursor="Hand" />
-                                </Grid>
-                            </Border>
-                            
-                            <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="5" MinHeight="60">
-                                <Grid>
-                                    <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop scoring items here" TextAlignment="Center" IsVisible="True" />
-                                    <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                        <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- Removed action buttons - they're now integrated into the UI -->
-                </Grid>
-            </Grid>
-        </Grid>
     </Grid>
 </UserControl>

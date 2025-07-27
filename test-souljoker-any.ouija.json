@@ -1,0 +1,13 @@
+{
+  "name": "Test Any Soul Joker",
+  "description": "Test configuration to find any soul joker",
+  "author": "Test",
+  "version": "v0.0.1",
+  "sources": ["Shop"],
+  "filter_config": {
+    "Needs": [
+      { "Type": "SoulJoker", "Value": "any", "SearchAntes": [1] }
+    ],
+    "Wants": []
+  }
+}

@@ -58,12 +58,12 @@ public partial class FiltersModalContent : UserControl
         // Initialize item categories from BalatroData
         _itemCategories = new Dictionary<string, List<string>>
         {
+            ["Favorites"] = FavoritesService.Instance.GetFavoriteItems(),
             ["Jokers"] = BalatroData.Jokers.Keys.ToList(),
             ["Tarots"] = BalatroData.TarotCards.Keys.ToList(),
             ["Spectrals"] = BalatroData.SpectralCards.Keys.ToList(),
             ["Vouchers"] = BalatroData.Vouchers.Keys.ToList(),
             ["Tags"] = BalatroData.Tags.Keys.ToList(),
-            ["Favorites"] = FavoritesService.Instance.GetFavoriteItems() // Load persistent favorites
         };
         
         SetupControls();
@@ -94,12 +94,33 @@ public partial class FiltersModalContent : UserControl
         SetupSearchBox();
     }
     
+    private void OnModeToggleChanged(object? sender, RoutedEventArgs e)
+    {
+        var modeToggle = sender as ToggleSwitch;
+        if (modeToggle == null) return;
+        
+        if (modeToggle.IsChecked == true)
+        {
+            // JSON mode
+            EnterEditJsonMode();
+        }
+        else
+        {
+            // Visual mode - restore the layout AND reload the content
+            RestoreDragDropModeLayout();
+            
+            // Reload all categories to refresh the sprite display
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Reloading all categories after JSON mode exit");
+            LoadAllCategories();
+            
+            // Update drop zones to show current selections
+            UpdateDropZoneVisibility();
+        }
+    }
+    
     private void SetupTabButtons()
     {
-        // Removed search tab - now integrated into main area
-        
-        var editJsonTab = this.FindControl<Button>("EditJsonTab");
-        editJsonTab?.AddHandler(Button.ClickEvent, (s, e) => EnterEditJsonMode());
+        // Removed search tab and editJsonTab - now using toggle switch
         
         // Favorites tab
         var favoritesTab = this.FindControl<Button>("FavoritesTab");
@@ -182,32 +203,15 @@ public partial class FiltersModalContent : UserControl
         if (clearWantsButton != null)
             clearWantsButton.Click += (s, e) => ClearWants();
             
-        // Setup mode toggle buttons
-        var dragDropModeButton = this.FindControl<Border>("DragDropModeButton");
-        var jsonEditorModeButton = this.FindControl<Border>("JsonEditorModeButton");
+        // Setup mode toggle switch
+        var modeToggle = this.FindControl<ToggleSwitch>("ModeToggle");
+        if (modeToggle != null)
+        {
+            modeToggle.IsCheckedChanged += OnModeToggleChanged;
+        }
         
-        if (dragDropModeButton != null)
-            dragDropModeButton.PointerPressed += (s, e) => {
-                // Switch to drag-drop mode
-                dragDropModeButton.Classes.Remove("mode-inactive");
-                dragDropModeButton.Classes.Add("mode-active");
-                jsonEditorModeButton?.Classes.Remove("mode-active");
-                jsonEditorModeButton?.Classes.Add("mode-inactive");
-                
-                // Restore visibility of hidden elements
-                RestoreDragDropModeLayout();
-                
-                LoadCategory(_currentCategory);
-            };
-        if (jsonEditorModeButton != null)
-            jsonEditorModeButton.PointerPressed += (s, e) => {
-                // Switch to JSON editor mode
-                jsonEditorModeButton.Classes.Remove("mode-inactive");
-                jsonEditorModeButton.Classes.Add("mode-active");
-                dragDropModeButton?.Classes.Remove("mode-active");
-                dragDropModeButton?.Classes.Add("mode-inactive");
-                EnterEditJsonMode();
-            };
+        // Remove old button code - using toggle switch now
+        // Rest of the toggle switch handling is in OnModeToggleChanged
         
         Oracle.Helpers.DebugLogger.Log("FiltersModal", "Drop zones setup complete!");
     }
@@ -216,7 +220,7 @@ public partial class FiltersModalContent : UserControl
     
     private void OnNeedsDragEnter(object? sender, DragEventArgs e)
     {
-        if (e.Data.Contains("balatro-item"))
+        if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
         {
             var needsBorder = sender as Border;
             needsBorder?.Classes.Add("drag-over");
@@ -234,7 +238,7 @@ public partial class FiltersModalContent : UserControl
     
     private void OnNeedsDragOver(object? sender, DragEventArgs e)
     {
-        if (e.Data.Contains("balatro-item"))
+        if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
         {
             e.DragEffects = DragDropEffects.Move;
             
@@ -254,7 +258,7 @@ public partial class FiltersModalContent : UserControl
     
     private void OnWantsDragEnter(object? sender, DragEventArgs e)
     {
-        if (e.Data.Contains("balatro-item"))
+        if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
         {
             var wantsBorder = sender as Border;
             wantsBorder?.Classes.Add("drag-over");
@@ -272,7 +276,7 @@ public partial class FiltersModalContent : UserControl
     
     private void OnWantsDragOver(object? sender, DragEventArgs e)
     {
-        if (e.Data.Contains("balatro-item"))
+        if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
         {
             e.DragEffects = DragDropEffects.Move;
             
@@ -295,6 +299,39 @@ public partial class FiltersModalContent : UserControl
         // Remove visual feedback
         var needsBorder = sender as Border;
         needsBorder?.Classes.Remove("drag-over");
+        
+        // Handle JokerSet drop
+        if (e.Data.Contains("JokerSet"))
+        {
+            var jokerSet = e.Data.Get("JokerSet") as FavoritesService.JokerSet;
+            if (jokerSet != null)
+            {
+                // Add all items from the joker set to needs
+                foreach (var item in jokerSet.Jokers)
+                {
+                    // Find the category for this item
+                    string? itemCategory = null;
+                    if (BalatroData.Jokers.ContainsKey(item)) itemCategory = "Jokers";
+                    else if (BalatroData.TarotCards.ContainsKey(item)) itemCategory = "Tarots";
+                    else if (BalatroData.SpectralCards.ContainsKey(item)) itemCategory = "Spectrals";
+                    else if (BalatroData.Vouchers.ContainsKey(item)) itemCategory = "Vouchers";
+                    
+                    if (itemCategory != null)
+                    {
+                        var itemKey = $"{itemCategory}:{item}";
+                        _selectedWants.Remove(itemKey);
+                        _selectedNeeds.Add(itemKey);
+                    }
+                }
+                
+                UpdateDropZoneVisibility();
+                RemoveDragOverlay();
+                _isDragging = false;
+                e.Handled = true;
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Jokers.Count} items) to NEEDS");
+                return;
+            }
+        }
         
         if (e.Data.Contains("balatro-item"))
         {
@@ -360,6 +397,39 @@ public partial class FiltersModalContent : UserControl
         var wantsBorder = sender as Border;
         wantsBorder?.Classes.Remove("drag-over");
         
+        // Handle JokerSet drop
+        if (e.Data.Contains("JokerSet"))
+        {
+            var jokerSet = e.Data.Get("JokerSet") as FavoritesService.JokerSet;
+            if (jokerSet != null)
+            {
+                // Add all items from the joker set to wants
+                foreach (var item in jokerSet.Jokers)
+                {
+                    // Find the category for this item
+                    string? itemCategory = null;
+                    if (BalatroData.Jokers.ContainsKey(item)) itemCategory = "Jokers";
+                    else if (BalatroData.TarotCards.ContainsKey(item)) itemCategory = "Tarots";
+                    else if (BalatroData.SpectralCards.ContainsKey(item)) itemCategory = "Spectrals";
+                    else if (BalatroData.Vouchers.ContainsKey(item)) itemCategory = "Vouchers";
+                    
+                    if (itemCategory != null)
+                    {
+                        var itemKey = $"{itemCategory}:{item}";
+                        _selectedNeeds.Remove(itemKey);
+                        _selectedWants.Add(itemKey);
+                    }
+                }
+                
+                UpdateDropZoneVisibility();
+                RemoveDragOverlay();
+                _isDragging = false;
+                e.Handled = true;
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Jokers.Count} items) to WANTS");
+                return;
+            }
+        }
+        
         if (e.Data.Contains("balatro-item"))
         {
             var itemData = e.Data.Get("balatro-item") as string;
@@ -424,114 +494,60 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Starting restoration");
             
-            // Find the root grid first
-            var rootGrid = this.FindControl<Grid>("RootGrid");
-            if (rootGrid == null)
+            // Find controls by name
+            var mainContentGrid = this.FindControl<Grid>("MainContentGrid");
+            
+            if (mainContentGrid == null)
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Could not find RootGrid");
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Could not find MainContentGrid");
                 return;
             }
             
-            // Navigate to the main content area (Grid.Row="1")
-            var mainContentArea = rootGrid.Children.OfType<Grid>()
-                .FirstOrDefault(g => Grid.GetRow(g) == 1);
-            
-            if (mainContentArea == null)
+            // Restore the left sidebar visibility
+            var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
+            if (leftSidebar != null)
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Could not find main content area");
-                return;
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found left sidebar, making visible");
+                leftSidebar.IsVisible = true;
             }
             
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"RestoreDragDropModeLayout: Found main content area with {mainContentArea.ColumnDefinitions.Count} columns");
-            
-            // This should be the grid with columns "160, 12, *"
-            if (mainContentArea.ColumnDefinitions.Count == 3)
+            // Restore the search bar
+            var searchBox = this.FindControl<TextBox>("SearchBox");
+            if (searchBox?.Parent?.Parent is Border searchBar)
             {
-                // Restore the left sidebar (Column 0)
-                var leftSidebar = mainContentArea.Children.OfType<Border>()
-                    .FirstOrDefault(b => Grid.GetColumn(b) == 0);
-                if (leftSidebar != null)
-                {
-                    Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found left sidebar, making visible");
-                    leftSidebar.IsVisible = true;
-                }
+                searchBar.IsVisible = true;
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored search bar");
                 
-                // Find the item palette grid (Column 2)
-                var rightContentGrid = mainContentArea.Children.OfType<Grid>()
-                    .FirstOrDefault(g => Grid.GetColumn(g) == 2);
-                    
-                if (rightContentGrid != null)
+                // Clear the search box when returning from JSON mode
+                if (searchBox != null && _searchBox != null)
                 {
-                    Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found right content grid");
-                    
-                    // Find the left side (item palette) within the right content grid
-                    var itemPaletteGrid = rightContentGrid.Children.OfType<Grid>()
-                        .FirstOrDefault(g => Grid.GetColumn(g) == 0);
-                        
-                    if (itemPaletteGrid != null)
-                    {
-                        // Find and show the search bar container
-                        var searchBarContainer = itemPaletteGrid.Children.OfType<Border>()
-                            .FirstOrDefault(b => Grid.GetRow(b) == 0);
-                        if (searchBarContainer != null)
-                        {
-                            Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found search bar container, making visible");
-                            searchBarContainer.IsVisible = true;
-                        }
-                        
-                        // Show the item palette container
-                        var itemPaletteContainer = itemPaletteGrid.Children.OfType<Border>()
-                            .FirstOrDefault(b => Grid.GetRow(b) == 1);
-                        if (itemPaletteContainer != null)
-                        {
-                            Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found item palette container, making visible");
-                            itemPaletteContainer.IsVisible = true;
-                        }
-                    }
-                    
-                    // Find the drop zones grid (Column 2 of the right content grid)
-                    var dropZonesGrid = rightContentGrid.Children.OfType<Grid>()
-                        .FirstOrDefault(g => Grid.GetColumn(g) == 2);
-                        
-                    if (dropZonesGrid != null)
-                    {
-                        Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found drop zones grid, making visible");
-                        dropZonesGrid.IsVisible = true;
-                        
-                        // Also make sure the individual drop zones are visible
-                        var needsBorder = dropZonesGrid.Children.OfType<Border>()
-                            .FirstOrDefault(b => b.Name == "NeedsBorder");
-                        var wantsBorder = dropZonesGrid.Children.OfType<Border>()
-                            .FirstOrDefault(b => b.Name == "WantsBorder");
-                            
-                        if (needsBorder != null)
-                        {
-                            Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found NeedsBorder, making visible");
-                            needsBorder.IsVisible = true;
-                        }
-                        
-                        if (wantsBorder != null)
-                        {
-                            Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found WantsBorder, making visible");
-                            wantsBorder.IsVisible = true;
-                        }
-                    }
-                    
-                    // Restore the column widths for the right content grid
-                    if (rightContentGrid.ColumnDefinitions.Count == 3)
-                    {
-                        Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoring right content grid column widths");
-                        rightContentGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
-                        rightContentGrid.ColumnDefinitions[1].Width = new GridLength(15);
-                        rightContentGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
-                    }
+                    _searchBox.Text = "";
+                    _searchFilter = "";
                 }
-                
-                // Restore main content area column widths
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoring main content area column widths");
-                mainContentArea.ColumnDefinitions[0].Width = new GridLength(160);
-                mainContentArea.ColumnDefinitions[1].Width = new GridLength(12);
-                mainContentArea.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            }
+            
+            // Restore drop zones by finding them by name
+            var needsBorder = this.FindControl<Border>("NeedsBorder");
+            var wantsBorder = this.FindControl<Border>("WantsBorder");
+            
+            if (needsBorder != null)
+            {
+                needsBorder.IsVisible = true;
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored NeedsBorder");
+            }
+            
+            if (wantsBorder != null)
+            {
+                wantsBorder.IsVisible = true;
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored WantsBorder");
+            }
+            
+            // Restore padding to the ItemPaletteBorder
+            var itemPaletteBorder = this.FindControl<Border>("ItemPaletteBorder");
+            if (itemPaletteBorder != null)
+            {
+                itemPaletteBorder.Padding = new Thickness(8);
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored ItemPaletteBorder padding");
             }
             
             Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
@@ -548,9 +564,18 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
             
-            // Hide the left sidebar
-            var leftSidebar = this.GetVisualDescendants().OfType<Border>()
-                .FirstOrDefault(b => Grid.GetColumn(b) == 0 && b.Background?.ToString() == "#FF2A2A2A");
+            // Find controls by name instead of searching through visual tree
+            var mainContentGrid = this.FindControl<Grid>("MainContentGrid");
+            var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
+            
+            if (mainContentGrid == null || rightContentGrid == null)
+            {
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "Could not find required grids");
+                return;
+            }
+            
+            // Hide left sidebar
+            var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
             if (leftSidebar != null)
             {
                 leftSidebar.IsVisible = false;
@@ -559,64 +584,41 @@ public partial class FiltersModalContent : UserControl
             
             // Hide the search bar
             var searchBox = this.FindControl<TextBox>("SearchBox");
-            var searchBar = searchBox?.Parent?.Parent as Border;
-            if (searchBar != null)
+            if (searchBox?.Parent?.Parent is Border searchBar)
             {
                 searchBar.IsVisible = false;
                 Oracle.Helpers.DebugLogger.Log("Hidden search bar");
             }
             
-            // Hide the drop zones (NEEDS and WANTS panels)
+            // Hide drop zones by finding them by name
             var needsBorder = this.FindControl<Border>("NeedsBorder");
             var wantsBorder = this.FindControl<Border>("WantsBorder");
-            if (needsBorder != null) needsBorder.IsVisible = false;
-            if (wantsBorder != null) wantsBorder.IsVisible = false;
-            Oracle.Helpers.DebugLogger.Log("Hidden drop zones");
             
-            // Find the main content area that contains the columns
-            var mainContentArea = this.GetVisualDescendants().OfType<Grid>()
-                .FirstOrDefault(g => g.ColumnDefinitions.Count == 3 && g.ColumnDefinitions[0].Width.Value == 160);
-            
-            if (mainContentArea != null)
+            if (needsBorder != null)
             {
-                // Hide only column 0 (sidebar) - don't change column widths yet
-                var sidebarInColumn0 = mainContentArea.Children
-                    .OfType<Border>()
-                    .FirstOrDefault(b => Grid.GetColumn(b) == 0);
-                if (sidebarInColumn0 != null)
-                {
-                    sidebarInColumn0.IsVisible = false;
-                }
-                
-                // The JSON editor is in the Grid at column 2, which contains both the item palette (col 0) and drop zones (col 2)
-                // We need to find the inner grid that has the item palette and drop zones
-                var innerContentGrid = mainContentArea.Children
-                    .OfType<Grid>()
-                    .FirstOrDefault(g => Grid.GetColumn(g) == 2 && g.ColumnDefinitions.Count == 3);
-                    
-                if (innerContentGrid != null)
-                {
-                    // Hide the drop zones grid (column 2 of inner grid)
-                    var dropZonesGrid = innerContentGrid.Children
-                        .OfType<Grid>()
-                        .FirstOrDefault(g => Grid.GetColumn(g) == 2);
-                    if (dropZonesGrid != null)
-                    {
-                        dropZonesGrid.IsVisible = false;
-                    }
-                    
-                    // Make the item palette column take full width
-                    innerContentGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
-                    innerContentGrid.ColumnDefinitions[1].Width = new GridLength(0);
-                    innerContentGrid.ColumnDefinitions[2].Width = new GridLength(0);
-                }
-                
-                // Also hide the left sidebar by adjusting outer grid
-                mainContentArea.ColumnDefinitions[0].Width = new GridLength(0);
-                mainContentArea.ColumnDefinitions[1].Width = new GridLength(0);
-                Oracle.Helpers.DebugLogger.Log("Adjusted layout for JSON editor");
+                needsBorder.IsVisible = false;
+                Oracle.Helpers.DebugLogger.Log("Hidden NeedsBorder");
             }
             
+            if (wantsBorder != null) 
+            {
+                wantsBorder.IsVisible = false;
+                Oracle.Helpers.DebugLogger.Log("Hidden WantsBorder");
+            }
+            
+            // Remove padding from the ItemPaletteBorder to let JSON editor use full space
+            var itemPaletteBorder = this.FindControl<Border>("ItemPaletteBorder");
+            if (itemPaletteBorder != null)
+            {
+                itemPaletteBorder.Padding = new Thickness(0);
+                Oracle.Helpers.DebugLogger.Log("Removed ItemPaletteBorder padding");
+            }
+            
+            // Update tab appearance
+            Oracle.Helpers.DebugLogger.Log("Updating tab buttons");
+            UpdateTabButtons("EditJson");
+
+            // Find the ItemPaletteContent container
             var container = this.FindControl<ContentControl>("ItemPaletteContent");
             if (container == null) 
             {
@@ -624,17 +626,14 @@ public partial class FiltersModalContent : UserControl
                 return;
             }
 
-            // Update tab appearance
-            Oracle.Helpers.DebugLogger.Log("Updating tab buttons");
-            UpdateTabButtons("EditJson");
-
             // Create JSON editor interface
             Oracle.Helpers.DebugLogger.Log("Creating edit JSON interface");
             var editJsonInterface = CreateEditJsonInterface();
+            
             Oracle.Helpers.DebugLogger.Log("Adding interface to container");
             container.Content = editJsonInterface;
-            Oracle.Helpers.DebugLogger.Log("JSON editor interface added successfully");
             
+            Oracle.Helpers.DebugLogger.Log("JSON editor interface added successfully");
             Oracle.Helpers.DebugLogger.Log("JSON editor mode entered");
         }
         catch (Exception ex)
@@ -669,13 +668,13 @@ public partial class FiltersModalContent : UserControl
                 Oracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
             }
             
-            // Create a simple Grid layout
+            // Create a Grid that fills the entire space
             var mainGrid = new Grid
             {
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.Parse("#1e1e1e"))
-                // Remove MinHeight to let it use all available space
+                Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
+                Margin = new Thickness(-8) // Negative margin to counteract parent padding
             };
             
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -746,7 +745,6 @@ public partial class FiltersModalContent : UserControl
                     Padding = new Thickness(10),
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
-                    // Let it stretch to fill available space in the grid
                 };
                 
                 // Create AvaloniaEdit TextEditor
@@ -763,9 +761,7 @@ public partial class FiltersModalContent : UserControl
                     VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                    IsVisible = true,
-                    // Height will be managed by the container
-                    // Don't set Text here - we'll set it after the control is loaded
+                    IsVisible = true
                 };
                 
                 // Set up editor options
@@ -1368,8 +1364,8 @@ public partial class FiltersModalContent : UserControl
         _mainScrollViewer.ScrollChanged += OnScrollChanged;
         
         // Update initial tab highlight
-        UpdateTabHighlight("SoulJokersTab");
-        
+        UpdateTabHighlight("FavoritesTab");
+
         // Update drop zones
         UpdateDropZoneVisibility();
     }
@@ -2366,34 +2362,63 @@ public partial class FiltersModalContent : UserControl
         
         Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Soul check result: IsSoulJoker={isSoulJoker} for item '{itemName}'");
         
+        // Also check for debugging - log what the GetJokerSoulImage will look for
+        if (isSoulJoker)
+        {
+            Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Will attempt to get soul image for: '{itemName}'");
+        }
+        
         if (isSoulJoker)
         {
             // Create stacked layout for soul joker
             var grid = new Grid();
             
             // Card back image
-            var cardImage = new Image
+            var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
+            if (jokerImageSource == null)
             {
-                Source = SpriteService.Instance.GetJokerImage(itemName),
-                Stretch = Stretch.Uniform,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            grid.Children.Add(cardImage);
+                Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 FAILED to get joker image for legendary joker '{itemName}'");
+                // Fallback to text display
+                var textBlock = new TextBlock
+                {
+                    Text = itemName,
+                    FontSize = 10,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    TextAlignment = TextAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                };
+                grid.Children.Add(textBlock);
+            }
+            else
+            {
+                var cardImage = new Image
+                {
+                    Source = jokerImageSource,
+                    Stretch = Stretch.Uniform,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                };
+                grid.Children.Add(cardImage);
+            }
             
             // Animated face overlay
+            Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Attempting GetJokerSoulImage for: '{itemName}'");
             var faceSource = SpriteService.Instance.GetJokerSoulImage(itemName);
+            Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 GetJokerSoulImage result: {(faceSource != null ? "SUCCESS" : "NULL")}");
             if (faceSource != null)
             {
                 var faceImage = new Image
                 {
                     Source = faceSource,
                     Stretch = Stretch.Uniform,
-                    Width = 45,
-                    Height = 45,
+                    Width = 30,  // Smaller for dropped items (was 45)
+                    Height = 30, // Proportional to the 50x65 card size
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    RenderTransform = new RotateTransform()
+                    RenderTransform = new RotateTransform(),
+                    Margin = new Thickness(0, 5, 0, 0) // Slight offset down
                 };
                 
                 // Add wobble animation
@@ -2792,8 +2817,8 @@ public partial class FiltersModalContent : UserControl
                     var faceImage = new Image
                     {
                         Source = faceSource,
-                        Width = 50,
-                        Height = 50,
+                        Width = 64,
+                        Height = 64,
                         Stretch = Stretch.Uniform,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
@@ -2899,8 +2924,8 @@ public partial class FiltersModalContent : UserControl
     private async void OnSaveClick(object? sender, RoutedEventArgs e)
     {
         // Check if we're in JSON editor mode
-        var jsonEditorModeButton = this.FindControl<Border>("JsonEditorModeButton");
-        if (jsonEditorModeButton != null && jsonEditorModeButton.Classes.Contains("mode-active"))
+        var modeToggle = this.FindControl<ToggleSwitch>("ModeToggle");
+        if (modeToggle?.IsChecked == true)
         {
             // We're in JSON editor mode, use the JSON save method
             SaveConfig();
@@ -3087,13 +3112,45 @@ public partial class FiltersModalContent : UserControl
         };
     }
     
+    /// <summary>
+    /// Normalizes item names to match the casing used in BalatroData
+    /// </summary>
+    private string NormalizeItemName(string itemName, string category)
+    {
+        // Try to find the item in the appropriate dictionary with case-insensitive search
+        switch (category)
+        {
+            case "Jokers":
+                var joker = BalatroData.Jokers.Keys.FirstOrDefault(k => k.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                return joker ?? itemName;
+                
+            case "Tarots":
+                var tarot = BalatroData.TarotCards.Keys.FirstOrDefault(k => k.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                return tarot ?? itemName;
+                
+            case "Spectrals":
+                var spectral = BalatroData.SpectralCards.Keys.FirstOrDefault(k => k.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                return spectral ?? itemName;
+                
+            case "Vouchers":
+                var voucher = BalatroData.Vouchers.Keys.FirstOrDefault(k => k.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                return voucher ?? itemName;
+                
+            case "Tags":
+                var tag = BalatroData.Tags.Keys.FirstOrDefault(k => k.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                return tag ?? itemName;
+                
+            default:
+                return itemName;
+        }
+    }
 
 
     private async void OnLoadClick(object? sender, RoutedEventArgs e)
     {
         // Check if we're in JSON editor mode
-        var jsonEditorModeButton = this.FindControl<Border>("JsonEditorModeButton");
-        if (jsonEditorModeButton != null && jsonEditorModeButton.Classes.Contains("mode-active"))
+        var modeToggle = this.FindControl<ToggleSwitch>("ModeToggle");
+        if (modeToggle?.IsChecked == true)
         {
             // We're in JSON editor mode, use the JSON load method
             LoadConfig();
@@ -3200,7 +3257,9 @@ public partial class FiltersModalContent : UserControl
             foreach (var need in config.filter_config.Needs)
             {
                 var category = MapTypeToCategory(need.Type);
-                var key = $"{category}:{need.Value}";
+                // Normalize the item name based on the category
+                var normalizedValue = NormalizeItemName(need.Value, category);
+                var key = $"{category}:{normalizedValue}";
                 _selectedNeeds.Add(key);
             }
         }
@@ -3210,14 +3269,27 @@ public partial class FiltersModalContent : UserControl
             foreach (var want in config.filter_config.Wants)
             {
                 var category = MapTypeToCategory(want.Type);
-                var key = $"{category}:{want.Value}";
+                // Normalize the item name based on the category
+                var normalizedValue = NormalizeItemName(want.Value, category);
+                var key = $"{category}:{normalizedValue}";
                 _selectedWants.Add(key);
             }
         }
         
         // Refresh the UI
-        LoadCategory(_currentCategory);
+        UpdateDropZoneVisibility();
         UpdateSelectionDisplay();
+        RefreshItemPalette();
+        
+        // If no category is loaded, default to Jokers
+        if (string.IsNullOrEmpty(_currentCategory))
+        {
+            LoadCategory("Jokers");
+        }
+        else
+        {
+            LoadCategory(_currentCategory);
+        }
     }
     
     private async void OnLaunchSearchClick(object? sender, RoutedEventArgs e)

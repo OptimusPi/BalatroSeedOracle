@@ -1,247 +1,130 @@
 [
     {
-        "name": "crystalball",
-        "pos": {
-            "x": 0,
-            "y": 0
-        }
-    },
-    {
-        "name": "omenglobe",
-        "pos": {
-            "x": 1,
-            "y": 0
-        }
-    },
-    {
-        "name": "telescope",
-        "pos": {
-            "x": 2,
-            "y": 0
-        }
-    },
-    {
-        "name": "observatory",
-        "pos": {
-            "x": 3,
-            "y": 0
-        }
-    },
-    {
-        "name": "tarotmerchant",
-        "pos": {
-            "x": 4,
-            "y": 0
-        }
-    },
-    {
-        "name": "tarotycoon",
-        "pos": {
-            "x": 5,
-            "y": 0
-        }
-    },
-    {
-        "name": "planetmerchant",
-        "pos": {
-            "x": 6,
-            "y": 0
-        }
-    },
-    {
-        "name": "planettycoon",
-        "pos": {
-            "x": 7,
-            "y": 0
-        }
-    },
-    {
         "name": "overstock",
-        "pos": {
-            "x": 0,
-            "y": 1
-        }
-    },
-    {
-        "name": "overstockplus",
-        "pos": {
-            "x": 1,
-            "y": 1
-        }
+        "pos": { "x": 0, "y": 0 }
     },
     {
         "name": "clearancesale",
-        "pos": {
-            "x": 2,
-            "y": 1
-        }
-    },
-    {
-        "name": "liquidation",
-        "pos": {
-            "x": 3,
-            "y": 1
-        }
-    },
-    {
-        "name": "reroll",
-        "pos": {
-            "x": 4,
-            "y": 1
-        }
-    },
-    {
-        "name": "rerollsurplus",
-        "pos": {
-            "x": 5,
-            "y": 1
-        }
+        "pos": { "x": 3, "y": 0 }
     },
     {
         "name": "hone",
-        "pos": {
-            "x": 6,
-            "y": 1
-        }
+        "pos": { "x": 4, "y": 0 }
     },
     {
-        "name": "glowup",
-        "pos": {
-            "x": 7,
-            "y": 1
-        }
+        "name": "rerollsurplus",
+        "pos": { "x": 0, "y": 2 }
     },
     {
-        "name": "wasteful",
-        "pos": {
-            "x": 0,
-            "y": 2
-        }
+        "name": "crystalball",
+        "pos": { "x": 2, "y": 2 }
     },
     {
-        "name": "recyclomancy",
-        "pos": {
-            "x": 1,
-            "y": 2
-        }
-    },
-    {
-        "name": "tarot",
-        "pos": {
-            "x": 2,
-            "y": 2
-        }
-    },
-    {
-        "name": "hieroglyph",
-        "pos": {
-            "x": 3,
-            "y": 2
-        }
-    },
-    {
-        "name": "directorscut",     
-        "pos": {
-            "x": 4,
-            "y": 2
-        }
-    },
-    {
-        "name": "paintbrush",
-        "pos": {
-            "x": 5,
-            "y": 2
-        }
-    },
-    {
-        "name": "retcon",
-        "pos": {
-            "x": 6,
-            "y": 2
-        }
-    },
-    {
-        "name": "brainstorm",
-        "pos": {
-            "x": 7,
-            "y": 2
-        }
-    },
-    {
-        "name": "seedmoney",
-        "pos": {
-            "x": 0,
-            "y": 3
-        }
-    },
-    {
-        "name": "moneytree",
-        "pos": {
-            "x": 1,
-            "y": 3
-        }
-    },
-    {
-        "name": "blank",
-        "pos": {
-            "x": 2,
-            "y": 3
-        }
-    },
-    {
-        "name": "antimatter",
-        "pos": {
-            "x": 3,
-            "y": 3
-        }
-    },
-    {
-        "name": "magictrick",       
-        "pos": {
-            "x": 4,
-            "y": 3
-        }
-    },
-    {
-        "name": "illusion",
-        "pos": {
-            "x": 5,
-            "y": 3
-        }
-    },
-    {
-        "name": "petroglyph",
-        "pos": {
-            "x": 6,
-            "y": 3
-        }
-    },
-    {
-        "name": "nachotong",
-        "pos": {
-            "x": 7,
-            "y": 3
-        }
-    },
-    {
-        "name": "rerollglut",
-        "pos": {
-            "x": 0,
-            "y": 4
-        }
+        "name": "telescope",
+        "pos": { "x": 3, "y": 2 }
     },
     {
         "name": "grabber",
-        "pos": {
-            "x": 1,
-            "y": 4
-        }
+        "pos": { "x": 5, "y": 0 }
+    },
+    {
+        "name": "wasteful",
+        "pos": { "x": 6, "y": 0 }
+    },
+    {
+        "name": "tarotmerchant",
+        "pos": { "x": 1, "y": 0 }
+    },
+    {
+        "name": "planetmerchant",
+        "pos": { "x": 2, "y": 0 }
+    },
+    {
+        "name": "seedmoney",
+        "pos": { "x": 1, "y": 2 }
+    },
+    {
+        "name": "blank",
+        "pos": { "x": 7, "y": 0 }
+    },
+    {
+        "name": "magictrick",
+        "pos": { "x": 4, "y": 2 }
+    },
+    {
+        "name": "hieroglyph",
+        "pos": { "x": 5, "y": 2 }
+    },
+    {
+        "name": "directorscut",
+        "pos": { "x": 6, "y": 2 }
+    },
+    {
+        "name": "paintbrush",
+        "pos": { "x": 7, "y": 2 }
+    },
+    {
+        "name": "overstockplus",
+        "pos": { "x": 0, "y": 1 }
+    },
+    {
+        "name": "liquidation",
+        "pos": { "x": 3, "y": 1 }
+    },
+    {
+        "name": "glowup",
+        "pos": { "x": 4, "y": 1 }
+    },
+    {
+        "name": "rerollglut",
+        "pos": { "x": 0, "y": 3 }
+    },
+    {
+        "name": "omenglobe",
+        "pos": { "x": 2, "y": 3 }
+    },
+    {
+        "name": "observatory",
+        "pos": { "x": 3, "y": 3 }
+    },
+    {
+        "name": "nachotong",
+        "pos": { "x": 5, "y": 1 }
+    },
+    {
+        "name": "recyclomancy",
+        "pos": { "x": 6, "y": 1 }
+    },
+    {
+        "name": "tarottycoon",
+        "pos": { "x": 1, "y": 1 }
+    },
+    {
+        "name": "planettycoon",
+        "pos": { "x": 2, "y": 1 }
+    },
+    {
+        "name": "moneytree",
+        "pos": { "x": 1, "y": 3 }
+    },
+    {
+        "name": "antimatter",
+        "pos": { "x": 7, "y": 1 }
+    },
+    {
+        "name": "illusion",
+        "pos": { "x": 4, "y": 3 }
+    },
+    {
+        "name": "petroglyph",
+        "pos": { "x": 5, "y": 3 }
+    },
+    {
+        "name": "retcon",
+        "pos": { "x": 6, "y": 3 }
     },
     {
         "name": "palette",
-        "pos": {
-            "x": 2,
-            "y": 4
-        }
+        "pos": { "x": 7, "y": 3 }
     }
 ]

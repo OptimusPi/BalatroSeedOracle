@@ -109,3 +109,7 @@ Game assets in `src/Assets/`:
 5. **GitHub Actions**: Simplified workflow for Windows, Linux, and macOS builds without code signing
 6. **ItemConfigPopup**: Added range slider for ante selection with drag functionality
 7. **OuijaConfig**: Removed unused 'keywords' field from JSON output - no longer generated in filters
+8. **SearchWidget**: Updated window control buttons - minimize/maximize are blue (#009dff), close is red (#FE5F55) on hover
+10. **MainWindow**: Added window chrome button customization - minimize/maximize buttons show blue (#009dff) on hover, close button shows red (#FE5F55) on hover
+11. **MainMenu**: Fixed button layout to match Balatro exactly - SEARCH (blue/large), FILTERS (orange/small), QUIT (red/small), RESULTS (green/large), FUN RUNS (purple/small)
+9. **UI Padding**: Reduced padding throughout the app - window height reduced from 720 to 700, button padding from 12,8 to 10,6, modal padding from 24 to 20

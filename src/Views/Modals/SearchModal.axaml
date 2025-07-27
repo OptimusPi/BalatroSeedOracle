@@ -89,9 +89,11 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
                         <Button Name="MinimizeButton"
                                 Content="▼"
-                                Classes="oracle-btn button-color-yellow-orange"
+                                Classes="btn-red"
                                 Width="30"
                                 Height="30"
+                                FontSize="12"
+                                Padding="0"
                                 ToolTip.Tip="Back to widget"
                                 Click="OnMinimizeClick"/>
                     </StackPanel>
@@ -114,18 +116,139 @@
             </Grid>
         </Border>
         
-        <!-- Action buttons -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,0,0,10">
-            <Button Name="ExportButton"
-                    Content="Export Results"
-                    Classes="oracle-btn button-color-blue"
-                    IsEnabled="False"
-                    Click="OnExportClick"/>
-            <Button Name="ClearButton"
-                    Content="Clear Results"
-                    Classes="oracle-btn button-color-yellow-orange"
-                    Click="OnClearClick"/>
-        </StackPanel>
+        <!-- Search Configuration and Action buttons -->
+        <Border Grid.Row="1" 
+                Background="#374244" 
+                BorderBrush="#7A9E9F"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,10">
+            <Grid RowDefinitions="Auto,Auto,Auto">
+                <!-- Search Configuration -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,*,*" Margin="0,0,0,15">
+                    <StackPanel Grid.Column="0" Spacing="8">
+                        <TextBlock Text="Search Parameters" FontWeight="Bold" FontSize="14" Foreground="#FEB95F"/>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Threads:" VerticalAlignment="Center" Width="60"/>
+                            <NumericUpDown Name="ThreadsUpDown" 
+                                           Value="4" 
+                                           Minimum="1" 
+                                           Maximum="32" 
+                                           Width="80"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Batch Size:" VerticalAlignment="Center" Width="60"/>
+                            <NumericUpDown Name="BatchSizeUpDown" 
+                                           Value="4" 
+                                           Minimum="2" 
+                                           Maximum="4" 
+                                           Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="Search Range" FontWeight="Bold" FontSize="14" Foreground="#FEB95F"/>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Start:" VerticalAlignment="Center" Width="60"/>
+                            <NumericUpDown Name="StartBatchUpDown" 
+                                           Value="0" 
+                                           Minimum="0" 
+                                           Maximum="999999" 
+                                           Width="80"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="End:" VerticalAlignment="Center" Width="60"/>
+                            <NumericUpDown Name="EndBatchUpDown" 
+                                           Value="1000" 
+                                           Minimum="1" 
+                                           Maximum="999999" 
+                                           Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2" Spacing="8">
+                        <TextBlock Text="Options" FontWeight="Bold" FontSize="14" Foreground="#FEB95F"/>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Score Min:" VerticalAlignment="Center" Width="70"/>
+                            <NumericUpDown Name="CutoffUpDown" 
+                                           Value="0" 
+                                           Minimum="0" 
+                                           Maximum="10000" 
+                                           Width="80"/>
+                        </StackPanel>
+                        
+                        <CheckBox Name="DebugCheckBox" 
+                                  Content="Debug Output" 
+                                  Margin="0,4"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Specific Search -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,0,0,15">
+                    <StackPanel Grid.Column="0" Spacing="8">
+                        <TextBlock Text="Specific Seed:" VerticalAlignment="Center"/>
+                        <TextBox Name="SpecificSeedTextBox" 
+                                 Watermark="Enter 8-character seed (optional)"
+                                 MaxLength="8"
+                                 Width="200"
+                                 HorizontalAlignment="Left"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="Keyword Search:" VerticalAlignment="Center"/>
+                        <TextBox Name="KeywordTextBox" 
+                                 Watermark="Generate seeds from keyword"
+                                 Width="200"
+                                 HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                    <Button Name="StartButton"
+                            Content="Start Search"
+                            Classes="btn-green"
+                            Height="36"
+                            FontSize="14"
+                            Padding="20,6"
+                            MinWidth="120"
+                            IsEnabled="False"
+                            Click="OnStartClick"/>
+                    <Button Name="StopButton"
+                            Content="Stop Search"
+                            Classes="btn-red"
+                            Height="36"
+                            FontSize="14"
+                            Padding="20,6"
+                            MinWidth="120"
+                            IsEnabled="False"
+                            Click="OnStopClick"/>
+                    <Button Name="ExportButton"
+                            Content="Export Results"
+                            Classes="btn-blue"
+                            Height="36"
+                            FontSize="14"
+                            Padding="20,6"
+                            MinWidth="120"
+                            IsEnabled="False"
+                            Click="OnExportClick"/>
+                    <Button Name="ClearButton"
+                            Content="Clear Results"
+                            Classes="btn-orange"
+                            Height="36"
+                            FontSize="14"
+                            Padding="20,6"
+                            MinWidth="120"
+                            Click="OnClearClick"/>
+                </StackPanel>
+            </Grid>
+        </Border>
         
         <!-- Results Table -->
         <Border Grid.Row="2" 

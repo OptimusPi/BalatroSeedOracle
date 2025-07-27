@@ -91,7 +91,7 @@ public class SpriteService
             {
                 if (pos?.Name != null)
                 {
-                    positions[pos.Name] = pos;
+                    positions[pos.Name.ToLower()] = pos;
                 }
             }
             
@@ -127,41 +127,17 @@ public class SpriteService
         string name = name_in.Trim().Replace(" ", "").ToLower();
 
         // Try the normalized name
-        if (positions.TryGetValue(name, out var pos))
+        if (positions!.TryGetValue(name, out var pos))
         {
             int x = pos.Pos.X * spriteWidth;
             int y = pos.Pos.Y * spriteHeight;
             return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
         }
-        
-        // Try variations from GetNormalizedNames
-        var variations = GetNormalizedNames(name_in);
-        foreach (var variation in variations)
+        else
         {
-            var normalizedVariation = variation.ToLower();
-            if (positions.TryGetValue(normalizedVariation, out pos))
-            {
-                int x = pos.Pos.X * spriteWidth;
-                int y = pos.Pos.Y * spriteHeight;
-                return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-            }
+            DebugLogger.Log("SpriteService", $"INFO: Could not find sprite for {category} '{name_in}' (tried: '{name}')");
+            return null;
         }
-        
-        // For "8 Ball" special case, also try "8ball" directly
-        if (name_in.Contains("8") || name_in.ToLower().Contains("ball"))
-        {
-            if (positions.TryGetValue("8ball", out pos))
-            {
-                int x = pos.Pos.X * spriteWidth;
-                int y = pos.Pos.Y * spriteHeight;
-                return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-            }
-        }
-
-        // Debug logging for missing sprites
-        DebugLogger.Log("SpriteService", $"Could not find sprite for {category} '{name_in}' (tried: '{name}' and {variations.Count} variations)");
-            DebugLogger.Log("SpriteService", $"Available sprites: {string.Join(", ", positions.Keys.Take(5))}...");
-        return null;
     }
 
     public IImage? GetJokerImage(string name, int spriteWidth = UIConstants.JokerSpriteWidth, int spriteHeight = UIConstants.JokerSpriteHeight)
@@ -329,14 +305,17 @@ public class SpriteService
             { "BurntJoker", new[] { "Burnt_Joker", "BurntJoker" } },
             
             // Spectrals
-            { "DejaVu", new[] { "Deja_Vu", "DejaVu" } },
-            { "TheSoul", new[] { "The_Soul", "TheSoul" } },
-            { "BlackHole", new[] { "Black_Hole", "BlackHole" } },
+            { "DejaVu", new[] { "Deja_Vu", "DejaVu", "dejavu" } },
+            { "Soul", new[] { "thesoul", "Soul", "The Soul", "The_Soul", "TheSoul" } },
+            { "BlackHole", new[] { "blackhole", "Black Hole", "Black_Hole" } },
             
             // Tags - no underscores in JSON, all use PascalCase
             
             // Vouchers
-            { "Grabber", new[] { "grabber" } },
+            { "Grabber", new[] { "grabber", "Grabber" } },
+            { "Palette", new[] { "palette", "Palette" } },
+            { "Glut", new[] { "rerollglut", "RerollGlut", "Reroll_Glut" } },
+            { "RerollGlut", new[] { "rerollglut", "RerollGlut" } },
             { "ClearanceSale", new[] { "Clearance_Sale", "ClearanceSale" } },
             { "CrystalBall", new[] { "Crystal_Ball", "CrystalBall" } },
             { "TarotMerchant", new[] { "Tarot_Merchant", "TarotMerchant" } },
@@ -349,7 +328,8 @@ public class SpriteService
             { "GlowUp", new[] { "Glow_Up", "GlowUp" } },
             { "OmenGlobe", new[] { "Omen_Globe", "OmenGlobe" } },
             { "NachoTong", new[] { "Nacho_Tong", "NachoTong" } },
-            { "TarotTycoon", new[] { "Tarot_Tycoon", "TarotTycoon" } },
+            { "TarotTycoon", new[] { "Tarot_Tycoon", "TarotTycoon", "tarotycoon" } },
+            { "Tarot Tycoon", new[] { "tarotycoon", "Tarot Tycoon", "TarotTycoon" } },
             { "PlanetTycoon", new[] { "Planet_Tycoon", "PlanetTycoon" } },
             { "MoneyTree", new[] { "Money_Tree", "MoneyTree" } }
         };

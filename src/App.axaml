@@ -15,13 +15,26 @@
         <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
 
         <!-- Game colors -->
-        <SolidColorBrush x:Key="Red">#FE5F55</SolidColorBrush>
-        <SolidColorBrush x:Key="Blue">#009dff</SolidColorBrush>
-        <SolidColorBrush x:Key="Green">#4BC292</SolidColorBrush>
+        <SolidColorBrush x:Key="Red">#ff4c40</SolidColorBrush>
+        <SolidColorBrush x:Key="Blue">#0093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="Green">#429f79</SolidColorBrush>
         <SolidColorBrush x:Key="PaleGreen">#56a887</SolidColorBrush>
-        <SolidColorBrush x:Key="Orange">#fda200</SolidColorBrush>
+        <SolidColorBrush x:Key="Orange">#ff9800</SolidColorBrush>
         <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="Purple">#8867a5</SolidColorBrush>
+        <SolidColorBrush x:Key="Purple">#525db0</SolidColorBrush>
+        
+        <!-- Hover/Pressed states -->
+        <SolidColorBrush x:Key="BlueHover">#0057a1</SolidColorBrush>
+        <SolidColorBrush x:Key="OrangeHover">#a05b00</SolidColorBrush>
+        <SolidColorBrush x:Key="RedHover">#a02721</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenHover">#215e45</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleHover">#2c336b</SolidColorBrush>
+        
+        <!-- UI Container colors -->
+        <SolidColorBrush x:Key="DockGrey">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="DropShadow">#1e2e32</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalShadow">#777e89</SolidColorBrush>
         
         <!-- UI Colors from C.UI -->
         <SolidColorBrush x:Key="TextLight">#FFFFFF</SolidColorBrush>
@@ -73,16 +86,16 @@
         <!-- Include AvaloniaEdit styles -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         
-        <!-- Load custom styles AFTER -->
+        <!-- 🎯 GLOBAL BALATRO STYLES - Applied to ALL controls automatically -->
+        <StyleInclude Source="avares://Oracle/Styles/BalatroGlobalStyles.axaml" />
+        
+        <!-- Legacy styles for specific overrides -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroModal.axaml" />
         <StyleInclude Source="avares://Oracle/Styles/ButtonStyles.axaml" />
-        <!-- <StyleInclude Source="avares://Oracle/Styles/PixelatedButtonStyles.axaml" /> -->
         <StyleInclude Source="avares://Oracle/Styles/TextBoxStyles.axaml" />
         
-        <Style Selector="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        </Style>
+        <!-- Popup and Flyout styles -->
+        <StyleInclude Source="avares://Oracle/Styles/PopupStyles.axaml" />
 
     </Application.Styles>
 </Application>

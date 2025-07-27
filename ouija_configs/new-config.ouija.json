@@ -1,6 +1,6 @@
 {
-  "name": "My Filter Config",
-  "description": "Search for specific items",
+  "name": "new-config.ouija",
+  "description": "description, a config for stuff",
   "author": "Jimbo",
   "sources": [
     "tag",
@@ -10,37 +10,120 @@
   "filter_config": {
     "Needs": [
       {
-        "Type": "Joker",
-        "Value": "Blueprint",
+        "Type": "SoulJoker",
+        "Value": "Perkeo",
         "SearchAntes": [
-          1
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
         ],
         "Score": 1,
-        "Edition": "Negative",
-        "Stickers": null,
-        "Suit": null,
-        "Rank": null,
-        "Seal": null,
-        "Enhancement": null
+        "Edition": "NoEdition"
       },
       {
         "Type": "Joker",
-        "Value": "AncientJoker",
+        "Value": "SmearedJoker",
         "SearchAntes": [
           1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
         ],
         "Score": 1,
-        "Edition": "NoEdition",
-        "Stickers": null,
-        "Suit": null,
-        "Rank": null,
-        "Seal": null,
-        "Enhancement": null
+        "Edition": "NoEdition"
+      },
+      {
+        "Type": "Voucher",
+        "Value": "Telescope",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition"
       }
     ],
-    "Wants": [],
-    "Deck": null,
-    "Stake": null,
+    "Wants": [
+      {
+        "Type": "Joker",
+        "Value": "Blueprint",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition"
+      },
+      {
+        "Type": "Joker",
+        "Value": "Brainstorm",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition"
+      },
+      {
+        "Type": "Joker",
+        "Value": "BurntJoker",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition"
+      },
+      {
+        "Type": "Voucher",
+        "Value": "Observatory",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition"
+      }
+    ],
     "ScoreNaturalNegatives": false,
     "ScoreDesiredNegatives": false
   }

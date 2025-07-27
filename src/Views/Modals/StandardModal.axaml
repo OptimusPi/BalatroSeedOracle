@@ -11,21 +11,29 @@
         <!-- Grid for percentage-based margins -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.025*"/>
-                <ColumnDefinition Width="0.95*"/>
-                <ColumnDefinition Width="0.025*"/>
+                <ColumnDefinition Width="0.05*"/>
+                <ColumnDefinition Width="0.9*"/>
+                <ColumnDefinition Width="0.05*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.025*"/>
-                <RowDefinition Height="0.95*"/>
-                <RowDefinition Height="0.025*"/>
+                <RowDefinition Height="0.03*"/>
+                <RowDefinition Height="0.94*"/>
+                <RowDefinition Height="0.03*"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container -->
+            <!-- Main modal container with proper Balatro styling -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Classes="modal-panel"
+                    Background="{StaticResource DockGrey}"
+                    CornerRadius="16"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="1"
+                    Padding="4"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    BoxShadow="0 2 6 #777e89">
+                <Border Background="{StaticResource Black}" 
+                        CornerRadius="10"
+                        Padding="0">
             
             <Grid VerticalAlignment="Stretch" MinHeight="500">
                 <Grid.RowDefinitions>
@@ -63,6 +71,7 @@
                             HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Grid>
+            </Border>
             </Border>
         </Grid>
     </Border>

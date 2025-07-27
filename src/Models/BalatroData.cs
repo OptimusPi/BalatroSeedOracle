@@ -170,35 +170,33 @@ public static class BalatroData
 
     private static void InitializeDecks()
     {
-        // TODO: Update when Motely deck enums are available
-        Decks["RedDeck"] = "Red Deck";
-        Decks["BlueDeck"] = "Blue Deck";
-        Decks["YellowDeck"] = "Yellow Deck";
-        Decks["GreenDeck"] = "Green Deck";
-        Decks["BlackDeck"] = "Black Deck";
-        Decks["MagicDeck"] = "Magic Deck";
-        Decks["NebulousDeck"] = "Nebulous Deck";
-        Decks["GhostDeck"] = "Ghost Deck";
-        Decks["AbandonedDeck"] = "Abandoned Deck";
-        Decks["CheckeredDeck"] = "Checkered Deck";
-        Decks["ZodiacDeck"] = "Zodiac Deck";
-        Decks["PaintedDeck"] = "Painted Deck";
-        Decks["AnagraphDeck"] = "Anagraph Deck";
-        Decks["PlasmaDeck"] = "Plasma Deck";
-        Decks["ErraticDeck"] = "Erratic Deck";
+        Decks["Red"] = "Red Deck";
+        Decks["Blue"] = "Blue Deck";
+        Decks["Yellow"] = "Yellow Deck";
+        Decks["Green"] = "Green Deck";
+        Decks["Black"] = "Black Deck";
+        Decks["Magic"] = "Magic Deck";
+        Decks["Nebulous"] = "Nebulous Deck";
+        Decks["Ghost"] = "Ghost Deck";
+        Decks["Abandoned"] = "Abandoned Deck";
+        Decks["Checkered"] = "Checkered Deck";
+        Decks["Zodiac"] = "Zodiac Deck";
+        Decks["Painted"] = "Painted Deck";
+        Decks["Anagraph"] = "Anagraph Deck";
+        Decks["Plasma"] = "Plasma Deck";
+        Decks["Erratic"] = "Erratic Deck";
     }
 
     private static void InitializeStakes()
     {
-        // TODO: Update when Motely stake enums are available
-        Stakes["WhiteStake"] = "White Stake";
-        Stakes["RedStake"] = "Red Stake";
-        Stakes["GreenStake"] = "Green Stake";
-        Stakes["BlackStake"] = "Black Stake";
-        Stakes["BlueStake"] = "Blue Stake";
-        Stakes["PurpleStake"] = "Purple Stake";
-        Stakes["OrangeStake"] = "Orange Stake";
-        Stakes["GoldStake"] = "Gold Stake";
+        Stakes["White"] = "White Stake";
+        Stakes["Red"] = "Red Stake";
+        Stakes["Green"] = "Green Stake";
+        Stakes["Black"] = "Black Stake";
+        Stakes["Blue"] = "Blue Stake";
+        Stakes["Purple"] = "Purple Stake";
+        Stakes["Orange"] = "Orange Stake";
+        Stakes["Gold"] = "Gold Stake";
     }
 
     /// <summary>
@@ -404,7 +402,9 @@ public static class BalatroData
             { "TheWorld", "The World" },
             
             // Spectral cards
+            { "Soul", "The Soul" },
             { "TheSoul", "The Soul" },
+            { "BlackHole", "Black Hole" },
             { "DejaVu", "Deja Vu" },
             
             // Boss blinds

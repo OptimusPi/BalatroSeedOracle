@@ -14,10 +14,6 @@
     <AvaloniaResource Include="Oracle.webp" />
     <AvaloniaResource Include="MainLogo.png" />
     <AvaloniaResource Include="MainLogoHover.png" />
-    <AvaloniaResource Include="Styles\BalatroModal.axaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
   </ItemGroup>
 
   <ItemGroup>

@@ -89,9 +89,21 @@ namespace Oracle.Views
         
         private void OpenSearchModal(string? configPath = null)
         {
-            // SearchModal is now only used when maximizing from the widget
-            // For direct search, show the widget instead
-            ShowSearchWidget(configPath);
+            // Create a new search modal
+            var searchModal = new SearchModal();
+            searchModal.SetSearchService(ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService());
+            
+            // If a config path is provided, set it
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                searchModal.SetConfigPath(configPath);
+            }
+            
+            // Wrap in standard modal frame
+            var modal = new StandardModal("SEED SEARCH");
+            modal.SetContent(searchModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal);
         }
         
         public void OpenSearchModalWithConfig(string configPath)
@@ -99,6 +111,16 @@ namespace Oracle.Views
             OpenSearchModal(configPath);
         }
 
+        private void OnResultsClick(object? sender, RoutedEventArgs e)
+        {
+            // Show the results modal
+            var resultsModal = new ResultsModal();
+            var modal = new StandardModal("SAVED FILTERS");
+            modal.SetContent(resultsModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal);
+        }
+        
         private void OnFiltersClick(object? sender, RoutedEventArgs e)
         {
             // Use the modal helper extension method

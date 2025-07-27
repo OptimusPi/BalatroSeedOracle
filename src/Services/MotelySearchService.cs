@@ -214,11 +214,14 @@ public class MotelySearchService : IDisposable
             int lastCompletedCount = 0;
 
             // Monitor the search - similar to how Program.cs does it
-            while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested)
+            while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
             {
-                // Check if we should exit early
-                if (!_isRunning || cancellationToken.IsCancellationRequested)
+                // Double-check cancellation at the start of each iteration
+                if (!_isRunning || cancellationToken.IsCancellationRequested || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
+                {
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Breaking out of search loop - cancellation requested");
                     break;
+                }
                     
                 // Get current batch count (this is what's available on the interface)
                 var currentBatchCount = _currentSearch.CompletedBatchCount;
@@ -297,14 +300,25 @@ public class MotelySearchService : IDisposable
                     Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Loop {loopCount}: Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}");
                 }
                 
-                await Task.Delay(100, cancellationToken);
+                // Use shorter delay and catch cancellation
+                try
+                {
+                    await Task.Delay(50, cancellationToken); // Reduced from 100ms to 50ms for faster response
+                }
+                catch (OperationCanceledException)
+                {
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Delay cancelled - exiting loop");
+                    break;
+                }
             }
 
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Search loop ended. Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}");
             
-            // Collect any final results
+            // Collect any final results (but skip if we're force-stopping)
             int finalResultCount = 0;
             while (!cancellationToken.IsCancellationRequested && 
+                   _isRunning &&
+                   !OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled &&
                    OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue != null && 
                    OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out var result))
             {
@@ -348,15 +362,19 @@ public class MotelySearchService : IDisposable
                 await _historyService.CompleteSearchAsync(_currentSearchId, finalSeeds, duration);
             }
             
-            progress?.Report(new Oracle.Models.SearchProgress
+            // Only report completion/cancellation if we haven't been force-stopped
+            if (_isRunning || !OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
             {
-                Message = cancellationToken.IsCancellationRequested ? "Search cancelled" : 
-                    $"Search complete. Found {Results.Count} seeds",
-                IsComplete = true,
-                SeedsSearched = finalSeeds,
-                ResultsFound = Results.Count,
-                PercentComplete = 100
-            });
+                progress?.Report(new Oracle.Models.SearchProgress
+                {
+                    Message = cancellationToken.IsCancellationRequested || !_isRunning ? "Search cancelled" : 
+                        $"Search complete. Found {Results.Count} seeds",
+                    IsComplete = true,
+                    SeedsSearched = finalSeeds,
+                    ResultsFound = Results.Count,
+                    PercentComplete = 100
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -383,20 +401,46 @@ public class MotelySearchService : IDisposable
         _isRunning = false;
         OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
         
-        // Cancel the token source
+        // Cancel the token source FIRST to interrupt the RunSearch loop
         try
         {
             _cancellationTokenSource?.Cancel();
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Cancellation token cancelled");
         }
         catch { }
         
-        // Force stop the search engine
+        // Force stop the search engine - Pause first, then Dispose
         try
         {
             if (_currentSearch != null)
             {
-                _currentSearch.Pause();
-                _currentSearch.Dispose();
+                Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Current search status: {_currentSearch.Status}");
+                
+                // Only pause if it's running
+                if (_currentSearch.Status == MotelySearchStatus.Running)
+                {
+                    _currentSearch.Pause();
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search paused");
+                }
+                
+                // Dispose in a separate task with timeout to avoid blocking
+                var disposeTask = Task.Run(() => {
+                    try 
+                    {
+                        _currentSearch.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Error disposing search: {ex.Message}");
+                    }
+                });
+                
+                // Wait max 1 second for disposal
+                if (!disposeTask.Wait(1000))
+                {
+                    Oracle.Helpers.DebugLogger.LogError("MotelySearchService", "Search disposal timed out");
+                }
+                
                 _currentSearch = null;
             }
         }
@@ -408,9 +452,14 @@ public class MotelySearchService : IDisposable
         // Clear the results queue completely
         if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue != null)
         {
+            int drainedCount = 0;
             while (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out _))
             {
-                // Drain it
+                drainedCount++;
+            }
+            if (drainedCount > 0)
+            {
+                Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Drained {drainedCount} results from queue");
             }
         }
         
@@ -508,6 +557,12 @@ public class MotelySearchService : IDisposable
         
         _cancellationTokenSource = null;
         _currentSearch = null;
+        
+        // Dispose the history service to close the DuckDB connection
+        if (_historyService is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
         
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", "MotelySearchService disposed");
     }
