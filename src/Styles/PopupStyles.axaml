@@ -68,6 +68,7 @@
         <Setter Property="FontSize" Value="16"/>
     </Style>
     
+    
     <!-- Ensure proper ComboBox dropdown styling -->
     <Style Selector="ComboBoxItem">
         <Setter Property="Background" Value="#1E1E1E"/>

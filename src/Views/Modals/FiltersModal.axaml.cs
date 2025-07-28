@@ -2556,7 +2556,7 @@ public partial class FiltersModalContent : UserControl
     {
         _itemConfigs[e.Config.ItemKey] = e.Config;
         _configPopup!.IsOpen = false;
-        Oracle.Helpers.DebugLogger.Log($"Item config updated: {e.Config.ItemKey}");
+        Oracle.Helpers.DebugLogger.LogError($"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}");
     }
     
     private void OnItemDeleteRequested(object? sender, EventArgs e)
@@ -3018,17 +3018,20 @@ public partial class FiltersModalContent : UserControl
                 var itemKey = $"{parts[0]}:{parts[1]}";
                 var itemConfig = _itemConfigs.GetValueOrDefault(itemKey);
                 
-                config.filter_config.Needs.Add(new FilterItem
+                var filterItem = new FilterItem
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
                     SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = itemConfig?.Edition ?? "NoEdition",
-                    IncludeShopStream = itemConfig?.Sources?.Contains("Shop") ?? true,
-                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("Booster Packs") ?? true,
-                    IncludeSkipTags = itemConfig?.Sources?.Contains("Tags") ?? true
-                });
+                    Edition = itemConfig?.Edition ?? "none",
+                    IncludeShopStream = itemConfig?.Sources?.Contains("shop") ?? true,
+                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("booster") ?? true,
+                    IncludeSkipTags = itemConfig?.Sources?.Contains("tag") ?? true
+                };
+                
+                Oracle.Helpers.DebugLogger.LogError($"[NEED] Key: {itemKey}, Type: {filterItem.Type}, Value: {filterItem.Value}, Edition: {filterItem.Edition}");
+                config.filter_config.Needs.Add(filterItem);
             }
         }
         
@@ -3041,17 +3044,20 @@ public partial class FiltersModalContent : UserControl
                 var itemKey = $"{parts[0]}:{parts[1]}";
                 var itemConfig = _itemConfigs.GetValueOrDefault(itemKey);
                 
-                config.filter_config.Wants.Add(new FilterItem
+                var filterItem = new FilterItem
                 {
                     Type = MapCategoryToType(parts[0]),
                     Value = parts[1],
                     SearchAntes = itemConfig?.SearchAntes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Score = 1,
-                    Edition = itemConfig?.Edition ?? "NoEdition",
-                    IncludeShopStream = itemConfig?.Sources?.Contains("Shop") ?? true,
-                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("Booster Packs") ?? true,
-                    IncludeSkipTags = itemConfig?.Sources?.Contains("Tags") ?? true
-                });
+                    Edition = itemConfig?.Edition ?? "none",
+                    IncludeShopStream = itemConfig?.Sources?.Contains("shop") ?? true,
+                    IncludeBoosterPacks = itemConfig?.Sources?.Contains("booster") ?? true,
+                    IncludeSkipTags = itemConfig?.Sources?.Contains("tag") ?? true
+                };
+                
+                Oracle.Helpers.DebugLogger.LogError($"[WANT] Key: {itemKey}, Type: {filterItem.Type}, Value: {filterItem.Value}, Edition: {filterItem.Edition}");
+                config.filter_config.Wants.Add(filterItem);
             }
         }
         
@@ -3088,7 +3094,7 @@ public partial class FiltersModalContent : UserControl
         return category switch
         {
             "Jokers" => "Joker",
-            "SoulJokers" => "SoulJoker",  // Soul/Legendary jokers for Ouija
+            "SoulJokers" => "Joker",  // Soul jokers are still type "Joker" in the filter
             "Tarots" => "Tarot",
             "Spectrals" => "Spectral",
             "Vouchers" => "Voucher",

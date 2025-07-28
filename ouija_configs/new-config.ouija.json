@@ -11,7 +11,7 @@
     "Needs": [
       {
         "Type": "SoulJoker",
-        "Value": "Perkeo",
+        "Value": "Triboulet",
         "SearchAntes": [
           1,
           2,
@@ -23,11 +23,14 @@
           8
         ],
         "Score": 1,
-        "Edition": "NoEdition"
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
       },
       {
         "Type": "Joker",
-        "Value": "SmearedJoker",
+        "Value": "FourFingers",
         "SearchAntes": [
           1,
           2,
@@ -39,11 +42,14 @@
           8
         ],
         "Score": 1,
-        "Edition": "NoEdition"
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
       },
       {
-        "Type": "Voucher",
-        "Value": "Telescope",
+        "Type": "Joker",
+        "Value": "TurtleBean",
         "SearchAntes": [
           1,
           2,
@@ -55,75 +61,70 @@
           8
         ],
         "Score": 1,
-        "Edition": "NoEdition"
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "SockAndBuskin",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "Bloodstone",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "OopsAll6s",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
       }
     ],
-    "Wants": [
-      {
-        "Type": "Joker",
-        "Value": "Blueprint",
-        "SearchAntes": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8
-        ],
-        "Score": 1,
-        "Edition": "NoEdition"
-      },
-      {
-        "Type": "Joker",
-        "Value": "Brainstorm",
-        "SearchAntes": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8
-        ],
-        "Score": 1,
-        "Edition": "NoEdition"
-      },
-      {
-        "Type": "Joker",
-        "Value": "BurntJoker",
-        "SearchAntes": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8
-        ],
-        "Score": 1,
-        "Edition": "NoEdition"
-      },
-      {
-        "Type": "Voucher",
-        "Value": "Observatory",
-        "SearchAntes": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8
-        ],
-        "Score": 1,
-        "Edition": "NoEdition"
-      }
-    ],
+    "Wants": [],
     "ScoreNaturalNegatives": false,
     "ScoreDesiredNegatives": false
   }

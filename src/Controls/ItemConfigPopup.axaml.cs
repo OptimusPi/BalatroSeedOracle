@@ -279,7 +279,7 @@ namespace Oracle.Controls
             if (this.FindControl<RadioButton>("EditionHolo")?.IsChecked == true) return "holographic";
             if (this.FindControl<RadioButton>("EditionPoly")?.IsChecked == true) return "polychrome";
             if (this.FindControl<RadioButton>("EditionNegative")?.IsChecked == true) return "negative";
-            return "normal";
+            return "none";
         }
         
         private List<string> GetSelectedSources()
@@ -309,7 +309,7 @@ namespace Oracle.Controls
     {
         public string ItemKey { get; set; } = "";
         public List<int>? SearchAntes { get; set; }
-        public string Edition { get; set; } = "normal";
+        public string Edition { get; set; } = "none";
         public List<string> Sources { get; set; } = new();
     }
 }

@@ -139,6 +139,28 @@
         <Setter Property="FontSize" Value="14" />
     </Style>
     
+    <!-- ALL NumericUpDowns get dark theme -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Height" Value="32" />
+    </Style>
+    <Style Selector="NumericUpDown:focus">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="NumericUpDown:pointerover">
+        <Setter Property="Background" Value="#2e2e2e" />
+        <Setter Property="BorderBrush" Value="#666666" />
+    </Style>
+    
     <!-- ALL ListBoxes get dark theme -->
     <Style Selector="ListBox">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
