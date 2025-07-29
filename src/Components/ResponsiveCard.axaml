@@ -46,6 +46,19 @@
             
             <!-- Main card container with layered images -->
             <Grid Grid.Row="0" Margin="6" Name="ImageContainer">
+                <!-- Gold background for legendary jokers -->
+                <Border Name="LegendaryBackground" 
+                        IsVisible="False"
+                        CornerRadius="4">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                            <GradientStop Color="#FFD700" Offset="0" />
+                            <GradientStop Color="#FFA500" Offset="0.5" />
+                            <GradientStop Color="#FFD700" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                
                 <!-- Base card image -->
                 <Image Name="CardImage" />
                 

@@ -57,11 +57,12 @@ public class MotelySearchService : IDisposable
                 Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Loaded config: \r\n{configAsJson}\r\n");
             }
             
-            // Count needs and wants
-            var needs = _currentConfig.Needs?.Length ?? 0;
-            var wants = _currentConfig.Wants?.Length ?? 0;
+            // Count clauses
+            var must = _currentConfig.Must?.Count ?? 0;
+            var should = _currentConfig.Should?.Count ?? 0;
+            var mustNot = _currentConfig.MustNot?.Count ?? 0;
             
-            return (true, $"Loaded config with {needs} needs, {wants} wants");
+            return (true, $"Loaded config with {must} must, {should} should, {mustNot} mustNot clauses");
         }
         catch (Exception ex)
         {
@@ -174,24 +175,31 @@ public class MotelySearchService : IDisposable
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Min Score: {criteria.MinScore}");
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Max Seeds: {criteria.MaxSeeds}");
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Thread Count: {criteria.ThreadCount}");
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Needs: {_currentConfig?.Needs?.Length ?? 0}");
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Wants: {_currentConfig?.Wants?.Length ?? 0}");
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Must: {_currentConfig?.Must?.Count ?? 0}");
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Should: {_currentConfig?.Should?.Count ?? 0}");
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"MustNot: {_currentConfig?.MustNot?.Count ?? 0}");
             
-            if (_currentConfig?.Needs != null)
+            if (_currentConfig?.Must != null)
             {
-                foreach (var need in _currentConfig.Needs)
+                foreach (var must in _currentConfig.Must)
                 {
-                    var antes = need.SearchAntes ?? Array.Empty<int>();
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Need: Type={need.Type}, Value={need.Value ?? "any"}, SearchAntes=[{string.Join(",", antes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, SearchAntes=[{string.Join(",", must.SearchAntes)}]");
                 }
             }
             
-            if (_currentConfig?.Wants != null)
+            if (_currentConfig?.Should != null)
             {
-                foreach (var want in _currentConfig.Wants)
+                foreach (var should in _currentConfig.Should)
                 {
-                    var antes = want.SearchAntes ?? Array.Empty<int>();
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Want: Type={want.Type}, Value={want.Value ?? "any"}, Score={want.Score}, SearchAntes=[{string.Join(",", antes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, SearchAntes=[{string.Join(",", should.SearchAntes)}]");
+                }
+            }
+            
+            if (_currentConfig?.MustNot != null)
+            {
+                foreach (var mustNot in _currentConfig.MustNot)
+                {
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, SearchAntes=[{string.Join(",", mustNot.SearchAntes)}]");
                 }
             }
 
@@ -200,7 +208,8 @@ public class MotelySearchService : IDisposable
             var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(filterDesc)
                 .WithThreadCount(criteria.ThreadCount)
                 .WithBatchCharacterCount(batchSize)
-                .WithStartBatchIndex(0);
+                .WithStartBatchIndex(0)
+                .WithSequentialSearch();
 
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}");
             
@@ -470,16 +479,16 @@ public class MotelySearchService : IDisposable
     {
         var details = new List<string>();
         
-        // Add want scores if available
-        if (result.ScoreWants != null && config.Wants != null)
+        // Add should scores if available
+        if (result.ScoreWants != null && config.Should != null)
         {
-            for (int i = 0; i < config.Wants.Length && i < result.ScoreWants.Length; i++)
+            for (int i = 0; i < config.Should.Count && i < result.ScoreWants.Length; i++)
             {
                 var score = result.ScoreWants[i];
                 if (score > 0)
                 {
-                    var want = config.Wants[i];
-                    var name = !string.IsNullOrEmpty(want.Value) ? want.Value : want.Type;
+                    var should = config.Should[i];
+                    var name = !string.IsNullOrEmpty(should.Value) ? should.Value : should.Type;
                     details.Add($"{name}={score}");
                 }
             }

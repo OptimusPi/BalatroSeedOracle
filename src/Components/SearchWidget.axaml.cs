@@ -288,9 +288,12 @@ namespace Oracle.Components
                 var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
                 
                 var threadCount = (int)(threadsUpDown?.Value ?? 4);
-                var minScore = (int)(scoreMinUpDown?.Value ?? 0);
+                var minScore = (int)(scoreMinUpDown?.Value ?? 1);
                 var batchSize = (int)(batchSizeUpDown?.Value ?? 4);
                 var debug = debugCheckBox?.IsChecked ?? false;
+                
+                // Set debug logging based on checkbox
+                Oracle.Helpers.DebugLogger.SetDebugEnabled(debug);
                 
                 // Update button to stop mode
                 var cookButton = this.FindControl<Button>("CookButton");
@@ -318,11 +321,12 @@ namespace Oracle.Components
                 {
                     ConfigPath = _configPath,
                     ThreadCount = threadCount,
-                    MaxSeeds = 10000000,
+                    MaxSeeds = long.MaxValue, // Search all seeds
                     MinScore = minScore,
                     BatchSize = batchSize,
                     Deck = _searchParams.Deck,
-                    Stake = _searchParams.Stake
+                    Stake = _searchParams.Stake,
+                    EnableDebugOutput = debug
                 };
                 
                 // Start search

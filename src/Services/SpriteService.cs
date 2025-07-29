@@ -23,11 +23,13 @@ public class SpriteService
     private Dictionary<string, SpritePosition> tarotPositions = null!;
     private Dictionary<string, SpritePosition> spectralPositions = null!;
     private Dictionary<string, SpritePosition> voucherPositions = null!;
+    private Dictionary<string, SpritePosition> uiAssetPositions = null!;
     private Bitmap? jokerSheet;
     private Bitmap? tagSheet;
     private Bitmap? tarotSheet;
     private Bitmap? spectralSheet;
     private Bitmap? voucherSheet;
+    private Bitmap? uiAssetsSheet;
 
     private SpriteService()
     {
@@ -54,12 +56,16 @@ public class SpriteService
             // Load voucher positions from json
             voucherPositions = LoadSpritePositions("avares://Oracle/Assets/Vouchers/vouchers.json");
 
+            // Load UI asset positions from json
+            uiAssetPositions = LoadSpritePositions("avares://Oracle/Assets/Other/ui_assets.json");
+
             // Load spritesheets
             jokerSheet = LoadBitmap("avares://Oracle/Assets/Jokers/Jokers.png");
             tagSheet = LoadBitmap("avares://Oracle/Assets/Tags/tags.png");
             tarotSheet = LoadBitmap("avares://Oracle/Assets/Tarots/Tarots.png");
             voucherSheet = LoadBitmap("avares://Oracle/Assets/Vouchers/Vouchers.png");
             spectralSheet = tarotSheet;
+            uiAssetsSheet = LoadBitmap("avares://Oracle/Assets/Other/ui_assets.png");
         }
         catch (Exception ex)
         {
@@ -70,6 +76,7 @@ public class SpriteService
             tarotPositions ??= new Dictionary<string, SpritePosition>();
             spectralPositions ??= new Dictionary<string, SpritePosition>();
             voucherPositions ??= new Dictionary<string, SpritePosition>();
+            uiAssetPositions ??= new Dictionary<string, SpritePosition>();
             
             // Bitmaps will remain null if loading failed
         }
@@ -257,149 +264,61 @@ public class SpriteService
         return null;
     }
     
-    /// <summary>
-    /// Get normalized variations of a name to handle mismatches between Motely enums and sprite JSON
-    /// </summary>
-    private List<string> GetNormalizedNames(string name)
+    private Bitmap? editionsSheet;
+    
+    public IImage? GetEditionImage(string edition)
     {
-        var variations = new List<string>();
-        
-        // Known specific mappings
-        var specificMappings = new Dictionary<string, string[]>
+        try
         {
-            // Jokers
-            { "OopsAll6s", new[] { "Oops_All_6s", "OopsAll6s" } },
-            { "Cloud9", new[] { "Cloud_9", "Cloud9" } },
-            { "EightBall", new[] { "_8Ball", "8Ball", "EightBall", "8ball" } },
-            { "MrBones", new[] { "Mr_Bones", "MrBones" } },
-            { "ToTheMoon", new[] { "To_the_Moon", "ToTheMoon" } },
-            { "MidasMask", new[] { "Midas_Mask", "MidasMask" } },
-            { "GiftCard", new[] { "Gift_Card", "GiftCard" } },
-            { "TurtleBean", new[] { "Turtle_Bean", "TurtleBean" } },
-            { "ReservedParking", new[] { "Reserved_Parking", "ReservedParking" } },
-            { "MailInRebate", new[] { "Mail_In_Rebate", "MailInRebate" } },
-            { "FortuneTeller", new[] { "Fortune_Teller", "FortuneTeller" } },
-            { "LuckyCat", new[] { "Lucky_Cat", "LuckyCat" } },
-            { "BaseballCard", new[] { "Baseball_Card", "BaseballCard" } },
-            { "DietCola", new[] { "Diet_Cola", "DietCola" } },
-            { "TradingCard", new[] { "Trading_Card", "TradingCard" } },
-            { "FlashCard", new[] { "Flash_Card", "FlashCard" } },
-            { "SparesTrousers", new[] { "Spare_Trousers", "SpareTrousers" } },
-            { "AncientJoker", new[] { "Ancient_Joker", "AncientJoker" } },
-            { "WalkieTalkie", new[] { "Walkie_Talkie", "WalkieTalkie" } },
-            { "SmileyFace", new[] { "Smiley_Face", "SmileyFace" } },
-            { "GoldenTicket", new[] { "Golden_Ticket", "GoldenTicket" } },
-            { "SockandBuskin", new[] { "Sock_and_Buskin", "SockandBuskin" } },
-            { "SmearedJoker", new[] { "Smeared_Joker", "SmearedJoker" } },
-            { "HangingChad", new[] { "Hanging_Chad", "HangingChad" } },
-            { "RoughGem", new[] { "Rough_Gem", "RoughGem" } },
-            { "OnyxAgate", new[] { "Onyx_Agate", "OnyxAgate" } },
-            { "GlassJoker", new[] { "Glass_Joker", "GlassJoker" } },
-            { "FlowerPot", new[] { "Flower_Pot", "FlowerPot" } },
-            { "WeeJoker", new[] { "Wee_Joker", "WeeJoker" } },
-            { "MerryAndy", new[] { "Merry_Andy", "MerryAndy" } },
-            { "TheIdol", new[] { "The_Idol", "TheIdol" } },
-            { "SeeingDouble", new[] { "Seeing_Double", "SeeingDouble" } },
-            { "HittheRoad", new[] { "Hit_the_Road", "HittheRoad" } },
-            { "TheDuo", new[] { "The_Duo", "TheDuo" } },
-            { "TheTrio", new[] { "The_Trio", "TheTrio" } },
-            { "TheFamily", new[] { "The_Family", "TheFamily" } },
-            { "TheOrder", new[] { "The_Order", "TheOrder" } },
-            { "TheTribe", new[] { "The_Tribe", "TheTribe" } },
-            { "InvisibleJoker", new[] { "Invisible_Joker", "InvisibleJoker" } },
-            { "ShoottheMoon", new[] { "Shoot_the_Moon", "ShoottheMoon" } },
-            { "DriversLicense", new[] { "Drivers_License", "DriversLicense" } },
-            { "BurntJoker", new[] { "Burnt_Joker", "BurntJoker" } },
-            
-            // Spectrals
-            { "DejaVu", new[] { "Deja_Vu", "DejaVu", "dejavu" } },
-            { "Soul", new[] { "thesoul", "Soul", "The Soul", "The_Soul", "TheSoul" } },
-            { "BlackHole", new[] { "blackhole", "Black Hole", "Black_Hole" } },
-            
-            // Tags - no underscores in JSON, all use PascalCase
-            
-            // Vouchers
-            { "Grabber", new[] { "grabber", "Grabber" } },
-            { "Palette", new[] { "palette", "Palette" } },
-            { "Glut", new[] { "rerollglut", "RerollGlut", "Reroll_Glut" } },
-            { "RerollGlut", new[] { "rerollglut", "RerollGlut" } },
-            { "ClearanceSale", new[] { "Clearance_Sale", "ClearanceSale" } },
-            { "CrystalBall", new[] { "Crystal_Ball", "CrystalBall" } },
-            { "TarotMerchant", new[] { "Tarot_Merchant", "TarotMerchant" } },
-            { "PlanetMerchant", new[] { "Planet_Merchant", "PlanetMerchant" } },
-            { "SeedMoney", new[] { "Seed_Money", "SeedMoney" } },
-            { "MagicTrick", new[] { "Magic_Trick", "MagicTrick" } },
-            { "DirectorsCut", new[] { "Directors_Cut", "DirectorsCut" } },
-            { "PaintBrush", new[] { "Paint_Brush", "PaintBrush" } },
-            { "OverstockPlus", new[] { "Overstock_Plus", "OverstockPlus" } },
-            { "GlowUp", new[] { "Glow_Up", "GlowUp" } },
-            { "OmenGlobe", new[] { "Omen_Globe", "OmenGlobe" } },
-            { "NachoTong", new[] { "Nacho_Tong", "NachoTong" } },
-            { "TarotTycoon", new[] { "Tarot_Tycoon", "TarotTycoon", "tarotycoon" } },
-            { "Tarot Tycoon", new[] { "tarotycoon", "Tarot Tycoon", "TarotTycoon" } },
-            { "PlanetTycoon", new[] { "Planet_Tycoon", "PlanetTycoon" } },
-            { "MoneyTree", new[] { "Money_Tree", "MoneyTree" } }
-        };
-        
-        if (specificMappings.TryGetValue(name, out var mappings))
-        {
-            variations.AddRange(mappings);
-        }
-        
-        // Generic transformations
-        // Try with underscores between words (for multi-word names)
-        var withUnderscores = System.Text.RegularExpressions.Regex.Replace(
-            name, 
-            @"(?<!^)(?=[A-Z])", 
-            "_"
-        );
-        if (withUnderscores != name)
-            variations.Add(withUnderscores);
-        
-        // Try prefixing numbers with underscore
-        if (char.IsDigit(name[0]))
-        {
-            variations.Add("_" + name);
-        }
-        
-        return variations;
-    }
-
-    /// <summary>
-    /// Debug method to check what sprites are available
-    /// </summary>
-    public void DebugListSprites()
-    {
-        DebugLogger.Log("SpriteService", $"Loaded {jokerPositions.Count} jokers: {string.Join(", ", jokerPositions.Keys.Take(10))}...");
-            DebugLogger.Log("SpriteService", $"Loaded {tagPositions.Count} tags: {string.Join(", ", tagPositions.Keys.Take(10))}...");
-            DebugLogger.Log("SpriteService", $"Loaded {tarotPositions.Count} tarots: {string.Join(", ", tarotPositions.Keys.Take(10))}...");
-            DebugLogger.Log("SpriteService", $"Loaded {spectralPositions.Count} spectrals: {string.Join(", ", spectralPositions.Keys.Take(10))}...");
-            DebugLogger.Log("SpriteService", $"Loaded {voucherPositions.Count} vouchers: {string.Join(", ", voucherPositions.Keys.Take(10))}...");
-    }
-
-    /// <summary>
-    /// Check if a sprite exists for the given name and type
-    /// </summary>
-    public bool SpriteExists(string name, string? type = null)
-    {
-        if (string.IsNullOrEmpty(name))
-            return false;
-
-        if (!string.IsNullOrEmpty(type))
-        {
-            var positions = type.ToLower() switch
+            // Lazy load the editions sheet
+            if (editionsSheet == null)
             {
-                "joker" or "jokers" => jokerPositions,
-                "tag" or "tags" => tagPositions,
-                "tarot" or "tarots" => tarotPositions,
-                "spectral" or "spectrals" => spectralPositions,
-                "voucher" or "vouchers" => voucherPositions,
-                _ => []
+                var editionsUri = "avares://Oracle/Assets/Jokers/Editions.png";
+                editionsSheet = LoadBitmap(editionsUri);
+                if (editionsSheet != null)
+                {
+                    DebugLogger.Log("SpriteService", "Loaded editions sprite sheet");
+                }
+                else
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to load editions sprite sheet");
+                    return null;
+                }
+            }
+            
+            // Each edition is 71x94 pixels (355 width / 5 editions = 71)
+            int spriteWidth = 71;
+            int spriteHeight = 94;
+            
+            // Map edition names to positions (0-4)
+            int position = edition.ToLower() switch
+            {
+                "none" or "normal" => 0,
+                "foil" => 1,
+                "holographic" or "holo" => 2,
+                "polychrome" or "poly" => 3,
+                "negative" or "neg" => 4,  // Position 4 is Negative (not debuffed/red X)
+                _ => 0
             };
-
-            return positions.ContainsKey(name);
+            
+            int x = position * spriteWidth;
+            
+            if (x + spriteWidth <= editionsSheet.PixelSize.Width && spriteHeight <= editionsSheet.PixelSize.Height)
+            {
+                return new CroppedBitmap(editionsSheet, new PixelRect(x, 0, spriteWidth, spriteHeight));
+            }
         }
-        return false;
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SpriteService", $"Failed to get edition image: {ex.Message}");
+        }
+        
+        return null;
+    }
+    
+    public IImage? GetUIAssetImage(string name, int spriteWidth = 18, int spriteHeight = 18)
+    {
+        return GetSpriteImage(name, uiAssetPositions, uiAssetsSheet, spriteWidth, spriteHeight, "ui_asset");
     }
 }
 

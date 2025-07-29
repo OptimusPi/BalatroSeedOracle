@@ -24,14 +24,20 @@
         
         <!-- NEEDS Zone Specific Styling -->
         <Style Selector="Border.needs-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#FE5F55" />
-            <Setter Property="BoxShadow" Value="0 0 15 #FE5F5580" />
+            <Setter Property="BorderBrush" Value="#ff4c40" />
+            <Setter Property="BoxShadow" Value="0 0 15 #ff4c4080" />
         </Style>
         
         <!-- WANTS Zone Specific Styling -->
         <Style Selector="Border.wants-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#009dff" />
-            <Setter Property="BoxShadow" Value="0 0 15 #009dff80" />
+            <Setter Property="BorderBrush" Value="#0093ff" />
+            <Setter Property="BoxShadow" Value="0 0 15 #0093ff80" />
+        </Style>
+        
+        <!-- MUST NOT Zone Specific Styling -->
+        <Style Selector="Border.mustnot-zone.drag-over">
+            <Setter Property="BorderBrush" Value="#525db0" />
+            <Setter Property="BoxShadow" Value="0 0 15 #525db080" />
         </Style>
         
         <!-- Draggable Item Styling -->
@@ -76,7 +82,7 @@
         
         <!-- Dropped Item Hover -->
         <Style Selector="Border.dropped-item:pointerover">
-            <Setter Property="BorderBrush" Value="#FE5F55" />
+            <Setter Property="BorderBrush" Value="#ff4c40" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         
@@ -97,7 +103,7 @@
             <Setter Property="BorderBrush" Value="#555555" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="SelectionBrush" Value="#0078d4" />
+            <Setter Property="SelectionBrush" Value="#4A90E2" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
             <Setter Property="IsHitTestVisible" Value="True" />
             <Setter Property="Focusable" Value="True" />
@@ -169,7 +175,7 @@
         <!-- Force TextPresenter visibility -->
         <Style Selector="TextBox /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="SelectionBrush" Value="#0078d4" />
+            <Setter Property="SelectionBrush" Value="#4A90E2" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
         </Style>
         
@@ -178,15 +184,6 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
         
-        <!-- Clear Buttons Styling -->
-        <Style Selector="Button#ClearNeedsButton:pointerover, Button#ClearWantsButton:pointerover">
-            <Setter Property="Background" Value="#CC0000" /> <!-- Darker red -->
-        </Style>
-        
-        <Style Selector="Button#ClearNeedsButton:pressed, Button#ClearWantsButton:pressed">
-            <Setter Property="Background" Value="#CC0000" />
-            <Setter Property="RenderTransform" Value="translateY(3px)" />
-        </Style>
         
         <!-- Mode Toggle Buttons -->
         <Style Selector="Border.mode-active">
@@ -278,61 +275,8 @@
                     
                     <!-- Modal Title (removed - StandardModal already shows it) -->
                     
-                    <!-- Top Header Row - 3 Column Layout -->
-                    <Grid Grid.Row="1" Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Column A: Name + Description horizontally -->
-                        <StackPanel Grid.Column="0" VerticalAlignment="Top" Orientation="Horizontal" Spacing="8">
-                            <TextBox Name="ConfigNameBox" 
-                                     Text="CustomFilterName" 
-                                     FontSize="12" FontWeight="Bold"
-                                     Background="#333333" 
-                                     BorderThickness="1" 
-                                     BorderBrush="#555555"
-                                     Foreground="#eac058"
-                                     Padding="6,3"
-                                     CornerRadius="4"
-                                     Width="150"
-                                     Height="28"
-                                     VerticalContentAlignment="Center" />
-                            <TextBox Name="ConfigDescriptionBox" 
-                                     Text="description, a config for stuff" 
-                                     FontSize="11"
-                                     Background="#333333" 
-                                     BorderThickness="1" 
-                                     BorderBrush="#555555"
-                                     Foreground="#CCCCCC"
-                                     Padding="6,3"
-                                     CornerRadius="4"
-                                     Width="200"
-                                     Height="28"
-                                     VerticalContentAlignment="Center" />
-                        </StackPanel>
-                        
-                        <!-- Column B: Action Buttons -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="3">
-                            <Button Name="LoadButton" Content="Load" Classes="btn-orange" MinWidth="80" MinHeight="40" FontSize="16" />
-                            <Button Name="SaveButton" Content="Save" Classes="btn-blue" MinWidth="80" MinHeight="40" FontSize="16" />
-                            <Button Name="SearchButton" Content="Search" Classes="btn-green" MinWidth="80" MinHeight="40" FontSize="16" />
-                            <Button Name="ClearAllButton" Content="Clear" Classes="btn-red" MinWidth="80" MinHeight="40" FontSize="16" />
-                        </StackPanel>
-
-                        <!-- Column C: Simple Mode Toggle -->
-                        <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="json?" FontSize="14" VerticalAlignment="Center" Foreground="#CCCCCC"/>
-                            <ToggleSwitch Name="ModeToggle" 
-                                         IsChecked="False"
-                                         OnContent="" 
-                                         OffContent=""
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
+                    <!-- Top Header Row - Empty now since controls moved to sidebar -->
+                    <Grid Grid.Row="1" Height="0" />
                     
                     <!-- Main Content Area -->
                     <Grid Grid.Row="2" Name="MainContentGrid">
@@ -346,6 +290,42 @@
                         <Border Grid.Column="0" Background="#2a2a2a" CornerRadius="8" Padding="8">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Spacing="2">
+                                    <!-- Filter Config Section -->
+                                    <Border Background="#1f1f1f" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="CONFIG" FontSize="10" FontWeight="Bold" Foreground="#888888" HorizontalAlignment="Center"/>
+                                            
+                                            <TextBox Name="ConfigNameBox" 
+                                                     Watermark="Filter name" 
+                                                     FontSize="11"
+                                                     Background="#333333" 
+                                                     BorderThickness="1" 
+                                                     BorderBrush="#555555"
+                                                     Foreground="#eac058"
+                                                     Padding="4,2"
+                                                     CornerRadius="4"
+                                                     Height="24"
+                                                     SelectionBrush="#4A90E2"
+                                                     SelectionForegroundBrush="White"
+                                                     CaretBrush="#eac058" />
+                                            
+                                            <Grid ColumnDefinitions="*,4,*">
+                                                <Button Grid.Column="0" Name="LoadButton" Content="Load" FontSize="11" Height="24" />
+                                                <Button Grid.Column="2" Name="SaveButton" Content="Save" FontSize="11" Height="24" />
+                                            </Grid>
+                                            
+                                            <Border Height="1" Background="#444444" Margin="0,2" />
+                                            
+                                            <CheckBox Name="ModeToggle" FontSize="10" HorizontalAlignment="Center">
+                                                <TextBlock Text="JSON Editor" Foreground="#CCCCCC"/>
+                                            </CheckBox>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Separator -->
+                                    <Border Height="1" Background="#444444" Margin="4,0,4,8" />
+                                    
+                                    <!-- Category Tabs -->
                                     <Button Name="FavoritesTab" Content="Favorites" Classes="nav-button" />
                                     <Button Name="SoulJokersTab" Content="Soul Joker" Classes="nav-button active" />
                                     <Button Name="RareJokersTab" Content="Rare Joker" Classes="nav-button" />
@@ -402,34 +382,41 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="6" />
                                     <RowDefinition Height="*" />
+                                    <RowDefinition Height="6" />
+                                    <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 
-                                <!-- NEEDS Panel -->
-                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="#2a2a2a" CornerRadius="8" Padding="8">
+                                <!-- MUST (NEEDS) Panel -->
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="#2a2a2a" CornerRadius="8" Padding="6">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         
-                                        <Border Grid.Row="0" Background="#FE5F55" CornerRadius="4" Padding="6,3" Margin="0,0,0,6" HorizontalAlignment="Center">
-                                            <Grid>
-                                                <TextBlock Text="NEEDS (Required)" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0" />
-                                                <Button Name="ClearNeedsButton" Content="✕" Classes="btn-red"
-                                                        Width="18" Height="18" 
-                                                        FontWeight="Bold"
-                                                        FontSize="9"
-                                                        Padding="0"
-                                                        CornerRadius="2"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Center"
-                                                        Cursor="Hand" />
-                                            </Grid>
-                                        </Border>
+                                        <!-- Compact header with inline trash button -->
+                                        <Grid Grid.Row="0" Margin="0,0,0,2">
+                                            <TextBlock Text="MUST" FontWeight="Bold" FontSize="12" Foreground="#ff4c40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Button Name="ClearNeedsButton" Content="🗑️" 
+                                                    Background="Transparent" 
+                                                    FontSize="10"
+                                                    Padding="2"
+                                                    HorizontalAlignment="Right"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    ToolTip.Tip="Clear all"
+                                                    Opacity="0.6">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                        </Grid>
                                         
-                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="100">
+                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="60">
                                             <Grid>
-                                                <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" FontSize="12" />
+                                                <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items" TextAlignment="Center" IsVisible="True" FontSize="11" />
                                                 <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
                                                     <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
                                                 </ScrollViewer>
@@ -438,34 +425,78 @@
                                     </Grid>
                                 </Border>
                                 
-                                <!-- WANTS Panel -->
-                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="#2a2a2a" CornerRadius="8" Padding="8">
+                                <!-- SHOULD (WANTS) Panel -->
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="#2a2a2a" CornerRadius="8" Padding="6">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         
-                                        <Border Grid.Row="0" Background="#009dff" CornerRadius="4" Padding="6,3" Margin="0,0,0,6" HorizontalAlignment="Center">
-                                            <Grid>
-                                                <TextBlock Text="WANTS (Bonus Points)" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0" />
-                                                <Button Name="ClearWantsButton" Content="✕" Classes="btn-red"
-                                                        Width="18" Height="18" 
-                                                        FontWeight="Bold"
-                                                        FontSize="9"
-                                                        Padding="0"
-                                                        CornerRadius="2"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Center"
-                                                        Cursor="Hand" />
-                                            </Grid>
-                                        </Border>
+                                        <!-- Compact header with inline trash button -->
+                                        <Grid Grid.Row="0" Margin="0,0,0,2">
+                                            <TextBlock Text="SHOULD" FontWeight="Bold" FontSize="12" Foreground="#0093ff" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Button Name="ClearWantsButton" Content="🗑️" 
+                                                    Background="Transparent" 
+                                                    FontSize="10"
+                                                    Padding="2"
+                                                    HorizontalAlignment="Right"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    ToolTip.Tip="Clear all"
+                                                    Opacity="0.6">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                        </Grid>
                                         
-                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="50">
+                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="60">
                                             <Grid>
-                                                <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop scoring items here" TextAlignment="Center" IsVisible="True" FontSize="12" />
+                                                <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop scoring items" TextAlignment="Center" IsVisible="True" FontSize="11" />
                                                 <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
                                                     <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                
+                                <!-- MUST NOT Panel -->
+                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="#2a2a2a" CornerRadius="8" Padding="6">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Compact header with inline trash button -->
+                                        <Grid Grid.Row="0" Margin="0,0,0,2">
+                                            <TextBlock Text="MUST-NOT" FontWeight="Bold" FontSize="12" Foreground="#525db0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Button Name="ClearMustNotButton" Content="🗑️" 
+                                                    Background="Transparent" 
+                                                    FontSize="10"
+                                                    Padding="2"
+                                                    HorizontalAlignment="Right"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    ToolTip.Tip="Clear all"
+                                                    Opacity="0.6">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                        </Grid>
+                                        
+                                        <Border Grid.Row="1" Background="#374244" CornerRadius="6" Padding="4" MinHeight="60">
+                                            <Grid>
+                                                <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop excluded items" TextAlignment="Center" IsVisible="True" FontSize="11" />
+                                                <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                    <WrapPanel Name="MustNotPanel" Orientation="Horizontal" />
                                                 </ScrollViewer>
                                             </Grid>
                                         </Border>

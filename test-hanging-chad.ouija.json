@@ -1,0 +1,29 @@
+{
+  "must": [
+    {
+      "item": {
+        "type": "joker",
+        "name": "HangingChad"
+      },
+      "antes": [1],
+      "sources": ["shop", "packs", "tags"]
+    }
+  ],
+  "should": [
+    {
+      "item": {
+        "type": "joker",
+        "name": "SmileyFace"
+      },
+      "antes": [1,2],
+      "sources": ["shop", "packs", "tags"]
+    }
+  ],
+  "mustNot": [],
+  "filter": {
+    "deck": "Red",
+    "stake": "White",
+    "maxAnte": 8
+  },
+  "minimumScore": 0
+}

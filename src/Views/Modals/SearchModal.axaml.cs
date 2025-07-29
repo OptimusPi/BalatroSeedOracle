@@ -23,6 +23,8 @@ public partial class SearchModal : UserControl
     private readonly ObservableCollection<SearchResultViewModel> _results = new();
     private string? _configPath;
     private bool _isRunning;
+    private TextBox? _consoleOutput;
+    private Border? _emptyState;
     
 
     public SearchModal()
@@ -31,6 +33,10 @@ public partial class SearchModal : UserControl
         
         // Get service from DI using helper
         _searchService = ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService();
+        
+        // Find console output control
+        _consoleOutput = this.FindControl<TextBox>("ConsoleOutput");
+        _emptyState = this.FindControl<Border>("EmptyState");
         
         // Set default values for controls
         InitializeDefaults();
@@ -86,10 +92,14 @@ public partial class SearchModal : UserControl
         {
             configPathTextBox.Text = Path.GetFileName(configPath);
             if (startButton != null) startButton.IsEnabled = true;
+            
+            // Update console
+            AppendConsoleOutput($"> Config loaded from widget: {Path.GetFileName(configPath)}");
+            AppendConsoleOutput($"> Ready to start cooking!");
         }
         else
         {
-            if (configPathTextBox != null) configPathTextBox.Text = "No config loaded";
+            if (configPathTextBox != null) configPathTextBox.Text = "No filter loaded";
             if (startButton != null) startButton.IsEnabled = false;
         }
     }
@@ -110,20 +120,17 @@ public partial class SearchModal : UserControl
         }
         
         var resultsGrid = this.FindControl<DataGrid>("ResultsGrid");
-        var noResultsText = this.FindControl<TextBlock>("NoResultsText");
         var summaryText = this.FindControl<TextBlock>("SummaryText");
         var exportButton = this.FindControl<Button>("ExportButton");
         
-        if (resultsGrid != null)
+        // Toggle empty state vs results grid
+        if (_emptyState != null && resultsGrid != null)
         {
             resultsGrid.ItemsSource = _results;
             resultsGrid.IsVisible = _results.Count > 0;
+            _emptyState.IsVisible = _results.Count == 0;
         }
         
-        if (noResultsText != null)
-        {
-            noResultsText.IsVisible = _results.Count == 0;
-        }
         
         if (summaryText != null)
         {
@@ -195,6 +202,67 @@ public partial class SearchModal : UserControl
     {
         _results.Clear();
         SetResults(new List<SearchResult>());
+    }
+    
+    private void AppendConsoleOutput(string text)
+    {
+        if (_consoleOutput != null)
+        {
+            _consoleOutput.Text += text + Environment.NewLine;
+            
+            // Auto-scroll to bottom
+            _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
+        }
+    }
+    
+    private async void OnLoadConfigClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+            
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Select Filter Config",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("Ouija Config Files")
+                    {
+                        Patterns = new[] { "*.ouija.json", "*.json" }
+                    }
+                }
+            });
+            
+            if (files.Count > 0)
+            {
+                var file = files[0];
+                _configPath = file.Path.LocalPath;
+                
+                // Update UI
+                var configPathTextBox = this.FindControl<TextBlock>("ConfigPathTextBox");
+                if (configPathTextBox != null)
+                {
+                    configPathTextBox.Text = Path.GetFileName(_configPath);
+                }
+                
+                // Enable start button
+                var startButton = this.FindControl<Button>("StartButton");
+                if (startButton != null)
+                {
+                    startButton.IsEnabled = true;
+                }
+                
+                // Update console
+                AppendConsoleOutput($"> Loaded config: {Path.GetFileName(_configPath)}");
+                AppendConsoleOutput($"> Ready to start cooking!");
+            }
+        }
+        catch (Exception ex)
+        {
+            AppendConsoleOutput($"> Error loading config: {ex.Message}");
+        }
     }
     
     private async void OnExportClick(object? sender, RoutedEventArgs e)
@@ -280,8 +348,12 @@ public partial class SearchModal : UserControl
                 ConfigPath = _configPath,
                 ThreadCount = (int)(threadsUpDown?.Value ?? 4),
                 BatchSize = (int)(batchSizeUpDown?.Value ?? 4),
-                MinScore = (int)(cutoffUpDown?.Value ?? 0)
+                MinScore = (int)(cutoffUpDown?.Value ?? 0),
+                EnableDebugOutput = debugCheckBox?.IsChecked ?? false
             };
+            
+            // Set debug logging based on checkbox
+            Oracle.Helpers.DebugLogger.SetDebugEnabled(criteria.EnableDebugOutput);
             
             // Calculate MaxSeeds from batch range if specified
             var startBatch = (int)(startBatchUpDown?.Value ?? 0);

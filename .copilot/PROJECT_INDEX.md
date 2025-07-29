@@ -16,7 +16,6 @@
 - **Usage:**  
   - `GetJokerImage`, `GetVoucherImage`, etc. return cropped images for UI
   - `GetItemImage` auto-detects type
-  - `SpriteExists` checks for sprite presence
 - **Extensibility:** Add new assets by updating JSON and PNG files; no code changes needed
 
 ### Asset Structure
@@ -33,13 +32,13 @@
 
 ### How to Use Motely in AvaloniaUI
 - **Integration:**  
-  - Use Motely’s SIMD search in your view models or services to process large datasets (e.g., searching for voucher combos).
+  - Use Motelyï¿½s SIMD search in your view models or services to process large datasets (e.g., searching for voucher combos).
   - Display results in AvaloniaUI controls (DataGrid, ListBox, etc.).
 - **Example Pattern:**
   1. Use Motely to filter/search your data (e.g., seeds, vouchers).
   2. Bind results to AvaloniaUI controls for instant, interactive feedback.
 - **Benefits:**  
   - Lightning-fast search, even for large datasets.
-  - Smooth UI experience—no blocking or lag.
+  - Smooth UI experienceï¿½no blocking or lag.
 
 ### Example (Pseudo-code)

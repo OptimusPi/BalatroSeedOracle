@@ -21,7 +21,13 @@
       "Bash(git checkout:*)",
       "Bash(git restore:*)",
       "Bash(cp:*)",
-      "Bash(dotnet --version)"
+      "Bash(dotnet --version)",
+      "Bash(git fetch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(dotnet:*)",
+      "Bash(csc:*)",
+      "Bash(mono:*)",
+      "Bash(identify:*)"
     ],
     "deny": []
   }

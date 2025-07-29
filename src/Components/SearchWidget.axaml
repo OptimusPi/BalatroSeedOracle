@@ -5,26 +5,26 @@
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/> <!-- Use Balatro dock grey -->
-            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="BoxShadow" Value="0 8 24 #1e2e32"/> <!-- Use Balatro shadow -->
+            <Setter Property="BoxShadow" Value="0 6 20 #1e2e32"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderThickness" Value="3"/> <!-- Thicker border -->
         </Style>
         
         <Style Selector="Border.widget-header">
             <Setter Property="Background" Value="{StaticResource DockGrey}"/>
-            <Setter Property="CornerRadius" Value="16,16,0,0"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="CornerRadius" Value="12,12,0,0"/>
+            <Setter Property="Height" Value="32"/> <!-- Smaller header -->
         </Style>
         
         <Style Selector="TextBox.terminal">
             <Setter Property="Background" Value="#0a0a0a"/>
             <Setter Property="Foreground" Value="#00ff66"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="9"/> <!-- Smaller font -->
+            <Setter Property="Padding" Value="6"/> <!-- Less padding -->
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="SelectionBrush" Value="#00ff6644"/>
         </Style>
@@ -32,7 +32,7 @@
         <Style Selector="Border.config-section">
             <Setter Property="Background" Value="{StaticResource Black}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="0,1,0,1"/>
+            <Setter Property="BorderThickness" Value="0,2,0,2"/> <!-- Thicker borders -->
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Height" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
@@ -139,8 +139,8 @@
         <!-- Expanded State -->
         <Border Name="ExpandedView" 
                 Classes="widget-container"
-                Width="450" 
-                MaxHeight="700"
+                Width="380" 
+                MaxHeight="500"
                 IsVisible="True">
             <Grid RowDefinitions="Auto,*">
                 <!-- Header -->
@@ -149,10 +149,10 @@
                         <TextBlock Grid.Column="0"
                                    Text="🔍 Motely Search" 
                                    FontWeight="Bold"
-                                   FontSize="16"
+                                   FontSize="13" 
                                    VerticalAlignment="Center"
                                    Foreground="#ffffff"
-                                   Margin="16,0,0,0"/>
+                                   Margin="12,0,0,0"/>
                         
                         <TextBlock Grid.Column="1"
                                    Name="StatusText"
@@ -251,45 +251,45 @@
                                 </Grid>
                                 
                                 <StackPanel Name="ConfigContent" 
-                                            Margin="16,8,16,16"
-                                            Spacing="12">
+                                            Margin="12,6,12,12"
+                                            Spacing="8">
                                     
                                     <!-- Search Parameters Grid -->
-                                    <Grid ColumnDefinitions="*,16,*" 
-                                          RowDefinitions="Auto,8,Auto,8,Auto,8,Auto">
+                                    <Grid ColumnDefinitions="*,12,*" 
+                                          RowDefinitions="Auto,6,Auto,6,Auto,6,Auto">
                                         <TextBlock Grid.Row="0" Grid.Column="0" 
                                                    Text="Threads:" 
                                                    VerticalAlignment="Center" 
-                                                   FontSize="12"
+                                                   FontSize="10"
                                                    Foreground="#aaaaaa"/>
                                         <NumericUpDown Grid.Row="0" Grid.Column="2" 
                                                        Name="ThreadsUpDown" 
                                                        Value="4" Minimum="1" Maximum="32" 
-                                                       FontSize="11" Height="28"
+                                                       FontSize="10" Height="22"
                                                        Background="#0a0a0a"
                                                        BorderBrush="#3a4b4f"/>
                                         
                                         <TextBlock Grid.Row="2" Grid.Column="0" 
                                                    Text="Batch Size:" 
                                                    VerticalAlignment="Center" 
-                                                   FontSize="12"
+                                                   FontSize="10"
                                                    Foreground="#aaaaaa"/>
                                         <NumericUpDown Grid.Row="2" Grid.Column="2" 
                                                        Name="BatchSizeUpDown" 
                                                        Value="4" Minimum="2" Maximum="4" 
-                                                       FontSize="11" Height="28"
+                                                       FontSize="10" Height="22"
                                                        Background="#0a0a0a"
                                                        BorderBrush="#3a4b4f"/>
                                         
                                         <TextBlock Grid.Row="4" Grid.Column="0" 
                                                    Text="Min Score:" 
                                                    VerticalAlignment="Center" 
-                                                   FontSize="12"
+                                                   FontSize="10"
                                                    Foreground="#aaaaaa"/>
                                         <NumericUpDown Grid.Row="4" Grid.Column="2" 
                                                        Name="ScoreMinUpDown" 
                                                        Value="0" Minimum="0" Maximum="1000" 
-                                                       FontSize="11" Height="28"
+                                                       FontSize="10" Height="22"
                                                        Background="#0a0a0a"
                                                        BorderBrush="#3a4b4f"/>
                                     </Grid>
@@ -305,13 +305,13 @@
                         
                         <!-- Console Section -->
                         <Border Background="#0a0a0a" 
-                                MinHeight="300"
-                                MaxHeight="400">
+                                MinHeight="200"
+                                MaxHeight="250">
                             <Grid RowDefinitions="Auto,*,Auto">
                                 <!-- Console Header -->
                                 <Border Grid.Row="0" 
                                         Background="{StaticResource Black}" 
-                                        Height="32">
+                                        Height="24">
                                     <Grid ColumnDefinitions="Auto,*,Auto">
                                         <TextBlock Grid.Column="0"
                                                    Text="Console Output" 
@@ -343,7 +343,7 @@
                                               Name="TerminalScrollViewer" 
                                               VerticalScrollBarVisibility="Auto"
                                               HorizontalScrollBarVisibility="Auto"
-                                              MaxHeight="300">
+                                              MaxHeight="180">
                                     <TextBox Name="TerminalOutput" 
                                              Classes="terminal" 
                                              IsReadOnly="True"
@@ -354,12 +354,12 @@
                                 <!-- Cook Button -->
                                 <Border Grid.Row="2" 
                                         Background="{StaticResource Black}"
-                                        Padding="12">
+                                        Padding="8">
                                     <Button Name="CookButton" 
                                             Content="🔥 Let Jimbo Cook!" 
                                             Classes="btn-green widget-btn"
-                                            Height="48" 
-                                            FontSize="18" 
+                                            Height="36" 
+                                            FontSize="14" 
                                             FontWeight="Bold"
                                             HorizontalAlignment="Stretch"
                                             Click="OnCookClick" 

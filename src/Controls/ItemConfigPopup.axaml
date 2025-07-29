@@ -46,21 +46,88 @@
             <Setter Property="TextElement.Foreground" Value="#4BC292"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+        
+        <!-- Edition radio button styles -->
+        <Style Selector="RadioButton.edition-radio">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Default edition border style -->
+        <Style Selector="RadioButton.edition-radio Border.edition-border">
+            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+        </Style>
+        
+        <!-- Checked states for each edition -->
+        <Style Selector="RadioButton.edition-radio:checked Border.edition-border">
+            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="#eac058"/>
+        </Style>
+        
+        <Style Selector="RadioButton.edition-foil:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="#4A90E2"/>
+        </Style>
+        
+        <Style Selector="RadioButton.edition-holo:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="#FF6B6B"/>
+        </Style>
+        
+        <Style Selector="RadioButton.edition-poly:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="#B19CD9"/>
+        </Style>
+        
+        <Style Selector="RadioButton.edition-negative:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="#525db0"/>
+        </Style>
+        
+        <!-- Source checkbox styles -->
+        <Style Selector="CheckBox.source-checkbox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Default source border style -->
+        <Style Selector="CheckBox.source-checkbox Border.source-border">
+            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+        </Style>
+        
+        <!-- Checked state for source checkboxes -->
+        <Style Selector="CheckBox.source-checkbox:checked Border.source-border">
+            <Setter Property="Background" Value="#2a3a2a"/>
+            <Setter Property="BorderBrush" Value="#4BC292"/>
+        </Style>
     </UserControl.Styles>
     
-    <Border MinWidth="320" 
-            Background="#2A2B32"
-            BorderBrush="#eac058"
-            BorderThickness="2"
-            CornerRadius="12"
-            Padding="20"
-            BoxShadow="0 8 24 #00000099">
+    <Border MinWidth="280" 
+            MaxWidth="320"
+            Background="#1a1a1a"
+            BorderBrush="#3a3a3a"
+            BorderThickness="3"
+            CornerRadius="8"
+            Padding="16"
+            BoxShadow="0 4 16 #000000CC">
         
-        <StackPanel Spacing="12">
-            <!-- Item Name Header -->
-            <TextBlock Name="ItemNameText" 
-                       Classes="header"
-                       HorizontalAlignment="Center"/>
+        <StackPanel Spacing="10">
+            <!-- Item Name Header with Balatro styling -->
+            <Border Background="#2a2a2a" 
+                    CornerRadius="4" 
+                    Padding="8,6"
+                    Margin="-16,-16,-16,0">
+                <TextBlock Name="ItemNameText" 
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#eac058"
+                           HorizontalAlignment="Center"/>
+            </Border>
             
             <!-- Ante Selection -->
             <Grid>
@@ -70,60 +137,98 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                    <TextBlock Text="Antes:" Classes="label" VerticalAlignment="Center"/>
-                    <TextBlock Name="AnteRangeText" Text="1-8" VerticalAlignment="Center" FontSize="16" Foreground="#FEB95F" FontWeight="Bold"/>
-                </StackPanel>
+                <Border Grid.Row="0" 
+                        Background="#262626" 
+                        CornerRadius="4" 
+                        Padding="8,4"
+                        HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="ANTES" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12" 
+                                   Foreground="#888888" 
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Name="AnteRangeText" 
+                                   Text="1-8" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14" 
+                                   Foreground="#eac058" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
                 
-                <!-- Range Slider -->
-                <Grid Grid.Row="1" Margin="0,10">
+                <!-- Range Slider with Balatro styling -->
+                <Grid Grid.Row="1" Margin="0,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="25"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="25"/>
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Grid.Column="0" Name="MinAnteText" Text="1" HorizontalAlignment="Center" FontSize="12" Foreground="#CCCCCC"/>
+                    <TextBlock Grid.Column="0" Name="MinAnteText" Text="1" 
+                               HorizontalAlignment="Center" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="#666666"/>
                     
-                    <Grid Grid.Column="1" Height="40">
+                    <Grid Grid.Column="1" Height="32">
                         <!-- Track -->
-                        <Border Height="8" VerticalAlignment="Center" Background="#1A1A1A" CornerRadius="4" Margin="10,0"/>
+                        <Border Height="6" VerticalAlignment="Center" Background="#0a0a0a" CornerRadius="3" Margin="8,0"/>
                         <!-- Active range -->
-                        <Border Name="ActiveRange" Height="8" VerticalAlignment="Center" Background="#FEB95F" CornerRadius="4" 
-                                HorizontalAlignment="Left" Margin="10,0,0,0" Width="260"/>
+                        <Border Name="ActiveRange" Height="6" VerticalAlignment="Center" Background="#eac058" CornerRadius="3" 
+                                HorizontalAlignment="Left" Margin="8,0,0,0" Width="220"/>
                         
-                        <!-- Min thumb -->
-                        <Thumb Name="MinThumb" Width="24" Height="24" 
+                        <!-- Min thumb with Balatro style -->
+                        <Thumb Name="MinThumb" Width="20" Height="20" 
                                HorizontalAlignment="Left" 
                                Margin="-2,0,0,0"
                                DragDelta="OnMinThumbDragDelta">
                             <Thumb.Template>
                                 <ControlTemplate>
-                                    <Grid>
-                                        <Ellipse Fill="#2A2B32" Width="26" Height="26" Margin="-1"/>
-                                        <Ellipse Fill="#FEB95F" Stroke="#FFFFFF" StrokeThickness="2"/>
-                                    </Grid>
+                                    <Border Background="#2a2a2a" 
+                                            BorderBrush="#eac058" 
+                                            BorderThickness="2" 
+                                            CornerRadius="10" 
+                                            Width="20" 
+                                            Height="20">
+                                        <Border Background="#eac058" 
+                                                CornerRadius="6" 
+                                                Width="12" 
+                                                Height="12"/>
+                                    </Border>
                                 </ControlTemplate>
                             </Thumb.Template>
                         </Thumb>
                         
-                        <!-- Max thumb -->
-                        <Thumb Name="MaxThumb" Width="24" Height="24" 
+                        <!-- Max thumb with Balatro style -->
+                        <Thumb Name="MaxThumb" Width="20" Height="20" 
                                HorizontalAlignment="Left" 
-                               Margin="258,0,0,0"
+                               Margin="218,0,0,0"
                                DragDelta="OnMaxThumbDragDelta">
                             <Thumb.Template>
                                 <ControlTemplate>
-                                    <Grid>
-                                        <Ellipse Fill="#2A2B32" Width="26" Height="26" Margin="-1"/>
-                                        <Ellipse Fill="#FEB95F" Stroke="#FFFFFF" StrokeThickness="2"/>
-                                    </Grid>
+                                    <Border Background="#2a2a2a" 
+                                            BorderBrush="#eac058" 
+                                            BorderThickness="2" 
+                                            CornerRadius="10" 
+                                            Width="20" 
+                                            Height="20">
+                                        <Border Background="#eac058" 
+                                                CornerRadius="6" 
+                                                Width="12" 
+                                                Height="12"/>
+                                    </Border>
                                 </ControlTemplate>
                             </Thumb.Template>
                         </Thumb>
                     </Grid>
                     
-                    <TextBlock Grid.Column="2" Name="MaxAnteText" Text="8" HorizontalAlignment="Center" FontSize="12" Foreground="#CCCCCC"/>
+                    <TextBlock Grid.Column="2" Name="MaxAnteText" Text="8" 
+                               HorizontalAlignment="Center" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="#666666"/>
                 </Grid>
                 
                 <!-- Tick marks -->
@@ -150,56 +255,238 @@
                 </Grid>
             </Grid>
             
-            <!-- Edition Selection -->
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Text="Edition:" Classes="label" Margin="0,0,0,5"/>
-                <WrapPanel Grid.Row="1">
-                    <RadioButton Name="EditionNormal" Content="Normal" IsChecked="True" GroupName="ItemEdition" Margin="0,0,10,0"/>
-                    <RadioButton Name="EditionFoil" Content="Foil" GroupName="ItemEdition" Margin="0,0,10,0"/>
-                    <RadioButton Name="EditionHolo" Content="Holo" GroupName="ItemEdition" Margin="0,0,10,0"/>
-                    <RadioButton Name="EditionPoly" Content="Poly" GroupName="ItemEdition" Margin="0,0,10,0"/>
-                    <RadioButton Name="EditionNegative" Content="Negative" GroupName="ItemEdition"/>
-                </WrapPanel>
-            </Grid>
+            <!-- Edition Selection with Balatro toggle style -->
+            <Border Background="#262626" CornerRadius="4" Padding="10,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="EDITION" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="#888888" 
+                               Margin="0,0,0,6"/>
+                    
+                    <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
+                        <RadioButton Name="EditionNormal" IsChecked="True" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio">
+                            <Border Classes="edition-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="6,4"
+                                    Cursor="Hand">
+                                <Image Name="EditionNormalImage" 
+                                       Width="35" 
+                                       Height="47" 
+                                       Stretch="Uniform" 
+                                       HorizontalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil">
+                            <Border Classes="edition-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="6,4"
+                                    Cursor="Hand">
+                                <Image Name="EditionFoilImage" 
+                                       Width="35" 
+                                       Height="47" 
+                                       Stretch="Uniform" 
+                                       HorizontalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo">
+                            <Border Classes="edition-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="6,4"
+                                    Cursor="Hand">
+                                <Image Name="EditionHoloImage" 
+                                       Width="35" 
+                                       Height="47" 
+                                       Stretch="Uniform" 
+                                       HorizontalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly">
+                            <Border Classes="edition-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="6,4"
+                                    Cursor="Hand">
+                                <Image Name="EditionPolyImage" 
+                                       Width="35" 
+                                       Height="47" 
+                                       Stretch="Uniform" 
+                                       HorizontalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative">
+                            <Border Classes="edition-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="6,4"
+                                    Cursor="Hand">
+                                <Image Name="EditionNegativeImage" 
+                                       Width="35" 
+                                       Height="47" 
+                                       Stretch="Uniform" 
+                                       HorizontalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                    </UniformGrid>
+                </Grid>
+            </Border>
             
-            <!-- Sources Selection -->
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Text="Sources:" Classes="label" Margin="0,0,0,5"/>
-                <StackPanel Grid.Row="1" Spacing="5">
-                    <CheckBox Name="SourceTags" Content="Tags" IsChecked="True"/>
-                    <CheckBox Name="SourcePacks" Content="Booster Packs" IsChecked="True"/>
-                    <CheckBox Name="SourceShop" Content="Shop" IsChecked="True"/>
-                </StackPanel>
-            </Grid>
+            <!-- Sources Selection with Balatro style -->
+            <Border Background="#262626" CornerRadius="4" Padding="10,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="SOURCES" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="#888888" 
+                               Margin="0,0,0,6"/>
+                    
+                    <StackPanel Grid.Row="1" Spacing="4">
+                        <CheckBox Name="SourceTags" IsChecked="True" Classes="source-checkbox">
+                            <Border Classes="source-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,4"
+                                    Cursor="Hand">
+                                <TextBlock Text="From Tags" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           Foreground="#CCCCCC"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="SourcePacks" IsChecked="True" Classes="source-checkbox">
+                            <Border Classes="source-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,4"
+                                    Cursor="Hand">
+                                <TextBlock Text="From Packs" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           Foreground="#CCCCCC"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="SourceShop" IsChecked="True" Classes="source-checkbox">
+                            <Border Classes="source-border" 
+                                    Background="#1a1a1a" 
+                                    BorderBrush="#3a3a3a" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,4"
+                                    Cursor="Hand">
+                                <TextBlock Text="From Shop" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           Foreground="#CCCCCC"/>
+                            </Border>
+                        </CheckBox>
+                    </StackPanel>
+                </Grid>
+            </Border>
             
-            <!-- Buttons -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0">
-                <Button Name="ApplyButton" 
-                        Content="Apply" 
-                        Classes="oracle-btn button-color-green"
-                        Width="80"
-                        Click="OnApplyClick"/>
-                <Button Name="DeleteButton" 
-                        Content="Delete" 
-                        Classes="oracle-btn button-color-red"
-                        Width="80"
-                        Click="OnDeleteClick"/>
-                <Button Name="CancelButton" 
-                        Content="Cancel" 
-                        Classes="oracle-btn button-color-yellow-orange"
-                        Width="80"
-                        Click="OnCancelClick"/>
-            </StackPanel>
+            <!-- Buttons with Balatro style -->
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" Name="ApplyButton" 
+                        Click="OnApplyClick"
+                        Margin="0,0,4,0"
+                        Height="32"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="#2a4a2a" 
+                                    BorderBrush="#4BC292" 
+                                    BorderThickness="2" 
+                                    CornerRadius="4">
+                                <TextBlock Text="APPLY" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#4BC292" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                
+                <Button Grid.Column="1" Name="DeleteButton" 
+                        Click="OnDeleteClick"
+                        Margin="2,0"
+                        Height="32"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="#4a2a2a" 
+                                    BorderBrush="#FE5F55" 
+                                    BorderThickness="2" 
+                                    CornerRadius="4">
+                                <TextBlock Text="DELETE" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#FE5F55" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                
+                <Button Grid.Column="2" Name="CancelButton" 
+                        Click="OnCancelClick"
+                        Margin="4,0,0,0"
+                        Height="32"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="#3a3a2a" 
+                                    BorderBrush="#888888" 
+                                    BorderThickness="2" 
+                                    CornerRadius="4">
+                                <TextBlock Text="CANCEL" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#888888" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

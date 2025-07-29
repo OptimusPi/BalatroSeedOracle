@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Oracle.Services;
 
 namespace Oracle.Controls
 {
@@ -36,7 +37,48 @@ namespace Oracle.Controls
             Dispatcher.UIThread.Post(() => {
                 UpdateThumbPositions();
                 UpdateAnteRangeText();
+                LoadEditionImages();
             });
+        }
+        
+        private void LoadEditionImages()
+        {
+            var spriteService = SpriteService.Instance;
+            
+            // Load Normal edition image
+            var normalImage = this.Find<Image>("EditionNormalImage");
+            if (normalImage != null)
+            {
+                normalImage.Source = spriteService.GetEditionImage("normal");
+            }
+            
+            // Load Foil edition image
+            var foilImage = this.Find<Image>("EditionFoilImage");
+            if (foilImage != null)
+            {
+                foilImage.Source = spriteService.GetEditionImage("foil");
+            }
+            
+            // Load Holographic edition image
+            var holoImage = this.Find<Image>("EditionHoloImage");
+            if (holoImage != null)
+            {
+                holoImage.Source = spriteService.GetEditionImage("holographic");
+            }
+            
+            // Load Polychrome edition image
+            var polyImage = this.Find<Image>("EditionPolyImage");
+            if (polyImage != null)
+            {
+                polyImage.Source = spriteService.GetEditionImage("polychrome");
+            }
+            
+            // Load Negative edition image
+            var negativeImage = this.Find<Image>("EditionNegativeImage");
+            if (negativeImage != null)
+            {
+                negativeImage.Source = spriteService.GetEditionImage("negative");
+            }
         }
         
         public void SetItem(string itemKey, string itemName, ItemConfig? existingConfig = null)

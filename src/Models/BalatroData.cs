@@ -65,6 +65,13 @@ public static class BalatroData
 
     private static void InitializeJokers()
     {
+        // Add wildcard entries first
+        Jokers["anylegendary"] = "Any Legendary";
+        Jokers["anyrare"] = "Any Rare";
+        Jokers["anyuncommon"] = "Any Uncommon";
+        Jokers["anycommon"] = "Any Common";
+        Jokers["anyjoker"] = "Any Joker";
+        
         // Common Jokers
         foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
         {
@@ -100,6 +107,9 @@ public static class BalatroData
 
     private static void InitializeTarotCards()
     {
+        // Add wildcard entry first
+        TarotCards["anytarot"] = "Any Tarot";
+        
         foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
         {
             var name = tarot.ToString();
@@ -110,6 +120,9 @@ public static class BalatroData
 
     private static void InitializeSpectralCards()
     {
+        // Add wildcard entry first
+        SpectralCards["anyspectral"] = "Any Spectral";
+        
         foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
         {
             var name = spectral.ToString();
@@ -130,6 +143,11 @@ public static class BalatroData
 
     private static void InitializeTags()
     {
+        // Add wildcard entries first
+        Tags["anytag"] = "Any Tag";
+        Tags["anysmall"] = "Any Small";
+        Tags["anybig"] = "Any Big";
+        
         foreach (var tag in Enum.GetValues<MotelyTag>())
         {
             var name = tag.ToString();
@@ -509,27 +527,25 @@ public static class BalatroData
         }
 
         // Initialize JokersByRarity
-        JokersByRarity["Common"] = new List<string>();
+        JokersByRarity["Common"] = new List<string> { "anycommon", "anyjoker" };
         foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
         {
             JokersByRarity["Common"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Uncommon"] = new List<string>();
+        JokersByRarity["Uncommon"] = new List<string> { "anyuncommon" };
         foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
         {
             JokersByRarity["Uncommon"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Rare"] = new List<string>();
+        JokersByRarity["Rare"] = new List<string> { "anyrare" };
         foreach (var joker in Enum.GetValues<MotelyJokerRare>())
         {
             JokersByRarity["Rare"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Legendary"] = new List<string>();
-        // Add "any" option for soul joker searches
-        JokersByRarity["Legendary"].Add("any");
+        JokersByRarity["Legendary"] = new List<string> { "anylegendary" };
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
             JokersByRarity["Legendary"].Add(joker.ToString().ToLower());

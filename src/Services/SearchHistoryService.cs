@@ -18,8 +18,7 @@ namespace Oracle.Services
 
         public SearchHistoryService()
         {
-            // Initialize with default path
-            SetFilterName("default");
+            // Don't create any database until a search actually starts
         }
 
         public void SetFilterName(string filterPath)

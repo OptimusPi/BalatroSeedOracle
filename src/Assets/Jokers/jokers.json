@@ -1048,5 +1048,40 @@
             "x": 7,
             "y": 8
         }
+    },
+    {
+        "name": "anylegendary",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
+    },
+    {
+        "name": "anyrare",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
+    },
+    {
+        "name": "anyuncommon",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
+    },
+    {
+        "name": "anycommon",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
+    },
+    {
+        "name": "anyjoker",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
     }
 ]

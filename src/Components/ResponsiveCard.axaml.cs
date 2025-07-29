@@ -20,6 +20,7 @@ namespace Oracle.Components
         private Image _soulImage;
         private TextBlock _cardName;
         private Grid _imageContainer;
+        private Border _legendaryBackground;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
         
@@ -81,6 +82,7 @@ namespace Oracle.Components
             _soulImage = this.FindControl<Image>("SoulImage")!;
             _cardName = this.FindControl<TextBlock>("CardName")!;
             _imageContainer = this.FindControl<Grid>("ImageContainer")!;
+            _legendaryBackground = this.FindControl<Border>("LegendaryBackground")!;
             
             // Property change handlers
             this.PropertyChanged += OnPropertyChanged;
@@ -244,29 +246,40 @@ namespace Oracle.Components
                 if (BalatroData.LegendaryJokers.Contains(ItemName.ToLower()))
                 {
                     Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' IS a legendary joker!");
-                    // Load the soul sprite (one row below in the sprite sheet)
-                    var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
-                    if (soulImage != null)
+                    
+                    // Don't show gold background in item palette - it looks weird
+                    _legendaryBackground.IsVisible = false;
+                    
+                    // Check if this is one of the 5 with animated faces
+                    var animatedLegendaryJokers = new[] { "canio", "triboulet", "yorick", "chicot", "perkeo" };
+                    if (animatedLegendaryJokers.Contains(ItemName.ToLower()))
                     {
-                        Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Soul image loaded successfully for '{ItemName}'");
-                        _soulImage.Source = soulImage;
-                        _soulImage.IsVisible = true;
-                        StartSoulAnimation();
-                    }
-                    else
-                    {
-                        Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Failed to load soul image for '{ItemName}'");
+                        // Load the soul sprite (one row below in the sprite sheet)
+                        var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
+                        if (soulImage != null)
+                        {
+                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Soul image loaded successfully for '{ItemName}'");
+                            _soulImage.Source = soulImage;
+                            _soulImage.IsVisible = true;
+                            StartSoulAnimation();
+                        }
+                        else
+                        {
+                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Failed to load soul image for '{ItemName}'");
+                        }
                     }
                 }
                 else
                 {
                     Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' is NOT a legendary joker");
+                    _legendaryBackground.IsVisible = false;
                     _soulImage.IsVisible = false;
                     StopSoulAnimation();
                 }
             }
             else
             {
+                _legendaryBackground.IsVisible = false;
                 _soulImage.IsVisible = false;
                 StopSoulAnimation();
             }

@@ -16,6 +16,8 @@ public static class UIConstants
     public const int SpectralSpriteHeight = 95;
     public const int VoucherSpriteWidth = 71;
     public const int VoucherSpriteHeight = 95;
+    public const int UIAssetSpriteWidth = 18;
+    public const int UIAssetSpriteHeight = 18;
     
     // Colors
     public const string PrimaryBackground = "#374244";
