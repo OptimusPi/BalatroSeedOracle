@@ -27,7 +27,12 @@
       "Bash(dotnet:*)",
       "Bash(csc:*)",
       "Bash(mono:*)",
-      "Bash(identify:*)"
+      "Bash(identify:*)",
+      "Bash(timeout:*)",
+      "Bash(chmod:*)",
+      "Bash(/mnt/x/BalatroSeedOracle/test-search.sh:*)",
+      "Bash(/mnt/x/BalatroSeedOracle/external/Motely/bin/Debug/net9.0/Motely:*)",
+      "Bash(external/Motely/bin/Debug/net9.0/Motely:*)"
     ],
     "deny": []
   }

@@ -602,13 +602,13 @@ public partial class FiltersModalContent : UserControl
                 return;
             }
             
-            // Hide left sidebar
-            var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
-            if (leftSidebar != null)
-            {
-                leftSidebar.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden left sidebar");
-            }
+            // Don't hide left sidebar - we need the navigation tabs!
+            // var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
+            // if (leftSidebar != null)
+            // {
+            //     leftSidebar.IsVisible = false;
+            //     Oracle.Helpers.DebugLogger.Log("Hidden left sidebar");
+            // }
             
             // Hide the search bar
             var searchBox = this.FindControl<TextBox>("SearchBox");
@@ -688,10 +688,8 @@ public partial class FiltersModalContent : UserControl
             if (_selectedNeeds.Any() || _selectedWants.Any() || _selectedMustNot.Any())
             {
                 // Build JSON from current selections
-                // TODO: Fix this to use new OuijaConfig format
-                jsonContent = "{}";
-                //var config = BuildCompoundConfigFromSelections();
-                //jsonContent = SerializeConfigWithoutMustScores(config);
+                var config = BuildOuijaConfigFromSelections();
+                jsonContent = SerializeOuijaConfig(config);
                 Oracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
             }
             else
@@ -3059,10 +3057,8 @@ public partial class FiltersModalContent : UserControl
         try
         {
             // Create ouija config from selections - always use compound format
-            // TODO: Fix this to use new OuijaConfig format
-            var json = "{}";
-            //var compoundConfig = BuildCompoundConfigFromSelections();
-            //var json = SerializeConfigWithoutMustScores(compoundConfig);
+            var config = BuildOuijaConfigFromSelections();
+            var json = SerializeOuijaConfig(config);
             
             // Get top level visual
             var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
@@ -3215,7 +3211,7 @@ public partial class FiltersModalContent : UserControl
 
     private OuijaConfigV2 BuildCompoundConfigFromSelections()
     {
-        var config = new OuijaConfigV2
+        var config = new Motely.Filters.OuijaConfigV2
         {
             Filter = new OuijaConfigV2.FilterClause
             {
@@ -3457,6 +3453,247 @@ public partial class FiltersModalContent : UserControl
         return (null, itemConfig);
     }
     */
+    
+    private string SerializeOuijaConfig(Motely.Filters.OuijaConfig config)
+    {
+        // Manually build the JSON to ensure we get the exact nested format
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+        
+        writer.WriteStartObject();
+        
+        // Write must array
+        writer.WriteStartArray("must");
+        foreach (var item in config.Must)
+        {
+            WriteFilterItem(writer, item);
+        }
+        writer.WriteEndArray();
+        
+        // Write should array
+        writer.WriteStartArray("should");
+        foreach (var item in config.Should)
+        {
+            WriteFilterItem(writer, item, includeScore: true);
+        }
+        writer.WriteEndArray();
+        
+        // Write mustNot array
+        writer.WriteStartArray("mustNot");
+        foreach (var item in config.MustNot)
+        {
+            WriteFilterItem(writer, item);
+        }
+        writer.WriteEndArray();
+        
+        // Write deck, stake, maxSearchAnte, minimumScore
+        writer.WriteString("deck", config.Deck);
+        writer.WriteString("stake", config.Stake);
+        writer.WriteNumber("maxSearchAnte", config.MaxSearchAnte);
+        writer.WriteNumber("minimumScore", config.MinimumScore);
+        
+        writer.WriteEndObject();
+        writer.Flush();
+        
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+    
+    private void WriteFilterItem(Utf8JsonWriter writer, Motely.Filters.OuijaConfig.FilterItem item, bool includeScore = false)
+    {
+        writer.WriteStartObject();
+        
+        // Write nested item object
+        if (item.Item != null)
+        {
+            writer.WriteStartObject("item");
+            writer.WriteString("type", item.Item.Type);
+            writer.WriteString("name", item.Item.Name);
+            if (!string.IsNullOrEmpty(item.Item.Edition))
+            {
+                writer.WriteString("edition", item.Item.Edition);
+            }
+            writer.WriteEndObject();
+        }
+        
+        // Write antes array
+        if (item.Antes != null && item.Antes.Length > 0)
+        {
+            writer.WriteStartArray("antes");
+            foreach (var ante in item.Antes)
+            {
+                writer.WriteNumberValue(ante);
+            }
+            writer.WriteEndArray();
+        }
+        
+        // Write sources array
+        if (item.Sources != null && item.Sources.Count > 0)
+        {
+            writer.WriteStartArray("sources");
+            foreach (var source in item.Sources)
+            {
+                writer.WriteStringValue(source);
+            }
+            writer.WriteEndArray();
+        }
+        
+        // Write score if requested (for should clauses)
+        if (includeScore && item.Score > 0)
+        {
+            writer.WriteNumber("score", item.Score);
+        }
+        
+        writer.WriteEndObject();
+    }
+    
+    private Motely.Filters.OuijaConfig BuildOuijaConfigFromSelections()
+    {
+        var config = new Motely.Filters.OuijaConfig
+        {
+            Deck = "Red", // Default deck - TODO: add deck selector from UI
+            Stake = "White", // Default stake - TODO: add stake selector from UI
+            MaxSearchAnte = 8,
+            MinimumScore = 0
+        };
+        
+        // Convert MUST items
+        foreach (var need in _selectedNeeds)
+        {
+            var parts = need.Split(':');
+            if (parts.Length == 2)
+            {
+                var category = parts[0];
+                var itemName = parts[1];
+                var itemConfig = _itemConfigs.ContainsKey(need) ? _itemConfigs[need] : new ItemConfig();
+                
+                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
+                if (filterItem != null)
+                {
+                    filterItem.Score = 0; // Must clauses don't contribute to score
+                    config.Must.Add(filterItem);
+                }
+            }
+        }
+        
+        // Convert SHOULD items
+        foreach (var want in _selectedWants)
+        {
+            var parts = want.Split(':');
+            if (parts.Length == 2)
+            {
+                var category = parts[0];
+                var itemName = parts[1];
+                var itemConfig = _itemConfigs.ContainsKey(want) ? _itemConfigs[want] : new ItemConfig();
+                
+                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
+                if (filterItem != null)
+                {
+                    filterItem.Score = 1; // Default score of 1
+                    config.Should.Add(filterItem);
+                }
+            }
+        }
+        
+        // Convert MUST NOT items
+        foreach (var mustNot in _selectedMustNot)
+        {
+            var parts = mustNot.Split(':');
+            if (parts.Length == 2)
+            {
+                var category = parts[0];
+                var itemName = parts[1];
+                var itemConfig = _itemConfigs.ContainsKey(mustNot) ? _itemConfigs[mustNot] : new ItemConfig();
+                
+                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
+                if (filterItem != null)
+                {
+                    filterItem.Score = 0; // MustNot clauses don't contribute to score
+                    config.MustNot.Add(filterItem);
+                }
+            }
+        }
+        
+        return config;
+    }
+    
+    private Motely.Filters.OuijaConfig.FilterItem? CreateFilterItemFromSelection(string category, string itemName, ItemConfig config)
+    {
+        var filterItem = new Motely.Filters.OuijaConfig.FilterItem
+        {
+            SearchAntes = config.SearchAntes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+            Sources = new List<string>()
+        };
+        
+        // Set sources
+        if (config.Sources == null || config.Sources.Count == 0)
+        {
+            filterItem.Sources = new List<string> { "shop", "packs", "tags" };
+        }
+        else
+        {
+            if (config.Sources.Contains("shop")) filterItem.Sources.Add("shop");
+            if (config.Sources.Contains("booster")) filterItem.Sources.Add("packs");
+            if (config.Sources.Contains("tag")) filterItem.Sources.Add("tags");
+        }
+        
+        // Handle category mappings (SoulJokers -> Joker mapping for Motely)
+        var normalizedCategory = category.ToLower();
+        if (normalizedCategory == "souljokers") normalizedCategory = "jokers";
+        
+        // Set item info using nested format
+        switch (normalizedCategory)
+        {
+            case "jokers":
+                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
+                {
+                    Type = "joker",
+                    Name = itemName,
+                    Edition = config.Edition?.ToString()
+                };
+                break;
+                
+            case "tarots":
+                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
+                {
+                    Type = "tarot",
+                    Name = itemName
+                };
+                break;
+                
+            case "spectrals":
+                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
+                {
+                    Type = "spectral",
+                    Name = itemName
+                };
+                break;
+                
+            case "vouchers":
+                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
+                {
+                    Type = "voucher",
+                    Name = itemName
+                };
+                break;
+                
+            case "tags":
+                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
+                {
+                    Type = "tag",
+                    Name = itemName
+                };
+                break;
+                
+            default:
+                return null;
+        }
+        
+        // Don't call Initialize() - we want to keep the nested format
+        // Set the antes array (instead of SearchAntes) for the nested format
+        filterItem.Antes = filterItem.SearchAntes;
+        
+        return filterItem;
+    }
     
     private string GetDefaultCompoundConfigJson()
     {
@@ -3700,10 +3937,8 @@ public partial class FiltersModalContent : UserControl
             if (!string.IsNullOrEmpty(_currentConfigPath))
             {
                 // Update the existing config file with current selections
-                // TODO: Fix this to use new OuijaConfig format  
-                var json = "{}";
-                //var config = BuildCompoundConfigFromSelections();
-                //var json = SerializeConfigWithoutMustScores(config);
+                var config = BuildOuijaConfigFromSelections();
+                var json = SerializeOuijaConfig(config);
                 await File.WriteAllTextAsync(_currentConfigPath, json);
                 configPath = _currentConfigPath;
             }

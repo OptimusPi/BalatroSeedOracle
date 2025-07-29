@@ -12,19 +12,6 @@ BalatroSeedOracle is a Balatro seed searching tool with a beautiful, Balatro-ins
 - **Beautiful UI**: Balatro-themed interface built with Avalonia
 - **High Performance**: Leverages Motely's vectorized search capabilities
 
-### Current TODOs
-1. **Maximize button for search widget**: Transform from standard modal to full search modal
-2. **Sortable data table**: Implement a nice sortable table for search results
-3. **DuckDB Integration**: Capture CSV results from Motely/OuijaJS and store in a DuckDB database (backed by .duckdb file)
-4. **Visual Builder - Complete JSON Support**: Add missing config options:
-   - **Ante selector**: Allow users to set the ante level
-   - **Sources**: Add UI for tags, booster packs, and shop item queue
-   - **Edition selector**: Add tab switcher for 5 editions:
-     - Normal
-     - Foil
-     - Holographic
-     - Polychrome
-     - Negative
 
 ## Common Development Commands
 
@@ -113,3 +100,4 @@ Game assets in `src/Assets/`:
 10. **MainWindow**: Added window chrome button customization - minimize/maximize buttons show blue (#009dff) on hover, close button shows red (#FE5F55) on hover
 11. **MainMenu**: Fixed button layout to match Balatro exactly - SEARCH (blue/large), FILTERS (orange/small), QUIT (red/small), RESULTS (green/large), FUN RUNS (purple/small)
 9. **UI Padding**: Reduced padding throughout the app - window height reduced from 720 to 700, button padding from 12,8 to 10,6, modal padding from 24 to 20
+12. **FiltersModal JSON Editor**: Fixed JSON editor to properly convert visual selections to the new OuijaConfig format used by Motely - editor now shows properly formatted JSON instead of "{}"
