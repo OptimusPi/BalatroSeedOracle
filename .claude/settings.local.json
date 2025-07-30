@@ -33,7 +33,8 @@
       "Bash(/mnt/x/BalatroSeedOracle/test-search.sh:*)",
       "Bash(/mnt/x/BalatroSeedOracle/external/Motely/bin/Debug/net9.0/Motely:*)",
       "Bash(external/Motely/bin/Debug/net9.0/Motely:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

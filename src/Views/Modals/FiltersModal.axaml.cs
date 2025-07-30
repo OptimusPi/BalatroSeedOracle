@@ -364,7 +364,7 @@ public partial class FiltersModalContent : UserControl
                     if (itemCategory != null)
                     {
                         var itemKey = $"{itemCategory}:{item}";
-                        _selectedWants.Remove(itemKey);
+                        // Add to needs (allow item in multiple lists)
                         _selectedNeeds.Add(itemKey);
                     }
                 }
@@ -408,7 +408,7 @@ public partial class FiltersModalContent : UserControl
                                 if (itemCategory != null)
                                 {
                                     var itemKey = $"{itemCategory}:{item}";
-                                    _selectedWants.Remove(itemKey);
+                                    // Add to needs (allow item in multiple lists)
                                     _selectedNeeds.Add(itemKey);
                                 }
                             }
@@ -422,8 +422,7 @@ public partial class FiltersModalContent : UserControl
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
                         var key = $"{storageCategory}:{itemName}";
                         
-                        // Move from wants to needs
-                        _selectedWants.Remove(key);
+                        // Add to needs (allow item in multiple lists)
                         _selectedNeeds.Add(key);
                         
                         Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to NEEDS");
@@ -463,7 +462,7 @@ public partial class FiltersModalContent : UserControl
                     if (itemCategory != null)
                     {
                         var itemKey = $"{itemCategory}:{item}";
-                        _selectedNeeds.Remove(itemKey);
+                        // Add to wants (allow item in multiple lists)
                         _selectedWants.Add(itemKey);
                     }
                 }
@@ -507,7 +506,7 @@ public partial class FiltersModalContent : UserControl
                                 if (itemCategory != null)
                                 {
                                     var itemKey = $"{itemCategory}:{item}";
-                                    _selectedNeeds.Remove(itemKey);
+                                    // Add to wants (allow item in multiple lists)
                                     _selectedWants.Add(itemKey);
                                 }
                             }
@@ -521,8 +520,7 @@ public partial class FiltersModalContent : UserControl
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
                         var key = $"{storageCategory}:{itemName}";
                         
-                        // Move from needs to wants
-                        _selectedNeeds.Remove(key);
+                        // Add to wants (allow item in multiple lists)
                         _selectedWants.Add(key);
                         
                         Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to WANTS");
@@ -3232,8 +3230,8 @@ public partial class FiltersModalContent : UserControl
                     var faceImage = new Image
                     {
                         Source = faceSource,
-                        Width = 64,
-                        Height = 64,
+                        Width = 71,  // Match the joker face size
+                        Height = 95, // Match the joker face size
                         Stretch = Stretch.Uniform,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
@@ -3244,12 +3242,27 @@ public partial class FiltersModalContent : UserControl
         }
         else if (imageSource != null)
         {
-            // Regular item - just show the image
+            // Regular item - adjust size based on category
+            double width = UIConstants.JokerSpriteWidth;
+            double height = UIConstants.JokerSpriteHeight;
+            
+            // Adjust for different item types
+            if (category == "Tags")
+            {
+                width = 27;
+                height = 27;
+            }
+            else if (category == "Bosses")
+            {
+                width = 34;
+                height = 34;
+            }
+            
             var image = new Image
             {
                 Source = imageSource,
-                Width = UIConstants.JokerSpriteWidth,
-                Height = UIConstants.JokerSpriteHeight,
+                Width = width,
+                Height = height,
                 Stretch = Stretch.Uniform,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
@@ -4415,8 +4428,7 @@ public partial class FiltersModalContent : UserControl
                     if (itemCategory != null)
                     {
                         var itemKey = $"{itemCategory}:{item}";
-                        _selectedNeeds.Remove(itemKey);
-                        _selectedWants.Remove(itemKey);
+                        // Add to must not (allow item in multiple lists)
                         _selectedMustNot.Add(itemKey);
                     }
                 }
@@ -4460,8 +4472,7 @@ public partial class FiltersModalContent : UserControl
                                 if (itemCategory != null)
                                 {
                                     var itemKey = $"{itemCategory}:{item}";
-                                    _selectedNeeds.Remove(itemKey);
-                                    _selectedWants.Remove(itemKey);
+                                    // Add to must not (allow item in multiple lists)
                                     _selectedMustNot.Add(itemKey);
                                 }
                             }
@@ -4475,9 +4486,7 @@ public partial class FiltersModalContent : UserControl
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
                         var key = $"{storageCategory}:{itemName}";
                         
-                        // Move from needs/wants to must not
-                        _selectedNeeds.Remove(key);
-                        _selectedWants.Remove(key);
+                        // Add to must not (allow item in multiple lists)
                         _selectedMustNot.Add(key);
                         
                         Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to MUST NOT");
@@ -4529,7 +4538,7 @@ public partial class FiltersModalContent : UserControl
         if (allItems.Count == 0) return;
         
         // Extract just the item names (after the "Category:" part)
-        var itemNames = allItems.Select(item => item.Split(':').LastOrDefault()?.Replace("_", ""))
+        var itemNames = allItems.Select(item => item.Split(':').LastOrDefault()?.Replace("_", "") ?? "")
                                 .Where(name => !string.IsNullOrEmpty(name))
                                 .Take(4) // Only use first 4 items
                                 .ToList();

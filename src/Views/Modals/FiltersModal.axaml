@@ -397,7 +397,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="15" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="400" />
                             </Grid.ColumnDefinitions>
                             
                             <!-- LEFT: Item Palette -->

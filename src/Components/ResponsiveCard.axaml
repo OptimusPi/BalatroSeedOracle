@@ -60,7 +60,10 @@
                 </Border>
                 
                 <!-- Base card image -->
-                <Image Name="CardImage" />
+                <Image Name="CardImage" 
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
                 
                 <!-- Soul/Face overlay for legendary jokers -->
                 <Image Name="SoulImage" 

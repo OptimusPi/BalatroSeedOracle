@@ -11,22 +11,14 @@ namespace Oracle.Services
     /// </summary>
     public class UserProfileService
     {
-        private const string PROFILE_FILENAME = "user-profile.json";
+        private const string PROFILE_FILENAME = "userprofile.json";
         private readonly string _profilePath;
         private UserProfile _currentProfile;
         
         public UserProfileService()
         {
-            // Store profile in user's local app data
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var oracleDir = Path.Combine(appDataPath, "BalatroSeedOracle");
-            
-            if (!Directory.Exists(oracleDir))
-            {
-                Directory.CreateDirectory(oracleDir);
-            }
-            
-            _profilePath = Path.Combine(oracleDir, PROFILE_FILENAME);
+            // Store profile in the current directory
+            _profilePath = Path.Combine(Directory.GetCurrentDirectory(), PROFILE_FILENAME);
             _currentProfile = LoadProfile();
         }
         

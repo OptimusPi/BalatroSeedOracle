@@ -166,6 +166,11 @@ namespace Oracle.Components
                     _imageContainer.Width = 27;
                     _imageContainer.Height = 27;
                     break;
+                case "Bosses":
+                    // Boss blinds are 34x34 sprites
+                    _imageContainer.Width = 34;
+                    _imageContainer.Height = 34;
+                    break;
                 default:
                     // Standard size for other items
                     _imageContainer.Width = 64;
