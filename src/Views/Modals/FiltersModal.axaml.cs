@@ -69,7 +69,7 @@ public partial class FiltersModalContent : UserControl
             ["Spectrals"] = BalatroData.SpectralCards.Keys.ToList(),
             ["Vouchers"] = BalatroData.Vouchers.Keys.ToList(),
             ["Tags"] = BalatroData.Tags.Keys.ToList(),
-            ["Bosses"] = new List<string>() // Will be populated with boss-related items
+            ["Bosses"] = BalatroData.BossBlinds.Keys.ToList()
         };
         
         SetupControls();
@@ -1976,6 +1976,7 @@ public partial class FiltersModalContent : UserControl
             else if (BalatroData.SpectralCards.ContainsKey(itemName)) actualCategory = "Spectrals";
             else if (BalatroData.Vouchers.ContainsKey(itemName)) actualCategory = "Vouchers";
             else if (BalatroData.Tags.ContainsKey(itemName)) actualCategory = "Tags";
+            else if (BalatroData.BossBlinds.ContainsKey(itemName)) actualCategory = "Bosses";
         }
         
         // Load appropriate image based on actual category
@@ -1986,6 +1987,7 @@ public partial class FiltersModalContent : UserControl
             "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
             "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
             "Tags" => SpriteService.Instance.GetTagImage(itemName),
+            "Bosses" => SpriteService.Instance.GetBossImage(itemName),
             _ => null
         };
         
