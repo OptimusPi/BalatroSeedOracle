@@ -1,0 +1,135 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="clr-namespace:Oracle.Components"
+             x:Class="Oracle.Views.Modals.AnalyzerModal">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Input Section -->
+        <Border Grid.Row="0" Background="#1a1a1a" Margin="5" CornerRadius="8" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Seed Input -->
+                <TextBlock Grid.Column="0" 
+                          Text="Seed:" 
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"
+                          FontSize="16"
+                          FontWeight="Bold"/>
+                
+                <TextBox Grid.Column="1" 
+                        Name="SeedInput"
+                        Text=""
+                        FontSize="16"
+                        MaxLength="8"
+                        Watermark="Enter 1-8 character seed..."
+                        VerticalAlignment="Center"
+                        Margin="0,0,10,0"/>
+                
+                <!-- Deck/Stake Selection -->
+                <ComboBox Grid.Column="2" 
+                         Name="DeckStakeCombo"
+                         SelectedIndex="0"
+                         MinWidth="150"
+                         Margin="0,0,10,0"
+                         VerticalAlignment="Center">
+                    <ComboBoxItem>Red Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Red Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Green Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Black Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Blue Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Purple Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Orange Stake</ComboBoxItem>
+                    <ComboBoxItem>Red Deck - Gold Stake</ComboBoxItem>
+                    <ComboBoxItem>Blue Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Yellow Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Green Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Black Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Magic Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Nebula Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Ghost Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Abandoned Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Checkered Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Zodiac Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Painted Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Anaglyph Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Plasma Deck - White Stake</ComboBoxItem>
+                    <ComboBoxItem>Erratic Deck - White Stake</ComboBoxItem>
+                </ComboBox>
+                
+                <!-- Analyze Button -->
+                <Button Grid.Column="3" 
+                       Name="AnalyzeButton"
+                       Content="ANALYZE"
+                       Click="OnAnalyzeClick"
+                       MinWidth="100"
+                       Background="#4BC292"
+                       Foreground="#FFFFFF"
+                       FontWeight="Bold"
+                       CornerRadius="6"
+                       Height="40"/>
+            </Grid>
+        </Border>
+        
+        <!-- Results Section - Visual Representation -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Name="ResultsPanel" Margin="10">
+                <!-- Placeholder text -->
+                <TextBlock Name="PlaceholderText"
+                          Text="Enter a seed and click ANALYZE to see shop contents, booster packs, and skip tags for each ante."
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Margin="20"
+                          Opacity="0.7"/>
+                
+                <!-- Ante results will be added here dynamically -->
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+    
+    <UserControl.Styles>
+        <!-- Ante Panel Style -->
+        <Style Selector="Border.ante-panel">
+            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="15"/>
+        </Style>
+        
+        <!-- Section Header Style -->
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Foreground" Value="#eac058"/>
+        </Style>
+        
+        <!-- Shop Slot Style -->
+        <Style Selector="Border.shop-slot">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        
+        <!-- Tag Display Style -->
+        <Style Selector="Border.tag-display">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

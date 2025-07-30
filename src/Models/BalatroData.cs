@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Motely;
+using Oracle.Helpers;
 
 namespace Oracle.Models;
 
@@ -513,7 +514,7 @@ public static class BalatroData
     // Initialize these in the static constructor
     static void InitializeCompatibilityCollections()
     {
-        Console.WriteLine("Initializing compatibility collections...");
+        Oracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
         // Initialize LegendaryJokers and SoulJokers (they're the same)
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {

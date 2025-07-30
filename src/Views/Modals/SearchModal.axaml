@@ -5,71 +5,72 @@
     <UserControl.Styles>
         <!-- Terminal console style -->
         <Style Selector="TextBox.terminal">
-            <Setter Property="Background" Value="#0a0a0a"/>
-            <Setter Property="Foreground" Value="#00ff66"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Padding" Value="10"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="SelectionBrush" Value="#00ff6644"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#b9c2d2"/>
+            <Setter Property="SelectionBrush" Value="#0093ff"/>
         </Style>
         
         <!-- Results table styles -->
         <Style Selector="DataGrid">
-            <Setter Property="Background" Value="#1a1a1a"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="BorderBrush" Value="#b9c2d2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="GridLinesVisibility" Value="All"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="RowBackground" Value="#1a1a1a"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#2a2a2a"/>
-            <Setter Property="VerticalGridLinesBrush" Value="#2a2a2a"/>
+            <Setter Property="RowBackground" Value="#3a5055"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#b9c2d2"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#b9c2d2"/>
         </Style>
         
         <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="Foreground" Value="#FEB95F"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="Foreground" Value="#ff9800"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="#b9c2d2"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         
         <Style Selector="DataGridRow">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#3a5055"/>
             <Setter Property="Height" Value="35"/>
         </Style>
         
         <Style Selector="DataGridRow:nth-child(2n)">
-            <Setter Property="Background" Value="#222222"/>
+            <Setter Property="Background" Value="#374244"/>
         </Style>
         
         <Style Selector="DataGridRow:selected">
-            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#0093ff"/>
         </Style>
         
         <Style Selector="DataGridRow:pointerover">
-            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="Background" Value="#4f6367"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="DataGridCell">
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
         </Style>
         
         <!-- Specific cell styles for seed column -->
         <Style Selector="DataGridCell:nth-child(2) TextBlock">
-            <Setter Property="Foreground" Value="#00ff66"/>
+            <Setter Property="Foreground" Value="#429f79"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
         </Style>
         
         <!-- Specific cell styles for score column -->
         <Style Selector="DataGridCell:nth-child(3) TextBlock">
-            <Setter Property="Foreground" Value="#FEB95F"/>
+            <Setter Property="Foreground" Value="#ff9800"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
@@ -114,8 +115,8 @@
         
         <!-- Status display -->
         <Style Selector="Border.status-display">
-            <Setter Property="Background" Value="#0a0a0a"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="BorderBrush" Value="#b9c2d2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="8,4"/>
@@ -126,8 +127,8 @@
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="0">
         <!-- Live Status Bar -->
         <Border Grid.Row="0" 
-                Background="#1a1a1a" 
-                BorderBrush="#3a3a3a"
+                Background="#3a5055" 
+                BorderBrush="#b9c2d2"
                 BorderThickness="0,0,0,1"
                 Padding="12,8">
             <Grid>
@@ -142,7 +143,7 @@
                     <TextBlock Text="CONFIG:" 
                                FontSize="11" 
                                FontWeight="Bold" 
-                               Foreground="#888888"
+                               Foreground="#b9c2d2"
                                VerticalAlignment="Center"/>
                     <TextBlock Name="ConfigPathTextBox" 
                                Text="No filter loaded"
@@ -162,20 +163,20 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16">
                     <Border Classes="status-display">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="SEEDS:" FontSize="10" Foreground="#666666"/>
-                            <TextBlock Name="SeedsSearchedText" Text="0" FontSize="12" Foreground="#00ff66" FontWeight="Bold"/>
+                            <TextBlock Text="SEEDS:" FontSize="10" Foreground="#b9c2d2"/>
+                            <TextBlock Name="SeedsSearchedText" Text="0" FontSize="12" Foreground="#429f79" FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="status-display">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="FOUND:" FontSize="10" Foreground="#666666"/>
-                            <TextBlock Name="FoundCountText" Text="0" FontSize="12" Foreground="#4BC292" FontWeight="Bold"/>
+                            <TextBlock Text="FOUND:" FontSize="10" Foreground="#b9c2d2"/>
+                            <TextBlock Name="FoundCountText" Text="0" FontSize="12" Foreground="#429f79" FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="status-display">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="SPEED:" FontSize="10" Foreground="#666666"/>
-                            <TextBlock Name="SpeedText" Text="0/s" FontSize="12" Foreground="#FEB95F" FontWeight="Bold"/>
+                            <TextBlock Text="SPEED:" FontSize="10" Foreground="#b9c2d2"/>
+                            <TextBlock Name="SpeedText" Text="0/s" FontSize="12" Foreground="#ff9800" FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
                     <Button Name="MinimizeButton"
@@ -193,7 +194,7 @@
         
         <!-- Control Panel with tabs -->
         <Border Grid.Row="1" 
-                Background="#0a0a0a" 
+                Background="#3a5055" 
                 Padding="0">
             <TabControl>
                 <TabItem Header="SEARCH PARAMETERS">
@@ -465,8 +466,8 @@
         
         <!-- Bottom status bar -->
         <Border Grid.Row="3" 
-                Background="#1a1a1a" 
-                BorderBrush="#3a3a3a"
+                Background="#3a5055" 
+                BorderBrush="#b9c2d2"
                 BorderThickness="0,1,0,0"
                 Padding="12,6">
             <Grid>

@@ -8,8 +8,8 @@
         
         <!-- Drop Zone Base Styling -->
         <Style Selector="Border.drop-zone">
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
@@ -21,34 +21,34 @@
         
         <!-- Drop Zone Hover State -->
         <Style Selector="Border.drop-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#eaba44" />
-            <Setter Property="BoxShadow" Value="0 0 15 #eaba4480" />
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
         </Style>
         
         <!-- NEEDS Zone Specific Styling -->
         <Style Selector="Border.needs-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#ff4c40" />
+            <Setter Property="BorderBrush" Value="{StaticResource Red}" />
             <Setter Property="BoxShadow" Value="0 0 15 #ff4c4080" />
         </Style>
         
         <!-- WANTS Zone Specific Styling -->
         <Style Selector="Border.wants-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#0093ff" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
             <Setter Property="BoxShadow" Value="0 0 15 #0093ff80" />
         </Style>
         
         <!-- MUST NOT Zone Specific Styling -->
         <Style Selector="Border.mustnot-zone.drag-over">
-            <Setter Property="BorderBrush" Value="#ff8f00" />
-            <Setter Property="BoxShadow" Value="0 0 15 #ff8f0080" />
+            <Setter Property="BorderBrush" Value="{StaticResource Orange}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #ff980080" />
         </Style>
         
         <!-- Draggable Item Styling -->
         <Style Selector="Border.draggable-item">
-            <Setter Property="Background" Value="#4f6367" />
-            <Setter Property="BorderBrush" Value="#7A9E9F" />
+            <Setter Property="Background" Value="{StaticResource Black}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="6,4" />
             <Setter Property="Margin" Value="2" />
             <Setter Property="Cursor" Value="Hand" />
@@ -62,8 +62,8 @@
         
         <!-- Draggable Item Hover -->
         <Style Selector="Border.draggable-item:pointerover">
-            <Setter Property="BorderBrush" Value="#eac058" />
-            <Setter Property="BoxShadow" Value="0 2 8 #00000060" />
+            <Setter Property="BorderBrush" Value="{StaticResource White}" />
+            <Setter Property="BoxShadow" Value="0 2 8 {StaticResource Black}" />
         </Style>
         
         <!-- Item Being Dragged -->
@@ -90,8 +90,8 @@
         
         <!-- Empty Drop Zone Placeholder -->
         <Style Selector="TextBlock.drop-placeholder">
-            <Setter Property="Foreground" Value="#888888" />
-            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="Foreground" Value="{StaticResource Border}" />
+            <Setter Property="FontStyle" Value="Normal" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -102,10 +102,25 @@
         <Style Selector="Button.clear-zone-button">
             <Setter Property="Opacity" Value="0.5" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
                 </Transitions>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Content="{TemplateBinding Content}"
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </ControlTemplate>
             </Setter>
         </Style>
         
@@ -114,17 +129,17 @@
         </Style>
         
         <Style Selector="Button.clear-zone-button:pointerover Path">
-            <Setter Property="Fill" Value="#ff4444" />
+            <Setter Property="Fill" Value="{StaticResource Red}" />
         </Style>
         
         <!-- FIX: Force TextBox styles to work in this modal -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#3a5055" />
+            <Setter Property="Background" Value="{StaticResource Black}" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="#1e2b2d" />
+            <Setter Property="BorderBrush" Value="{StaticResource Black}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="SelectionBrush" Value="#0093ff" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
             <Setter Property="IsHitTestVisible" Value="True" />
             <Setter Property="Focusable" Value="True" />
@@ -159,7 +174,7 @@
                                        TextWrapping="{TemplateBinding TextWrapping}"
                                        IsHitTestVisible="False"
                                        Opacity="0.7"
-                                       Foreground="#888888"
+                                       Foreground="{StaticResource TextMuted}"
                                        FontStyle="Italic"
                                        Margin="{TemplateBinding Padding}"
                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -172,31 +187,31 @@
         </Style>
         
         <Style Selector="TextBox:focus">
-            <Setter Property="Background" Value="#3d3d3d" />
-            <Setter Property="BorderBrush" Value="#0078d4" />
+            <Setter Property="Background" Value="{StaticResource LightBlack}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
         </Style>
         
         <Style Selector="TextBox:pointerover">
-            <Setter Property="Background" Value="#383838" />
-            <Setter Property="BorderBrush" Value="#666666" />
+            <Setter Property="Background" Value="{StaticResource LightBlack}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         
         <!-- Watermark/Placeholder text fix - MORE AGGRESSIVE -->
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="#888888" />
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         
 
         <Style Selector="TextBox:watermark">
-            <Setter Property="Foreground" Value="#888888" />
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
         </Style>
         
         <!-- Force TextPresenter visibility -->
         <Style Selector="TextBox /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="SelectionBrush" Value="#4A90E2" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
         </Style>
         
@@ -223,33 +238,33 @@
         
         <!-- Specific styling for active states -->
         <Style Selector="Border#DragDropModeButton.mode-active">
-            <Setter Property="Background" Value="#eac058" />
-            <Setter Property="BorderBrush" Value="#eac058" />
+            <Setter Property="Background" Value="{StaticResource Gold}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
         
         <Style Selector="Border#DragDropModeButton.mode-inactive">
-            <Setter Property="Background" Value="#4f6367" />
-            <Setter Property="BorderBrush" Value="#7A9E9F" />
+            <Setter Property="Background" Value="{StaticResource Black}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         
         <Style Selector="Border#JsonEditorModeButton.mode-active">
-            <Setter Property="Background" Value="#eac058" />
-            <Setter Property="BorderBrush" Value="#eac058" />
+            <Setter Property="Background" Value="{StaticResource Gold}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
         
         <Style Selector="Border#JsonEditorModeButton.mode-inactive">
-            <Setter Property="Background" Value="#4f6367" />
-            <Setter Property="BorderBrush" Value="#7A9E9F" />
+            <Setter Property="Background" Value="{StaticResource Black}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         
         <!-- ScrollBar Styling -->
         <Style Selector="ScrollBar">
-            <Setter Property="Background" Value="#333333" />
+            <Setter Property="Background" Value="{StaticResource LightBlack}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         
         <Style Selector="ScrollBar /template/ Thumb">
-            <Setter Property="Background" Value="#666666" />
+            <Setter Property="Background" Value="{StaticResource Border}" />
             <Setter Property="MinHeight" Value="20" />
             <Setter Property="MinWidth" Value="10" />
             <Setter Property="Opacity" Value="1" />
@@ -261,7 +276,7 @@
         </Style>
         
         <Style Selector="ScrollBar /template/ Thumb:pointerover">
-            <Setter Property="Background" Value="#888888" />
+            <Setter Property="Background" Value="{StaticResource TextMuted}" />
         </Style>
         
         <!-- ScrollViewer Styling -->
@@ -271,17 +286,17 @@
         
         <!-- AvaloniaEdit TextEditor Styling -->
         <Style Selector="avalonedit|TextEditor">
-            <Setter Property="Background" Value="#1e1e1e" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{StaticResource Black}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="FontFamily" Value="Cascadia Code,Consolas,Menlo,Monaco,monospace" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="LineNumbersForeground" Value="#858585" />
+            <Setter Property="LineNumbersForeground" Value="{StaticResource TextMuted}" />
         </Style>
         
         <!-- Style the text area inside AvaloniaEdit -->
         <Style Selector="avalonedit|TextEditor /template/ avalonedit|TextArea">
-            <Setter Property="SelectionBrush" Value="#264F78" />
-            <Setter Property="SelectionForeground" Value="#FFFFFF" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
+            <Setter Property="SelectionForeground" Value="{StaticResource White}" />
         </Style>
     </UserControl.Styles>
     
@@ -295,7 +310,7 @@
                     </Grid.RowDefinitions>
                     
                     <!-- File Operations Bar -->
-                    <Border Grid.Row="0" Background="#3a5055" BorderBrush="#1e2b2d" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                    <Border Grid.Row="0" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="12" Margin="0,0,0,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -308,56 +323,66 @@
                             <!-- Browse Button -->
                             <Button Grid.Column="1" 
                                     Name="BrowseButton"
-                                    Classes="btn-orange"
+                                    Classes="oracle-btn button-color-yellow-orange"
                                     Content="Browse..."
-                                    FontSize="14"
-                                    MinHeight="32"
-                                    MinWidth="100"
+                                    FontSize="18"
+                                    MinHeight="50"
+                                    MinWidth="120"
                                     Margin="0,0,8,0"/>
                             
-                            <!-- Mode Toggle -->
-                            <controls:BalatroToggleSwitch Grid.Column="0"
-                                                         Name="FileBarModeToggle"
-                                                         LeftText="Visual"
-                                                         RightText="Json"
-                                                         IsChecked="False"
-                                                         Margin="0,0,8,0"
-                                                         VerticalAlignment="Center"/>
+                            <!-- Mode Toggle - Chunky Balatro buttons -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" Margin="0,0,8,0">
+                                <Button Name="VisualModeButton" 
+                                        Classes="oracle-btn button-color-red"
+                                        Content="Visual" 
+                                        FontSize="14" 
+                                        MinHeight="40" 
+                                        MinWidth="70"
+                                        Padding="8,4"/>
+                                <Button Name="JsonModeButton" 
+                                        Classes="oracle-btn button-color-red"
+                                        Content="Json" 
+                                        FontSize="14" 
+                                        MinHeight="40" 
+                                        MinWidth="70"
+                                        Padding="8,4"
+                                        Opacity="0.6"/>
+                            </StackPanel>
                             
                             <!-- File Name Input -->
                             <TextBox Grid.Column="2"
                                     Name="ConfigNameBox" 
                                     Watermark="Enter filter name..." 
                                     FontSize="14"
-                                    Background="#262633" 
+                                    Background="{StaticResource LightBlack}" 
                                     BorderThickness="2" 
-                                    BorderBrush="#555555"
-                                    Foreground="#E2E2E3"
-                                    Padding="8,4"
-                                    CornerRadius="4"
-                                    Height="32"
-                                    SelectionBrush="#4A90E2"
-                                    SelectionForegroundBrush="White"
-                                    CaretBrush="#E2E2E3" />
+                                    BorderBrush="{StaticResource Border}"
+                                    Foreground="{StaticResource TextLight}"
+                                    Padding="10,6"
+                                    CornerRadius="6"
+                                    Height="40"
+                                    SelectionBrush="{StaticResource Blue}"
+                                    SelectionForegroundBrush="{StaticResource TextLight}"
+                                    CaretBrush="{StaticResource TextLight}" />
                             
                             <!-- Save Button -->
                             <Button Grid.Column="3" 
                                     Name="SaveButton"
-                                    Classes="btn-blue"
+                                    Classes="oracle-btn button-color-blue"
                                     Content="SAVE"
-                                    FontSize="14"
-                                    MinHeight="32"
-                                    MinWidth="80"
+                                    FontSize="18"
+                                    MinHeight="50"
+                                    MinWidth="100"
                                     Margin="0,0,8,0"/>
                             
                             <!-- Create Search Widget Button -->
                             <Button Grid.Column="4" 
                                     Name="CreateWidgetButton"
-                                    Classes="btn-green"
+                                    Classes="oracle-btn button-color-green"
                                     Content="GO TO SEARCH"
-                                    FontSize="14"
-                                    MinHeight="32"
-                                    MinWidth="180"
+                                    FontSize="18"
+                                    MinHeight="50"
+                                    MinWidth="200"
                                     ToolTip.Tip="Create a search widget on desktop with this filter"/>
                         </Grid>
                     </Border>
@@ -373,43 +398,44 @@
                     <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                         
-                        <!-- Left Sidebar - Balatro modal background -->
-                        <Border Grid.Column="0" Name="LeftSidebar" Background="#3a5055" BorderBrush="#1e2b2d" BorderThickness="1" CornerRadius="8" Padding="8">
+                        <!-- Left Sidebar - Dark panel with light border -->
+                        <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="8">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Spacing="2">
-                                    <!-- Category Tabs -->
-                                    <Button Name="FavoritesTab" Content="Favorites" Classes="nav-button" />
-                                    <Button Name="SoulJokersTab" Content="Soul Joker" Classes="nav-button active" />
-                                    <Button Name="RareJokersTab" Content="Rare Joker" Classes="nav-button" />
-                                    <Button Name="UncommonJokersTab" Content="Uncommon Joker" Classes="nav-button" />
-                                    <Button Name="CommonJokersTab" Content="Common Joker" Classes="nav-button" />
-                                    <Button Name="VouchersTab" Content="Vouchers" Classes="nav-button" />
-                                    <Button Name="TarotsTab" Content="Tarots" Classes="nav-button" />
-                                    <Button Name="SpectralsTab" Content="Spectrals" Classes="nav-button" />
-                                    <Button Name="TagsTab" Content="Tags" Classes="nav-button" />
-                                    <Button Name="BossesTab" Content="Bosses" Classes="nav-button" />
+                                    <!-- Category Tabs - RED CHUNKY BUTTONS like Balatro -->
+                                    <Button Name="FavoritesTab" Content="Favorites" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="SoulJokersTab" Content="Soul Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="RareJokersTab" Content="Rare Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="UncommonJokersTab" Content="Uncommon Joker" Classes="oracle-btn button-color-red" FontSize="12" MinHeight="40" Margin="0,2" />
+                                    <Button Name="CommonJokersTab" Content="Common Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="VouchersTab" Content="Vouchers" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="TarotsTab" Content="Tarots" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="SpectralsTab" Content="Spectrals" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="TagsTab" Content="Tags" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="BossesTab" Content="Bosses" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>
                         
-                        <!-- Main Content Area -->
+                        <!-- Visual Mode Content Area -->
                         <Grid Grid.Column="2" Name="RightContentGrid">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" MinWidth="400" />
                                 <ColumnDefinition Width="15" />
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="2*" MinWidth="500" />
                             </Grid.ColumnDefinitions>
                             
                             <!-- LEFT: Item Palette -->
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                
-                                <!-- Search Bar -->
-                                <Border Grid.Row="0" Background="#3a5055" BorderBrush="#1e2b2d" BorderThickness="1" CornerRadius="4" Padding="4" Margin="0,0,0,8">
-                                    <Grid>
+                            <Border Grid.Column="0" Name="ItemPaletteBorder" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="8" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    
+                                    <!-- Search Bar -->
+                                    <Grid Grid.Row="0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="4" />
@@ -417,17 +443,23 @@
                                         </Grid.ColumnDefinitions>
                                         
                                         <!-- Search Bar -->
-                                        <TextBox Grid.Column="0" Name="SearchBox" Watermark="Search items..." Height="26" VerticalContentAlignment="Center" 
-                                         Classes="search-box" IsHitTestVisible="True" Focusable="True" ZIndex="10" FontSize="11" />
-                                        <Button Grid.Column="2" Name="ClearSearchButton" Content="X" ToolTip.Tip="Clear Search" Width="24" Height="24" FontSize="10" Padding="0" />
+                                        <TextBox Grid.Column="0" Name="SearchBox" Watermark="Search items..." Height="28" VerticalContentAlignment="Center" 
+                                                 Background="{StaticResource LightBlack}"
+                                                 BorderBrush="{StaticResource Border}"
+                                                 BorderThickness="2"
+                                                 Foreground="{StaticResource TextLight}"
+                                                 CaretBrush="{StaticResource TextLight}"
+                                                 SelectionBrush="{StaticResource Blue}"
+                                                 CornerRadius="6"
+                                                 Padding="8,4"
+                                                 Classes="search-box" IsHitTestVisible="True" Focusable="True" ZIndex="10" FontSize="12" />
+                                        <Button Grid.Column="2" Name="ClearSearchButton" Content="X" ToolTip.Tip="Clear Search" Width="24" Height="24" FontSize="10" Padding="0" Classes="btn-red" />
                                     </Grid>
-                                </Border>
-                                
-                                <!-- Item Palette Container - Add explicit height constraint -->
-                                <Border Grid.Row="1" Name="ItemPaletteBorder" Background="#3a5055" BorderBrush="#1e2b2d" BorderThickness="1" CornerRadius="8" Padding="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True">
-                                <ContentControl Name="ItemPaletteContent" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True" />
-                                </Border>
-                            </Grid>
+                                    
+                                    <!-- Item Palette Content -->
+                                    <ContentControl Grid.Row="2" Name="ItemPaletteContent" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True" />
+                                </Grid>
+                            </Border>
                             
                             <!-- RIGHT: Drag & Drop Areas -->
                             <Grid Grid.Column="2">
@@ -440,126 +472,117 @@
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
-                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="#3a3a3a" CornerRadius="8" Padding="0">
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="60"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
                                         <!-- Sideways Label -->
-                                        <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8,0,0,8" Margin="0,0,2,0">
-                                            <TextBlock Text="MUST"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="14"
-                                                       FontWeight="Bold"
-                                                       Foreground="#999999"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Center"
-                                                       Margin="8"
-                                                       RenderTransformOrigin="0.5,0.5">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
-                                        </Border>
+                                        <TextBlock Text="MUST"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource Border}"
+                                                   Opacity="0.5"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Left"
+                                                   Margin="5,0,0,0"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                            <TextBlock.RenderTransform>
+                                                <RotateTransform Angle="-90"/>
+                                            </TextBlock.RenderTransform>
+                                        </TextBlock>
                                         
                                         <!-- Drop Area -->
-                                        <Border Grid.Column="1" Background="#262626" CornerRadius="0,8,8,0" Padding="8" MinHeight="60">
-                                            <Grid>
-                                                <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                                <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                    <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
-                                                </ScrollViewer>
-                                                <Button Name="ClearNeedsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-2,-2,0" Width="20" Height="20" Padding="0" Background="Transparent" BorderThickness="0">
-                                                    <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="#666666" Width="16" Height="16" Stretch="Uniform" />
-                                                </Button>
-                                            </Grid>
-                                        </Border>
+                                        <Grid Margin="30,0,0,0">
+                                            <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
+                                            <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
+                                            </ScrollViewer>
+                                            <Button Name="ClearNeedsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
+                                                <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
+                                            </Button>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                                 
                                 <!-- SHOULD (WANTS) Panel -->
-                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="#3a3a3a" CornerRadius="8" Padding="0">
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="60"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
                                         <!-- Sideways Label -->
-                                        <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8,0,0,8" Margin="0,0,2,0">
-                                            <TextBlock Text="SHOULD"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="14"
-                                                       FontWeight="Bold"
-                                                       Foreground="#999999"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Center"
-                                                       Margin="8"
-                                                       RenderTransformOrigin="0.5,0.5">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
-                                        </Border>
+                                        <TextBlock Text="SHOULD"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource Border}"
+                                                   Opacity="0.5"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Left"
+                                                   Margin="5,0,0,0"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                            <TextBlock.RenderTransform>
+                                                <RotateTransform Angle="-90"/>
+                                            </TextBlock.RenderTransform>
+                                        </TextBlock>
                                         
                                         <!-- Drop Area -->
-                                        <Border Grid.Column="1" Background="#262626" CornerRadius="0,8,8,0" Padding="8" MinHeight="60">
-                                            <Grid>
-                                                <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop scoring items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                                <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                    <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
-                                                </ScrollViewer>
-                                                <Button Name="ClearWantsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-2,-2,0" Width="20" Height="20" Padding="0" Background="Transparent" BorderThickness="0">
-                                                    <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="#666666" Width="16" Height="16" Stretch="Uniform" />
-                                                </Button>
-                                            </Grid>
-                                        </Border>
+                                        <Grid Margin="30,0,0,0">
+                                            <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop wanted items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
+                                            <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
+                                            </ScrollViewer>
+                                            <Button Name="ClearWantsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
+                                                <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
+                                            </Button>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                                 
                                 <!-- MUST NOT Panel -->
-                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="#3a3a3a" CornerRadius="8" Padding="0">
+                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource Black}" BorderBrush="{StaticResource Border}" BorderThickness="2" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="60"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
                                         <!-- Sideways Label -->
-                                        <Border Grid.Column="0" Background="#2d2d2d" CornerRadius="8,0,0,8" Margin="0,0,2,0">
-                                            <TextBlock Text="MUST NOT"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       FontWeight="Bold"
-                                                       Foreground="#999999"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Center"
-                                                       Margin="4"
-                                                       RenderTransformOrigin="0.5,0.5">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
-                                        </Border>
+                                        <TextBlock Text="MUST NOT"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource Border}"
+                                                   Opacity="0.5"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Left"
+                                                   Margin="2,0,0,0"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                            <TextBlock.RenderTransform>
+                                                <RotateTransform Angle="-90"/>
+                                            </TextBlock.RenderTransform>
+                                        </TextBlock>
                                         
                                         <!-- Drop Area -->
-                                        <Border Grid.Column="1" Background="#262626" CornerRadius="0,8,8,0" Padding="8" MinHeight="60">
-                                            <Grid>
-                                                <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop forbidden items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                                <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                    <WrapPanel Name="MustNotPanel" Orientation="Horizontal" />
-                                                </ScrollViewer>
-                                                <Button Name="ClearMustNotButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-2,-2,0" Width="20" Height="20" Padding="0" Background="Transparent" BorderThickness="0">
-                                                    <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="#666666" Width="16" Height="16" Stretch="Uniform" />
-                                                </Button>
-                                            </Grid>
-                                        </Border>
+                                        <Grid Margin="40,0,0,0">
+                                            <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop forbidden items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
+                                            <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                                <WrapPanel Name="MustNotPanel" Orientation="Horizontal" />
+                                            </ScrollViewer>
+                                            <Button Name="ClearMustNotButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
+                                                <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
+                                            </Button>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </Grid>
                         </Grid>
+                        
+                        <!-- JSON Mode Content Area (Initially Hidden) -->
+                        <Border Grid.Column="2" Name="JsonModeContainer" 
+                                Background="{StaticResource Black}" 
+                                BorderBrush="{StaticResource Border}" 
+                                BorderThickness="2" 
+                                CornerRadius="8" 
+                                Padding="0"
+                                IsVisible="False"
+                                ClipToBounds="True">
+                            <ContentControl Name="JsonModeContent" 
+                                            VerticalAlignment="Stretch" 
+                                            HorizontalAlignment="Stretch" 
+                                            ClipToBounds="True" />
+                        </Border>
                     </Grid>
                 </Grid>
     </Grid>

@@ -61,7 +61,8 @@ This document details all PRNG sources in Balatro and how they generate items.
 
 ## 9. **Cryptid Spectral**
 - **PRNG Key**: Not directly used - duplicates selected card
-- **What it does**: Creates a copy of 1 selected card in hand
+- **What it does**: Creates 2 copies of 1 selected PLAYING CARD in hand
+- **Note**: Copies playing cards NOT jokers! The selected card is duplicated twice.
 
 ## 10. **8 Ball Tarot**
 - **PRNG Key**: `8ba`

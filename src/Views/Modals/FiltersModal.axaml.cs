@@ -38,6 +38,15 @@ public partial class FiltersModalContent : UserControl
     private readonly HashSet<string> _selectedMustNot = new();
     private readonly Dictionary<string, ItemConfig> _itemConfigs = new();
     private string _currentCategory = "Jokers";
+    private int _itemKeyCounter = 0;
+    
+    /// <summary>
+    /// Creates a unique key for an item to allow duplicates with different configurations
+    /// </summary>
+    private string CreateUniqueKey(string category, string itemName)
+    {
+        return $"{category}:{itemName}#{++_itemKeyCounter}";
+    }
     private string _searchFilter = "";
     private Popup? _configPopup;
     private ItemConfigPopup? _configPopupContent;
@@ -420,7 +429,7 @@ public partial class FiltersModalContent : UserControl
                         // Handle single item drop
                         // For SoulJokers, use Jokers category for storage
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
-                        var key = $"{storageCategory}:{itemName}";
+                        var key = CreateUniqueKey(storageCategory, itemName);
                         
                         // Add to needs (allow item in multiple lists)
                         _selectedNeeds.Add(key);
@@ -518,7 +527,7 @@ public partial class FiltersModalContent : UserControl
                         // Handle single item drop
                         // For SoulJokers, use Jokers category for storage
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
-                        var key = $"{storageCategory}:{itemName}";
+                        var key = CreateUniqueKey(storageCategory, itemName);
                         
                         // Add to wants (allow item in multiple lists)
                         _selectedWants.Add(key);
@@ -4484,7 +4493,7 @@ public partial class FiltersModalContent : UserControl
                         // Handle single item drop
                         // For SoulJokers, use Jokers category for storage
                         var storageCategory = category == "SoulJokers" ? "Jokers" : category;
-                        var key = $"{storageCategory}:{itemName}";
+                        var key = CreateUniqueKey(storageCategory, itemName);
                         
                         // Add to must not (allow item in multiple lists)
                         _selectedMustNot.Add(key);

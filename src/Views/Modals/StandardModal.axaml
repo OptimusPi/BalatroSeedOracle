@@ -21,18 +21,18 @@
                 <RowDefinition Height="0.03*"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container with proper Balatro styling -->
+            <!-- Main modal container with exact Balatro layered styling -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource DockGrey}"
+                    Background="#7A9E9F"
                     CornerRadius="16"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="1"
-                    Padding="4"
+                    BorderBrush="#FFFFFF"
+                    BorderThickness="2"
+                    Padding="6"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    BoxShadow="0 2 6 #777e89">
-                <Border Background="{StaticResource Black}" 
-                        CornerRadius="10"
+                    BoxShadow="0 4 12 #00000066">
+                <Border Background="#374244" 
+                        CornerRadius="12"
                         Padding="0">
             
             <Grid VerticalAlignment="Stretch" MinHeight="500">

@@ -65,9 +65,18 @@ namespace Oracle.Views
                 if (authorDisplay != null && authorEdit != null)
                 {
                     var authorName = _userProfileService.GetAuthorName();
+                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Setting author display to: '{authorName}'");
                     authorDisplay.Text = authorName;
                     authorEdit.Text = authorName;
                 }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "Could not find AuthorDisplay or AuthorEdit controls");
+                }
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "UserProfileService is null");
             }
         }
         
@@ -130,6 +139,12 @@ namespace Oracle.Views
         {
             // Use the modal helper extension method
             this.ShowFunRunsModal();
+        }
+
+        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
+        {
+            // Use the modal helper extension method
+            this.ShowAnalyzerModal();
         }
 
         private void OnExitClick(object? sender, RoutedEventArgs e)

@@ -17,8 +17,47 @@ namespace Oracle.Services
         
         public UserProfileService()
         {
-            // Store profile in the current directory
-            _profilePath = Path.Combine(Directory.GetCurrentDirectory(), PROFILE_FILENAME);
+            // Store profile in the application base directory
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var currentDir = Directory.GetCurrentDirectory();
+            
+            DebugLogger.Log("UserProfileService", $"BaseDirectory: {baseDir}");
+            DebugLogger.Log("UserProfileService", $"CurrentDirectory: {currentDir}");
+            
+            // Try multiple locations for the profile file
+            var possiblePaths = new[]
+            {
+                Path.Combine(currentDir, PROFILE_FILENAME),
+                Path.Combine(Directory.GetParent(currentDir)?.FullName ?? currentDir, PROFILE_FILENAME),
+                Path.Combine(baseDir, PROFILE_FILENAME),
+                Path.Combine(Directory.GetParent(baseDir)?.FullName ?? baseDir, PROFILE_FILENAME),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", PROFILE_FILENAME)
+            };
+            
+            DebugLogger.Log("UserProfileService", $"Checking {possiblePaths.Length} possible paths for profile:");
+            foreach (var path in possiblePaths)
+            {
+                DebugLogger.Log("UserProfileService", $"  {path} - Exists: {File.Exists(path)}");
+            }
+            
+            // Find the first existing profile
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                {
+                    _profilePath = Path.GetFullPath(path);
+                    DebugLogger.Log("UserProfileService", $"✅ Found profile at: {_profilePath}");
+                    break;
+                }
+            }
+            
+            // If no profile found, use the current directory
+            if (string.IsNullOrEmpty(_profilePath))
+            {
+                _profilePath = Path.Combine(currentDir, PROFILE_FILENAME);
+                DebugLogger.Log("UserProfileService", $"No existing profile found, will create at: {_profilePath}");
+            }
+            
             _currentProfile = LoadProfile();
         }
         
@@ -30,7 +69,11 @@ namespace Oracle.Services
         /// <summary>
         /// Get the author name
         /// </summary>
-        public string GetAuthorName() => _currentProfile.AuthorName;
+        public string GetAuthorName() 
+        {
+            DebugLogger.Log("UserProfileService", $"GetAuthorName() returning: '{_currentProfile.AuthorName}'");
+            return _currentProfile.AuthorName;
+        }
         
         /// <summary>
         /// Set the author name
@@ -116,16 +159,23 @@ namespace Oracle.Services
         {
             try
             {
+                // Ensure directory exists
+                var directory = Path.GetDirectoryName(_profilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
                 var json = JsonSerializer.Serialize(_currentProfile, new JsonSerializerOptions 
                 { 
                     WriteIndented = true 
                 });
                 File.WriteAllText(_profilePath, json);
-                DebugLogger.Log("UserProfileService", "Profile saved successfully");
+                DebugLogger.Log("UserProfileService", $"Profile saved successfully to: {_profilePath}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("UserProfileService", $"Error saving profile: {ex.Message}");
+                DebugLogger.LogError("UserProfileService", $"Error saving profile to {_profilePath}: {ex.Message}");
             }
         }
     }

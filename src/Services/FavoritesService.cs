@@ -82,71 +82,71 @@ namespace Oracle.Services
                     {
                         Name = "Photo Chad",
                         Description = "Picture perfect combo",
-                        Jokers = new List<string> { "Photograph", "HangingChad" },
+                        Jokers = new List<string> { "photograph", "hangingchad" },
                         Tags = new List<string> { "#FaceCards", "#Mult", "#Synergy" }
                     },
                     new JokerSet
                     {
                         Name = "BaronMime",
                         Description = "Kings multiply and copy",
-                        Jokers = new List<string> { "Baron", "Mime" },
+                        Jokers = new List<string> { "baron", "mime" },
                         Tags = new List<string> { "#Kings", "#Copy", "#XMult" }
                     },
                     new JokerSet
                     {
                         Name = "Double Vision",
                         Description = "Copy your best joker twice",
-                        Jokers = new List<string> { "Brainstorm", "Blueprint" },
+                        Jokers = new List<string> { "brainstorm", "blueprint" },
                         Tags = new List<string> { "#Copy", "#Legendary", "#Synergy" }
                     },
                     new JokerSet
                     {
                         Name = "Lucky",
                         Description = "Maximum luck manipulation",
-                        Jokers = new List<string> { "OopsAll6s", "LuckyCat" },
-                        Items = new List<string> { "TheMagician" },
+                        Jokers = new List<string> { "oopsall6s", "luckycat" },
+                        Items = new List<string> { "themagician" },
                         Tags = new List<string> { "#Luck", "#Cat", "#LuckyCat", "#Tarot" }
                     },
                     new JokerSet
                     {
                         Name = "Legendary Lineup",
                         Description = "The legendary joker collection",
-                        Jokers = new List<string> { "Chicot", "Perkeo", "Triboulet", "Yorick", "Canio" },
+                        Jokers = new List<string> { "chicot", "perkeo", "triboulet", "yorick", "canio" },
                         Tags = new List<string> { "#Legendary", "#LateGame", "#XMult" }
                     },
                     new JokerSet
                     {
                         Name = "ReTrigger",
                         Description = "Maximum retrigger synergy",
-                        Jokers = new List<string> { "Sock and Buskin", "Hanging Chad", "Dusk", "Deja Vu" },
+                        Jokers = new List<string> { "sockandbuskin", "hangingchad", "dusk", "dejavu" },
                         Tags = new List<string> { "#Retrigger", "#FaceCards", "#Spectral" }
                     },
                     new JokerSet
                     {
                         Name = "Money Makers",
                         Description = "Economic powerhouse combo",
-                        Jokers = new List<string> { "Business Card", "Bull", "To the Moon", "Bootstraps", "Egg" },
+                        Jokers = new List<string> { "businesscard", "bull", "tothemoon", "bootstraps", "egg" },
                         Tags = new List<string> { "#Money", "#Gold", "#Economy" }
                     },
                     new JokerSet
                     {
                         Name = "HandSize",
                         Description = "Maximum hand size expansion",
-                        Jokers = new List<string> { "Turtle Bean", "Juggler", "Paint Brush", "Palette", "Troubadour" },
+                        Jokers = new List<string> { "turtlebean", "juggler", "giftcard", "palette", "troubadour" },
                         Tags = new List<string> { "#HandSize", "#Voucher", "#Utility" }
                     },
                     new JokerSet
                     {
                         Name = "Blueprint Bros",
                         Description = "Copy and enhance strategy",
-                        Jokers = new List<string> { "Blueprint", "Brainstorm", "Showman", "DNA" },
+                        Jokers = new List<string> { "blueprint", "brainstorm", "showman", "dna" },
                         Tags = new List<string> { "#Copy", "#Synergy", "#LateGame" }
                     },
                     new JokerSet
                     {
                         Name = "Economy",
                         Description = "Build your gold empire",
-                        Jokers = new List<string> { "Golden Ticket", "The Devil", "Business Card", "Trading Card", "Reserved Parking", "Faceless Joker" },
+                        Jokers = new List<string> { "goldenticket", "thedevil", "businesscard", "tradingcard", "reservedparking", "facelessjoker" },
                         Tags = new List<string> { "#Gold", "#Economy", "#Scaling", "#Tarot" }
                     }
                 };

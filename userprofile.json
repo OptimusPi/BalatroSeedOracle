@@ -1,0 +1,27 @@
+{
+  "AuthorName": "pifreak",
+  "ActiveWidgets": [
+    {
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\external\\Motely\\JsonItemFilters\\Untitled Filter.ouija.json",
+      "X": 420,
+      "Y": 80,
+      "IsMinimized": false,
+      "ThreadCount": 4,
+      "MinScore": 1,
+      "BatchSize": 4
+    },
+    {
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\config-20250728-211113.ouija.json",
+      "X": 420,
+      "Y": 80,
+      "IsMinimized": false,
+      "ThreadCount": 4,
+      "MinScore": 1,
+      "BatchSize": 4
+    }
+  ],
+  "BackgroundTheme": null,
+  "AnimationEnabled": true,
+  "VolumeLevel": 2,
+  "MusicEnabled": true
+}

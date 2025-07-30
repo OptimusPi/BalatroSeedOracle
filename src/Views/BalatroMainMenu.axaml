@@ -146,13 +146,13 @@
                                 <Grid>
                                     <!-- Display mode -->
                                     <TextBlock x:Name="AuthorDisplay"
-                                               Text="Jimbo"
+                                               Text=""
                                                IsVisible="True"
                                                IsHitTestVisible="False"/>
                                     
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
-                                             Text="Jimbo"
+                                             Text=""
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
                                              FontWeight="Bold"
@@ -238,6 +238,19 @@
                             MinHeight="64"
                             MinWidth="64">
                         <TextBlock Text="FUN RUN" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
+
+                    <!-- ANALYZE button (cyan/teal) -->
+                    <Button Classes="btn-blue"
+                            Click="OnAnalyzeClick"
+                            MinHeight="48"
+                            MinWidth="100"
+                            Background="#17a2b8">
+                        <TextBlock Text="ANALYZE" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"

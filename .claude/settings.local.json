@@ -34,7 +34,10 @@
       "Bash(/mnt/x/BalatroSeedOracle/external/Motely/bin/Debug/net9.0/Motely:*)",
       "Bash(external/Motely/bin/Debug/net9.0/Motely:*)",
       "Bash(rg:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(./test-profile.exe)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": []
   }

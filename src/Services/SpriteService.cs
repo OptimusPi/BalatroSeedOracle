@@ -447,10 +447,19 @@ public class SpriteService
     // Get boss blind image (first frame of animation, similar size to tags)
     public IImage? GetBossImage(string name, int frameIndex = 0)
     {
-        if (bossPositions == null || bossSheet == null) return null;
+        if (bossPositions == null || bossSheet == null)
+        {
+            DebugLogger.LogError("SpriteService", $"Boss positions or sheet not loaded for: {name}");
+            return null;
+        }
         
         var normalizedName = name.Trim().Replace(" ", "").ToLower();
-        if (!bossPositions.TryGetValue(normalizedName, out var position)) return null;
+        if (!bossPositions.TryGetValue(normalizedName, out var position))
+        {
+            DebugLogger.LogError("SpriteService", $"Boss position not found for: {name} (normalized: {normalizedName})");
+            DebugLogger.Log("SpriteService", $"Available boss names: {string.Join(", ", bossPositions.Keys)}");
+            return null;
+        }
         
         // Boss blind sprites are 34x34, with 21 frames per row
         int spriteWidth = 34;
