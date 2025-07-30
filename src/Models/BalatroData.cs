@@ -53,14 +53,10 @@ public static class BalatroData
     public static readonly Dictionary<string, string> LegacyNameMappings = new()
     {
         // Joker ID fixes
-        { "OopsAll6s", "OopsAll6s" }, // Actually correct in Motely
-        { "Oops_All_6s", "OopsAll6s" }, // Map underscore version to correct
+        { "OopsAll6s", "OopsAll6s" },
         
         // Voucher ID fixes
-        { "BlankVoucher", "Blank" },
-        
-        // Other special cases
-        { "SoulJoker", "Spectral" }, // SoulJoker actually refers to The Soul spectral card
+        { "BlankVoucher", "Blank" }
     };
 
     private static void InitializeJokers()

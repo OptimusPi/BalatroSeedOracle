@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using DynamicData;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
@@ -23,7 +24,7 @@ namespace Oracle.Views.Modals;
 public partial class SearchModal : UserControl
 {
     private MotelySearchService _searchService;
-    private readonly ObservableCollection<SearchResultViewModel> _results = new();
+    private readonly ObservableCollection<Oracle.Views.Modals.SearchResultViewModel> _results = new();
     private string? _configPath;
     private bool _isRunning;
     private TextBox? _consoleOutput;
@@ -60,7 +61,7 @@ public partial class SearchModal : UserControl
         if (startBatchUpDown != null) startBatchUpDown.Value = 0;
         
         var endBatchUpDown = this.FindControl<NumericUpDown>("EndBatchUpDown");
-        if (endBatchUpDown != null) endBatchUpDown.Value = 1000;
+        if (endBatchUpDown != null) endBatchUpDown.Value = 999999; // Search entire seed space
         
         var cutoffUpDown = this.FindControl<NumericUpDown>("CutoffUpDown");
         if (cutoffUpDown != null) cutoffUpDown.Value = 0;
@@ -109,19 +110,19 @@ public partial class SearchModal : UserControl
         }
     }
     
-    public void SetResults(List<SearchResult> results)
+    public void SetResults(List<Oracle.Models.SearchResult> results)
     {
         _results.Clear();
         int index = 1;
         foreach (var result in results)
         {
-            _results.Add(new SearchResultViewModel
+            _results.Add(new Oracle.Views.Modals.SearchResultViewModel
             {
                 Index = index++,
                 Seed = result.Seed,
                 Score = result.Score,
-                Details = result.Details ?? "",
-                ScoreBreakdown = result.ScoreBreakdown ?? ""
+                Details = result.Details,
+                ScoreBreakdown = result.ScoreBreakdown
             });
         }
         
@@ -207,7 +208,7 @@ public partial class SearchModal : UserControl
     private void OnClearClick(object? sender, RoutedEventArgs e)
     {
         _results.Clear();
-        SetResults(new List<SearchResult>());
+        SetResults(new List<Oracle.Models.SearchResult>());
     }
     
     private void AppendConsoleOutput(string text)
@@ -468,7 +469,7 @@ public partial class SearchModal : UserControl
             // Add new result if any
             if (progress.NewResult != null)
             {
-                _results.Add(new SearchResultViewModel
+                _results.Add(new Oracle.Views.Modals.SearchResultViewModel
                 {
                     Index = _results.Count + 1,
                     Seed = progress.NewResult.Seed,

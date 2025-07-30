@@ -1053,35 +1053,35 @@
         "name": "anylegendary",
         "pos": {
             "x": 9,
-            "y": 8
+            "y": 9
         }
     },
     {
         "name": "anyrare",
         "pos": {
             "x": 9,
-            "y": 8
+            "y": 9
         }
     },
     {
         "name": "anyuncommon",
         "pos": {
             "x": 9,
-            "y": 8
+            "y": 9
         }
     },
     {
         "name": "anycommon",
         "pos": {
             "x": 9,
-            "y": 8
+            "y": 9
         }
     },
     {
         "name": "anyjoker",
         "pos": {
             "x": 9,
-            "y": 8
+            "y": 9
         }
     }
 ]

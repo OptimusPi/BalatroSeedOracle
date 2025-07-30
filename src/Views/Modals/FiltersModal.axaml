@@ -354,7 +354,7 @@
                             <Button Grid.Column="4" 
                                     Name="CreateWidgetButton"
                                     Classes="btn-green"
-                                    Content="CREATE SEARCH WIDGET"
+                                    Content="GO TO SEARCH"
                                     FontSize="14"
                                     MinHeight="32"
                                     MinWidth="180"

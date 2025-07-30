@@ -18,6 +18,7 @@ namespace Oracle.Components
         private Border _cardBorder;
         private Image _cardImage;
         private Image _soulImage;
+        private Image _editionOverlay;
         private TextBlock _cardName;
         private Grid _imageContainer;
         private Border _legendaryBackground;
@@ -38,6 +39,9 @@ namespace Oracle.Components
         
         public static readonly StyledProperty<bool> IsSelectedWantProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedWant));
+        
+        public static readonly StyledProperty<string> EditionProperty =
+            AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Edition), "none");
         
         public string ItemName
         {
@@ -69,6 +73,12 @@ namespace Oracle.Components
             set => SetValue(IsSelectedWantProperty, value);
         }
         
+        public string Edition
+        {
+            get => GetValue(EditionProperty);
+            set => SetValue(EditionProperty, value);
+        }
+        
         // Events
         public event EventHandler<CardClickEventArgs>? CardClicked;
         public event EventHandler<CardDragEventArgs>? CardDragStarted;
@@ -80,6 +90,7 @@ namespace Oracle.Components
             _cardBorder = this.FindControl<Border>("CardBorder")!;
             _cardImage = this.FindControl<Image>("CardImage")!;
             _soulImage = this.FindControl<Image>("SoulImage")!;
+            _editionOverlay = this.FindControl<Image>("EditionOverlay")!;
             _cardName = this.FindControl<TextBlock>("CardName")!;
             _imageContainer = this.FindControl<Grid>("ImageContainer")!;
             _legendaryBackground = this.FindControl<Border>("LegendaryBackground")!;
@@ -204,6 +215,10 @@ namespace Oracle.Components
                 {
                     _cardBorder.Classes.Remove("selected-want");
                 }
+            }
+            else if (e.Property == EditionProperty)
+            {
+                UpdateEditionOverlay();
             }
         }
         
@@ -347,6 +362,28 @@ namespace Oracle.Components
 
             // Otherwise use the existing formatting
             return System.Text.RegularExpressions.Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " ");
+        }
+        
+        private void UpdateEditionOverlay()
+        {
+            if (Category != "Jokers" || string.IsNullOrEmpty(Edition) || Edition == "none")
+            {
+                _editionOverlay.IsVisible = false;
+                return;
+            }
+            
+            var spriteService = SpriteService.Instance;
+            var editionImage = spriteService.GetEditionImage(Edition.ToLower());
+            
+            if (editionImage != null)
+            {
+                _editionOverlay.Source = editionImage;
+                _editionOverlay.IsVisible = true;
+            }
+            else
+            {
+                _editionOverlay.IsVisible = false;
+            }
         }
     }
     

@@ -47,6 +47,31 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
+        <!-- Ante checkbox styles -->
+        <Style Selector="CheckBox.ante-checkbox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Default ante border style -->
+        <Style Selector="CheckBox.ante-checkbox Border.ante-border">
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="BorderBrush" Value="#1e2b2d"/>
+        </Style>
+        
+        <!-- Checked state for ante checkboxes -->
+        <Style Selector="CheckBox.ante-checkbox:checked Border.ante-border">
+            <Setter Property="Background" Value="#2a3a2a"/>
+            <Setter Property="BorderBrush" Value="#4BC292"/>
+        </Style>
+        
+        <Style Selector="CheckBox.ante-checkbox:checked TextBlock">
+            <Setter Property="Foreground" Value="#4BC292"/>
+        </Style>
+        
         <!-- Edition radio button styles -->
         <Style Selector="RadioButton.edition-radio">
             <Setter Property="Template">
@@ -129,100 +154,163 @@
                            HorizontalAlignment="Center"/>
             </Border>
             
-            <!-- Ante Selection with Balatro style -->
-            <Grid HorizontalAlignment="Center" Margin="0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Left Arrow Button -->
-                <Button Grid.Column="0" 
-                        Name="AnteLeftButton"
-                        Width="24" 
-                        Height="32"
-                        Margin="0,0,4,0"
-                        Cursor="Hand"
-                        Background="#3a5055"
-                        BorderBrush="#1e2b2d"
-                        BorderThickness="2">
-                    <Button.Template>
-                        <ControlTemplate>
-                            <Border Background="{TemplateBinding Background}" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" 
-                                    BorderThickness="{TemplateBinding BorderThickness}" 
-                                    CornerRadius="4">
-                                <Path Data="M8,12 L4,8 L8,4" 
-                                      Stroke="#eac058" 
-                                      StrokeThickness="2" 
-                                      Width="12" 
-                                      Height="16"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
+            <!-- Ante Selection with individual toggle buttons -->
+            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="ANTES" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="#888888" 
+                               Margin="0,0,0,6"/>
+                    
+                    <UniformGrid Grid.Row="1" Columns="8" Margin="-2">
+                        <CheckBox Name="Ante1" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="1" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                
-                <!-- Ante Badge -->
-                <Border Grid.Column="1" 
-                        Background="#FE5F55" 
-                        BorderBrush="#CC4C44"
-                        BorderThickness="2"
-                        CornerRadius="6" 
-                        Padding="12,6"
-                        MinWidth="100">
-                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                        <TextBlock Text="ANTES" 
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11" 
-                                   Foreground="#FFFFFF" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Name="AnteRangeText" 
-                                   Text="1-8" 
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="16" 
-                                   Foreground="#FFFFFF" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-                
-                <!-- Right Arrow Button -->
-                <Button Grid.Column="2" 
-                        Name="AnteRightButton"
-                        Width="24" 
-                        Height="32"
-                        Margin="4,0,0,0"
-                        Cursor="Hand"
-                        Background="#3a5055"
-                        BorderBrush="#1e2b2d"
-                        BorderThickness="2">
-                    <Button.Template>
-                        <ControlTemplate>
-                            <Border Background="{TemplateBinding Background}" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" 
-                                    BorderThickness="{TemplateBinding BorderThickness}" 
-                                    CornerRadius="4">
-                                <Path Data="M4,12 L8,8 L4,4" 
-                                      Stroke="#eac058" 
-                                      StrokeThickness="2" 
-                                      Width="12" 
-                                      Height="16"
-                                      Stretch="Uniform"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
+                        </CheckBox>
+                        <CheckBox Name="Ante2" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="2" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </Grid>
+                        </CheckBox>
+                        <CheckBox Name="Ante3" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="3" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="Ante4" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="4" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="Ante5" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="5" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="Ante6" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="6" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="Ante7" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="7" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                        <CheckBox Name="Ante8" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="8" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Foreground="#CCCCCC"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
+                    </UniformGrid>
+                </Grid>
+            </Border>
             
             <!-- Edition Selection with Balatro toggle style -->
-            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
+            <Border Name="EditionSection" Background="#1e2b2d" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -236,7 +324,7 @@
                                Margin="0,0,0,6"/>
                     
                     <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
-                        <RadioButton Name="EditionNormal" IsChecked="True" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio">
+                        <RadioButton Name="EditionNormal" IsChecked="True" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -251,7 +339,7 @@
                                        HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
-                        <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil">
+                        <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -266,7 +354,7 @@
                                        HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
-                        <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo">
+                        <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -281,7 +369,7 @@
                                        HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
-                        <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly">
+                        <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -296,7 +384,7 @@
                                        HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
-                        <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative">
+                        <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -330,7 +418,7 @@
                                Margin="0,0,0,6"/>
                     
                     <StackPanel Grid.Row="1" Spacing="4">
-                        <CheckBox Name="SourceTags" IsChecked="True" Classes="source-checkbox">
+                        <CheckBox Name="SourceTags" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -344,7 +432,7 @@
                                            Foreground="#CCCCCC"/>
                             </Border>
                         </CheckBox>
-                        <CheckBox Name="SourcePacks" IsChecked="True" Classes="source-checkbox">
+                        <CheckBox Name="SourcePacks" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 
@@ -358,7 +446,7 @@
                                            Foreground="#CCCCCC"/>
                             </Border>
                         </CheckBox>
-                        <CheckBox Name="SourceShop" IsChecked="True" Classes="source-checkbox">
+                        <CheckBox Name="SourceShop" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
                                     Background="#3a5055" 
                                     BorderBrush="#1e2b2d" 

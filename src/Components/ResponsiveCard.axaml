@@ -78,6 +78,15 @@
                         </TransformGroup>
                     </Image.RenderTransform>
                 </Image>
+                
+                <!-- Edition overlay for jokers with editions -->
+                <Image Name="EditionOverlay" 
+                       IsVisible="False"
+                       Width="64"
+                       Height="64"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
             </Grid>
             
             <TextBlock Grid.Row="1" 

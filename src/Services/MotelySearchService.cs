@@ -30,6 +30,7 @@ public class MotelySearchService : IDisposable
     
     public bool IsRunning => _isRunning;
     public List<Oracle.Models.SearchResult> Results { get; } = new();
+    public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
 
     public MotelySearchService()
     {

@@ -16,6 +16,7 @@ using Oracle.Controls;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
+using Avalonia.VisualTree;
 
 namespace Oracle.Components
 {
@@ -239,7 +240,7 @@ namespace Oracle.Components
         {
             var cookButton = this.FindControl<Button>("CookButton");
             
-            if (cookButton?.Content?.ToString()?.Contains("Let Jimbo Cook") == true)
+            if (cookButton?.Content?.ToString()?.Contains("START SEARCH") == true)
             {
                 // Start the search
                 await StartSearch();
@@ -327,7 +328,7 @@ namespace Oracle.Components
                 var cookButton = this.FindControl<Button>("CookButton");
                 if (cookButton != null)
                 {
-                    cookButton.Content = "Let Jimbo Cook!";
+                    cookButton.Content = "🚀 START SEARCH";
                     cookButton.Classes.Clear();
                     cookButton.Classes.Add("oracle-btn");
                     cookButton.Classes.Add("button-color-green");
@@ -459,7 +460,7 @@ namespace Oracle.Components
             _terminalBuffer.AppendLine(string.Join('\n', lines));
             
             // Update UI
-            var terminalOutput = this.FindControl<TextBox>("TerminalOutput");
+            var terminalOutput = this.FindControl<TextBlock>("TerminalOutput");
             if (terminalOutput != null)
             {
                 terminalOutput.Text = _terminalBuffer.ToString();
@@ -480,6 +481,53 @@ namespace Oracle.Components
             {
                 badge.IsVisible = count > 0;
                 countText.Text = count > 99 ? "99+" : count.ToString();
+            }
+            
+            // Also update the View Results button and badge
+            var viewResultsButton = this.FindControl<Button>("ViewResultsButton");
+            var resultCountBadge = this.FindControl<Border>("ResultCountBadge");
+            var resultCountText = this.FindControl<TextBlock>("ResultCountText");
+            
+            if (viewResultsButton != null)
+            {
+                viewResultsButton.IsVisible = count > 0;
+            }
+            
+            if (resultCountBadge != null && resultCountText != null)
+            {
+                resultCountBadge.IsVisible = count > 0;
+                resultCountText.Text = count > 99 ? "99+" : count.ToString();
+            }
+        }
+        
+        private async void OnViewResultsClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Get the main window
+                var mainWindow = this.FindAncestorOfType<Window>();
+                if (mainWindow == null) return;
+                
+                // Create and show the results window
+                var resultsWindow = new Views.Modals.SearchResultsWindow();
+                
+                // Convert MotelySearchService results to the modal's SearchResult format
+                var modalResults = _searchService.Results.Select(r => new Views.Modals.SearchResult
+                {
+                    Seed = r.Seed,
+                    Score = r.Score,
+                    Antes = r.Ante.ToString(),
+                    ItemsJson = r.ScoreBreakdown,
+                    Timestamp = DateTime.Now
+                }).ToList();
+                
+                resultsWindow.LoadResults(modalResults, _currentConfigName ?? "Search Results", _searchService.SearchDuration);
+                
+                await resultsWindow.ShowDialog(mainWindow);
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchWidget", $"Failed to show results modal: {ex.Message}");
             }
         }
         
@@ -528,7 +576,7 @@ namespace Oracle.Components
         
         private void OnClearConsoleClick(object? sender, RoutedEventArgs e)
         {
-            var terminalOutput = this.FindControl<TextBox>("TerminalOutput");
+            var terminalOutput = this.FindControl<TextBlock>("TerminalOutput");
             if (terminalOutput != null)
             {
                 terminalOutput.Text = "";

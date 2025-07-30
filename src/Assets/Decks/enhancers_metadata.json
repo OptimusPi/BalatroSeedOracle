@@ -1,0 +1,52 @@
+{
+  "spriteSheet": "Enhancers.png",
+  "spriteWidth": 142,
+  "spriteHeight": 190,
+  "columns": 7,
+  "rows": 5,
+  "sprites": {
+    "decks": {
+      "Red": { "x": 0, "y": 0 },
+      "Blue": { "x": 0, "y": 2 },
+      "Yellow": { "x": 1, "y": 2 },
+      "Green": { "x": 2, "y": 2 },
+      "Black": { "x": 3, "y": 2 },
+      "Plasma": { "x": 4, "y": 2 },
+      "Ghost": { "x": 6, "y": 2 },
+      "Magic": { "x": 0, "y": 3 },
+      "Checkered": { "x": 1, "y": 3 },
+      "Erratic": { "x": 2, "y": 3 },
+      "Abandoned": { "x": 3, "y": 3 },
+      "Painted": { "x": 4, "y": 3 },
+      "Challenge": { "x": 0, "y": 4 },
+      "Anaglyph": { "x": 2, "y": 4 },
+      "Zodiac": { "x": 3, "y": 4 },
+      "Nebula": { "x": 4, "y": 0 }
+    },
+    "enhancements": {
+      "Bonus": { "x": 1, "y": 1 },
+      "Mult": { "x": 2, "y": 1 },
+      "Wild": { "x": 3, "y": 1 },
+      "Lucky": { "x": 4, "y": 1 },
+      "Glass": { "x": 5, "y": 1 },
+      "Steel": { "x": 6, "y": 1 },
+      "Stone": { "x": 6, "y": 0 },
+      "Gold": { "x": 7, "y": 0 }
+    },
+    "seals": {
+      "Gold": { "x": 3, "y": 0 },
+      "Purple": { "x": 4, "y": 4 },
+      "Red": { "x": 5, "y": 4 },
+      "Blue": { "x": 6, "y": 4 }
+    },
+    "special": {
+      "BlankCard": { "x": 1, "y": 0, "description": "Base card template" },
+      "TheSoulGem": { "x": 0, "y": 1, "description": "Animated gem overlay for Soul cards" },
+      "LockedDeckPlaceholder": { "x": 5, "y": 0 },
+      "MysteryLegendary": { "x": 5, "y": 3, "description": "Use for 'Any Legendary' selection" },
+      "MysteryGeneric": { "x": 6, "y": 3, "description": "Use for 'Any' selections" },
+      "UnusedDeck1": { "x": 5, "y": 2 },
+      "UnusedDeck2": { "x": 1, "y": 4 }
+    }
+  }
+}

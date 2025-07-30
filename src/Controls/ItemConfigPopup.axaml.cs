@@ -19,8 +19,8 @@ namespace Oracle.Controls
         public event EventHandler? Cancelled;
         
         private string _itemKey = "";
-        private int _minAnte = 1;
-        private int _maxAnte = 8;
+        private bool[] _selectedAntes = new bool[8] { true, true, true, true, true, true, true, true };
+        private bool _isJoker = false;
         
         public ItemConfigPopup()
         {
@@ -33,17 +33,7 @@ namespace Oracle.Controls
             
             // Initialize after loading
             Dispatcher.UIThread.Post(() => {
-                UpdateAnteRangeText();
                 LoadEditionImages();
-                
-                // Wire up arrow button handlers
-                var leftButton = this.FindControl<Button>("AnteLeftButton");
-                var rightButton = this.FindControl<Button>("AnteRightButton");
-                
-                if (leftButton != null)
-                    leftButton.Click += OnAnteLeftClick;
-                if (rightButton != null)
-                    rightButton.Click += OnAnteRightClick;
             });
         }
         
@@ -91,25 +81,48 @@ namespace Oracle.Controls
         {
             _itemKey = itemKey;
             
+            // Check if this is a joker (editions only apply to jokers)
+            _isJoker = IsJokerItem(itemKey);
+            
             var nameText = this.FindControl<TextBlock>("ItemNameText");
             if (nameText != null)
                 nameText.Text = itemName;
             
+            // Show/hide edition section based on item type
+            var editionBorder = this.FindControl<Border>("EditionSection");
+            if (editionBorder != null)
+                editionBorder.IsVisible = _isJoker;
+            
             if (existingConfig != null)
             {
-                // Load existing ante configuration for range slider
+                // Load existing ante configuration
                 if (existingConfig.SearchAntes != null && existingConfig.SearchAntes.Count > 0)
                 {
-                    _minAnte = existingConfig.SearchAntes.Min();
-                    _maxAnte = existingConfig.SearchAntes.Max();
-                    UpdateAnteRangeText();
+                    // Clear all antes first
+                    for (int i = 0; i < 8; i++)
+                    {
+                        _selectedAntes[i] = false;
+                    }
+                    
+                    // Set selected antes
+                    foreach (var ante in existingConfig.SearchAntes)
+                    {
+                        if (ante >= 1 && ante <= 8)
+                        {
+                            _selectedAntes[ante - 1] = true;
+                        }
+                    }
+                    
+                    UpdateAnteCheckboxes();
                 }
                 else
                 {
-                    // Default to full range
-                    _minAnte = 1;
-                    _maxAnte = 8;
-                    UpdateAnteRangeText();
+                    // Default to all antes selected
+                    for (int i = 0; i < 8; i++)
+                    {
+                        _selectedAntes[i] = true;
+                    }
+                    UpdateAnteCheckboxes();
                 }
                 
                 // Set edition
@@ -184,19 +197,22 @@ namespace Oracle.Controls
         
         private List<int>? GetSelectedAntes()
         {
-            // Return the range of antes from min to max
-            if (_minAnte == 1 && _maxAnte == 8)
+            var antes = new List<int>();
+            for (int i = 0; i < 8; i++)
             {
-                // Full range means "any ante"
+                if (_selectedAntes[i])
+                {
+                    antes.Add(i + 1);
+                }
+            }
+            
+            // If all antes are selected, return null (means "any ante")
+            if (antes.Count == 8)
+            {
                 return null;
             }
             
-            var antes = new List<int>();
-            for (int i = _minAnte; i <= _maxAnte; i++)
-            {
-                antes.Add(i);
-            }
-            return antes;
+            return antes.Count > 0 ? antes : null;
         }
         
         public string GetItem()
@@ -204,59 +220,14 @@ namespace Oracle.Controls
             return _itemKey;
         }
         
-        private void OnAnteLeftClick(object? sender, RoutedEventArgs e)
+        private void UpdateAnteCheckboxes()
         {
-            // Decrease the ante range
-            if (_minAnte > 1)
+            for (int i = 0; i < 8; i++)
             {
-                _minAnte--;
-                if (_maxAnte < _minAnte)
-                    _maxAnte = _minAnte;
-            }
-            else if (_maxAnte > _minAnte)
-            {
-                _maxAnte--;
-            }
-            
-            UpdateAnteRangeText();
-        }
-        
-        private void OnAnteRightClick(object? sender, RoutedEventArgs e)
-        {
-            // Increase the ante range
-            if (_maxAnte < 8)
-            {
-                _maxAnte++;
-                if (_minAnte > _maxAnte)
-                    _minAnte = _maxAnte;
-            }
-            else if (_minAnte < _maxAnte)
-            {
-                _minAnte++;
-            }
-            
-            UpdateAnteRangeText();
-        }
-        
-        // Removed slider-related methods as we now use arrow buttons
-        
-        private void UpdateAnteRangeText()
-        {
-            var rangeText = this.FindControl<TextBlock>("AnteRangeText");
-            
-            if (rangeText != null)
-            {
-                if (_minAnte == 1 && _maxAnte == 8)
+                var checkbox = this.FindControl<CheckBox>($"Ante{i + 1}");
+                if (checkbox != null)
                 {
-                    rangeText.Text = "Any";
-                }
-                else if (_minAnte == _maxAnte)
-                {
-                    rangeText.Text = $"Ante {_minAnte}";
-                }
-                else
-                {
-                    rangeText.Text = $"{_minAnte}-{_maxAnte}";
+                    checkbox.IsChecked = _selectedAntes[i];
                 }
             }
         }
@@ -285,6 +256,61 @@ namespace Oracle.Controls
             }
             
             return sources;
+        }
+        
+        private bool IsJokerItem(string itemKey)
+        {
+            // Check if the item key corresponds to a joker
+            // Jokers typically start with specific prefixes or are in joker categories
+            return itemKey.Contains("joker") || 
+                   itemKey.Contains("Joker") ||
+                   itemKey.StartsWith("j_") || // Common joker prefix pattern
+                   IsSpecificJoker(itemKey);
+        }
+        
+        private bool IsSpecificJoker(string itemKey)
+        {
+            // Add specific joker names that might not follow the pattern
+            var jokerKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "blueprint", "brainstorm", "satellite", "showman", "flower_pot",
+                "merry_andy", "oops_all_6s", "the_idol", "seeing_double",
+                "matador", "hit_the_road", "the_duo", "the_trio", "the_family",
+                "the_order", "the_tribe", "stuntman", "invisible_joker",
+                "brainstorm", "satellite", "showman", "flower_pot",
+                "blueprint", "wee_joker", "joker", "greedy_joker",
+                "lusty_joker", "wrathful_joker", "gluttonous_joker"
+                // Add more as needed
+            };
+            
+            return jokerKeys.Contains(itemKey);
+        }
+        
+        private void OnAnteClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.Name != null)
+            {
+                // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
+                if (checkBox.Name.StartsWith("Ante") && int.TryParse(checkBox.Name.Substring(4), out int anteNum))
+                {
+                    if (anteNum >= 1 && anteNum <= 8)
+                    {
+                        _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
+                    }
+                }
+            }
+        }
+        
+        private void OnEditionClick(object? sender, RoutedEventArgs e)
+        {
+            // Edition selection is handled by radio button group automatically
+            // We'll read the selected edition when Apply is clicked
+        }
+        
+        private void OnSourceClick(object? sender, RoutedEventArgs e)
+        {
+            // Source selection is handled automatically by checkboxes
+            // We'll read the selected sources when Apply is clicked
         }
     }
     

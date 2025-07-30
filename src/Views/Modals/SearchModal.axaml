@@ -244,7 +244,7 @@
                                         <TextBlock Classes="param-label" Text="End:"/>
                                         <NumericUpDown Grid.Column="1" 
                                                        Name="EndBatchUpDown" 
-                                                       Value="1000" 
+                                                       Value="999999" 
                                                        Minimum="1" 
                                                        Maximum="999999" 
                                                        Background="#1a1a1a"
