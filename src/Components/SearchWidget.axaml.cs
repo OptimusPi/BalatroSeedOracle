@@ -36,7 +36,7 @@ namespace Oracle.Components
         private const int TERMINAL_UPDATE_INTERVAL_MS = 250; // Update terminal max 4 times per second
         private bool _isConfigExpanded = true; // Start with config expanded
         
-        // Public properties for SearchModal
+        // Public properties
         public string? ConfigPath => _configPath;
         public bool IsRunning => _searchService.IsRunning;
         public int FoundCount => _foundCount;
@@ -112,18 +112,13 @@ namespace Oracle.Components
             
             Oracle.Helpers.DebugLogger.Log("SearchWidget", $"MainMenu found: {mainMenu != null}");
             
-            if (mainMenu != null)
+            // For now, just toggle between minimized and normal state
+            // since SearchModal is being removed
+            if (_searchGrid != null)
             {
-                // Hide the widget
-                this.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("SearchWidget", "Widget hidden, calling ShowSearchModal");
-                
-                // Show the full modal with current results
-                mainMenu.ShowSearchModal(this);
-            }
-            else
-            {
-                Oracle.Helpers.DebugLogger.Log("SearchWidget", "Cannot find main menu - maximize failed");
+                _searchGrid.IsVisible = !_searchGrid.IsVisible;
+                UpdateWindowState();
+                Oracle.Helpers.DebugLogger.Log("SearchWidget", $"Toggled search grid visibility to: {_searchGrid.IsVisible}");
             }
         }
         
@@ -505,7 +500,7 @@ namespace Oracle.Components
         }
         
         /// <summary>
-        /// Start search with specific parameters (called from SearchModal)
+        /// Start search with specific parameters
         /// </summary>
         public void StartSearchWithParams(int threadCount, int minScore, int seedsToSearch)
         {

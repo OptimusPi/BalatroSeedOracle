@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using DuckDB.NET.Data;
 using Oracle.Models;
 using Oracle.Helpers;
@@ -82,15 +87,18 @@ namespace Oracle.Services
                     CREATE TABLE IF NOT EXISTS searches (
                         search_id INTEGER PRIMARY KEY,
                         config_path VARCHAR,
+                        config_hash VARCHAR,
                         search_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         thread_count INTEGER,
                         min_score INTEGER,
                         batch_size INTEGER,
                         deck VARCHAR,
                         stake VARCHAR,
+                        max_ante INTEGER,
                         total_seeds_searched BIGINT,
                         results_found INTEGER,
-                        duration_seconds DOUBLE
+                        duration_seconds DOUBLE,
+                        search_status VARCHAR DEFAULT 'running'
                     )
                 ";
                 createSearchesTable.ExecuteNonQuery();
@@ -105,19 +113,39 @@ namespace Oracle.Services
                         score INTEGER,
                         details TEXT,
                         ante INTEGER,
+                        score_breakdown TEXT,
                         found_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (search_id) REFERENCES searches(search_id)
                     )
                 ";
                 createResultsTable.ExecuteNonQuery();
 
+                // Create filter items table for search reconstruction
+                using var createFilterTable = connection.CreateCommand();
+                createFilterTable.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS filter_items (
+                        item_id INTEGER PRIMARY KEY,
+                        search_id INTEGER,
+                        filter_type VARCHAR,
+                        item_type VARCHAR,
+                        item_value VARCHAR,
+                        edition VARCHAR,
+                        score INTEGER,
+                        antes TEXT,
+                        FOREIGN KEY (search_id) REFERENCES searches(search_id)
+                    )
+                ";
+                createFilterTable.ExecuteNonQuery();
+
                 // Create indexes for better performance
                 using var createIndexes = connection.CreateCommand();
                 createIndexes.CommandText = @"
                     CREATE INDEX IF NOT EXISTS idx_search_date ON searches(search_date);
                     CREATE INDEX IF NOT EXISTS idx_seed ON search_results(seed);
-                    CREATE INDEX IF NOT EXISTS idx_score ON search_results(score);
+                    CREATE INDEX IF NOT EXISTS idx_score ON search_results(score DESC);
                     CREATE INDEX IF NOT EXISTS idx_search_id ON search_results(search_id);
+                    CREATE INDEX IF NOT EXISTS idx_config_hash ON searches(config_hash);
+                    CREATE INDEX IF NOT EXISTS idx_filter_search ON filter_items(search_id);
                 ";
                 createIndexes.ExecuteNonQuery();
 
@@ -227,7 +255,7 @@ namespace Oracle.Services
         }
 
         public async Task<long> StartNewSearchAsync(string configPath, int threadCount, int minScore, 
-            int batchSize, string deck, string stake)
+            int batchSize, string deck, string stake, int maxAnte = 39, string? configHash = null)
         {
             try
             {
@@ -238,17 +266,22 @@ namespace Oracle.Services
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    INSERT INTO searches (config_path, thread_count, min_score, batch_size, deck, stake, results_found)
-                    VALUES ($1, $2, $3, $4, $5, $6, 0)
+                    INSERT INTO searches (config_path, config_hash, thread_count, min_score, batch_size, 
+                                          deck, stake, max_ante, results_found, search_status)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                     RETURNING search_id
                 ";
                 
                 cmd.Parameters.Add(new DuckDBParameter("$1", configPath));
-                cmd.Parameters.Add(new DuckDBParameter("$2", threadCount));
-                cmd.Parameters.Add(new DuckDBParameter("$3", minScore));
-                cmd.Parameters.Add(new DuckDBParameter("$4", batchSize));
-                cmd.Parameters.Add(new DuckDBParameter("$5", deck));
-                cmd.Parameters.Add(new DuckDBParameter("$6", stake));
+                cmd.Parameters.Add(new DuckDBParameter("$2", configHash ?? ""));
+                cmd.Parameters.Add(new DuckDBParameter("$3", threadCount));
+                cmd.Parameters.Add(new DuckDBParameter("$4", minScore));
+                cmd.Parameters.Add(new DuckDBParameter("$5", batchSize));
+                cmd.Parameters.Add(new DuckDBParameter("$6", deck));
+                cmd.Parameters.Add(new DuckDBParameter("$7", stake));
+                cmd.Parameters.Add(new DuckDBParameter("$8", maxAnte));
+                cmd.Parameters.Add(new DuckDBParameter("$9", 0)); // results_found starts at 0
+                cmd.Parameters.Add(new DuckDBParameter("$10", "running"));
 
                 var searchId = Convert.ToInt64(await cmd.ExecuteScalarAsync());
                 DebugLogger.Log("SearchHistoryService", $"Started new search with ID: {searchId}");
@@ -269,8 +302,8 @@ namespace Oracle.Services
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    INSERT INTO search_results (search_id, seed, score, details, ante)
-                    VALUES ($1, $2, $3, $4, $5)
+                    INSERT INTO search_results (search_id, seed, score, details, ante, score_breakdown)
+                    VALUES ($1, $2, $3, $4, $5, $6)
                 ";
                 
                 cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
@@ -278,6 +311,7 @@ namespace Oracle.Services
                 cmd.Parameters.Add(new DuckDBParameter("$3", result.Score));
                 cmd.Parameters.Add(new DuckDBParameter("$4", result.Details ?? ""));
                 cmd.Parameters.Add(new DuckDBParameter("$5", result.Ante));
+                cmd.Parameters.Add(new DuckDBParameter("$6", result.ScoreBreakdown ?? ""));
 
                 await cmd.ExecuteNonQueryAsync();
                 
@@ -297,7 +331,7 @@ namespace Oracle.Services
             }
         }
 
-        public async Task CompleteSearchAsync(long searchId, long totalSeedsSearched, double durationSeconds)
+        public async Task CompleteSearchAsync(long searchId, long totalSeedsSearched, double durationSeconds, bool wasCancelled = false)
         {
             try
             {
@@ -306,16 +340,18 @@ namespace Oracle.Services
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
                     UPDATE searches 
-                    SET total_seeds_searched = $1, duration_seconds = $2
-                    WHERE search_id = $3
+                    SET total_seeds_searched = $1, duration_seconds = $2, search_status = $3
+                    WHERE search_id = $4
                 ";
                 
                 cmd.Parameters.Add(new DuckDBParameter("$1", totalSeedsSearched));
                 cmd.Parameters.Add(new DuckDBParameter("$2", durationSeconds));
-                cmd.Parameters.Add(new DuckDBParameter("$3", searchId));
+                cmd.Parameters.Add(new DuckDBParameter("$3", wasCancelled ? "cancelled" : "completed"));
+                cmd.Parameters.Add(new DuckDBParameter("$4", searchId));
 
                 await cmd.ExecuteNonQueryAsync();
-                DebugLogger.Log("SearchHistoryService", $"Completed search {searchId}: {totalSeedsSearched} seeds in {durationSeconds:F2}s");
+                var status = wasCancelled ? "cancelled" : "completed";
+                DebugLogger.Log("SearchHistoryService", $"Search {searchId} {status}: {totalSeedsSearched} seeds in {durationSeconds:F2}s");
             }
             catch (Exception ex)
             {
@@ -375,7 +411,7 @@ namespace Oracle.Services
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    SELECT seed, score, details, ante
+                    SELECT seed, score, details, ante, score_breakdown
                     FROM search_results
                     WHERE search_id = $1
                     ORDER BY score DESC
@@ -390,7 +426,8 @@ namespace Oracle.Services
                         Seed = reader.GetString(0),
                         Score = reader.GetInt32(1),
                         Details = reader.GetString(2),
-                        Ante = reader.GetInt32(3)
+                        Ante = reader.GetInt32(3),
+                        ScoreBreakdown = reader.IsDBNull(4) ? "" : reader.GetString(4)
                     });
                 }
             }
@@ -400,6 +437,91 @@ namespace Oracle.Services
             }
 
             return results;
+        }
+        
+        /// <summary>
+        /// Get live results as an observable collection that updates automatically
+        /// </summary>
+        public async Task<ObservableCollection<SearchResultViewModel>> GetLiveResultsObservableAsync(long searchId)
+        {
+            var collection = new ObservableCollection<SearchResultViewModel>();
+            
+            try
+            {
+                // Initial load of existing results
+                var results = await GetSearchResultsAsync(searchId);
+                int index = 1;
+                foreach (var result in results)
+                {
+                    collection.Add(new SearchResultViewModel
+                    {
+                        Index = index++,
+                        Seed = result.Seed,
+                        Score = result.Score,
+                        Details = result.Details,
+                        ScoreBreakdown = result.ScoreBreakdown
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to get live results: {ex.Message}");
+            }
+            
+            return collection;
+        }
+        
+        /// <summary>
+        /// Save filter configuration for a search
+        /// </summary>
+        public async Task SaveFilterItemsAsync(long searchId, Motely.Filters.OuijaConfig config)
+        {
+            try
+            {
+                var connection = GetConnection();
+                
+                // Save MUST items
+                foreach (var item in config.Must)
+                {
+                    await SaveFilterItemAsync(connection, searchId, "must", item);
+                }
+                
+                // Save SHOULD items
+                foreach (var item in config.Should)
+                {
+                    await SaveFilterItemAsync(connection, searchId, "should", item);
+                }
+                
+                // Save MUST NOT items
+                foreach (var item in config.MustNot)
+                {
+                    await SaveFilterItemAsync(connection, searchId, "mustnot", item);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to save filter items: {ex.Message}");
+            }
+        }
+        
+        private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType, 
+            Motely.Filters.OuijaConfig.FilterItem item)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                INSERT INTO filter_items (search_id, filter_type, item_type, item_value, edition, score, antes)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ";
+            
+            cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+            cmd.Parameters.Add(new DuckDBParameter("$2", filterType));
+            cmd.Parameters.Add(new DuckDBParameter("$3", item.Type));
+            cmd.Parameters.Add(new DuckDBParameter("$4", item.Value));
+            cmd.Parameters.Add(new DuckDBParameter("$5", item.Edition ?? ""));
+            cmd.Parameters.Add(new DuckDBParameter("$6", item.Score));
+            cmd.Parameters.Add(new DuckDBParameter("$7", System.Text.Json.JsonSerializer.Serialize(item.SearchAntes)));
+            
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 

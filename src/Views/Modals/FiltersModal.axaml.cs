@@ -25,6 +25,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using Motely;
 using Motely.Filters;
+using DebugLogger = Oracle.Helpers.DebugLogger;
 
 namespace Oracle.Views.Modals;
 
@@ -48,6 +49,7 @@ public partial class FiltersModalContent : UserControl
     private TextBox? _configNameBox;
     private TextBox? _configDescriptionBox;
     private TextBox? _jsonTextBox;
+    private object? _originalItemPaletteContent;
     private TextBlock? _statusText;
     private string? _currentFilePath;
 
@@ -96,7 +98,19 @@ public partial class FiltersModalContent : UserControl
         // Setup search functionality
         SetupSearchBox();
         
-        // Setup clear buttons for must not zone
+        // Setup clear buttons for each zone
+        var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
+        if (clearNeedsButton != null)
+        {
+            clearNeedsButton.Click += (s, e) => ClearNeeds();
+        }
+        
+        var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
+        if (clearWantsButton != null)
+        {
+            clearWantsButton.Click += (s, e) => ClearWants();
+        }
+        
         var clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
         if (clearMustNotButton != null)
         {
@@ -169,6 +183,9 @@ public partial class FiltersModalContent : UserControl
         loadButton?.AddHandler(Button.ClickEvent, OnLoadClick);
         clearAllButton?.AddHandler(Button.ClickEvent, (s, e) => { ClearNeeds(); ClearWants(); ClearMustNot(); });
         
+        var createWidgetButton = this.FindControl<Button>("CreateWidgetButton");
+        createWidgetButton?.AddHandler(Button.ClickEvent, OnCreateWidgetClick);
+        
         var searchButton = this.FindControl<Button>("SearchButton");
         searchButton?.AddHandler(Button.ClickEvent, OnLaunchSearchClick);
     }
@@ -215,14 +232,14 @@ public partial class FiltersModalContent : UserControl
             mustNotBorder.AddHandler(DragDrop.DragLeaveEvent, OnMustNotDragLeave);
         }
         
-        // Setup clear buttons (now integrated in the headers)
-        var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
-        var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
-        
-        if (clearNeedsButton != null)
-            clearNeedsButton.Click += (s, e) => ClearNeeds();
-        if (clearWantsButton != null)
-            clearWantsButton.Click += (s, e) => ClearWants();
+        // Clear buttons removed from headers - using clearTab button in navigation instead
+        // var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
+        // var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
+        // 
+        // if (clearNeedsButton != null)
+        //     clearNeedsButton.Click += (s, e) => ClearNeeds();
+        // if (clearWantsButton != null)
+        //     clearWantsButton.Click += (s, e) => ClearWants();
             
         // Setup mode toggle switch
         var modeToggle = this.FindControl<CheckBox>("ModeToggle");
@@ -394,7 +411,9 @@ public partial class FiltersModalContent : UserControl
                     else
                     {
                         // Handle single item drop
-                        var key = $"{category}:{itemName}";
+                        // For SoulJokers, use Jokers category for storage
+                        var storageCategory = category == "SoulJokers" ? "Jokers" : category;
+                        var key = $"{storageCategory}:{itemName}";
                         
                         // Move from wants to needs
                         _selectedWants.Remove(key);
@@ -491,7 +510,9 @@ public partial class FiltersModalContent : UserControl
                     else
                     {
                         // Handle single item drop
-                        var key = $"{category}:{itemName}";
+                        // For SoulJokers, use Jokers category for storage
+                        var storageCategory = category == "SoulJokers" ? "Jokers" : category;
+                        var key = $"{storageCategory}:{itemName}";
                         
                         // Move from needs to wants
                         _selectedNeeds.Remove(key);
@@ -515,23 +536,6 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Starting restoration");
             
-            // Find controls by name
-            var mainContentGrid = this.FindControl<Grid>("MainContentGrid");
-            
-            if (mainContentGrid == null)
-            {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Could not find MainContentGrid");
-                return;
-            }
-            
-            // Restore the left sidebar visibility
-            var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
-            if (leftSidebar != null)
-            {
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Found left sidebar, making visible");
-                leftSidebar.IsVisible = true;
-            }
-            
             // Restore the search bar
             var searchBox = this.FindControl<TextBox>("SearchBox");
             if (searchBox?.Parent?.Parent is Border searchBar)
@@ -547,35 +551,21 @@ public partial class FiltersModalContent : UserControl
                 }
             }
             
-            // Restore drop zones by finding them by name
-            var needsBorder = this.FindControl<Border>("NeedsBorder");
-            var wantsBorder = this.FindControl<Border>("WantsBorder");
-            var mustNotBorder = this.FindControl<Border>("MustNotBorder");
-            
-            if (needsBorder != null)
-            {
-                needsBorder.IsVisible = true;
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored NeedsBorder");
-            }
-            
-            if (wantsBorder != null)
-            {
-                wantsBorder.IsVisible = true;
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored WantsBorder");
-            }
-            
-            if (mustNotBorder != null)
-            {
-                mustNotBorder.IsVisible = true;
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored MustNotBorder");
-            }
-            
             // Restore padding to the ItemPaletteBorder
             var itemPaletteBorder = this.FindControl<Border>("ItemPaletteBorder");
             if (itemPaletteBorder != null)
             {
                 itemPaletteBorder.Padding = new Thickness(8);
                 Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored ItemPaletteBorder padding");
+            }
+            
+            // Restore the original item palette content
+            var itemPaletteContent = this.FindControl<ContentControl>("ItemPaletteContent");
+            if (itemPaletteContent != null && _originalItemPaletteContent != null)
+            {
+                itemPaletteContent.Content = _originalItemPaletteContent;
+                _originalItemPaletteContent = null;
+                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored original item palette content");
             }
             
             Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
@@ -618,28 +608,14 @@ public partial class FiltersModalContent : UserControl
                 Oracle.Helpers.DebugLogger.Log("Hidden search bar");
             }
             
-            // Hide drop zones by finding them by name
-            var needsBorder = this.FindControl<Border>("NeedsBorder");
-            var wantsBorder = this.FindControl<Border>("WantsBorder");
-            var mustNotBorder = this.FindControl<Border>("MustNotBorder");
+            // Keep drop zones visible - they will act as visual preview
+            // Update them to show current config
+            Oracle.Helpers.DebugLogger.Log("Keeping drop zones visible as visual preview");
             
-            if (needsBorder != null)
-            {
-                needsBorder.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden NeedsBorder");
-            }
-            
-            if (wantsBorder != null) 
-            {
-                wantsBorder.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden WantsBorder");
-            }
-            
-            if (mustNotBorder != null) 
-            {
-                mustNotBorder.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden MustNotBorder");
-            }
+            // Update drop zones after a short delay to allow JSON editor to load
+            Dispatcher.UIThread.Post(() => {
+                UpdateDropZonesFromJson();
+            }, DispatcherPriority.Background);
             
             // Remove padding from the ItemPaletteBorder to let JSON editor use full space
             var itemPaletteBorder = this.FindControl<Border>("ItemPaletteBorder");
@@ -659,6 +635,12 @@ public partial class FiltersModalContent : UserControl
             {
                 Oracle.Helpers.DebugLogger.LogError("ItemPaletteContent not found!");
                 return;
+            }
+
+            // Store the original content before replacing
+            if (_originalItemPaletteContent == null)
+            {
+                _originalItemPaletteContent = container.Content;
             }
 
             // Create JSON editor interface
@@ -878,6 +860,8 @@ public partial class FiltersModalContent : UserControl
                     
                     Dispatcher.UIThread.Post(() => {
                         ValidateJsonSyntaxForAvaloniaEdit(textEditor);
+                        // Update drop zones to show visual preview
+                        UpdateDropZonesFromJson();
                     }, DispatcherPriority.Background);
                 };
                 
@@ -1037,6 +1021,63 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
+    /// <summary>
+    /// Public method to load a config file from a given path
+    /// </summary>
+    public async Task LoadConfigAsync(string configPath)
+    {
+        try
+        {
+            if (!File.Exists(configPath))
+            {
+                UpdateStatus($"❌ File not found: {configPath}", isError: true);
+                return;
+            }
+            
+            var content = await File.ReadAllTextAsync(configPath);
+            
+            // Validate before loading
+            using var testDoc = JsonDocument.Parse(content);
+            
+            // Update AvaloniaEdit if available
+            var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
+            if (textEditor != null)
+            {
+                Oracle.Helpers.DebugLogger.Log($"Setting TextEditor text, length: {content.Length}");
+                textEditor.Text = content;
+                textEditor.IsVisible = true; // Ensure visibility
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "WARNING: JsonTextEditor not found in LoadConfig");
+            }
+            
+            // Also update the hidden TextBox for compatibility
+            if (_jsonTextBox != null)
+            {
+                _jsonTextBox.Text = content;
+            }
+            
+            _currentFilePath = configPath;
+            
+            // Format the JSON for better readability
+            await Dispatcher.UIThread.InvokeAsync(() => FormatJson(), DispatcherPriority.Background);
+            
+            UpdateStatus($"✓ Loaded: {Path.GetFileName(configPath)}");
+            
+            // Update the search widget to use this loaded config
+            UpdateSearchWidgetConfig(configPath);
+        }
+        catch (JsonException ex)
+        {
+            UpdateStatus($"❌ Invalid JSON file: {ex.Message}", isError: true);
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"❌ Error loading file: {ex.Message}", isError: true);
+        }
+    }
+
     private async void LoadConfig()
     {
         try
@@ -1072,50 +1113,7 @@ public partial class FiltersModalContent : UserControl
             if (files.Count > 0)
             {
                 var file = files[0];
-                try
-                {
-                    var content = await File.ReadAllTextAsync(file.Path.LocalPath);
-                    
-                    // Validate before loading
-                    using var testDoc = JsonDocument.Parse(content);
-                    
-                    // Update AvaloniaEdit if available
-                    var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
-                    if (textEditor != null)
-                    {
-                        Oracle.Helpers.DebugLogger.Log($"Setting TextEditor text, length: {content.Length}");
-                        textEditor.Text = content;
-                        textEditor.IsVisible = true; // Ensure visibility
-                    }
-                    else
-                    {
-                        Oracle.Helpers.DebugLogger.Log("FiltersModal", "WARNING: JsonTextEditor not found in LoadConfig");
-                    }
-                    
-                    // Also update the hidden TextBox for compatibility
-                    if (_jsonTextBox != null)
-                    {
-                        _jsonTextBox.Text = content;
-                    }
-                    
-                    _currentFilePath = file.Path.LocalPath;
-                    
-                    // Format the JSON for better readability
-                    Dispatcher.UIThread.Post(() => FormatJson(), DispatcherPriority.Background);
-                    
-                    UpdateStatus($"✓ Loaded: {Path.GetFileName(file.Path.LocalPath)}");
-                    
-                    // Update the search widget to use this loaded config
-                    UpdateSearchWidgetConfig(file.Path.LocalPath);
-                }
-                catch (JsonException ex)
-                {
-                    UpdateStatus($"❌ Invalid JSON file: {ex.Message}", isError: true);
-                }
-                catch (Exception ex)
-                {
-                    UpdateStatus($"❌ Error loading file: {ex.Message}", isError: true);
-                }
+                await LoadConfigAsync(file.Path.LocalPath);
             }
         }
         catch (Exception ex)
@@ -2314,6 +2312,7 @@ public partial class FiltersModalContent : UserControl
         var needsPlaceholder = this.FindControl<TextBlock>("NeedsPlaceholder");
         var needsScrollViewer = this.FindControl<ScrollViewer>("NeedsScrollViewer");
         var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
+        var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
         
         if (needsPlaceholder != null && needsScrollViewer != null && needsPanel != null)
         {
@@ -2322,12 +2321,14 @@ public partial class FiltersModalContent : UserControl
                 needsPlaceholder.IsVisible = false;
                 needsScrollViewer.IsVisible = true;
                 PopulateDropZonePanel(needsPanel, _selectedNeeds);
+                if (clearNeedsButton != null) clearNeedsButton.IsVisible = true;
             }
             else
             {
                 needsPlaceholder.IsVisible = true;
                 needsScrollViewer.IsVisible = false;
                 needsPanel.Children.Clear();
+                if (clearNeedsButton != null) clearNeedsButton.IsVisible = false;
             }
         }
         
@@ -2335,6 +2336,7 @@ public partial class FiltersModalContent : UserControl
         var wantsPlaceholder = this.FindControl<TextBlock>("WantsPlaceholder");
         var wantsScrollViewer = this.FindControl<ScrollViewer>("WantsScrollViewer");
         var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
+        var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
         
         if (wantsPlaceholder != null && wantsScrollViewer != null && wantsPanel != null)
         {
@@ -2343,12 +2345,14 @@ public partial class FiltersModalContent : UserControl
                 wantsPlaceholder.IsVisible = false;
                 wantsScrollViewer.IsVisible = true;
                 PopulateDropZonePanel(wantsPanel, _selectedWants);
+                if (clearWantsButton != null) clearWantsButton.IsVisible = true;
             }
             else
             {
                 wantsPlaceholder.IsVisible = true;
                 wantsScrollViewer.IsVisible = false;
                 wantsPanel.Children.Clear();
+                if (clearWantsButton != null) clearWantsButton.IsVisible = false;
             }
         }
         
@@ -2356,6 +2360,7 @@ public partial class FiltersModalContent : UserControl
         var mustNotPlaceholder = this.FindControl<TextBlock>("MustNotPlaceholder");
         var mustNotScrollViewer = this.FindControl<ScrollViewer>("MustNotScrollViewer");
         var mustNotPanel = this.FindControl<WrapPanel>("MustNotPanel");
+        var clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
         
         if (mustNotPlaceholder != null && mustNotScrollViewer != null && mustNotPanel != null)
         {
@@ -2364,16 +2369,106 @@ public partial class FiltersModalContent : UserControl
                 mustNotPlaceholder.IsVisible = false;
                 mustNotScrollViewer.IsVisible = true;
                 PopulateDropZonePanel(mustNotPanel, _selectedMustNot);
+                if (clearMustNotButton != null) clearMustNotButton.IsVisible = true;
             }
             else
             {
                 mustNotPlaceholder.IsVisible = true;
                 mustNotScrollViewer.IsVisible = false;
                 mustNotPanel.Children.Clear();
+                if (clearMustNotButton != null) clearMustNotButton.IsVisible = false;
             }
         }
         
         Oracle.Helpers.DebugLogger.Log($"📈 Updated drop zones: {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not");
+    }
+    
+    private void UpdateDropZonesFromJson()
+    {
+        try
+        {
+            // Get the current JSON from the editor
+            var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
+            if (textEditor == null || string.IsNullOrWhiteSpace(textEditor.Text))
+            {
+                return;
+            }
+            
+            // Parse the JSON to extract items
+            var json = textEditor.Text;
+            var jsonDoc = JsonDocument.Parse(json);
+            var root = jsonDoc.RootElement;
+            
+            // Clear current selections
+            _selectedNeeds.Clear();
+            _selectedWants.Clear();
+            _selectedMustNot.Clear();
+            
+            // Parse must items
+            if (root.TryGetProperty("must", out var mustArray) && mustArray.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in mustArray.EnumerateArray())
+                {
+                    AddItemFromJson(item, _selectedNeeds);
+                }
+            }
+            
+            // Parse should items
+            if (root.TryGetProperty("should", out var shouldArray) && shouldArray.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in shouldArray.EnumerateArray())
+                {
+                    AddItemFromJson(item, _selectedWants);
+                }
+            }
+            
+            // Parse mustNot items
+            if (root.TryGetProperty("mustNot", out var mustNotArray) && mustNotArray.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in mustNotArray.EnumerateArray())
+                {
+                    AddItemFromJson(item, _selectedMustNot);
+                }
+            }
+            
+            // Update the drop zones to show the items
+            UpdateDropZoneVisibility();
+            
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Updated drop zones from JSON");
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error updating drop zones from JSON: {ex.Message}");
+        }
+    }
+    
+    private void AddItemFromJson(JsonElement item, HashSet<string> targetSet)
+    {
+        if (item.TryGetProperty("type", out var typeElement) && 
+            item.TryGetProperty("value", out var valueElement))
+        {
+            var type = typeElement.GetString();
+            var value = valueElement.GetString();
+            
+            if (!string.IsNullOrEmpty(type) && !string.IsNullOrEmpty(value))
+            {
+                // Map type to category
+                string? category = type?.ToLower() switch
+                {
+                    "joker" or "souljoker" => "Jokers",
+                    "tarot" or "tarotcard" => "Tarots",
+                    "spectral" or "spectralcard" => "Spectrals",
+                    "voucher" => "Vouchers",
+                    "tag" => "Tags",
+                    _ => null
+                };
+                
+                if (category != null)
+                {
+                    targetSet.Add($"{category}:{value}");
+                }
+            }
+        }
     }
     
     private void PopulateDropZonePanel(WrapPanel panel, HashSet<string> items)
@@ -2400,10 +2495,10 @@ public partial class FiltersModalContent : UserControl
         {
             Stretch = Stretch.Uniform,
             StretchDirection = StretchDirection.DownOnly,
-            MaxWidth = 70,
-            MaxHeight = 90,
-            MinWidth = 40,
-            MinHeight = 52,
+            MaxWidth = 80,
+            MaxHeight = 100,
+            MinWidth = 50,
+            MinHeight = 65,
             Margin = new Thickness(2)
         };
         
@@ -2411,9 +2506,9 @@ public partial class FiltersModalContent : UserControl
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 50,
-            Height = 65,
-            Padding = new Thickness(2),
+            Width = 64,
+            Height = 80,
+            Padding = new Thickness(0),
             Tag = $"{category}:{itemName}" // Store for later reference
         };
         
@@ -2433,29 +2528,6 @@ public partial class FiltersModalContent : UserControl
             // Create stacked layout for legendary joker
             var grid = new Grid();
             
-            // Create gold card background for legendary
-            var goldCard = new Border
-            {
-                Background = new LinearGradientBrush
-                {
-                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                    EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                    GradientStops =
-                    {
-                        new GradientStop(Color.Parse("#FFD700"), 0),
-                        new GradientStop(Color.Parse("#FFA500"), 0.5),
-                        new GradientStop(Color.Parse("#FFD700"), 1)
-                    }
-                },
-                CornerRadius = new CornerRadius(4),
-                Width = 44,
-                Height = 58,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Margin = new Thickness(2)
-            };
-            grid.Children.Add(goldCard);
-            
             // Joker face image on top
             var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
             if (jokerImageSource != null)
@@ -2463,9 +2535,7 @@ public partial class FiltersModalContent : UserControl
                 var jokerFace = new Image
                 {
                     Source = jokerImageSource,
-                    Stretch = Stretch.UniformToFill,
-                    Width = 44,
-                    Height = 58,
+                    Stretch = Stretch.Uniform,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
                 };
@@ -2482,12 +2552,11 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 25,  // Small animated face
-                        Height = 25,
+                        Width = 64,  // Slightly larger animated face
+                        Height = 64,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        RenderTransform = new RotateTransform(),
-                        Margin = new Thickness(0, 5, 0, 0) // Slight offset down
+                        RenderTransform = new RotateTransform()
                     };
                     
                     // Add wobble animation
@@ -2733,6 +2802,176 @@ public partial class FiltersModalContent : UserControl
         Oracle.Helpers.DebugLogger.Log("🗑️ Cleared all MUST NOT");
     }
     
+    private async void OnCreateWidgetClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Ensure we have a saved config file
+            string? configPath = _currentConfigPath;
+            
+            if (string.IsNullOrEmpty(configPath))
+            {
+                // Prompt to save first
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "No saved config - prompting user to save first");
+                await OnSaveClickAsync();
+                configPath = _currentConfigPath;
+                
+                // If they cancelled the save, abort
+                if (string.IsNullOrEmpty(configPath))
+                {
+                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "User cancelled save - aborting widget creation");
+                    return;
+                }
+            }
+            
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Creating widget with config: {configPath}");
+            
+            // Find the BalatroMainMenu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu != null)
+            {
+                // Show the search widget with the config
+                mainMenu.ShowSearchWidget(configPath);
+                
+                // Save widget persistence preferences
+                SaveWidgetPreference(configPath);
+                
+                // Close the filters modal
+                var mainWindow = this.GetVisualRoot() as Window;
+                if (mainWindow != null)
+                {
+                    var balMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainContent");
+                    if (balMenu != null)
+                    {
+                        balMenu.HideModalContent();
+                    }
+                }
+                
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Widget created successfully!");
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "Could not find BalatroMainMenu!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error creating widget: {ex.Message}");
+        }
+    }
+    
+    private async Task OnSaveClickAsync()
+    {
+        var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+        var configName = configNameBox?.Text ?? "Untitled Filter";
+        
+        // Create the config object using the existing method
+        var config = BuildOuijaConfigFromSelections();
+        var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions 
+        { 
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
+        
+        // Get the MainWindow to access storage
+        var mainWindow = this.GetVisualRoot() as Window;
+        if (mainWindow != null)
+        {
+            var options = new Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Save Filter Configuration",
+                DefaultExtension = "ouija.json",
+                SuggestedFileName = $"{configName}.ouija.json",
+                FileTypeChoices = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("Ouija Filter")
+                    {
+                        Patterns = new[] { "*.ouija.json" }
+                    }
+                }
+            };
+            
+            var file = await mainWindow.StorageProvider.SaveFilePickerAsync(options);
+            if (file != null)
+            {
+                // Wrap the config with metadata for saving
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                var authorName = userProfileService?.GetAuthorName() ?? "Jimbo";
+                
+                var wrappedConfig = new 
+                {
+                    name = configName,
+                    author = authorName,
+                    created = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    filter_config = config
+                };
+                
+                var wrappedJson = System.Text.Json.JsonSerializer.Serialize(wrappedConfig, new System.Text.Json.JsonSerializerOptions 
+                { 
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                });
+                
+                await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, wrappedJson);
+                _currentConfigPath = file.Path.LocalPath;
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved config to: {_currentConfigPath}");
+            }
+        }
+    }
+    
+    private void SaveWidgetPreference(string configPath)
+    {
+        try
+        {
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            if (userProfileService != null)
+            {
+                // Add widget to user profile for persistence
+                var widgetConfig = new SearchWidgetConfig
+                {
+                    FilterConfigPath = configPath,
+                    X = 20 + (_widgetCount * 400), // Calculate position based on existing widgets
+                    Y = 80,
+                    IsMinimized = false,
+                    ThreadCount = 4,
+                    MinScore = 1,
+                    BatchSize = 4
+                };
+                
+                userProfileService.AddOrUpdateWidget(widgetConfig);
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Widget preference saved");
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving widget preference: {ex.Message}");
+        }
+    }
+    
+    private int _widgetCount
+    {
+        get
+        {
+            // Get the main window to find BalatroMainMenu
+            var mainWindow = TopLevel.GetTopLevel(this) as Window;
+            if (mainWindow?.Content is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    if (child is Views.BalatroMainMenu mainMenu)
+                    {
+                        var desktopCanvas = mainMenu.FindControl<Grid>("DesktopCanvas");
+                        if (desktopCanvas != null)
+                        {
+                            return desktopCanvas.Children.OfType<Components.SearchWidget>().Count();
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+    }
+    
     private void PreviewConfig()
     {
         try
@@ -2807,12 +3046,8 @@ public partial class FiltersModalContent : UserControl
             var properties = e.GetCurrentPoint(card).Properties;
             if (!properties.IsLeftButtonPressed) return;
             
-            // For jokers, check if it's a legendary/soul joker
+            // For jokers, always use "Jokers" category regardless of legendary status
             var dragCategory = category;
-            if (category == "Jokers" && IsLegendaryJoker(itemName))
-            {
-                dragCategory = "SoulJokers";
-            }
             
             // Create drag data
             var dataObject = new DataObject();
@@ -2924,8 +3159,8 @@ public partial class FiltersModalContent : UserControl
                     var faceImage = new Image
                     {
                         Source = faceSource,
-                        Width = 40,
-                        Height = 40,
+                        Width = 64,
+                        Height = 64,
                         Stretch = Stretch.Uniform,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
@@ -2950,6 +3185,7 @@ public partial class FiltersModalContent : UserControl
         }
         else
         {
+            DebugLogger.Log("FiltersModal", $"No image found for item '{itemName}' in category '{category}' - using text fallback");
             // Fallback to text if no image
             ghostContent.Children.Add(new TextBlock
             {
@@ -2971,8 +3207,8 @@ public partial class FiltersModalContent : UserControl
             Height = 100,
             Background = new SolidColorBrush(Color.FromArgb(200, 32, 32, 32)),
             BorderBrush = new SolidColorBrush(Color.Parse(UIConstants.BorderGold)),
-            BorderThickness = new Thickness(2),
-            CornerRadius = new CornerRadius(8),
+            BorderThickness = new Thickness(4),
+            CornerRadius = new CornerRadius(6),
             BoxShadow = BoxShadows.Parse("0 5 20 #000000AA"),
             RenderTransform = new RotateTransform(-5),
             Opacity = 0.9,
@@ -4162,7 +4398,9 @@ public partial class FiltersModalContent : UserControl
                     else
                     {
                         // Handle single item drop
-                        var key = $"{category}:{itemName}";
+                        // For SoulJokers, use Jokers category for storage
+                        var storageCategory = category == "SoulJokers" ? "Jokers" : category;
+                        var key = $"{storageCategory}:{itemName}";
                         
                         // Move from needs/wants to must not
                         _selectedNeeds.Remove(key);

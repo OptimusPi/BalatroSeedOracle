@@ -280,7 +280,7 @@
                                         Spacing="16"
                                         Margin="0,16,0,0">
                                 <Button Name="StartButton"
-                                        Content="🔥 START COOKING"
+                                        Content="Let Jimbo COOK!"
                                         Classes="btn-green action-button"
                                         IsEnabled="False"
                                         Click="OnStartClick"/>
@@ -425,10 +425,18 @@
                                             Binding="{Binding Seed}" 
                                             Width="120"
                                             FontFamily="Cascadia Code, Consolas, monospace"/>
-                        <DataGridTextColumn Header="SCORE" 
-                                            Binding="{Binding ScoreFormatted}" 
-                                            Width="100"
-                                            SortMemberPath="Score"/>
+                        <DataGridTemplateColumn Header="SCORE" Width="100" SortMemberPath="Score">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ScoreFormatted}" 
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="Bold"
+                                               Foreground="#FEB95F"
+                                               ToolTip.Tip="{Binding ScoreTooltip}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="DETAILS" 
                                             Binding="{Binding Details}" 
                                             Width="*"/>

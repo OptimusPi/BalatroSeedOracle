@@ -7,9 +7,11 @@ using Avalonia.Markup.Xaml;
 using Avalonia.LogicalTree;
 using Oracle.Controls;
 using Oracle.Helpers;
+using Oracle.Models;
 using Oracle.Services;
 using Oracle.Views.Modals;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,8 +25,9 @@ namespace Oracle.Views
         private Button? _animationToggleButton;
         private TextBlock? _animationButtonText;
         private bool _isAnimating = true;
-        private bool _isMusicEnabled = true;
-        private int _volumeLevel = 2; // Default to medium volume
+        private readonly List<Components.SearchWidget> _searchWidgets = new();
+        private int _widgetCounter = 0;
+        private UserProfileService? _userProfileService;
 
         /// <summary>
         /// Callback to request main content swap (set by MainWindow)
@@ -34,6 +37,9 @@ namespace Oracle.Views
         public BalatroMainMenu()
         {
             InitializeComponent();
+            
+            // Initialize user profile service
+            _userProfileService = ServiceHelper.GetService<UserProfileService>();
         }
 
         private void InitializeComponent()
@@ -48,6 +54,20 @@ namespace Oracle.Views
             {
                 // Find the TextBlock inside the button using logical tree traversal
                 _animationButtonText = LogicalExtensions.GetLogicalChildren(_animationToggleButton).OfType<TextBlock>().FirstOrDefault();
+            }
+            
+            
+            // Load and display current author name
+            if (_userProfileService != null)
+            {
+                var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
+                if (authorDisplay != null && authorEdit != null)
+                {
+                    var authorName = _userProfileService.GetAuthorName();
+                    authorDisplay.Text = authorName;
+                    authorEdit.Text = authorName;
+                }
             }
         }
         
@@ -83,33 +103,16 @@ namespace Oracle.Views
         }
 
         // Main menu button event handlers
-        private void OnSearchClick(object? sender, RoutedEventArgs e)
+        private void OnNewFilterClick(object? sender, RoutedEventArgs e)
         {
-            OpenSearchModal();
+            // Open filters modal with blank/new filter
+            this.ShowFiltersModal();
         }
         
-        private void OpenSearchModal(string? configPath = null)
+        private void OnLoadClick(object? sender, RoutedEventArgs e)
         {
-            // Create a new search modal
-            var searchModal = new SearchModal();
-            searchModal.SetSearchService(ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService());
-            
-            // If a config path is provided, set it
-            if (!string.IsNullOrEmpty(configPath))
-            {
-                searchModal.SetConfigPath(configPath);
-            }
-            
-            // Wrap in standard modal frame
-            var modal = new StandardModal("SEED SEARCH");
-            modal.SetContent(searchModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal);
-        }
-        
-        public void OpenSearchModalWithConfig(string configPath)
-        {
-            OpenSearchModal(configPath);
+            // Show the browse filters modal
+            this.ShowBrowseFiltersModal();
         }
 
         private void OnResultsClick(object? sender, RoutedEventArgs e)
@@ -122,11 +125,6 @@ namespace Oracle.Views
             ShowModalContent(modal);
         }
         
-        private void OnFiltersClick(object? sender, RoutedEventArgs e)
-        {
-            // Use the modal helper extension method
-            this.ShowFiltersModal();
-        }
 
         private void OnFunRunClick(object? sender, RoutedEventArgs e)
         {
@@ -149,11 +147,10 @@ namespace Oracle.Views
         {
             try
             {
-                // Stop any running search in the search widget
-                var searchWidget = this.FindControl<Components.SearchWidget>("SearchWidget");
-                if (searchWidget != null)
+                // Stop all search widgets
+                foreach (var searchWidget in _searchWidgets)
                 {
-                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Stopping search widget...");
+                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Stopping search widget #{_searchWidgets.IndexOf(searchWidget) + 1}...");
                     searchWidget.StopSearch();
                 }
             }
@@ -216,63 +213,90 @@ namespace Oracle.Views
             }
         }
         
+        
         /// <summary>
-        /// Toggles music playback when the music button is clicked
+        /// Switches to edit mode for author name
         /// </summary>
-        private void OnMusicToggleClick(object? sender, RoutedEventArgs e)
+        private void OnAuthorClick(object? sender, PointerPressedEventArgs e)
         {
-            // Toggle music on/off (placeholder implementation)
-            _isMusicEnabled = !_isMusicEnabled;
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Music toggled: {(_isMusicEnabled ? "ON" : "OFF")}");
+            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
             
-            // Update button text to reflect state
-            if (sender is Button button)
+            if (authorDisplay != null && authorEdit != null)
             {
-                button.Content = _isMusicEnabled ? "🔊 MUSIC" : "🔇 MUSIC";
+                // Switch to edit mode
+                authorDisplay.IsVisible = false;
+                authorEdit.IsVisible = true;
+                
+                // Focus and select all text
+                authorEdit.Focus();
+                authorEdit.SelectAll();
+            }
+            
+            e.Handled = true;
+        }
+        
+        /// <summary>
+        /// Save author name when edit loses focus
+        /// </summary>
+        private void OnAuthorEditLostFocus(object? sender, RoutedEventArgs e)
+        {
+            SaveAuthorName();
+        }
+        
+        /// <summary>
+        /// Handle Enter/Tab keys in author edit
+        /// </summary>
+        private void OnAuthorEditKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Tab)
+            {
+                SaveAuthorName();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                // Cancel edit
+                var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
+                
+                if (authorDisplay != null && authorEdit != null && _userProfileService != null)
+                {
+                    // Restore original value
+                    authorEdit.Text = _userProfileService.GetAuthorName();
+                    authorDisplay.IsVisible = true;
+                    authorEdit.IsVisible = false;
+                }
+                e.Handled = true;
             }
         }
         
         /// <summary>
-        /// Shows volume control when the volume button is clicked
+        /// Save the author name and switch back to display mode
         /// </summary>
-        private void OnVolumeClick(object? sender, RoutedEventArgs e)
+        private void SaveAuthorName()
         {
-            // Cycle through volume levels (placeholder implementation)
-            _volumeLevel = (_volumeLevel + 1) % 4; // 0-3 levels
-            var volumeText = _volumeLevel switch
-            {
-                0 => "🔇 MUTE",
-                1 => "🔈 LOW",
-                2 => "🔉 MED",
-                3 => "🔊 HIGH",
-                _ => "🔊 HIGH"
-            };
+            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
             
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Volume changed to level {_volumeLevel}: {volumeText}");
-            
-            // Update button text to reflect volume level
-            if (sender is Button button)
+            if (authorDisplay != null && authorEdit != null && _userProfileService != null)
             {
-                button.Content = volumeText;
+                var newName = authorEdit.Text?.Trim();
+                if (!string.IsNullOrEmpty(newName))
+                {
+                    _userProfileService.SetAuthorName(newName);
+                    authorDisplay.Text = newName;
+                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Author name updated to: {newName}");
+                }
+                
+                // Switch back to display mode
+                authorDisplay.IsVisible = true;
+                authorEdit.IsVisible = false;
             }
         }
         
-        /// <summary>
-        /// Shows the search modal with current search results from widget
-        /// </summary>
-        public void ShowSearchModal(Components.SearchWidget searchWidget)
-        {
-            var searchModal = new SearchModal();
-            searchModal.SetSearchService(ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService());
-            searchModal.SetConfigPath(searchWidget.ConfigPath);
-            searchModal.SetResults(searchWidget.Results);
-            searchModal.SetSearchState(searchWidget.IsRunning, searchWidget.FoundCount);
-            
-            var modal = new StandardModal("SEARCH RESULTS");
-            modal.SetContent(searchModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal);
-        }
+        
+        
         
         /// <summary>
         /// Shows the search widget on the desktop
@@ -281,23 +305,38 @@ namespace Oracle.Views
         {
             Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchWidget called with config: {configPath}");
             
-            var searchWidget = this.FindControl<Components.SearchWidget>("SearchWidget");
-            if (searchWidget != null)
+            // Get the desktop canvas
+            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
+            if (desktopCanvas == null)
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Found SearchWidget control");
-                searchWidget.IsVisible = true;
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"SearchWidget.IsVisible set to: {searchWidget.IsVisible}");
-                
-                // If config path provided, load it
-                if (!string.IsNullOrEmpty(configPath))
-                {
-                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Loading config...");
-                    await searchWidget.LoadConfig(configPath);
-                }
+                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                return;
             }
-            else
+            
+            // Create a new SearchWidget instance
+            var searchWidget = new Components.SearchWidget();
+            
+            // Calculate position based on existing widgets
+            var leftMargin = 20 + (_widgetCounter % 3) * 400; // 3 widgets per row
+            var topMargin = 80 + (_widgetCounter / 3) * 300; // Stack rows
+            
+            searchWidget.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+            searchWidget.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
+            searchWidget.Margin = new Thickness(leftMargin, topMargin, 0, 0);
+            searchWidget.IsVisible = true;
+            
+            // Add to the desktop canvas
+            desktopCanvas.Children.Add(searchWidget);
+            _searchWidgets.Add(searchWidget);
+            _widgetCounter++;
+            
+            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Created SearchWidget #{_widgetCounter} at position ({leftMargin}, {topMargin})");
+            
+            // If config path provided, load it
+            if (!string.IsNullOrEmpty(configPath))
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "SearchWidget control not found!");
+                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Loading config...");
+                await searchWidget.LoadConfig(configPath);
             }
         }
         
@@ -308,18 +347,23 @@ namespace Oracle.Views
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
             
-            // Find and stop the search widget
-            var searchWidget = this.FindControl<Components.SearchWidget>("SearchWidget");
-            if (searchWidget != null && searchWidget.IsRunning)
+            // Stop all search widgets
+            foreach (var searchWidget in _searchWidgets)
             {
-                DebugLogger.LogImportant("BalatroMainMenu", "Stopping SearchWidget search...");
-                searchWidget.StopSearch();
-                
-                // Wait a bit for the search to stop
+                if (searchWidget.IsRunning)
+                {
+                    DebugLogger.LogImportant("BalatroMainMenu", $"Stopping SearchWidget #{_searchWidgets.IndexOf(searchWidget) + 1}...");
+                    searchWidget.StopSearch();
+                }
+            }
+            
+            // Wait a bit for the searches to stop
+            if (_searchWidgets.Any(w => w.IsRunning))
+            {
                 await Task.Delay(500);
             }
             
-            // Also check if there's a search modal open
+            // Check if there's a filters modal open with a search running
             if (_modalContainer != null && _modalContainer.Children.Count > 0)
             {
                 var modal = _modalContainer.Children[0] as StandardModal;
@@ -327,12 +371,13 @@ namespace Oracle.Views
                 {
                     // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var searchModal = modalContent?.Content as SearchModal;
-                    if (searchModal != null)
+                    var filtersModal = modalContent?.Content as FiltersModalContent;
+                    if (filtersModal != null)
                     {
-                        DebugLogger.LogImportant("BalatroMainMenu", "Stopping SearchModal search...");
-                        searchModal.StopSearch();
-                        await Task.Delay(500);
+                        // FiltersModal may have active searches to stop
+                        DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
+                        // Note: FiltersModal doesn't have a StopSearch method currently
+                        // but we keep this structure in case it's needed later
                     }
                 }
             }

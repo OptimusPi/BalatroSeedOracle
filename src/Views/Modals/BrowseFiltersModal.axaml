@@ -1,0 +1,175 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             x:Class="Oracle.Views.Modals.BrowseFiltersModal"
+             Width="700"
+             Height="450">
+    
+    <UserControl.Styles>
+        <!-- Filter item style -->
+        <Style Selector="ListBoxItem.filter-item">
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="ListBoxItem.filter-item:pointerover">
+            <Setter Property="Background" Value="#4a5356"/>
+            <Setter Property="BorderBrush" Value="#009dff"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem.filter-item:selected">
+            <Setter Property="Background" Value="#009dff"/>
+            <Setter Property="BorderBrush" Value="#00b5ff"/>
+        </Style>
+        
+        <!-- Action button style -->
+        <Style Selector="Button.action-button">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header with search -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <TextBox x:Name="SearchBox"
+                     Classes="search-box"
+                     Watermark="Search saved filters..."
+                     TextChanged="OnSearchTextChanged"/>
+        </Grid>
+        
+        <!-- Filter list -->
+        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Location tabs -->
+                <StackPanel Grid.Row="0" 
+                           Orientation="Horizontal" 
+                           Spacing="8"
+                           Margin="0,0,0,8">
+                    <Button x:Name="LocalTab"
+                            Classes="nav-button active"
+                            Content="LOCAL"
+                            Click="OnLocalTabClick"/>
+                    <Button x:Name="OuijaTab"
+                            Classes="nav-button"
+                            Content="OUIJA CONFIGS"
+                            Click="OnOuijaTabClick"/>
+                    <Button x:Name="ExamplesTab"
+                            Classes="nav-button"
+                            Content="EXAMPLES"
+                            Click="OnExamplesTabClick"/>
+                </StackPanel>
+                
+                <!-- Filter items -->
+                <ListBox x:Name="FilterList"
+                         Grid.Row="1"
+                         Background="Transparent"
+                         SelectionMode="Single"
+                         SelectionChanged="OnFilterSelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <!-- Filter name -->
+                                <TextBlock Grid.Row="0"
+                                          Text="{Binding Name}"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          FontSize="16"
+                                          FontWeight="Bold"
+                                          Foreground="#E2E2E3"/>
+                                
+                                <!-- File path -->
+                                <TextBlock Grid.Row="1"
+                                          Text="{Binding FilePath}"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          FontSize="11"
+                                          Foreground="#999999"
+                                          Margin="0,2,0,0"/>
+                                
+                                <!-- Description (if available) -->
+                                <TextBlock Grid.Row="2"
+                                          Text="{Binding Description}"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          FontSize="12"
+                                          Foreground="#CCCCCC"
+                                          Margin="0,4,0,0"
+                                          TextWrapping="Wrap"
+                                          IsVisible="{Binding HasDescription}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Border Classes="filter-item"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="8"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter Content="{TemplateBinding Content}"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter>
+                        </Style>
+                    </ListBox.Styles>
+                </ListBox>
+                
+                <!-- Empty state -->
+                <TextBlock x:Name="EmptyMessage"
+                          Grid.Row="1"
+                          Text="No filters found"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="16"
+                          Foreground="#666666"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsVisible="False"/>
+            </Grid>
+        </ScrollViewer>
+        
+        <!-- Action buttons -->
+        <StackPanel Grid.Row="2" 
+                   Orientation="Horizontal"
+                   HorizontalAlignment="Center"
+                   Spacing="8"
+                   Margin="0,12,0,0">
+            <Button x:Name="LaunchButton"
+                    Classes="btn-green action-button"
+                    Content="LAUNCH SEARCH"
+                    Click="OnLaunchClick"
+                    IsEnabled="False"/>
+            
+            <Button x:Name="EditButton"
+                    Classes="btn-blue action-button"
+                    Content="EDIT FILTER"
+                    Click="OnEditClick"
+                    IsEnabled="False"/>
+            
+            <Button x:Name="NativeButton"
+                    Classes="btn-purple action-button"
+                    Content="BROWSE FILES"
+                    Click="OnNativeBrowseClick"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

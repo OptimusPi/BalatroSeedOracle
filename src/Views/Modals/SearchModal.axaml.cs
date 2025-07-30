@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
@@ -25,6 +28,8 @@ public partial class SearchModal : UserControl
     private bool _isRunning;
     private TextBox? _consoleOutput;
     private Border? _emptyState;
+    private CancellationTokenSource? _searchCts;
+    private DateTime _searchStartTime;
     
 
     public SearchModal()
@@ -115,7 +120,8 @@ public partial class SearchModal : UserControl
                 Index = index++,
                 Seed = result.Seed,
                 Score = result.Score,
-                Details = result.Details ?? ""
+                Details = result.Details ?? "",
+                ScoreBreakdown = result.ScoreBreakdown ?? ""
             });
         }
         
@@ -371,8 +377,27 @@ public partial class SearchModal : UserControl
                 statusText.Text = $"Starting search with {criteria.ThreadCount} threads...";
             }
 
-            // Start the search with the criteria
-            await _searchService.StartSearchAsync(criteria);
+            // Clear previous results
+            _results.Clear();
+            _searchStartTime = DateTime.UtcNow;
+            
+            // Hide empty state and show grid
+            var resultsGrid = this.FindControl<DataGrid>("ResultsGrid");
+            if (_emptyState != null && resultsGrid != null)
+            {
+                _emptyState.IsVisible = false;
+                resultsGrid.IsVisible = true;
+                resultsGrid.ItemsSource = _results;
+            }
+            
+            // Create progress handler
+            var progress = new Progress<SearchProgress>(OnSearchProgress);
+            
+            // Create cancellation token
+            _searchCts = new CancellationTokenSource();
+            
+            // Start the search with progress reporting
+            await _searchService.StartSearchAsync(criteria, progress, _searchCts.Token);
         }
         catch (Exception ex)
         {
@@ -391,6 +416,10 @@ public partial class SearchModal : UserControl
     {
         try
         {
+            // Cancel via token first
+            _searchCts?.Cancel();
+            
+            // Then stop the service
             _searchService.StopSearch();
             
             // Update UI state
@@ -411,6 +440,84 @@ public partial class SearchModal : UserControl
             Oracle.Helpers.DebugLogger.Log("SearchModal", $"Error stopping search: {ex.Message}");
         }
     }
+    
+    private void OnSearchProgress(SearchProgress progress)
+    {
+        // Run UI updates on UI thread
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            // Update status text
+            var statusText = this.FindControl<TextBlock>("StatusText");
+            if (statusText != null)
+            {
+                statusText.Text = progress.Message;
+            }
+            
+            // Update speed and count displays
+            var seedsSearchedText = this.FindControl<TextBlock>("SeedsSearchedText");
+            var foundCountText = this.FindControl<TextBlock>("FoundCountText");
+            var speedText = this.FindControl<TextBlock>("SpeedText");
+            
+            if (seedsSearchedText != null)
+                seedsSearchedText.Text = progress.SeedsSearched.ToString("N0");
+            if (foundCountText != null)
+                foundCountText.Text = progress.ResultsFound.ToString();
+            if (speedText != null)
+                speedText.Text = $"{progress.SeedsPerSecond:F0}/s";
+            
+            // Add new result if any
+            if (progress.NewResult != null)
+            {
+                _results.Add(new SearchResultViewModel
+                {
+                    Index = _results.Count + 1,
+                    Seed = progress.NewResult.Seed,
+                    Score = progress.NewResult.Score,
+                    Details = progress.NewResult.Details ?? "",
+                    ScoreBreakdown = progress.NewResult.ScoreBreakdown ?? ""
+                });
+                
+                // Update summary
+                var summaryText = this.FindControl<TextBlock>("SummaryText");
+                if (summaryText != null)
+                {
+                    summaryText.Text = $"{_results.Count} results";
+                }
+                
+                // Enable export button
+                var exportButton = this.FindControl<Button>("ExportButton");
+                if (exportButton != null && _results.Count > 0)
+                {
+                    exportButton.IsEnabled = true;
+                }
+                
+                // Log to console
+                AppendConsoleOutput($"> Found: {progress.NewResult.Seed} (Score: {progress.NewResult.Score})");
+            }
+            
+            // Handle completion
+            if (progress.IsComplete)
+            {
+                _isRunning = false;
+                var startButton = this.FindControl<Button>("StartButton");
+                var stopButton = this.FindControl<Button>("StopButton");
+                if (startButton != null) startButton.IsEnabled = true;
+                if (stopButton != null) stopButton.IsEnabled = false;
+                
+                // Show final stats
+                var elapsed = DateTime.UtcNow - _searchStartTime;
+                AppendConsoleOutput($"> Search completed in {elapsed:hh\\:mm\\:ss}");
+                AppendConsoleOutput($"> Total seeds searched: {progress.SeedsSearched:N0}");
+                AppendConsoleOutput($"> Results found: {_results.Count}");
+            }
+            
+            // Handle errors
+            if (progress.HasError)
+            {
+                AppendConsoleOutput($"> ERROR: {progress.Message}");
+            }
+        });
+    }
 }
 
 public class SearchResultViewModel : INotifyPropertyChanged
@@ -419,6 +526,7 @@ public class SearchResultViewModel : INotifyPropertyChanged
     private string _seed = "";
     private int _score;
     private string _details = "";
+    private string _scoreBreakdown = "";
     
     public int Index
     {
@@ -448,6 +556,7 @@ public class SearchResultViewModel : INotifyPropertyChanged
             _score = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(ScoreFormatted));
+            OnPropertyChanged(nameof(ScoreTooltip));
         }
     }
     
@@ -460,6 +569,43 @@ public class SearchResultViewModel : INotifyPropertyChanged
         {
             _details = value;
             OnPropertyChanged();
+        }
+    }
+    
+    public string ScoreBreakdown
+    {
+        get => _scoreBreakdown;
+        set
+        {
+            _scoreBreakdown = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ScoreTooltip));
+        }
+    }
+    
+    /// <summary>
+    /// Tooltip showing score breakdown
+    /// </summary>
+    public string ScoreTooltip
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(ScoreBreakdown) || ScoreBreakdown == "[]")
+                return $"Total Score: {ScoreFormatted}";
+                
+            try
+            {
+                var scores = System.Text.Json.JsonSerializer.Deserialize<int[]>(ScoreBreakdown);
+                if (scores == null || scores.Length == 0)
+                    return $"Total Score: {ScoreFormatted}";
+                    
+                var breakdown = string.Join(" + ", scores);
+                return $"Score Breakdown: {breakdown} = {ScoreFormatted}";
+            }
+            catch
+            {
+                return $"Total Score: {ScoreFormatted}";
+            }
         }
     }
     
