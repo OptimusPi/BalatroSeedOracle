@@ -2587,8 +2587,8 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 40,  // Scaled down animated face to match card size
-                        Height = 40,
+                        Width = 64, 
+                        Height = 64,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = new RotateTransform()
