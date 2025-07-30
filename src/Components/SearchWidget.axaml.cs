@@ -92,33 +92,16 @@ namespace Oracle.Components
         {
             Oracle.Helpers.DebugLogger.Log("SearchWidget", "OnMaximizeClick called");
             
-            // Get the main menu
-            var mainWindow = TopLevel.GetTopLevel(this) as Window;
-            Oracle.Helpers.DebugLogger.Log("SearchWidget", $"MainWindow found: {mainWindow != null}");
+            // Toggle to minimized view - effectively "maximizing" by minimizing the widget
+            // This allows the user to see more of the desktop/other widgets
+            var minimizedView = this.FindControl<Grid>("MinimizedView");
+            var expandedView = this.FindControl<Border>("ExpandedView");
             
-            // The MainWindow content is a Grid, need to find BalatroMainMenu within it
-            Views.BalatroMainMenu? mainMenu = null;
-            if (mainWindow?.Content is Grid grid)
+            if (minimizedView != null && expandedView != null)
             {
-                foreach (var child in grid.Children)
-                {
-                    if (child is Views.BalatroMainMenu menu)
-                    {
-                        mainMenu = menu;
-                        break;
-                    }
-                }
-            }
-            
-            Oracle.Helpers.DebugLogger.Log("SearchWidget", $"MainMenu found: {mainMenu != null}");
-            
-            // For now, just toggle between minimized and normal state
-            // since SearchModal is being removed
-            if (_searchGrid != null)
-            {
-                _searchGrid.IsVisible = !_searchGrid.IsVisible;
-                UpdateWindowState();
-                Oracle.Helpers.DebugLogger.Log("SearchWidget", $"Toggled search grid visibility to: {_searchGrid.IsVisible}");
+                minimizedView.IsVisible = true;
+                expandedView.IsVisible = false;
+                Oracle.Helpers.DebugLogger.Log("SearchWidget", "Switched to minimized view");
             }
         }
         
