@@ -49,6 +49,34 @@
         <Style Selector="Button:focus /template/ ContentPresenter">
             <Setter Property="BorderBrush" Value="Transparent"/>
         </Style>
+        
+        <!-- Author Button Style - matches language/theme buttons -->
+        <Style Selector="Button.author-button">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="#708386"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="Button.author-button:pointerover">
+            <Setter Property="BorderBrush" Value="#eac058"/>
+        </Style>
+        <Style Selector="Button.author-button:pressed">
+            <Setter Property="Background" Value="#1a1a1a"/>
+        </Style>
+        <Style Selector="Button.author-button TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid>
@@ -80,168 +108,197 @@
                         HorizontalAlignment="Center"
                         Margin="0,5,0,0"/>
 
-            <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
-            <Grid Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="28,0,28,0">
-                <!-- Dark shadow underneath -->
-                <Border Background="{StaticResource DropShadow}"
-                        CornerRadius="8"
-                        Margin="0,2,0,0"/>
-                <!-- Main dock panel -->
-                <Border Background="{StaticResource DockGrey}"
-                        CornerRadius="8"
-                        Padding="6,4,6,6"
-                        Margin="0,0,0,4">
-                    <StackPanel Orientation="Vertical" Spacing="2">
-                        <!-- Author Label -->
-                        <TextBlock Text="AUTHOR" 
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#CCCCCC"/>
-                        
-                        <!-- Author Name (click to edit) -->
-                        <Border x:Name="AuthorBorder"
-                                Background="{StaticResource Black}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinWidth="120"
-                                Height="40"
-                                Padding="12,0"
-                                PointerPressed="OnAuthorClick">
-                            <Grid>
-                                <!-- Display mode -->
-                                <TextBlock x:Name="AuthorDisplay"
-                                           Text="Jimbo"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           IsVisible="True"/>
-                                
-                                <!-- Edit mode -->
-                                <TextBox x:Name="AuthorEdit"
-                                         Text="Jimbo"
-                                         FontFamily="{StaticResource BalatroFont}"
-                                         FontSize="14"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Stretch"
-                                         TextAlignment="Center"
-                                         IsVisible="False"
-                                         LostFocus="OnAuthorEditLostFocus"
-                                         KeyDown="OnAuthorEditKeyDown"/>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-                </Border>
-            </Grid>
-            
-            <!-- Right Side Dock (like Language selector in real Balatro) -->
-            <Grid Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="28,0,28,0">
-                <!-- Dark shadow underneath -->
-                <Border Background="{StaticResource DropShadow}"
-                        CornerRadius="8"
-                        Margin="0,2,0,0"/>
-                <!-- Main dock panel -->
-                <Border Background="{StaticResource DockGrey}"
-                        CornerRadius="8"
-                        Padding="6,4,6,6"
-                        Margin="0,0,0,4">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <!-- Theme Cycling Button (square like language buttons) -->
-                        <Button x:Name="ThemeCycleButton"
-                                FontSize="16"
-                                Width="48"
-                                Height="48"
-                                CornerRadius="8"
-                                Background="{StaticResource Black}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2"
-                                Click="OnThemeCycleClick"
-                                ToolTip.Tip="Cycle background theme">
-                            <TextBlock Text="🎨" 
-                                       FontFamily="Segoe UI Emoji, Noto Color Emoji"
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"/>
-                        </Button>
-                        
-                        <!-- Pause/Resume Animation Button (square like language buttons) -->
-                        <Button x:Name="AnimationToggleButton"
-                                FontSize="16"
-                                Width="48"
-                                Height="48"
-                                CornerRadius="8"
-                                Background="{StaticResource Black}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2"
-                                Click="OnAnimationToggleClick"
-                                ToolTip.Tip="Pause/resume background animation">
-                            <TextBlock Text="⏸" 
-                                       FontFamily="Segoe UI Symbol, Segoe UI Emoji"
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"/>
-                        </Button>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
-            <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="28">
-                <!-- Dark shadow underneath -->
-                <Border Background="{StaticResource DropShadow}"
-                        CornerRadius="8"
-                        Margin="0,2,0,0"/>
-                <!-- Main dock panel -->
-                <Border Background="{StaticResource DockGrey}"
-                        CornerRadius="8"
-                        Padding="3,2,6,6"
-                        Margin="0,0,0,4">
+            <!-- All Docks Container - Anchored together in center -->
+            <StackPanel Grid.Row="1" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        Spacing="20">
+                
+                <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,2,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="4,2,4,4"
+                            Margin="0,0,0,4">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <!-- Author Label -->
+                            <TextBlock Text="AUTHOR" 
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Foreground="#888888"
+                                       IsHitTestVisible="False"/>
+                            
+                            <!-- Author Button (Balatro style like language buttons) -->
+                            <Button x:Name="AuthorButton"
+                                    Width="120"
+                                    Height="48"
+                                    Click="OnAuthorClick"
+                                    Classes="author-button">
+                                <Grid>
+                                    <!-- Display mode -->
+                                    <TextBlock x:Name="AuthorDisplay"
+                                               Text="Jimbo"
+                                               IsVisible="True"
+                                               IsHitTestVisible="False"/>
+                                    
+                                    <!-- Edit mode -->
+                                    <TextBox x:Name="AuthorEdit"
+                                             Text="Jimbo"
+                                             FontFamily="{StaticResource BalatroFont}"
+                                             FontSize="16"
+                                             FontWeight="Bold"
+                                             Background="#708386"
+                                             BorderThickness="0"
+                                             VerticalAlignment="Center"
+                                             HorizontalAlignment="Stretch"
+                                             TextAlignment="Center"
+                                             Foreground="#E2E2E3"
+                                             IsVisible="False"
+                                             LostFocus="OnAuthorEditLostFocus"
+                                             KeyDown="OnAuthorEditKeyDown"/>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                
+                <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,4,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="2"
+                            Margin="0,0,0,4">
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <!-- PLAY button equivalent - NEW FILTER (blue) -->
                     <Button Classes="btn-blue"
-                            Content="NEW FILTER"
                             Click="OnNewFilterClick"
-                            FontSize="36"
                             MinHeight="64"
-                            MinWidth="180" />
+                            MinWidth="160">
+                        <TextBlock Text="NEW FILTER" 
+                                   FontSize="24" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
                     
                     <!-- OPTIONS button equivalent - LOAD (orange) -->
                     <Button Classes="btn-orange"
-                            Content="LOAD"
                             Click="OnLoadClick"
-                            FontSize="24"
                             MinHeight="48"
-                            MinWidth="100" />
+                            MinWidth="100">
+                        <TextBlock Text="LOAD" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
                     
                     <!-- QUIT button (red) -->
                     <Button Classes="btn-red"
-                            Content="QUIT"
                             Click="OnExitClick"
-                            FontSize="28"
                             MinHeight="48"
-                            MinWidth="100" />
+                            MinWidth="100">
+                        <TextBlock Text="QUIT" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
                     
                     <!-- COLLECTION button equivalent - RESULTS (green) -->
                     <Button Classes="btn-green"
-                            Content="RESULTS"
                             Click="OnResultsClick"
-                            FontSize="28"
                             MinHeight="64"
-                            MinWidth="140" />
+                            MinWidth="160">
+                        <TextBlock Text="RESULTS" 
+                                   FontSize="24" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
 
                     <!-- MODS button equivalent - FUN RUNS (purple) -->
                     <Button Classes="btn-purple"
-                            Content="FUN"
                             Click="OnFunRunClick"
-                            FontSize="28"
-                            MinHeight="64"
-                            MinWidth="64" />
-                </StackPanel>
-                </Border>
-            </Grid>
+                            MinHeight="48"
+                            MinWidth="80">
+                        <TextBlock Text="FUN" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                
+                <!-- Right Side Dock (like Language selector in real Balatro) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,2,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="6,4,6,6"
+                            Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <!-- Theme Cycling Button (square like language buttons) -->
+                            <Button x:Name="ThemeCycleButton"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    Background="#708386"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Click="OnThemeCycleClick"
+                                    ToolTip.Tip="Cycle background theme">
+                                <TextBlock Text="🎨" 
+                                           FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                            </Button>
+                            
+                            <!-- Pause/Resume Animation Button (square like language buttons) -->
+                            <Button x:Name="AnimationToggleButton"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    Background="#708386"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Click="OnAnimationToggleClick"
+                                    ToolTip.Tip="Pause/resume background animation">
+                                <TextBlock Text="⏸" 
+                                           FontFamily="Segoe UI Symbol, Segoe UI Emoji"
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel> <!-- End All Docks Container -->
         </Grid> <!-- End MainContent -->
 
         <!-- Modal overlay container for code-behind modals -->

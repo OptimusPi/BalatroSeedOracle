@@ -11,9 +11,9 @@
         <!-- Grid for percentage-based margins -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.05*"/>
-                <ColumnDefinition Width="0.9*"/>
-                <ColumnDefinition Width="0.05*"/>
+                <ColumnDefinition Width="0.025*"/>
+                <ColumnDefinition Width="0.95*"/>
+                <ColumnDefinition Width="0.025*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.03*"/>
@@ -66,7 +66,7 @@
                             Spacing="5">
                     <!-- Long yellow back button (always present) -->
                     <Button x:Name="BackButton"
-                            Content="BACK"
+                            Content="Back"
                             Classes="back-button"
                             HorizontalAlignment="Stretch"/>
                 </StackPanel>

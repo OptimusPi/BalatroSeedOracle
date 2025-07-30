@@ -1,22 +1,25 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Oracle.Controls"
              x:Class="Oracle.Components.SearchWidget"
              x:CompileBindings="False">
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Background" Value="#262633"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="BoxShadow" Value="0 6 20 #1e2e32"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="3"/> <!-- Thicker border -->
+            <Setter Property="BoxShadow" Value="0 4 10 #40000000"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
         
         <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
-            <Setter Property="CornerRadius" Value="12,12,0,0"/>
-            <Setter Property="Height" Value="32"/> <!-- Smaller header -->
+            <Setter Property="Background" Value="#374244"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
         </Style>
         
         <Style Selector="TextBox.terminal">
@@ -68,19 +71,28 @@
             </Setter>
         </Style>
         
-        <!-- Minimize button (blue) -->
+        <!-- Minimize button (always blue) -->
+        <Style Selector="Button.window-button.minimize">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
         <Style Selector="Button.window-button.minimize:pointerover">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
         </Style>
         
-        <!-- Maximize button (blue) -->
+        <!-- Maximize button (always blue) -->
+        <Style Selector="Button.window-button.maximize">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
         <Style Selector="Button.window-button.maximize:pointerover">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
         </Style>
         
-        <!-- Close button (red) -->
-        <Style Selector="Button.window-button.close:pointerover">
+        <!-- Close button (always red) -->
+        <Style Selector="Button.window-button.close">
             <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        <Style Selector="Button.window-button.close:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
         <!-- Widget-specific button style (flat, no shadows) -->
@@ -254,45 +266,29 @@
                                             Margin="12,6,12,12"
                                             Spacing="8">
                                     
-                                    <!-- Search Parameters Grid -->
-                                    <Grid ColumnDefinitions="*,12,*" 
-                                          RowDefinitions="Auto,6,Auto,6,Auto,6,Auto">
-                                        <TextBlock Grid.Row="0" Grid.Column="0" 
-                                                   Text="Threads:" 
-                                                   VerticalAlignment="Center" 
-                                                   FontSize="10"
-                                                   Foreground="#aaaaaa"/>
-                                        <NumericUpDown Grid.Row="0" Grid.Column="2" 
-                                                       Name="ThreadsUpDown" 
-                                                       Value="4" Minimum="1" Maximum="32" 
-                                                       FontSize="10" Height="22"
-                                                       Background="#0a0a0a"
-                                                       BorderBrush="#3a4b4f"/>
+                                    <!-- Search Parameters -->
+                                    <StackPanel Spacing="12">
+                                        <controls:BalatroSpinnerControl Name="ThreadsSpinner"
+                                                                       Label="Threads"
+                                                                       Value="4"
+                                                                       Minimum="1"
+                                                                       Maximum="32"
+                                                                       Increment="1"/>
                                         
-                                        <TextBlock Grid.Row="2" Grid.Column="0" 
-                                                   Text="Batch Size:" 
-                                                   VerticalAlignment="Center" 
-                                                   FontSize="10"
-                                                   Foreground="#aaaaaa"/>
-                                        <NumericUpDown Grid.Row="2" Grid.Column="2" 
-                                                       Name="BatchSizeUpDown" 
-                                                       Value="4" Minimum="2" Maximum="4" 
-                                                       FontSize="10" Height="22"
-                                                       Background="#0a0a0a"
-                                                       BorderBrush="#3a4b4f"/>
+                                        <controls:BalatroSpinnerControl Name="BatchSizeSpinner"
+                                                                       Label="Batch Size"
+                                                                       Value="4"
+                                                                       Minimum="2"
+                                                                       Maximum="4"
+                                                                       Increment="1"/>
                                         
-                                        <TextBlock Grid.Row="4" Grid.Column="0" 
-                                                   Text="Min Score:" 
-                                                   VerticalAlignment="Center" 
-                                                   FontSize="10"
-                                                   Foreground="#aaaaaa"/>
-                                        <NumericUpDown Grid.Row="4" Grid.Column="2" 
-                                                       Name="ScoreMinUpDown" 
-                                                       Value="0" Minimum="0" Maximum="1000" 
-                                                       FontSize="10" Height="22"
-                                                       Background="#0a0a0a"
-                                                       BorderBrush="#3a4b4f"/>
-                                    </Grid>
+                                        <controls:BalatroSpinnerControl Name="MinScoreSpinner"
+                                                                       Label="Score Minimum"
+                                                                       Value="0"
+                                                                       Minimum="0"
+                                                                       Maximum="1000"
+                                                                       Increment="10"/>
+                                    </StackPanel>
                                     
                                     <CheckBox Name="DebugCheckBox" 
                                               IsChecked="False" 

@@ -82,7 +82,7 @@ namespace Oracle.Services
                     {
                         Name = "Photo Chad",
                         Description = "Picture perfect combo",
-                        Jokers = new List<string> { "Photograph", "Hanging Chad" },
+                        Jokers = new List<string> { "Photograph", "HangingChad" },
                         Tags = new List<string> { "#FaceCards", "#Mult", "#Synergy" }
                     },
                     new JokerSet
@@ -103,8 +103,9 @@ namespace Oracle.Services
                     {
                         Name = "Lucky",
                         Description = "Maximum luck manipulation",
-                        Jokers = new List<string> { "The Magician", "Oops! All 6s", "Lucky Cat" },
-                        Tags = new List<string> { "#Luck", "#Probability", "#Tarot" }
+                        Jokers = new List<string> { "OopsAll6s", "LuckyCat" },
+                        Items = new List<string> { "TheMagician" },
+                        Tags = new List<string> { "#Luck", "#Cat", "#LuckyCat", "#Tarot" }
                     },
                     new JokerSet
                     {

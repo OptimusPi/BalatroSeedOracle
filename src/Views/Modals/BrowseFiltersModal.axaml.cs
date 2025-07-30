@@ -9,6 +9,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Views.Modals;
@@ -19,7 +20,6 @@ namespace Oracle.Views.Modals
     {
         private ObservableCollection<FilterItem> _allFilters = new();
         private ObservableCollection<FilterItem> _displayedFilters = new();
-        private string _currentLocation = "local";
         private FilterItem? _selectedFilter;
         
         public event EventHandler<string>? FilterSelected;
@@ -47,19 +47,9 @@ namespace Oracle.Views.Modals
             {
                 _allFilters.Clear();
                 
-                // Load filters based on current location
-                switch (_currentLocation)
-                {
-                    case "local":
-                        await LoadLocalFilters();
-                        break;
-                    case "ouija":
-                        await LoadOuijaConfigs();
-                        break;
-                    case "examples":
-                        await LoadExampleFilters();
-                        break;
-                }
+                // Load all filters from various sources
+                await LoadLocalFilters();
+                await LoadOuijaConfigs();
                 
                 ApplySearch();
             }
@@ -111,19 +101,58 @@ namespace Oracle.Views.Modals
                             var name = Path.GetFileNameWithoutExtension(file);
                             var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), file);
                             
-                            // Try to read description from file
+                            // Try to read filter data from file
                             string? description = null;
+                            var needs = new List<string>();
+                            var wants = new List<string>();
+                            var mustNots = new List<string>();
+                            
                             try
                             {
                                 var content = File.ReadAllText(file);
+                                
+                                // Parse description
                                 if (content.Contains("\"description\""))
                                 {
-                                    // Simple extraction - could be improved
                                     var start = content.IndexOf("\"description\"") + 14;
                                     var end = content.IndexOf("\"", start);
                                     if (end > start)
                                     {
                                         description = content.Substring(start, end - start).Trim();
+                                    }
+                                }
+                                
+                                // Parse filter items - look for needs, wants, must_nots
+                                using var doc = System.Text.Json.JsonDocument.Parse(content);
+                                var root = doc.RootElement;
+                                
+                                if (root.TryGetProperty("filters", out var filters))
+                                {
+                                    if (filters.TryGetProperty("needs", out var needsArray))
+                                    {
+                                        foreach (var need in needsArray.EnumerateArray())
+                                        {
+                                            if (need.TryGetProperty("Item", out var item))
+                                                needs.Add(item.GetString() ?? "");
+                                        }
+                                    }
+                                    
+                                    if (filters.TryGetProperty("wants", out var wantsArray))
+                                    {
+                                        foreach (var want in wantsArray.EnumerateArray())
+                                        {
+                                            if (want.TryGetProperty("Item", out var item))
+                                                wants.Add(item.GetString() ?? "");
+                                        }
+                                    }
+                                    
+                                    if (filters.TryGetProperty("must_nots", out var mustNotsArray))
+                                    {
+                                        foreach (var mustNot in mustNotsArray.EnumerateArray())
+                                        {
+                                            if (mustNot.TryGetProperty("Item", out var item))
+                                                mustNots.Add(item.GetString() ?? "");
+                                        }
                                     }
                                 }
                             }
@@ -134,7 +163,10 @@ namespace Oracle.Views.Modals
                                 Name = FormatFilterName(name),
                                 FilePath = relativePath,
                                 FullPath = file,
-                                Description = description
+                                Description = description,
+                                Needs = needs,
+                                Wants = wants,
+                                MustNots = mustNots
                             });
                         }
                         catch (Exception ex)
@@ -224,41 +256,13 @@ namespace Oracle.Views.Modals
             ApplySearch();
         }
         
-        private void OnLocalTabClick(object? sender, RoutedEventArgs e)
-        {
-            SetActiveTab("local");
-        }
-        
-        private void OnOuijaTabClick(object? sender, RoutedEventArgs e)
-        {
-            SetActiveTab("ouija");
-        }
-        
-        private void OnExamplesTabClick(object? sender, RoutedEventArgs e)
-        {
-            SetActiveTab("examples");
-        }
-        
-        private void SetActiveTab(string location)
-        {
-            _currentLocation = location;
-            
-            // Update tab styles
-            var localTab = this.FindControl<Button>("LocalTab");
-            var ouijaTab = this.FindControl<Button>("OuijaTab");
-            var examplesTab = this.FindControl<Button>("ExamplesTab");
-            
-            if (localTab != null) localTab.Classes.Set("active", location == "local");
-            if (ouijaTab != null) ouijaTab.Classes.Set("active", location == "ouija");
-            if (examplesTab != null) examplesTab.Classes.Set("active", location == "examples");
-            
-            _ = LoadFiltersAsync();
-        }
-        
         private void OnFilterSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var filterList = sender as ListBox;
             _selectedFilter = filterList?.SelectedItem as FilterItem;
+            
+            // Update visual selection state
+            UpdateCardSelection();
             
             // Enable/disable action buttons
             var launchButton = this.FindControl<Button>("LaunchButton");
@@ -267,6 +271,22 @@ namespace Oracle.Views.Modals
             var hasSelection = _selectedFilter != null;
             if (launchButton != null) launchButton.IsEnabled = hasSelection;
             if (editButton != null) editButton.IsEnabled = hasSelection;
+        }
+        
+        private void UpdateCardSelection()
+        {
+            var filterList = this.FindControl<ListBox>("FilterList");
+            if (filterList == null) return;
+            
+            // Get all card borders in the list
+            var items = filterList.GetVisualDescendants().OfType<Border>()
+                .Where(b => b.Classes.Contains("filter-card"));
+            
+            foreach (var card in items)
+            {
+                var isSelected = card.Tag == _selectedFilter;
+                card.Classes.Set("selected", isSelected);
+            }
         }
         
         private void OnLaunchClick(object? sender, RoutedEventArgs e)
@@ -329,6 +349,9 @@ namespace Oracle.Views.Modals
         private string _filePath = "";
         private string _fullPath = "";
         private string? _description;
+        private List<string> _needs = new();
+        private List<string> _wants = new();
+        private List<string> _mustNots = new();
         
         public string Name
         {
@@ -371,8 +394,49 @@ namespace Oracle.Views.Modals
             }
         }
         
+        public List<string> Needs
+        {
+            get => _needs;
+            set
+            {
+                _needs = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Needs)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNeeds)));
+            }
+        }
+        
+        public List<string> Wants
+        {
+            get => _wants;
+            set
+            {
+                _wants = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Wants)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasWants)));
+            }
+        }
+        
+        public List<string> MustNots
+        {
+            get => _mustNots;
+            set
+            {
+                _mustNots = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MustNots)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMustNots)));
+            }
+        }
+        
         public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+        public bool HasNeeds => Needs?.Count > 0;
+        public bool HasWants => Wants?.Count > 0;
+        public bool HasMustNots => MustNots?.Count > 0;
         
         public event PropertyChangedEventHandler? PropertyChanged;
+        
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

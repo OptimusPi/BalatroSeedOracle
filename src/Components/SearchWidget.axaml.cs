@@ -12,6 +12,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Oracle.Controls;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
@@ -260,14 +261,14 @@ namespace Oracle.Components
                 UpdateNotificationBadge(0);
                 
                 // Get search parameters from UI controls
-                var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
-                var batchSizeUpDown = this.FindControl<NumericUpDown>("BatchSizeUpDown");
-                var scoreMinUpDown = this.FindControl<NumericUpDown>("ScoreMinUpDown");
+                var threadsSpinner = this.FindControl<BalatroSpinnerControl>("ThreadsSpinner");
+                var batchSizeSpinner = this.FindControl<BalatroSpinnerControl>("BatchSizeSpinner");
+                var minScoreSpinner = this.FindControl<BalatroSpinnerControl>("MinScoreSpinner");
                 var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
                 
-                var threadCount = (int)(threadsUpDown?.Value ?? 4);
-                var minScore = (int)(scoreMinUpDown?.Value ?? 1);
-                var batchSize = (int)(batchSizeUpDown?.Value ?? 4);
+                var threadCount = threadsSpinner?.Value ?? 4;
+                var minScore = minScoreSpinner?.Value ?? 0;
+                var batchSize = batchSizeSpinner?.Value ?? 4;
                 var debug = debugCheckBox?.IsChecked ?? false;
                 
                 // Set debug logging based on checkbox
@@ -488,11 +489,11 @@ namespace Oracle.Components
         public void StartSearchWithParams(int threadCount, int minScore, int seedsToSearch)
         {
             // Update the UI controls
-            var threadsUpDown = this.FindControl<NumericUpDown>("ThreadsUpDown");
-            var scoreMinUpDown = this.FindControl<NumericUpDown>("ScoreMinUpDown");
+            var threadsSpinner = this.FindControl<BalatroSpinnerControl>("ThreadsSpinner");
+            var minScoreSpinner = this.FindControl<BalatroSpinnerControl>("MinScoreSpinner");
             
-            if (threadsUpDown != null) threadsUpDown.Value = threadCount;
-            if (scoreMinUpDown != null) scoreMinUpDown.Value = minScore;
+            if (threadsSpinner != null) threadsSpinner.Value = threadCount;
+            if (minScoreSpinner != null) minScoreSpinner.Value = minScore;
             
             // Auto-start the search
             OnCookClick(null, new RoutedEventArgs());

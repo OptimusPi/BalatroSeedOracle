@@ -58,13 +58,13 @@
         
         <!-- Default edition border style -->
         <Style Selector="RadioButton.edition-radio Border.edition-border">
-            <Setter Property="Background" Value="#1a1a1a"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="BorderBrush" Value="#1e2b2d"/>
         </Style>
         
         <!-- Checked states for each edition -->
         <Style Selector="RadioButton.edition-radio:checked Border.edition-border">
-            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#1e2b2d"/>
             <Setter Property="BorderBrush" Value="#eac058"/>
         </Style>
         
@@ -95,8 +95,8 @@
         
         <!-- Default source border style -->
         <Style Selector="CheckBox.source-checkbox Border.source-border">
-            <Setter Property="Background" Value="#1a1a1a"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="BorderBrush" Value="#1e2b2d"/>
         </Style>
         
         <!-- Checked state for source checkboxes -->
@@ -108,8 +108,8 @@
     
     <Border MinWidth="280" 
             MaxWidth="320"
-            Background="#1a1a1a"
-            BorderBrush="#3a3a3a"
+            Background="#3a5055"
+            BorderBrush="#1e2b2d"
             BorderThickness="3"
             CornerRadius="8"
             Padding="16"
@@ -117,7 +117,7 @@
         
         <StackPanel Spacing="10">
             <!-- Item Name Header with Balatro styling -->
-            <Border Background="#2a2a2a" 
+            <Border Background="#1e2b2d" 
                     CornerRadius="4" 
                     Padding="8,6"
                     Margin="-16,-16,-16,0">
@@ -129,134 +129,100 @@
                            HorizontalAlignment="Center"/>
             </Border>
             
-            <!-- Ante Selection -->
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <!-- Ante Selection with Balatro style -->
+            <Grid HorizontalAlignment="Center" Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
                 
-                <Border Grid.Row="0" 
-                        Background="#262626" 
-                        CornerRadius="4" 
-                        Padding="8,4"
-                        HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
+                <!-- Left Arrow Button -->
+                <Button Grid.Column="0" 
+                        Name="AnteLeftButton"
+                        Width="24" 
+                        Height="32"
+                        Margin="0,0,4,0"
+                        Cursor="Hand"
+                        Background="#3a5055"
+                        BorderBrush="#1e2b2d"
+                        BorderThickness="2">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="4">
+                                <Path Data="M8,12 L4,8 L8,4" 
+                                      Stroke="#eac058" 
+                                      StrokeThickness="2" 
+                                      Width="12" 
+                                      Height="16"
+                                      Stretch="Uniform"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                
+                <!-- Ante Badge -->
+                <Border Grid.Column="1" 
+                        Background="#FE5F55" 
+                        BorderBrush="#CC4C44"
+                        BorderThickness="2"
+                        CornerRadius="6" 
+                        Padding="12,6"
+                        MinWidth="100">
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                         <TextBlock Text="ANTES" 
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12" 
-                                   Foreground="#888888" 
+                                   FontSize="11" 
+                                   Foreground="#FFFFFF" 
+                                   FontWeight="Bold"
                                    VerticalAlignment="Center"/>
                         <TextBlock Name="AnteRangeText" 
                                    Text="1-8" 
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14" 
-                                   Foreground="#eac058" 
+                                   FontSize="16" 
+                                   Foreground="#FFFFFF" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
                 
-                <!-- Range Slider with Balatro styling -->
-                <Grid Grid.Row="1" Margin="0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="25"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="25"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBlock Grid.Column="0" Name="MinAnteText" Text="1" 
-                               HorizontalAlignment="Center" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="11" 
-                               Foreground="#666666"/>
-                    
-                    <Grid Grid.Column="1" Height="32">
-                        <!-- Track -->
-                        <Border Height="6" VerticalAlignment="Center" Background="#0a0a0a" CornerRadius="3" Margin="8,0"/>
-                        <!-- Active range -->
-                        <Border Name="ActiveRange" Height="6" VerticalAlignment="Center" Background="#eac058" CornerRadius="3" 
-                                HorizontalAlignment="Left" Margin="8,0,0,0" Width="220"/>
-                        
-                        <!-- Min thumb with Balatro style -->
-                        <Thumb Name="MinThumb" Width="20" Height="20" 
-                               HorizontalAlignment="Left" 
-                               Margin="-2,0,0,0"
-                               DragDelta="OnMinThumbDragDelta">
-                            <Thumb.Template>
-                                <ControlTemplate>
-                                    <Border Background="#2a2a2a" 
-                                            BorderBrush="#eac058" 
-                                            BorderThickness="2" 
-                                            CornerRadius="10" 
-                                            Width="20" 
-                                            Height="20">
-                                        <Border Background="#eac058" 
-                                                CornerRadius="6" 
-                                                Width="12" 
-                                                Height="12"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Thumb.Template>
-                        </Thumb>
-                        
-                        <!-- Max thumb with Balatro style -->
-                        <Thumb Name="MaxThumb" Width="20" Height="20" 
-                               HorizontalAlignment="Left" 
-                               Margin="218,0,0,0"
-                               DragDelta="OnMaxThumbDragDelta">
-                            <Thumb.Template>
-                                <ControlTemplate>
-                                    <Border Background="#2a2a2a" 
-                                            BorderBrush="#eac058" 
-                                            BorderThickness="2" 
-                                            CornerRadius="10" 
-                                            Width="20" 
-                                            Height="20">
-                                        <Border Background="#eac058" 
-                                                CornerRadius="6" 
-                                                Width="12" 
-                                                Height="12"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Thumb.Template>
-                        </Thumb>
-                    </Grid>
-                    
-                    <TextBlock Grid.Column="2" Name="MaxAnteText" Text="8" 
-                               HorizontalAlignment="Center" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="11" 
-                               Foreground="#666666"/>
-                </Grid>
-                
-                <!-- Tick marks -->
-                <Grid Grid.Row="2" Margin="40,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBlock Grid.Column="0" Text="1" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="1" Text="2" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="2" Text="3" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="3" Text="4" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="4" Text="5" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="5" Text="6" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="6" Text="7" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                    <TextBlock Grid.Column="7" Text="8" HorizontalAlignment="Center" FontSize="11" Foreground="#999999"/>
-                </Grid>
+                <!-- Right Arrow Button -->
+                <Button Grid.Column="2" 
+                        Name="AnteRightButton"
+                        Width="24" 
+                        Height="32"
+                        Margin="4,0,0,0"
+                        Cursor="Hand"
+                        Background="#3a5055"
+                        BorderBrush="#1e2b2d"
+                        BorderThickness="2">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="4">
+                                <Path Data="M4,12 L8,8 L4,4" 
+                                      Stroke="#eac058" 
+                                      StrokeThickness="2" 
+                                      Width="12" 
+                                      Height="16"
+                                      Stretch="Uniform"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
             
             <!-- Edition Selection with Balatro toggle style -->
-            <Border Background="#262626" CornerRadius="4" Padding="10,8">
+            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -272,8 +238,8 @@
                     <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
                         <RadioButton Name="EditionNormal" IsChecked="True" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio">
                             <Border Classes="edition-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
@@ -287,8 +253,8 @@
                         </RadioButton>
                         <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil">
                             <Border Classes="edition-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
@@ -302,8 +268,8 @@
                         </RadioButton>
                         <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo">
                             <Border Classes="edition-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
@@ -317,8 +283,8 @@
                         </RadioButton>
                         <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly">
                             <Border Classes="edition-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
@@ -332,8 +298,8 @@
                         </RadioButton>
                         <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative">
                             <Border Classes="edition-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
@@ -350,7 +316,7 @@
             </Border>
             
             <!-- Sources Selection with Balatro style -->
-            <Border Background="#262626" CornerRadius="4" Padding="10,8">
+            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -366,8 +332,8 @@
                     <StackPanel Grid.Row="1" Spacing="4">
                         <CheckBox Name="SourceTags" IsChecked="True" Classes="source-checkbox">
                             <Border Classes="source-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -380,8 +346,8 @@
                         </CheckBox>
                         <CheckBox Name="SourcePacks" IsChecked="True" Classes="source-checkbox">
                             <Border Classes="source-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -394,8 +360,8 @@
                         </CheckBox>
                         <CheckBox Name="SourceShop" IsChecked="True" Classes="source-checkbox">
                             <Border Classes="source-border" 
-                                    Background="#1a1a1a" 
-                                    BorderBrush="#3a3a3a" 
+                                    Background="#3a5055" 
+                                    BorderBrush="#1e2b2d" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -425,7 +391,7 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#2a4a2a" 
+                            <Border Background="#223322" 
                                     BorderBrush="#4BC292" 
                                     BorderThickness="2" 
                                     CornerRadius="4">
@@ -448,7 +414,7 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#4a2a2a" 
+                            <Border Background="#332222" 
                                     BorderBrush="#FE5F55" 
                                     BorderThickness="2" 
                                     CornerRadius="4">
@@ -471,7 +437,7 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#3a3a2a" 
+                            <Border Background="#2a2a2a" 
                                     BorderBrush="#888888" 
                                     BorderThickness="2" 
                                     CornerRadius="4">

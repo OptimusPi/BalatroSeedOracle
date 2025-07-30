@@ -54,7 +54,10 @@
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                                          TextBlock.FontSize="{TemplateBinding FontSize}"
+                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                          TextBlock.FontFamily="{TemplateBinding FontFamily}"/>
                     </Border>
                 </Grid>
             </ControlTemplate>
@@ -284,23 +287,6 @@
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
         <Setter Property="Background" Value="{StaticResource PurpleHover}" />
-    </Style>
-    
-    <!-- Main Menu specific button font size overrides - IMPORTANT: These override the base 16px FontSize -->
-    <Style Selector="Grid#MainContent Button.btn-blue">
-        <Setter Property="FontSize" Value="48" />
-    </Style>
-    <Style Selector="Grid#MainContent Button.btn-green">
-        <Setter Property="FontSize" Value="28" />
-    </Style>
-    <Style Selector="Grid#MainContent Button.btn-orange">
-        <Setter Property="FontSize" Value="28" />
-    </Style>
-    <Style Selector="Grid#MainContent Button.btn-red">
-        <Setter Property="FontSize" Value="28" />
-    </Style>
-    <Style Selector="Grid#MainContent Button.btn-purple">
-        <Setter Property="FontSize" Value="28" />
     </Style>
     
     <!-- Big back button style -->

@@ -19,10 +19,8 @@ namespace Oracle.Controls
         public event EventHandler? Cancelled;
         
         private string _itemKey = "";
-        private double _sliderWidth = 260;
         private int _minAnte = 1;
         private int _maxAnte = 8;
-        private double _thumbOffset = 10; // margin offset for thumbs
         
         public ItemConfigPopup()
         {
@@ -33,11 +31,19 @@ namespace Oracle.Controls
         {
             AvaloniaXamlLoader.Load(this);
             
-            // Initialize thumbs after loading
+            // Initialize after loading
             Dispatcher.UIThread.Post(() => {
-                UpdateThumbPositions();
                 UpdateAnteRangeText();
                 LoadEditionImages();
+                
+                // Wire up arrow button handlers
+                var leftButton = this.FindControl<Button>("AnteLeftButton");
+                var rightButton = this.FindControl<Button>("AnteRightButton");
+                
+                if (leftButton != null)
+                    leftButton.Click += OnAnteLeftClick;
+                if (rightButton != null)
+                    rightButton.Click += OnAnteRightClick;
             });
         }
         
@@ -96,7 +102,6 @@ namespace Oracle.Controls
                 {
                     _minAnte = existingConfig.SearchAntes.Min();
                     _maxAnte = existingConfig.SearchAntes.Max();
-                    UpdateThumbPositions();
                     UpdateAnteRangeText();
                 }
                 else
@@ -104,7 +109,6 @@ namespace Oracle.Controls
                     // Default to full range
                     _minAnte = 1;
                     _maxAnte = 8;
-                    UpdateThumbPositions();
                     UpdateAnteRangeText();
                 }
                 
@@ -200,100 +204,45 @@ namespace Oracle.Controls
             return _itemKey;
         }
         
-        private void OnMinThumbDragDelta(object? sender, Avalonia.Input.VectorEventArgs e)
+        private void OnAnteLeftClick(object? sender, RoutedEventArgs e)
         {
-            var minThumb = this.FindControl<Thumb>("MinThumb");
-            var maxThumb = this.FindControl<Thumb>("MaxThumb");
-            if (minThumb == null || maxThumb == null) return;
+            // Decrease the ante range
+            if (_minAnte > 1)
+            {
+                _minAnte--;
+                if (_maxAnte < _minAnte)
+                    _maxAnte = _minAnte;
+            }
+            else if (_maxAnte > _minAnte)
+            {
+                _maxAnte--;
+            }
             
-            // Calculate new position
-            var currentMargin = minThumb.Margin;
-            var newX = Math.Max(0, Math.Min(_sliderWidth, currentMargin.Left + e.Vector.X));
-            
-            // Don't allow min to go past max
-            var maxX = maxThumb.Margin.Left;
-            newX = Math.Min(newX, maxX);
-            
-            // Update position
-            minThumb.Margin = new Thickness(newX, 0, 0, 0);
-            
-            // Update ante value
-            _minAnte = PositionToAnte(newX);
-            
-            // Update UI
-            UpdateActiveRange();
             UpdateAnteRangeText();
         }
         
-        private void OnMaxThumbDragDelta(object? sender, Avalonia.Input.VectorEventArgs e)
+        private void OnAnteRightClick(object? sender, RoutedEventArgs e)
         {
-            var minThumb = this.FindControl<Thumb>("MinThumb");
-            var maxThumb = this.FindControl<Thumb>("MaxThumb");
-            if (minThumb == null || maxThumb == null) return;
+            // Increase the ante range
+            if (_maxAnte < 8)
+            {
+                _maxAnte++;
+                if (_minAnte > _maxAnte)
+                    _minAnte = _maxAnte;
+            }
+            else if (_minAnte < _maxAnte)
+            {
+                _minAnte++;
+            }
             
-            // Calculate new position
-            var currentMargin = maxThumb.Margin;
-            var newX = Math.Max(0, Math.Min(_sliderWidth, currentMargin.Left + e.Vector.X));
-            
-            // Don't allow max to go before min
-            var minX = minThumb.Margin.Left;
-            newX = Math.Max(newX, minX);
-            
-            // Update position
-            maxThumb.Margin = new Thickness(newX, 0, 0, 0);
-            
-            // Update ante value
-            _maxAnte = PositionToAnte(newX);
-            
-            // Update UI
-            UpdateActiveRange();
             UpdateAnteRangeText();
         }
         
-        private int PositionToAnte(double position)
-        {
-            // Convert pixel position to ante number (1-8)
-            var ante = (int)Math.Round((position / _sliderWidth) * 7) + 1;
-            return Math.Max(1, Math.Min(8, ante));
-        }
-        
-        private double AnteToPosition(int ante)
-        {
-            // Convert ante number to pixel position
-            return ((ante - 1) / 7.0) * _sliderWidth;
-        }
-        
-        private void UpdateThumbPositions()
-        {
-            var minThumb = this.FindControl<Thumb>("MinThumb");
-            var maxThumb = this.FindControl<Thumb>("MaxThumb");
-            if (minThumb == null || maxThumb == null) return;
-            
-            minThumb.Margin = new Thickness(AnteToPosition(_minAnte), 0, 0, 0);
-            maxThumb.Margin = new Thickness(AnteToPosition(_maxAnte), 0, 0, 0);
-            
-            UpdateActiveRange();
-        }
-        
-        private void UpdateActiveRange()
-        {
-            var activeRange = this.FindControl<Border>("ActiveRange");
-            var minThumb = this.FindControl<Thumb>("MinThumb");
-            var maxThumb = this.FindControl<Thumb>("MaxThumb");
-            if (activeRange == null || minThumb == null || maxThumb == null) return;
-            
-            var minX = minThumb.Margin.Left;
-            var maxX = maxThumb.Margin.Left;
-            
-            activeRange.Margin = new Thickness(_thumbOffset + minX, 0, 0, 0);
-            activeRange.Width = maxX - minX;
-        }
+        // Removed slider-related methods as we now use arrow buttons
         
         private void UpdateAnteRangeText()
         {
             var rangeText = this.FindControl<TextBlock>("AnteRangeText");
-            var minText = this.FindControl<TextBlock>("MinAnteText");
-            var maxText = this.FindControl<TextBlock>("MaxAnteText");
             
             if (rangeText != null)
             {
@@ -310,9 +259,6 @@ namespace Oracle.Controls
                     rangeText.Text = $"{_minAnte}-{_maxAnte}";
                 }
             }
-            
-            if (minText != null) minText.Text = _minAnte.ToString();
-            if (maxText != null) maxText.Text = _maxAnte.ToString();
         }
         
         private string GetSelectedEdition()

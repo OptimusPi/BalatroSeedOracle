@@ -69,6 +69,7 @@ public partial class FiltersModalContent : UserControl
             ["Spectrals"] = BalatroData.SpectralCards.Keys.ToList(),
             ["Vouchers"] = BalatroData.Vouchers.Keys.ToList(),
             ["Tags"] = BalatroData.Tags.Keys.ToList(),
+            ["Bosses"] = new List<string>() // Will be populated with boss-related items
         };
         
         SetupControls();
@@ -116,14 +117,18 @@ public partial class FiltersModalContent : UserControl
         {
             clearMustNotButton.Click += (s, e) => ClearMustNot();
         }
+        
+        // Setup Mode Toggle (in file bar)
+        var fileBarModeToggle = this.FindControl<BalatroToggleSwitch>("FileBarModeToggle");
+        if (fileBarModeToggle != null)
+        {
+            fileBarModeToggle.IsCheckedChanged += OnModeToggleChanged;
+        }
     }
     
-    private void OnModeToggleChanged(object? sender, RoutedEventArgs e)
+    private void OnModeToggleChanged(object? sender, bool isChecked)
     {
-        var modeToggle = sender as CheckBox;
-        if (modeToggle == null) return;
-        
-        if (modeToggle.IsChecked == true)
+        if (isChecked)
         {
             // JSON mode
             EnterEditJsonMode();
@@ -166,21 +171,23 @@ public partial class FiltersModalContent : UserControl
         var tarotsTab = this.FindControl<Button>("TarotsTab");
         var spectralsTab = this.FindControl<Button>("SpectralsTab");
         var tagsTab = this.FindControl<Button>("TagsTab");
+        var bossesTab = this.FindControl<Button>("BossesTab");
         var clearTab = this.FindControl<Button>("ClearTab");
         
         vouchersTab?.AddHandler(Button.ClickEvent, (s, e) => NavigateToSection("VouchersTab"));
         tarotsTab?.AddHandler(Button.ClickEvent, (s, e) => NavigateToSection("TarotsTab"));
         spectralsTab?.AddHandler(Button.ClickEvent, (s, e) => NavigateToSection("SpectralsTab"));
         tagsTab?.AddHandler(Button.ClickEvent, (s, e) => NavigateToSection("TagsTab"));
+        bossesTab?.AddHandler(Button.ClickEvent, (s, e) => NavigateToSection("BossesTab"));
         clearTab?.AddHandler(Button.ClickEvent, (s, e) => { ClearNeeds(); ClearWants(); ClearMustNot(); });
         
         // Setup other button handlers
         var saveButton = this.FindControl<Button>("SaveButton");
-        var loadButton = this.FindControl<Button>("LoadButton");
+        var browseButton = this.FindControl<Button>("BrowseButton");
         var clearAllButton = this.FindControl<Button>("ClearAllButton");
         
         saveButton?.AddHandler(Button.ClickEvent, OnSaveClick);
-        loadButton?.AddHandler(Button.ClickEvent, OnLoadClick);
+        browseButton?.AddHandler(Button.ClickEvent, OnLoadClick);
         clearAllButton?.AddHandler(Button.ClickEvent, (s, e) => { ClearNeeds(); ClearWants(); ClearMustNot(); });
         
         var createWidgetButton = this.FindControl<Button>("CreateWidgetButton");
@@ -242,7 +249,7 @@ public partial class FiltersModalContent : UserControl
         //     clearWantsButton.Click += (s, e) => ClearWants();
             
         // Setup mode toggle switch
-        var modeToggle = this.FindControl<CheckBox>("ModeToggle");
+        var modeToggle = this.FindControl<BalatroToggleSwitch>("ModeToggle");
         if (modeToggle != null)
         {
             modeToggle.IsCheckedChanged += OnModeToggleChanged;
@@ -536,6 +543,26 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "RestoreDragDropModeLayout: Starting restoration");
             
+            // Restore the sidebar and grid columns
+            var mainContentGrid = this.FindControl<Grid>("MainContentGrid");
+            if (mainContentGrid != null)
+            {
+                // Restore left sidebar visibility
+                var leftSidebar = this.FindControl<Border>("LeftSidebar");
+                if (leftSidebar != null)
+                {
+                    leftSidebar.IsVisible = true;
+                    Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored left sidebar");
+                }
+                
+                // Restore column widths
+                if (mainContentGrid.ColumnDefinitions.Count >= 2)
+                {
+                    mainContentGrid.ColumnDefinitions[0].Width = new GridLength(120); // Restore sidebar width
+                    mainContentGrid.ColumnDefinitions[1].Width = new GridLength(8);   // Restore spacer width
+                }
+            }
+            
             // Restore the search bar
             var searchBox = this.FindControl<TextBox>("SearchBox");
             if (searchBox?.Parent?.Parent is Border searchBar)
@@ -592,13 +619,20 @@ public partial class FiltersModalContent : UserControl
                 return;
             }
             
-            // Don't hide left sidebar - we need the navigation tabs!
-            // var leftSidebar = mainContentGrid.Children[0] as Border; // First child is the sidebar
-            // if (leftSidebar != null)
-            // {
-            //     leftSidebar.IsVisible = false;
-            //     Oracle.Helpers.DebugLogger.Log("Hidden left sidebar");
-            // }
+            // Hide left sidebar and adjust grid columns for more space
+            var leftSidebar = this.FindControl<Border>("LeftSidebar");
+            if (leftSidebar != null)
+            {
+                leftSidebar.IsVisible = false;
+                Oracle.Helpers.DebugLogger.Log("Hidden left sidebar");
+            }
+            
+            // Also hide the spacer column
+            if (mainContentGrid.ColumnDefinitions.Count >= 2)
+            {
+                mainContentGrid.ColumnDefinitions[0].Width = new GridLength(0); // Hide sidebar column
+                mainContentGrid.ColumnDefinitions[1].Width = new GridLength(0); // Hide spacer column
+            }
             
             // Hide the search bar
             var searchBox = this.FindControl<TextBox>("SearchBox");
@@ -1370,6 +1404,7 @@ public partial class FiltersModalContent : UserControl
         AddCategorySection(itemsPanel, "Tarots", null, "TarotsTab");
         AddCategorySection(itemsPanel, "Spectrals", null, "SpectralsTab");
         AddCategorySection(itemsPanel, "Tags", null, "TagsTab");
+        AddCategorySection(itemsPanel, "Bosses", null, "BossesTab");
         
         _mainScrollViewer.Content = itemsPanel;
         
@@ -2490,15 +2525,15 @@ public partial class FiltersModalContent : UserControl
     
     private Control CreateDroppedItemControl(string itemName, string category)
     {
-        // Create a viewbox to make the item responsive
+        // Create a viewbox to make the item responsive - moderately smaller than palette items
         var viewBox = new Viewbox
         {
             Stretch = Stretch.Uniform,
             StretchDirection = StretchDirection.DownOnly,
-            MaxWidth = 80,
-            MaxHeight = 100,
-            MinWidth = 50,
-            MinHeight = 65,
+            MaxWidth = 56,
+            MaxHeight = 70,
+            MinWidth = 40,
+            MinHeight = 50,
             Margin = new Thickness(2)
         };
         
@@ -2506,8 +2541,8 @@ public partial class FiltersModalContent : UserControl
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 64,
-            Height = 80,
+            Width = 48,
+            Height = 60,
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}" // Store for later reference
         };
@@ -2552,8 +2587,8 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 64,  // Slightly larger animated face
-                        Height = 64,
+                        Width = 40,  // Scaled down animated face to match card size
+                        Height = 40,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = new RotateTransform()

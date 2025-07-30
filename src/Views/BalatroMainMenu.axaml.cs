@@ -217,7 +217,7 @@ namespace Oracle.Views
         /// <summary>
         /// Switches to edit mode for author name
         /// </summary>
-        private void OnAuthorClick(object? sender, PointerPressedEventArgs e)
+        private void OnAuthorClick(object? sender, RoutedEventArgs e)
         {
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");

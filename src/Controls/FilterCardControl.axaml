@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Controls.FilterCardControl">
+    
+    <UserControl.Styles>
+        <!-- Mini item preview -->
+        <Style Selector="Image.mini-item">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        
+        <!-- Debuffed overlay for must-nots -->
+        <Style Selector="Panel.debuffed-item">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        
+        <!-- Section label -->
+        <Style Selector="TextBlock.section-label">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <!-- Mini preview section at bottom of card -->
+        <Border Name="PreviewSection"
+                Background="#0a0a0a"
+                CornerRadius="6"
+                Padding="8,4"
+                Margin="-12,0,-12,-12"
+                VerticalAlignment="Bottom"
+                MinHeight="40">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Needs section -->
+                <StackPanel Grid.Column="0" 
+                           Orientation="Horizontal"
+                           Name="NeedsPanel"
+                           IsVisible="False">
+                    <TextBlock Classes="section-label"
+                              Text="NEEDS:"
+                              VerticalAlignment="Center"/>
+                    <ItemsControl Name="NeedsItems">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <!-- Wants section (center) -->
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal"
+                           Name="WantsPanel"
+                           HorizontalAlignment="Center"
+                           IsVisible="False">
+                    <TextBlock Classes="section-label"
+                              Text="WANTS:"
+                              VerticalAlignment="Center"/>
+                    <ItemsControl Name="WantsItems">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <!-- Must Nots section (right) -->
+                <StackPanel Grid.Column="2" 
+                           Orientation="Horizontal"
+                           Name="MustNotsPanel"
+                           IsVisible="False">
+                    <TextBlock Classes="section-label"
+                              Text="NOT:"
+                              VerticalAlignment="Center"
+                              Foreground="#ff4444"/>
+                    <ItemsControl Name="MustNotsItems">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <!-- Empty state -->
+                <TextBlock Name="EmptyText"
+                          Grid.ColumnSpan="3"
+                          Text="No filter items"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="11"
+                          Foreground="#666666"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsVisible="True"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
