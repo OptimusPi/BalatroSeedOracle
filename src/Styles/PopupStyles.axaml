@@ -1,0 +1,87 @@
+<!-- /src/Styles/PopupStyles.axaml -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- =============================================
+         POPUP AND FLYOUT STYLES
+         Clean, readable styling for all popups
+         ============================================= -->
+    
+    <!-- Flyout Presenter Style -->
+    <Style Selector="FlyoutPresenter">
+        <Setter Property="Background" Value="#1E1E1E"/>
+        <Setter Property="BorderBrush" Value="#4BC292"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    
+    <!-- Popup Style -->
+    <Style Selector="Popup">
+        <Setter Property="PlacementMode" Value="AnchorAndGravity"/>
+    </Style>
+    
+    <!-- ToolTip Style -->
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="#1E1E1E"/>
+        <Setter Property="BorderBrush" Value="#FEB95F"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+    
+    <!-- RadioButton in Popups -->
+    <Style Selector="FlyoutPresenter RadioButton">
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,0,10,0"/>
+    </Style>
+    
+    <Style Selector="FlyoutPresenter RadioButton:checked /template/ ContentPresenter">
+        <Setter Property="TextElement.Foreground" Value="#FEB95F"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+    
+    <!-- CheckBox in Popups -->
+    <Style Selector="FlyoutPresenter CheckBox">
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,2"/>
+    </Style>
+    
+    <Style Selector="FlyoutPresenter CheckBox:checked /template/ ContentPresenter">
+        <Setter Property="TextElement.Foreground" Value="#4BC292"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+    
+    <!-- TextBlock in Popups -->
+    <Style Selector="FlyoutPresenter TextBlock">
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    
+    <!-- Headers in Popups -->
+    <Style Selector="FlyoutPresenter TextBlock.header">
+        <Setter Property="Foreground" Value="#FEB95F"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="16"/>
+    </Style>
+    
+    
+    <!-- Ensure proper ComboBox dropdown styling -->
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Background" Value="#1E1E1E"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="Padding" Value="8,4"/>
+    </Style>
+    
+    <Style Selector="ComboBoxItem:pointerover">
+        <Setter Property="Background" Value="#3A3A3A"/>
+    </Style>
+    
+    <Style Selector="ComboBoxItem:selected">
+        <Setter Property="Background" Value="#4BC292"/>
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+    </Style>
+</Styles>

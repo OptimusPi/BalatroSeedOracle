@@ -1,0 +1,15 @@
+{
+  "name": "Test Scoring",
+  "description": "Test that scores are calculated correctly",
+  "author": "Test",
+  "filter_config": {
+    "must": [],
+    "should": [
+      { "Type": "Joker", "Value": "Perkeo", "SearchAntes": [1,2], "Score": 10 },
+      { "Type": "Joker", "Value": "Blueprint", "SearchAntes": [1,2], "Score": 5 },
+      { "Type": "Tag", "Value": "NegativeTag", "SearchAntes": [1,2], "Score": 3 }
+    ],
+    "mustNot": [],
+    "minimumScore": 0
+  }
+}

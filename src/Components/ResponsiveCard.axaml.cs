@@ -18,7 +18,10 @@ namespace Oracle.Components
         private Border _cardBorder;
         private Image _cardImage;
         private Image _soulImage;
+        private Image _editionOverlay;
         private TextBlock _cardName;
+        private Grid _imageContainer;
+        private Border _legendaryBackground;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
         
@@ -36,6 +39,9 @@ namespace Oracle.Components
         
         public static readonly StyledProperty<bool> IsSelectedWantProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedWant));
+        
+        public static readonly StyledProperty<string> EditionProperty =
+            AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Edition), "none");
         
         public string ItemName
         {
@@ -67,6 +73,12 @@ namespace Oracle.Components
             set => SetValue(IsSelectedWantProperty, value);
         }
         
+        public string Edition
+        {
+            get => GetValue(EditionProperty);
+            set => SetValue(EditionProperty, value);
+        }
+        
         // Events
         public event EventHandler<CardClickEventArgs>? CardClicked;
         public event EventHandler<CardDragEventArgs>? CardDragStarted;
@@ -78,7 +90,10 @@ namespace Oracle.Components
             _cardBorder = this.FindControl<Border>("CardBorder")!;
             _cardImage = this.FindControl<Image>("CardImage")!;
             _soulImage = this.FindControl<Image>("SoulImage")!;
+            _editionOverlay = this.FindControl<Image>("EditionOverlay")!;
             _cardName = this.FindControl<TextBlock>("CardName")!;
+            _imageContainer = this.FindControl<Grid>("ImageContainer")!;
+            _legendaryBackground = this.FindControl<Border>("LegendaryBackground")!;
             
             // Property change handlers
             this.PropertyChanged += OnPropertyChanged;
@@ -141,6 +156,29 @@ namespace Oracle.Components
             }
         }
         
+        private void UpdateImageSize()
+        {
+            // Adjust image container size based on category
+            switch (Category)
+            {
+                case "Tags":
+                    // Tags at 50% size for better clarity
+                    _imageContainer.Width = 27;
+                    _imageContainer.Height = 27;
+                    break;
+                case "Bosses":
+                    // Boss blinds are 34x34 sprites
+                    _imageContainer.Width = 34;
+                    _imageContainer.Height = 34;
+                    break;
+                default:
+                    // Standard size for other items
+                    _imageContainer.Width = 64;
+                    _imageContainer.Height = 64;
+                    break;
+            }
+        }
+        
         private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ItemNameProperty)
@@ -151,10 +189,12 @@ namespace Oracle.Components
             else if (e.Property == ImageSourceProperty)
             {
                 _cardImage.Source = ImageSource;
+                UpdateImageSize();
                 CheckAndLoadLegendarySoul();
             }
             else if (e.Property == CategoryProperty)
             {
+                UpdateImageSize();
                 CheckAndLoadLegendarySoul();
             }
             else if (e.Property == IsSelectedNeedProperty)
@@ -180,6 +220,10 @@ namespace Oracle.Components
                 {
                     _cardBorder.Classes.Remove("selected-want");
                 }
+            }
+            else if (e.Property == EditionProperty)
+            {
+                UpdateEditionOverlay();
             }
         }
         
@@ -211,20 +255,51 @@ namespace Oracle.Components
         
         private void CheckAndLoadLegendarySoul()
         {
+            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')");
+            
             // Check if this is a legendary joker
-            if (Category == "Jokers" && BalatroData.LegendaryJokers.Contains(ItemName))
+            if (Category == "Jokers")
             {
-                // Load the soul sprite (one row below in the sprite sheet)
-                var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
-                if (soulImage != null)
+                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}");
+                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 ItemName.ToLower(): '{ItemName.ToLower()}'");
+                
+                if (BalatroData.LegendaryJokers.Contains(ItemName.ToLower()))
                 {
-                    _soulImage.Source = soulImage;
-                    _soulImage.IsVisible = true;
-                    StartSoulAnimation();
+                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' IS a legendary joker!");
+                    
+                    // Don't show gold background in item palette - it looks weird
+                    _legendaryBackground.IsVisible = false;
+                    
+                    // Check if this is one of the 5 with animated faces
+                    var animatedLegendaryJokers = new[] { "canio", "triboulet", "yorick", "chicot", "perkeo" };
+                    if (animatedLegendaryJokers.Contains(ItemName.ToLower()))
+                    {
+                        // Load the soul sprite (one row below in the sprite sheet)
+                        var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
+                        if (soulImage != null)
+                        {
+                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Soul image loaded successfully for '{ItemName}'");
+                            _soulImage.Source = soulImage;
+                            _soulImage.IsVisible = true;
+                            StartSoulAnimation();
+                        }
+                        else
+                        {
+                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Failed to load soul image for '{ItemName}'");
+                        }
+                    }
+                }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' is NOT a legendary joker");
+                    _legendaryBackground.IsVisible = false;
+                    _soulImage.IsVisible = false;
+                    StopSoulAnimation();
                 }
             }
             else
             {
+                _legendaryBackground.IsVisible = false;
                 _soulImage.IsVisible = false;
                 StopSoulAnimation();
             }
@@ -292,6 +367,28 @@ namespace Oracle.Components
 
             // Otherwise use the existing formatting
             return System.Text.RegularExpressions.Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " ");
+        }
+        
+        private void UpdateEditionOverlay()
+        {
+            if (Category != "Jokers" || string.IsNullOrEmpty(Edition) || Edition == "none")
+            {
+                _editionOverlay.IsVisible = false;
+                return;
+            }
+            
+            var spriteService = SpriteService.Instance;
+            var editionImage = spriteService.GetEditionImage(Edition.ToLower());
+            
+            if (editionImage != null)
+            {
+                _editionOverlay.Source = editionImage;
+                _editionOverlay.IsVisible = true;
+            }
+            else
+            {
+                _editionOverlay.IsVisible = false;
+            }
         }
     }
     

@@ -1,0 +1,409 @@
+<!-- /src/Styles/BalatroGlobalStyles.axaml -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- =============================================
+         GLOBAL BALATRO STYLES - Applied to ALL controls
+         This ensures consistent theming everywhere
+         ============================================= -->
+    
+    <!-- ==== DEFAULT CONTROL STYLES (Applied automatically) ==== -->
+    
+    <!-- ALL Buttons get Balatro styling by default (except window chrome buttons) -->
+    <Style Selector="Button:not(.SystemCaptionButton)">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Background" Value="{StaticResource DockGrey}" /> <!-- Default gray like in Balatro -->
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Grid>
+                    <!-- Dark drop shadow - creates 3D effect -->
+                    <Border Name="DropShadow"
+                            Background="#00000033"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="2,2,0,0"/>
+                    <!-- Dark bottom shadow -->
+                    <Border Name="BottomShadow"
+                            Background="{StaticResource DropShadow}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0,4,0,0"/>
+                    <!-- Main button face -->
+                    <Border Name="ButtonFace"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="0,0,0,4">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                                          TextBlock.FontSize="{TemplateBinding FontSize}"
+                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                          TextBlock.FontFamily="{TemplateBinding FontFamily}"/>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Button hover - no opacity change, color is handled by specific styles -->
+    <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ TextBlock">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    
+    <!-- Button pressed - move down to meet shadow -->
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#ButtonFace">
+        <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    
+    <!-- Button disabled state -->
+    <Style Selector="Button:not(.SystemCaptionButton):disabled">
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):disabled /template/ Border#ButtonFace">
+        <Setter Property="Background" Value="#b9c2d2" />
+    </Style>
+    
+    <!-- ALL TextBlocks get Balatro font -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    
+    <!-- ALL Labels get Balatro font -->
+    <Style Selector="Label">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    
+    <!-- ALL TextBoxes get dark theme -->
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
+        <Setter Property="CaretBrush" Value="{StaticResource TextLight}" />
+    </Style>
+    <Style Selector="TextBox:focus">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="TextBox:pointerover">
+        <Setter Property="Background" Value="#2e2e2e" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
+    </Style>
+    
+    <!-- ALL ComboBoxes get dark theme -->
+    <Style Selector="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    
+    <!-- ALL CheckBoxes get dark theme -->
+    <Style Selector="CheckBox">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    
+    <!-- ALL NumericUpDowns get dark theme -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Height" Value="32" />
+    </Style>
+    <Style Selector="NumericUpDown:focus">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="NumericUpDown:pointerover">
+        <Setter Property="Background" Value="#2e2e2e" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
+    </Style>
+    
+    <!-- ALL ListBoxes get dark theme -->
+    <Style Selector="ListBox">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    
+    <!-- ALL DataGrids get dark theme -->
+    <Style Selector="DataGrid">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="RowBackground" Value="#2a2a2a" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="#444444" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+    </Style>
+    
+    <!-- DataGrid headers -->
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="BorderBrush" Value="#555555" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+    
+    <!-- DataGrid cells -->
+    <Style Selector="DataGridCell">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+    
+    <!-- ==== BALATRO-SPECIFIC COMPONENT STYLES ==== -->
+    
+    <!-- Main modal/dialog style -->
+    <Style Selector="Border.balatro-modal">
+        <Setter Property="Background" Value="{StaticResource Black}" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="BorderBrush" Value="#555a5c" />
+        <Setter Property="BorderThickness" Value="3" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="BoxShadow" Value="0 2 8 #99000000" />
+    </Style>
+    
+    <!-- Card-like container (like the Common Sets area) -->
+    <Style Selector="Border.balatro-card">
+        <Setter Property="Background" Value="#2e3f42" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderBrush" Value="#444444" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Margin" Value="4" />
+    </Style>
+    
+    <!-- Section headers (like "Common Sets") -->
+    <Style Selector="TextBlock.balatro-section-header">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Modal titles (like "FILTER CONFIGURATION") -->
+    <Style Selector="TextBlock.balatro-modal-title">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,0,20" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Button color variants - these override the default gray -->
+    <Style Selector="Button:not(.SystemCaptionButton).btn-blue">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
+    </Style>
+    
+    <Style Selector="Button:not(.SystemCaptionButton).btn-orange">
+        <Setter Property="Background" Value="{StaticResource Orange}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-orange:pointerover">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
+    
+    <Style Selector="Button:not(.SystemCaptionButton).btn-green">
+        <Setter Property="Background" Value="{StaticResource Green}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
+        <Setter Property="Background" Value="{StaticResource GreenHover}" />
+    </Style>
+    
+    <Style Selector="Button:not(.SystemCaptionButton).btn-red">
+        <Setter Property="Background" Value="{StaticResource Red}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
+    </Style>
+    
+    <Style Selector="Button:not(.SystemCaptionButton).btn-purple">
+        <Setter Property="Background" Value="{StaticResource Purple}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
+        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
+    </Style>
+    
+    <!-- Big back button style -->
+    <Style Selector="Button.btn-back">
+        <Setter Property="Background" Value="{StaticResource Orange}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="MinHeight" Value="50" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0,16,0,0" />
+    </Style>
+    
+    <!-- Compact navigation buttons for filter modal sidebar -->
+    <Style Selector="Button.nav-button">
+        <Setter Property="Background" Value="{StaticResource Red}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="MinHeight" Value="22" />
+        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Button.nav-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
+    </Style>
+    <Style Selector="Button.nav-button.active">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="Button.nav-button.active:pointerover">
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
+    </Style>
+    
+    <!-- Search box style -->
+    <Style Selector="TextBox.search-box">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Watermark" Value="Search items..." />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+    
+    <!-- Drop zone style (for drag & drop areas) -->
+    <Style Selector="Border.drop-zone">
+        <Setter Property="Background" Value="#2e3f42" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinHeight" Value="120" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+    
+    <!-- When dragging over drop zone -->
+    <Style Selector="Border.drop-zone.drag-over">
+        <Setter Property="Background" Value="#2a2a2a" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+    </Style>
+    
+    <!-- Pokémon cards style (for your joker/item cards) -->
+    <Style Selector="Border.game-item-card">
+        <Setter Property="Background" Value="{StaticResource SetDefault}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderBrush" Value="#888888" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <ThicknessTransition Property="Margin" Duration="0:0:0.1" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.game-item-card:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        <Setter Property="Margin" Value="4,2,4,6" /> <!-- Lift effect -->
+    </Style>
+    
+    <!-- Tab control styling -->
+    <Style Selector="TabControl">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    
+    <Style Selector="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="CornerRadius" Value="8,8,0,0" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+        <Setter Property="Background" Value="#5a6d71" />
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+    
+    <!-- Scrollbar styling -->
+    <Style Selector="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ScrollBar:vertical">
+        <Setter Property="Width" Value="12" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+        <Setter Property="Height" Value="12" />
+    </Style>
+    <Style Selector="ScrollBar /template/ Thumb">
+        <Setter Property="Background" Value="#555555" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="ScrollBar /template/ Thumb:pointerover">
+        <Setter Property="Background" Value="#b9c2d2" />
+    </Style>
+    
+</Styles>

@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Oracle.Models;
 
 /// <summary>
-/// Models for ouija.json configuration files
+/// MongoDB-style compound query configuration for Balatro seed searching
 /// </summary>
 public class OuijaConfig
 {
@@ -18,9 +18,6 @@ public class OuijaConfig
     
     [JsonPropertyName("author")]
     public string author { get; set; } = "BalatroSeedOracle User";
-    
-    [JsonPropertyName("keywords")]
-    public List<string> keywords { get; set; } = new();
     
     [JsonPropertyName("filter_config")]
     public FilterConfig filter_config { get; set; } = new();
@@ -38,23 +35,17 @@ public class OuijaConfig
 
 public class FilterConfig
 {
-    [JsonPropertyName("Needs")]
-    public List<FilterItem> Needs { get; set; } = new();
+    [JsonPropertyName("must")]
+    public List<FilterItem> Must { get; set; } = new();
     
-    [JsonPropertyName("Wants")]
-    public List<FilterItem> Wants { get; set; } = new();
+    [JsonPropertyName("should")]
+    public List<FilterItem> Should { get; set; } = new();
     
-    [JsonPropertyName("Deck")]
-    public string? Deck { get; set; }
+    [JsonPropertyName("mustNot")]
+    public List<FilterItem> MustNot { get; set; } = new();
     
-    [JsonPropertyName("Stake")]
-    public string? Stake { get; set; }
-    
-    [JsonPropertyName("ScoreNaturalNegatives")]
-    public bool ScoreNaturalNegatives { get; set; } = false;
-    
-    [JsonPropertyName("ScoreDesiredNegatives")]
-    public bool ScoreDesiredNegatives { get; set; } = false;
+    [JsonPropertyName("minimumScore")]
+    public int MinimumScore { get; set; } = 0;
 }
 
 public class FilterItem
@@ -66,7 +57,7 @@ public class FilterItem
     public string Value { get; set; } = "";
     
     [JsonPropertyName("SearchAntes")]
-    public List<int> SearchAntes { get; set; } = new() { 1, 2, 3, 4, 5, 6, 7, 8 };
+    public List<int> SearchAntes { get; set; } = new() { 1 };
     
     [JsonPropertyName("Score")]
     public int Score { get; set; } = 1;
@@ -89,26 +80,14 @@ public class FilterItem
     
     [JsonPropertyName("Enhancement")]
     public string? Enhancement { get; set; }
-}
-
-// Legacy simple format for backward compatibility
-public class OuijaDesire
-{
-    [JsonPropertyName("itemType")]
-    public string itemType { get; set; } = "";
     
-    [JsonPropertyName("itemName")]
-    public string itemName { get; set; } = "";
+    // Source configuration
+    [JsonPropertyName("IncludeShopStream")]
+    public bool? IncludeShopStream { get; set; }
     
-    [JsonPropertyName("required")]
-    public bool required { get; set; } = true;
+    [JsonPropertyName("IncludeBoosterPacks")]
+    public bool? IncludeBoosterPacks { get; set; }
     
-    [JsonPropertyName("editions")]
-    public List<string>? editions { get; set; }
-    
-    [JsonPropertyName("anteMin")]
-    public int? anteMin { get; set; }
-    
-    [JsonPropertyName("anteMax")]
-    public int? anteMax { get; set; }
+    [JsonPropertyName("IncludeSkipTags")]
+    public bool? IncludeSkipTags { get; set; }
 }

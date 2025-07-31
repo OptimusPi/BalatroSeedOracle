@@ -3,11 +3,11 @@
   "description": "Example Ouija JSON Configuration file!",
   "author": "Jimbo",
   "filter_config": {
-    "Needs": [
+    "must": [
       { "Type": "SoulJoker", "Value": "Bloodstone", "SearchAntes": [1] },
       { "Type": "Joker", "Value": "OopsAll6s", "SearchAntes": [1,2,3] }
     ],
-    "Wants": [
+    "should": [
       { "Type": "SoulJoker", "Value": "Perkeo",
         "Edition": "Negative", "SearchAntes": [1,2], "Score": 10
       },
@@ -26,11 +26,7 @@
       { "Type": "PlayingCard", "Suit": "Spades", "Rank": "Ace", "Seal": "Red",
         "Enhancement": "Mult", "Edition": "Glass", "SearchAntes": [1], "Score": 1 }
     ],
-    "MinSearchAnte": 1,
-    "MaxSearchAnte": 8,
-    "Deck": "GhostDeck",
-    "Stake": "BlackStake",
-    "ScoreNaturalNegatives": false,
-    "ScoreDesiredNegatives": false
+    "mustNot": [],
+    "minimumScore": 0
   }
 }

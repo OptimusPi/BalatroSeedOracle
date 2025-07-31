@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Oracle.Views.Modals;
 using Oracle.Components;
 using Oracle.Services;
@@ -50,60 +51,47 @@ public static class ModalHelper
     }
     
     /// <summary>
-    /// Creates and shows a search modal with search widget integration
+    /// Creates and shows an analyzer modal
     /// </summary>
     /// <param name="menu">The main menu to show the modal on</param>
-    /// <param name="searchWidget">Optional search widget to integrate with</param>
     /// <returns>The created modal</returns>
-    public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu, Components.SearchWidget? searchWidget = null)
+    public static StandardModal ShowAnalyzerModal(this Views.BalatroMainMenu menu)
     {
-        var searchModal = new SearchModal();
+        var analyzerView = new AnalyzerModal();
+        return menu.ShowModal("SEED ANALYZER", analyzerView);
+    }
+    
+    /// <summary>
+    /// Creates and shows a browse filters modal
+    /// </summary>
+    /// <param name="menu">The main menu to show the modal on</param>
+    /// <returns>The created modal</returns>
+    public static StandardModal ShowBrowseFiltersModal(this Views.BalatroMainMenu menu)
+    {
+        var browseModal = new BrowseFiltersModal();
         
-        // If search widget provided, transfer state
-        if (searchWidget != null)
-        {
-            // Get search service from widget using reflection (temporary)
-            var searchServiceField = typeof(Components.SearchWidget).GetField("_searchService", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var configPathField = typeof(Components.SearchWidget).GetField("_configPath", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var foundCountField = typeof(Components.SearchWidget).GetField("_foundCount", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (searchServiceField?.GetValue(searchWidget) is Services.MotelySearchService searchService)
-            {
-                searchModal.SetSearchService(searchService);
-                searchModal.SetResults(searchService.Results);
-                searchModal.SetSearchState(searchService.IsRunning, (int)(foundCountField?.GetValue(searchWidget) ?? 0));
-            }
-            
-            if (configPathField?.GetValue(searchWidget) is string configPath)
-            {
-                searchModal.SetConfigPath(configPath);
-            }
-        }
-        
-        var modal = new StandardModal("SEED SEARCH - MAXIMIZED");
-        modal.SetContent(searchModal);
-        
-        // Custom back button behavior for search modal
-        modal.BackClicked += (s, ev) =>
+        // Handle filter selection - launch search
+        browseModal.FilterSelected += (sender, filterPath) =>
         {
             menu.HideModalContent();
-            // Make search widget visible again if it exists
-            if (searchWidget != null)
+            menu.ShowSearchWidget(filterPath);
+        };
+        
+        // Handle edit request - open filters modal with loaded config
+        browseModal.EditRequested += async (sender, filterPath) =>
+        {
+            menu.HideModalContent();
+            var filtersModal = menu.ShowFiltersModal();
+            
+            // Load the filter into the modal - the modal itself is StandardModal, need to get its content
+            var modalContentPresenter = filtersModal.FindControl<ContentPresenter>("ModalContent");
+            if (modalContentPresenter?.Content is FiltersModalContent filtersContent)
             {
-                searchWidget.IsVisible = true;
+                await filtersContent.LoadConfigAsync(filterPath);
             }
         };
         
-        // Hide search widget while modal is open
-        if (searchWidget != null)
-        {
-            searchWidget.IsVisible = false;
-        }
-        
-        menu.ShowModalContent(modal);
-        return modal;
+        return menu.ShowModal("BROWSE FILTERS", browseModal);
     }
+    
 }

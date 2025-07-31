@@ -26,10 +26,10 @@
         
         <!-- Modal panel style - Balatro card style with beveled border -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="Background" Value="#262633"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
-            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
             <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="BoxShadow" Value="5 5 6 #80000000"/>
         </Style>
@@ -49,6 +49,34 @@
         <Style Selector="Button:focus /template/ ContentPresenter">
             <Setter Property="BorderBrush" Value="Transparent"/>
         </Style>
+        
+        <!-- Author Button Style - matches language/theme buttons -->
+        <Style Selector="Button.author-button">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="#708386"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="Button.author-button:pointerover">
+            <Setter Property="BorderBrush" Value="#eac058"/>
+        </Style>
+        <Style Selector="Button.author-button:pressed">
+            <Setter Property="Background" Value="#2e3f42"/>
+        </Style>
+        <Style Selector="Button.author-button TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid>
@@ -57,12 +85,7 @@
         
         <!-- Desktop widgets layer -->
         <Grid x:Name="DesktopCanvas" ZIndex="10">
-            <!-- Search Widget - positioned in top-left by default -->
-            <components:SearchWidget x:Name="SearchWidget" 
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Margin="20,80,0,0"
-                                   IsVisible="False"/>
+            <!-- Search Widgets will be added dynamically here -->
             
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
@@ -81,115 +104,202 @@
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
                         FontWeight="Bold"
-                        Foreground="#eac058"
+                        Foreground="{StaticResource TextLight}"
                         HorizontalAlignment="Center"
-                        Margin="0,10,0,0"/>
+                        Margin="0,5,0,0"/>
 
-            <!-- Control Buttons Stack -->
-            <StackPanel Orientation="Horizontal"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Bottom"
-                      Margin="0,0,20,20"
-                      Spacing="10">
+            <!-- All Docks Container - Float off bottom of screen -->
+            <StackPanel Grid.Row="1" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,60"
+                        Spacing="20">
                 
-                <!-- Music Toggle Button -->
-                <Button x:Name="MusicToggleButton"
-                        FontSize="20"
-                        Width="40"
-                        Height="40"
-                        CornerRadius="20"
-                        Background="#4f6367"
-                        BorderBrush="#7A9E9F"
-                        BorderThickness="2"
-                        Click="OnMusicToggleClick"
-                        ToolTip.Tip="Toggle music">
-                    <TextBlock Text="🎶" 
-                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center"/>
-                </Button>
+                <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,2,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="4,2,4,4"
+                            Margin="0,0,0,4">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <!-- Author Label -->
+                            <TextBlock Text="AUTHOR" 
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Foreground="#888888"
+                                       IsHitTestVisible="False"/>
+                            
+                            <!-- Author Button (Balatro style like language buttons) -->
+                            <Button x:Name="AuthorButton"
+                                    Width="120"
+                                    Height="48"
+                                    Click="OnAuthorClick"
+                                    Classes="author-button">
+                                <Grid>
+                                    <!-- Display mode -->
+                                    <TextBlock x:Name="AuthorDisplay"
+                                               Text=""
+                                               IsVisible="True"
+                                               IsHitTestVisible="False"/>
+                                    
+                                    <!-- Edit mode -->
+                                    <TextBox x:Name="AuthorEdit"
+                                             Text=""
+                                             FontFamily="{StaticResource BalatroFont}"
+                                             FontSize="16"
+                                             FontWeight="Bold"
+                                             Background="#708386"
+                                             BorderThickness="0"
+                                             VerticalAlignment="Center"
+                                             HorizontalAlignment="Stretch"
+                                             TextAlignment="Center"
+                                             Foreground="#E2E2E3"
+                                             IsVisible="False"
+                                             LostFocus="OnAuthorEditLostFocus"
+                                             KeyDown="OnAuthorEditKeyDown"/>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
                 
-                <!-- Volume Control Button -->
-                <Button x:Name="VolumeButton"
-                        FontSize="20"
-                        Width="40"
-                        Height="40"
-                        CornerRadius="20"
-                        Background="#4f6367"
-                        BorderBrush="#7A9E9F"
-                        BorderThickness="2"
-                        Click="OnVolumeClick"
-                        ToolTip.Tip="Adjust volume">
-                    <TextBlock Text="🔊" 
-                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center"/>
-                </Button>
-                
-                <!-- Pause/Resume Animation Button -->
-                <Button x:Name="AnimationToggleButton"
-                        FontSize="20"
-                        Width="40"
-                        Height="40"
-                        CornerRadius="20"
-                        Background="#4f6367"
-                        BorderBrush="#7A9E9F"
-                        BorderThickness="2"
-                        Click="OnAnimationToggleClick"
-                        ToolTip.Tip="Pause/resume background animation">
-                    <TextBlock Text="⏸" 
-                               FontFamily="Segoe UI Symbol, Segoe UI Emoji"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center"/>
-                </Button>
-                
-                <!-- Theme Cycling Button -->
-                <Button x:Name="ThemeCycleButton"
-                        FontSize="20"
-                        Width="40"
-                        Height="40"
-                        CornerRadius="20"
-                        Background="#4f6367"
-                        BorderBrush="#7A9E9F"
-                        BorderThickness="2"
-                        Click="OnThemeCycleClick"
-                        ToolTip.Tip="Cycle background theme">
-                    <TextBlock Text="🎨" 
-                               FontFamily="Segoe UI Emoji, Noto Color Emoji"
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center"/>
-                </Button>
-            </StackPanel>
-
-            <!-- Main Menu Buttons - Tight dock -->
-            <Border Grid.Row="1"
-                    Background="#4f6367"
-                    Padding="3,3"
-                    HorizontalAlignment="Center"
-                    CornerRadius="12"
-                    Margin="16"
-                    BorderBrush="#7A9E9F"
-                    BorderThickness="2"
-                    BoxShadow="4 4 8 #5e5e5e80">
+                <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,4,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="2"
+                            Margin="0,0,0,4">
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Classes="oracle-btn button-color-blue"
-                            Content="SEARCH"
-                            Click="OnSearchClick"/>
+                    <!-- PLAY button equivalent - NEW FILTER (blue) -->
+                    <Button Classes="btn-blue"
+                            Click="OnNewFilterClick"
+                            MinHeight="64"
+                            MinWidth="160">
+                        <TextBlock Text="NEW FILTER" 
+                                   FontSize="24" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
                     
-                    <Button Classes="oracle-btn button-color-yellow-orange"
-                            Content="FILTERS"
-                            Click="OnFiltersClick"/>
+                    <!-- OPTIONS button equivalent - LOAD (orange) -->
+                    <Button Classes="btn-orange"
+                            Click="OnLoadClick"
+                            MinHeight="48"
+                            MinWidth="100">
+                        <TextBlock Text="LOAD" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
                     
-                    <Button Classes="oracle-btn button-color-purple"
-                            Content="FUN RUN"
-                            Click="OnFunRunClick"/>
+                    <!-- QUIT button (red) -->
+                    <Button Classes="btn-red"
+                            Click="OnExitClick"
+                            MinHeight="48"
+                            MinWidth="100">
+                        <TextBlock Text="QUIT" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
+                    
+                    <!-- COLLECTION button equivalent - RESULTS (green) -->
+                    <Button Classes="btn-green"
+                            Click="OnResultsClick"
+                            MinHeight="64"
+                            MinWidth="160">
+                        <TextBlock Text="RESULTS" 
+                                   FontSize="24" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
 
-                    <Button Classes="oracle-btn button-color-red"
-                            Content="EXIT"
-                            Click="OnExitClick"/>
-                </StackPanel>
-            </Border>
+                    <!-- MODS button equivalent - FUN RUNS (purple) -->
+                    <Button Classes="btn-purple"
+                            Click="OnFunRunClick"
+                            MinHeight="64"
+                            MinWidth="64">
+                        <TextBlock Text="FUN RUN" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   IsHitTestVisible="False"/>
+                    </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                
+                <!-- Right Side Dock (like Language selector in real Balatro) -->
+                <Grid>
+                    <!-- Dark shadow underneath -->
+                    <Border Background="{StaticResource DropShadow}"
+                            CornerRadius="8"
+                            Margin="0,2,0,0"/>
+                    <!-- Main dock panel -->
+                    <Border Background="{StaticResource DockGrey}"
+                            CornerRadius="8"
+                            Padding="6,4,6,6"
+                            Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <!-- Theme Cycling Button (square like language buttons) -->
+                            <Button x:Name="ThemeCycleButton"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    Background="#708386"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Click="OnThemeCycleClick"
+                                    ToolTip.Tip="Cycle background theme">
+                                <TextBlock Text="🎨" 
+                                           FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                            </Button>
+                            
+                            <!-- Pause/Resume Animation Button (square like language buttons) -->
+                            <Button x:Name="AnimationToggleButton"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    Background="#708386"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Click="OnAnimationToggleClick"
+                                    ToolTip.Tip="Pause/resume background animation">
+                                <TextBlock Text="⏸" 
+                                           FontFamily="Segoe UI Symbol, Segoe UI Emoji"
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel> <!-- End All Docks Container -->
         </Grid> <!-- End MainContent -->
 
         <!-- Modal overlay container for code-behind modals -->

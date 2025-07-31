@@ -6,6 +6,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <NoWarn>$(NoWarn);CS0108</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +15,6 @@
     <AvaloniaResource Include="Oracle.webp" />
     <AvaloniaResource Include="MainLogo.png" />
     <AvaloniaResource Include="MainLogoHover.png" />
-    <AvaloniaResource Include="Styles\BalatroModal.axaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
   </ItemGroup>
 
   <ItemGroup>

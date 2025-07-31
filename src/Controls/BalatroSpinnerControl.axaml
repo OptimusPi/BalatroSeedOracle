@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Controls.BalatroSpinnerControl">
+    
+    <UserControl.Styles>
+        <!-- Arrow button style -->
+        <Style Selector="Button.arrow-button">
+            <Setter Property="Width" Value="19"/>
+            <Setter Property="Height" Value="19"/>
+            <Setter Property="Background" Value="#FE5F55"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            BorderThickness="0">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.arrow-button:pointerover">
+            <Setter Property="Background" Value="#FF7066"/>
+        </Style>
+        
+        <Style Selector="Button.arrow-button:pressed">
+            <Setter Property="Background" Value="#E54B41"/>
+        </Style>
+        
+        <!-- Value display badge style -->
+        <Style Selector="Border.value-badge">
+            <Setter Property="Background" Value="#FE5F55"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinWidth" Value="48"/>
+            <Setter Property="Height" Value="19"/>
+            <Setter Property="Padding" Value="7,0"/>
+        </Style>
+        
+        <!-- Label style -->
+        <Style Selector="TextBlock.spinner-label">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        
+        <!-- Value text style -->
+        <Style Selector="TextBlock.value-text">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Dots indicator -->
+        <Style Selector="TextBlock.dots-indicator">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="6"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Label -->
+        <TextBlock Grid.Row="0"
+                   Name="LabelText"
+                   Classes="spinner-label"
+                   Text="{Binding Label}"/>
+        
+        <!-- Spinner control -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left arrow -->
+            <Button Grid.Column="0"
+                    Name="DecrementButton"
+                    Classes="arrow-button"
+                    Content="&lt;"
+                    Click="OnDecrementClick"/>
+            
+            <!-- Value badge -->
+            <Border Grid.Column="2"
+                    Classes="value-badge">
+                <Grid>
+                    <TextBlock Name="ValueText"
+                               Classes="value-text"
+                               Text="{Binding Value}"/>
+                    <TextBlock Classes="dots-indicator"
+                               Text="•••"/>
+                </Grid>
+            </Border>
+            
+            <!-- Right arrow -->
+            <Button Grid.Column="4"
+                    Name="IncrementButton"
+                    Classes="arrow-button"
+                    Content="&gt;"
+                    Click="OnIncrementClick"/>
+        </Grid>
+    </Grid>
+</UserControl>

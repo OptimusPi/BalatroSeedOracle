@@ -54,7 +54,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0"
                                Text="📅 Daily" 
-                               FontSize="16"
+                               FontSize="24"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,5,0,0"/>

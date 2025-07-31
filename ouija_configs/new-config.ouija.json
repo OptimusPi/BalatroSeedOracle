@@ -1,0 +1,131 @@
+{
+  "name": "new-config.ouija",
+  "description": "description, a config for stuff",
+  "author": "Jimbo",
+  "sources": [
+    "tag",
+    "booster",
+    "shop"
+  ],
+  "filter_config": {
+    "Needs": [
+      {
+        "Type": "SoulJoker",
+        "Value": "Triboulet",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "FourFingers",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "TurtleBean",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "SockAndBuskin",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "Bloodstone",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      },
+      {
+        "Type": "Joker",
+        "Value": "OopsAll6s",
+        "SearchAntes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "Score": 1,
+        "Edition": "NoEdition",
+        "IncludeShopStream": true,
+        "IncludeBoosterPacks": true,
+        "IncludeSkipTags": true
+      }
+    ],
+    "Wants": [],
+    "ScoreNaturalNegatives": false,
+    "ScoreDesiredNegatives": false
+  }
+}

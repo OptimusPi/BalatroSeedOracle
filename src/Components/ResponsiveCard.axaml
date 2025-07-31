@@ -33,11 +33,12 @@
     </UserControl.Styles>
 
     <Border Name="CardBorder" 
-            Background="Transparent"
+            Background="{StaticResource Black}"
             Padding="2" 
-            MinWidth="72"
+            MinWidth="80"
             MinHeight="72"
-            Cursor="Hand">
+            Cursor="Hand"
+            IsHitTestVisible="True">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -45,13 +46,34 @@
             </Grid.RowDefinitions>
             
             <!-- Main card container with layered images -->
-            <Grid Grid.Row="0" Margin="6" Width="64" Height="64">
+            <Grid Grid.Row="0" Margin="6" Name="ImageContainer">
+                <!-- Gold background for legendary jokers -->
+                <Border Name="LegendaryBackground" 
+                        IsVisible="False"
+                        CornerRadius="4">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                            <GradientStop Color="#FFD700" Offset="0" />
+                            <GradientStop Color="#FFA500" Offset="0.5" />
+                            <GradientStop Color="#FFD700" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                
                 <!-- Base card image -->
-                <Image Name="CardImage" />
+                <Image Name="CardImage" 
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
                 
                 <!-- Soul/Face overlay for legendary jokers -->
                 <Image Name="SoulImage" 
                        IsVisible="False"
+                       Width="64"
+                       Height="64"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
                        RenderTransformOrigin="0.5,0.5">
                     <Image.RenderTransform>
                         <TransformGroup>
@@ -60,6 +82,15 @@
                         </TransformGroup>
                     </Image.RenderTransform>
                 </Image>
+                
+                <!-- Edition overlay for jokers with editions -->
+                <Image Name="EditionOverlay" 
+                       IsVisible="False"
+                       Width="64"
+                       Height="64"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
             </Grid>
             
             <TextBlock Grid.Row="1" 

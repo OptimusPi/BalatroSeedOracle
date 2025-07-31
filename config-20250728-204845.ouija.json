@@ -1,0 +1,174 @@
+{
+  "must": [
+    {
+      "item": {
+        "type": "joker",
+        "name": "Triboulet",
+        "edition": "none"
+      },
+      "score": 0,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    },
+    {
+      "item": {
+        "type": "joker",
+        "name": "Perkeo",
+        "edition": "none"
+      },
+      "score": 0,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    }
+  ],
+  "should": [
+    {
+      "item": {
+        "type": "joker",
+        "name": "Blueprint",
+        "edition": "none"
+      },
+      "score": 1,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    },
+    {
+      "item": {
+        "type": "joker",
+        "name": "AncientJoker",
+        "edition": "none"
+      },
+      "score": 1,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    },
+    {
+      "item": {
+        "type": "joker",
+        "name": "InvisibleJoker",
+        "edition": "none"
+      },
+      "score": 1,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    },
+    {
+      "item": {
+        "type": "joker",
+        "name": "Brainstorm",
+        "edition": "none"
+      },
+      "score": 1,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    },
+    {
+      "item": {
+        "type": "joker",
+        "name": "BurntJoker",
+        "edition": "none"
+      },
+      "score": 1,
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": [
+        "shop",
+        "packs",
+        "tags"
+      ]
+    }
+  ],
+  "mustNot": [],
+  "filter": {
+    "deck": "Red",
+    "stake": "White",
+    "maxAnte": 8
+  },
+  "minimumScore": 0
+}

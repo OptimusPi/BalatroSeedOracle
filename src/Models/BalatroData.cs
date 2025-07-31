@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Motely;
+using Oracle.Helpers;
 
 namespace Oracle.Models;
 
 /// <summary>
 /// Complete Balatro game data for ouija.json configuration
-/// Uses Motely.Core enums as the source of truth for item names
+/// Uses Motely enums as the source of truth for item names
 /// </summary>
 public static class BalatroData
 {
@@ -53,18 +54,21 @@ public static class BalatroData
     public static readonly Dictionary<string, string> LegacyNameMappings = new()
     {
         // Joker ID fixes
-        { "OopsAll6s", "OopsAll6s" }, // Actually correct in Motely
-        { "Oops_All_6s", "OopsAll6s" }, // Map underscore version to correct
+        { "OopsAll6s", "OopsAll6s" },
         
         // Voucher ID fixes
-        { "BlankVoucher", "Blank" },
-        
-        // Other special cases
-        { "SoulJoker", "Spectral" }, // SoulJoker actually refers to The Soul spectral card
+        { "BlankVoucher", "Blank" }
     };
 
     private static void InitializeJokers()
     {
+        // Add wildcard entries first
+        Jokers["anylegendary"] = "Any Legendary";
+        Jokers["anyrare"] = "Any Rare";
+        Jokers["anyuncommon"] = "Any Uncommon";
+        Jokers["anycommon"] = "Any Common";
+        Jokers["anyjoker"] = "Any Joker";
+        
         // Common Jokers
         foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
         {
@@ -100,6 +104,9 @@ public static class BalatroData
 
     private static void InitializeTarotCards()
     {
+        // Add wildcard entry first
+        TarotCards["anytarot"] = "Any Tarot";
+        
         foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
         {
             var name = tarot.ToString();
@@ -110,6 +117,9 @@ public static class BalatroData
 
     private static void InitializeSpectralCards()
     {
+        // Add wildcard entry first
+        SpectralCards["anyspectral"] = "Any Spectral";
+        
         foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
         {
             var name = spectral.ToString();
@@ -130,6 +140,11 @@ public static class BalatroData
 
     private static void InitializeTags()
     {
+        // Add wildcard entries first
+        Tags["anytag"] = "Any Tag";
+        Tags["anysmall"] = "Any Small";
+        Tags["anybig"] = "Any Big";
+        
         foreach (var tag in Enum.GetValues<MotelyTag>())
         {
             var name = tag.ToString();
@@ -170,35 +185,33 @@ public static class BalatroData
 
     private static void InitializeDecks()
     {
-        // TODO: Update when Motely deck enums are available
-        Decks["RedDeck"] = "Red Deck";
-        Decks["BlueDeck"] = "Blue Deck";
-        Decks["YellowDeck"] = "Yellow Deck";
-        Decks["GreenDeck"] = "Green Deck";
-        Decks["BlackDeck"] = "Black Deck";
-        Decks["MagicDeck"] = "Magic Deck";
-        Decks["NebulousDeck"] = "Nebulous Deck";
-        Decks["GhostDeck"] = "Ghost Deck";
-        Decks["AbandonedDeck"] = "Abandoned Deck";
-        Decks["CheckeredDeck"] = "Checkered Deck";
-        Decks["ZodiacDeck"] = "Zodiac Deck";
-        Decks["PaintedDeck"] = "Painted Deck";
-        Decks["AnagraphDeck"] = "Anagraph Deck";
-        Decks["PlasmaDeck"] = "Plasma Deck";
-        Decks["ErraticDeck"] = "Erratic Deck";
+        Decks["Red"] = "Red Deck";
+        Decks["Blue"] = "Blue Deck";
+        Decks["Yellow"] = "Yellow Deck";
+        Decks["Green"] = "Green Deck";
+        Decks["Black"] = "Black Deck";
+        Decks["Magic"] = "Magic Deck";
+        Decks["Nebulous"] = "Nebulous Deck";
+        Decks["Ghost"] = "Ghost Deck";
+        Decks["Abandoned"] = "Abandoned Deck";
+        Decks["Checkered"] = "Checkered Deck";
+        Decks["Zodiac"] = "Zodiac Deck";
+        Decks["Painted"] = "Painted Deck";
+        Decks["Anagraph"] = "Anagraph Deck";
+        Decks["Plasma"] = "Plasma Deck";
+        Decks["Erratic"] = "Erratic Deck";
     }
 
     private static void InitializeStakes()
     {
-        // TODO: Update when Motely stake enums are available
-        Stakes["WhiteStake"] = "White Stake";
-        Stakes["RedStake"] = "Red Stake";
-        Stakes["GreenStake"] = "Green Stake";
-        Stakes["BlackStake"] = "Black Stake";
-        Stakes["BlueStake"] = "Blue Stake";
-        Stakes["PurpleStake"] = "Purple Stake";
-        Stakes["OrangeStake"] = "Orange Stake";
-        Stakes["GoldStake"] = "Gold Stake";
+        Stakes["White"] = "White Stake";
+        Stakes["Red"] = "Red Stake";
+        Stakes["Green"] = "Green Stake";
+        Stakes["Black"] = "Black Stake";
+        Stakes["Blue"] = "Blue Stake";
+        Stakes["Purple"] = "Purple Stake";
+        Stakes["Orange"] = "Orange Stake";
+        Stakes["Gold"] = "Gold Stake";
     }
 
     /// <summary>
@@ -404,7 +417,9 @@ public static class BalatroData
             { "TheWorld", "The World" },
             
             // Spectral cards
+            { "Soul", "The Soul" },
             { "TheSoul", "The Soul" },
+            { "BlackHole", "Black Hole" },
             { "DejaVu", "Deja Vu" },
             
             // Boss blinds
@@ -493,37 +508,41 @@ public static class BalatroData
 
     // Additional properties for backwards compatibility
     public static readonly List<string> LegendaryJokers = new List<string>();
+    public static readonly List<string> SoulJokers = new List<string>(); // Alias for LegendaryJokers
     public static readonly Dictionary<string, List<string>> JokersByRarity = new Dictionary<string, List<string>>();
 
     // Initialize these in the static constructor
     static void InitializeCompatibilityCollections()
     {
-        // Initialize LegendaryJokers
+        Oracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
+        // Initialize LegendaryJokers and SoulJokers (they're the same)
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
-            LegendaryJokers.Add(joker.ToString().ToLower());
+            var jokerName = joker.ToString();
+            LegendaryJokers.Add(jokerName.ToLower());
+            SoulJokers.Add(jokerName); // Keep original casing for SoulJokers
         }
 
         // Initialize JokersByRarity
-        JokersByRarity["Common"] = new List<string>();
+        JokersByRarity["Common"] = new List<string> { "anycommon", "anyjoker" };
         foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
         {
             JokersByRarity["Common"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Uncommon"] = new List<string>();
+        JokersByRarity["Uncommon"] = new List<string> { "anyuncommon" };
         foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
         {
             JokersByRarity["Uncommon"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Rare"] = new List<string>();
+        JokersByRarity["Rare"] = new List<string> { "anyrare" };
         foreach (var joker in Enum.GetValues<MotelyJokerRare>())
         {
             JokersByRarity["Rare"].Add(joker.ToString().ToLower());
         }
 
-        JokersByRarity["Legendary"] = new List<string>();
+        JokersByRarity["Legendary"] = new List<string> { "anylegendary" };
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
             JokersByRarity["Legendary"].Add(joker.ToString().ToLower());

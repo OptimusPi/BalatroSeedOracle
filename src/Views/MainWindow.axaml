@@ -4,7 +4,7 @@
         x:Class="Oracle.Views.MainWindow"
         Title="🃏Balatro Seed Oracle🥠"
         Width="1200"
-        Height="720">
+        Height="700">
     
     <Window.Styles>
         <Style Selector="TextBlock.attribution">
@@ -31,8 +31,8 @@
         
         <!-- Attribution line -->
         <Border Grid.Row="1" 
-                Background="#1a1a1a" 
-                Padding="5,5">
+                Background="#2e3f42" 
+                Padding="4,3">
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Center"
                         Spacing="5">

@@ -3,10 +3,14 @@
              x:Class="Oracle.Views.Modals.StandardModal">
     
     <!-- Full screen modal with percentage-based margins -->
-    <!-- Semi-transparent overlay -->
-    <Border Background="#80000000"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+    <!-- Semi-transparent overlay with proper click handling -->
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <!-- Background that blocks clicks to elements behind the modal -->
+        <Border Background="#80000000"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="True" />
         
         <!-- Grid for percentage-based margins -->
         <Grid>
@@ -16,16 +20,25 @@
                 <ColumnDefinition Width="0.025*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.025*"/>
-                <RowDefinition Height="0.95*"/>
-                <RowDefinition Height="0.025*"/>
+                <RowDefinition Height="0.03*"/>
+                <RowDefinition Height="0.94*"/>
+                <RowDefinition Height="0.03*"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container -->
+            <!-- Main modal container with exact Balatro layered styling -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Classes="modal-panel"
+                    Background="{StaticResource DockGrey}"
+                    CornerRadius="16"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="3"
+                    Padding="0"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    MaxWidth="1200"
+                    BoxShadow="0 4 12 #777e89">
+                <Border Background="{StaticResource Black}" 
+                        CornerRadius="16"
+                        Padding="0">
             
             <Grid VerticalAlignment="Stretch" MinHeight="500">
                 <Grid.RowDefinitions>
@@ -58,12 +71,13 @@
                             Spacing="5">
                     <!-- Long yellow back button (always present) -->
                     <Button x:Name="BackButton"
-                            Content="BACK"
+                            Content="Back"
                             Classes="back-button"
                             HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Grid>
             </Border>
+            </Border>
         </Grid>
-    </Border>
+    </Grid>
 </UserControl>

@@ -1,0 +1,51 @@
+{
+  "spriteSheet": "BlindChips.png",
+  "spriteWidth": 34,
+  "spriteHeight": 34,
+  "columns": 21,
+  "rows": 31,
+  "animated": true,
+  "framesPerAnimation": 21,
+  "description": "Boss blind chips with animations",
+  "sprites": {
+    "blinds": {
+      "SmallBlind": { "x": 0, "y": 0, "description": "Small blind chip" },
+      "BigBlind": { "x": 0, "y": 1, "description": "Big blind chip" }
+    },
+    "bosses": {
+      "TheOx": { "x": 0, "y": 2 },
+      "TheHouse": { "x": 0, "y": 3 },
+      "TheClub": { "x": 0, "y": 4 },
+      "TheFish": { "x": 0, "y": 5 },
+      "TheWindow": { "x": 0, "y": 6 },
+      "TheHook": { "x": 0, "y": 7 },
+      "TheManacle": { "x": 0, "y": 8 },
+      "TheWall": { "x": 0, "y": 9 },
+      "TheWheel": { "x": 0, "y": 10 },
+      "TheArm": { "x": 0, "y": 11 },
+      "ThePsychic": { "x": 0, "y": 12 },
+      "TheGoad": { "x": 0, "y": 13 },
+      "TheWater": { "x": 0, "y": 14 },
+      "TheSerpent": { "x": 0, "y": 15 },
+      "ThePillar": { "x": 0, "y": 16 },
+      "TheEye": { "x": 0, "y": 17 },
+      "TheMouth": { "x": 0, "y": 18 },
+      "ThePlant": { "x": 0, "y": 19 },
+      "TheNeedle": { "x": 0, "y": 20 },
+      "TheHead": { "x": 0, "y": 21 },
+      "TheTooth": { "x": 0, "y": 22 },
+      "TheMark": { "x": 0, "y": 23 },
+      "TheFlint": { "x": 0, "y": 24 }
+    },
+    "finisherBosses": {
+      "CrimsonHeart": { "x": 0, "y": 25, "description": "Ante 8/16 finisher boss" },
+      "CeruleanBell": { "x": 0, "y": 26, "description": "Ante 8/16 finisher boss" },
+      "AmberAcorn": { "x": 0, "y": 27, "description": "Ante 8/16 finisher boss" },
+      "VerdantLeaf": { "x": 0, "y": 28, "description": "Ante 8/16 finisher boss" },
+      "VioletVessel": { "x": 0, "y": 29, "description": "Ante 8/16 finisher boss" }
+    },
+    "special": {
+      "MysteryBoss": { "x": 0, "y": 30, "description": "Mystery boss icon" }
+    }
+  }
+}

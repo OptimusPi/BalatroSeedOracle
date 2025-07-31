@@ -1,0 +1,11 @@
+{
+  "name": "Test Spectral Soul", 
+  "description": "Test searching for The Soul spectral card",
+  "author": "Test",
+  "filter_config": {
+    "Needs": [
+      { "Type": "Spectral", "Value": "Soul", "SearchAntes": [1,2,3,4,5,6,7,8] }
+    ],
+    "Wants": []
+  }
+}

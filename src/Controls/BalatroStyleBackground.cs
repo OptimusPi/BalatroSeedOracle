@@ -153,7 +153,7 @@ namespace Oracle.Controls
                 float4 main(float2 screen_coords) {
                     // Convert to UV coords (0-1) and floor for pixel effect
                     float pixel_size = length(resolution) / PIXEL_SIZE_FAC;
-                    float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution) - float2(0.12, 0.0);
+                    float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution);
                     float uv_len = length(uv);
 
                     // Adding in a center swirl, changes with time. Only applies meaningfully if the 'spin amount' is a non-zero number
@@ -259,9 +259,9 @@ namespace Oracle.Controls
             return theme switch
             {
                 BalatroStyleBackground.BackgroundTheme.Default => (
-                    new float[] { 0.871f, 0.267f, 0.231f, 1.0f }, // Red
-                    new float[] { 0.0f, 0.42f, 0.706f, 1.0f },    // Blue
-                    new float[] { 0.086f, 0.137f, 0.145f, 1.0f }  // Dark gray
+                    new float[] { 0.871f, 0.267f, 0.231f, 1.0f }, // Red (original Balatro red)
+                    new float[] { 0.0f, 0.42f, 0.706f, 1.0f },    // Blue (original Balatro blue)
+                    new float[] { 0.086f, 0.137f, 0.145f, 1.0f }  // Dark gray background
                 ),
                 
                 BalatroStyleBackground.BackgroundTheme.Plasma => (

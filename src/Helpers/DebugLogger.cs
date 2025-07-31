@@ -8,7 +8,16 @@ namespace Oracle.Helpers;
 public static class DebugLogger
 {
     // Set to false for production builds
-    private static readonly bool EnableDebugLogging = true;  // Enabled for debugging search issues
+    private static bool EnableDebugLogging = false;  // Disabled by default
+    private static bool EnableVerboseLogging = false;  // For extra verbose output
+    
+    /// <summary>
+    /// Sets whether debug logging is enabled
+    /// </summary>
+    public static void SetDebugEnabled(bool enabled)
+    {
+        EnableDebugLogging = enabled;
+    }
     
     /// <summary>
     /// Logs a debug message with timestamp if debug logging is enabled
@@ -55,13 +64,16 @@ public static class DebugLogger
     }
     
     /// <summary>
-    /// Logs important information (always shown regardless of debug setting)
+    /// Logs important information (only shown if verbose logging is enabled)
     /// </summary>
     /// <param name="category">The category/component name</param>
     /// <param name="message">The important message to log</param>
     public static void LogImportant(string category, string message)
     {
-        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] INFO: {message}");
+        if (EnableVerboseLogging || EnableDebugLogging)
+        {
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] INFO: {message}");
+        }
     }
     
     /// <summary>

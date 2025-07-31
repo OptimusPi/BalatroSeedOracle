@@ -1,0 +1,259 @@
+<views:StandardModal xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:views="using:Oracle.Views.Modals"
+                     x:Class="Oracle.Views.Modals.SearchResultsModal"
+                     Width="1400"
+                     Height="800">
+    
+    <views:StandardModal.Styles>
+        <!-- DataGrid styling to match Balatro theme -->
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#3a3a3a"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        
+        <!-- Header styling -->
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        
+        <!-- Row styling -->
+        <Style Selector="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:nth-child(2n)">
+            <Setter Property="Background" Value="#2e3f42"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#3a5055"/>
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#009dff"/>
+            <Setter Property="Opacity" Value="0.3"/>
+        </Style>
+        
+        <!-- Cell styling -->
+        <Style Selector="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        
+        <!-- Score color coding -->
+        <Style Selector="TextBlock.score-high">
+            <Setter Property="Foreground" Value="#4BC292"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        
+        <Style Selector="TextBlock.score-medium">
+            <Setter Property="Foreground" Value="#FEB95F"/>
+        </Style>
+        
+        <Style Selector="TextBlock.score-low">
+            <Setter Property="Foreground" Value="#FE5F55"/>
+        </Style>
+        
+        <!-- Toolbar button styling -->
+        <Style Selector="Button.toolbar-button">
+            <Setter Property="Background" Value="#3a5055"/>
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        </Style>
+        
+        <Style Selector="Button.toolbar-button:pointerover">
+            <Setter Property="Background" Value="#4a6065"/>
+            <Setter Property="BorderBrush" Value="#009dff"/>
+        </Style>
+        
+        <!-- Stats styling -->
+        <Style Selector="TextBlock.stat-label">
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+        
+        <Style Selector="TextBlock.stat-value">
+            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </views:StandardModal.Styles>
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" 
+                Background="#2a2a2a" 
+                BorderBrush="#3a3a3a" 
+                BorderThickness="0,0,0,1"
+                Padding="12,8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Left side - Info -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
+                    <TextBlock Classes="stat-label" Text="Filter:" VerticalAlignment="Center"/>
+                    <TextBlock Name="FilterNameText" 
+                              Classes="stat-value" 
+                              Text="Loading..."
+                              VerticalAlignment="Center"/>
+                    
+                    <Border Width="1" Background="#3a3a3a" Margin="8,0"/>
+                    
+                    <TextBlock Classes="stat-label" Text="Results:" VerticalAlignment="Center"/>
+                    <TextBlock Name="ResultCountText" 
+                              Classes="stat-value" 
+                              Text="0"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Right side - Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                    <Button Name="LoadHistoryButton" 
+                           Classes="toolbar-button"
+                           Content="Load History"
+                           IsVisible="False"/>
+                    
+                    <Button Name="ExportCsvButton" 
+                           Classes="toolbar-button"
+                           Content="Export CSV"/>
+                    
+                    <Button Name="CopyAllButton" 
+                           Classes="toolbar-button"
+                           Content="Copy All Seeds"/>
+                    
+                    <Button Name="RefreshButton" 
+                           Classes="toolbar-button"
+                           Content="Refresh"
+                           IsVisible="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Results DataGrid -->
+        <Border Grid.Row="1" 
+                Background="#2e3f42"
+                BorderBrush="#3a3a3a"
+                BorderThickness="0"
+                Margin="0">
+            <DataGrid Name="ResultsGrid"
+                     CanUserResizeColumns="True"
+                     CanUserSortColumns="True"
+                     CanUserReorderColumns="True"
+                     GridLinesVisibility="Horizontal"
+                     HeadersVisibility="Column"
+                     SelectionMode="Extended"
+                     IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Seed" 
+                                       Binding="{Binding Seed}" 
+                                       Width="150"
+                                       FontFamily="{StaticResource MonospaceFont}"/>
+                    
+                    <DataGridTemplateColumn Header="Score" 
+                                           Width="120"
+                                           CanUserSort="True"
+                                           SortMemberPath="Score">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FormattedScore}"
+                                          HorizontalAlignment="Right"
+                                          Margin="0,0,8,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTextColumn Header="Antes" 
+                                       Binding="{Binding Antes}" 
+                                       Width="100"/>
+                    
+                    <DataGridTemplateColumn Header="Items Found" 
+                                           Width="*"
+                                           MinWidth="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding FoundItems}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border ToolTip.Tip="{Binding Tooltip}"
+                                                   Margin="2">
+                                                <Image Source="{Binding Icon}"
+                                                      Width="32"
+                                                      Height="32"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTextColumn Header="Timestamp" 
+                                       Binding="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" 
+                                       Width="150"
+                                       IsVisible="{Binding IsHistoricalView}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+        
+        <!-- Footer Stats -->
+        <Border Grid.Row="2" 
+                Background="#2a2a2a" 
+                BorderBrush="#3a3a3a" 
+                BorderThickness="0,1,0,0"
+                Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="24">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Classes="stat-label" Text="Highest Score:"/>
+                        <TextBlock Name="HighestScoreText" 
+                                  Classes="stat-value score-high" 
+                                  Text="0"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Classes="stat-label" Text="Average Score:"/>
+                        <TextBlock Name="AverageScoreText" 
+                                  Classes="stat-value" 
+                                  Text="0"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Name="SearchTimePanel" IsVisible="False">
+                        <TextBlock Classes="stat-label" Text="Search Time:"/>
+                        <TextBlock Name="SearchTimeText" 
+                                  Classes="stat-value" 
+                                  Text="0s"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <TextBlock Grid.Column="1" 
+                          Classes="stat-label"
+                          Text="Double-click a row to copy seed • Ctrl+C to copy selected"
+                          VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</views:StandardModal>
