@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Oracle.Helpers;
 using Oracle.Services;
 
@@ -190,6 +191,20 @@ namespace Oracle.Views.Modals
             {
                 _currentPage++;
                 DisplayCurrentPage();
+            }
+        }
+        
+        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
+        {
+            // Get the parent window (MainMenu)
+            var parentMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (parentMenu != null)
+            {
+                // Hide this modal first
+                parentMenu.HideModalContent();
+                
+                // Show the analyzer modal
+                parentMenu.ShowAnalyzerModal();
             }
         }
     }

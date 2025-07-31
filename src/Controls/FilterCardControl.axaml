@@ -101,7 +101,7 @@
                           Text="No filter items"
                           FontFamily="{StaticResource BalatroFont}"
                           FontSize="11"
-                          Foreground="#666666"
+                          Foreground="#b9c2d2"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
                           IsVisible="True"/>

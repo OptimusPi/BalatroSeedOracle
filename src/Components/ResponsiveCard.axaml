@@ -33,11 +33,12 @@
     </UserControl.Styles>
 
     <Border Name="CardBorder" 
-            Background="Transparent"
+            Background="{StaticResource Black}"
             Padding="2" 
             MinWidth="80"
             MinHeight="72"
-            Cursor="Hand">
+            Cursor="Hand"
+            IsHitTestVisible="True">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

@@ -32,6 +32,7 @@ public class SpriteService
     private Dictionary<string, SpritePosition> bossPositions = null!;
     private Dictionary<string, SpritePosition> blindPositions = null!;
     private Dictionary<string, SpritePosition> stickerPositions = null!;
+    private Dictionary<string, SpritePosition> boosterPositions = null!;
     private Bitmap? jokerSheet;
     private Bitmap? tagSheet;
     private Bitmap? tarotSheet;
@@ -42,6 +43,7 @@ public class SpriteService
     private Bitmap? playingCardsSheet;
     private Bitmap? bossSheet;
     private Bitmap? stickersSheet;
+    private Bitmap? boosterSheet;
 
     private SpriteService()
     {
@@ -70,6 +72,9 @@ public class SpriteService
 
             // Load UI asset positions from json
             uiAssetPositions = LoadSpritePositions("avares://Oracle/Assets/Other/ui_assets.json");
+            
+            // Load booster pack positions from json
+            boosterPositions = LoadSpritePositions("avares://Oracle/Assets/Other/Boosters.json");
             
             // Load deck, enhancement, and seal positions from enhancers metadata
             var enhancersMetadata = LoadEnhancersMetadata("avares://Oracle/Assets/Decks/enhancers_metadata.json");
@@ -122,6 +127,7 @@ public class SpriteService
             playingCardsSheet = LoadBitmap("avares://Oracle/Assets/Decks/8BitDeck.png");
             bossSheet = LoadBitmap("avares://Oracle/Assets/Bosses/BlindChips.png");
             stickersSheet = LoadBitmap("avares://Oracle/Assets/Jokers/stickers.png");
+            boosterSheet = LoadBitmap("avares://Oracle/Assets/Other/boosters.png");
         }
         catch (Exception ex)
         {
@@ -141,6 +147,7 @@ public class SpriteService
             bossPositions ??= new Dictionary<string, SpritePosition>();
             blindPositions ??= new Dictionary<string, SpritePosition>();
             stickerPositions ??= new Dictionary<string, SpritePosition>();
+            boosterPositions ??= new Dictionary<string, SpritePosition>();
             
             // Bitmaps will remain null if loading failed
         }
@@ -301,6 +308,7 @@ public class SpriteService
                 "boss" or "bosses" => GetBossImage(name),
                 "blind" or "blinds" => GetBlindImage(name),
                 "sticker" or "stickers" => GetStickerImage(name),
+                "booster" or "boosters" or "pack" or "packs" => GetBoosterImage(name),
                 _ => null
             };
         }
@@ -476,6 +484,12 @@ public class SpriteService
     public IImage? GetStickerImage(string stickerType)
     {
         return GetSpriteImage(stickerType, stickerPositions, stickersSheet, 142, 190, "sticker");
+    }
+    
+    public IImage? GetBoosterImage(string packType)
+    {
+        // Booster pack sprites are 142x285 (width of 568/4, height of 1710/6)
+        return GetSpriteImage(packType, boosterPositions, boosterSheet, 142, 285, "booster");
     }
     
     // Get blind chip image (small/big blind indicators)

@@ -127,11 +127,58 @@ public partial class FiltersModalContent : UserControl
             clearMustNotButton.Click += (s, e) => ClearMustNot();
         }
         
-        // Setup Mode Toggle (in file bar)
-        var fileBarModeToggle = this.FindControl<BalatroToggleSwitch>("FileBarModeToggle");
-        if (fileBarModeToggle != null)
+        // Setup Mode Toggle buttons
+        var visualModeButton = this.FindControl<Button>("VisualModeButton");
+        var jsonModeButton = this.FindControl<Button>("JsonModeButton");
+        
+        if (visualModeButton != null && jsonModeButton != null)
         {
-            fileBarModeToggle.IsCheckedChanged += OnModeToggleChanged;
+            // Visual mode is default - set it as active
+            visualModeButton.Classes.Add("active");
+            
+            visualModeButton.Click += (s, e) => {
+                // Switch to visual mode
+                RestoreDragDropModeLayout();
+                LoadAllCategories();
+                UpdateDropZoneVisibility();
+                
+                // Update button states
+                visualModeButton.Classes.Add("active");
+                jsonModeButton.Classes.Remove("active");
+                
+                // Hide JSON container, show visual content
+                var jsonContainer = this.FindControl<Border>("JsonModeContainer");
+                if (jsonContainer != null) jsonContainer.IsVisible = false;
+                
+                var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
+                if (rightContentGrid != null) rightContentGrid.IsVisible = true;
+            };
+            
+            jsonModeButton.Click += (s, e) => {
+                // Switch to JSON mode
+                EnterEditJsonMode();
+                
+                // Update button states
+                jsonModeButton.Classes.Add("active");
+                visualModeButton.Classes.Remove("active");
+                
+                // Show JSON container, hide visual content
+                var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
+                if (rightContentGrid != null) rightContentGrid.IsVisible = false;
+                
+                var jsonContainer = this.FindControl<Border>("JsonModeContainer");
+                if (jsonContainer != null)
+                {
+                    jsonContainer.IsVisible = true;
+                    
+                    // Create or update JSON editor content
+                    var jsonContent = this.FindControl<ContentControl>("JsonModeContent");
+                    if (jsonContent != null && jsonContent.Content == null)
+                    {
+                        jsonContent.Content = CreateEditJsonInterface();
+                    }
+                }
+            };
         }
     }
     
@@ -616,82 +663,14 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
             
-            // Find controls by name instead of searching through visual tree
-            var mainContentGrid = this.FindControl<Grid>("MainContentGrid");
-            var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
-            
-            if (mainContentGrid == null || rightContentGrid == null)
-            {
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "Could not find required grids");
-                return;
-            }
-            
-            // Hide left sidebar and adjust grid columns for more space
-            var leftSidebar = this.FindControl<Border>("LeftSidebar");
-            if (leftSidebar != null)
-            {
-                leftSidebar.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden left sidebar");
-            }
-            
-            // Also hide the spacer column
-            if (mainContentGrid.ColumnDefinitions.Count >= 2)
-            {
-                mainContentGrid.ColumnDefinitions[0].Width = new GridLength(0); // Hide sidebar column
-                mainContentGrid.ColumnDefinitions[1].Width = new GridLength(0); // Hide spacer column
-            }
-            
-            // Hide the search bar
-            var searchBox = this.FindControl<TextBox>("SearchBox");
-            if (searchBox?.Parent?.Parent is Border searchBar)
-            {
-                searchBar.IsVisible = false;
-                Oracle.Helpers.DebugLogger.Log("Hidden search bar");
-            }
-            
-            // Keep drop zones visible - they will act as visual preview
-            // Update them to show current config
-            Oracle.Helpers.DebugLogger.Log("Keeping drop zones visible as visual preview");
+            // The JSON editor is created in the JsonModeContainer/JsonModeContent when the button is clicked
+            // This method now just handles the JSON content creation if needed
             
             // Update drop zones after a short delay to allow JSON editor to load
             Dispatcher.UIThread.Post(() => {
                 UpdateDropZonesFromJson();
             }, DispatcherPriority.Background);
             
-            // Remove padding from the ItemPaletteBorder to let JSON editor use full space
-            var itemPaletteBorder = this.FindControl<Border>("ItemPaletteBorder");
-            if (itemPaletteBorder != null)
-            {
-                itemPaletteBorder.Padding = new Thickness(0);
-                Oracle.Helpers.DebugLogger.Log("Removed ItemPaletteBorder padding");
-            }
-            
-            // Update tab appearance
-            Oracle.Helpers.DebugLogger.Log("Updating tab buttons");
-            UpdateTabButtons("EditJson");
-
-            // Find the ItemPaletteContent container
-            var container = this.FindControl<ContentControl>("ItemPaletteContent");
-            if (container == null) 
-            {
-                Oracle.Helpers.DebugLogger.LogError("ItemPaletteContent not found!");
-                return;
-            }
-
-            // Store the original content before replacing
-            if (_originalItemPaletteContent == null)
-            {
-                _originalItemPaletteContent = container.Content;
-            }
-
-            // Create JSON editor interface
-            Oracle.Helpers.DebugLogger.Log("Creating edit JSON interface");
-            var editJsonInterface = CreateEditJsonInterface();
-            
-            Oracle.Helpers.DebugLogger.Log("Adding interface to container");
-            container.Content = editJsonInterface;
-            
-            Oracle.Helpers.DebugLogger.Log("JSON editor interface added successfully");
             Oracle.Helpers.DebugLogger.Log("JSON editor mode entered");
         }
         catch (Exception ex)
@@ -916,7 +895,7 @@ public partial class FiltersModalContent : UserControl
             Oracle.Helpers.DebugLogger.Log("Creating status bar");
             var statusBar = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = new SolidColorBrush(Color.Parse("#2e3f42")),
                 Padding = new Avalonia.Thickness(12, 6),
                 BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
                 BorderThickness = new Avalonia.Thickness(0, 1, 0, 0),
@@ -2527,11 +2506,19 @@ public partial class FiltersModalContent : UserControl
         
         foreach (var item in items)
         {
-            var parts = item.Split(':');
-            if (parts.Length == 2)
+            // Handle both formats: "Category:Item" and "Category:Item#123"
+            var colonIndex = item.IndexOf(':');
+            if (colonIndex > 0)
             {
-                var category = parts[0];
-                var itemName = parts[1];
+                var category = item.Substring(0, colonIndex);
+                var itemNameWithSuffix = item.Substring(colonIndex + 1);
+                
+                // Remove the unique key suffix if present
+                var hashIndex = itemNameWithSuffix.IndexOf('#');
+                var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
+                
+                Oracle.Helpers.DebugLogger.LogImportant("PopulateDropZonePanel", $"Processing item: '{item}' -> category:'{category}', itemName:'{itemName}'");
+                
                 var droppedItem = CreateDroppedItemControl(itemName, category);
                 panel.Children.Add(droppedItem);
             }
@@ -2644,6 +2631,8 @@ public partial class FiltersModalContent : UserControl
         else
         {
             // Regular item display
+            Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Getting image for regular item: '{itemName}' (category: '{category}')");
+            
             IImage? imageSource = category switch
             {
                 "Jokers" => SpriteService.Instance.GetJokerImage(itemName),
@@ -2658,6 +2647,7 @@ public partial class FiltersModalContent : UserControl
             
             if (imageSource != null)
             {
+                Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"✅ Found image for '{itemName}'");
                 var image = new Image
                 {
                     Source = imageSource,
@@ -2669,9 +2659,12 @@ public partial class FiltersModalContent : UserControl
             }
             else
             {
+                Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"❌ No image found for '{itemName}', using text fallback");
+                // Get display name for items like "anyuncommon" -> "Any Uncommon"
+                var displayText = category == "Jokers" ? Oracle.Models.BalatroData.GetDisplayNameFromSprite(itemName) : itemName;
                 var textBlock = new TextBlock
                 {
-                    Text = itemName,
+                    Text = displayText,
                     FontSize = 8,
                     FontWeight = FontWeight.SemiBold,
                     Foreground = Brushes.White,
@@ -2698,9 +2691,22 @@ public partial class FiltersModalContent : UserControl
     
     private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
     {
-        var key = $"{category}:{itemName}";
-        var isInNeeds = _selectedNeeds.Contains(key);
-        var isInWants = _selectedWants.Contains(key);
+        // Get the actual key from the border's tag (includes unique suffix)
+        var actualKey = itemBorder.Tag as string ?? $"{category}:{itemName}";
+        
+        // Find if this item exists in any of our sets
+        var isInNeeds = _selectedNeeds.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        var isInWants = _selectedWants.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        var isInMustNot = _selectedMustNot.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        
+        // Find the actual key in use
+        string? foundKey = null;
+        if (isInNeeds) foundKey = _selectedNeeds.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        else if (isInWants) foundKey = _selectedWants.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        else if (isInMustNot) foundKey = _selectedMustNot.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
+        
+        var key = foundKey ?? actualKey;
+        
         _configPopupContent = new ItemConfigPopup();
         
         // Create popup if it doesn't exist
@@ -2782,16 +2788,47 @@ public partial class FiltersModalContent : UserControl
         if (_configPopupContent != null)
         {
             var key = _configPopupContent.GetItem();
-            _selectedNeeds.Remove(key);
-            _selectedWants.Remove(key);
-            _itemConfigs.Remove(key);
+            
+            // Remove all items with the same base key (handles unique key suffixes)
+            var keysToRemove = new List<string>();
+            
+            // Get the base key without unique suffix
+            var colonIndex = key.IndexOf(':');
+            if (colonIndex > 0)
+            {
+                var baseKey = key;
+                var hashIndex = key.IndexOf('#');
+                if (hashIndex > colonIndex)
+                {
+                    baseKey = key.Substring(0, hashIndex);
+                }
+                
+                // Find all matching keys in all sets
+                keysToRemove.AddRange(_selectedNeeds.Where(k => k == key || k.StartsWith(baseKey + "#")));
+                keysToRemove.AddRange(_selectedWants.Where(k => k == key || k.StartsWith(baseKey + "#")));
+                keysToRemove.AddRange(_selectedMustNot.Where(k => k == key || k.StartsWith(baseKey + "#")));
+            }
+            else
+            {
+                // Fallback to exact match
+                keysToRemove.Add(key);
+            }
+            
+            // Remove from all sets
+            foreach (var k in keysToRemove)
+            {
+                _selectedNeeds.Remove(k);
+                _selectedWants.Remove(k);
+                _selectedMustNot.Remove(k);
+                _itemConfigs.Remove(k);
+            }
             
             UpdateDropZoneVisibility();
             UpdatePersistentFavorites();
             RefreshItemPalette();
             
             _configPopup!.IsOpen = false;
-            Oracle.Helpers.DebugLogger.Log($"Item deleted: {key}");
+            Oracle.Helpers.DebugLogger.Log($"Item(s) deleted: {string.Join(", ", keysToRemove)}");
         }
     }
     
@@ -2882,50 +2919,45 @@ public partial class FiltersModalContent : UserControl
         Oracle.Helpers.DebugLogger.Log("🗑️ Cleared all MUST NOT");
     }
     
-    private async void OnCreateWidgetClick(object? sender, RoutedEventArgs e)
+    private void SaveConfigurationToFile(string filePath)
+    {
+        var config = BuildOuijaConfigFromSelections();
+        var json = SerializeOuijaConfig(config);
+        File.WriteAllText(filePath, json);
+    }
+    
+    private void OnCreateWidgetClick(object? sender, RoutedEventArgs e)
     {
         try
         {
-            // Ensure we have a saved config file
-            string? configPath = _currentConfigPath;
+            // Always save to temp.ouija.json automatically
+            string tempPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "", "filters", "temp.ouija.json");
             
-            if (string.IsNullOrEmpty(configPath))
+            // Ensure the filters directory exists
+            var filtersDir = Path.GetDirectoryName(tempPath);
+            if (!string.IsNullOrEmpty(filtersDir) && !Directory.Exists(filtersDir))
             {
-                // Prompt to save first
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "No saved config - prompting user to save first");
-                await OnSaveClickAsync();
-                configPath = _currentConfigPath;
-                
-                // If they cancelled the save, abort
-                if (string.IsNullOrEmpty(configPath))
-                {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "User cancelled save - aborting widget creation");
-                    return;
-                }
+                Directory.CreateDirectory(filtersDir);
             }
             
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Creating widget with config: {configPath}");
+            // Save current configuration to temp file
+            SaveConfigurationToFile(tempPath);
+            _currentConfigPath = tempPath;
+            
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Auto-saved to temp file and creating widget: {tempPath}");
             
             // Find the BalatroMainMenu in the visual tree
             var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
             if (mainMenu != null)
             {
-                // Show the search widget with the config
-                mainMenu.ShowSearchWidget(configPath);
+                // First hide the modal
+                mainMenu.HideModalContent();
+                
+                // Then show the search widget with the config
+                mainMenu.ShowSearchWidget(tempPath);
                 
                 // Save widget persistence preferences
-                SaveWidgetPreference(configPath);
-                
-                // Close the filters modal
-                var mainWindow = this.GetVisualRoot() as Window;
-                if (mainWindow != null)
-                {
-                    var balMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainContent");
-                    if (balMenu != null)
-                    {
-                        balMenu.HideModalContent();
-                    }
-                }
+                SaveWidgetPreference(tempPath);
                 
                 Oracle.Helpers.DebugLogger.Log("FiltersModal", "Widget created successfully!");
             }
@@ -3887,64 +3919,39 @@ public partial class FiltersModalContent : UserControl
             MinimumScore = 0
         };
         
-        // Convert MUST items
-        foreach (var need in _selectedNeeds)
-        {
-            var parts = need.Split(':');
-            if (parts.Length == 2)
-            {
-                var category = parts[0];
-                var itemName = parts[1];
-                var itemConfig = _itemConfigs.ContainsKey(need) ? _itemConfigs[need] : new ItemConfig();
-                
-                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
-                if (filterItem != null)
-                {
-                    filterItem.Score = 0; // Must clauses don't contribute to score
-                    config.Must.Add(filterItem);
-                }
-            }
-        }
-        
-        // Convert SHOULD items
-        foreach (var want in _selectedWants)
-        {
-            var parts = want.Split(':');
-            if (parts.Length == 2)
-            {
-                var category = parts[0];
-                var itemName = parts[1];
-                var itemConfig = _itemConfigs.ContainsKey(want) ? _itemConfigs[want] : new ItemConfig();
-                
-                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
-                if (filterItem != null)
-                {
-                    filterItem.Score = 1; // Default score of 1
-                    config.Should.Add(filterItem);
-                }
-            }
-        }
-        
-        // Convert MUST NOT items
-        foreach (var mustNot in _selectedMustNot)
-        {
-            var parts = mustNot.Split(':');
-            if (parts.Length == 2)
-            {
-                var category = parts[0];
-                var itemName = parts[1];
-                var itemConfig = _itemConfigs.ContainsKey(mustNot) ? _itemConfigs[mustNot] : new ItemConfig();
-                
-                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
-                if (filterItem != null)
-                {
-                    filterItem.Score = 0; // MustNot clauses don't contribute to score
-                    config.MustNot.Add(filterItem);
-                }
-            }
-        }
+        // Convert all items using the helper method that handles unique keys
+        FixUniqueKeyParsing(_selectedNeeds, config.Must, 0);
+        FixUniqueKeyParsing(_selectedWants, config.Should, 1);
+        FixUniqueKeyParsing(_selectedMustNot, config.MustNot, 0);
         
         return config;
+    }
+    
+    private void FixUniqueKeyParsing(HashSet<string> items, List<Motely.Filters.OuijaConfig.FilterItem> targetList, int defaultScore = 0)
+    {
+        foreach (var item in items)
+        {
+            // Handle both formats: "Category:Item" and "Category:Item#123"
+            var colonIndex = item.IndexOf(':');
+            if (colonIndex > 0)
+            {
+                var category = item.Substring(0, colonIndex);
+                var itemNameWithSuffix = item.Substring(colonIndex + 1);
+                
+                // Remove the unique key suffix if present
+                var hashIndex = itemNameWithSuffix.IndexOf('#');
+                var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
+                
+                var itemConfig = _itemConfigs.ContainsKey(item) ? _itemConfigs[item] : new ItemConfig();
+                
+                var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
+                if (filterItem != null)
+                {
+                    filterItem.Score = defaultScore;
+                    targetList.Add(filterItem);
+                }
+            }
+        }
     }
     
     private Motely.Filters.OuijaConfig.FilterItem? CreateFilterItemFromSelection(string category, string itemName, ItemConfig config)
@@ -4159,9 +4166,9 @@ public partial class FiltersModalContent : UserControl
 
     private async void OnLoadClick(object? sender, RoutedEventArgs e)
     {
-        // Check if we're in JSON editor mode
-        var modeToggle = this.FindControl<CheckBox>("ModeToggle");
-        if (modeToggle?.IsChecked == true)
+        // Check if we're in JSON editor mode by checking which button is active
+        var jsonModeButton = this.FindControl<Button>("JsonModeButton");
+        if (jsonModeButton != null && jsonModeButton.Classes.Contains("active"))
         {
             // We're in JSON editor mode, use the JSON load method
             LoadConfig();
@@ -4197,21 +4204,27 @@ public partial class FiltersModalContent : UserControl
                 var file = files[0];
                 var json = await System.IO.File.ReadAllTextAsync(file.Path.LocalPath);
                 
-                // TODO: Fix to use new OuijaConfig format
-                /*
-                // Parse as compound format
-                var compoundConfig = JsonSerializer.Deserialize<OuijaConfigV2>(json, new JsonSerializerOptions
+                // Parse the JSON to load into UI
+                var config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip
                 });
                 
-                if (compoundConfig != null)
+                if (config != null)
                 {
-                    LoadCompoundConfigIntoUI(compoundConfig);
+                    LoadConfigIntoUI(config);
+                    _currentConfigPath = file.Path.LocalPath;
+                    
+                    // Update filename in textbox
+                    var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+                    if (configNameBox != null)
+                    {
+                        configNameBox.Text = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Path.LocalPath));
+                    }
+                    
                     Oracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
                 }
-                */
                 
                 // Update the search widget to use this loaded config
                 UpdateSearchWidgetConfig(file.Path.LocalPath);
@@ -4220,6 +4233,138 @@ public partial class FiltersModalContent : UserControl
         catch (Exception ex)
         {
             Oracle.Helpers.DebugLogger.LogError($"Error loading config: {ex.Message}");
+        }
+    }
+    
+    private void LoadConfigIntoUI(Motely.Filters.OuijaConfig config)
+    {
+        // Clear existing selections
+        ClearNeeds();
+        ClearWants();
+        ClearMustNot();
+        
+        // Load MUST items (needs)
+        if (config.Must != null)
+        {
+            foreach (var item in config.Must)
+            {
+                var category = GetCategoryFromType(item.Type);
+                var itemName = item.Value;
+                
+                // Add to selected needs
+                _selectedNeeds.Add($"{category}:{itemName}");
+            }
+        }
+        
+        // Load SHOULD items (wants)
+        if (config.Should != null)
+        {
+            foreach (var item in config.Should)
+            {
+                var category = GetCategoryFromType(item.Type);
+                var itemName = item.Value;
+                
+                // Add to selected wants
+                _selectedWants.Add($"{category}:{itemName}");
+            }
+        }
+        
+        // Load MUST NOT items
+        if (config.MustNot != null)
+        {
+            foreach (var item in config.MustNot)
+            {
+                var category = GetCategoryFromType(item.Type);
+                var itemName = item.Value;
+                
+                // Add to selected must not
+                _selectedMustNot.Add($"{category}:{itemName}");
+            }
+        }
+        
+        // The new format doesn't have a separate filters section
+        // All items are directly in Must/Should/MustNot lists
+        
+        // Update the UI to show the loaded items
+        UpdateDropZoneVisibility();
+        RefreshItemPalette();
+        
+        Oracle.Helpers.DebugLogger.Log($"LoadConfigIntoUI: Loaded {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not");
+        PopulateDropZones();
+        RefreshItemPalette();
+    }
+    
+    private string GetCategoryFromType(string type)
+    {
+        return type.ToLower() switch
+        {
+            "joker" or "souljoker" => "Jokers",
+            "tarot" or "tarotcard" => "Tarots",
+            "spectral" or "spectralcard" => "Spectrals",
+            "planet" or "planetcard" => "Planets",
+            "tag" or "smallblindtag" or "bigblindtag" => "Tags",
+            "voucher" => "Vouchers",
+            "playingcard" => "PlayingCards",
+            _ => "Unknown"
+        };
+    }
+    
+    private void PopulateDropZones()
+    {
+        // Get the panels
+        var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
+        var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
+        var mustNotPanel = this.FindControl<WrapPanel>("MustNotPanel");
+        
+        // Clear and populate NEEDS panel
+        if (needsPanel != null)
+        {
+            needsPanel.Children.Clear();
+            foreach (var item in _selectedNeeds)
+            {
+                var parts = item.Split(':');
+                if (parts.Length >= 2)
+                {
+                var category = parts[0];
+                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
+                    var droppedItem = CreateDroppedItemControl(itemName, category);
+                    needsPanel.Children.Add(droppedItem);
+                }
+            }
+        }
+        
+        // Clear and populate WANTS panel
+        if (wantsPanel != null)
+        {
+            wantsPanel.Children.Clear();
+            foreach (var item in _selectedWants)
+            {
+                var parts = item.Split(':');
+                if (parts.Length >= 2)
+                {
+                    var category = parts[0];
+                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
+                    var droppedItem = CreateDroppedItemControl(itemName, category);
+                    wantsPanel.Children.Add(droppedItem);
+                }
+            }
+        }
+        
+        // Clear and populate MUST NOT panel
+        if (mustNotPanel != null)
+        {
+            mustNotPanel.Children.Clear();
+            foreach (var item in _selectedMustNot)
+            {
+                var parts = item.Split(':');
+                if (parts.Length >= 2)
+                {
+                    var category = parts[0];
+                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
+                    var droppedItem = CreateDroppedItemControl(itemName, category);
+                    mustNotPanel.Children.Add(droppedItem);
+                }
+            }
         }
     }
     

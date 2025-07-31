@@ -13,7 +13,7 @@
         </Grid.RowDefinitions>
         
         <!-- Section 1: pifreak's Curated Balatro Seeds -->
-        <Border Grid.Row="0" Background="#1a1a1a" Margin="5" CornerRadius="8">
+        <Border Grid.Row="0" Background="#2e3f42" Margin="5" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -94,7 +94,7 @@
         </Border>
         
         <!-- Section 2: Community Fun Runs -->
-        <Border Grid.Row="1" Background="#1a1a1a" Margin="5" CornerRadius="8">
+        <Border Grid.Row="1" Background="#2e3f42" Margin="5" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -206,7 +206,7 @@
         </Border>
         
         <!-- Section 3: Add Your Own -->
-        <Border Grid.Row="2" Background="#1a1a1a" Margin="5" CornerRadius="8">
+        <Border Grid.Row="2" Background="#2e3f42" Margin="5" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

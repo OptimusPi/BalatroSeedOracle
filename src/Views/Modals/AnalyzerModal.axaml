@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
         
         <!-- Input Section -->
-        <Border Grid.Row="0" Background="#1a1a1a" Margin="5" CornerRadius="8" Padding="20">
+        <Border Grid.Row="0" Background="#2e3f42" Margin="5" CornerRadius="8" Padding="20">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -100,7 +100,7 @@
     <UserControl.Styles>
         <!-- Ante Panel Style -->
         <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#2e3f42"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Padding" Value="15"/>

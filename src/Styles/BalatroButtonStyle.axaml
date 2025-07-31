@@ -1,0 +1,104 @@
+<!-- Fixed Balatro Button Style that matches the actual game -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Balatro Authentic Button Style -->
+    <Style Selector="Button.balatro-button">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#ff6666" /> <!-- Balatro red -->
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Grid>
+                    <!-- Dark shadow base -->
+                    <Border Name="ShadowBase"
+                            Background="#1a1a1a"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0,4,0,0"/>
+                    
+                    <!-- Main button with 3D effect -->
+                    <Border Name="ButtonMain"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0,0,0,4">
+                        <Border Name="ButtonInner"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                BorderThickness="2"
+                                BorderBrush="#00000033"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        </Border>
+                    </Border>
+                    
+                    <!-- Top highlight -->
+                    <Border Name="Highlight"
+                            Background="#FFFFFF22"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Height="2"
+                            VerticalAlignment="Top"
+                            Margin="2,0,2,0"
+                            IsHitTestVisible="False"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Pressed state - button moves down -->
+    <Style Selector="Button.balatro-button:pressed /template/ Border#ButtonMain">
+        <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+    <Style Selector="Button.balatro-button:pressed /template/ Border#ShadowBase">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    
+    <!-- Color variants -->
+    <Style Selector="Button.balatro-button.red">
+        <Setter Property="Background" Value="#ff6666" />
+    </Style>
+    <Style Selector="Button.balatro-button.red:pointerover">
+        <Setter Property="Background" Value="#ff8888" />
+    </Style>
+    
+    <Style Selector="Button.balatro-button.blue">
+        <Setter Property="Background" Value="#4EC9B0" />
+    </Style>
+    <Style Selector="Button.balatro-button.blue:pointerover">
+        <Setter Property="Background" Value="#6EDDC4" />
+    </Style>
+    
+    <Style Selector="Button.balatro-button.orange">
+        <Setter Property="Background" Value="#FEB95F" />
+    </Style>
+    <Style Selector="Button.balatro-button.orange:pointerover">
+        <Setter Property="Background" Value="#FFCC80" />
+    </Style>
+    
+    <Style Selector="Button.balatro-button.green">
+        <Setter Property="Background" Value="#4CAF50" />
+    </Style>
+    <Style Selector="Button.balatro-button.green:pointerover">
+        <Setter Property="Background" Value="#66BB6A" />
+    </Style>
+    
+    <!-- Disabled state -->
+    <Style Selector="Button.balatro-button:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    <Style Selector="Button.balatro-button:disabled /template/ Border#ButtonMain">
+        <Setter Property="Background" Value="#666666" />
+    </Style>
+</Styles>

@@ -6,10 +6,21 @@
              
     <UserControl.Styles>
         
+        <!-- Small nav button style -->
+        <Style Selector="Button.small-nav-button">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        
         <!-- Drop Zone Base Styling -->
         <Style Selector="Border.drop-zone">
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#2e3f42" />
+            <Setter Property="BorderBrush" Value="#b9c2d2" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="120" />
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
@@ -21,25 +32,25 @@
         
         <!-- Drop Zone Hover State -->
         <Style Selector="Border.drop-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
+            <Setter Property="BorderBrush" Value="#eac058" />
             <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
         </Style>
         
         <!-- NEEDS Zone Specific Styling -->
         <Style Selector="Border.needs-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Red}" />
+            <Setter Property="BorderBrush" Value="#ff4c40" />
             <Setter Property="BoxShadow" Value="0 0 15 #ff4c4080" />
         </Style>
         
         <!-- WANTS Zone Specific Styling -->
         <Style Selector="Border.wants-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+            <Setter Property="BorderBrush" Value="#0093ff" />
             <Setter Property="BoxShadow" Value="0 0 15 #0093ff80" />
         </Style>
         
         <!-- MUST NOT Zone Specific Styling -->
         <Style Selector="Border.mustnot-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Orange}" />
+            <Setter Property="BorderBrush" Value="#ff9800" />
             <Setter Property="BoxShadow" Value="0 0 15 #ff980080" />
         </Style>
         
@@ -50,7 +61,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="6,4" />
-            <Setter Property="Margin" Value="2" />
+            <Setter Property="Margin" Value="4" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
@@ -80,7 +91,7 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Padding" Value="2" />
-            <Setter Property="Margin" Value="3" />
+            <Setter Property="Margin" Value="4" />
         </Style>
         
         <!-- Dropped Item Hover - no animation, just cursor change -->
@@ -174,7 +185,7 @@
                                        TextWrapping="{TemplateBinding TextWrapping}"
                                        IsHitTestVisible="False"
                                        Opacity="0.7"
-                                       Foreground="{StaticResource TextMuted}"
+                                       Foreground="{StaticResource TextInactive}"
                                        FontStyle="Italic"
                                        Margin="{TemplateBinding Padding}"
                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -198,14 +209,14 @@
         
         <!-- Watermark/Placeholder text fix - MORE AGGRESSIVE -->
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+            <Setter Property="Foreground" Value="#AAAAAA" />
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         
 
         <Style Selector="TextBox:watermark">
-            <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+            <Setter Property="Foreground" Value="{StaticResource TextInactive}" />
         </Style>
         
         <!-- Force TextPresenter visibility -->
@@ -222,9 +233,11 @@
         
         
         <!-- Mode Toggle Buttons -->
-        <Style Selector="Border.mode-active">
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="Opacity" Value="1" />
+        <Style Selector="Button.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+        <Style Selector="Button.active:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}" />
         </Style>
         
         <Style Selector="Border.mode-inactive">
@@ -276,7 +289,7 @@
         </Style>
         
         <Style Selector="ScrollBar /template/ Thumb:pointerover">
-            <Setter Property="Background" Value="{StaticResource TextMuted}" />
+            <Setter Property="Background" Value="{StaticResource TextInactive}" />
         </Style>
         
         <!-- ScrollViewer Styling -->
@@ -290,7 +303,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="FontFamily" Value="Cascadia Code,Consolas,Menlo,Monaco,monospace" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="LineNumbersForeground" Value="{StaticResource TextMuted}" />
+            <Setter Property="LineNumbersForeground" Value="{StaticResource TextInactive}" />
         </Style>
         
         <!-- Style the text area inside AvaloniaEdit -->
@@ -323,7 +336,7 @@
                             <!-- Browse Button -->
                             <Button Grid.Column="1" 
                                     Name="BrowseButton"
-                                    Classes="oracle-btn button-color-yellow-orange"
+                                    Classes="btn-orange"
                                     Content="Browse..."
                                     FontSize="18"
                                     MinHeight="50"
@@ -333,20 +346,19 @@
                             <!-- Mode Toggle - Chunky Balatro buttons -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" Margin="0,0,8,0">
                                 <Button Name="VisualModeButton" 
-                                        Classes="oracle-btn button-color-red"
+                                        Classes="btn-red"
                                         Content="Visual" 
                                         FontSize="14" 
                                         MinHeight="40" 
                                         MinWidth="70"
                                         Padding="8,4"/>
                                 <Button Name="JsonModeButton" 
-                                        Classes="oracle-btn button-color-red"
+                                        Classes="btn-red"
                                         Content="Json" 
                                         FontSize="14" 
                                         MinHeight="40" 
                                         MinWidth="70"
-                                        Padding="8,4"
-                                        Opacity="0.6"/>
+                                        Padding="8,4"/>
                             </StackPanel>
                             
                             <!-- File Name Input -->
@@ -368,7 +380,7 @@
                             <!-- Save Button -->
                             <Button Grid.Column="3" 
                                     Name="SaveButton"
-                                    Classes="oracle-btn button-color-blue"
+                                    Classes="btn-blue"
                                     Content="SAVE"
                                     FontSize="18"
                                     MinHeight="50"
@@ -378,7 +390,7 @@
                             <!-- Create Search Widget Button -->
                             <Button Grid.Column="4" 
                                     Name="CreateWidgetButton"
-                                    Classes="oracle-btn button-color-green"
+                                    Classes="btn-green"
                                     Content="GO TO SEARCH"
                                     FontSize="18"
                                     MinHeight="50"
@@ -403,16 +415,17 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Spacing="2">
                                     <!-- Category Tabs - RED CHUNKY BUTTONS like Balatro -->
-                                    <Button Name="FavoritesTab" Content="Favorites" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="SoulJokersTab" Content="Soul Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="RareJokersTab" Content="Rare Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="UncommonJokersTab" Content="Uncommon Joker" Classes="oracle-btn button-color-red" FontSize="12" MinHeight="40" Margin="0,2" />
-                                    <Button Name="CommonJokersTab" Content="Common Joker" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="VouchersTab" Content="Vouchers" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="TarotsTab" Content="Tarots" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="SpectralsTab" Content="Spectrals" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="TagsTab" Content="Tags" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
-                                    <Button Name="BossesTab" Content="Bosses" Classes="oracle-btn button-color-red" FontSize="14" MinHeight="40" Margin="0,2" />
+                                    <Button Name="FavoritesTab" Content="FAVORITES" Classes="nav-button" />
+                                    <Button Name="SoulJokersTab" Content="LEGENDARY" Classes="nav-button" />
+                                    <Button Name="RareJokersTab" Content="RARE" Classes="nav-button" />
+                                    <Button Name="UncommonJokersTab" Content="UNCOMMON" Classes="nav-button" />
+                                    <Button Name="CommonJokersTab" Content="COMMON" Classes="nav-button" />
+                                    <Button Name="VouchersTab" Content="VOUCHERS" Classes="nav-button" />
+                                    <Button Name="TarotsTab" Content="TAROTS" Classes="nav-button" />
+                                    <Button Name="SpectralsTab" Content="SPECTRALS" Classes="nav-button" />
+                                    <Button Name="TagsTab" Content="TAGS" Classes="nav-button" />
+                                    <Button Name="BossesTab" Content="BOSSES" Classes="nav-button" />
+                                    <Button Name="ClearTab" Content="CLEAR ALL" Classes="nav-button" />
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>
@@ -422,7 +435,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="400" />
                                 <ColumnDefinition Width="15" />
-                                <ColumnDefinition Width="2*" MinWidth="500" />
+                                <ColumnDefinition Width="*" MinWidth="400" MaxWidth="600" />
                             </Grid.ColumnDefinitions>
                             
                             <!-- LEFT: Item Palette -->
@@ -492,7 +505,7 @@
                                         
                                         <!-- Drop Area -->
                                         <Grid Margin="30,0,0,0">
-                                            <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop required items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
+                                            <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop items that MUST appear" TextAlignment="Center" IsVisible="True" FontSize="14" />
                                             <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
                                                 <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
                                             </ScrollViewer>
@@ -524,7 +537,7 @@
                                         
                                         <!-- Drop Area -->
                                         <Grid Margin="30,0,0,0">
-                                            <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop wanted items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
+                                            <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop items you'd LIKE to see" TextAlignment="Center" IsVisible="True" FontSize="14" />
                                             <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
                                                 <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
                                             </ScrollViewer>

@@ -73,31 +73,53 @@
             </WrapPanel>
         </ScrollViewer>
         
-        <!-- Navigation buttons -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,20,0,0">
-            <Button Name="PrevPageButton" 
-                    Classes="btn-orange"
-                    Content="← PREVIOUS"
+        <!-- Navigation buttons and Analyze -->
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Analyze button on the left -->
+            <Button Grid.Column="0"
+                    Name="AnalyzeButton"
+                    Classes="btn-blue"
+                    Background="#17a2b8"
+                    Content="ANALYZE"
                     FontSize="16"
                     MinWidth="120"
                     MinHeight="40"
-                    Click="OnPrevPageClick"
-                    IsEnabled="False"/>
+                    Margin="0,0,20,0"
+                    Click="OnAnalyzeClick"
+                    ToolTip.Tip="Analyze seed data"/>
             
-            <TextBlock Name="PageIndicator"
-                      Text="Page 1 of 1"
-                      FontSize="16"
-                      Foreground="#CCCCCC"
-                      VerticalAlignment="Center"/>
-            
-            <Button Name="NextPageButton"
-                    Classes="btn-orange"
-                    Content="NEXT →"
-                    FontSize="16"
-                    MinWidth="120"
-                    MinHeight="40"
-                    Click="OnNextPageClick"
+            <!-- Navigation in the center -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Name="PrevPageButton" 
+                        Classes="btn-orange"
+                        Content="← PREVIOUS"
+                        FontSize="16"
+                        MinWidth="120"
+                        MinHeight="40"
+                        Click="OnPrevPageClick"
+                        IsEnabled="False"/>
+                
+                <TextBlock Name="PageIndicator"
+                          Text="Page 1 of 1"
+                          FontSize="16"
+                          Foreground="#CCCCCC"
+                          VerticalAlignment="Center"/>
+                
+                <Button Name="NextPageButton"
+                        Classes="btn-orange"
+                        Content="NEXT →"
+                        FontSize="16"
+                        MinWidth="120"
+                        MinHeight="40"
+                        Click="OnNextPageClick"
                     IsEnabled="False"/>
-        </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

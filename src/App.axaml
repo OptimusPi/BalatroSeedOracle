@@ -45,7 +45,7 @@
         <SolidColorBrush x:Key="Border">#7A9E9F</SolidColorBrush>
         <SolidColorBrush x:Key="BackgroundLight">#B8D8D8</SolidColorBrush>
         <SolidColorBrush x:Key="BackgroundDark">#7A9E9F</SolidColorBrush>
-        <SolidColorBrush x:Key="BackgroundInactive">#666666FF</SolidColorBrush>
+        <SolidColorBrush x:Key="BackgroundInactive">#b9c2d2FF</SolidColorBrush>
         <SolidColorBrush x:Key="OutlineLight">#D8D8D8</SolidColorBrush>
         <SolidColorBrush x:Key="OutlineDark">#7A9E9F</SolidColorBrush>
         <SolidColorBrush x:Key="Hover">#00000055</SolidColorBrush>
@@ -92,6 +92,7 @@
         <!-- Legacy styles for specific overrides -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroModal.axaml" />
         <StyleInclude Source="avares://Oracle/Styles/ButtonStyles.axaml" />
+        <StyleInclude Source="avares://Oracle/Styles/BalatroButtonStyle.axaml" />
         <StyleInclude Source="avares://Oracle/Styles/TextBoxStyles.axaml" />
         
         <!-- Popup and Flyout styles -->

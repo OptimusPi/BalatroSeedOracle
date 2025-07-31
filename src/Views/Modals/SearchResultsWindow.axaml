@@ -12,7 +12,7 @@
     
     <Window.Styles>
         <Style Selector="Window">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#2e3f42"/>
         </Style>
     </Window.Styles>
     

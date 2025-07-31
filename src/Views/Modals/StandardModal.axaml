@@ -3,10 +3,14 @@
              x:Class="Oracle.Views.Modals.StandardModal">
     
     <!-- Full screen modal with percentage-based margins -->
-    <!-- Semi-transparent overlay -->
-    <Border Background="#80000000"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+    <!-- Semi-transparent overlay with proper click handling -->
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <!-- Background that blocks clicks to elements behind the modal -->
+        <Border Background="#80000000"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="True" />
         
         <!-- Grid for percentage-based margins -->
         <Grid>
@@ -23,16 +27,17 @@
             
             <!-- Main modal container with exact Balatro layered styling -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Background="#7A9E9F"
+                    Background="{StaticResource DockGrey}"
                     CornerRadius="16"
-                    BorderBrush="#FFFFFF"
-                    BorderThickness="2"
-                    Padding="6"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="3"
+                    Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    BoxShadow="0 4 12 #00000066">
-                <Border Background="#374244" 
-                        CornerRadius="12"
+                    MaxWidth="1200"
+                    BoxShadow="0 4 12 #777e89">
+                <Border Background="{StaticResource Black}" 
+                        CornerRadius="16"
                         Padding="0">
             
             <Grid VerticalAlignment="Stretch" MinHeight="500">
@@ -74,5 +79,5 @@
             </Border>
             </Border>
         </Grid>
-    </Border>
+    </Grid>
 </UserControl>

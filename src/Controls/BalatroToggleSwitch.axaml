@@ -7,7 +7,7 @@
         <Style Selector="Border.toggle-container">
             <Setter Property="Width" Value="60"/>
             <Setter Property="Height" Value="30"/>
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#2e3f42"/>
             <Setter Property="CornerRadius" Value="15"/>
             <Setter Property="BorderBrush" Value="#555a5c"/>
             <Setter Property="BorderThickness" Value="2"/>

@@ -211,7 +211,7 @@
                                                        Value="4" 
                                                        Minimum="1" 
                                                        Maximum="32" 
-                                                       Background="#1a1a1a"
+                                                       Background="#2e3f42"
                                                        BorderBrush="#3a3a3a"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto,*">
@@ -221,7 +221,7 @@
                                                        Value="4" 
                                                        Minimum="2" 
                                                        Maximum="4" 
-                                                       Background="#1a1a1a"
+                                                       Background="#2e3f42"
                                                        BorderBrush="#3a3a3a"/>
                                     </Grid>
                                 </StackPanel>
@@ -238,7 +238,7 @@
                                                        Value="0" 
                                                        Minimum="0" 
                                                        Maximum="999999" 
-                                                       Background="#1a1a1a"
+                                                       Background="#2e3f42"
                                                        BorderBrush="#3a3a3a"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto,*">
@@ -248,7 +248,7 @@
                                                        Value="999999" 
                                                        Minimum="1" 
                                                        Maximum="999999" 
-                                                       Background="#1a1a1a"
+                                                       Background="#2e3f42"
                                                        BorderBrush="#3a3a3a"/>
                                     </Grid>
                                 </StackPanel>
@@ -265,7 +265,7 @@
                                                        Value="0" 
                                                        Minimum="0" 
                                                        Maximum="10000" 
-                                                       Background="#1a1a1a"
+                                                       Background="#2e3f42"
                                                        BorderBrush="#3a3a3a"/>
                                     </Grid>
                                     <CheckBox Name="DebugCheckBox" 
@@ -316,7 +316,7 @@
                                              Watermark="Enter 8-character seed"
                                              MaxLength="8"
                                              Height="32"
-                                             Background="#1a1a1a"
+                                             Background="#2e3f42"
                                              BorderBrush="#3a3a3a"
                                              Margin="0,0,8,0"/>
                                     <Button Grid.Column="2"
@@ -335,7 +335,7 @@
                                              Name="KeywordTextBox" 
                                              Watermark="Generate seeds from keyword"
                                              Height="32"
-                                             Background="#1a1a1a"
+                                             Background="#2e3f42"
                                              BorderBrush="#3a3a3a"
                                              Margin="0,0,8,0"/>
                                     <Button Grid.Column="2"
@@ -383,7 +383,7 @@
             <Grid>
                 <!-- Empty state -->
                 <Border Name="EmptyState"
-                        Background="#1a1a1a"
+                        Background="#2e3f42"
                         CornerRadius="8"
                         Margin="20"
                         Padding="40"
@@ -395,7 +395,7 @@
                         <TextBlock Text="No results yet" 
                                    FontSize="18" 
                                    FontWeight="Bold"
-                                   Foreground="#666666"
+                                   Foreground="#b9c2d2"
                                    HorizontalAlignment="Center"/>
                         <TextBlock Text="Click 'Load Filter' above to get started"
                                    FontSize="14"
@@ -474,7 +474,7 @@
                 <TextBlock Name="StatusText"
                            Text="Ready"
                            FontSize="12"
-                           Foreground="#666666"
+                           Foreground="#b9c2d2"
                            HorizontalAlignment="Left"/>
                 <TextBlock Name="SummaryText"
                            Text="0 results"

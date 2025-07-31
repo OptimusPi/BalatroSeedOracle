@@ -88,8 +88,8 @@
                 BorderThickness="0,0,0,2"
                 Padding="12">
             <TextBox x:Name="SearchBox"
-                     Background="#1a1a1a"
-                     BorderBrush="#666666"
+                     Background="#2e3f42"
+                     BorderBrush="#b9c2d2"
                      BorderThickness="2"
                      CornerRadius="8"
                      Padding="12,8"
@@ -177,7 +177,7 @@
                       Text="No saved filters found"
                       FontFamily="{StaticResource BalatroFont}"
                       FontSize="18"
-                      Foreground="#666666"
+                      Foreground="#b9c2d2"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Center"
                       IsVisible="False"/>

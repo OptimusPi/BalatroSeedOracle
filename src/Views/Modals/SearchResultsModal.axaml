@@ -35,7 +35,7 @@
         </Style>
         
         <Style Selector="DataGridRow:nth-child(2n)">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#2e3f42"/>
         </Style>
         
         <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
@@ -150,7 +150,7 @@
         
         <!-- Results DataGrid -->
         <Border Grid.Row="1" 
-                Background="#1a1a1a"
+                Background="#2e3f42"
                 BorderBrush="#3a3a3a"
                 BorderThickness="0"
                 Margin="0">

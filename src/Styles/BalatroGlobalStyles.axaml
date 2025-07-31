@@ -88,7 +88,7 @@
         <Setter Property="Opacity" Value="0.6" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton):disabled /template/ Border#ButtonFace">
-        <Setter Property="Background" Value="#666666" />
+        <Setter Property="Background" Value="#b9c2d2" />
     </Style>
     
     <!-- ALL TextBlocks get Balatro font -->
@@ -125,7 +125,7 @@
     </Style>
     <Style Selector="TextBox:pointerover">
         <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#666666" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
     </Style>
     
     <!-- ALL ComboBoxes get dark theme -->
@@ -166,7 +166,7 @@
     </Style>
     <Style Selector="NumericUpDown:pointerover">
         <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#666666" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
     </Style>
     
     <!-- ALL ListBoxes get dark theme -->
@@ -224,7 +224,7 @@
     
     <!-- Card-like container (like the Common Sets area) -->
     <Style Selector="Border.balatro-card">
-        <Setter Property="Background" Value="#1a1a1a" />
+        <Setter Property="Background" Value="#2e3f42" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="BorderBrush" Value="#444444" />
         <Setter Property="BorderThickness" Value="2" />
@@ -301,13 +301,12 @@
     <!-- Compact navigation buttons for filter modal sidebar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="10" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
         <Setter Property="MinHeight" Value="22" />
-        <Setter Property="Padding" Value="4,2" />
+        <Setter Property="Padding" Value="2,1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
@@ -322,16 +321,16 @@
     
     <!-- Search box style -->
     <Style Selector="TextBox.search-box">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="36" />
         <Setter Property="Watermark" Value="Search items..." />
-        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Margin" Value="0,0,0,6" />
     </Style>
     
     <!-- Drop zone style (for drag & drop areas) -->
     <Style Selector="Border.drop-zone">
-        <Setter Property="Background" Value="#1a1a1a" />
-        <Setter Property="BorderBrush" Value="#666666" />
+        <Setter Property="Background" Value="#2e3f42" />
+        <Setter Property="BorderBrush" Value="#b9c2d2" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="MinHeight" Value="120" />
@@ -404,7 +403,7 @@
         <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="ScrollBar /template/ Thumb:pointerover">
-        <Setter Property="Background" Value="#666666" />
+        <Setter Property="Background" Value="#b9c2d2" />
     </Style>
     
 </Styles>

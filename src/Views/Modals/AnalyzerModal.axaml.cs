@@ -335,9 +335,9 @@ namespace Oracle.Views.Modals
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            // Get pack sprite - packs are in UI assets
-            var packName = pack.ToString().Replace("Pack", "");
-            var packSprite = _spriteService.GetUIAssetImage(packName);
+            // Get pack sprite from the new booster sprites
+            var packName = pack.ToString().ToLower().Replace("_", "");
+            var packSprite = _spriteService.GetBoosterImage(packName);
             if (packSprite != null)
             {
                 var image = new Image
@@ -345,7 +345,7 @@ namespace Oracle.Views.Modals
                     Source = packSprite,
                     Width = 71,
                     Height = 95,
-                    Stretch = Stretch.UniformToFill
+                    Stretch = Stretch.Uniform
                 };
                 content.Children.Add(image);
             }

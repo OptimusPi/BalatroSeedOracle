@@ -67,7 +67,7 @@
             <Setter Property="BorderBrush" Value="#eac058"/>
         </Style>
         <Style Selector="Button.author-button:pressed">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="#2e3f42"/>
         </Style>
         <Style Selector="Button.author-button TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -104,7 +104,7 @@
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
                         FontWeight="Bold"
-                        Foreground="#eac058"
+                        Foreground="{StaticResource TextLight}"
                         HorizontalAlignment="Center"
                         Margin="0,5,0,0"/>
 
@@ -238,19 +238,6 @@
                             MinHeight="64"
                             MinWidth="64">
                         <TextBlock Text="FUN RUN" 
-                                   FontSize="20" 
-                                   FontWeight="Bold"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
-
-                    <!-- ANALYZE button (cyan/teal) -->
-                    <Button Classes="btn-blue"
-                            Click="OnAnalyzeClick"
-                            MinHeight="48"
-                            MinWidth="100"
-                            Background="#17a2b8">
-                        <TextBlock Text="ANALYZE" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"

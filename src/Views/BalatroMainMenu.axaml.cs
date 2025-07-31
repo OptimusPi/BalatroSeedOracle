@@ -120,11 +120,6 @@ namespace Oracle.Views
             this.ShowFunRunsModal();
         }
 
-        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
-        {
-            // Use the modal helper extension method
-            this.ShowAnalyzerModal();
-        }
 
         private void OnExitClick(object? sender, RoutedEventArgs e)
         {

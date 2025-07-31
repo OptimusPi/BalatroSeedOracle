@@ -260,9 +260,12 @@
                                 <Border Background="#262633" 
                                         CornerRadius="6" 
                                         Padding="12"
-                                        MinHeight="100">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  HorizontalScrollBarVisibility="Auto">
+                                        MinHeight="100"
+                                        MaxHeight="200">
+                                    <ScrollViewer Name="TerminalScrollViewer"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Auto"
+                                                  MaxHeight="180">
                                         <TextBlock Name="TerminalOutput" 
                                                    FontFamily="Cascadia Code, Consolas, monospace"
                                                    FontSize="11"

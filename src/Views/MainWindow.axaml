@@ -31,7 +31,7 @@
         
         <!-- Attribution line -->
         <Border Grid.Row="1" 
-                Background="#1a1a1a" 
+                Background="#2e3f42" 
                 Padding="4,3">
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Center"
