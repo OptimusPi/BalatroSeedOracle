@@ -38,8 +38,8 @@ namespace Oracle.Views
         {
             InitializeComponent();
             
-            // Initialize user profile service
-            _userProfileService = ServiceHelper.GetService<UserProfileService>();
+            // Defer service initialization to OnLoaded to ensure services are ready
+            this.Loaded += OnLoaded;
         }
 
         private void InitializeComponent()
@@ -56,28 +56,7 @@ namespace Oracle.Views
                 _animationButtonText = LogicalExtensions.GetLogicalChildren(_animationToggleButton).OfType<TextBlock>().FirstOrDefault();
             }
             
-            
-            // Load and display current author name
-            if (_userProfileService != null)
-            {
-                var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-                if (authorDisplay != null && authorEdit != null)
-                {
-                    var authorName = _userProfileService.GetAuthorName();
-                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Setting author display to: '{authorName}'");
-                    authorDisplay.Text = authorName;
-                    authorEdit.Text = authorName;
-                }
-                else
-                {
-                    Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "Could not find AuthorDisplay or AuthorEdit controls");
-                }
-            }
-            else
-            {
-                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "UserProfileService is null");
-            }
+            // Don't initialize service here - wait for OnLoaded
         }
         
         private UserControl? _activeModalContent;
@@ -312,6 +291,35 @@ namespace Oracle.Views
         
         
         
+        
+        private void OnLoaded(object? sender, RoutedEventArgs e)
+        {
+            // Initialize user profile service when control is loaded
+            if (_userProfileService == null)
+            {
+                _userProfileService = ServiceHelper.GetService<UserProfileService>();
+                if (_userProfileService == null)
+                {
+                    Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "UserProfileService is null after initialization attempt");
+                    return;
+                }
+            }
+            
+            // Load and display current author name
+            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
+            if (authorDisplay != null && authorEdit != null)
+            {
+                var authorName = _userProfileService.GetAuthorName();
+                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Setting author display to: '{authorName}'");
+                authorDisplay.Text = authorName;
+                authorEdit.Text = authorName;
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "Could not find AuthorDisplay or AuthorEdit controls");
+            }
+        }
         
         /// <summary>
         /// Shows the search widget on the desktop

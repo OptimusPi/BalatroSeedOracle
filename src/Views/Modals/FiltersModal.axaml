@@ -63,7 +63,7 @@
         <!-- Draggable Item Hover -->
         <Style Selector="Border.draggable-item:pointerover">
             <Setter Property="BorderBrush" Value="{StaticResource White}" />
-            <Setter Property="BoxShadow" Value="0 2 8 {StaticResource Black}" />
+            <Setter Property="BoxShadow" Value="0 2 8 #000000" />
         </Style>
         
         <!-- Item Being Dragged -->

@@ -147,8 +147,8 @@ namespace Oracle.Services
                 DebugLogger.LogError("UserProfileService", $"Error loading profile: {ex.Message}");
             }
             
-            // Return default profile with "Jimbo" as the author
-            DebugLogger.Log("UserProfileService", "Creating new profile with default author: Jimbo");
+            // Return default profile with "pifreak" as the author
+            DebugLogger.Log("UserProfileService", "Creating new profile with default author: pifreak");
             return new UserProfile();
         }
         

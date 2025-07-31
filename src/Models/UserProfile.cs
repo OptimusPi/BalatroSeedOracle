@@ -8,9 +8,9 @@ namespace Oracle.Models
     public class UserProfile
     {
         /// <summary>
-        /// The author name (defaults to "Jimbo" for fun)
+        /// The author name (defaults to "pifreak")
         /// </summary>
-        public string AuthorName { get; set; } = "Jimbo";
+        public string AuthorName { get; set; } = "pifreak";
         
         /// <summary>
         /// List of active search widgets with their configurations
