@@ -68,4 +68,16 @@ public partial class App : Application
         services.AddSingleton<Services.UserProfileService>();
         // ClipboardService is static, no need to register
     }
+    
+    /// <summary>
+    /// Get a service from the DI container
+    /// </summary>
+    public static T? GetService<T>() where T : class
+    {
+        if (Current is App app)
+        {
+            return app._serviceProvider?.GetService<T>();
+        }
+        return null;
+    }
 }

@@ -32,6 +32,13 @@ public class MotelySearchService : IDisposable
     public List<Oracle.Models.SearchResult> Results { get; } = new();
     public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
 
+    // Events for UI integration
+    public event EventHandler? SearchStarted;
+    public event EventHandler? SearchCompleted;
+    public event EventHandler<Views.Modals.SearchProgressEventArgs>? ProgressUpdated;
+    public event EventHandler<Views.Modals.SearchResultEventArgs>? ResultFound;
+    public event EventHandler<string>? ConsoleOutput;
+
     public MotelySearchService()
     {
         _historyService = ServiceHelper.GetService<SearchHistoryService>() ?? new SearchHistoryService();
@@ -40,12 +47,13 @@ public class MotelySearchService : IDisposable
     /// <summary>
     /// Load a config file and validate it
     /// </summary>
-    public async Task<(bool success, string message)> LoadConfigAsync(string configPath)
+    public async Task<(bool success, string message, string? name, string? author, string? description)> LoadConfigAsync(string configPath)
     {
+        ConsoleOutput?.Invoke(this, $"Loading config: {Path.GetFileName(configPath)}");
         try
         {
             if (!File.Exists(configPath))
-                return (false, "Config file not found");
+                return (false, "Config file not found", null, null, null);
 
             // Load the config using Motely's loader
             await Task.Run(() =>
@@ -54,7 +62,7 @@ public class MotelySearchService : IDisposable
             });
 
             if (_currentConfig == null)
-                return (false, "Failed to parse config file");
+                return (false, "Failed to parse config file", null, null, null);
             else
             {
                 var configAsJson = JsonSerializer.Serialize(_currentConfig);
@@ -66,22 +74,65 @@ public class MotelySearchService : IDisposable
             var should = _currentConfig.Should?.Count ?? 0;
             var mustNot = _currentConfig.MustNot?.Count ?? 0;
 
-            return (true, $"Loaded config with {must} must, {should} should, {mustNot} mustNot clauses");
+            return (true, $"Loaded config with {must} must, {should} should, {mustNot} mustNot clauses", 
+                    _currentConfig.Name, _currentConfig.Author, _currentConfig.Description);
         }
         catch (System.Text.Json.JsonException jsonEx)
         {
             // More specific JSON parsing errors
             var lineInfo = jsonEx.LineNumber.HasValue ? $" (Line {jsonEx.LineNumber})" : "";
-            return (false, $"JSON parsing error{lineInfo}: {jsonEx.Message}");
+            return (false, $"JSON parsing error{lineInfo}: {jsonEx.Message}", null, null, null);
         }
         catch (Exception ex)
         {
             // Check for common issues
             if (ex.Message.Contains("not supported") || ex.Message.Contains("invalid"))
             {
-                return (false, $"Invalid config format: {ex.Message}");
+                return (false, $"Invalid config format: {ex.Message}", null, null, null);
             }
-            return (false, $"Error loading config: {ex.Message}");
+            return (false, $"Error loading config: {ex.Message}", null, null, null);
+        }
+    }
+
+    /// <summary>
+    /// Start a search with a SearchConfiguration (adapter for SearchModal)
+    /// </summary>
+    public async Task StartSearchAsync(Views.Modals.SearchConfiguration config)
+    {
+        if (_currentConfig == null)
+        {
+            ConsoleOutput?.Invoke(this, "Error: No filter loaded. Please load a filter first.");
+            return;
+        }
+        
+        // Create a temporary path to satisfy the existing StartSearchAsync method
+        var tempConfigPath = Path.GetTempFileName();
+        try
+        {
+            // Write current config to temp file
+            var json = System.Text.Json.JsonSerializer.Serialize(_currentConfig);
+            await File.WriteAllTextAsync(tempConfigPath, json);
+            
+            var criteria = new Oracle.Models.SearchCriteria
+            {
+                ConfigPath = tempConfigPath,
+                ThreadCount = config.ThreadCount,
+                MinScore = config.MinScore,
+                BatchSize = config.BatchSize,
+                StartBatch = config.StartBatch,
+                EndBatch = config.EndBatch,
+                MaxSeeds = long.MaxValue // No limit
+            };
+            
+            await StartSearchAsync(criteria);
+        }
+        finally
+        {
+            // Clean up temp file
+            if (File.Exists(tempConfigPath))
+            {
+                try { File.Delete(tempConfigPath); } catch { }
+            }
         }
     }
 
@@ -100,13 +151,16 @@ public class MotelySearchService : IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         Results.Clear();
         _searchStartTime = DateTime.UtcNow;
+        
+        // Raise search started event
+        SearchStarted?.Invoke(this, EventArgs.Empty);
+        ConsoleOutput?.Invoke(this, "Search started");
 
         try
         {
             // Start a new search in DuckDB
             var deck = criteria.Deck ?? "Red Deck";
             var stake = criteria.Stake ?? "White Stake";
-            var configHash = ComputeConfigHash(_currentConfig);
 
             _currentSearchId = await _historyService.StartNewSearchAsync(
                 criteria.ConfigPath,
@@ -114,8 +168,7 @@ public class MotelySearchService : IDisposable
                 criteria.MinScore,
                 criteria.BatchSize,
                 deck,
-                stake,
-                configHash
+                stake
             );
 
             // Save filter configuration
@@ -130,6 +183,19 @@ public class MotelySearchService : IDisposable
             {
                 Results.Add(result);
 
+                // Raise result found event
+                ResultFound?.Invoke(this, new Views.Modals.SearchResultEventArgs 
+                { 
+                    Result = new Views.Modals.SearchResult 
+                    { 
+                        Seed = result.Seed, 
+                        Score = result.Score, 
+                        Details = result.Details ?? "" 
+                    } 
+                });
+                
+                ConsoleOutput?.Invoke(this, $"Found seed: {result.Seed} (Score: {result.Score})");
+
                 // Report new result through progress
                 progress?.Report(new Oracle.Models.SearchProgress
                 {
@@ -143,7 +209,7 @@ public class MotelySearchService : IDisposable
             // Load config if needed
             if (_currentConfig == null)
             {
-                var (success, message) = await LoadConfigAsync(criteria.ConfigPath);
+                var (success, message, _, _, _) = await LoadConfigAsync(criteria.ConfigPath);
                 if (!success)
                 {
                     progress?.Report(new Oracle.Models.SearchProgress
@@ -212,6 +278,10 @@ public class MotelySearchService : IDisposable
 
             _isRunning = false;
             // Don't dispose/null _currentSearch here - we might need it in the catch block
+            
+            // Raise search completed event
+            SearchCompleted?.Invoke(this, EventArgs.Empty);
+            ConsoleOutput?.Invoke(this, "Search completed");
         }
     }
 
@@ -319,6 +389,14 @@ public class MotelySearchService : IDisposable
                         PercentComplete = 0, // We don't know total batches
                         Message = $"Searched ~{currentSeeds:N0} seeds at {seedsPerSecond:F0}/s",
                         ResultsFound = Results.Count
+                    });
+                    
+                    // Raise progress updated event
+                    ProgressUpdated?.Invoke(this, new Views.Modals.SearchProgressEventArgs
+                    {
+                        SeedsSearched = (int)currentSeeds,
+                        ResultsFound = Results.Count,
+                        SeedsPerSecond = seedsPerSecond
                     });
                 }
 
@@ -565,26 +643,5 @@ public class MotelySearchService : IDisposable
         }
 
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", "MotelySearchService disposed");
-    }
-
-    /// <summary>
-    /// Compute a hash of the config for deduplication
-    /// </summary>
-    private string ComputeConfigHash(Motely.Filters.OuijaConfig? config)
-    {
-        if (config == null)
-            return "";
-
-        // Serialize config to JSON for consistent hashing
-        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
-
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(json);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash).Substring(0, 16); // First 16 chars is enough
     }
 }

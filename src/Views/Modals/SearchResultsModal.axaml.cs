@@ -447,12 +447,4 @@ namespace Oracle.Views.Modals
         public string Tooltip { get; set; } = "";
     }
 
-    public class SearchResult
-    {
-        public string Seed { get; set; } = "";
-        public double Score { get; set; }
-        public string? Antes { get; set; }
-        public string? ItemsJson { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-    }
 }

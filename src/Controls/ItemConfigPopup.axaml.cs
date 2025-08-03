@@ -261,8 +261,13 @@ namespace Oracle.Controls
 
         private bool IsJokerItem(string itemKey)
         {
-            // Check if the item key corresponds to a joker
-            // Jokers typically start with specific prefixes or are in joker categories
+            // In Balatro, editions can apply to:
+            // - Jokers
+            // - Playing cards
+            // - Vouchers (in some cases)
+            // For now, we'll enable editions for jokers only
+            // TODO: Extend to support playing cards when that feature is added
+            
             return itemKey.Contains("joker") ||
                    itemKey.Contains("Joker") ||
                    itemKey.StartsWith("j_") || // Common joker prefix pattern
@@ -289,6 +294,9 @@ namespace Oracle.Controls
 
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
+            // Prevent double-toggling
+            if (e.Handled) return;
+
             CheckBox? checkBox = null;
 
             // Handle both direct CheckBox clicks and clicks on child elements
@@ -315,9 +323,17 @@ namespace Oracle.Controls
                 {
                     if (anteNum >= 1 && anteNum <= 8)
                     {
-                        // Toggle the checkbox state
-                        checkBox.IsChecked = !checkBox.IsChecked;
+                        // For child element clicks, toggle the checkbox
+                        if (sender is not CheckBox)
+                        {
+                            checkBox.IsChecked = !checkBox.IsChecked;
+                        }
+                        
+                        // Update internal state
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
+                        
+                        // Mark as handled to prevent bubbling
+                        e.Handled = true;
                     }
                 }
             }
@@ -325,6 +341,9 @@ namespace Oracle.Controls
 
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
+            // Prevent double-handling
+            if (e.Handled) return;
+
             RadioButton? radioButton = null;
 
             // Handle both direct RadioButton clicks and clicks on child elements
@@ -348,13 +367,35 @@ namespace Oracle.Controls
             {
                 // Set this radio button as checked
                 radioButton.IsChecked = true;
+                
+                // Mark as handled to prevent bubbling
+                e.Handled = true;
             }
         }
 
         private void OnSourceClick(object? sender, RoutedEventArgs e)
         {
-            // Source selection is handled automatically by checkboxes
-            // We'll read the selected sources when Apply is clicked
+            // Prevent double-handling
+            if (e.Handled) return;
+            
+            CheckBox? checkBox = null;
+            
+            // Handle clicks on child elements
+            if (sender is CheckBox cb)
+            {
+                checkBox = cb;
+            }
+            else if (sender is Border border)
+            {
+                checkBox = border.Parent as CheckBox;
+                if (checkBox != null && sender is not CheckBox)
+                {
+                    checkBox.IsChecked = !checkBox.IsChecked;
+                }
+            }
+            
+            // Mark as handled
+            e.Handled = true;
         }
     }
 

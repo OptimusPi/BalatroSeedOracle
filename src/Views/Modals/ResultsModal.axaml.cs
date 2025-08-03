@@ -194,18 +194,6 @@ namespace Oracle.Views.Modals
             }
         }
 
-        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
-        {
-            // Get the parent window (MainMenu)
-            var parentMenu = this.FindAncestorOfType<BalatroMainMenu>();
-            if (parentMenu != null)
-            {
-                // Hide this modal first
-                parentMenu.HideModalContent();
 
-                // Show the analyzer modal
-                parentMenu.ShowAnalyzerModal();
-            }
-        }
     }
 }

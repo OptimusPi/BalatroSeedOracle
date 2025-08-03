@@ -22,7 +22,8 @@ namespace Oracle.Controls
             Forest,       // Green/Brown
             Cherry,       // Pink/Red
             Gold,         // Gold/Black
-            Monochrome    // Gray scale
+            Monochrome,   // Gray scale
+            Dynamic       // Dynamic hue-shifted colors
         }
 
         private BackgroundTheme _currentTheme = BackgroundTheme.Default;
@@ -30,6 +31,9 @@ namespace Oracle.Controls
         private float _spinAmount = 0.5f;
         private bool _isAnimating = true;
         private DispatcherTimer? _animationTimer;
+        private float _currentHue = 0.0f;
+        private float _targetHue = 0.0f;
+        private int _seedCount = 0;
 
         public new BackgroundTheme Theme
         {
@@ -106,9 +110,58 @@ namespace Oracle.Controls
             _animationTimer?.Stop();
         }
 
+        /// <summary>
+        /// Call this when a new seed is found to shift the background hue
+        /// </summary>
+        public void OnSeedFound()
+        {
+            _seedCount++;
+            
+            // Set theme to Dynamic if not already
+            if (_currentTheme != BackgroundTheme.Dynamic)
+            {
+                _currentTheme = BackgroundTheme.Dynamic;
+            }
+            
+            // Shift hue by a golden ratio-based amount for nice distribution
+            const float goldenAngle = 137.5f; // Golden angle in degrees
+            _targetHue = (_targetHue + goldenAngle) % 360.0f;
+            
+            // Ensure we're animating to see the smooth transition
+            if (!_isAnimating)
+            {
+                IsAnimating = true;
+            }
+        }
+
+        public float CurrentHue => _currentHue;
+        public float TargetHue => _targetHue;
+
         public override void Render(DrawingContext context)
         {
-            context.Custom(new BalatroStyleBackgroundDrawOp(new Rect(0, 0, Bounds.Width, Bounds.Height), _currentTheme, _contrast, _spinAmount, _isAnimating));
+            // Smoothly interpolate hue
+            if (Math.Abs(_currentHue - _targetHue) > 0.1f)
+            {
+                float diff = _targetHue - _currentHue;
+                
+                // Handle wrapping around 360 degrees
+                if (diff > 180) diff -= 360;
+                if (diff < -180) diff += 360;
+                
+                _currentHue += diff * 0.1f; // Smooth interpolation
+                
+                // Normalize to 0-360
+                if (_currentHue < 0) _currentHue += 360;
+                if (_currentHue >= 360) _currentHue -= 360;
+            }
+            
+            context.Custom(new BalatroStyleBackgroundDrawOp(
+                new Rect(0, 0, Bounds.Width, Bounds.Height), 
+                _currentTheme, 
+                _contrast, 
+                _spinAmount, 
+                _isAnimating,
+                _currentHue));
 
             // We no longer need this as we're using a timer for animation
             // Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
@@ -122,15 +175,17 @@ namespace Oracle.Controls
         private readonly float _contrast;
         private readonly float _spinAmount;
         private readonly bool _isAnimating;
+        private readonly float _hue;
         private static float _lastTime = Environment.TickCount / 1000.0f;
 
-        public BalatroStyleBackgroundDrawOp(Rect bounds, BalatroStyleBackground.BackgroundTheme theme, float contrast, float spinAmount, bool isAnimating)
+        public BalatroStyleBackgroundDrawOp(Rect bounds, BalatroStyleBackground.BackgroundTheme theme, float contrast, float spinAmount, bool isAnimating, float hue = 0.0f)
         {
             Bounds = bounds;
             _theme = theme;
             _contrast = contrast;
             _spinAmount = spinAmount;
             _isAnimating = isAnimating;
+            _hue = hue;
             InitShader();
         }
 
@@ -254,8 +309,45 @@ namespace Oracle.Controls
             }
         }
 
+        private static (float r, float g, float b) HsvToRgb(float h, float s, float v)
+        {
+            h = h / 60.0f;
+            float c = v * s;
+            float x = c * (1 - Math.Abs((h % 2) - 1));
+            float m = v - c;
+
+            float r = 0, g = 0, b = 0;
+            if (h < 1) { r = c; g = x; b = 0; }
+            else if (h < 2) { r = x; g = c; b = 0; }
+            else if (h < 3) { r = 0; g = c; b = x; }
+            else if (h < 4) { r = 0; g = x; b = c; }
+            else if (h < 5) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+
+            return (r + m, g + m, b + m);
+        }
+
         private (float[], float[], float[]) GetThemeColors(BalatroStyleBackground.BackgroundTheme theme)
         {
+            if (theme == BalatroStyleBackground.BackgroundTheme.Dynamic)
+            {
+                // Use the current hue to generate colors
+                // Primary color: full saturation and value
+                var (r1, g1, b1) = HsvToRgb(_hue, 0.8f, 0.9f);
+                
+                // Secondary color: complementary hue (180 degrees offset)
+                var (r2, g2, b2) = HsvToRgb((_hue + 180) % 360, 0.7f, 0.8f);
+                
+                // Background: darker version of primary
+                var (r3, g3, b3) = HsvToRgb(_hue, 0.3f, 0.2f);
+                
+                return (
+                    new float[] { r1, g1, b1, 1.0f },
+                    new float[] { r2, g2, b2, 1.0f },
+                    new float[] { r3, g3, b3, 1.0f }
+                );
+            }
+            
             return theme switch
             {
                 BalatroStyleBackground.BackgroundTheme.Default => (

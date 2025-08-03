@@ -2,81 +2,82 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Oracle.Views.Modals.StandardModal">
     
-    <!-- Full screen modal with percentage-based margins -->
-    <!-- Semi-transparent overlay with proper click handling -->
+    <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <!-- Background that blocks clicks to elements behind the modal -->
-        <Border Background="#80000000"
+        <!-- Semi-transparent background overlay -->
+        <Border Background="#CC000000"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 IsHitTestVisible="True" />
         
-        <!-- Grid for percentage-based margins -->
+        <!-- Modal positioning grid -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.025*"/>
-                <ColumnDefinition Width="0.95*"/>
-                <ColumnDefinition Width="0.025*"/>
+                <ColumnDefinition Width="0.05*"/>
+                <ColumnDefinition Width="0.9*"/>
+                <ColumnDefinition Width="0.05*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.03*"/>
-                <RowDefinition Height="0.94*"/>
-                <RowDefinition Height="0.03*"/>
+                <RowDefinition Height="0.05*"/>
+                <RowDefinition Height="0.9*"/>
+                <RowDefinition Height="0.05*"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container with exact Balatro layered styling -->
+            <!-- Main modal container - Balatro style -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource DockGrey}"
-                    CornerRadius="16"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="3"
-                    Padding="0"
+                    Background="#4f6367"
+                    CornerRadius="20"
+                    BorderBrush="#7A9E9F"
+                    BorderThickness="4"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    MaxWidth="1200"
-                    BoxShadow="0 4 12 #777e89">
-                <Border Background="{StaticResource Black}" 
-                        CornerRadius="16"
-                        Padding="0">
-            
-            <Grid VerticalAlignment="Stretch" MinHeight="500">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/> <!-- Header -->
-                    <RowDefinition Height="*"/>    <!-- Content -->
-                    <RowDefinition Height="Auto"/> <!-- Footer with back button -->
-                </Grid.RowDefinitions>
+                    MaxWidth="1000"
+                    MaxHeight="700"
+                    BoxShadow="0 8 24 #000000">
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Header -->
+                        <RowDefinition Height="*"/>    <!-- Content -->
+                        <RowDefinition Height="Auto"/> <!-- Footer -->
+                    </Grid.RowDefinitions>
 
-                <!-- Header Section -->
-                <TextBlock Grid.Row="0" 
-                           x:Name="ModalTitle"
-                           Text="MODAL TITLE"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="32"
-                           FontWeight="Bold"
-                           Foreground="#FFFFFF"
-                           HorizontalAlignment="Center"
-                           Margin="0,10,0,10"/>
+                    <!-- Header with title -->
+                    <Border Grid.Row="0" 
+                            Background="#374244"
+                            CornerRadius="20,20,0,0">
+                        <TextBlock x:Name="ModalTitle"
+                                   Text="MODAL TITLE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Foreground="#FFFFFF"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,16,0,16"/>
+                    </Border>
 
-                <!-- Content Section -->
-                <ContentPresenter Grid.Row="1"
-                                  x:Name="ModalContent" 
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch"
-                                  Margin="10"/>
+                    <!-- Content area -->
+                    <Border Grid.Row="1"
+                            Background="#374244"
+                            Margin="3">
+                        <ContentPresenter x:Name="ModalContent" 
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          Margin="20,10,20,10"/>
+                    </Border>
 
-                <!-- Footer Section with Back Button -->
-                <StackPanel Grid.Row="2" 
-                            Margin="5,5,5,5" 
-                            Spacing="5">
-                    <!-- Long yellow back button (always present) -->
-                    <Button x:Name="BackButton"
-                            Content="Back"
-                            Classes="back-button"
-                            HorizontalAlignment="Stretch"/>
-                </StackPanel>
-            </Grid>
-            </Border>
+                    <!-- Footer with back button -->
+                    <Border Grid.Row="2"
+                            Background="#374244"
+                            CornerRadius="0,0,20,20"
+                            Padding="20,10,20,20">
+                        <Button x:Name="BackButton"
+                                Content="Back"
+                                Classes="back-button"
+                                HorizontalAlignment="Stretch"/>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

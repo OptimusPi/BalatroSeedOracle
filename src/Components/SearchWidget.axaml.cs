@@ -16,6 +16,7 @@ using Oracle.Controls;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
+using Oracle.Views;
 using Avalonia.VisualTree;
 
 namespace Oracle.Components
@@ -205,20 +206,55 @@ namespace Oracle.Components
                 WriteToTerminal($"Loading config: {filename}");
 
                 // Validate the config
-                var (success, message) = await _searchService.LoadConfigAsync(configPath);
+                var (success, message, name, author, description) = await _searchService.LoadConfigAsync(configPath);
 
                 if (success)
                 {
                     WriteToTerminal($"Config loaded: {message}");
+                    
+                    // Display metadata if available
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        WriteToTerminal($"Filter: {name}");
+                    }
+                    if (!string.IsNullOrEmpty(author))
+                    {
+                        WriteToTerminal($"Author: {author}");
+                    }
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        WriteToTerminal($"Description: {description}");
+                    }
 
                     var cookButton = this.FindControl<Button>("CookButton");
                     if (cookButton != null)
                         cookButton.IsEnabled = true;
 
-                    // Update config path display
+                    // Update config path display with name if available
                     var configPathBox = this.FindControl<TextBox>("ConfigPathBox");
                     if (configPathBox != null)
-                        configPathBox.Text = _configPath;
+                    {
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            configPathBox.Text = $"{name} - {Path.GetFileName(_configPath)}";
+                            
+                            // Set tooltip with full metadata
+                            var tooltip = new System.Text.StringBuilder();
+                            tooltip.AppendLine($"Filter: {name}");
+                            if (!string.IsNullOrEmpty(author))
+                                tooltip.AppendLine($"Author: {author}");
+                            if (!string.IsNullOrEmpty(description))
+                                tooltip.AppendLine($"Description: {description}");
+                            tooltip.AppendLine($"File: {_configPath}");
+                            
+                            ToolTip.SetTip(configPathBox, tooltip.ToString());
+                        }
+                        else
+                        {
+                            configPathBox.Text = _configPath;
+                            ToolTip.SetTip(configPathBox, _configPath);
+                        }
+                    }
 
                     // Show loaded indicator
                     var indicator = this.FindControl<Border>("ConfigLoadedIndicator");
@@ -418,6 +454,9 @@ namespace Oracle.Components
                     {
                         UpdateNotificationBadge(_foundCount);
                         WriteToTerminal($"Found: {progress.NewResult.Seed} ({progress.NewResult.Score:N0})");
+                        
+                        // Notify the background to shift hue
+                        NotifyBackgroundOfSeedFound();
                     });
                 }
                 Oracle.Helpers.DebugLogger.LogImportant("SearchWidget", $">>> RESULT FOUND: Seed={progress.NewResult.Seed}, Score={progress.NewResult.Score}, Total Found={_foundCount}");
@@ -632,6 +671,31 @@ namespace Oracle.Components
             {
                 terminalOutput.Text = "";
                 _terminalBuffer.Clear();
+            }
+        }
+
+        private void NotifyBackgroundOfSeedFound()
+        {
+            try
+            {
+                // Find the BalatroMainMenu in the visual tree
+                var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                if (mainMenu != null)
+                {
+                    // Access the background control through reflection or make it public
+                    var backgroundField = mainMenu.GetType().GetField("_background", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    
+                    if (backgroundField != null)
+                    {
+                        var background = backgroundField.GetValue(mainMenu) as BalatroStyleBackground;
+                        background?.OnSeedFound();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchWidget", $"Failed to notify background: {ex.Message}");
             }
         }
 

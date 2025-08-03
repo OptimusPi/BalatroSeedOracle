@@ -12,6 +12,8 @@ public class SearchCriteria
     public long MaxSeeds { get; set; } = long.MaxValue; // Search all seeds by default
     public int MinScore { get; set; } = 0;
     public int BatchSize { get; set; } = 4; // Default batch size
+    public int StartBatch { get; set; } = 0;
+    public int EndBatch { get; set; } = 999999;
     public string? Deck { get; set; } = "Red Deck";
     public string? Stake { get; set; } = "White Stake";
     public bool EnableDebugOutput { get; set; } = false;
