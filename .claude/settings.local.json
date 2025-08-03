@@ -37,7 +37,9 @@
       "Bash(echo:*)",
       "WebFetch(domain:github.com)",
       "Bash(./test-profile.exe)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(printf \"0x%X\\n\" 16408)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

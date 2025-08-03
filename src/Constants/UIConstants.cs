@@ -18,7 +18,7 @@ public static class UIConstants
     public const int VoucherSpriteHeight = 95;
     public const int UIAssetSpriteWidth = 18;
     public const int UIAssetSpriteHeight = 18;
-    
+
     // Colors
     public const string PrimaryBackground = "#374244";
     public const string AccentColor = "#FEB95F";
@@ -27,31 +27,31 @@ public static class UIConstants
     public const string TarotColor = "#3498DB";
     public const string DefaultGray = "#95A5A6";
     public const string BorderGold = "#EAC058"; // RGB(234, 192, 88)
-    
+
     // Font Sizes
     public const int SmallFontSize = 12;
     public const int DefaultFontSize = 14;
     public const int LargeFontSize = 16;
     public const int HeaderFontSize = 18;
-    
+
     // Layout Constants
     public const double DefaultCornerRadius = 6.0;
     public const double DefaultPadding = 5.0;
     public const double DefaultMargin = 10.0;
     public const int MinModalHeight = 120;
     public const int MinFilterHeight = 60;
-    
+
     // Grid Proportions
     public const string StandardGridProportion = "0.95*";
-    
+
     // Animation/Timing
     public const int DefaultDelayMs = 100;
     public const int SearchUpdateIntervalMs = 100;
-    
+
     // File Extensions
     public static readonly string[] ConfigFilePatterns = { "*.ouija.json", "*.json" };
     public static readonly string[] CsvFilePatterns = { "*.csv" };
-    
+
     // UI Text
     public const string ConfigFileTypeDescription = "Config Files";
     public const string CsvFileTypeDescription = "CSV Files";

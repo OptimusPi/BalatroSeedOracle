@@ -69,6 +69,18 @@
             <Setter Property="Foreground" Value="#FE5F55"/>
         </Style>
         
+        <!-- Quick filter styles -->
+        <Style Selector="TextBox#QuickFilterBox">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        
+        <Style Selector="TextBox#QuickFilterBox:focus">
+            <Setter Property="BorderBrush" Value="#009dff"/>
+        </Style>
+        
         <!-- Toolbar button styling -->
         <Style Selector="Button.toolbar-button">
             <Setter Property="Background" Value="#3a5055"/>
@@ -154,19 +166,93 @@
                 BorderBrush="#3a3a3a"
                 BorderThickness="0"
                 Margin="0">
-            <DataGrid Name="ResultsGrid"
-                     CanUserResizeColumns="True"
-                     CanUserSortColumns="True"
-                     CanUserReorderColumns="True"
-                     GridLinesVisibility="Horizontal"
-                     HeadersVisibility="Column"
-                     SelectionMode="Extended"
-                     IsReadOnly="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Quick Filter Bar -->
+                <Border Grid.Row="0" 
+                        Background="#1a1a1a" 
+                        Padding="8"
+                        IsVisible="{Binding ShowQuickFilter}">
+                    <Grid ColumnDefinitions="Auto,200,Auto,Auto,Auto,*">
+                        <TextBlock Grid.Column="0" 
+                                  Text="Filter:" 
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,8,0"
+                                  Foreground="#888888"/>
+                        
+                        <TextBox Grid.Column="1" 
+                                Name="QuickFilterBox"
+                                Watermark="Type to filter..."
+                                Margin="0,0,8,0"/>
+                        
+                        <Button Grid.Column="2" 
+                               Name="ClearFilterButton"
+                               Content="Clear"
+                               Padding="8,4"
+                               Margin="0,0,8,0"/>
+                        
+                        <Separator Grid.Column="3" 
+                                  Width="1" 
+                                  Background="#3a3a3a"
+                                  Margin="8,0"/>
+                        
+                        <CheckBox Grid.Column="4" 
+                                 Name="HighScoreOnlyCheck"
+                                 Content="High Scores Only (≥100)"
+                                 VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                
+                <DataGrid Grid.Row="1"
+                         Name="ResultsGrid"
+                         CanUserResizeColumns="True"
+                         CanUserSortColumns="True"
+                         CanUserReorderColumns="True"
+                         GridLinesVisibility="Horizontal"
+                         HeadersVisibility="Column"
+                         SelectionMode="Extended"
+                         IsReadOnly="True"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Seed" 
-                                       Binding="{Binding Seed}" 
-                                       Width="150"
-                                       FontFamily="{StaticResource MonospaceFont}"/>
+                    <DataGridTemplateColumn Header="Seed" 
+                                           Width="180"
+                                           CanUserSort="True"
+                                           SortMemberPath="Seed">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                              Text="{Binding Seed}"
+                                              FontFamily="{StaticResource MonospaceFont}"
+                                              FontSize="14"
+                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" 
+                                           Content="📋"
+                                           ToolTip.Tip="Copy seed"
+                                           Background="Transparent"
+                                           BorderThickness="0"
+                                           Padding="4,2"
+                                           Margin="4,0,0,0"
+                                           FontSize="12"
+                                           Opacity="0.7"
+                                           Click="OnCopySeedClick"
+                                           Tag="{Binding Seed}">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover">
+                                                <Setter Property="Opacity" Value="1"/>
+                                                <Setter Property="Background" Value="#3a3a3a"/>
+                                            </Style>
+                                        </Button.Styles>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     
                     <DataGridTemplateColumn Header="Score" 
                                            Width="120"
@@ -174,16 +260,38 @@
                                            SortMemberPath="Score">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding FormattedScore}"
-                                          HorizontalAlignment="Right"
-                                          Margin="0,0,8,0"/>
+                                <Border CornerRadius="4" 
+                                       Padding="6,2"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,2,8,2">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding ScoreBackgroundColor}" Opacity="0.2"/>
+                                    </Border.Background>
+                                    <TextBlock Text="{Binding FormattedScore}"
+                                              FontWeight="Bold"
+                                              Foreground="{Binding ScoreForeground}"/>
+                                </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     
-                    <DataGridTextColumn Header="Antes" 
-                                       Binding="{Binding Antes}" 
-                                       Width="100"/>
+                    <DataGridTemplateColumn Header="Antes" 
+                                           Width="100"
+                                           CanUserSort="True"
+                                           SortMemberPath="Antes">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="#1a1a1a" 
+                                       CornerRadius="4" 
+                                       Padding="6,2"
+                                       HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Antes}"
+                                              HorizontalAlignment="Center"
+                                              FontWeight="Medium"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     
                     <DataGridTemplateColumn Header="Items Found" 
                                            Width="*"
@@ -199,10 +307,30 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border ToolTip.Tip="{Binding Tooltip}"
-                                                   Margin="2">
-                                                <Image Source="{Binding Icon}"
-                                                      Width="32"
-                                                      Height="32"/>
+                                                   Margin="2"
+                                                   CornerRadius="4"
+                                                   Background="#1a1a1a"
+                                                   BorderBrush="#3a3a3a"
+                                                   BorderThickness="1"
+                                                   Padding="2">
+                                                <Grid>
+                                                    <Image Source="{Binding Icon}"
+                                                          Width="32"
+                                                          Height="32"/>
+                                                    <!-- Ante indicator -->
+                                                    <Border CornerRadius="6"
+                                                           Background="#000000"
+                                                           Padding="2,0"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Bottom"
+                                                           Margin="0,0,-2,-2"
+                                                           IsVisible="{Binding ShowAnte}">
+                                                        <TextBlock Text="{Binding Ante}"
+                                                                  FontSize="9"
+                                                                  FontWeight="Bold"
+                                                                  Foreground="#FFFFFF"/>
+                                                    </Border>
+                                                </Grid>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -217,6 +345,7 @@
                                        IsVisible="{Binding IsHistoricalView}"/>
                 </DataGrid.Columns>
             </DataGrid>
+            </Grid>
         </Border>
         
         <!-- Footer Stats -->

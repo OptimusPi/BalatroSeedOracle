@@ -27,6 +27,24 @@
       "ThreadCount": 4,
       "MinScore": 1,
       "BatchSize": 4
+    },
+    {
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\debug\\net9.0\\filters\\temp.ouija.json",
+      "X": 20,
+      "Y": 80,
+      "IsMinimized": false,
+      "ThreadCount": 4,
+      "MinScore": 1,
+      "BatchSize": 4
+    },
+    {
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\Debug\\net9.0\\filters\\temp.ouija.json",
+      "X": 20,
+      "Y": 80,
+      "IsMinimized": false,
+      "ThreadCount": 4,
+      "MinScore": 1,
+      "BatchSize": 4
     }
   ],
   "BackgroundTheme": null,

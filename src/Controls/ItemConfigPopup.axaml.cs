@@ -17,58 +17,59 @@ namespace Oracle.Controls
         public event EventHandler<ItemConfigEventArgs>? ConfigApplied;
         public event EventHandler? DeleteRequested;
         public event EventHandler? Cancelled;
-        
+
         private string _itemKey = "";
         private bool[] _selectedAntes = new bool[8] { true, true, true, true, true, true, true, true };
         private bool _isJoker = false;
-        
+
         public ItemConfigPopup()
         {
             InitializeComponent();
         }
-        
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             // Initialize after loading
-            Dispatcher.UIThread.Post(() => {
+            Dispatcher.UIThread.Post(() =>
+            {
                 LoadEditionImages();
             });
         }
-        
+
         private void LoadEditionImages()
         {
             var spriteService = SpriteService.Instance;
-            
+
             // Load Normal edition image
             var normalImage = this.Find<Image>("EditionNormalImage");
             if (normalImage != null)
             {
                 normalImage.Source = spriteService.GetEditionImage("normal");
             }
-            
+
             // Load Foil edition image
             var foilImage = this.Find<Image>("EditionFoilImage");
             if (foilImage != null)
             {
                 foilImage.Source = spriteService.GetEditionImage("foil");
             }
-            
+
             // Load Holographic edition image
             var holoImage = this.Find<Image>("EditionHoloImage");
             if (holoImage != null)
             {
                 holoImage.Source = spriteService.GetEditionImage("holographic");
             }
-            
+
             // Load Polychrome edition image
             var polyImage = this.Find<Image>("EditionPolyImage");
             if (polyImage != null)
             {
                 polyImage.Source = spriteService.GetEditionImage("polychrome");
             }
-            
+
             // Load Negative edition image
             var negativeImage = this.Find<Image>("EditionNegativeImage");
             if (negativeImage != null)
@@ -76,23 +77,23 @@ namespace Oracle.Controls
                 negativeImage.Source = spriteService.GetEditionImage("negative");
             }
         }
-        
+
         public void SetItem(string itemKey, string itemName, ItemConfig? existingConfig = null)
         {
             _itemKey = itemKey;
-            
+
             // Check if this is a joker (editions only apply to jokers)
             _isJoker = IsJokerItem(itemKey);
-            
+
             var nameText = this.FindControl<TextBlock>("ItemNameText");
             if (nameText != null)
                 nameText.Text = itemName;
-            
+
             // Show/hide edition section based on item type
             var editionBorder = this.FindControl<Border>("EditionSection");
             if (editionBorder != null)
                 editionBorder.IsVisible = _isJoker;
-            
+
             if (existingConfig != null)
             {
                 // Load existing ante configuration
@@ -103,7 +104,7 @@ namespace Oracle.Controls
                     {
                         _selectedAntes[i] = false;
                     }
-                    
+
                     // Set selected antes
                     foreach (var ante in existingConfig.SearchAntes)
                     {
@@ -112,7 +113,7 @@ namespace Oracle.Controls
                             _selectedAntes[ante - 1] = true;
                         }
                     }
-                    
+
                     UpdateAnteCheckboxes();
                 }
                 else
@@ -124,7 +125,7 @@ namespace Oracle.Controls
                     }
                     UpdateAnteCheckboxes();
                 }
-                
+
                 // Set edition
                 if (!string.IsNullOrEmpty(existingConfig.Edition))
                 {
@@ -147,7 +148,7 @@ namespace Oracle.Controls
                             break;
                     }
                 }
-                
+
                 // Set sources
                 if (existingConfig.Sources != null)
                 {
@@ -157,21 +158,21 @@ namespace Oracle.Controls
                 }
             }
         }
-        
+
         private void SetRadioButton(string name)
         {
             var radio = this.FindControl<RadioButton>(name);
             if (radio != null)
                 radio.IsChecked = true;
         }
-        
+
         private void SetCheckBox(string name, bool isChecked)
         {
             var check = this.FindControl<CheckBox>(name);
             if (check != null)
                 check.IsChecked = isChecked;
         }
-        
+
         private void OnApplyClick(object? sender, RoutedEventArgs e)
         {
             var config = new ItemConfig
@@ -181,20 +182,20 @@ namespace Oracle.Controls
                 Edition = GetSelectedEdition(),
                 Sources = GetSelectedSources()
             };
-            
+
             ConfigApplied?.Invoke(this, new ItemConfigEventArgs { Config = config });
         }
-        
+
         private void OnDeleteClick(object? sender, RoutedEventArgs e)
         {
             DeleteRequested?.Invoke(this, EventArgs.Empty);
         }
-        
+
         private void OnCancelClick(object? sender, RoutedEventArgs e)
         {
             Cancelled?.Invoke(this, EventArgs.Empty);
         }
-        
+
         private List<int>? GetSelectedAntes()
         {
             var antes = new List<int>();
@@ -205,21 +206,21 @@ namespace Oracle.Controls
                     antes.Add(i + 1);
                 }
             }
-            
+
             // If all antes are selected, return null (means "any ante")
             if (antes.Count == 8)
             {
                 return null;
             }
-            
+
             return antes.Count > 0 ? antes : null;
         }
-        
+
         public string GetItem()
         {
             return _itemKey;
         }
-        
+
         private void UpdateAnteCheckboxes()
         {
             for (int i = 0; i < 8; i++)
@@ -231,7 +232,7 @@ namespace Oracle.Controls
                 }
             }
         }
-        
+
         private string GetSelectedEdition()
         {
             if (this.FindControl<RadioButton>("EditionFoil")?.IsChecked == true) return "foil";
@@ -240,34 +241,34 @@ namespace Oracle.Controls
             if (this.FindControl<RadioButton>("EditionNegative")?.IsChecked == true) return "negative";
             return "none";
         }
-        
+
         private List<string> GetSelectedSources()
         {
             var sources = new List<string>();
-            
+
             if (this.FindControl<CheckBox>("SourceTags")?.IsChecked == true) sources.Add("tag");
             if (this.FindControl<CheckBox>("SourcePacks")?.IsChecked == true) sources.Add("booster");
             if (this.FindControl<CheckBox>("SourceShop")?.IsChecked == true) sources.Add("shop");
-            
+
             // Default to main sources if none selected
             if (sources.Count == 0)
             {
                 sources.AddRange(new[] { "tag", "booster", "shop" });
             }
-            
+
             return sources;
         }
-        
+
         private bool IsJokerItem(string itemKey)
         {
             // Check if the item key corresponds to a joker
             // Jokers typically start with specific prefixes or are in joker categories
-            return itemKey.Contains("joker") || 
+            return itemKey.Contains("joker") ||
                    itemKey.Contains("Joker") ||
                    itemKey.StartsWith("j_") || // Common joker prefix pattern
                    IsSpecificJoker(itemKey);
         }
-        
+
         private bool IsSpecificJoker(string itemKey)
         {
             // Add specific joker names that might not follow the pattern
@@ -282,43 +283,86 @@ namespace Oracle.Controls
                 "lusty_joker", "wrathful_joker", "gluttonous_joker"
                 // Add more as needed
             };
-            
+
             return jokerKeys.Contains(itemKey);
         }
-        
+
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox checkBox && checkBox.Name != null)
+            CheckBox? checkBox = null;
+
+            // Handle both direct CheckBox clicks and clicks on child elements
+            if (sender is CheckBox cb)
+            {
+                checkBox = cb;
+            }
+            else if (sender is Border borderElement)
+            {
+                // Find parent CheckBox
+                checkBox = borderElement.Parent as CheckBox;
+            }
+            else if (sender is TextBlock textBlock)
+            {
+                // Find parent CheckBox through Border
+                var borderParent = textBlock.Parent as Border;
+                checkBox = borderParent?.Parent as CheckBox;
+            }
+
+            if (checkBox?.Name != null)
             {
                 // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
                 if (checkBox.Name.StartsWith("Ante") && int.TryParse(checkBox.Name.Substring(4), out int anteNum))
                 {
                     if (anteNum >= 1 && anteNum <= 8)
                     {
+                        // Toggle the checkbox state
+                        checkBox.IsChecked = !checkBox.IsChecked;
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
                     }
                 }
             }
         }
-        
+
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
-            // Edition selection is handled by radio button group automatically
-            // We'll read the selected edition when Apply is clicked
+            RadioButton? radioButton = null;
+
+            // Handle both direct RadioButton clicks and clicks on child elements
+            if (sender is RadioButton rb)
+            {
+                radioButton = rb;
+            }
+            else if (sender is Border borderControl)
+            {
+                // Find parent RadioButton
+                radioButton = borderControl.Parent as RadioButton;
+            }
+            else if (sender is Image image)
+            {
+                // Find parent RadioButton through Border
+                var borderParent = image.Parent as Border;
+                radioButton = borderParent?.Parent as RadioButton;
+            }
+
+            if (radioButton != null)
+            {
+                // Set this radio button as checked
+                radioButton.IsChecked = true;
+            }
         }
-        
+
         private void OnSourceClick(object? sender, RoutedEventArgs e)
         {
             // Source selection is handled automatically by checkboxes
             // We'll read the selected sources when Apply is clicked
         }
     }
-    
+
     public class ItemConfigEventArgs : EventArgs
     {
         public ItemConfig Config { get; set; } = new();
     }
-    
+
     public class ItemConfig
     {
         public string ItemKey { get; set; } = "";

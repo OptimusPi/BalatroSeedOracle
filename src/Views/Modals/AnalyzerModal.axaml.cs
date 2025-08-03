@@ -18,7 +18,7 @@ namespace Oracle.Views.Modals
     public partial class AnalyzerModal : UserControl
     {
         private readonly SpriteService _spriteService;
-        
+
         public AnalyzerModal()
         {
             InitializeComponent();
@@ -51,87 +51,30 @@ namespace Oracle.Views.Modals
             ResultsPanel.Children.Add(loadingText);
 
             // Run analysis in background
-            await Task.Run(() =>
-            {
-                // Create analyzer context
-                var filterDesc = new AnalyzerFilterDesc();
-                var searchSettings = new MotelySearchSettings<AnalyzerFilterDesc.AnalyzerFilter>(filterDesc)
-                    .WithDeck(deck)
-                    .WithStake(stake)
-                    .WithListSearch(new[] { seed })
-                    .WithThreadCount(1);
-                    
-                var search = searchSettings.Start();
-                
-                // Wait for completion
-                while (search.Status == MotelySearchStatus.Running)
-                {
-                    System.Threading.Thread.Sleep(10);
-                }
-                
-                search.Dispose();
-            });
+            var analysisData = await Task.Run(() => SeedAnalyzerCapture.CaptureAnalysis(seed, deck, stake));
 
             // Remove loading indicator
             ResultsPanel.Children.Remove(loadingText);
 
-            // Get the analysis results by running our own analysis
-            var results = await AnalyzeSeed(seed, deck, stake);
-            
-            // Display results visually
-            DisplayResults(results);
+            // Display results
+            DisplayResults(seed, deck, stake, analysisData);
         }
 
-        private async Task<SeedAnalysisResults> AnalyzeSeed(string seed, MotelyDeck deck, MotelyStake stake)
-        {
-            var results = new SeedAnalysisResults { Seed = seed, Deck = deck, Stake = stake };
 
-            // Run analysis in a task
-            await Task.Run(() =>
-            {
-                var filterDesc = new AnalyzerFilterDesc();
-                var ctx = new MotelyFilterCreationContext();
-                var filter = filterDesc.CreateFilter(ref ctx);
-                
-                // We need to use the filter pattern to access the context
-                // The context is provided by the filter system
-                
-                // Use a custom filter to extract the data
-                var customFilter = new AnalysisExtractorFilterDesc(results);
-                var searchSettings = new MotelySearchSettings<AnalysisExtractorFilterDesc.AnalysisExtractorFilter>(customFilter)
-                    .WithDeck(deck)
-                    .WithStake(stake)
-                    .WithListSearch(new[] { seed })
-                    .WithThreadCount(1);
-                    
-                var search = searchSettings.Start();
-                
-                // Wait for completion
-                while (search.Status == MotelySearchStatus.Running)
-                {
-                    System.Threading.Thread.Sleep(10);
-                }
-                
-                search.Dispose();
-            });
-
-            return results;
-        }
-
-        private void DisplayResults(SeedAnalysisResults results)
+        private void DisplayResults(string seed, MotelyDeck deck, MotelyStake stake, List<SeedAnalyzerCapture.AnteData> analysisData)
         {
             // Add header
             var headerPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
             headerPanel.Children.Add(new TextBlock
             {
-                Text = $"Seed: {results.Seed}",
+                Text = $"Seed: {seed}",
                 FontSize = 24,
                 FontWeight = FontWeight.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center
             });
             headerPanel.Children.Add(new TextBlock
             {
-                Text = $"Deck: {results.Deck}, Stake: {results.Stake}",
+                Text = $"Deck: {deck}, Stake: {stake}",
                 FontSize = 16,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Opacity = 0.8
@@ -139,7 +82,7 @@ namespace Oracle.Views.Modals
             ResultsPanel.Children.Add(headerPanel);
 
             // Display each ante
-            foreach (var ante in results.Antes)
+            foreach (var ante in analysisData)
             {
                 var antePanel = new Border { Classes = { "ante-panel" } };
                 var anteContent = new StackPanel();
@@ -151,8 +94,28 @@ namespace Oracle.Views.Modals
                     Classes = { "section-header" }
                 });
 
+                // Voucher section
+                if (ante.Voucher != 0)
+                {
+                    anteContent.Children.Add(new TextBlock
+                    {
+                        Text = "VOUCHER",
+                        FontSize = 16,
+                        FontWeight = FontWeight.Bold,
+                        Margin = new Thickness(0, 10, 0, 5)
+                    });
+
+                    var voucherName = ante.Voucher.ToString();
+                    anteContent.Children.Add(new TextBlock
+                    {
+                        Text = voucherName,
+                        FontSize = 14,
+                        Margin = new Thickness(20, 0, 0, 10)
+                    });
+                }
+
                 // Shop section
-                if (ante.ShopItems.Any())
+                if (ante.ShopQueue.Any())
                 {
                     anteContent.Children.Add(new TextBlock
                     {
@@ -163,7 +126,7 @@ namespace Oracle.Views.Modals
                     });
 
                     var shopPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-                    foreach (var shopItem in ante.ShopItems)
+                    foreach (var shopItem in ante.ShopQueue)
                     {
                         var itemControl = CreateShopItemDisplay(shopItem);
                         shopPanel.Children.Add(itemControl);
@@ -172,7 +135,7 @@ namespace Oracle.Views.Modals
                 }
 
                 // Booster packs section
-                if (ante.BoosterPacks.Any())
+                if (ante.Packs.Any())
                 {
                     anteContent.Children.Add(new TextBlock
                     {
@@ -183,7 +146,7 @@ namespace Oracle.Views.Modals
                     });
 
                     var packsPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-                    foreach (var pack in ante.BoosterPacks)
+                    foreach (var pack in ante.Packs)
                     {
                         var packControl = CreateBoosterPackDisplay(pack);
                         packsPanel.Children.Add(packControl);
@@ -192,7 +155,7 @@ namespace Oracle.Views.Modals
                 }
 
                 // Tags section
-                if (ante.SmallBlindTag != 0 || ante.BigBlindTag != 0)
+                if (ante.Tags.Any())
                 {
                     anteContent.Children.Add(new TextBlock
                     {
@@ -203,13 +166,10 @@ namespace Oracle.Views.Modals
                     });
 
                     var tagsPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-                    if (ante.SmallBlindTag != 0)
+                    for (int i = 0; i < ante.Tags.Count; i++)
                     {
-                        tagsPanel.Children.Add(CreateTagDisplay("Small Blind", ante.SmallBlindTag));
-                    }
-                    if (ante.BigBlindTag != 0)
-                    {
-                        tagsPanel.Children.Add(CreateTagDisplay("Big Blind", ante.BigBlindTag));
+                        var blindType = i == 0 ? "Small Blind" : "Big Blind";
+                        tagsPanel.Children.Add(CreateTagDisplay(blindType, ante.Tags[i]));
                     }
                     anteContent.Children.Add(tagsPanel);
                 }
@@ -219,7 +179,7 @@ namespace Oracle.Views.Modals
             }
         }
 
-        private Control CreateShopItemDisplay(ShopItemResult item)
+        private Control CreateShopItemDisplay(SeedAnalyzerCapture.ShopItem item)
         {
             var container = new Border
             {
@@ -235,10 +195,11 @@ namespace Oracle.Views.Modals
             };
 
             // Add sprite based on item type
-            switch (item.Type)
+            switch (item.Item.TypeCategory)
             {
-                case ShopState.ShopItem.ShopItemType.Joker:
-                    var jokerSprite = _spriteService.GetJokerImage(item.Joker.ToString());
+                case MotelyItemTypeCategory.Joker:
+                    var joker = (MotelyJoker)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var jokerSprite = _spriteService.GetJokerImage(joker.ToString());
                     if (jokerSprite != null)
                     {
                         var image = new Image
@@ -250,22 +211,23 @@ namespace Oracle.Views.Modals
                         };
                         content.Children.Add(image);
                     }
-                    
+
                     // Add edition indicator if applicable
-                    if (item.Edition != MotelyItemEdition.None)
+                    if (item.Item.Edition != MotelyItemEdition.None)
                     {
                         content.Children.Add(new TextBlock
                         {
-                            Text = item.Edition.ToString(),
+                            Text = item.Item.Edition.ToString(),
                             FontSize = 10,
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Foreground = GetEditionColor(item.Edition)
+                            Foreground = GetEditionColor(item.Item.Edition)
                         });
                     }
                     break;
 
-                case ShopState.ShopItem.ShopItemType.Tarot:
-                    var tarotSprite = _spriteService.GetTarotImage(item.Tarot.ToString());
+                case MotelyItemTypeCategory.TarotCard:
+                    var tarot = (MotelyTarotCard)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var tarotSprite = _spriteService.GetTarotImage(tarot.ToString());
                     if (tarotSprite != null)
                     {
                         var image = new Image
@@ -279,9 +241,9 @@ namespace Oracle.Views.Modals
                     }
                     break;
 
-                case ShopState.ShopItem.ShopItemType.Planet:
-                    // Planet images are in the tarot sheet
-                    var planetSprite = _spriteService.GetTarotImage(item.Planet.ToString());
+                case MotelyItemTypeCategory.PlanetCard:
+                    var planet = (MotelyPlanetCard)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var planetSprite = _spriteService.GetTarotImage(planet.ToString());
                     if (planetSprite != null)
                     {
                         var image = new Image
@@ -298,34 +260,45 @@ namespace Oracle.Views.Modals
                 default:
                     content.Children.Add(new TextBlock
                     {
-                        Text = item.Type.ToString(),
+                        Text = item.FormattedName,
                         TextAlignment = TextAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     });
                     break;
             }
 
-            // Add slot number
-            content.Children.Add(new TextBlock
+            // Add slot number badge
+            var slotBadge = new Border
             {
-                Text = $"Slot {item.Slot}",
+                Background = new SolidColorBrush(Color.Parse("#3a3a3a")),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(6, 2),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+
+            slotBadge.Child = new TextBlock
+            {
+                Text = $"#{item.Slot}",
                 FontSize = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Opacity = 0.6,
-                Margin = new Thickness(0, 2, 0, 0)
-            });
+                FontWeight = FontWeight.Medium
+            };
+
+            content.Children.Add(slotBadge);
 
             container.Child = content;
             return container;
         }
 
-        private Control CreateBoosterPackDisplay(MotelyBoosterPack pack)
+        private Control CreateBoosterPackDisplay(SeedAnalyzerCapture.PackContent pack)
         {
             var container = new Border
             {
                 Classes = { "shop-slot" },
-                Width = 100,
-                Height = 140,
+                MinWidth = 100,
+                MaxWidth = 150,
+                MinHeight = 140,
                 Margin = new Thickness(4)
             };
 
@@ -336,7 +309,7 @@ namespace Oracle.Views.Modals
             };
 
             // Get pack sprite from the new booster sprites
-            var packName = pack.ToString().ToLower().Replace("_", "");
+            var packName = pack.PackType.ToString().ToLower().Replace("_", "");
             var packSprite = _spriteService.GetBoosterImage(packName);
             if (packSprite != null)
             {
@@ -350,13 +323,31 @@ namespace Oracle.Views.Modals
                 content.Children.Add(image);
             }
 
-            content.Children.Add(new TextBlock
+            var packText = new StackPanel();
+            packText.Children.Add(new TextBlock
             {
-                Text = pack.ToString().Replace("Pack", ""),
+                Text = pack.PackType.ToString().Replace("Pack", ""),
                 FontSize = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 2, 0, 0)
+                FontWeight = FontWeight.Bold
             });
+
+            // Show pack contents
+            if (pack.Contents.Any())
+            {
+                packText.Children.Add(new TextBlock
+                {
+                    Text = string.Join(", ", pack.Contents),
+                    FontSize = 8,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 90,
+                    Opacity = 0.8,
+                    Margin = new Thickness(0, 2, 0, 0)
+                });
+            }
+
+            content.Children.Add(packText);
 
             container.Child = content;
             return container;
@@ -450,120 +441,50 @@ namespace Oracle.Views.Modals
                 _ => (MotelyDeck.Red, MotelyStake.White)
             };
         }
-    }
 
-    // Result classes
-    public class SeedAnalysisResults
-    {
-        public string Seed { get; set; } = "";
-        public MotelyDeck Deck { get; set; }
-        public MotelyStake Stake { get; set; }
-        public List<AnteResults> Antes { get; set; } = new();
-    }
-
-    public class AnteResults
-    {
-        public int Ante { get; set; }
-        public List<ShopItemResult> ShopItems { get; set; } = new();
-        public List<MotelyBoosterPack> BoosterPacks { get; set; } = new();
-        public MotelyTag SmallBlindTag { get; set; }
-        public MotelyTag BigBlindTag { get; set; }
-    }
-
-    public class ShopItemResult
-    {
-        public int Slot { get; set; }
-        public ShopState.ShopItem.ShopItemType Type { get; set; }
-        public MotelyJoker Joker { get; set; }
-        public MotelyTarotCard Tarot { get; set; }
-        public MotelyPlanetCard Planet { get; set; }
-        public MotelyItemEdition Edition { get; set; }
-    }
-
-    // Custom filter to extract analysis data
-    public struct AnalysisExtractorFilterDesc : IMotelySeedFilterDesc<AnalysisExtractorFilterDesc.AnalysisExtractorFilter>
-    {
-        private readonly SeedAnalysisResults _results;
-
-        public AnalysisExtractorFilterDesc(SeedAnalysisResults results)
+        private string GetAnteIcon(int ante)
         {
-            _results = results;
+            return ante switch
+            {
+                1 => "🔵",
+                2 => "🟢",
+                3 => "🟡",
+                4 => "🟠",
+                5 => "🔴",
+                6 => "🟣",
+                7 => "⚫",
+                8 => "⚪",
+                _ => "❓"
+            };
         }
 
-        public AnalysisExtractorFilter CreateFilter(ref MotelyFilterCreationContext ctx)
+        private string FormatVoucherName(string name)
         {
-            return new AnalysisExtractorFilter(_results);
+            // Add spaces before capital letters
+            return System.Text.RegularExpressions.Regex.Replace(name, "([A-Z])", " $1").Trim();
         }
 
-        public struct AnalysisExtractorFilter : IMotelySeedFilter
+        private string FormatPackName(string name)
         {
-            private readonly SeedAnalysisResults _results;
+            // Remove "Pack" and add spaces
+            name = name.Replace("Pack", "");
+            name = System.Text.RegularExpressions.Regex.Replace(name, "([A-Z])", " $1").Trim();
 
-            public AnalysisExtractorFilter(SeedAnalysisResults results)
+            // Special formatting for pack types
+            return name switch
             {
-                _results = results;
-            }
-
-            public VectorMask Filter(ref MotelyVectorSearchContext ctx)
-            {
-                // For analyzer, we just want to check individual seeds
-                return ctx.SearchIndividualSeeds(CheckSeed);
-            }
-
-            public bool CheckSeed(ref MotelySingleSearchContext ctx)
-            {
-                // Analyze each ante
-                for (int ante = 1; ante <= 8; ante++)
-                {
-                    var anteResult = new AnteResults { Ante = ante };
-                    
-                    // Get shop
-                    var shop = ctx.GenerateFullShop(ante);
-                    int slots = ante == 1 ? ShopState.ShopSlotsAnteOne : ShopState.ShopSlots;
-                    
-                    for (int i = 0; i < slots; i++)
-                    {
-                        ref var item = ref shop.Items[i];
-                        if (item.Type != ShopState.ShopItem.ShopItemType.Empty)
-                        {
-                            anteResult.ShopItems.Add(new ShopItemResult
-                            {
-                                Slot = i + 1,
-                                Type = item.Type,
-                                Joker = item.Joker,
-                                Tarot = item.Tarot,
-                                Planet = item.Planet,
-                                Edition = item.Edition
-                            });
-                        }
-                    }
-                    
-                    // Get booster packs
-                    var packStream = ctx.CreateBoosterPackStream(ante);
-                    var pack1 = ctx.GetNextBoosterPack(ref packStream);
-                    var pack2 = ctx.GetNextBoosterPack(ref packStream);
-                    
-                    if (pack1 != 0)
-                        anteResult.BoosterPacks.Add((MotelyBoosterPack)pack1);
-                    if (pack2 != 0)
-                        anteResult.BoosterPacks.Add((MotelyBoosterPack)pack2);
-                    
-                    // Get tags
-                    var tagStream = ctx.CreateTagStream(ante);
-                    var smallTag = ctx.GetNextTag(ref tagStream);
-                    var bigTag = ctx.GetNextTag(ref tagStream);
-                    
-                    if (smallTag != 0)
-                        anteResult.SmallBlindTag = smallTag;
-                    if (bigTag != 0)
-                        anteResult.BigBlindTag = bigTag;
-                    
-                    _results.Antes.Add(anteResult);
-                }
-                
-                // Return false so we don't actually match this seed
-                return false;
-            }
+                "Jumbo Arcana" => "Jumbo Arcana Pack",
+                "Jumbo Buffoon" => "Jumbo Buffoon Pack",
+                "Jumbo Celestial" => "Jumbo Celestial Pack",
+                "Jumbo Spectral" => "Jumbo Spectral Pack",
+                "Jumbo Standard" => "Jumbo Standard Pack",
+                "Mega Arcana" => "Mega Arcana Pack",
+                "Mega Buffoon" => "Mega Buffoon Pack",
+                "Mega Celestial" => "Mega Celestial Pack",
+                "Mega Spectral" => "Mega Spectral Pack",
+                "Mega Standard" => "Mega Standard Pack",
+                _ => name + " Pack"
+            };
         }
     }
 }

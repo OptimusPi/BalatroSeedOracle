@@ -8,7 +8,7 @@ namespace Oracle.Views.Modals
     public class BalatroModalBase : UserControl
     {
         public event EventHandler? BackClicked;
-        
+
         protected virtual void OnBackClicked()
         {
             BackClicked?.Invoke(this, EventArgs.Empty);

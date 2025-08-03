@@ -27,7 +27,7 @@ public class MotelySearchService : IDisposable
     private MotelyResultCapture? _resultCapture;
     private long _currentSearchId = -1;
     private DateTime _searchStartTime;
-    
+
     public bool IsRunning => _isRunning;
     public List<Oracle.Models.SearchResult> Results { get; } = new();
     public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
@@ -48,7 +48,7 @@ public class MotelySearchService : IDisposable
                 return (false, "Config file not found");
 
             // Load the config using Motely's loader
-            await Task.Run(() => 
+            await Task.Run(() =>
             {
                 _currentConfig = Motely.Filters.OuijaConfig.LoadFromJson(configPath);
             });
@@ -60,16 +60,27 @@ public class MotelySearchService : IDisposable
                 var configAsJson = JsonSerializer.Serialize(_currentConfig);
                 Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Loaded config: \r\n{configAsJson}\r\n");
             }
-            
+
             // Count clauses
             var must = _currentConfig.Must?.Count ?? 0;
             var should = _currentConfig.Should?.Count ?? 0;
             var mustNot = _currentConfig.MustNot?.Count ?? 0;
-            
+
             return (true, $"Loaded config with {must} must, {should} should, {mustNot} mustNot clauses");
+        }
+        catch (System.Text.Json.JsonException jsonEx)
+        {
+            // More specific JSON parsing errors
+            var lineInfo = jsonEx.LineNumber.HasValue ? $" (Line {jsonEx.LineNumber})" : "";
+            return (false, $"JSON parsing error{lineInfo}: {jsonEx.Message}");
         }
         catch (Exception ex)
         {
+            // Check for common issues
+            if (ex.Message.Contains("not supported") || ex.Message.Contains("invalid"))
+            {
+                return (false, $"Invalid config format: {ex.Message}");
+            }
             return (false, $"Error loading config: {ex.Message}");
         }
     }
@@ -81,7 +92,7 @@ public class MotelySearchService : IDisposable
     {
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"StartSearchAsync called on thread: {Thread.CurrentThread.ManagedThreadId}");
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Criteria: Threads={criteria.ThreadCount}, MinScore={criteria.MinScore}");
-        
+
         if (_isRunning || string.IsNullOrEmpty(criteria.ConfigPath))
             return;
 
@@ -95,32 +106,30 @@ public class MotelySearchService : IDisposable
             // Start a new search in DuckDB
             var deck = criteria.Deck ?? "Red Deck";
             var stake = criteria.Stake ?? "White Stake";
-            var maxAnte = _currentConfig?.MaxSearchAnte ?? 39;
             var configHash = ComputeConfigHash(_currentConfig);
-            
+
             _currentSearchId = await _historyService.StartNewSearchAsync(
-                criteria.ConfigPath, 
-                criteria.ThreadCount, 
-                criteria.MinScore, 
+                criteria.ConfigPath,
+                criteria.ThreadCount,
+                criteria.MinScore,
                 criteria.BatchSize,
                 deck,
                 stake,
-                maxAnte,
                 configHash
             );
-            
+
             // Save filter configuration
             if (_currentConfig != null)
             {
                 await _historyService.SaveFilterItemsAsync(_currentSearchId, _currentConfig);
             }
-            
+
             // Start result capture service
             _resultCapture = new MotelyResultCapture(_historyService);
-            _resultCapture.ResultCaptured += (result) => 
+            _resultCapture.ResultCaptured += (result) =>
             {
                 Results.Add(result);
-                
+
                 // Report new result through progress
                 progress?.Report(new Oracle.Models.SearchProgress
                 {
@@ -129,7 +138,7 @@ public class MotelySearchService : IDisposable
                     Message = $"Found seed: {result.Seed} (Score: {result.Score})"
                 });
             };
-            
+
             await _resultCapture.StartCaptureAsync(_currentSearchId);
             // Load config if needed
             if (_currentConfig == null)
@@ -184,7 +193,7 @@ public class MotelySearchService : IDisposable
         finally
         {
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "StartSearchAsync finally block - cleaning up");
-            
+
             // Stop result capture
             if (_resultCapture != null)
             {
@@ -192,7 +201,7 @@ public class MotelySearchService : IDisposable
                 _resultCapture.Dispose();
                 _resultCapture = null;
             }
-            
+
             // Complete the search in DuckDB
             if (_currentSearchId > 0)
             {
@@ -200,7 +209,7 @@ public class MotelySearchService : IDisposable
                 var wasCancelled = _cancellationTokenSource?.IsCancellationRequested ?? false;
                 await _historyService.CompleteSearchAsync(_currentSearchId, 0, duration, wasCancelled);
             }
-            
+
             _isRunning = false;
             // Don't dispose/null _currentSearch here - we might need it in the catch block
         }
@@ -209,16 +218,16 @@ public class MotelySearchService : IDisposable
     private async Task RunSearch(Oracle.Models.SearchCriteria criteria, IProgress<Oracle.Models.SearchProgress>? progress, CancellationToken cancellationToken)
     {
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"RunSearch started on thread: {Thread.CurrentThread.ManagedThreadId}");
-        
+
         try
         {
             // Reset cancellation flag
             OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
-            
+
             // Create filter descriptor
             var filterDesc = new OuijaJsonFilterDesc(_currentConfig!);
             filterDesc.Cutoff = criteria.MinScore;
-            
+
             // Log the configuration details
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"=== SEARCH CONFIGURATION ===");
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Min Score: {criteria.MinScore}");
@@ -227,7 +236,7 @@ public class MotelySearchService : IDisposable
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Must: {_currentConfig?.Must?.Count ?? 0}");
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Should: {_currentConfig?.Should?.Count ?? 0}");
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"MustNot: {_currentConfig?.MustNot?.Count ?? 0}");
-            
+
             if (_currentConfig?.Must != null)
             {
                 foreach (var must in _currentConfig.Must)
@@ -235,7 +244,7 @@ public class MotelySearchService : IDisposable
                     Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, SearchAntes=[{string.Join(",", must.SearchAntes)}]");
                 }
             }
-            
+
             if (_currentConfig?.Should != null)
             {
                 foreach (var should in _currentConfig.Should)
@@ -243,7 +252,7 @@ public class MotelySearchService : IDisposable
                     Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, SearchAntes=[{string.Join(",", should.SearchAntes)}]");
                 }
             }
-            
+
             if (_currentConfig?.MustNot != null)
             {
                 foreach (var mustNot in _currentConfig.MustNot)
@@ -261,10 +270,10 @@ public class MotelySearchService : IDisposable
                 .WithSequentialSearch();
 
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}");
-            
+
             // Start the search
             _currentSearch = searchSettings.Start();
-            
+
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Search started with batch size {batchSize}");
 
             var startTime = DateTime.UtcNow;
@@ -280,16 +289,16 @@ public class MotelySearchService : IDisposable
                     Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Breaking out of search loop - cancellation requested");
                     break;
                 }
-                    
+
                 // Get current batch count (this is what's available on the interface)
                 var currentBatchCount = _currentSearch.CompletedBatchCount;
-                
+
                 // Estimate seeds searched - batchSize determines seeds per batch
                 // Balatro uses 35 characters (no 0): 123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
                 // With batchSize=4, each batch has 35^4 = 1,500,625 seeds
                 long seedsPerBatch = (long)Math.Pow(35, batchSize); // 35 characters, batchSize positions
                 long currentSeeds = (long)currentBatchCount * seedsPerBatch;
-                
+
                 var elapsed = DateTime.UtcNow - startTime;
                 var seedsPerSecond = elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
 
@@ -302,7 +311,7 @@ public class MotelySearchService : IDisposable
                 {
                     lastCompletedCount = currentBatchCount;
                     Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Progress: Batch {currentBatchCount}, ~{currentSeeds:N0} seeds, {Results.Count} results found");
-                    
+
                     progress?.Report(new Oracle.Models.SearchProgress
                     {
                         SeedsSearched = currentSeeds,
@@ -318,7 +327,7 @@ public class MotelySearchService : IDisposable
                 {
                     Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Loop {loopCount}: Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}");
                 }
-                
+
                 // Use shorter delay and catch cancellation
                 try
                 {
@@ -332,28 +341,28 @@ public class MotelySearchService : IDisposable
             }
 
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Search loop ended. Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}");
-            
+
             // Give capture service a moment to catch any final results
             if (_resultCapture != null && !cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(100, CancellationToken.None);
             }
-            
+
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Final result count: {Results.Count}");
 
             // Report completion
             var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0;
             long finalSeeds = (long)finalBatchCount * (long)Math.Pow(35, batchSize);
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Final stats: CompletedBatchCount={finalBatchCount}, EstimatedSeeds={finalSeeds}");
-            
+
             // Search completion is now handled in the finally block of StartSearchAsync
-            
+
             // Only report completion/cancellation if we haven't been force-stopped
             if (_isRunning || !OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
             {
                 progress?.Report(new Oracle.Models.SearchProgress
                 {
-                    Message = cancellationToken.IsCancellationRequested || !_isRunning ? "Search cancelled" : 
+                    Message = cancellationToken.IsCancellationRequested || !_isRunning ? "Search cancelled" :
                         $"Search complete. Found {Results.Count} seeds",
                     IsComplete = true,
                     SeedsSearched = finalSeeds,
@@ -366,7 +375,7 @@ public class MotelySearchService : IDisposable
         {
             Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"RunSearch exception: {ex.GetType().Name}: {ex.Message}");
             Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Stack trace: {ex.StackTrace}");
-            
+
             progress?.Report(new Oracle.Models.SearchProgress
             {
                 Message = $"Search error: {ex.Message}",
@@ -382,11 +391,11 @@ public class MotelySearchService : IDisposable
     public void StopSearch()
     {
         Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "StopSearch called - FORCE STOPPING NOW");
-        
+
         // IMMEDIATELY set all stop flags
         _isRunning = false;
         OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
-        
+
         // Cancel the token source FIRST to interrupt the RunSearch loop
         try
         {
@@ -394,24 +403,25 @@ public class MotelySearchService : IDisposable
             Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Cancellation token cancelled");
         }
         catch { }
-        
+
         // Force stop the search engine - Pause first, then Dispose
         try
         {
             if (_currentSearch != null)
             {
                 Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Current search status: {_currentSearch.Status}");
-                
+
                 // Only pause if it's running
                 if (_currentSearch.Status == MotelySearchStatus.Running)
                 {
                     _currentSearch.Pause();
                     Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search paused");
                 }
-                
+
                 // Dispose in a separate task with timeout to avoid blocking
-                var disposeTask = Task.Run(() => {
-                    try 
+                var disposeTask = Task.Run(() =>
+                {
+                    try
                     {
                         _currentSearch.Dispose();
                     }
@@ -420,13 +430,13 @@ public class MotelySearchService : IDisposable
                         Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Error disposing search: {ex.Message}");
                     }
                 });
-                
+
                 // Wait max 1 second for disposal
                 if (!disposeTask.Wait(1000))
                 {
                     Oracle.Helpers.DebugLogger.LogError("MotelySearchService", "Search disposal timed out");
                 }
-                
+
                 _currentSearch = null;
             }
         }
@@ -434,7 +444,7 @@ public class MotelySearchService : IDisposable
         {
             Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Error stopping search: {ex.Message}");
         }
-        
+
         // Clear the results queue completely
         if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue != null)
         {
@@ -448,14 +458,14 @@ public class MotelySearchService : IDisposable
                 Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Drained {drainedCount} results from queue");
             }
         }
-        
+
         Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search STOPPED");
     }
 
     private string BuildDetailsString(Motely.Filters.OuijaResult result, Motely.Filters.OuijaConfig config)
     {
         var details = new List<string>();
-        
+
         // Add should scores if available
         if (result.ScoreWants != null && config.Should != null)
         {
@@ -470,26 +480,26 @@ public class MotelySearchService : IDisposable
                 }
             }
         }
-        
+
         // Add negative joker info if present
         if (result.NaturalNegativeJokers > 0)
             details.Add($"Natural Negatives: {result.NaturalNegativeJokers}");
         if (result.DesiredNegativeJokers > 0)
             details.Add($"Desired Negatives: {result.DesiredNegativeJokers}");
-            
+
         return details.Count > 0 ? string.Join(", ", details) : "No details";
     }
-    
+
     /// <summary>
     /// Dispose and cleanup resources
     /// </summary>
     public void Dispose()
     {
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", "Disposing MotelySearchService - stopping any running searches");
-        
+
         // Force stop any running search
         _isRunning = false;
-        
+
         try
         {
             // Cancel the token source first
@@ -503,7 +513,7 @@ public class MotelySearchService : IDisposable
         {
             Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Error during cancellation: {ex.Message}");
         }
-        
+
         // Dispose the Motely search with timeout
         if (_currentSearch != null)
         {
@@ -519,7 +529,7 @@ public class MotelySearchService : IDisposable
                     Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Error disposing search: {ex.Message}");
                 }
             });
-            
+
             // Wait max 3 seconds for disposal
             if (!disposeTask.Wait(3000))
             {
@@ -530,7 +540,7 @@ public class MotelySearchService : IDisposable
                 Oracle.Helpers.DebugLogger.Log("MotelySearchService", "Motely search disposed successfully");
             }
         }
-        
+
         try
         {
             // Dispose the cancellation token source
@@ -540,23 +550,23 @@ public class MotelySearchService : IDisposable
         {
             Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Error disposing cancellation token: {ex.Message}");
         }
-        
+
         _cancellationTokenSource = null;
         _currentSearch = null;
-        
+
         // Dispose result capture
         _resultCapture?.Dispose();
         _resultCapture = null;
-        
+
         // Dispose the history service to close the DuckDB connection
         if (_historyService is IDisposable disposable)
         {
             disposable.Dispose();
         }
-        
+
         Oracle.Helpers.DebugLogger.Log("MotelySearchService", "MotelySearchService disposed");
     }
-    
+
     /// <summary>
     /// Compute a hash of the config for deduplication
     /// </summary>
@@ -564,14 +574,14 @@ public class MotelySearchService : IDisposable
     {
         if (config == null)
             return "";
-            
+
         // Serialize config to JSON for consistent hashing
-        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions 
-        { 
+        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions
+        {
             WriteIndented = false,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
-        
+
         using var sha256 = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(json);
         var hash = sha256.ComputeHash(bytes);

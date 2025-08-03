@@ -24,69 +24,69 @@ namespace Oracle.Components
         private Border _legendaryBackground;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
-        
+
         public static readonly StyledProperty<string> ItemNameProperty =
             AvaloniaProperty.Register<ResponsiveCard, string>(nameof(ItemName), "");
-        
+
         public static readonly StyledProperty<string> CategoryProperty =
             AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Category), "");
-        
+
         public static readonly StyledProperty<IImage?> ImageSourceProperty =
             AvaloniaProperty.Register<ResponsiveCard, IImage?>(nameof(ImageSource));
-        
+
         public static readonly StyledProperty<bool> IsSelectedNeedProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedNeed));
-        
+
         public static readonly StyledProperty<bool> IsSelectedWantProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedWant));
-        
+
         public static readonly StyledProperty<string> EditionProperty =
             AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Edition), "none");
-        
+
         public string ItemName
         {
             get => GetValue(ItemNameProperty);
             set => SetValue(ItemNameProperty, value);
         }
-        
+
         public string Category
         {
             get => GetValue(CategoryProperty);
             set => SetValue(CategoryProperty, value);
         }
-        
+
         public IImage? ImageSource
         {
             get => GetValue(ImageSourceProperty);
             set => SetValue(ImageSourceProperty, value);
         }
-        
+
         public bool IsSelectedNeed
         {
             get => GetValue(IsSelectedNeedProperty);
             set => SetValue(IsSelectedNeedProperty, value);
         }
-        
+
         public bool IsSelectedWant
         {
             get => GetValue(IsSelectedWantProperty);
             set => SetValue(IsSelectedWantProperty, value);
         }
-        
+
         public string Edition
         {
             get => GetValue(EditionProperty);
             set => SetValue(EditionProperty, value);
         }
-        
+
         // Events
         public event EventHandler<CardClickEventArgs>? CardClicked;
         public event EventHandler<CardDragEventArgs>? CardDragStarted;
-        
+
         public ResponsiveCard()
         {
             InitializeComponent();
-            
+
             _cardBorder = this.FindControl<Border>("CardBorder")!;
             _cardImage = this.FindControl<Image>("CardImage")!;
             _soulImage = this.FindControl<Image>("SoulImage")!;
@@ -94,29 +94,29 @@ namespace Oracle.Components
             _cardName = this.FindControl<TextBlock>("CardName")!;
             _imageContainer = this.FindControl<Grid>("ImageContainer")!;
             _legendaryBackground = this.FindControl<Border>("LegendaryBackground")!;
-            
+
             // Property change handlers
             this.PropertyChanged += OnPropertyChanged;
-            
+
             // Event handlers
             _cardBorder.PointerPressed += OnPointerPressed;
             _cardBorder.PointerMoved += OnPointerMoved;
-            
+
             // Listen for parent size changes to update breakpoint
             this.AttachedToVisualTree += OnAttachedToVisualTree;
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
-        
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             StopSoulAnimation();
         }
-        
+
         private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (this.Parent is Control parent)
@@ -125,12 +125,12 @@ namespace Oracle.Components
                 UpdateBreakpoint(parent.Bounds.Width);
             }
         }
-        
+
         private void OnParentSizeChanged(object? sender, SizeChangedEventArgs e)
         {
             UpdateBreakpoint(e.NewSize.Width);
         }
-        
+
         private void UpdateBreakpoint(double parentWidth)
         {
             string newBreakpoint = parentWidth switch
@@ -140,14 +140,14 @@ namespace Oracle.Components
                 < 1440 => "desktop",
                 _ => "large-desktop"
             };
-            
+
             if (newBreakpoint != _currentBreakpoint)
             {
                 // Remove old breakpoint classes
                 _cardBorder.Classes.Remove(_currentBreakpoint);
                 _cardImage.Classes.Remove(_currentBreakpoint);
                 _cardName.Classes.Remove(_currentBreakpoint);
-                
+
                 // Add new breakpoint classes
                 _currentBreakpoint = newBreakpoint;
                 _cardBorder.Classes.Add(_currentBreakpoint);
@@ -155,7 +155,7 @@ namespace Oracle.Components
                 _cardName.Classes.Add(_currentBreakpoint);
             }
         }
-        
+
         private void UpdateImageSize()
         {
             // Adjust image container size based on category
@@ -178,7 +178,7 @@ namespace Oracle.Components
                     break;
             }
         }
-        
+
         private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ItemNameProperty)
@@ -226,7 +226,7 @@ namespace Oracle.Components
                 UpdateEditionOverlay();
             }
         }
-        
+
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(this);
@@ -236,40 +236,40 @@ namespace Oracle.Components
                 PointerUpdateKind.RightButtonPressed => CardClickType.RightClick,
                 _ => CardClickType.LeftClick // Default to left click
             };
-            
+
             CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, clickType));
         }
-        
+
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
         {
             if (e.GetCurrentPoint(_cardBorder).Properties.IsLeftButtonPressed)
             {
                 var dragData = new DataObject();
                 dragData.Set("card-data", $"{Category}:{ItemName}");
-                
+
                 CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
                 DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
                 await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
             }
         }
-        
+
         private void CheckAndLoadLegendarySoul()
         {
             Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')");
-            
+
             // Check if this is a legendary joker
             if (Category == "Jokers")
             {
                 Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}");
                 Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 ItemName.ToLower(): '{ItemName.ToLower()}'");
-                
+
                 if (BalatroData.LegendaryJokers.Contains(ItemName.ToLower()))
                 {
                     Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' IS a legendary joker!");
-                    
+
                     // Don't show gold background in item palette - it looks weird
                     _legendaryBackground.IsVisible = false;
-                    
+
                     // Check if this is one of the 5 with animated faces
                     var animatedLegendaryJokers = new[] { "canio", "triboulet", "yorick", "chicot", "perkeo" };
                     if (animatedLegendaryJokers.Contains(ItemName.ToLower()))
@@ -304,11 +304,11 @@ namespace Oracle.Components
                 StopSoulAnimation();
             }
         }
-        
+
         private void StartSoulAnimation()
         {
             StopSoulAnimation();
-            
+
             var startTime = DateTime.Now;
             _soulAnimationTimer = new System.Threading.Timer(_ =>
             {
@@ -317,13 +317,13 @@ namespace Oracle.Components
                     if (_soulImage.IsVisible)
                     {
                         var elapsed = (DateTime.Now - startTime).TotalSeconds;
-                        
+
                         // Floating scale animation
                         var scale = 1.0 + 0.07 + 0.02 * Math.Sin(1.8 * elapsed);
-                        
+
                         // Floating rotation animation
                         var rotation = 5 * Math.Sin(1.219 * elapsed);
-                        
+
                         if (_soulImage.RenderTransform is TransformGroup group)
                         {
                             if (group.Children[0] is ScaleTransform scaleTransform)
@@ -340,7 +340,7 @@ namespace Oracle.Components
                 });
             }, null, 0, 33); // ~30 FPS
         }
-        
+
         private void StopSoulAnimation()
         {
             _soulAnimationTimer?.Dispose();
@@ -368,7 +368,7 @@ namespace Oracle.Components
             // Otherwise use the existing formatting
             return System.Text.RegularExpressions.Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " ");
         }
-        
+
         private void UpdateEditionOverlay()
         {
             if (Category != "Jokers" || string.IsNullOrEmpty(Edition) || Edition == "none")
@@ -376,10 +376,10 @@ namespace Oracle.Components
                 _editionOverlay.IsVisible = false;
                 return;
             }
-            
+
             var spriteService = SpriteService.Instance;
             var editionImage = spriteService.GetEditionImage(Edition.ToLower());
-            
+
             if (editionImage != null)
             {
                 _editionOverlay.Source = editionImage;
@@ -391,13 +391,13 @@ namespace Oracle.Components
             }
         }
     }
-    
+
     public class CardClickEventArgs : EventArgs
     {
         public string ItemName { get; }
         public string Category { get; }
         public CardClickType ClickType { get; }
-        
+
         public CardClickEventArgs(string itemName, string category, CardClickType clickType)
         {
             ItemName = itemName;
@@ -405,13 +405,13 @@ namespace Oracle.Components
             ClickType = clickType;
         }
     }
-    
+
     public class CardDragEventArgs : EventArgs
     {
         public string ItemName { get; }
         public string Category { get; }
         public DataObject DragData { get; }
-        
+
         public CardDragEventArgs(string itemName, string category, DataObject dragData)
         {
             ItemName = itemName;
@@ -419,7 +419,7 @@ namespace Oracle.Components
             DragData = dragData;
         }
     }
-    
+
     public enum CardClickType
     {
         LeftClick,

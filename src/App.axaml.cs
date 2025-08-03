@@ -22,7 +22,7 @@ public partial class App : Application
         try
         {
             DebugLogger.Log("Initializing services...");
-            
+
             // Set up services
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -35,10 +35,10 @@ public partial class App : Application
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new Views.MainWindow();
-                
+
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
-                
+
                 DebugLogger.Log("MainWindow created successfully");
             }
 
@@ -57,7 +57,7 @@ public partial class App : Application
     {
         _serviceProvider?.Dispose();
     }
-    
+
     private void ConfigureServices(IServiceCollection services)
     {
         // Register services

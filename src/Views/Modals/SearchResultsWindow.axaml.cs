@@ -9,7 +9,7 @@ namespace Oracle.Views.Modals
         {
             InitializeComponent();
         }
-        
+
         public void LoadResults(List<SearchResult> results, string filterName, System.TimeSpan? searchDuration = null)
         {
             var modal = this.FindControl<SearchResultsModal>("ResultsModal");

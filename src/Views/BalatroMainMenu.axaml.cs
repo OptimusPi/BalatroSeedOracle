@@ -37,7 +37,7 @@ namespace Oracle.Views
         public BalatroMainMenu()
         {
             InitializeComponent();
-            
+
             // Defer service initialization to OnLoaded to ensure services are ready
             this.Loaded += OnLoaded;
         }
@@ -45,20 +45,20 @@ namespace Oracle.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             _modalContainer = this.FindControl<Grid>("ModalContainer");
             _background = this.FindControl<BalatroStyleBackground>("BackgroundControl");
             _animationToggleButton = this.FindControl<Button>("AnimationToggleButton");
-            
+
             if (_animationToggleButton != null)
             {
                 // Find the TextBlock inside the button using logical tree traversal
                 _animationButtonText = LogicalExtensions.GetLogicalChildren(_animationToggleButton).OfType<TextBlock>().FirstOrDefault();
             }
-            
+
             // Don't initialize service here - wait for OnLoaded
         }
-        
+
         private UserControl? _activeModalContent;
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Oracle.Views
             // Open filters modal with blank/new filter
             this.ShowFiltersModal();
         }
-        
+
         private void OnLoadClick(object? sender, RoutedEventArgs e)
         {
             // Show the browse filters modal
@@ -112,7 +112,7 @@ namespace Oracle.Views
             modal.BackClicked += (s, ev) => HideModalContent();
             ShowModalContent(modal);
         }
-        
+
 
         private void OnFunRunClick(object? sender, RoutedEventArgs e)
         {
@@ -148,7 +148,7 @@ namespace Oracle.Views
                 Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", $"⚠️  Error during disposal: {ex.Message}");
             }
         }
-        
+
         private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
         {
             try
@@ -173,36 +173,36 @@ namespace Oracle.Views
         private void OnThemeCycleClick(object? sender, RoutedEventArgs e)
         {
             if (_background == null) return;
-            
+
             // Get the current theme and cycle to the next one
             var currentTheme = _background.Theme;
             var themes = Enum.GetValues<BalatroStyleBackground.BackgroundTheme>();
             var nextThemeIndex = ((int)currentTheme + 1) % themes.Length;
             var nextTheme = themes[nextThemeIndex];
-            
+
             // Set the new theme
             _background.Theme = nextTheme;
         }
-        
+
         /// <summary>
         /// Toggles the background animation on/off when the animation button is clicked
         /// </summary>
         private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
         {
             if (_background == null) return;
-            
+
             // Toggle animation state
             _isAnimating = !_isAnimating;
             _background.IsAnimating = _isAnimating;
-            
+
             // Update button icon based on animation state
             if (_animationButtonText != null)
             {
                 _animationButtonText.Text = _isAnimating ? "⏸" : "▶";
             }
         }
-        
-        
+
+
         /// <summary>
         /// Switches to edit mode for author name
         /// </summary>
@@ -210,21 +210,21 @@ namespace Oracle.Views
         {
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-            
+
             if (authorDisplay != null && authorEdit != null)
             {
                 // Switch to edit mode
                 authorDisplay.IsVisible = false;
                 authorEdit.IsVisible = true;
-                
+
                 // Focus and select all text
                 authorEdit.Focus();
                 authorEdit.SelectAll();
             }
-            
+
             e.Handled = true;
         }
-        
+
         /// <summary>
         /// Save author name when edit loses focus
         /// </summary>
@@ -232,7 +232,7 @@ namespace Oracle.Views
         {
             SaveAuthorName();
         }
-        
+
         /// <summary>
         /// Handle Enter/Tab keys in author edit
         /// </summary>
@@ -248,7 +248,7 @@ namespace Oracle.Views
                 // Cancel edit
                 var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
                 var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-                
+
                 if (authorDisplay != null && authorEdit != null && _userProfileService != null)
                 {
                     // Restore original value
@@ -259,7 +259,7 @@ namespace Oracle.Views
                 e.Handled = true;
             }
         }
-        
+
         /// <summary>
         /// Save the author name and switch back to display mode
         /// </summary>
@@ -267,7 +267,7 @@ namespace Oracle.Views
         {
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-            
+
             if (authorDisplay != null && authorEdit != null && _userProfileService != null)
             {
                 var newName = authorEdit.Text?.Trim();
@@ -277,16 +277,16 @@ namespace Oracle.Views
                     authorDisplay.Text = newName;
                     Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Author name updated to: {newName}");
                 }
-                
+
                 // Switch back to display mode
                 authorDisplay.IsVisible = true;
                 authorEdit.IsVisible = false;
             }
         }
-        
-        
-        
-        
+
+
+
+
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
             // Initialize user profile service when control is loaded
@@ -299,7 +299,7 @@ namespace Oracle.Views
                     return;
                 }
             }
-            
+
             // Load and display current author name
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");
@@ -315,14 +315,14 @@ namespace Oracle.Views
                 Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "Could not find AuthorDisplay or AuthorEdit controls");
             }
         }
-        
+
         /// <summary>
         /// Shows the search widget on the desktop
         /// </summary>
         public async void ShowSearchWidget(string? configPath = null)
         {
             Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchWidget called with config: {configPath}");
-            
+
             // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
@@ -330,26 +330,26 @@ namespace Oracle.Views
                 Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
-            
+
             // Create a new SearchWidget instance
             var searchWidget = new Components.SearchWidget();
-            
+
             // Calculate position based on existing widgets
             var leftMargin = 20 + (_widgetCounter % 3) * 400; // 3 widgets per row
             var topMargin = 80 + (_widgetCounter / 3) * 300; // Stack rows
-            
+
             searchWidget.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
             searchWidget.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
             searchWidget.Margin = new Thickness(leftMargin, topMargin, 0, 0);
             searchWidget.IsVisible = true;
-            
+
             // Add to the desktop canvas
             desktopCanvas.Children.Add(searchWidget);
             _searchWidgets.Add(searchWidget);
             _widgetCounter++;
-            
+
             Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Created SearchWidget #{_widgetCounter} at position ({leftMargin}, {topMargin})");
-            
+
             // If config path provided, load it
             if (!string.IsNullOrEmpty(configPath))
             {
@@ -357,14 +357,14 @@ namespace Oracle.Views
                 await searchWidget.LoadConfig(configPath);
             }
         }
-        
+
         /// <summary>
         /// Stops all running searches - called during application shutdown
         /// </summary>
         public async Task StopAllSearchesAsync()
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
-            
+
             // Stop all search widgets
             foreach (var searchWidget in _searchWidgets)
             {
@@ -374,13 +374,13 @@ namespace Oracle.Views
                     searchWidget.StopSearch();
                 }
             }
-            
+
             // Wait a bit for the searches to stop
             if (_searchWidgets.Any(w => w.IsRunning))
             {
                 await Task.Delay(500);
             }
-            
+
             // Check if there's a filters modal open with a search running
             if (_modalContainer != null && _modalContainer.Children.Count > 0)
             {
@@ -399,7 +399,7 @@ namespace Oracle.Views
                     }
                 }
             }
-            
+
             DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
         }
     }

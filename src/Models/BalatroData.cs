@@ -25,7 +25,7 @@ public static class BalatroData
         InitializeBoosterPacks();
         InitializeDecks();
         InitializeStakes();
-        
+
         // Initialize compatibility collections
         InitializeCompatibilityCollections();
     }
@@ -50,15 +50,6 @@ public static class BalatroData
         { "Negative", "Negative" }
     };
 
-    // Legacy mappings for items with inconsistent names in example.ouija.json
-    public static readonly Dictionary<string, string> LegacyNameMappings = new()
-    {
-        // Joker ID fixes
-        { "OopsAll6s", "OopsAll6s" },
-        
-        // Voucher ID fixes
-        { "BlankVoucher", "Blank" }
-    };
 
     private static void InitializeJokers()
     {
@@ -68,7 +59,7 @@ public static class BalatroData
         Jokers["anyuncommon"] = "Any Uncommon";
         Jokers["anycommon"] = "Any Common";
         Jokers["anyjoker"] = "Any Joker";
-        
+
         // Common Jokers
         foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
         {
@@ -106,7 +97,7 @@ public static class BalatroData
     {
         // Add wildcard entry first
         TarotCards["anytarot"] = "Any Tarot";
-        
+
         foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
         {
             var name = tarot.ToString();
@@ -119,7 +110,7 @@ public static class BalatroData
     {
         // Add wildcard entry first
         SpectralCards["anyspectral"] = "Any Spectral";
-        
+
         foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
         {
             var name = spectral.ToString();
@@ -144,7 +135,7 @@ public static class BalatroData
         Tags["anytag"] = "Any Tag";
         Tags["anysmall"] = "Any Small";
         Tags["anybig"] = "Any Big";
-        
+
         foreach (var tag in Enum.GetValues<MotelyTag>())
         {
             var name = tag.ToString();
@@ -373,16 +364,16 @@ public static class BalatroData
             { "chicot", "Chicot" },
             { "perkeo", "Perkeo" }
         };
-        
+
         if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))
         {
             return displayName;
         }
-        
+
         // Fallback: try to format the sprite name
         return FormatDisplayName(spriteName);
     }
-    
+
     private static string FormatDisplayName(string enumName)
     {
         // Special cases that need custom formatting
@@ -477,12 +468,10 @@ public static class BalatroData
     }
 
     /// <summary>
-    /// Gets the correct item ID, handling legacy mappings
+    /// Gets the correct item ID
     /// </summary>
     public static string GetCorrectItemId(string itemId)
     {
-        if (LegacyNameMappings.TryGetValue(itemId, out var correctId))
-            return correctId;
         return itemId;
     }
 
@@ -492,7 +481,7 @@ public static class BalatroData
     public static bool ItemExists(string type, string itemId)
     {
         itemId = GetCorrectItemId(itemId);
-        
+
         return type switch
         {
             "Joker" => Jokers.ContainsKey(itemId),
@@ -506,21 +495,16 @@ public static class BalatroData
         };
     }
 
-    // Additional properties for backwards compatibility
     public static readonly List<string> LegendaryJokers = new List<string>();
-    public static readonly List<string> SoulJokers = new List<string>(); // Alias for LegendaryJokers
     public static readonly Dictionary<string, List<string>> JokersByRarity = new Dictionary<string, List<string>>();
-
-    // Initialize these in the static constructor
     static void InitializeCompatibilityCollections()
     {
         Oracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
-        // Initialize LegendaryJokers and SoulJokers (they're the same)
+        // Initialize LegendaryJokers
         foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
         {
             var jokerName = joker.ToString();
             LegendaryJokers.Add(jokerName.ToLower());
-            SoulJokers.Add(jokerName); // Keep original casing for SoulJokers
         }
 
         // Initialize JokersByRarity

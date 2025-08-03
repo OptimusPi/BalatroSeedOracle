@@ -31,7 +31,7 @@ namespace Oracle.Views.Modals
         private TextBlock? _averageScoreText;
         private TextBlock? _searchTimeText;
         private StackPanel? _searchTimePanel;
-        
+
         private ObservableCollection<ResultRowViewModel> _results;
         private string _filterName = "Unknown Filter";
         private SearchHistoryService? _searchHistoryService;
@@ -46,7 +46,7 @@ namespace Oracle.Views.Modals
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
-            
+
             // Get control references
             _resultsGrid = this.FindControl<DataGrid>("ResultsGrid");
             _filterNameText = this.FindControl<TextBlock>("FilterNameText");
@@ -55,11 +55,11 @@ namespace Oracle.Views.Modals
             _averageScoreText = this.FindControl<TextBlock>("AverageScoreText");
             _searchTimeText = this.FindControl<TextBlock>("SearchTimeText");
             _searchTimePanel = this.FindControl<StackPanel>("SearchTimePanel");
-            
+
             // Get services
             _searchHistoryService = ServiceHelper.GetService<SearchHistoryService>();
             _spriteService = ServiceHelper.GetService<SpriteService>();
-            
+
             // Setup DataGrid
             if (_resultsGrid != null)
             {
@@ -67,20 +67,20 @@ namespace Oracle.Views.Modals
                 _resultsGrid.DoubleTapped += OnRowDoubleTapped;
                 _resultsGrid.KeyDown += OnGridKeyDown;
             }
-            
+
             // Wire up buttons
             var exportButton = this.FindControl<Button>("ExportCsvButton");
             if (exportButton != null)
                 exportButton.Click += OnExportCsvClick;
-                
+
             var copyAllButton = this.FindControl<Button>("CopyAllButton");
             if (copyAllButton != null)
                 copyAllButton.Click += OnCopyAllSeedsClick;
-                
+
             var loadHistoryButton = this.FindControl<Button>("LoadHistoryButton");
             if (loadHistoryButton != null)
                 loadHistoryButton.Click += OnLoadHistoryClick;
-                
+
             var refreshButton = this.FindControl<Button>("RefreshButton");
             if (refreshButton != null)
                 refreshButton.Click += OnRefreshClick;
@@ -90,12 +90,12 @@ namespace Oracle.Views.Modals
         {
             _filterName = filterName;
             _results.Clear();
-            
+
             foreach (var result in results)
             {
                 _results.Add(new ResultRowViewModel(result, _spriteService));
             }
-            
+
             UpdateStats(searchDuration);
             UpdateUI();
         }
@@ -103,17 +103,17 @@ namespace Oracle.Views.Modals
         public async Task LoadHistoricalResults(int searchId)
         {
             if (_searchHistoryService == null) return;
-            
+
             try
             {
                 // TODO: Get search info from history service
                 // For now, just get the results
-                
+
                 var results = await _searchHistoryService.GetSearchResultsAsync(searchId);
-                
+
                 _filterName = "Historical Search";
                 _results.Clear();
-                
+
                 // Convert Oracle.Models.SearchResult to our local SearchResult format
                 foreach (var result in results)
                 {
@@ -127,10 +127,10 @@ namespace Oracle.Views.Modals
                     };
                     _results.Add(new ResultRowViewModel(modalResult, _spriteService));
                 }
-                
+
                 UpdateStats(null);
                 UpdateUI();
-                
+
                 // Show timestamp column for historical results
                 if (_resultsGrid != null)
                 {
@@ -153,17 +153,17 @@ namespace Oracle.Views.Modals
                 if (_averageScoreText != null) _averageScoreText.Text = "0";
                 return;
             }
-            
+
             var scores = _results.Select(r => r.Score).ToList();
             var highest = scores.Max();
             var average = scores.Average();
-            
+
             if (_highestScoreText != null)
                 _highestScoreText.Text = highest.ToString("N0");
-                
+
             if (_averageScoreText != null)
                 _averageScoreText.Text = average.ToString("N1");
-                
+
             if (searchDuration.HasValue && _searchTimePanel != null && _searchTimeText != null)
             {
                 _searchTimePanel.IsVisible = true;
@@ -175,10 +175,10 @@ namespace Oracle.Views.Modals
         {
             if (_filterNameText != null)
                 _filterNameText.Text = _filterName;
-                
+
             if (_resultCountText != null)
                 _resultCountText.Text = _results.Count.ToString("N0");
-                
+
             // Update the modal title through the base class
             SetTitle($"Search Results - {_filterName} ({_results.Count:N0} results)");
         }
@@ -218,10 +218,10 @@ namespace Oracle.Views.Modals
         private async Task CopySelectedSeeds()
         {
             if (_resultsGrid == null) return;
-            
+
             var selectedItems = _resultsGrid.SelectedItems.Cast<ResultRowViewModel>().ToList();
             if (selectedItems.Count == 0) return;
-            
+
             var seeds = string.Join(Environment.NewLine, selectedItems.Select(r => r.Seed));
             await CopyToClipboard(seeds);
         }
@@ -271,7 +271,7 @@ namespace Oracle.Views.Modals
                 if (string.IsNullOrEmpty(result)) return;
 
                 await ExportToCsv(result);
-                
+
                 // Show success notification
                 DebugLogger.Log("SearchResultsModal", $"Exported {_results.Count} results to {result}");
             }
@@ -285,13 +285,13 @@ namespace Oracle.Views.Modals
         {
             var csv = new StringBuilder();
             csv.AppendLine("Seed,Score,Antes,Items Found,Timestamp");
-            
+
             foreach (var result in _results)
             {
                 var items = string.Join("; ", result.FoundItems.Select(i => i.Tooltip));
                 csv.AppendLine($"{result.Seed},{result.Score},{result.Antes},\"{items}\",{result.Timestamp:yyyy-MM-dd HH:mm:ss}");
             }
-            
+
             await File.WriteAllTextAsync(filePath, csv.ToString());
         }
 
@@ -306,20 +306,20 @@ namespace Oracle.Views.Modals
             try
             {
                 if (_searchHistoryService == null) return;
-                
+
                 // Get recent searches
                 var recentSearches = await _searchHistoryService.GetRecentSearchesAsync(10);
-                
+
                 if (recentSearches.Count == 0)
                 {
                     DebugLogger.Log("SearchResultsModal", "No search history found");
                     return;
                 }
-                
+
                 // For now, just load the most recent search
                 var mostRecent = recentSearches.First();
                 await LoadHistoricalResults((int)mostRecent.SearchId);
-                
+
                 DebugLogger.Log("SearchResultsModal", $"Loaded historical search: {mostRecent.ConfigPath}");
             }
             catch (Exception ex)
@@ -333,7 +333,7 @@ namespace Oracle.Views.Modals
             // Refresh by updating the UI display with current data
             UpdateStats(null);
             UpdateUI();
-            
+
             // Sort results by score descending for better display
             var sortedResults = _results.OrderByDescending(r => r.Score).ToList();
             _results.Clear();
@@ -341,8 +341,28 @@ namespace Oracle.Views.Modals
             {
                 _results.Add(result);
             }
-            
+
             DebugLogger.Log("SearchResultsModal", $"Refreshed display with {_results.Count} results");
+        }
+
+        private async void OnCopySeedClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string seed)
+            {
+                try
+                {
+                    var topLevel = TopLevel.GetTopLevel(this);
+                    if (topLevel?.Clipboard != null)
+                    {
+                        await topLevel.Clipboard.SetTextAsync(seed);
+                        DebugLogger.Log("SearchResultsModal", $"Copied seed to clipboard: {seed}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SearchResultsModal", $"Failed to copy seed: {ex.Message}");
+                }
+            }
         }
     }
 
@@ -350,14 +370,14 @@ namespace Oracle.Views.Modals
     {
         private SearchResult _result;
         private SpriteService? _spriteService;
-        
+
         public string Seed => _result.Seed;
         public double Score => _result.Score;
         public string FormattedScore => Score.ToString("N0", CultureInfo.InvariantCulture);
         public string Antes => _result.Antes ?? "N/A";
         public DateTime Timestamp => _result.Timestamp;
         public ObservableCollection<FoundItemViewModel> FoundItems { get; }
-        
+
         public string ScoreClass
         {
             get
@@ -373,7 +393,7 @@ namespace Oracle.Views.Modals
             _result = result;
             _spriteService = spriteService;
             FoundItems = new ObservableCollection<FoundItemViewModel>();
-            
+
             // Parse items from JSON if available
             if (!string.IsNullOrEmpty(result.ItemsJson))
             {
@@ -387,7 +407,7 @@ namespace Oracle.Views.Modals
                         {
                             var itemName = property.Name;
                             var itemValue = property.Value;
-                            
+
                             // Try to get the sprite for this item
                             var bitmap = _spriteService?.GetJokerImage(itemName) as Bitmap;
                             if (bitmap == null)
@@ -397,7 +417,7 @@ namespace Oracle.Views.Modals
                                         _spriteService?.GetTarotImage(itemName) as Bitmap ??
                                         _spriteService?.GetTagImage(itemName) as Bitmap;
                             }
-                            
+
                             FoundItems.Add(new FoundItemViewModel
                             {
                                 Icon = bitmap,
@@ -414,7 +434,7 @@ namespace Oracle.Views.Modals
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        
+
         protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

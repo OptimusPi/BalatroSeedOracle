@@ -21,17 +21,17 @@ namespace Oracle.Views.Modals
         private ObservableCollection<FilterItem> _allFilters = new();
         private ObservableCollection<FilterItem> _displayedFilters = new();
         private FilterItem? _selectedFilter;
-        
+
         public event EventHandler<string>? FilterSelected;
         public event EventHandler<string>? EditRequested;
-        
+
         public BrowseFiltersModal()
         {
             InitializeComponent();
             InitializeControls();
             _ = LoadFiltersAsync();
         }
-        
+
         private void InitializeControls()
         {
             var filterList = this.FindControl<ListBox>("FilterList");
@@ -40,17 +40,17 @@ namespace Oracle.Views.Modals
                 filterList.ItemsSource = _displayedFilters;
             }
         }
-        
+
         private async Task LoadFiltersAsync()
         {
             try
             {
                 _allFilters.Clear();
-                
+
                 // Load all filters from various sources
                 await LoadLocalFilters();
                 await LoadOuijaConfigs();
-                
+
                 ApplySearch();
             }
             catch (Exception ex)
@@ -58,14 +58,14 @@ namespace Oracle.Views.Modals
                 DebugLogger.LogError("BrowseFiltersModal", $"Error loading filters: {ex.Message}");
             }
         }
-        
+
         private async Task LoadLocalFilters()
         {
             // Load from current directory
             var currentDir = Directory.GetCurrentDirectory();
             await LoadFiltersFromDirectory(currentDir, "*.ouija.json", maxDepth: 1);
         }
-        
+
         private async Task LoadOuijaConfigs()
         {
             // Load from ouija_configs directory
@@ -75,7 +75,7 @@ namespace Oracle.Views.Modals
                 await LoadFiltersFromDirectory(ouijaDir, "*.ouija.json");
             }
         }
-        
+
         private async Task LoadExampleFilters()
         {
             // Load from Motely examples
@@ -85,7 +85,7 @@ namespace Oracle.Views.Modals
                 await LoadFiltersFromDirectory(examplesDir, "*.ouija.json");
             }
         }
-        
+
         private async Task LoadFiltersFromDirectory(string directory, string pattern, int maxDepth = 3)
         {
             await Task.Run(() =>
@@ -93,24 +93,24 @@ namespace Oracle.Views.Modals
                 try
                 {
                     var files = GetFilesRecursive(directory, pattern, maxDepth);
-                    
+
                     foreach (var file in files)
                     {
                         try
                         {
                             var name = Path.GetFileNameWithoutExtension(file);
                             var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), file);
-                            
+
                             // Try to read filter data from file
                             string? description = null;
                             var needs = new List<string>();
                             var wants = new List<string>();
                             var mustNots = new List<string>();
-                            
+
                             try
                             {
                                 var content = File.ReadAllText(file);
-                                
+
                                 // Parse description
                                 if (content.Contains("\"description\""))
                                 {
@@ -121,11 +121,11 @@ namespace Oracle.Views.Modals
                                         description = content.Substring(start, end - start).Trim();
                                     }
                                 }
-                                
+
                                 // Parse filter items - look for needs, wants, must_nots
                                 using var doc = System.Text.Json.JsonDocument.Parse(content);
                                 var root = doc.RootElement;
-                                
+
                                 if (root.TryGetProperty("filters", out var filters))
                                 {
                                     if (filters.TryGetProperty("needs", out var needsArray))
@@ -136,7 +136,7 @@ namespace Oracle.Views.Modals
                                                 needs.Add(item.GetString() ?? "");
                                         }
                                     }
-                                    
+
                                     if (filters.TryGetProperty("wants", out var wantsArray))
                                     {
                                         foreach (var want in wantsArray.EnumerateArray())
@@ -145,7 +145,7 @@ namespace Oracle.Views.Modals
                                                 wants.Add(item.GetString() ?? "");
                                         }
                                     }
-                                    
+
                                     if (filters.TryGetProperty("must_nots", out var mustNotsArray))
                                     {
                                         foreach (var mustNot in mustNotsArray.EnumerateArray())
@@ -157,7 +157,7 @@ namespace Oracle.Views.Modals
                                 }
                             }
                             catch { }
-                            
+
                             _allFilters.Add(new FilterItem
                             {
                                 Name = FormatFilterName(name),
@@ -181,17 +181,17 @@ namespace Oracle.Views.Modals
                 }
             });
         }
-        
+
         private IEnumerable<string> GetFilesRecursive(string directory, string pattern, int maxDepth, int currentDepth = 0)
         {
             if (currentDepth >= maxDepth)
                 yield break;
-                
+
             foreach (var file in Directory.GetFiles(directory, pattern))
             {
                 yield return file;
             }
-            
+
             if (currentDepth < maxDepth - 1)
             {
                 foreach (var subDir in Directory.GetDirectories(directory))
@@ -200,7 +200,7 @@ namespace Oracle.Views.Modals
                     var dirName = Path.GetFileName(subDir);
                     if (dirName.StartsWith(".") || dirName == "node_modules" || dirName == "bin" || dirName == "obj")
                         continue;
-                        
+
                     foreach (var file in GetFilesRecursive(subDir, pattern, maxDepth, currentDepth + 1))
                     {
                         yield return file;
@@ -208,41 +208,41 @@ namespace Oracle.Views.Modals
                 }
             }
         }
-        
+
         private string FormatFilterName(string name)
         {
             // Convert snake_case and kebab-case to Title Case
             name = name.Replace("-", " ").Replace("_", " ");
-            
+
             // Remove common prefixes
             if (name.StartsWith("test ", StringComparison.OrdinalIgnoreCase))
                 name = name.Substring(5);
             if (name.StartsWith("config ", StringComparison.OrdinalIgnoreCase))
                 name = name.Substring(7);
-                
+
             // Title case
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name.ToLower());
         }
-        
+
         private void ApplySearch()
         {
             var searchBox = this.FindControl<TextBox>("SearchBox");
             var searchText = searchBox?.Text?.ToLowerInvariant() ?? "";
-            
+
             _displayedFilters.Clear();
-            
-            var filtered = string.IsNullOrWhiteSpace(searchText) 
-                ? _allFilters 
-                : _allFilters.Where(f => 
+
+            var filtered = string.IsNullOrWhiteSpace(searchText)
+                ? _allFilters
+                : _allFilters.Where(f =>
                     f.Name.ToLowerInvariant().Contains(searchText) ||
                     f.FilePath.ToLowerInvariant().Contains(searchText) ||
                     (f.Description?.ToLowerInvariant().Contains(searchText) ?? false));
-            
+
             foreach (var filter in filtered.OrderBy(f => f.Name))
             {
                 _displayedFilters.Add(filter);
             }
-            
+
             // Show/hide empty message
             var emptyMessage = this.FindControl<TextBlock>("EmptyMessage");
             if (emptyMessage != null)
@@ -250,45 +250,45 @@ namespace Oracle.Views.Modals
                 emptyMessage.IsVisible = _displayedFilters.Count == 0;
             }
         }
-        
+
         private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
         {
             ApplySearch();
         }
-        
+
         private void OnFilterSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             var filterList = sender as ListBox;
             _selectedFilter = filterList?.SelectedItem as FilterItem;
-            
+
             // Update visual selection state
             UpdateCardSelection();
-            
+
             // Enable/disable action buttons
             var launchButton = this.FindControl<Button>("LaunchButton");
             var editButton = this.FindControl<Button>("EditButton");
-            
+
             var hasSelection = _selectedFilter != null;
             if (launchButton != null) launchButton.IsEnabled = hasSelection;
             if (editButton != null) editButton.IsEnabled = hasSelection;
         }
-        
+
         private void UpdateCardSelection()
         {
             var filterList = this.FindControl<ListBox>("FilterList");
             if (filterList == null) return;
-            
+
             // Get all card borders in the list
             var items = filterList.GetVisualDescendants().OfType<Border>()
                 .Where(b => b.Classes.Contains("filter-card"));
-            
+
             foreach (var card in items)
             {
                 var isSelected = card.Tag == _selectedFilter;
                 card.Classes.Set("selected", isSelected);
             }
         }
-        
+
         private void OnLaunchClick(object? sender, RoutedEventArgs e)
         {
             if (_selectedFilter != null)
@@ -296,7 +296,7 @@ namespace Oracle.Views.Modals
                 FilterSelected?.Invoke(this, _selectedFilter.FullPath);
             }
         }
-        
+
         private void OnEditClick(object? sender, RoutedEventArgs e)
         {
             if (_selectedFilter != null)
@@ -304,14 +304,14 @@ namespace Oracle.Views.Modals
                 EditRequested?.Invoke(this, _selectedFilter.FullPath);
             }
         }
-        
+
         private async void OnNativeBrowseClick(object? sender, RoutedEventArgs e)
         {
             try
             {
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel == null) return;
-                
+
                 var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Select Filter File",
@@ -329,7 +329,7 @@ namespace Oracle.Views.Modals
                         }
                     }
                 });
-                
+
                 if (files.Count > 0)
                 {
                     var filePath = files[0].Path.LocalPath;
@@ -342,7 +342,7 @@ namespace Oracle.Views.Modals
             }
         }
     }
-    
+
     public class FilterItem : INotifyPropertyChanged
     {
         private string _name = "";
@@ -352,7 +352,7 @@ namespace Oracle.Views.Modals
         private List<string> _needs = new();
         private List<string> _wants = new();
         private List<string> _mustNots = new();
-        
+
         public string Name
         {
             get => _name;
@@ -362,7 +362,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
             }
         }
-        
+
         public string FilePath
         {
             get => _filePath;
@@ -372,7 +372,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilePath)));
             }
         }
-        
+
         public string FullPath
         {
             get => _fullPath;
@@ -382,7 +382,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullPath)));
             }
         }
-        
+
         public string? Description
         {
             get => _description;
@@ -393,7 +393,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasDescription)));
             }
         }
-        
+
         public List<string> Needs
         {
             get => _needs;
@@ -404,7 +404,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNeeds)));
             }
         }
-        
+
         public List<string> Wants
         {
             get => _wants;
@@ -415,7 +415,7 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasWants)));
             }
         }
-        
+
         public List<string> MustNots
         {
             get => _mustNots;
@@ -426,14 +426,14 @@ namespace Oracle.Views.Modals
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMustNots)));
             }
         }
-        
+
         public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
         public bool HasNeeds => Needs?.Count > 0;
         public bool HasWants => Wants?.Count > 0;
         public bool HasMustNots => MustNots?.Count > 0;
-        
+
         public event PropertyChangedEventHandler? PropertyChanged;
-        
+
         public override string ToString()
         {
             return Name;

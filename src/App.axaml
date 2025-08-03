@@ -89,7 +89,7 @@
         <!-- 🎯 GLOBAL BALATRO STYLES - Applied to ALL controls automatically -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroGlobalStyles.axaml" />
         
-        <!-- Legacy styles for specific overrides -->
+        <!-- Component-specific styles -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroModal.axaml" />
         <StyleInclude Source="avares://Oracle/Styles/ButtonStyles.axaml" />
         <StyleInclude Source="avares://Oracle/Styles/BalatroButtonStyle.axaml" />

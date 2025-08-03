@@ -23,12 +23,12 @@ namespace Oracle.Services
         private static readonly string[] EditionNames = Enum.GetNames(typeof(Motely.MotelyItemEdition));
         private static readonly string[] SuitNames = Enum.GetNames(typeof(Motely.MotelyPlayingCardSuit));
         private static readonly string[] RankNames = Enum.GetNames(typeof(Motely.MotelyPlayingCardRank));
-        
-        private static readonly string[] ValidTypes = new[] { "Joker", "Tarot", "TarotCard", "Planet", "PlanetCard", 
+
+        private static readonly string[] ValidTypes = new[] { "Joker", "Tarot", "TarotCard", "Planet", "PlanetCard",
             "Spectral", "SpectralCard", "Tag", "SmallBlindTag", "BigBlindTag", "Voucher", "PlayingCard" };
-        
+
         private static readonly string[] ValidSources = new[] { "shop", "packs", "tags" };
-        
+
         /// <summary>
         /// Get all valid values for a given field in a specific context
         /// </summary>
@@ -38,69 +38,69 @@ namespace Oracle.Services
             {
                 case "type":
                     return ValidTypes;
-                    
+
                 case "value":
                     return GetValidValuesForType(itemType);
-                    
+
                 case "edition":
                     return EditionNames;
-                    
+
                 case "deck":
                     return DeckNames;
-                    
+
                 case "stake":
                     return StakeNames;
-                    
+
                 case "sources":
                     return ValidSources;
-                    
+
                 case "suit":
                     return SuitNames;
-                    
+
                 case "rank":
                     return RankNames;
-                    
+
                 default:
                     return Enumerable.Empty<string>();
             }
         }
-        
+
         private static IEnumerable<string> GetValidValuesForType(string? type)
         {
             if (string.IsNullOrEmpty(type))
                 return Enumerable.Empty<string>();
-                
+
             switch (type.ToLower())
             {
                 case "joker":
                 case "souljoker":
                     return JokerNames;
-                    
+
                 case "tarot":
                 case "tarotcard":
                     return TarotNames;
-                    
+
                 case "planet":
                 case "planetcard":
                     return PlanetNames;
-                    
+
                 case "spectral":
                 case "spectralcard":
                     return SpectralNames;
-                    
+
                 case "tag":
                 case "smallblindtag":
                 case "bigblindtag":
                     return TagNames;
-                    
+
                 case "voucher":
                     return VoucherNames;
-                    
+
                 default:
                     return Enumerable.Empty<string>();
             }
         }
-        
+
         /// <summary>
         /// Generate a JSON schema for Ouija configs
         /// </summary>
@@ -124,14 +124,6 @@ namespace Oracle.Services
                         ["enum"] = new JsonArray(StakeNames.Select(s => JsonValue.Create(s)).ToArray()),
                         ["description"] = "The stake level for the search"
                     },
-                    ["maxSearchAnte"] = new JsonObject
-                    {
-                        ["type"] = "integer",
-                        ["minimum"] = 1,
-                        ["maximum"] = 39,
-                        ["default"] = 39,
-                        ["description"] = "Maximum ante to search up to"
-                    },
                     ["minimumScore"] = new JsonObject
                     {
                         ["type"] = "integer",
@@ -146,10 +138,10 @@ namespace Oracle.Services
                 ["required"] = new JsonArray("deck", "stake", "must", "should", "mustNot"),
                 ["additionalProperties"] = false
             };
-            
+
             return schema.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
-        
+
         private static JsonObject CreateFilterArraySchema(string description)
         {
             return new JsonObject
@@ -159,7 +151,7 @@ namespace Oracle.Services
                 ["items"] = CreateFilterItemSchema()
             };
         }
-        
+
         private static JsonObject CreateFilterItemSchema()
         {
             return new JsonObject
@@ -221,7 +213,7 @@ namespace Oracle.Services
                     },
                     ["rank"] = new JsonObject
                     {
-                        ["type"] = "string", 
+                        ["type"] = "string",
                         ["enum"] = new JsonArray(RankNames.Select(r => JsonValue.Create(r)).ToArray()),
                         ["description"] = "Rank for playing cards"
                     }
@@ -230,14 +222,14 @@ namespace Oracle.Services
                 ["additionalProperties"] = false
             };
         }
-        
+
         /// <summary>
         /// Get context-aware completions for a given position in JSON
         /// </summary>
         public static IEnumerable<CompletionItem> GetCompletions(string currentPath, string? currentValue, JsonContext context)
         {
             var completions = new List<CompletionItem>();
-            
+
             // If we're in a property name position
             if (context.IsPropertyName)
             {
@@ -248,10 +240,10 @@ namespace Oracle.Services
             {
                 completions.AddRange(GetValueCompletions(currentPath, context.PropertyName, context.ParentObject));
             }
-            
+
             return completions;
         }
-        
+
         private static IEnumerable<CompletionItem> GetPropertyCompletions(string path)
         {
             // Root level properties
@@ -278,26 +270,26 @@ namespace Oracle.Services
                 yield return new CompletionItem("rank", "Card rank", CompletionItemType.Property);
             }
         }
-        
+
         private static IEnumerable<CompletionItem> GetValueCompletions(string path, string? propertyName, JsonObject? parentObject)
         {
             if (string.IsNullOrEmpty(propertyName))
                 yield break;
-                
+
             // Get the item type if we're in a filter item
             string? itemType = null;
             if (parentObject != null && parentObject.ContainsKey("type"))
             {
                 itemType = parentObject["type"]?.ToString();
             }
-            
+
             var validValues = GetValidValues(propertyName, itemType);
             foreach (var value in validValues)
             {
                 yield return new CompletionItem(value, GetValueDescription(propertyName, value), CompletionItemType.Value);
             }
         }
-        
+
         private static string GetValueDescription(string propertyName, string value)
         {
             switch (propertyName.ToLower())
@@ -307,12 +299,12 @@ namespace Oracle.Services
                     {
                         "None" => "No edition",
                         "Foil" => "+50 chips",
-                        "Holographic" => "+10 mult", 
+                        "Holographic" => "+10 mult",
                         "Polychrome" => "x1.5 mult",
                         "Negative" => "+1 joker slot",
                         _ => value
                     };
-                    
+
                 case "sources":
                     return value switch
                     {
@@ -321,19 +313,19 @@ namespace Oracle.Services
                         "tags" => "Items from skip tags",
                         _ => value
                     };
-                    
+
                 default:
                     return value;
             }
         }
     }
-    
+
     public class CompletionItem
     {
         public string Text { get; }
         public string Description { get; }
         public CompletionItemType Type { get; }
-        
+
         public CompletionItem(string text, string description, CompletionItemType type)
         {
             Text = text;
@@ -341,14 +333,14 @@ namespace Oracle.Services
             Type = type;
         }
     }
-    
+
     public enum CompletionItemType
     {
         Property,
         Value,
         Snippet
     }
-    
+
     public class JsonContext
     {
         public bool IsPropertyName { get; set; }

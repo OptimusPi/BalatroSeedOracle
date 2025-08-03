@@ -22,14 +22,14 @@ namespace Oracle.Components
         private TextBox? _scoreInput;
         private TextBlock? _topScorePlayer;
         private TextBlock? _topScoreValue;
-        
+
         private string _todaySeed = "";
         private DateTime _lastCheckedDate;
-        
+
         public DayLatroWidget()
         {
             InitializeComponent();
-            
+
             _minimizedView = this.FindControl<Grid>("MinimizedView");
             _expandedView = this.FindControl<Border>("ExpandedView");
             _dateText = this.FindControl<TextBlock>("DateText");
@@ -41,35 +41,35 @@ namespace Oracle.Components
             _scoreInput = this.FindControl<TextBox>("ScoreInput");
             _topScorePlayer = this.FindControl<TextBlock>("TopScorePlayer");
             _topScoreValue = this.FindControl<TextBlock>("TopScoreValue");
-            
+
             LoadDailyChallenge();
         }
-        
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void LoadDailyChallenge()
         {
             var today = DateTime.UtcNow.Date;
-            
+
             // Get today's seed using the fixed algorithm
             _todaySeed = DaylatroSeeds.GetDailyBalatroSeed();
-            
+
             // Update UI
             if (_dateText != null)
                 _dateText.Text = $"Daily Challenge - {today:MMM dd, yyyy}";
-            
+
             if (_seedText != null)
                 _seedText.Text = _todaySeed;
-                
+
             if (_minimizedSeedText != null)
                 _minimizedSeedText.Text = _todaySeed;
-            
+
             // Load theme based on seed (rotate through themes)
             LoadThemeForSeed(_todaySeed);
-            
+
             // Check if it's a new day
             if (_lastCheckedDate.Date != today)
             {
@@ -77,7 +77,7 @@ namespace Oracle.Components
                 ShowNewDayBadge();
             }
         }
-        
+
         private void LoadThemeForSeed(string seed)
         {
             // Rotate through different themes based on seed
@@ -89,17 +89,17 @@ namespace Oracle.Components
                 ("Tag Team", "Use 5 different tags in one run", "Ethereal Tag"),
                 ("Boss Blitz", "Defeat Ante 8 boss with style", "The Manacle")
             };
-            
+
             // Use seed to pick theme
             var index = Math.Abs(seed.GetHashCode()) % themes.Length;
             var (theme, description, jokerName) = themes[index];
-            
+
             if (_themeText != null)
                 _themeText.Text = theme;
-            
+
             if (_descriptionText != null)
                 _descriptionText.Text = description;
-            
+
             // Load joker/item image
             if (_funRunImage != null)
             {
@@ -108,28 +108,28 @@ namespace Oracle.Components
                 _funRunImage.Source = spriteService.GetItemImage(jokerName);
             }
         }
-        
+
         private void ShowNewDayBadge()
         {
             var badge = this.FindControl<Border>("NewDayBadge");
             if (badge != null)
                 badge.IsVisible = true;
         }
-        
+
         private void OnMinimizedClick(object? sender, PointerPressedEventArgs e)
         {
             if (_minimizedView != null && _expandedView != null)
             {
                 _minimizedView.IsVisible = false;
                 _expandedView.IsVisible = true;
-                
+
                 // Hide new day badge when opened
                 var badge = this.FindControl<Border>("NewDayBadge");
                 if (badge != null)
                     badge.IsVisible = false;
             }
         }
-        
+
         private void OnMinimizeClick(object? sender, RoutedEventArgs e)
         {
             if (_minimizedView != null && _expandedView != null)
@@ -138,31 +138,31 @@ namespace Oracle.Components
                 _expandedView.IsVisible = false;
             }
         }
-        
-        
+
+
         private void OnSubmitScore(object? sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(_scoreInput?.Text))
                 return;
-            
+
             DebugLogger.Log("DayLatroWidget", $"Submitted score: {_scoreInput.Text} for seed {_todaySeed}");
-            
+
             // TODO: Save score to database/file
             // For now, just clear the input
             _scoreInput.Text = "";
         }
-        
+
         private async void OnCopyChallengeClick(object? sender, RoutedEventArgs e)
         {
             var theme = _themeText?.Text ?? "Daily Challenge";
             var challengeUrl = $"https://balatrogenie.app/challenge/{_todaySeed}";
-            
+
             var message = $"Today's Balatro Daily Challenge! " +
                          $"The seed is {_todaySeed}. " +
                          $"The theme is {theme}. " +
                          $"Can you beat the top score? Good luck!\n\n" +
                          $"Challenge link: {challengeUrl}";
-            
+
             await ClipboardService.CopyToClipboardAsync(message);
             DebugLogger.Log("DayLatroWidget", "Copied daily challenge to clipboard");
         }

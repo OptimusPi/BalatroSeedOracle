@@ -53,8 +53,10 @@ namespace Oracle.Services
             var searchResultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
             Directory.CreateDirectory(searchResultsDir);
 
+
             _dbPath = Path.Combine(searchResultsDir, $"{_currentFilterName}.ouija.duckdb");
             _connectionString = $"Data Source={_dbPath}";
+
 
             DebugLogger.Log("SearchHistoryService", $"Database path set to: {_dbPath}");
             InitializeDatabase();
@@ -275,6 +277,7 @@ namespace Oracle.Services
                 // Update filter name based on config path
                 SetFilterName(configPath);
 
+
                 var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
@@ -328,6 +331,7 @@ namespace Oracle.Services
 
                 await cmd.ExecuteNonQueryAsync();
 
+
                 // Update the results count
                 using var updateCmd = connection.CreateCommand();
                 updateCmd.CommandText = @"
@@ -376,6 +380,7 @@ namespace Oracle.Services
         {
             var results = new List<SearchHistorySummary>();
 
+
             try
             {
                 var connection = GetConnection();
@@ -418,6 +423,7 @@ namespace Oracle.Services
         {
             var results = new List<SearchResult>();
 
+
             try
             {
                 var connection = GetConnection();
@@ -452,12 +458,14 @@ namespace Oracle.Services
             return results;
         }
 
+
         /// <summary>
         /// Get live results as an observable collection that updates automatically
         /// </summary>
         public async Task<ObservableCollection<SearchResultViewModel>> GetLiveResultsObservableAsync(long searchId)
         {
             var collection = new ObservableCollection<SearchResultViewModel>();
+
 
             try
             {
@@ -481,8 +489,10 @@ namespace Oracle.Services
                 DebugLogger.LogError("SearchHistoryService", $"Failed to get live results: {ex.Message}");
             }
 
+
             return collection;
         }
+
 
         /// <summary>
         /// Save filter configuration for a search
@@ -493,17 +503,20 @@ namespace Oracle.Services
             {
                 var connection = GetConnection();
 
+
                 // Save MUST items
                 foreach (var item in config.Must)
                 {
                     await SaveFilterItemAsync(connection, searchId, "must", item);
                 }
 
+
                 // Save SHOULD items
                 foreach (var item in config.Should)
                 {
                     await SaveFilterItemAsync(connection, searchId, "should", item);
                 }
+
 
                 // Save MUST NOT items
                 foreach (var item in config.MustNot)
@@ -516,6 +529,8 @@ namespace Oracle.Services
                 DebugLogger.LogError("SearchHistoryService", $"Failed to save filter items: {ex.Message}");
             }
         }
+
+        private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType,
 
         private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType,
             Motely.Filters.OuijaConfig.FilterItem item)

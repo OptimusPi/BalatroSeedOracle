@@ -37,20 +37,20 @@ namespace Oracle.Components
         private const int UI_UPDATE_INTERVAL_MS = 100; // Update UI max 10 times per second
         private const int TERMINAL_UPDATE_INTERVAL_MS = 250; // Update terminal max 4 times per second
         private bool _isConfigExpanded = true; // Start with config expanded
-        
+
         // Public properties
         public string? ConfigPath => _configPath;
         public bool IsRunning => _searchService.IsRunning;
         public int FoundCount => _foundCount;
         public List<SearchResult> Results => _searchService.Results;
-        
+
         public SearchWidget()
         {
             InitializeComponent();
-            
+
             // Get service from DI using helper
             _searchService = ServiceHelper.GetService<MotelySearchService>() ?? new MotelySearchService();
-            
+
             // Make the expanded view draggable
             var expandedView = this.FindControl<Border>("ExpandedView");
             if (expandedView != null)
@@ -60,45 +60,45 @@ namespace Oracle.Components
                 expandedView.PointerReleased += OnDragEnd;
             }
         }
-        
+
         private void InitializeComponent()
         {
             Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void OnMinimizedClick(object? sender, PointerPressedEventArgs e)
         {
             var minimizedView = this.FindControl<Grid>("MinimizedView");
             var expandedView = this.FindControl<Border>("ExpandedView");
-            
+
             if (minimizedView != null && expandedView != null)
             {
                 minimizedView.IsVisible = false;
                 expandedView.IsVisible = true;
             }
         }
-        
+
         private void OnMinimizeClick(object? sender, RoutedEventArgs e)
         {
             var minimizedView = this.FindControl<Grid>("MinimizedView");
             var expandedView = this.FindControl<Border>("ExpandedView");
-            
+
             if (minimizedView != null && expandedView != null)
             {
                 minimizedView.IsVisible = true;
                 expandedView.IsVisible = false;
             }
         }
-        
+
         private void OnMaximizeClick(object? sender, RoutedEventArgs e)
         {
             Oracle.Helpers.DebugLogger.Log("SearchWidget", "OnMaximizeClick called");
-            
+
             // Toggle to minimized view - effectively "maximizing" by minimizing the widget
             // This allows the user to see more of the desktop/other widgets
             var minimizedView = this.FindControl<Grid>("MinimizedView");
             var expandedView = this.FindControl<Border>("ExpandedView");
-            
+
             if (minimizedView != null && expandedView != null)
             {
                 minimizedView.IsVisible = true;
@@ -106,22 +106,22 @@ namespace Oracle.Components
                 Oracle.Helpers.DebugLogger.Log("SearchWidget", "Switched to minimized view");
             }
         }
-        
+
         private void OnMainMenuClick(object? sender, RoutedEventArgs e)
         {
             // Hide the widget
             this.IsVisible = false;
         }
-        
+
         private void OnCloseClick(object? sender, RoutedEventArgs e)
         {
             // Stop any running search
             _searchCancellation?.Cancel();
-            
+
             // Hide the widget entirely
             this.IsVisible = false;
         }
-        
+
         private void OnDragStart(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -132,7 +132,7 @@ namespace Oracle.Components
                 ((Control)sender!).Cursor = new Cursor(StandardCursorType.DragMove);
             }
         }
-        
+
         private void OnDragMove(object? sender, PointerEventArgs e)
         {
             if (_isDragging)
@@ -140,7 +140,7 @@ namespace Oracle.Components
                 var currentPosition = e.GetPosition(this.Parent as Visual);
                 var deltaX = currentPosition.X - _clickPoint.X - _startPosition.X;
                 var deltaY = currentPosition.Y - _clickPoint.Y - _startPosition.Y;
-                
+
                 // Update widget position using margin
                 this.Margin = new Thickness(
                     Math.Max(0, _startPosition.X + deltaX),
@@ -148,20 +148,20 @@ namespace Oracle.Components
                     0, 0);
             }
         }
-        
+
         private void OnDragEnd(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
             ((Control)sender!).Cursor = new Cursor(StandardCursorType.Arrow);
         }
-        
+
         private async void OnLoadConfigClick(object? sender, RoutedEventArgs e)
         {
             try
             {
                 var topLevel = TopLevel.GetTopLevel(this);
                 var storageProvider = topLevel?.StorageProvider;
-                
+
                 if (storageProvider == null) return;
 
                 var options = new FilePickerOpenOptions
@@ -170,8 +170,8 @@ namespace Oracle.Components
                     AllowMultiple = false,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("Config Files") 
-                        { 
+                        new FilePickerFileType("Config Files")
+                        {
                             Patterns = new[] { "*.ouija.json", "*.json" }
                         }
                     }
@@ -179,7 +179,7 @@ namespace Oracle.Components
 
                 var files = await storageProvider.OpenFilePickerAsync(options);
                 var file = files.FirstOrDefault();
-                
+
                 if (file != null)
                 {
                     await LoadConfig(file.Path.LocalPath);
@@ -190,40 +190,42 @@ namespace Oracle.Components
                 WriteToTerminal($"Error loading config: {ex.Message}", isError: true);
             }
         }
-        
+
         public async Task LoadConfig(string configPath)
         {
             try
             {
                 _configPath = configPath;
-                
+
                 // Extract config name without extension
                 var filename = Path.GetFileName(configPath);
                 _currentConfigName = filename.Replace(".ouija.json", "").Replace(".json", "");
-                
+
                 UpdateTitle("Ready");
                 WriteToTerminal($"Loading config: {filename}");
-                
+
                 // Validate the config
                 var (success, message) = await _searchService.LoadConfigAsync(configPath);
-                
+
                 if (success)
                 {
                     WriteToTerminal($"Config loaded: {message}");
-                    
+
                     var cookButton = this.FindControl<Button>("CookButton");
                     if (cookButton != null)
                         cookButton.IsEnabled = true;
-                        
+
                     // Update config path display
                     var configPathBox = this.FindControl<TextBox>("ConfigPathBox");
                     if (configPathBox != null)
                         configPathBox.Text = _configPath;
-                        
+
                     // Show loaded indicator
                     var indicator = this.FindControl<Border>("ConfigLoadedIndicator");
                     if (indicator != null)
                         indicator.IsVisible = true;
+                        
+                    // For now, leave deck/stake as defaults - config values will be read from the file during search
                 }
                 else
                 {
@@ -235,11 +237,11 @@ namespace Oracle.Components
                 WriteToTerminal($"Error: {ex.Message}", isError: true);
             }
         }
-        
+
         private async void OnCookClick(object? sender, RoutedEventArgs e)
         {
             var cookButton = this.FindControl<Button>("CookButton");
-            
+
             if (cookButton?.Content?.ToString()?.Contains("START SEARCH") == true)
             {
                 // Start the search
@@ -251,30 +253,36 @@ namespace Oracle.Components
                 StopSearch();
             }
         }
-        
+
         private async Task StartSearch()
         {
             if (string.IsNullOrEmpty(_configPath)) return;
-            
+
             try
             {
                 _foundCount = 0;
                 UpdateNotificationBadge(0);
-                
+
                 // Get search parameters from UI controls
                 var threadsSpinner = this.FindControl<BalatroSpinnerControl>("ThreadsSpinner");
                 var batchSizeSpinner = this.FindControl<BalatroSpinnerControl>("BatchSizeSpinner");
                 var minScoreSpinner = this.FindControl<BalatroSpinnerControl>("MinScoreSpinner");
                 var debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
-                
-                var threadCount = threadsSpinner?.Value ?? 4;
+                var deckComboBox = this.FindControl<ComboBox>("DeckComboBox");
+                var stakeComboBox = this.FindControl<ComboBox>("StakeComboBox");
+
+                var threadCount = threadsSpinner?.Value ?? 8;
                 var minScore = minScoreSpinner?.Value ?? 0;
                 var batchSize = batchSizeSpinner?.Value ?? 4;
                 var debug = debugCheckBox?.IsChecked ?? false;
                 
+                // Get deck and stake from combo boxes
+                var deck = (deckComboBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Red Deck";
+                var stake = (stakeComboBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "White Stake";
+
                 // Set debug logging based on checkbox
                 Oracle.Helpers.DebugLogger.SetDebugEnabled(debug);
-                
+
                 // Update button to stop mode
                 var cookButton = this.FindControl<Button>("CookButton");
                 if (cookButton != null)
@@ -286,16 +294,16 @@ namespace Oracle.Components
                     cookButton.IsEnabled = true; // Ensure button stays enabled
                     cookButton.IsHitTestVisible = true;
                 }
-                
+
                 WriteToTerminal($"Let Jimbo cook! Starting search...");
                 UpdateTitle("Cooking...");
-                
+
                 // Create cancellation token
                 _searchCancellation = new CancellationTokenSource();
-                
+
                 // Set up progress reporting
                 var progress = new Progress<SearchProgress>(OnProgressUpdate);
-                
+
                 // Create search criteria
                 var criteria = new SearchCriteria
                 {
@@ -304,11 +312,11 @@ namespace Oracle.Components
                     MaxSeeds = long.MaxValue, // Search all seeds
                     MinScore = minScore,
                     BatchSize = batchSize,
-                    Deck = _searchParams.Deck,
-                    Stake = _searchParams.Stake,
+                    Deck = deck,
+                    Stake = stake,
                     EnableDebugOutput = debug
                 };
-                
+
                 // Start search
                 await _searchService.StartSearchAsync(criteria, progress, _searchCancellation.Token);
             }
@@ -333,19 +341,19 @@ namespace Oracle.Components
                     cookButton.Classes.Add("oracle-btn");
                     cookButton.Classes.Add("button-color-green");
                 }
-                
+
                 _searchCancellation?.Dispose();
                 _searchCancellation = null;
             }
         }
-        
+
         public void StopSearch()
         {
             // Stop messages should be immediate - no throttling
-            Dispatcher.UIThread.Post(() => 
+            Dispatcher.UIThread.Post(() =>
             {
                 WriteToTerminal("Jimbo is putting down the spatula...");
-                
+
                 // Keep button enabled and clickable during stop
                 var cookButton = this.FindControl<Button>("CookButton");
                 if (cookButton != null)
@@ -354,16 +362,16 @@ namespace Oracle.Components
                     cookButton.IsHitTestVisible = true;
                 }
             });
-            
+
             try
             {
                 // Cancel the token first
                 _searchCancellation?.Cancel();
-                
+
                 // Then stop the search service
                 _searchService.StopSearch();
-                
-                Dispatcher.UIThread.Post(() => 
+
+                Dispatcher.UIThread.Post(() =>
                 {
                     WriteToTerminal("Jimbo stopped cooking");
                     UpdateTitle("Stopped");
@@ -375,13 +383,13 @@ namespace Oracle.Components
                 Dispatcher.UIThread.Post(() => WriteToTerminal($"Stop error: {ex.Message}"));
             }
         }
-        
+
         private void ResetUIAfterStop()
         {
             var cookButton = this.FindControl<Button>("CookButton");
             var loadButton = this.FindControl<Button>("LoadConfigButton");
-            
-            if (cookButton != null) 
+
+            if (cookButton != null)
             {
                 cookButton.Content = "Let Jimbo Cook!";
                 cookButton.Classes.Clear();
@@ -391,17 +399,17 @@ namespace Oracle.Components
             }
             if (loadButton != null) loadButton.IsEnabled = true;
         }
-        
-        
+
+
         private void OnProgressUpdate(SearchProgress progress)
         {
             var now = DateTime.Now;
-            
+
             // Add any new results immediately (we always want to count them)
             if (progress.NewResult != null)
             {
                 _foundCount++;
-                
+
                 // But throttle UI updates
                 if ((now - _lastUIUpdate).TotalMilliseconds >= UI_UPDATE_INTERVAL_MS)
                 {
@@ -421,7 +429,7 @@ namespace Oracle.Components
                 {
                     _lastTerminalUpdate = now;
                     // Only show important messages in the compact terminal
-                    if (progress.Message.Contains("Found") || 
+                    if (progress.Message.Contains("Found") ||
                         progress.Message.Contains("complete") ||
                         progress.SeedsSearched % 10000 == 0) // Changed from 1000 to 10000 for less spam
                     {
@@ -430,7 +438,7 @@ namespace Oracle.Components
                     }
                 }
             }
-            
+
             // Always show completion message
             if (progress.IsComplete)
             {
@@ -442,12 +450,41 @@ namespace Oracle.Components
                 });
             }
         }
-        
+
         private void WriteToTerminal(string message, bool isError = false)
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
-            var line = $"[{timestamp}] {message}";
             
+            // Format error messages to be more readable
+            if (isError)
+            {
+                // Add visual separator for errors
+                message = $"❌ ERROR: {message}";
+                
+                // If the message is very long, try to format it better
+                if (message.Length > 80)
+                {
+                    // Look for common error patterns and format them
+                    if (message.Contains("at line") || message.Contains("Line"))
+                    {
+                        // JSON parsing errors - put line info on new line
+                        message = message.Replace(" at line", "\n  at line");
+                        message = message.Replace(" Line", "\n  Line");
+                    }
+                    if (message.Contains(": "))
+                    {
+                        // General errors - break after first colon
+                        var parts = message.Split(new[] { ": " }, 2, StringSplitOptions.None);
+                        if (parts.Length == 2)
+                        {
+                            message = $"{parts[0]}:\n  {parts[1]}";
+                        }
+                    }
+                }
+            }
+            
+            var line = $"[{timestamp}] {message}";
+
             // Keep terminal at 100 lines max in widget mode (was 1000)
             var lines = _terminalBuffer.ToString().Split('\n').ToList();
             if (lines.Count > 100)
@@ -455,51 +492,65 @@ namespace Oracle.Components
                 lines.RemoveRange(0, lines.Count - 100);
             }
             lines.Add(line);
-            
+
             _terminalBuffer.Clear();
             _terminalBuffer.AppendLine(string.Join('\n', lines));
-            
+
             // Update UI
             var terminalOutput = this.FindControl<TextBlock>("TerminalOutput");
             if (terminalOutput != null)
             {
                 terminalOutput.Text = _terminalBuffer.ToString();
                 
+                // Change text color for errors
+                if (isError)
+                {
+                    // Flash red briefly for errors
+                    terminalOutput.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#ff4444"));
+                    _ = Task.Delay(2000).ContinueWith(_ =>
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            terminalOutput.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#00ff66"));
+                        });
+                    });
+                }
+
                 // Auto-scroll to bottom
                 var scrollViewer = this.FindControl<ScrollViewer>("TerminalScrollViewer");
                 scrollViewer?.ScrollToEnd();
             }
         }
-        
-        
+
+
         private void UpdateNotificationBadge(int count)
         {
             var badge = this.FindControl<Border>("NotificationBadge");
             var countText = this.FindControl<TextBlock>("NotificationCount");
-            
+
             if (badge != null && countText != null)
             {
                 badge.IsVisible = count > 0;
                 countText.Text = count > 99 ? "99+" : count.ToString();
             }
-            
+
             // Also update the View Results button and badge
             var viewResultsButton = this.FindControl<Button>("ViewResultsButton");
             var resultCountBadge = this.FindControl<Border>("ResultCountBadge");
             var resultCountText = this.FindControl<TextBlock>("ResultCountText");
-            
+
             if (viewResultsButton != null)
             {
                 viewResultsButton.IsVisible = count > 0;
             }
-            
+
             if (resultCountBadge != null && resultCountText != null)
             {
                 resultCountBadge.IsVisible = count > 0;
                 resultCountText.Text = count > 99 ? "99+" : count.ToString();
             }
         }
-        
+
         private async void OnViewResultsClick(object? sender, RoutedEventArgs e)
         {
             try
@@ -507,10 +558,10 @@ namespace Oracle.Components
                 // Get the main window
                 var mainWindow = this.FindAncestorOfType<Window>();
                 if (mainWindow == null) return;
-                
+
                 // Create and show the results window
                 var resultsWindow = new Views.Modals.SearchResultsWindow();
-                
+
                 // Convert MotelySearchService results to the modal's SearchResult format
                 var modalResults = _searchService.Results.Select(r => new Views.Modals.SearchResult
                 {
@@ -520,9 +571,9 @@ namespace Oracle.Components
                     ItemsJson = r.ScoreBreakdown,
                     Timestamp = DateTime.Now
                 }).ToList();
-                
+
                 resultsWindow.LoadResults(modalResults, _currentConfigName ?? "Search Results", _searchService.SearchDuration);
-                
+
                 await resultsWindow.ShowDialog(mainWindow);
             }
             catch (Exception ex)
@@ -530,7 +581,7 @@ namespace Oracle.Components
                 Oracle.Helpers.DebugLogger.LogError("SearchWidget", $"Failed to show results modal: {ex.Message}");
             }
         }
-        
+
         /// <summary>
         /// Start search with specific parameters
         /// </summary>
@@ -539,14 +590,14 @@ namespace Oracle.Components
             // Update the UI controls
             var threadsSpinner = this.FindControl<BalatroSpinnerControl>("ThreadsSpinner");
             var minScoreSpinner = this.FindControl<BalatroSpinnerControl>("MinScoreSpinner");
-            
+
             if (threadsSpinner != null) threadsSpinner.Value = threadCount;
             if (minScoreSpinner != null) minScoreSpinner.Value = minScore;
-            
+
             // Auto-start the search
             OnCookClick(null, new RoutedEventArgs());
         }
-        
+
         private void UpdateTitle(string status)
         {
             var statusText = this.FindControl<TextBlock>("StatusText");
@@ -555,25 +606,25 @@ namespace Oracle.Components
                 statusText.Text = status;
             }
         }
-        
+
         private void OnConfigToggleClick(object? sender, RoutedEventArgs e)
         {
             _isConfigExpanded = !_isConfigExpanded;
-            
+
             var configContent = this.FindControl<StackPanel>("ConfigContent");
             var expandIcon = this.FindControl<TextBlock>("ConfigExpandIcon");
-            
+
             if (configContent != null)
             {
                 configContent.IsVisible = _isConfigExpanded;
             }
-            
+
             if (expandIcon != null)
             {
                 expandIcon.Text = _isConfigExpanded ? "▼" : "▶";
             }
         }
-        
+
         private void OnClearConsoleClick(object? sender, RoutedEventArgs e)
         {
             var terminalOutput = this.FindControl<TextBlock>("TerminalOutput");
@@ -583,7 +634,7 @@ namespace Oracle.Components
                 _terminalBuffer.Clear();
             }
         }
-        
+
         private class SearchParams
         {
             public int ThreadCount { get; set; } = 8;

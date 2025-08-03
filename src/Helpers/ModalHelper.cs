@@ -27,7 +27,7 @@ public static class ModalHelper
         menu.ShowModalContent(modal);
         return modal;
     }
-    
+
     /// <summary>
     /// Creates and shows a filters modal
     /// </summary>
@@ -38,7 +38,7 @@ public static class ModalHelper
         var filtersContent = new FiltersModalContent();
         return menu.ShowModal("FILTER CONFIGURATION", filtersContent);
     }
-    
+
     /// <summary>
     /// Creates and shows a fun runs modal
     /// </summary>
@@ -49,7 +49,7 @@ public static class ModalHelper
         var funRunView = new FunRunsModal();
         return menu.ShowModal("FUN RUNS", funRunView);
     }
-    
+
     /// <summary>
     /// Creates and shows an analyzer modal
     /// </summary>
@@ -60,7 +60,7 @@ public static class ModalHelper
         var analyzerView = new AnalyzerModal();
         return menu.ShowModal("SEED ANALYZER", analyzerView);
     }
-    
+
     /// <summary>
     /// Creates and shows a browse filters modal
     /// </summary>
@@ -69,20 +69,20 @@ public static class ModalHelper
     public static StandardModal ShowBrowseFiltersModal(this Views.BalatroMainMenu menu)
     {
         var browseModal = new BrowseFiltersModal();
-        
+
         // Handle filter selection - launch search
         browseModal.FilterSelected += (sender, filterPath) =>
         {
             menu.HideModalContent();
             menu.ShowSearchWidget(filterPath);
         };
-        
+
         // Handle edit request - open filters modal with loaded config
         browseModal.EditRequested += async (sender, filterPath) =>
         {
             menu.HideModalContent();
             var filtersModal = menu.ShowFiltersModal();
-            
+
             // Load the filter into the modal - the modal itself is StandardModal, need to get its content
             var modalContentPresenter = filtersModal.FindControl<ContentPresenter>("ModalContent");
             if (modalContentPresenter?.Content is FiltersModalContent filtersContent)
@@ -90,8 +90,8 @@ public static class ModalHelper
                 await filtersContent.LoadConfigAsync(filterPath);
             }
         };
-        
+
         return menu.ShowModal("BROWSE FILTERS", browseModal);
     }
-    
+
 }

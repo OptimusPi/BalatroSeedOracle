@@ -10,11 +10,11 @@ namespace Oracle.Views.Modals
     public partial class StandardModal : UserControl
     {
         public event EventHandler? BackClicked;
-        
+
         public StandardModal()
         {
             InitializeComponent();
-            
+
             // Wire up events
             var backButton = this.FindControl<Button>("BackButton");
             if (backButton != null)
@@ -22,17 +22,17 @@ namespace Oracle.Views.Modals
                 backButton.Click += OnBackButtonClick;
             }
         }
-        
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         public StandardModal(string title) : this()
         {
             SetTitle(title);
         }
-        
+
         /// <summary>
         /// Sets the modal title
         /// </summary>
@@ -43,7 +43,7 @@ namespace Oracle.Views.Modals
             if (modalTitle != null)
                 modalTitle.Text = title;
         }
-        
+
         /// <summary>
         /// Sets the modal content
         /// </summary>
@@ -61,12 +61,12 @@ namespace Oracle.Views.Modals
             content?.InvalidateVisual();
             content?.UpdateLayout();
             modalContent.Content = content;
-            
+
             // Force layout update
             content?.InvalidateVisual();
             this.InvalidateVisual();
         }
-        
+
         /// <summary>
         /// Sets the back button text
         /// </summary>
@@ -77,7 +77,7 @@ namespace Oracle.Views.Modals
             if (backButton != null)
                 backButton.Content = text;
         }
-        
+
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
         {
             BackClicked?.Invoke(this, EventArgs.Empty);

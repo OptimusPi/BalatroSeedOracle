@@ -24,13 +24,13 @@ namespace Oracle.Controls
             Gold,         // Gold/Black
             Monochrome    // Gray scale
         }
-        
+
         private BackgroundTheme _currentTheme = BackgroundTheme.Default;
         private float _contrast = 1.0f;
         private float _spinAmount = 0.5f;
         private bool _isAnimating = true;
         private DispatcherTimer? _animationTimer;
-        
+
         public new BackgroundTheme Theme
         {
             get => _currentTheme;
@@ -40,7 +40,7 @@ namespace Oracle.Controls
                 InvalidateVisual();
             }
         }
-        
+
         public float Contrast
         {
             get => _contrast;
@@ -50,7 +50,7 @@ namespace Oracle.Controls
                 InvalidateVisual();
             }
         }
-        
+
         public float SpinAmount
         {
             get => _spinAmount;
@@ -60,7 +60,7 @@ namespace Oracle.Controls
                 InvalidateVisual();
             }
         }
-        
+
         public new bool IsAnimating
         {
             get => _isAnimating;
@@ -80,7 +80,7 @@ namespace Oracle.Controls
                 }
             }
         }
-        
+
         public BalatroStyleBackground()
         {
             // Initialize animation timer
@@ -89,27 +89,27 @@ namespace Oracle.Controls
                 Interval = TimeSpan.FromMilliseconds(33) // ~30 FPS
             };
             _animationTimer.Tick += (s, e) => InvalidateVisual();
-            
+
             if (_isAnimating)
             {
                 StartAnimation();
             }
         }
-        
+
         private void StartAnimation()
         {
             _animationTimer?.Start();
         }
-        
+
         private void StopAnimation()
         {
             _animationTimer?.Stop();
         }
-        
+
         public override void Render(DrawingContext context)
         {
             context.Custom(new BalatroStyleBackgroundDrawOp(new Rect(0, 0, Bounds.Width, Bounds.Height), _currentTheme, _contrast, _spinAmount, _isAnimating));
-            
+
             // We no longer need this as we're using a timer for animation
             // Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
         }
@@ -190,13 +190,13 @@ namespace Oracle.Controls
             if (effect != null)
             {
                 _shaderBuilder = new SKRuntimeShaderBuilder(effect);
-                
+
                 // Set colors based on theme
                 var (color1, color2, color3) = GetThemeColors(_theme);
                 _shaderBuilder.Uniforms["colour_1"] = color1;
                 _shaderBuilder.Uniforms["colour_2"] = color2;
                 _shaderBuilder.Uniforms["colour_3"] = color3;
-                
+
                 // Apply user settings
                 _shaderBuilder.Uniforms["contrast"] = _contrast;
                 _shaderBuilder.Uniforms["spin_amount"] = _spinAmount;
@@ -235,16 +235,16 @@ namespace Oracle.Controls
                         // Use the last time when animation was active
                         time = _lastTime;
                     }
-                    
+
                     _shaderBuilder.Uniforms["time"] = time;
                     _shaderBuilder.Uniforms["spin_time"] = time;  // Balatro uses separate spin_time
                     _shaderBuilder.Uniforms["resolution"] = new SKSize((float)Bounds.Width, (float)Bounds.Height);
-                    
+
                     // Create the shader from the builder
                     var shader = _shaderBuilder.Build();
-                    
+
                     using var paint = new SKPaint { Shader = shader };
-                    
+
                     // Fill the entire bounds with the shader
                     var rect = new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height);
                     canvas.DrawRect(rect, paint);
@@ -253,7 +253,7 @@ namespace Oracle.Controls
                 canvas.Restore();
             }
         }
-        
+
         private (float[], float[], float[]) GetThemeColors(BalatroStyleBackground.BackgroundTheme theme)
         {
             return theme switch
@@ -263,61 +263,61 @@ namespace Oracle.Controls
                     new float[] { 0.0f, 0.42f, 0.706f, 1.0f },    // Blue (original Balatro blue)
                     new float[] { 0.086f, 0.137f, 0.145f, 1.0f }  // Dark gray background
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Plasma => (
                     new float[] { 0.6f, 0.2f, 0.8f, 1.0f },       // Purple
                     new float[] { 0.2f, 0.8f, 0.4f, 1.0f },       // Green
                     new float[] { 0.1f, 0.05f, 0.15f, 1.0f }      // Dark purple
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Sepia => (
                     new float[] { 0.7f, 0.5f, 0.3f, 1.0f },       // Brown
                     new float[] { 0.9f, 0.8f, 0.6f, 1.0f },       // Tan
                     new float[] { 0.2f, 0.15f, 0.1f, 1.0f }       // Dark brown
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Ocean => (
                     new float[] { 0.0f, 0.4f, 0.6f, 1.0f },       // Deep blue
                     new float[] { 0.0f, 0.7f, 0.8f, 1.0f },       // Teal
                     new float[] { 0.0f, 0.1f, 0.2f, 1.0f }        // Dark blue
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Sunset => (
                     new float[] { 1.0f, 0.4f, 0.2f, 1.0f },       // Orange
                     new float[] { 0.8f, 0.2f, 0.6f, 1.0f },       // Purple
                     new float[] { 0.2f, 0.05f, 0.1f, 1.0f }       // Dark red
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Midnight => (
                     new float[] { 0.1f, 0.1f, 0.3f, 1.0f },       // Dark blue
                     new float[] { 0.3f, 0.1f, 0.5f, 1.0f },       // Purple
                     new float[] { 0.05f, 0.05f, 0.1f, 1.0f }      // Very dark blue
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Forest => (
                     new float[] { 0.2f, 0.6f, 0.2f, 1.0f },       // Green
                     new float[] { 0.5f, 0.4f, 0.2f, 1.0f },       // Brown
                     new float[] { 0.1f, 0.15f, 0.1f, 1.0f }       // Dark green
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Cherry => (
                     new float[] { 0.9f, 0.3f, 0.5f, 1.0f },       // Pink
                     new float[] { 0.8f, 0.1f, 0.3f, 1.0f },       // Red
                     new float[] { 0.2f, 0.05f, 0.1f, 1.0f }       // Dark red
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Gold => (
                     new float[] { 1.0f, 0.843f, 0.0f, 1.0f },     // Gold
                     new float[] { 0.8f, 0.6f, 0.0f, 1.0f },       // Dark gold
                     new float[] { 0.1f, 0.1f, 0.1f, 1.0f }        // Black
                 ),
-                
+
                 BalatroStyleBackground.BackgroundTheme.Monochrome => (
                     new float[] { 0.7f, 0.7f, 0.7f, 1.0f },       // Light gray
                     new float[] { 0.3f, 0.3f, 0.3f, 1.0f },       // Dark gray
                     new float[] { 0.1f, 0.1f, 0.1f, 1.0f }        // Very dark gray
                 ),
-                
+
                 _ => ( // Default fallback
                     new float[] { 0.871f, 0.267f, 0.231f, 1.0f },
                     new float[] { 0.0f, 0.42f, 0.706f, 1.0f },
