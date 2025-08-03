@@ -531,8 +531,6 @@ namespace Oracle.Services
         }
 
         private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType,
-
-        private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType,
             Motely.Filters.OuijaConfig.FilterItem item)
         {
             using var cmd = connection.CreateCommand();
