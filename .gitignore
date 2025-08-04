@@ -59,3 +59,4 @@ nunit-*.xml
 userprofile.json
 .claude/settings.local.json
 userprofile.json
+.claude/settings.local.json
