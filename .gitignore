@@ -58,3 +58,4 @@ nunit-*.xml
 /ouija_configs
 userprofile.json
 .claude/settings.local.json
+userprofile.json
