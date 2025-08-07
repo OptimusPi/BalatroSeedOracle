@@ -193,6 +193,25 @@ public static class BalatroData
         Decks["Erratic"] = "Erratic Deck";
     }
 
+    public static readonly Dictionary<string, string> DeckDescriptions = new()
+    {
+        { "Red", "+1 discards every round" },
+        { "Blue", "+1 hands every round" },
+        { "Yellow", "Start with extra $10" },
+        { "Green", "$2 per remaining hand/discard\nEnd of round (no interest)" },
+        { "Black", "+1 Joker slot\n-1 hand every round" },
+        { "Magic", "Start run with the 'Crystal Ball' Voucher" },
+        { "Nebulous", "Start run with a 'Telescope' Voucher" },
+        { "Ghost", "Spectral cards may appear in the shop\nStart with a 'Hex' Spectral" },
+        { "Abandoned", "No face cards in deck" },
+        { "Checkered", "Start with 26 spades and 26 hearts" },
+        { "Zodiac", "Start run with 'Tarot Merchant'\n'Planet Merchant' and 'Overstock'" },
+        { "Painted", "+2 hand size\n-1 Joker slot" },
+        { "Anagraph", "After defeating each boss blind,\nchange all cards to a random rank" },
+        { "Plasma", "Balance chips and mult\nwhen calculating score for played hand\nX2 base blind size" },
+        { "Erratic", "All ranks and suits are randomized" }
+    };
+
     private static void InitializeStakes()
     {
         Stakes["White"] = "White Stake";

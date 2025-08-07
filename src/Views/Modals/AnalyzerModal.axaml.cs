@@ -12,6 +12,7 @@ using Oracle.Components;
 using Oracle.Services;
 using Oracle.Helpers;
 using Motely;
+using SeedAnalyzerCapture = Motely.SeedAnalyzerCapture;
 
 namespace Oracle.Views.Modals
 {

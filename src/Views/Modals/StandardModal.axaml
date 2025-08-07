@@ -6,7 +6,7 @@
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
         <!-- Semi-transparent background overlay -->
-        <Border Background="#CC000000"
+        <Border Background="{StaticResource SemiTransparentBlack}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 IsHitTestVisible="True" />
@@ -26,52 +26,39 @@
             
             <!-- Main modal container - Balatro style -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Background="#4f6367"
+                    Background="{StaticResource DockGrey}"
                     CornerRadius="20"
-                    BorderBrush="#7A9E9F"
-                    BorderThickness="4"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="3"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     MaxWidth="1000"
                     MaxHeight="700"
-                    BoxShadow="0 8 24 #000000">
+                    BoxShadow="0 4 0 #777e89">
                 
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Header -->
                         <RowDefinition Height="*"/>    <!-- Content -->
                         <RowDefinition Height="Auto"/> <!-- Footer -->
                     </Grid.RowDefinitions>
 
-                    <!-- Header with title -->
-                    <Border Grid.Row="0" 
-                            Background="#374244"
-                            CornerRadius="20,20,0,0">
-                        <TextBlock x:Name="ModalTitle"
-                                   Text="MODAL TITLE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Foreground="#FFFFFF"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,16,0,16"/>
-                    </Border>
-
                     <!-- Content area -->
-                    <Border Grid.Row="1"
-                            Background="#374244"
-                            Margin="3">
-                        <ContentPresenter x:Name="ModalContent" 
-                                          HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Stretch"
-                                          Margin="20,10,20,10"/>
-                    </Border>
+                    <!-- Removed dark background - content shows on medium grey modal background -->
+                            
+                    <!-- Actual content -->
+                    <ContentPresenter Grid.Row="0" 
+                                      x:Name="ModalContent"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Margin="4,4,4,2"/>
 
                     <!-- Footer with back button -->
-                    <Border Grid.Row="2"
-                            Background="#374244"
-                            CornerRadius="0,0,20,20"
-                            Padding="20,10,20,20">
+                    <Border Grid.Row="1"
+                            Background="{StaticResource DockGrey}"
+                            BorderThickness="0"
+                            CornerRadius="0,0,16,16"
+                            Margin="3,0,3,3"
+                            Padding="10,4,10,6">
                         <Button x:Name="BackButton"
                                 Content="Back"
                                 Classes="back-button"
@@ -81,4 +68,5 @@
             </Border>
         </Grid>
     </Grid>
+
 </UserControl>

@@ -13,7 +13,7 @@
     <UserControl.Styles>
         <!-- Modal overlay style - semi-transparent background only -->
         <Style Selector="Grid.modal-overlay">
-            <Setter Property="Background" Value="#00000088"/>
+            <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
         </Style>
         
         <!-- Blur backdrop style - this is what gets blurred -->
@@ -27,24 +27,24 @@
         
         <!-- Modal panel style - Balatro card style with beveled border -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="#262633"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PureBlack}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="BoxShadow" Value="5 5 6 #80000000"/>
         </Style>
         
         <!-- Inner content panel (darker) -->
         <Style Selector="Border.inner-panel">
-            <Setter Property="Background" Value="#374244"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="5"/>
         </Style>
         
         <!-- Kill any weird focus/selection effects -->
         <Style Selector="Button:focus">
-            <Setter Property="BorderBrush" Value="#E2E2E3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="Button:focus /template/ ContentPresenter">
@@ -55,7 +55,7 @@
         <Style Selector="Button.author-button">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Background" Value="#708386"/>
+            <Setter Property="Background" Value="{StaticResource TealGrey}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -65,10 +65,10 @@
             <Setter Property="Margin" Value="0,0,0,2"/>
         </Style>
         <Style Selector="Button.author-button:pointerover">
-            <Setter Property="BorderBrush" Value="#eac058"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
         </Style>
         <Style Selector="Button.author-button:pressed">
-            <Setter Property="Background" Value="#2e3f42"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         </Style>
         <Style Selector="Button.author-button TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -76,7 +76,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
         </Style>
     </UserControl.Styles>
 
@@ -93,11 +93,6 @@
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
                                      Margin="0,20,20,0"/>
-                                     
-            <!-- Search Desktop Icon - bottom right -->
-            <views:SearchDesktopIcon HorizontalAlignment="Right"
-                                     VerticalAlignment="Bottom"
-                                     Margin="0,0,20,20"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
@@ -106,20 +101,20 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="SEED ORACLE"
+            <TextBlock Text="Balatro Seed Oracle"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
                         FontWeight="Bold"
                         Foreground="{StaticResource TextLight}"
                         HorizontalAlignment="Center"
-                        Margin="0,5,0,0"/>
+                        Margin="0,5,5,5"/>
 
             <!-- All Docks Container - Float off bottom of screen -->
             <StackPanel Grid.Row="1" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Bottom"
-                        Margin="0,0,0,60"
+                        Margin="0,0,0,40"
                         Spacing="20">
                 
                 <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
@@ -140,7 +135,7 @@
                                        FontSize="14"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
-                                       Foreground="#888888"
+                                       Foreground="{StaticResource LightGrey}"
                                        IsHitTestVisible="False"/>
                             
                             <!-- Author Button (Balatro style like language buttons) -->
@@ -162,12 +157,12 @@
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
                                              FontWeight="Bold"
-                                             Background="#708386"
+                                             Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
-                                             Foreground="#E2E2E3"
+                                             Foreground="{StaticResource VeryLightGrey}"
                                              IsVisible="False"
                                              LostFocus="OnAuthorEditLostFocus"
                                              KeyDown="OnAuthorEditKeyDown"/>
@@ -190,24 +185,24 @@
                             Margin="0,0,0,4">
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <!-- PLAY button equivalent - NEW FILTER (blue) -->
+                    <!-- PLAY button equivalent - SEED SEARCH (blue) -->
                     <Button Classes="btn-blue"
-                            Click="OnNewFilterClick"
+                            Click="OnSeedSearchClick"
                             MinHeight="64"
                             MinWidth="160">
-                        <TextBlock Text="NEW FILTER" 
+                        <TextBlock Text="SEED SEARCH" 
                                    FontSize="24" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- OPTIONS button equivalent - LOAD (orange) -->
+                    <!-- OPTIONS button equivalent - EDITOR (orange) -->
                     <Button Classes="btn-orange"
-                            Click="OnLoadClick"
+                            Click="OnEditorClick"
                             MinHeight="48"
                             MinWidth="100">
-                        <TextBlock Text="LOAD" 
+                        <TextBlock Text="Filter Editor" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"
@@ -238,12 +233,12 @@
                                    IsHitTestVisible="False"/>
                     </Button>
 
-                    <!-- MODS button equivalent - FUN RUNS (purple) -->
+                    <!-- MODS button equivalent - TOOLS (purple) -->
                     <Button Classes="btn-purple"
-                            Click="OnFunRunClick"
+                            Click="OnToolClick"
                             MinHeight="64"
                             MinWidth="64">
-                        <TextBlock Text="FUN RUN" 
+                        <TextBlock Text="TOOLS" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"
@@ -271,7 +266,7 @@
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="#708386"
+                                    Background="{StaticResource TealGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
@@ -290,7 +285,7 @@
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="#708386"
+                                    Background="{StaticResource TealGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
@@ -312,7 +307,7 @@
         <Grid x:Name="ModalContainer"
               IsVisible="False"
               ZIndex="100"
-              Background="#3d414788"
+              Background="{StaticResource VeryTransparentBlack}"
               VerticalAlignment="Stretch"
               HorizontalAlignment="Stretch"
               Margin="0"/>

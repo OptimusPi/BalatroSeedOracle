@@ -38,16 +38,41 @@ public static class ModalHelper
         var filtersContent = new FiltersModalContent();
         return menu.ShowModal("FILTER CONFIGURATION", filtersContent);
     }
+    
+    /// <summary>
+    /// Creates and shows a search modal
+    /// </summary>
+    /// <param name="menu">The main menu to show the modal on</param>
+    /// <param name="configPath">Optional config path to load</param>
+    /// <returns>The created modal</returns>
+    public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu, string? configPath = null)
+    {
+        var searchContent = new SearchModal();
+        
+        // Handle desktop icon creation when modal closes with active search
+        searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
+        {
+            Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
+            menu.ShowSearchDesktopIcon(cfgPath);
+        };
+        
+        if (!string.IsNullOrEmpty(configPath))
+        {
+            // Load the config file into the search modal
+            _ = searchContent.LoadFilterAsync(configPath);
+        }
+        return menu.ShowModal("MOTELY SEARCH", searchContent);
+    }
 
     /// <summary>
-    /// Creates and shows a fun runs modal
+    /// Creates and shows a tools modal
     /// </summary>
     /// <param name="menu">The main menu to show the modal on</param>
     /// <returns>The created modal</returns>
-    public static StandardModal ShowFunRunsModal(this Views.BalatroMainMenu menu)
+    public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
     {
-        var funRunView = new FunRunsModal();
-        return menu.ShowModal("FUN RUNS", funRunView);
+        var ToolView = new ToolsModal();
+        return menu.ShowModal("TOOLS", ToolView);
     }
 
     /// <summary>
@@ -62,36 +87,33 @@ public static class ModalHelper
     }
 
     /// <summary>
-    /// Creates and shows a browse filters modal
+    /// Creates and shows a search modal
     /// </summary>
     /// <param name="menu">The main menu to show the modal on</param>
     /// <returns>The created modal</returns>
-    public static StandardModal ShowBrowseFiltersModal(this Views.BalatroMainMenu menu)
+    public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu)
     {
-        var browseModal = new BrowseFiltersModal();
-
-        // Handle filter selection - launch search
-        browseModal.FilterSelected += (sender, filterPath) =>
+        var searchModal = new SearchModal();
+        
+        // Handle desktop icon creation when modal closes with active search
+        searchModal.CreateDesktopIconRequested += (sender, configPath) => 
         {
-            menu.HideModalContent();
-            menu.ShowSearchWidget(filterPath);
+            Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
+            menu.ShowSearchDesktopIcon(configPath);
         };
+        
+        return menu.ShowModal("MOTELY SEARCH", searchModal);
+    }
 
-        // Handle edit request - open filters modal with loaded config
-        browseModal.EditRequested += async (sender, filterPath) =>
-        {
-            menu.HideModalContent();
-            var filtersModal = menu.ShowFiltersModal();
-
-            // Load the filter into the modal - the modal itself is StandardModal, need to get its content
-            var modalContentPresenter = filtersModal.FindControl<ContentPresenter>("ModalContent");
-            if (modalContentPresenter?.Content is FiltersModalContent filtersContent)
-            {
-                await filtersContent.LoadConfigAsync(filterPath);
-            }
-        };
-
-        return menu.ShowModal("BROWSE FILTERS", browseModal);
+    /// <summary>
+    /// Creates and shows a word lists modal
+    /// </summary>
+    /// <param name="menu">The main menu to show the modal on</param>
+    /// <returns>The created modal</returns>
+    public static StandardModal ShowWordListsModal(this Views.BalatroMainMenu menu)
+    {
+        var wordListsView = new WordListsModal();
+        return menu.ShowModal("WORD LISTS", wordListsView);
     }
 
 }

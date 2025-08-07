@@ -22,6 +22,11 @@ namespace Oracle.Components
         private TextBlock _cardName;
         private Grid _imageContainer;
         private Border _legendaryBackground;
+        
+        // Drag tracking
+        private Point? _dragStartPoint;
+        private bool _isDragging;
+        private const double MinimumDragDistance = 5;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
 
@@ -101,6 +106,7 @@ namespace Oracle.Components
             // Event handlers
             _cardBorder.PointerPressed += OnPointerPressed;
             _cardBorder.PointerMoved += OnPointerMoved;
+            _cardBorder.PointerReleased += OnPointerReleased;
 
             // Listen for parent size changes to update breakpoint
             this.AttachedToVisualTree += OnAttachedToVisualTree;
@@ -230,6 +236,14 @@ namespace Oracle.Components
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(this);
+            
+            // Store the drag start point for left button
+            if (pointer.Properties.IsLeftButtonPressed)
+            {
+                _dragStartPoint = pointer.Position;
+                _isDragging = false;
+            }
+            
             var clickType = pointer.Properties.PointerUpdateKind switch
             {
                 PointerUpdateKind.LeftButtonPressed => CardClickType.LeftClick,
@@ -242,15 +256,46 @@ namespace Oracle.Components
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (e.GetCurrentPoint(_cardBorder).Properties.IsLeftButtonPressed)
+            var currentPoint = e.GetCurrentPoint(_cardBorder);
+            
+            if (currentPoint.Properties.IsLeftButtonPressed && _dragStartPoint.HasValue && !_isDragging)
             {
-                var dragData = new DataObject();
-                dragData.Set("card-data", $"{Category}:{ItemName}");
+                // Calculate distance moved
+                var distance = Math.Sqrt(
+                    Math.Pow(currentPoint.Position.X - _dragStartPoint.Value.X, 2) +
+                    Math.Pow(currentPoint.Position.Y - _dragStartPoint.Value.Y, 2)
+                );
+                
+                // Only start drag if we've moved enough
+                if (distance >= MinimumDragDistance)
+                {
+                    _isDragging = true;
+                    
+                    var dragData = new DataObject();
+                    dragData.Set("card-data", $"{Category}:{ItemName}");
+                    dragData.Set("balatro-item", ItemName); // Add this for compatibility
 
-                CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
-                DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
-                await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
+                    CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
+                    DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
+                    
+                    try
+                    {
+                        await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
+                    }
+                    finally
+                    {
+                        _isDragging = false;
+                        _dragStartPoint = null;
+                    }
+                }
             }
+        }
+        
+        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            // Clean up drag state
+            _dragStartPoint = null;
+            _isDragging = false;
         }
 
         private void CheckAndLoadLegendarySoul()

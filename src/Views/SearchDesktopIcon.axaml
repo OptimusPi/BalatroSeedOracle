@@ -3,18 +3,27 @@
              x:Class="Oracle.Views.SearchDesktopIcon">
     
     <UserControl.Styles>
+        <Style Selector="Border.desktop-icon-container">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+        
         <Style Selector="Button.desktop-icon">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
-        <Style Selector="Button.desktop-icon:pointerover">
-            <Setter Property="Background" Value="#22FFFFFF"/>
+        
+        <Style Selector="Button.desktop-icon:pointerover Border.icon-border">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
         
         <Style Selector="Border.notification-badge">
-            <Setter Property="Background" Value="#ff4c40"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="MinWidth" Value="20"/>
             <Setter Property="Height" Value="20"/>
@@ -22,37 +31,80 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Margin" Value="-5,-5,0,0"/>
         </Style>
+        
+        <Style Selector="ProgressBar.search-progress">
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource Green}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
     </UserControl.Styles>
     
-    <Button Classes="desktop-icon" Click="OnIconClick">
-        <Grid Width="64" Height="64">
-            <!-- Icon background -->
-            <Border Background="{StaticResource DockGrey}"
-                    CornerRadius="12"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2">
-                <Grid>
-                    <!-- Search icon (magnifying glass) -->
-                    <TextBlock Text="🔍" 
-                               FontSize="32"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+    <Border Classes="desktop-icon-container">
+        <StackPanel Spacing="4">
+            <!-- Icon Button -->
+            <Button Classes="desktop-icon" Click="OnIconClick" ContextRequested="OnContextRequested">
+                <Grid Width="80" Height="80">
+                    <!-- Icon background -->
+                    <Border Name="IconBorder"
+                            Classes="icon-border"
+                            Background="{StaticResource DockGrey}"
+                            CornerRadius="12"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2">
+                        <Grid>
+                            <!-- Search icon (magnifying glass) -->
+                            <TextBlock Text="🔍" 
+                                       FontSize="40"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Notification badge -->
+                    <Border Name="NotificationBadge"
+                            Classes="notification-badge"
+                            IsVisible="False">
+                        <TextBlock Name="BadgeText"
+                                   Text="0"
+                                   Foreground="White"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0"/>
+                    </Border>
                 </Grid>
-            </Border>
+            </Button>
             
-            <!-- Notification badge -->
-            <Border Name="NotificationBadge"
-                    Classes="notification-badge"
-                    IsVisible="False">
-                <TextBlock Name="BadgeText"
-                           Text="0"
-                           Foreground="White"
-                           FontSize="11"
-                           FontWeight="Bold"
+            <!-- Filter Name -->
+            <TextBlock Name="FilterNameText"
+                       Text="Filter Name"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="12"
+                       Foreground="{StaticResource White}"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       MaxWidth="100"/>
+            
+            <!-- Progress Bar with Percentage -->
+            <Grid>
+                <ProgressBar Name="SearchProgress"
+                             Classes="search-progress"
+                             Value="0"
+                             Maximum="100"
+                             IsVisible="True"/>
+                <TextBlock Name="ProgressText"
+                           Text="0%"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="10"
+                           Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Margin="4,0"/>
-            </Border>
-        </Grid>
-    </Button>
+                           Margin="0,-1,0,0"/>
+            </Grid>
+        </StackPanel>
+    </Border>
 </UserControl>

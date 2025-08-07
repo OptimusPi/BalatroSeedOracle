@@ -171,7 +171,7 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
@@ -181,7 +181,7 @@
         <Setter Property="Cursor" Value="Hand" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="#4a5e62" /> <!-- Slightly darker than LightBlack (#4f6367) -->
+            <Setter Property="Background" Value="#4a5e62" /> <!-- Slightly darker than DarkBackground (#4f6367) -->
         </Style>
         
         <Style Selector="^:pressed">

@@ -13,8 +13,8 @@ public class SearchCriteria
     public int MinScore { get; set; } = 0;
     public int BatchSize { get; set; } = 4; // Default batch size
     public int StartBatch { get; set; } = 0;
-    public int EndBatch { get; set; } = 999999;
-    public string? Deck { get; set; } = "Red Deck";
-    public string? Stake { get; set; } = "White Stake";
+    public int EndBatch { get; set; } = -1;
+    public string? Deck { get; set; } = "Red";
+    public string? Stake { get; set; } = "White";
     public bool EnableDebugOutput { get; set; } = false;
 }

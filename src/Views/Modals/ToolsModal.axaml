@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.ToolsModal">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Tools Section -->
+        <Border Grid.Row="0" Background="{StaticResource PureBlack}" Margin="20" CornerRadius="8">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+                
+                <!-- Analyzer Button -->
+                <Button Name="AnalyzerButton"
+                       Click="OnAnalyzerClick"
+                       Background="{StaticResource Green}"
+                       Foreground="{StaticResource White}"
+                       CornerRadius="8"
+                       Padding="20,15"
+                       MinWidth="200"
+                       HorizontalAlignment="Center"
+                       Cursor="Hand"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       FontWeight="Bold">
+                    <TextBlock Text="ANALYZER" HorizontalAlignment="Center"/>
+                </Button>
+                
+                <!-- Word Lists Button -->
+                <Button Name="WordListsButton"
+                       Click="OnWordListsClick"
+                       Background="{StaticResource Purple}"
+                       Foreground="{StaticResource White}"
+                       CornerRadius="8"
+                       Padding="20,15"
+                       MinWidth="200"
+                       HorizontalAlignment="Center"
+                       Cursor="Hand"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       FontWeight="Bold">
+                    <TextBlock Text="WORD LISTS" HorizontalAlignment="Center"/>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="Button#AnalyzerButton:pointerover">
+            <Setter Property="Background" Value="{StaticResource PaleGreen}"/>
+        </Style>
+        <Style Selector="Button#WordListsButton:pointerover">
+            <Setter Property="Background" Value="{StaticResource PurpleHover}"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

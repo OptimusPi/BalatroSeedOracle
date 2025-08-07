@@ -1,0 +1,261 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.WordListsModal">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Tab Navigation -->
+        <Border Grid.Row="0" Background="{StaticResource VeryDarkGrey}" CornerRadius="8,8,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Triangle Indicator -->
+                <Polygon Name="TabTriangle"
+                         Grid.Column="0"
+                         Points="10,0 20,15 0,15" 
+                         Fill="{StaticResource Purple}"
+                         Margin="10,0,0,0"
+                         VerticalAlignment="Center"/>
+                
+                <!-- Tab Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                    <Button Name="EditorTab" 
+                            Content="EDITOR"
+                            Classes="tab-button active"
+                            Click="OnEditorTabClick"/>
+                    <Button Name="BrowseTab" 
+                            Content="BROWSE"
+                            Classes="tab-button"
+                            Click="OnBrowseTabClick"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Content Area -->
+        <Grid Grid.Row="1">
+            <!-- Editor Panel -->
+            <StackPanel Name="EditorPanel" IsVisible="True" Spacing="20" Margin="20">
+                <!-- File Controls -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox Name="FileNameBox" 
+                             Grid.Column="0"
+                             Watermark="Enter filename (e.g., keywords.txt)"
+                             Classes="search-box"
+                             Margin="0,0,10,0"/>
+                    
+                    <Button Grid.Column="1"
+                            Name="NewButton"
+                            Content="NEW"
+                            Classes="small-button"
+                            Background="{StaticResource Blue}"
+                            Click="OnNewClick"
+                            Margin="0,0,5,0"/>
+                    
+                    <Button Grid.Column="2"
+                            Name="SaveButton"
+                            Content="SAVE"
+                            Classes="small-button"
+                            Background="{StaticResource Green}"
+                            Click="OnSaveClick"
+                            Margin="0,0,5,0"/>
+                    
+                    <Button Grid.Column="3"
+                            Name="LoadButton"
+                            Content="LOAD"
+                            Classes="small-button"
+                            Background="{StaticResource Orange}"
+                            Click="OnLoadClick"/>
+                </Grid>
+                
+                <!-- Text Editor -->
+                <Border Classes="content-box" MinHeight="400">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBox Name="TextEditor"
+                                 AcceptsReturn="True"
+                                 AcceptsTab="True"
+                                 TextWrapping="NoWrap"
+                                 FontFamily="Cascadia Code, Consolas, monospace"
+                                 FontSize="14"
+                                 Background="{StaticResource PureBlack}"
+                                 Foreground="{StaticResource White}"
+                                 Padding="10"
+                                 Text=""/>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Status Bar -->
+                <Border Background="{StaticResource VeryDarkGrey}" 
+                        CornerRadius="4"
+                        Padding="10,5">
+                    <TextBlock Name="StatusText"
+                               Text="Ready"
+                               Foreground="{StaticResource PaleGreen}"
+                               FontSize="12"/>
+                </Border>
+            </StackPanel>
+            
+            <!-- Browse Panel -->
+            <StackPanel Name="BrowsePanel" IsVisible="False" Spacing="20" Margin="20">
+                <!-- Directory Info -->
+                <Border Classes="content-box" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="WORD LISTS DIRECTORY"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Purple}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Name="DirectoryPath"
+                                   Text="WordLists/"
+                                   Foreground="{StaticResource PaleGreen}"
+                                   FontFamily="Cascadia Code, Consolas, monospace"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- File List -->
+                <Border Classes="content-box" MinHeight="350">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ListBox Name="FileList"
+                                 Background="Transparent"
+                                 SelectionMode="Single"
+                                 SelectionChanged="OnFileSelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource VeryDarkGrey}"
+                                            CornerRadius="4"
+                                            Padding="10"
+                                            Margin="0,2"
+                                            Cursor="Hand">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Name}"
+                                                       Foreground="{StaticResource White}"
+                                                       VerticalAlignment="Center"/>
+                                            
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Size}"
+                                                       Foreground="{StaticResource PaleGreen}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Action Buttons -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0"
+                            Name="OpenButton"
+                            Content="OPEN"
+                            Classes="small-button"
+                            Background="{StaticResource Blue}"
+                            Click="OnOpenClick"
+                            Margin="0,0,5,0"
+                            IsEnabled="False"/>
+                    
+                    <Button Grid.Column="1"
+                            Name="DeleteButton"
+                            Content="DELETE"
+                            Classes="small-button"
+                            Background="{StaticResource Red}"
+                            Click="OnDeleteClick"
+                            Margin="5,0"
+                            IsEnabled="False"/>
+                    
+                    <Button Grid.Column="2"
+                            Name="RefreshButton"
+                            Content="REFRESH"
+                            Classes="small-button"
+                            Background="{StaticResource Orange}"
+                            Click="OnRefreshClick"
+                            Margin="5,0,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource Purple}"/>
+        </Style>
+        
+        <Style Selector="Button.tab-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource PalePurple}"/>
+        </Style>
+        
+        <Style Selector="Button.tab-button:disabled">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+        
+        <Style Selector="Button.small-button">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+        
+        <Style Selector="Border.content-box">
+            <Setter Property="Background" Value="{StaticResource PureBlack}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource VeryDarkGrey}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+        
+        <Style Selector="TextBox.search-box">
+            <Setter Property="Background" Value="{StaticResource PureBlack}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource VeryDarkGrey}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

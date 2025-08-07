@@ -64,12 +64,17 @@
         </Setter>
     </Style>
     
-    <!-- Button hover - no opacity change, color is handled by specific styles -->
+    <!-- Button hover - enhanced shadow effects for red buttons -->
     <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ TextBlock">
         <Setter Property="Background" Value="Transparent" />
+    </Style>
+    
+    <!-- Enhanced red button hover shadow using exact color -->
+    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
+        <Setter Property="Background" Value="#70150f" />
     </Style>
     
     <!-- Button pressed - move down to meet shadow -->
@@ -94,7 +99,7 @@
     <!-- ALL TextBlocks get Balatro font -->
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="Transparent" />
     </Style>
@@ -102,7 +107,7 @@
     <!-- ALL Labels get Balatro font -->
     <Style Selector="Label">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="14" />
     </Style>
     
@@ -197,7 +202,7 @@
     <Style Selector="DataGridColumnHeader">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="BorderBrush" Value="#555555" />
         <Setter Property="Padding" Value="8,6" />
@@ -212,24 +217,23 @@
     
     <!-- ==== BALATRO-SPECIFIC COMPONENT STYLES ==== -->
     
-    <!-- Main modal/dialog style -->
+    <!-- Main modal/dialog style - Medium grey background like Balatro -->
     <Style Selector="Border.balatro-modal">
-        <Setter Property="Background" Value="{StaticResource Black}" />
+        <Setter Property="Background" Value="{StaticResource DockGrey}" />
         <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="BorderBrush" Value="#555a5c" />
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
         <Setter Property="BorderThickness" Value="3" />
         <Setter Property="Padding" Value="20" />
-        <Setter Property="BoxShadow" Value="0 2 8 #99000000" />
+        <Setter Property="BoxShadow" Value="0 4 0 #777e89" />
     </Style>
     
-    <!-- Card-like container (like the Common Sets area) -->
+    <!-- Card-like container (like the Common Sets area) - Dark inner panel -->
     <Style Selector="Border.balatro-card">
-        <Setter Property="Background" Value="#2e3f42" />
+        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
         <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="BorderBrush" Value="#444444" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16" />
-        <Setter Property="Margin" Value="4" />
+        <Setter Property="Margin" Value="8" />
     </Style>
     
     <!-- Section headers (like "Common Sets") -->
@@ -301,12 +305,12 @@
     <!-- Compact navigation buttons for filter modal sidebar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="16" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="22" />
-        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="4,2" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
@@ -335,6 +339,15 @@
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="MinHeight" Value="120" />
         <Setter Property="Padding" Value="16" />
+    </Style>
+    
+    <!-- Info display using exact precise colors -->
+    <Style Selector="TextBlock.info-display">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     
     <!-- When dragging over drop zone -->
@@ -375,7 +388,7 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="Padding" Value="16,8" />
         <Setter Property="Margin" Value="2,0" />
         <Setter Property="CornerRadius" Value="8,8,0,0" />
@@ -404,6 +417,16 @@
     </Style>
     <Style Selector="ScrollBar /template/ Thumb:pointerover">
         <Setter Property="Background" Value="#b9c2d2" />
+    </Style>
+    
+    <!-- Modal content box style - Main modal container (medium grey) -->
+    <Style Selector="Border.modal-content-box">
+        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        <Setter Property="Padding" Value="30"/>
     </Style>
     
 </Styles>

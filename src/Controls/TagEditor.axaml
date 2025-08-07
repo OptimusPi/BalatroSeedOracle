@@ -4,18 +4,18 @@
     
     <UserControl.Styles>
         <Style Selector="Border.tag-chip">
-            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Margin" Value="2"/>
         </Style>
         
         <Style Selector="Border.tag-chip:pointerover">
-            <Setter Property="Background" Value="#5f7377"/>
+            <Setter Property="Background" Value="{StaticResource LightGrey}"/>
         </Style>
         
         <Style Selector="TextBlock.tag-text">
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -26,26 +26,26 @@
             <Setter Property="Padding" Value="4,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
         
         <Style Selector="Button.tag-remove:pointerover">
-            <Setter Property="Foreground" Value="#FE5F55"/>
+            <Setter Property="Foreground" Value="{StaticResource Red}"/>
         </Style>
         
         <Style Selector="AutoCompleteBox.tag-input">
             <Setter Property="MinWidth" Value="150"/>
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="Background" Value="{StaticResource PureBlack}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBackground}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,4"/>
             <Setter Property="Watermark" Value="Add tag..."/>
         </Style>
     </UserControl.Styles>
     
-    <Border Background="#2a2a2a" 
-            BorderBrush="#4a4a4a"
+    <Border Background="{StaticResource PureBlack}" 
+            BorderBrush="{StaticResource DarkBackground}"
             BorderThickness="1"
             CornerRadius="4"
             Padding="4">

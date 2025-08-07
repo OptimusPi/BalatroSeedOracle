@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Input;
@@ -20,12 +21,14 @@ using Oracle.Controls;
 using Oracle.Services;
 using Avalonia.Markup.Xaml;
 using System.IO;
+using IoPath = System.IO.Path;
 using Avalonia.Threading;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using Motely;
 using Motely.Filters;
 using DebugLogger = Oracle.Helpers.DebugLogger;
+using AvaloniaEdit;
 
 namespace Oracle.Views.Modals;
 
@@ -57,10 +60,14 @@ public partial class FiltersModalContent : UserControl
     private string _currentActiveTab = "SoulJokersTab";
     private TextBox? _configNameBox;
     private TextBox? _configDescriptionBox;
+    private int _currentTabIndex = 0;
+    private Polygon? _tabTriangle;
     private TextBox? _jsonTextBox;
     private object? _originalItemPaletteContent;
     private TextBlock? _statusText;
     private string? _currentFilePath;
+    private bool _isDragging = false;
+    private Border? _dragGhost;
 
 
     public FiltersModalContent()
@@ -127,61 +134,13 @@ public partial class FiltersModalContent : UserControl
             clearMustNotButton.Click += (s, e) => ClearMustNot();
         }
 
-        // Setup Mode Toggle buttons
-        var visualModeButton = this.FindControl<Button>("VisualModeButton");
-        var jsonModeButton = this.FindControl<Button>("JsonModeButton");
-
-        if (visualModeButton != null && jsonModeButton != null)
-        {
-            // Visual mode is default - set it as active
-            visualModeButton.Classes.Add("active");
-
-            visualModeButton.Click += (s, e) =>
-            {
-                // Switch to visual mode
-                RestoreDragDropModeLayout();
-                LoadAllCategories();
-                UpdateDropZoneVisibility();
-
-                // Update button states
-                visualModeButton.Classes.Add("active");
-                jsonModeButton.Classes.Remove("active");
-
-                // Hide JSON container, show visual content
-                var jsonContainer = this.FindControl<Border>("JsonModeContainer");
-                if (jsonContainer != null) jsonContainer.IsVisible = false;
-
-                var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
-                if (rightContentGrid != null) rightContentGrid.IsVisible = true;
-            };
-
-            jsonModeButton.Click += (s, e) =>
-            {
-                // Switch to JSON mode
-                EnterEditJsonMode();
-
-                // Update button states
-                jsonModeButton.Classes.Add("active");
-                visualModeButton.Classes.Remove("active");
-
-                // Show JSON container, hide visual content
-                var rightContentGrid = this.FindControl<Grid>("RightContentGrid");
-                if (rightContentGrid != null) rightContentGrid.IsVisible = false;
-
-                var jsonContainer = this.FindControl<Border>("JsonModeContainer");
-                if (jsonContainer != null)
-                {
-                    jsonContainer.IsVisible = true;
-
-                    // Create or update JSON editor content
-                    var jsonContent = this.FindControl<ContentControl>("JsonModeContent");
-                    if (jsonContent != null && jsonContent.Content == null)
-                    {
-                        jsonContent.Content = CreateEditJsonInterface();
-                    }
-                }
-            };
-        }
+        // Setup navigation tabs
+        var visualTab = this.FindControl<Button>("VisualTab");
+        var jsonTab = this.FindControl<Button>("JsonTab");
+        var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
+        
+        // Keep track of current tab for triangle animation
+        _currentTabIndex = 0;
     }
 
     private void OnModeToggleChanged(object? sender, bool isChecked)
@@ -203,6 +162,42 @@ public partial class FiltersModalContent : UserControl
             // Update drop zones to show current selections
             UpdateDropZoneVisibility();
         }
+    }
+
+    private void UpdateTabStates(bool configLoaded)
+    {
+        var visualTab = this.FindControl<Button>("VisualTab");
+        var jsonTab = this.FindControl<Button>("JsonTab");
+        
+        if (visualTab != null) visualTab.IsEnabled = configLoaded;
+        if (jsonTab != null) jsonTab.IsEnabled = configLoaded;
+    }
+    
+    private void OnCreateNewClick(object? sender, RoutedEventArgs e)
+    {
+        // Clear all selections
+        ClearNeeds();
+        ClearWants();
+        ClearMustNot();
+        
+        // Clear the config name
+        var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+        if (configNameBox != null)
+        {
+            configNameBox.Text = "";
+        }
+        
+        // Enable tabs and switch to Visual tab
+        UpdateTabStates(true);
+        
+        // Switch to Visual tab
+        var visualTab = this.FindControl<Button>("VisualTab");
+        if (visualTab != null)
+        {
+            OnTabClick(visualTab, new RoutedEventArgs());
+        }
+        
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
     }
 
     private void SetupTabButtons()
@@ -292,16 +287,51 @@ public partial class FiltersModalContent : UserControl
         browseButton?.AddHandler(Button.ClickEvent, OnLoadClick);
         clearAllButton?.AddHandler(Button.ClickEvent, (s, e) => { ClearNeeds(); ClearWants(); ClearMustNot(); });
 
-        var createWidgetButton = this.FindControl<Button>("CreateWidgetButton");
-        createWidgetButton?.AddHandler(Button.ClickEvent, OnCreateWidgetClick);
 
-        var searchButton = this.FindControl<Button>("SearchButton");
-        searchButton?.AddHandler(Button.ClickEvent, OnLaunchSearchClick);
     }
 
     private void SetupDropZones()
     {
         Oracle.Helpers.DebugLogger.Log("FiltersModal", "Setting up drop zones...");
+        
+        // Set up drag-over for main containers to keep drag alive
+        var mainGrid = this.FindControl<Grid>("VisualPanel");
+        var contentGrid = this.FindControl<Grid>("VisualModeContainer");
+        
+        if (mainGrid != null)
+        {
+            mainGrid.AddHandler(DragDrop.DragOverEvent, (s, e) =>
+            {
+                e.DragEffects = DragDropEffects.Move;
+                e.Handled = true;
+            });
+        }
+        
+        if (contentGrid != null)
+        {
+            contentGrid.AddHandler(DragDrop.DragOverEvent, (s, e) =>
+            {
+                e.DragEffects = DragDropEffects.Move;
+                e.Handled = true;
+            });
+        }
+        
+        // Handle global drop/drag-leave to clean up
+        this.AddHandler(DragDrop.DropEvent, (s, e) =>
+        {
+            // Clean up drag visuals when drop happens anywhere
+            CleanupDragVisuals();
+        });
+        
+        this.AddHandler(DragDrop.DragLeaveEvent, (s, e) =>
+        {
+            // Only clean up if we're really leaving the entire control
+            var point = e.GetPosition(this);
+            if (point.X < 0 || point.Y < 0 || point.X > this.Bounds.Width || point.Y > this.Bounds.Height)
+            {
+                CleanupDragVisuals();
+            }
+        });
 
         // Get the drop zone borders (not just the panels)
         var needsBorder = this.FindControl<Border>("NeedsBorder");
@@ -349,13 +379,6 @@ public partial class FiltersModalContent : UserControl
         //     clearNeedsButton.Click += (s, e) => ClearNeeds();
         // if (clearWantsButton != null)
         //     clearWantsButton.Click += (s, e) => ClearWants();
-
-        // Setup mode toggle switch
-        var modeToggle = this.FindControl<BalatroToggleSwitch>("ModeToggle");
-        if (modeToggle != null)
-        {
-            modeToggle.IsCheckedChanged += OnModeToggleChanged;
-        }
 
         // Remove old button code - using toggle switch now
         // Rest of the toggle switch handling is in OnModeToggleChanged
@@ -723,6 +746,42 @@ public partial class FiltersModalContent : UserControl
         catch (Exception ex)
         {
             Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in EnterEditJsonMode: {ex}");
+        }
+    }
+
+    private void UpdateJsonEditor()
+    {
+        try
+        {
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateJsonEditor called");
+
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor != null)
+            {
+                // Create OuijaConfig from current selections
+                var config = BuildOuijaConfigFromSelections();
+                
+                // Serialize to JSON
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+                
+                var json = JsonSerializer.Serialize(config, options);
+                jsonEditor.Text = json;
+                
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Updated JSON editor with {json.Length} characters");
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in UpdateJsonEditor: {ex}");
         }
     }
 
@@ -1140,10 +1199,9 @@ public partial class FiltersModalContent : UserControl
             // Format the JSON for better readability
             await Dispatcher.UIThread.InvokeAsync(() => FormatJson(), DispatcherPriority.Background);
 
-            UpdateStatus($"✓ Loaded: {Path.GetFileName(configPath)}");
+            UpdateStatus($"✓ Loaded: {IoPath.GetFileName(configPath)}");
 
-            // Update the search widget to use this loaded config
-            UpdateSearchWidgetConfig(configPath);
+            // SearchWidget removed - using desktop icons now
         }
         catch (JsonException ex)
         {
@@ -1172,11 +1230,7 @@ public partial class FiltersModalContent : UserControl
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
-                    new FilePickerFileType("Ouija Config Files")
-                    {
-                        Patterns = new[] { "*.ouija.json" }
-                    },
-                    new FilePickerFileType("JSON Files")
+                    new FilePickerFileType("Filter Files")
                     {
                         Patterns = new[] { "*.json" }
                     },
@@ -1213,13 +1267,13 @@ public partial class FiltersModalContent : UserControl
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
         {
             Title = "Save Balatro Config",
-            SuggestedFileName = _currentFilePath != null ? System.IO.Path.GetFileName(_currentFilePath) : "new-config.ouija.json",
-            DefaultExtension = "ouija.json",
+            SuggestedFileName = _currentFilePath != null ? System.IO.Path.GetFileName(_currentFilePath) : "new-config.json",
+            DefaultExtension = "json",
             FileTypeChoices = new[]
             {
-                new Avalonia.Platform.Storage.FilePickerFileType("Ouija Config Files")
+                new Avalonia.Platform.Storage.FilePickerFileType("Filter Files")
                 {
-                    Patterns = new[] { "*.ouija.json" }
+                    Patterns = new[] { "*.json" }
                 }
             }
         });
@@ -1249,8 +1303,7 @@ public partial class FiltersModalContent : UserControl
                 _currentFilePath = file.Path.LocalPath;
                 UpdateStatus($"Saved: {System.IO.Path.GetFileName(file.Path.LocalPath)}");
 
-                // Update the search widget to use this saved config
-                UpdateSearchWidgetConfig(file.Path.LocalPath);
+                // SearchWidget removed - using desktop icons now
             }
             catch (Exception ex)
             {
@@ -2087,7 +2140,10 @@ public partial class FiltersModalContent : UserControl
             "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
             "Tags" => SpriteService.Instance.GetTagImage(itemName),
             "Bosses" => SpriteService.Instance.GetBossImage(itemName),
-            _ => null
+            "Decks" => SpriteService.Instance.GetDeckImage(itemName),
+            "Stakes" => SpriteService.Instance.GetStickerImage(itemName + "Stake"),
+            "Boosters" or "Packs" => SpriteService.Instance.GetBoosterImage(itemName),
+            _ => SpriteService.Instance.GetItemImage(itemName, actualCategory)
         };
 
         var card = new ResponsiveCard
@@ -2225,7 +2281,7 @@ public partial class FiltersModalContent : UserControl
             // Additional validation for Ouija config structure
             if (jsonDocument.RootElement.TryGetProperty("filter_config", out var filterConfig))
             {
-                UpdateStatus("✓ Valid Ouija JSON config");
+                UpdateStatus("✓ Valid filter config");
             }
             else
             {
@@ -2260,7 +2316,7 @@ public partial class FiltersModalContent : UserControl
             // Additional validation for Ouija config structure
             if (jsonDocument.RootElement.TryGetProperty("filter_config", out var filterConfig))
             {
-                UpdateStatus("✓ Valid Ouija JSON config");
+                UpdateStatus("✓ Valid filter config");
             }
             else
             {
@@ -2438,6 +2494,77 @@ public partial class FiltersModalContent : UserControl
         activeButton?.Classes.Add("active");
     }
 
+    private void OnTabClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button) return;
+        
+        // Get all tab buttons
+        var visualTab = this.FindControl<Button>("VisualTab");
+        var jsonTab = this.FindControl<Button>("JsonTab");
+        var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
+        
+        // Get all panels
+        var visualPanel = this.FindControl<Grid>("VisualPanel");
+        var jsonPanel = this.FindControl<Grid>("JsonPanel");
+        var loadSavePanel = this.FindControl<StackPanel>("LoadSavePanel");
+        
+        // Remove active class from all tabs
+        visualTab?.Classes.Remove("active");
+        jsonTab?.Classes.Remove("active");
+        loadSaveTab?.Classes.Remove("active");
+        
+        // Hide all panels
+        if (visualPanel != null) visualPanel.IsVisible = false;
+        if (jsonPanel != null) jsonPanel.IsVisible = false;
+        if (loadSavePanel != null) loadSavePanel.IsVisible = false;
+        
+        // Get triangle for animation
+        _tabTriangle = this.FindControl<Polygon>("TabTriangle");
+        
+        // Show the clicked tab's panel and update triangle position
+        switch (button.Name)
+        {
+            case "LoadSaveTab":
+                button.Classes.Add("active");
+                if (loadSavePanel != null) loadSavePanel.IsVisible = true;
+                AnimateTriangleToTab(0);
+                break;
+                
+            case "VisualTab":
+                button.Classes.Add("active");
+                if (visualPanel != null) visualPanel.IsVisible = true;
+                AnimateTriangleToTab(1);
+                RestoreDragDropModeLayout();
+                LoadAllCategories();
+                UpdateDropZoneVisibility();
+                break;
+                
+            case "JsonTab":
+                button.Classes.Add("active");
+                if (jsonPanel != null) jsonPanel.IsVisible = true;
+                AnimateTriangleToTab(2);
+                EnterEditJsonMode();
+                UpdateJsonEditor();
+                break;
+        }
+    }
+    
+    private void AnimateTriangleToTab(int tabIndex)
+    {
+        if (_tabTriangle == null) return;
+        
+        _currentTabIndex = tabIndex;
+        // Map tab index to actual column position
+        // Tab order: LoadSaveTab=0, VisualTab=1, JsonTab=2
+        var targetColumn = tabIndex;
+        
+        // Move triangle to the correct column
+        if (_tabTriangle?.Parent is Grid triangleContainer)
+        {
+            Grid.SetColumn(triangleContainer, targetColumn);
+        }
+    }
+    
     private void OnClearClick(object? sender, RoutedEventArgs e)
     {
         _selectedNeeds.Clear();
@@ -2640,15 +2767,15 @@ public partial class FiltersModalContent : UserControl
 
     private Control CreateDroppedItemControl(string itemName, string category)
     {
-        // Create a viewbox to make the item responsive - moderately smaller than palette items
+        // Create a viewbox to make the item responsive - much smaller for drop zones
         var viewBox = new Viewbox
         {
             Stretch = Stretch.Uniform,
             StretchDirection = StretchDirection.DownOnly,
-            MaxWidth = 56,
-            MaxHeight = 70,
-            MinWidth = 40,
-            MinHeight = 50,
+            MaxWidth = 35,
+            MaxHeight = 44,
+            MinWidth = 28,
+            MinHeight = 35,
             Margin = new Thickness(2)
         };
 
@@ -2656,8 +2783,8 @@ public partial class FiltersModalContent : UserControl
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 48,
-            Height = 60,
+            Width = 30,
+            Height = 38,
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}" // Store for later reference
         };
@@ -2753,7 +2880,11 @@ public partial class FiltersModalContent : UserControl
                 "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
                 "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
                 "Tags" => SpriteService.Instance.GetTagImage(itemName),
-                _ => null
+                "Bosses" => SpriteService.Instance.GetBossImage(itemName),
+                "Decks" => SpriteService.Instance.GetDeckImage(itemName),
+                "Stakes" => SpriteService.Instance.GetStickerImage(itemName + "Stake"),
+                "Boosters" or "Packs" => SpriteService.Instance.GetBoosterImage(itemName),
+                _ => SpriteService.Instance.GetItemImage(itemName, category)
             };
 
             Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 Image lookup for '{itemName}' in category '{category}': {(imageSource != null ? "FOUND" : "NOT FOUND")}");
@@ -2778,7 +2909,7 @@ public partial class FiltersModalContent : UserControl
                 var textBlock = new TextBlock
                 {
                     Text = displayText,
-                    FontSize = 8,
+                    FontSize = 6,
                     FontWeight = FontWeight.SemiBold,
                     Foreground = Brushes.White,
                     TextTrimming = TextTrimming.CharacterEllipsis,
@@ -2958,51 +3089,6 @@ public partial class FiltersModalContent : UserControl
         File.WriteAllText(filePath, json);
     }
 
-    private void OnCreateWidgetClick(object? sender, RoutedEventArgs e)
-    {
-        try
-        {
-            // Always save to temp.ouija.json automatically
-            string tempPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "", "filters", "temp.ouija.json");
-
-            // Ensure the filters directory exists
-            var filtersDir = Path.GetDirectoryName(tempPath);
-            if (!string.IsNullOrEmpty(filtersDir) && !Directory.Exists(filtersDir))
-            {
-                Directory.CreateDirectory(filtersDir);
-            }
-
-            // Save current configuration to temp file
-            SaveConfigurationToFile(tempPath);
-            _currentConfigPath = tempPath;
-
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Auto-saved to temp file and creating widget: {tempPath}");
-
-            // Find the BalatroMainMenu in the visual tree
-            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu != null)
-            {
-                // First hide the modal
-                mainMenu.HideModalContent();
-
-                // Then show the search widget with the config
-                mainMenu.ShowSearchWidget(tempPath);
-
-                // Save widget persistence preferences
-                SaveWidgetPreference(tempPath);
-
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Widget created successfully!");
-            }
-            else
-            {
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "Could not find BalatroMainMenu!");
-            }
-        }
-        catch (Exception ex)
-        {
-            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error creating widget: {ex.Message}");
-        }
-    }
 
     private async Task OnSaveClickAsync()
     {
@@ -3024,13 +3110,13 @@ public partial class FiltersModalContent : UserControl
             var options = new Avalonia.Platform.Storage.FilePickerSaveOptions
             {
                 Title = "Save Filter Configuration",
-                DefaultExtension = "ouija.json",
-                SuggestedFileName = $"{configName}.ouija.json",
+                DefaultExtension = "json",
+                SuggestedFileName = $"{configName}.json",
                 FileTypeChoices = new[]
                 {
-                    new Avalonia.Platform.Storage.FilePickerFileType("Ouija Filter")
+                    new Avalonia.Platform.Storage.FilePickerFileType("Filter Files")
                     {
-                        Patterns = new[] { "*.ouija.json" }
+                        Patterns = new[] { "*.json" }
                     }
                 }
             };
@@ -3063,34 +3149,6 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
-    private void SaveWidgetPreference(string configPath)
-    {
-        try
-        {
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            if (userProfileService != null)
-            {
-                // Add widget to user profile for persistence
-                var widgetConfig = new SearchWidgetConfig
-                {
-                    FilterConfigPath = configPath,
-                    X = 20 + (_widgetCount * 400), // Calculate position based on existing widgets
-                    Y = 80,
-                    IsMinimized = false,
-                    ThreadCount = 4,
-                    MinScore = 1,
-                    BatchSize = 4
-                };
-
-                userProfileService.AddOrUpdateWidget(widgetConfig);
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Widget preference saved");
-            }
-        }
-        catch (Exception ex)
-        {
-            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving widget preference: {ex.Message}");
-        }
-    }
 
     private int _widgetCount
     {
@@ -3107,7 +3165,7 @@ public partial class FiltersModalContent : UserControl
                         var desktopCanvas = mainMenu.FindControl<Grid>("DesktopCanvas");
                         if (desktopCanvas != null)
                         {
-                            return desktopCanvas.Children.OfType<Components.SearchWidget>().Count();
+                            return desktopCanvas.Children.OfType<SearchDesktopIcon>().Count();
                         }
                     }
                 }
@@ -3181,54 +3239,58 @@ public partial class FiltersModalContent : UserControl
         }
         card.Tag = $"{actualCategory}:{itemName}";
 
-        // Single event handler for drag initiation - use PointerPressed!
-        card.PointerPressed += async (sender, e) =>
+        // Handle click events - ResponsiveCard will fire CardClicked for clicks
+        card.CardClicked += (sender, args) =>
         {
-            // Only start drag on left mouse button
-            var properties = e.GetCurrentPoint(card).Properties;
-            if (!properties.IsLeftButtonPressed) return;
-
-            // For jokers, always use "Jokers" category regardless of legendary status
-            var dragCategory = category;
-
-            // Create drag data
-            var dataObject = new DataObject();
-            dataObject.Set("balatro-item", $"{dragCategory}|{itemName}");
-
-            // Visual feedback
+            if (args.ClickType == CardClickType.LeftClick)
+            {
+                // Toggle selection
+                var key = $"{actualCategory}:{itemName}";
+                
+                // Toggle between Need/Want/None states
+                if (card.IsSelectedNeed)
+                {
+                    _selectedNeeds.Remove(key);
+                    _selectedWants.Add(key);
+                    card.IsSelectedNeed = false;
+                    card.IsSelectedWant = true;
+                    Oracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
+                }
+                else if (card.IsSelectedWant)
+                {
+                    _selectedWants.Remove(key);
+                    card.IsSelectedNeed = false;
+                    card.IsSelectedWant = false;
+                    Oracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
+                }
+                else
+                {
+                    _selectedNeeds.Add(key);
+                    card.IsSelectedNeed = true;
+                    card.IsSelectedWant = false;
+                    Oracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
+                }
+                
+                UpdateDropZoneVisibility();
+            }
+        };
+        
+        // Handle drag events - ResponsiveCard will fire CardDragStarted when dragging starts
+        card.CardDragStarted += (sender, args) =>
+        {
+            // Add visual feedback
             card.Classes.Add("is-dragging");
-            Oracle.Helpers.DebugLogger.Log($"👋 Started dragging {itemName} from {category}");
+            Oracle.Helpers.DebugLogger.Log($"👋 Drag started via CardDragStarted: {itemName} from {category}");
 
             // Create a ghost card overlay with actual image
             CreateDragOverlay(itemName, category, card.ImageSource);
             _isDragging = true;
-
-            try
-            {
-                // Do the drag operation
-                // Note: Avalonia doesn't have built-in support for custom drag visuals
-                // The wiggle animation on the source card will have to suffice for now
-                var result = await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move);
-                Oracle.Helpers.DebugLogger.Log($"✅ Drag complete: {itemName} - Result: {result}");
-            }
-            catch (Exception ex)
-            {
-                Oracle.Helpers.DebugLogger.LogError($"Drag failed: {ex.Message}");
-            }
-            finally
-            {
-                // Always clean up visual feedback
-                card.Classes.Remove("is-dragging");
-                RemoveDragOverlay();
-                _isDragging = false;
-            }
         };
     }
 
     private System.Threading.Timer? _ghostWiggleTimer;
     private Canvas? _dragOverlay;
     private Border? _ghostCard;
-    private bool _isDragging = false;
 
     private void CreateDragOverlay(string itemName, string category, IImage? imageSource)
     {
@@ -3399,6 +3461,20 @@ public partial class FiltersModalContent : UserControl
             Oracle.Helpers.DebugLogger.Log("👻 Removed drag overlay");
         }
     }
+    
+    private void CleanupDragVisuals()
+    {
+        // Find all cards and remove is-dragging class
+        var cards = this.GetVisualDescendants().OfType<ResponsiveCard>();
+        foreach (var card in cards)
+        {
+            card.Classes.Remove("is-dragging");
+        }
+        
+        // Remove drag overlay
+        RemoveDragOverlay();
+        _isDragging = false;
+    }
 
     private void StartGhostWiggle()
     {
@@ -3462,13 +3538,13 @@ public partial class FiltersModalContent : UserControl
             // Show save file dialog
             var saveOptions = new Avalonia.Platform.Storage.FilePickerSaveOptions
             {
-                Title = "Save Ouija Config",
-                DefaultExtension = "ouija.json",
+                Title = "Save Filter Config",
+                DefaultExtension = "json",
                 FileTypeChoices = new[]
                 {
-                    new Avalonia.Platform.Storage.FilePickerFileType("Ouija Config Files")
+                    new Avalonia.Platform.Storage.FilePickerFileType("Filter Files")
                     {
-                        Patterns = new[] { "*.ouija.json" }
+                        Patterns = new[] { "*.json" }
                     }
                 },
                 SuggestedFileName = GetSuggestedFileName()
@@ -3479,9 +3555,11 @@ public partial class FiltersModalContent : UserControl
             {
                 await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, json);
                 Oracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
+                
+                // Enable tabs after successful save
+                UpdateTabStates(true);
 
-                // Update the search widget to use this saved config
-                UpdateSearchWidgetConfig(file.Path.LocalPath);
+                // SearchWidget removed - using desktop icons now
             }
         }
         catch (Exception ex)
@@ -3606,8 +3684,8 @@ public partial class FiltersModalContent : UserControl
     {
         var config = new Motely.Filters.OuijaConfig
         {
-            Deck = "Red", // Default deck - TODO: add deck selector from UI
-            Stake = "White" // Default stake - TODO: add stake selector from UI
+            Deck = "Red", // Default deck
+            Stake = "White" // Default stake
         };
 
         // Convert all items using the helper method that handles unique keys
@@ -3861,6 +3939,16 @@ public partial class FiltersModalContent : UserControl
     }
 
 
+    private void OnBrowseFilterClick(object? sender, RoutedEventArgs e)
+    {
+        OnLoadClick(sender, e);
+    }
+    
+    private void OnBrowseFiltersClick(object? sender, RoutedEventArgs e)
+    {
+        OnLoadClick(sender, e);
+    }
+    
     private async void OnLoadClick(object? sender, RoutedEventArgs e)
     {
         // Check if we're in JSON editor mode by checking which button is active
@@ -3884,13 +3972,13 @@ public partial class FiltersModalContent : UserControl
             // Show open file dialog
             var openOptions = new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
-                Title = "Load Ouija Config",
+                Title = "Load Filter Config",
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
-                    new Avalonia.Platform.Storage.FilePickerFileType("Ouija Config Files")
+                    new Avalonia.Platform.Storage.FilePickerFileType("Filter Files")
                     {
-                        Patterns = new[] { "*.ouija.json", "*.json" }
+                        Patterns = new[] { "*.json" }
                     }
                 }
             };
@@ -3917,14 +4005,38 @@ public partial class FiltersModalContent : UserControl
                     var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
                     if (configNameBox != null)
                     {
-                        configNameBox.Text = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Path.LocalPath));
+                        configNameBox.Text = IoPath.GetFileNameWithoutExtension(IoPath.GetFileNameWithoutExtension(file.Path.LocalPath));
+                    }
+                    
+                    // Update LoadedFilterText
+                    var loadedFilterText = this.FindControl<TextBlock>("LoadedFilterText");
+                    if (loadedFilterText != null)
+                    {
+                        loadedFilterText.Text = $"Loaded: {IoPath.GetFileName(file.Path.LocalPath)}";
+                        loadedFilterText.Foreground = new SolidColorBrush(Colors.White);
+                    }
+                    
+                    // Update hidden FilterPathInput
+                    var filterPathInput = this.FindControl<TextBox>("FilterPathInput");
+                    if (filterPathInput != null)
+                    {
+                        filterPathInput.Text = file.Path.LocalPath;
                     }
 
                     Oracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
+                    
+                    // Enable tabs and switch to Visual tab
+                    UpdateTabStates(true);
+                    
+                    // Switch to Visual tab
+                    var visualTab = this.FindControl<Button>("VisualTab");
+                    if (visualTab != null)
+                    {
+                        OnTabClick(visualTab, new RoutedEventArgs());
+                    }
                 }
 
-                // Update the search widget to use this loaded config
-                UpdateSearchWidgetConfig(file.Path.LocalPath);
+                // SearchWidget removed - using desktop icons now
             }
         }
         catch (Exception ex)
@@ -4065,119 +4177,9 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
-    private void UpdateSearchWidgetConfig(string configPath)
-    {
-        try
-        {
-            // Store the current config path
-            _currentConfigPath = configPath;
-
-            // Get the main window and menu
-            var window = TopLevel.GetTopLevel(this) as Window;
-            var mainMenu = window?.Content as Views.BalatroMainMenu;
-
-            if (mainMenu != null)
-            {
-                // Get the search widget
-                var searchWidget = mainMenu.FindControl<Components.SearchWidget>("SearchWidget");
-                if (searchWidget != null && searchWidget.IsVisible)
-                {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Updating SearchWidget with config: {Path.GetFileName(configPath)}");
-
-                    // Load the config in the search widget
-                    Dispatcher.UIThread.Post(async () =>
-                    {
-                        await searchWidget.LoadConfig(configPath);
-                    });
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error updating search widget config: {ex.Message}");
-        }
-    }
+    // SearchWidget removed - using desktop icons now
 
 
-    private async void OnLaunchSearchClick(object? sender, RoutedEventArgs e)
-    {
-        Oracle.Helpers.DebugLogger.Log("FiltersModal: OnLaunchSearchClick called");
-        try
-        {
-            string configPath;
-
-            // If we have a saved config path, use it. Otherwise prompt to save first.
-            if (!string.IsNullOrEmpty(_currentConfigPath))
-            {
-                // Update the existing config file with current selections
-                var config = BuildOuijaConfigFromSelections();
-                var json = SerializeOuijaConfig(config);
-                await File.WriteAllTextAsync(_currentConfigPath, json);
-                configPath = _currentConfigPath;
-            }
-            else
-            {
-                // Prompt user to save the config first
-                Oracle.Helpers.DebugLogger.Log("No saved config - prompting user to save first");
-                OnSaveClick(sender, e);
-
-                // If they saved, use that path
-                if (!string.IsNullOrEmpty(_currentConfigPath))
-                {
-                    configPath = _currentConfigPath;
-                }
-                else
-                {
-                    // User cancelled save
-                    return;
-                }
-            }
-
-            Oracle.Helpers.DebugLogger.Log($"FiltersModal: Using config at {configPath}");
-
-            // Get the main menu reference
-            var mainWindow = TopLevel.GetTopLevel(this) as Window;
-            Oracle.Helpers.DebugLogger.Log($"FiltersModal: Got window: {mainWindow != null}");
-
-            if (mainWindow != null)
-            {
-                // The window content is a Grid, and BalatroMainMenu is inside it
-                var grid = mainWindow.Content as Grid;
-                Oracle.Helpers.DebugLogger.Log($"FiltersModal: Got grid: {grid != null}");
-
-                if (grid != null)
-                {
-                    // Find BalatroMainMenu in the grid's children
-                    BalatroMainMenu? mainMenu = null;
-                    foreach (var child in grid.Children)
-                    {
-                        if (child is BalatroMainMenu menu)
-                        {
-                            mainMenu = menu;
-                            break;
-                        }
-                    }
-
-                    Oracle.Helpers.DebugLogger.Log($"FiltersModal: Got mainMenu: {mainMenu != null}");
-
-                    if (mainMenu != null)
-                    {
-                        // Close this modal properly
-                        Oracle.Helpers.DebugLogger.Log("FiltersModal: Hiding modal content");
-                        mainMenu.HideModalContent();
-
-                        // Use the ShowSearchWidget method which creates a new widget with the config
-                        Oracle.Helpers.DebugLogger.Log($"FiltersModal: Calling ShowSearchWidget with config: {configPath}");
-                        mainMenu.ShowSearchWidget(configPath);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Oracle.Helpers.DebugLogger.LogError($"Error launching search: {ex.Message}");
-        }
-    }
 
     // Removed custom scroll handler - AvaloniaEdit handles scrolling natively
     // private void OnEditorPointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -4345,12 +4347,12 @@ public partial class FiltersModalContent : UserControl
             var sanitizedName = new string(configName.Where(c => !invalidChars.Contains(c)).ToArray());
             if (!string.IsNullOrEmpty(sanitizedName))
             {
-                return $"{sanitizedName}.ouija.json";
+                return $"{sanitizedName}.json";
             }
         }
 
         // Fallback to timestamp-based name
-        return $"config-{DateTime.Now:yyyyMMdd-HHmmss}.ouija.json";
+        return $"config-{DateTime.Now:yyyyMMdd-HHmmss}.json";
     }
 
     private void UpdateAutoGeneratedFilterName()

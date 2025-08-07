@@ -120,8 +120,8 @@ namespace Oracle.Views.Modals
                     var modalResult = new SearchResult
                     {
                         Seed = result.Seed,
-                        Score = result.Score,
-                        Antes = result.Ante.ToString(),
+                        Score = result.TotalScore,
+                        Antes = "",  // Ante was removed from SearchResult
                         ItemsJson = result.ScoreBreakdown,
                         Timestamp = DateTime.Now
                     };

@@ -1,0 +1,31 @@
+{
+  "must": [
+    {
+      "item": {
+        "type": "Joker",
+        "name": "Blueprint"
+      },
+      "searchAntes": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    {
+      "item": {
+        "type": "Tag",
+        "name": "StandardTag"
+      },
+      "searchAntes": [1, 2]
+    }
+  ],
+  "should": [
+    {
+      "item": {
+        "type": "Joker",
+        "name": "Brainstorm"
+      },
+      "searchAntes": [1, 2, 3, 4, 5, 6, 7, 8],
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

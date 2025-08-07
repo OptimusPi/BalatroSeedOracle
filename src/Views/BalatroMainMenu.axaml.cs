@@ -13,6 +13,7 @@ using Oracle.Views.Modals;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,9 +25,10 @@ namespace Oracle.Views
         private BalatroStyleBackground? _background;
         private Button? _animationToggleButton;
         private TextBlock? _animationButtonText;
+        private SearchDesktopIcon? _searchDesktopIcon;
         private bool _isAnimating = true;
-        private readonly List<Components.SearchWidget> _searchWidgets = new();
         private int _widgetCounter = 0;
+        private int _minimizedWidgetCount = 0;
         private UserProfileService? _userProfileService;
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Oracle.Views
             _modalContainer = this.FindControl<Grid>("ModalContainer");
             _background = this.FindControl<BalatroStyleBackground>("BackgroundControl");
             _animationToggleButton = this.FindControl<Button>("AnimationToggleButton");
+            _searchDesktopIcon = this.FindControl<SearchDesktopIcon>("SearchDesktopIcon");
 
             if (_animationToggleButton != null)
             {
@@ -85,22 +88,23 @@ namespace Oracle.Views
         {
             if (_modalContainer == null)
                 return;
+                
             _modalContainer.Children.Clear();
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
         }
 
         // Main menu button event handlers
-        private void OnNewFilterClick(object? sender, RoutedEventArgs e)
+        private void OnSeedSearchClick(object? sender, RoutedEventArgs e)
+        {
+            // Open the search modal
+            this.ShowSearchModal();
+        }
+
+        private void OnEditorClick(object? sender, RoutedEventArgs e)
         {
             // Open filters modal with blank/new filter
             this.ShowFiltersModal();
-        }
-
-        private void OnLoadClick(object? sender, RoutedEventArgs e)
-        {
-            // Show the browse filters modal
-            this.ShowBrowseFiltersModal();
         }
 
         private void OnResultsClick(object? sender, RoutedEventArgs e)
@@ -114,10 +118,10 @@ namespace Oracle.Views
         }
 
 
-        private void OnFunRunClick(object? sender, RoutedEventArgs e)
+        private void OnToolClick(object? sender, RoutedEventArgs e)
         {
             // Use the modal helper extension method
-            this.ShowFunRunsModal();
+            this.ShowToolsModal();
         }
 
 
@@ -136,12 +140,7 @@ namespace Oracle.Views
         {
             try
             {
-                // Stop all search widgets
-                foreach (var searchWidget in _searchWidgets)
-                {
-                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Stopping search widget #{_searchWidgets.IndexOf(searchWidget) + 1}...");
-                    searchWidget.StopSearch();
-                }
+                // Search widgets removed - using desktop icons now
             }
             catch (Exception ex)
             {
@@ -316,12 +315,13 @@ namespace Oracle.Views
             }
         }
 
+        
         /// <summary>
-        /// Shows the search widget on the desktop
+        /// Shows a search desktop icon on the desktop
         /// </summary>
-        public async void ShowSearchWidget(string? configPath = null)
+        public async void ShowSearchDesktopIcon(string? configPath = null)
         {
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchWidget called with config: {configPath}");
+            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchDesktopIcon called with config: {configPath}");
 
             // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
@@ -331,55 +331,72 @@ namespace Oracle.Views
                 return;
             }
 
-            // Create a new SearchWidget instance
-            var searchWidget = new Components.SearchWidget();
+            // Create a new SearchDesktopIcon instance
+            var searchIcon = new SearchDesktopIcon();
+            
+            // Get filter name from config path
+            string filterName = "Unknown Filter";
+            if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+            {
+                filterName = Path.GetFileNameWithoutExtension(configPath);
+            }
+            
+            searchIcon.Initialize(configPath ?? string.Empty, filterName);
 
-            // Calculate position based on existing widgets
-            var leftMargin = 20 + (_widgetCounter % 3) * 400; // 3 widgets per row
-            var topMargin = 80 + (_widgetCounter / 3) * 300; // Stack rows
+            // Calculate position based on existing icons
+            var leftMargin = 20 + (_widgetCounter % 8) * 120; // 8 icons per row, 120px apart
+            var topMargin = 20 + (_widgetCounter / 8) * 140; // Stack rows, 140px apart
 
-            searchWidget.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
-            searchWidget.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
-            searchWidget.Margin = new Thickness(leftMargin, topMargin, 0, 0);
-            searchWidget.IsVisible = true;
+            searchIcon.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+            searchIcon.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
+            searchIcon.Margin = new Thickness(leftMargin, topMargin, 0, 0);
+            searchIcon.IsVisible = true;
 
             // Add to the desktop canvas
-            desktopCanvas.Children.Add(searchWidget);
-            _searchWidgets.Add(searchWidget);
+            desktopCanvas.Children.Add(searchIcon);
             _widgetCounter++;
 
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Created SearchWidget #{_widgetCounter} at position ({leftMargin}, {topMargin})");
+            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})");
 
-            // If config path provided, load it
+            // If config path provided, start the search
             if (!string.IsNullOrEmpty(configPath))
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Loading config...");
-                await searchWidget.LoadConfig(configPath);
+                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Starting search...");
+                var searchService = App.GetService<MotelySearchService>();
+                if (searchService != null)
+                {
+                    var criteria = new Oracle.Models.SearchCriteria
+                    {
+                        ConfigPath = configPath,
+                        ThreadCount = 4,
+                        MinScore = 0,
+                        BatchSize = 3
+                    };
+                    await searchService.StartSearchAsync(criteria);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Updates the visibility of the search desktop icon based on minimized widget count
+        /// </summary>
+        private void UpdateSearchDesktopIconVisibility()
+        {
+            if (_searchDesktopIcon != null)
+            {
+                _searchDesktopIcon.IsVisible = _minimizedWidgetCount > 0;
             }
         }
 
         /// <summary>
         /// Stops all running searches - called during application shutdown
         /// </summary>
-        public async Task StopAllSearchesAsync()
+        public Task StopAllSearchesAsync()
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
 
-            // Stop all search widgets
-            foreach (var searchWidget in _searchWidgets)
-            {
-                if (searchWidget.IsRunning)
-                {
-                    DebugLogger.LogImportant("BalatroMainMenu", $"Stopping SearchWidget #{_searchWidgets.IndexOf(searchWidget) + 1}...");
-                    searchWidget.StopSearch();
-                }
-            }
-
-            // Wait a bit for the searches to stop
-            if (_searchWidgets.Any(w => w.IsRunning))
-            {
-                await Task.Delay(500);
-            }
+            // Search widgets removed - using desktop icons now
 
             // Check if there's a filters modal open with a search running
             if (_modalContainer != null && _modalContainer.Children.Count > 0)
@@ -394,13 +411,14 @@ namespace Oracle.Views
                     {
                         // FiltersModal may have active searches to stop
                         DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
-                        // Note: FiltersModal doesn't have a StopSearch method currently
+                        // Note: FiltersModal doesn't have a StopSearch method
                         // but we keep this structure in case it's needed later
                     }
                 }
             }
 
             DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
+            return Task.CompletedTask;
         }
     }
 }

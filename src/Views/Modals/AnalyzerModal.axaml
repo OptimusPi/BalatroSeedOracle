@@ -10,8 +10,8 @@
         </Grid.RowDefinitions>
         
         <!-- Input Section -->
-        <Border Grid.Row="0" Background="#1a1a1a" CornerRadius="12" Margin="10" BoxShadow="0 2 10 #00000040">
-            <Border Background="#2e3f42" CornerRadius="10" Margin="2">
+        <Border Grid.Row="0" Background="{StaticResource DarkerGrey}" CornerRadius="12" Margin="10" BoxShadow="0 2 10 #22000000">
+            <Border Background="{StaticResource DarkBackground}" CornerRadius="10" Margin="2">
                 <Grid Margin="15">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -24,7 +24,7 @@
                               FontSize="20"
                               FontWeight="Bold"
                               HorizontalAlignment="Center"
-                              Foreground="#eac058"
+                              Foreground="{StaticResource Gold}"
                               Margin="0,0,0,15"/>
                     
                     <!-- Input Controls -->
@@ -43,7 +43,7 @@
                                   Margin="0,0,10,0"
                                   FontSize="16"
                                   FontWeight="SemiBold"
-                                  Foreground="#FFFFFF"/>
+                                  Foreground="{StaticResource White}"/>
                         
                         <TextBox Grid.Column="1" 
                                 Name="SeedInput"
@@ -55,8 +55,8 @@
                                 Height="40"
                                 Margin="0,0,15,0"
                                 CornerRadius="6"
-                                Background="#1a1a1a"
-                                BorderBrush="#3a3a3a"
+                                Background="{StaticResource DarkerGrey}"
+                                BorderBrush="{StaticResource DarkBorder}"
                                 BorderThickness="2"/>
                         
                         <!-- Deck/Stake Selection -->
@@ -68,8 +68,8 @@
                                  Margin="0,0,15,0"
                                  VerticalAlignment="Center"
                                  CornerRadius="6"
-                                 Background="#1a1a1a"
-                                 BorderBrush="#3a3a3a"
+                                 Background="{StaticResource DarkerGrey}"
+                                 BorderBrush="{StaticResource DarkBorder}"
                                  BorderThickness="2">
                             <ComboBoxItem>Red Deck - White Stake</ComboBoxItem>
                             <ComboBoxItem>Red Deck - Red Stake</ComboBoxItem>
@@ -101,13 +101,13 @@
                                Content="ANALYZE"
                                Click="OnAnalyzeClick"
                                MinWidth="120"
-                               Background="#4BC292"
-                               Foreground="#FFFFFF"
+                               Background="{StaticResource AccentGreen}"
+                               Foreground="{StaticResource White}"
                                FontWeight="Bold"
                                FontSize="16"
                                CornerRadius="6"
                                Height="40"
-                               Classes="balatro-button"/>
+                               Classes="btn-green"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -118,7 +118,7 @@
             <StackPanel Name="ResultsPanel" Margin="5">
                 <!-- Placeholder -->
                 <Border Name="PlaceholderPanel" 
-                       Background="#2e3f42" 
+                       Background="{StaticResource DarkBackground}" 
                        CornerRadius="12" 
                        Padding="40"
                        HorizontalAlignment="Center"
@@ -134,7 +134,7 @@
                                   HorizontalAlignment="Center"
                                   FontSize="18"
                                   FontWeight="SemiBold"
-                                  Foreground="#FFFFFF"/>
+                                  Foreground="{StaticResource White}"/>
                         <TextBlock Text="View shop contents, booster packs, and skip tags for each ante"
                                   HorizontalAlignment="Center"
                                   FontSize="14"
@@ -151,14 +151,14 @@
     <UserControl.Styles>
         <!-- Ante Panel Style -->
         <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Margin" Value="5,5,5,10"/>
-            <Setter Property="BoxShadow" Value="0 2 10 #00000040"/>
+            <Setter Property="BoxShadow" Value="0 2 10 #22000000"/>
         </Style>
         
         <Style Selector="Border.ante-panel > Border">
-            <Setter Property="Background" Value="#2e3f42"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Padding" Value="20"/>
@@ -169,78 +169,67 @@
             <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,0,0,15"/>
-            <Setter Property="Foreground" Value="#eac058"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
         </Style>
         
         <Style Selector="TextBlock.subsection-header">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,15,0,8"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
         </Style>
         
         <!-- Shop Slot Style -->
         <Style Selector="Border.shop-slot">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="MinWidth" Value="90"/>
             <Setter Property="MinHeight" Value="130"/>
         </Style>
         
         <Style Selector="Border.shop-slot:pointerover">
-            <Setter Property="BorderBrush" Value="#5a5a5a"/>
-            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
         <!-- Pack Style -->
         <Style Selector="Border.pack-display">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="MinWidth" Value="120"/>
         </Style>
         
         <Style Selector="Border.pack-display:pointerover">
-            <Setter Property="BorderBrush" Value="#5a5a5a"/>
-            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
         <!-- Tag Display Style -->
         <Style Selector="Border.tag-display">
-            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         
         <Style Selector="Border.tag-display:pointerover">
-            <Setter Property="BorderBrush" Value="#5a5a5a"/>
-            <Setter Property="Background" Value="#252525"/>
-        </Style>
-        
-        <!-- Balatro Button Style -->
-        <Style Selector="Button.balatro-button:pointerover">
-            <Setter Property="Background" Value="#5BD3A3"/>
-            <Setter Property="RenderTransform" Value="scale(1.05)"/>
-        </Style>
-        
-        <Style Selector="Button.balatro-button:pressed">
-            <Setter Property="Background" Value="#3BA282"/>
-            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
         <!-- Loading Spinner Style -->
         <Style Selector="Border.loading-panel">
-            <Setter Property="Background" Value="#2e3f42"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="40"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>

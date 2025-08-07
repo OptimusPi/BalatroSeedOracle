@@ -1,5 +1,5 @@
 {
-  "AuthorName": "test",
+  "AuthorName": "pifreak",
   "ActiveWidgets": [
     {
       "FilterConfigPath": "X:\\BalatroSeedOracle\\config-20250728-211113.ouija.json",
@@ -29,7 +29,7 @@
       "BatchSize": 4
     },
     {
-      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\Debug\\net9.0\\filters\\temp.ouija.json",
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\debug\\net9.0\\filters\\temp.ouija.json",
       "X": 20,
       "Y": 80,
       "IsMinimized": false,
@@ -38,7 +38,7 @@
       "BatchSize": 4
     },
     {
-      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\debug\\net9.0\\filters\\temp.ouija.json",
+      "FilterConfigPath": "X:\\BalatroSeedOracle\\src\\bin\\Debug\\net9.0\\filters\\temp.ouija.json",
       "X": 20,
       "Y": 80,
       "IsMinimized": false,

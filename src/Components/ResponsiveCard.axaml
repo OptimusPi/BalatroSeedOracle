@@ -33,7 +33,7 @@
     </UserControl.Styles>
 
     <Border Name="CardBorder" 
-            Background="{StaticResource Black}"
+            Background="Transparent"
             Padding="2" 
             MinWidth="80"
             MinHeight="72"

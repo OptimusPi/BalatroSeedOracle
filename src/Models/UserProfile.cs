@@ -13,9 +13,9 @@ namespace Oracle.Models
         public string AuthorName { get; set; } = "pifreak";
 
         /// <summary>
-        /// List of active search widgets with their configurations
+        /// SearchWidget removed - using desktop icons now
         /// </summary>
-        public List<SearchWidgetConfig> ActiveWidgets { get; set; } = new();
+        // public List<SearchWidgetConfig> ActiveWidgets { get; set; } = new();
 
         /// <summary>
         /// Background theme preference
@@ -38,44 +38,5 @@ namespace Oracle.Models
         public bool MusicEnabled { get; set; } = true;
     }
 
-    /// <summary>
-    /// Configuration for a single search widget
-    /// </summary>
-    public class SearchWidgetConfig
-    {
-        /// <summary>
-        /// Path to the filter configuration file
-        /// </summary>
-        public string? FilterConfigPath { get; set; }
-
-        /// <summary>
-        /// Widget position X
-        /// </summary>
-        public double X { get; set; }
-
-        /// <summary>
-        /// Widget position Y
-        /// </summary>
-        public double Y { get; set; }
-
-        /// <summary>
-        /// Whether the widget is minimized
-        /// </summary>
-        public bool IsMinimized { get; set; }
-
-        /// <summary>
-        /// Thread count setting
-        /// </summary>
-        public int ThreadCount { get; set; } = 4;
-
-        /// <summary>
-        /// Minimum score setting
-        /// </summary>
-        public int MinScore { get; set; } = 1;
-
-        /// <summary>
-        /// Batch size setting
-        /// </summary>
-        public int BatchSize { get; set; } = 4;
-    }
+    // SearchWidgetConfig removed - using desktop icons now
 }

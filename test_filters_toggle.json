@@ -1,0 +1,10 @@
+{
+  "must": [
+    {
+      "type": "joker",
+      "value": "Joker"
+    }
+  ],
+  "should": [],
+  "mustNot": []
+}

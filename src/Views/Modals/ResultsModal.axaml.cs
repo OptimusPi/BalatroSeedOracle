@@ -167,10 +167,10 @@ namespace Oracle.Views.Modals
                     // Hide the modal
                     mainMenu.HideModalContent();
 
-                    // Show search widget with the selected config
+                    // Show search desktop icon with the selected config
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        mainMenu.ShowSearchWidget(filterPath);
+                        mainMenu.ShowSearchDesktopIcon(filterPath);
                     });
                 }
             }

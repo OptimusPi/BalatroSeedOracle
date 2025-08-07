@@ -85,26 +85,6 @@ namespace Oracle.Services
         }
 
         /// <summary>
-        /// Add or update a widget configuration
-        /// </summary>
-        public void AddOrUpdateWidget(SearchWidgetConfig widgetConfig)
-        {
-            // Remove existing config for the same filter path if any
-            _currentProfile.ActiveWidgets.RemoveAll(w => w.FilterConfigPath == widgetConfig.FilterConfigPath);
-            _currentProfile.ActiveWidgets.Add(widgetConfig);
-            SaveProfile();
-        }
-
-        /// <summary>
-        /// Remove a widget configuration
-        /// </summary>
-        public void RemoveWidget(string filterConfigPath)
-        {
-            _currentProfile.ActiveWidgets.RemoveAll(w => w.FilterConfigPath == filterConfigPath);
-            SaveProfile();
-        }
-
-        /// <summary>
         /// Update background settings
         /// </summary>
         public void UpdateBackgroundSettings(string? theme, bool animationEnabled)

@@ -12,9 +12,6 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
-    <AvaloniaResource Include="Oracle.webp" />
-    <AvaloniaResource Include="MainLogo.png" />
-    <AvaloniaResource Include="MainLogoHover.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,9 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely.csproj">
-      <!-- Suppress warnings from external Motely project -->
-      <PrivateAssets>compile</PrivateAssets>
-    </ProjectReference>
+    <ProjectReference Include="..\external\Motely\Motely.csproj" />
   </ItemGroup>
 </Project>

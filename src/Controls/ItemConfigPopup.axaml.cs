@@ -294,6 +294,8 @@ namespace Oracle.Controls
 
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
+            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnAnteClick called. Sender type: {sender?.GetType().Name}, Handled: {e.Handled}");
+            
             // Prevent double-toggling
             if (e.Handled) return;
 
@@ -332,6 +334,8 @@ namespace Oracle.Controls
                         // Update internal state
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
                         
+                        Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Ante {anteNum} toggled to: {checkBox.IsChecked}");
+                        
                         // Mark as handled to prevent bubbling
                         e.Handled = true;
                     }
@@ -341,6 +345,8 @@ namespace Oracle.Controls
 
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
+            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnEditionClick called. Sender type: {sender?.GetType().Name}, Handled: {e.Handled}");
+            
             // Prevent double-handling
             if (e.Handled) return;
 
@@ -350,23 +356,27 @@ namespace Oracle.Controls
             if (sender is RadioButton rb)
             {
                 radioButton = rb;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Direct RadioButton click: {rb.Name}");
             }
             else if (sender is Border borderControl)
             {
                 // Find parent RadioButton
                 radioButton = borderControl.Parent as RadioButton;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Border click, found parent RadioButton: {radioButton?.Name}");
             }
             else if (sender is Image image)
             {
                 // Find parent RadioButton through Border
                 var borderParent = image.Parent as Border;
                 radioButton = borderParent?.Parent as RadioButton;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Image click, found parent RadioButton: {radioButton?.Name}");
             }
 
             if (radioButton != null)
             {
                 // Set this radio button as checked
                 radioButton.IsChecked = true;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Set RadioButton {radioButton.Name} to checked");
                 
                 // Mark as handled to prevent bubbling
                 e.Handled = true;

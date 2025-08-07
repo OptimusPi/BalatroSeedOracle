@@ -6,16 +6,16 @@ using Avalonia.Interactivity;
 
 namespace Oracle.Controls
 {
-    public partial class BalatroToggleSwitch : UserControl
+    public partial class ModeToggleSwitch : UserControl
     {
         public static readonly StyledProperty<string> LeftTextProperty =
-            AvaloniaProperty.Register<BalatroToggleSwitch, string>(nameof(LeftText), "OFF");
+            AvaloniaProperty.Register<ModeToggleSwitch, string>(nameof(LeftText), "OFF");
 
         public static readonly StyledProperty<string> RightTextProperty =
-            AvaloniaProperty.Register<BalatroToggleSwitch, string>(nameof(RightText), "ON");
+            AvaloniaProperty.Register<ModeToggleSwitch, string>(nameof(RightText), "ON");
 
         public static readonly StyledProperty<bool> IsCheckedProperty =
-            AvaloniaProperty.Register<BalatroToggleSwitch, bool>(nameof(IsChecked), false);
+            AvaloniaProperty.Register<ModeToggleSwitch, bool>(nameof(IsChecked), false);
 
         public string LeftText
         {
@@ -37,7 +37,7 @@ namespace Oracle.Controls
 
         public event EventHandler<bool>? IsCheckedChanged;
 
-        public BalatroToggleSwitch()
+        public ModeToggleSwitch()
         {
             InitializeComponent();
             DataContext = this;

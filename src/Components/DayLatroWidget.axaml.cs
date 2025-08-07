@@ -16,7 +16,7 @@ namespace Oracle.Components
         private TextBlock? _dateText;
         private TextBlock? _seedText;
         private TextBlock? _minimizedSeedText;
-        private Image? _funRunImage;
+        private Image? _ToolImage;
         private TextBlock? _themeText;
         private TextBlock? _descriptionText;
         private TextBox? _scoreInput;
@@ -35,7 +35,7 @@ namespace Oracle.Components
             _dateText = this.FindControl<TextBlock>("DateText");
             _seedText = this.FindControl<TextBlock>("SeedText");
             _minimizedSeedText = this.FindControl<TextBlock>("MinimizedSeedText");
-            _funRunImage = this.FindControl<Image>("FunRunImage");
+            _ToolImage = this.FindControl<Image>("ToolImage");
             _themeText = this.FindControl<TextBlock>("ThemeText");
             _descriptionText = this.FindControl<TextBlock>("DescriptionText");
             _scoreInput = this.FindControl<TextBox>("ScoreInput");
@@ -101,11 +101,11 @@ namespace Oracle.Components
                 _descriptionText.Text = description;
 
             // Load joker/item image
-            if (_funRunImage != null)
+            if (_ToolImage != null)
             {
                 var spriteService = SpriteService.Instance;
                 // Use GetItemImage since some items like "Overstock" are vouchers, not jokers
-                _funRunImage.Source = spriteService.GetItemImage(jokerName);
+                _ToolImage.Source = spriteService.GetItemImage(jokerName);
             }
         }
 

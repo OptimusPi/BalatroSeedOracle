@@ -284,22 +284,28 @@ namespace Oracle.Services
                 cmd.CommandText = @"
                     INSERT INTO searches (config_path, config_hash, thread_count, min_score, batch_size, 
                                           deck, stake, max_ante, results_found, search_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                     RETURNING search_id
                 ";
 
-                cmd.Parameters.Add(new DuckDBParameter(configPath));
-                cmd.Parameters.Add(new DuckDBParameter(configHash ?? ""));
-                cmd.Parameters.Add(new DuckDBParameter(threadCount));
-                cmd.Parameters.Add(new DuckDBParameter(minScore));
-                cmd.Parameters.Add(new DuckDBParameter(batchSize));
-                cmd.Parameters.Add(new DuckDBParameter(deck));
-                cmd.Parameters.Add(new DuckDBParameter(stake));
-                cmd.Parameters.Add(new DuckDBParameter(maxAnte));
-                cmd.Parameters.Add(new DuckDBParameter(0)); // results_found starts at 0
-                cmd.Parameters.Add(new DuckDBParameter("running"));
+                cmd.Parameters.Add(new DuckDBParameter("$1", configPath));
+                cmd.Parameters.Add(new DuckDBParameter("$2", configHash ?? ""));
+                cmd.Parameters.Add(new DuckDBParameter("$3", threadCount));
+                cmd.Parameters.Add(new DuckDBParameter("$4", minScore));
+                cmd.Parameters.Add(new DuckDBParameter("$5", batchSize));
+                cmd.Parameters.Add(new DuckDBParameter("$6", deck));
+                cmd.Parameters.Add(new DuckDBParameter("$7", stake));
+                cmd.Parameters.Add(new DuckDBParameter("$8", maxAnte));
+                cmd.Parameters.Add(new DuckDBParameter("$9", 0)); // results_found starts at 0
+                cmd.Parameters.Add(new DuckDBParameter("$10", "running"));
 
-                var searchId = Convert.ToInt64(await cmd.ExecuteScalarAsync());
+                var result = await cmd.ExecuteScalarAsync();
+                if (result == null)
+                {
+                    DebugLogger.LogError("SearchHistoryService", "Failed to get search_id from INSERT");
+                    return -1;
+                }
+                var searchId = Convert.ToInt64(result);
                 DebugLogger.Log("SearchHistoryService", $"Started new search with ID: {searchId}");
                 return searchId;
             }
@@ -318,15 +324,13 @@ namespace Oracle.Services
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    INSERT INTO search_results (search_id, seed, score, details, ante, score_breakdown)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO search_results (search_id, seed, score, score_breakdown)
+                    VALUES (?, ?, ?, ?)
                     ";
 
                 cmd.Parameters.Add(new DuckDBParameter(searchId));
                 cmd.Parameters.Add(new DuckDBParameter(result.Seed));
-                cmd.Parameters.Add(new DuckDBParameter(result.Score));
-                cmd.Parameters.Add(new DuckDBParameter(result.Details ?? ""));
-                cmd.Parameters.Add(new DuckDBParameter(result.Ante));
+                cmd.Parameters.Add(new DuckDBParameter(result.TotalScore));
                 cmd.Parameters.Add(new DuckDBParameter(result.ScoreBreakdown ?? ""));
 
                 await cmd.ExecuteNonQueryAsync();
@@ -430,7 +434,7 @@ namespace Oracle.Services
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    SELECT seed, score, details, ante, score_breakdown
+                    SELECT seed, score, score_breakdown
                     FROM search_results
                     WHERE search_id = $1
                     ORDER BY score DESC
@@ -443,10 +447,8 @@ namespace Oracle.Services
                     results.Add(new SearchResult
                     {
                         Seed = reader.GetString(0),
-                        Score = reader.GetInt32(1),
-                        Details = reader.GetString(2),
-                        Ante = reader.GetInt32(3),
-                        ScoreBreakdown = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                        TotalScore = reader.GetInt32(1),
+                        ScoreBreakdown = reader.IsDBNull(2) ? "" : reader.GetString(2)
                     });
                 }
             }
@@ -478,8 +480,7 @@ namespace Oracle.Services
                     {
                         Index = index++,
                         Seed = result.Seed,
-                        Score = result.Score,
-                        Details = result.Details,
+                        Score = result.TotalScore,
                         ScoreBreakdown = result.ScoreBreakdown
                     });
                 }

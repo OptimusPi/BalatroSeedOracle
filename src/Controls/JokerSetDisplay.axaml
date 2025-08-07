@@ -4,8 +4,8 @@
     
     <UserControl.Styles>
         <Style Selector="Border.set-container">
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -15,8 +15,8 @@
         </Style>
         
         <Style Selector="Border.set-container:pointerover">
-            <Setter Property="Background" Value="#3a3a3a"/>
-            <Setter Property="BorderBrush" Value="#6a6a6a"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LightGrey}"/>
         </Style>
         
         <Style Selector="TextBlock.set-name">
@@ -74,13 +74,13 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#4a4a4a"
+                        <Border Background="{StaticResource DarkGreyBorder}"
                                CornerRadius="6"
                                Padding="3,1"
                                Margin="1">
                             <TextBlock Text="{Binding}"
                                       FontSize="8"
-                                      Foreground="#D0D0D0"/>
+                                      Foreground="{StaticResource LightTextGrey}"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

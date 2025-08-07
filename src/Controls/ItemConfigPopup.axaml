@@ -177,15 +177,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="1" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante2" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -196,15 +194,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="2" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante3" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -215,15 +211,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="3" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante4" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -234,15 +228,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="4" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante5" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -253,15 +245,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="5" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante6" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -272,15 +262,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="6" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante7" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -291,15 +279,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="7" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante8" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
@@ -310,15 +296,13 @@
                                     CornerRadius="4" 
                                     Padding="4,2"
                                     MinWidth="24"
-                                    Cursor="Hand"
-                                    PointerPressed="OnAnteClick">
+                                    Cursor="Hand">
                                 <TextBlock Text="8" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Foreground="#CCCCCC"
-                                           HorizontalAlignment="Center"
-                                           PointerPressed="OnAnteClick"/>
+                                           HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                     </UniformGrid>
@@ -353,8 +337,7 @@
                                        Width="35" 
                                        Height="47" 
                                        Stretch="Uniform" 
-                                       HorizontalAlignment="Center"
-                                       PointerPressed="OnEditionClick"/>
+                                       HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
                         <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil" Checked="OnEditionClick">
@@ -370,8 +353,7 @@
                                        Width="35" 
                                        Height="47" 
                                        Stretch="Uniform" 
-                                       HorizontalAlignment="Center"
-                                       PointerPressed="OnEditionClick"/>
+                                       HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
                         <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo" Checked="OnEditionClick">
@@ -387,8 +369,7 @@
                                        Width="35" 
                                        Height="47" 
                                        Stretch="Uniform" 
-                                       HorizontalAlignment="Center"
-                                       PointerPressed="OnEditionClick"/>
+                                       HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
                         <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly" Checked="OnEditionClick">
@@ -404,8 +385,7 @@
                                        Width="35" 
                                        Height="47" 
                                        Stretch="Uniform" 
-                                       HorizontalAlignment="Center"
-                                       PointerPressed="OnEditionClick"/>
+                                       HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
                         <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative" Checked="OnEditionClick">
@@ -421,8 +401,7 @@
                                        Width="35" 
                                        Height="47" 
                                        Stretch="Uniform" 
-                                       HorizontalAlignment="Center"
-                                       PointerPressed="OnEditionClick"/>
+                                       HorizontalAlignment="Center"/>
                             </Border>
                         </RadioButton>
                     </UniformGrid>

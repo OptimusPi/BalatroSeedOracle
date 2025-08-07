@@ -58,9 +58,7 @@ namespace Oracle.Services
                             var searchResult = new SearchResult
                             {
                                 Seed = result.Seed,
-                                Score = result.TotalScore,
-                                Details = GenerateDetails(result),
-                                Ante = ExtractAnteFromResult(result),
+                                TotalScore = result.TotalScore,
                                 ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants)
                             };
 
@@ -77,7 +75,7 @@ namespace Oracle.Services
                         else
                         {
                             // No results available, wait a bit
-                            await Task.Delay(10, _cts.Token);
+                            await Task.Delay(500, _cts.Token);
                         }
                     }
                 }
@@ -122,24 +120,6 @@ namespace Oracle.Services
         }
 
         /// <summary>
-        /// Generate human-readable details from the result
-        /// </summary>
-        private string GenerateDetails(OuijaResult result)
-        {
-            if (!result.Success)
-                return "Failed";
-
-            // TODO: Generate more detailed information based on the filter configuration
-            // For now, just show the score breakdown
-            if (result.ScoreWants != null && result.ScoreWants.Length > 0)
-            {
-                return $"Scores: {string.Join(", ", result.ScoreWants)}";
-            }
-
-            return "";
-        }
-
-        /// <summary>
         /// Serialize score breakdown as JSON
         /// </summary>
         private string SerializeScoreBreakdown(int[]? scores)
@@ -155,8 +135,8 @@ namespace Oracle.Services
         /// </summary>
         private int ExtractAnteFromResult(OuijaResult result)
         {
-            // TODO: When OuijaResult includes ante info, extract it here
-            // For now, default to 1
+            // Extract ante information when OuijaResult is extended with ante data
+            // Currently returns default ante 1; will be updated with actual ante extraction
             return 1;
         }
 

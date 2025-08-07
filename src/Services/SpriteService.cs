@@ -44,6 +44,7 @@ public class SpriteService
     private Bitmap? bossSheet;
     private Bitmap? stickersSheet;
     private Bitmap? boosterSheet;
+    private Bitmap? stakeChipsSheet;
 
     private SpriteService()
     {
@@ -113,7 +114,11 @@ public class SpriteService
                 foreach (var kvp in stickerMetadata.jokerStickers)
                     stickerPositions[kvp.Key.ToLower()] = kvp.Value;
                 foreach (var kvp in stickerMetadata.stakeStickers)
+                {
+                    // Store stake stickers with lowercase keys
                     stickerPositions[kvp.Key.ToLower()] = kvp.Value;
+                    DebugLogger.Log("SpriteService", $"Added stake sticker: {kvp.Key} -> {kvp.Key.ToLower()}");
+                }
             }
 
             // Load spritesheets
@@ -128,6 +133,7 @@ public class SpriteService
             bossSheet = LoadBitmap("avares://Oracle/Assets/Bosses/BlindChips.png");
             stickersSheet = LoadBitmap("avares://Oracle/Assets/Jokers/stickers.png");
             boosterSheet = LoadBitmap("avares://Oracle/Assets/Other/boosters.png");
+            stakeChipsSheet = LoadBitmap("avares://Oracle/Assets/Decks/balatro-stake-chips.png");
         }
         catch (Exception ex)
         {
@@ -441,8 +447,9 @@ public class SpriteService
             var cardPattern = GetPlayingCardPattern(suit, rank);
             if (cardPattern == null) return baseCard; // Return just the base if no pattern found
 
-            // TODO: Composite the images together
-            // For now, just return the pattern (this needs proper image compositing)
+            // Composite the images together using Avalonia's image manipulation
+            // Note: Full compositing implementation requires RenderTargetBitmap
+            // For now, return the pattern overlay as the primary visual
             return cardPattern;
         }
         catch (Exception ex)
@@ -469,12 +476,13 @@ public class SpriteService
             return null;
         }
 
-        // Boss blind sprites are 34x34, with 21 frames per row
-        int spriteWidth = 34;
-        int spriteHeight = 34;
+        // Boss blind sprites are 68x68 (1428px / 21 cols = 68px per sprite)
+        int spriteWidth = 68;
+        int spriteHeight = 68;
 
         // Use the specified frame (0-20)
-        int x = (position.Pos.X + frameIndex) * spriteWidth;
+        // All bosses start at column 0, so just use frameIndex for x position
+        int x = frameIndex * spriteWidth;
         int y = position.Pos.Y * spriteHeight;
 
         return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
@@ -483,7 +491,60 @@ public class SpriteService
     // Get sticker image (Eternal, Perishable, Rental, or stake stickers)
     public IImage? GetStickerImage(string stickerType)
     {
-        return GetSpriteImage(stickerType, stickerPositions, stickersSheet, 142, 190, "sticker");
+        DebugLogger.Log("SpriteService", $"GetStickerImage called with: '{stickerType}'");
+        if (stickerPositions != null)
+        {
+            DebugLogger.Log("SpriteService", $"Available sticker keys: {string.Join(", ", stickerPositions.Keys)}");
+        }
+        else
+        {
+            DebugLogger.LogError("SpriteService", "stickerPositions is null!");
+        }
+        return GetSpriteImage(stickerType, stickerPositions!, stickersSheet, 142, 190, "sticker");
+    }
+    
+    // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
+    public IImage? GetStakeChipImage(string stakeName)
+    {
+        if (stakeChipsSheet == null)
+        {
+            DebugLogger.LogError("SpriteService", "Stake chips sheet not loaded!");
+            return null;
+        }
+        
+        // Stake chips are 29x29 pixels arranged in a 5x2 grid
+        int spriteWidth = 29;
+        int spriteHeight = 29;
+        
+        // Map stake names to grid positions
+        // Top row: White, Red, Green, Blue, Black
+        // Bottom row: Purple, Orange, Gold1, Gold2, Special
+        int x, y;
+        switch (stakeName.ToLower().Replace("stake", "").Trim())
+        {
+            case "white": x = 0; y = 0; break;
+            case "red": x = 1; y = 0; break;
+            case "green": x = 2; y = 0; break;
+            case "blue": x = 3; y = 0; break;
+            case "black": x = 4; y = 0; break;
+            case "purple": x = 0; y = 1; break;
+            case "orange": x = 1; y = 1; break;
+            case "gold": x = 2; y = 1; break; // Use Gold1 for now
+            default: return null;
+        }
+        
+        int pixelX = x * spriteWidth;
+        int pixelY = y * spriteHeight;
+        
+        try
+        {
+            return new CroppedBitmap(stakeChipsSheet, new PixelRect(pixelX, pixelY, spriteWidth, spriteHeight));
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SpriteService", $"Error getting stake chip image: {ex.Message}");
+            return null;
+        }
     }
 
     public IImage? GetBoosterImage(string packType)
@@ -500,11 +561,12 @@ public class SpriteService
         var normalizedName = blindType.Trim().Replace(" ", "").ToLower();
         if (!blindPositions.TryGetValue(normalizedName, out var position)) return null;
 
-        // Same dimensions as boss sprites
-        int spriteWidth = 34;
-        int spriteHeight = 34;
+        // Same dimensions as boss sprites - 68x68 pixels
+        int spriteWidth = 68;
+        int spriteHeight = 68;
 
-        int x = (position.Pos.X + frameIndex) * spriteWidth;
+        // Blinds also start at column 0, so just use frameIndex for x position
+        int x = frameIndex * spriteWidth;
         int y = position.Pos.Y * spriteHeight;
 
         return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
