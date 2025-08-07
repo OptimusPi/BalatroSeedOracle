@@ -244,14 +244,12 @@ namespace Oracle.Components
                 _isDragging = false;
             }
             
-            var clickType = pointer.Properties.PointerUpdateKind switch
+            // Don't fire click event yet - wait to see if it's a drag
+            // Right click should fire immediately though
+            if (pointer.Properties.IsRightButtonPressed)
             {
-                PointerUpdateKind.LeftButtonPressed => CardClickType.LeftClick,
-                PointerUpdateKind.RightButtonPressed => CardClickType.RightClick,
-                _ => CardClickType.LeftClick // Default to left click
-            };
-
-            CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, clickType));
+                CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, CardClickType.RightClick));
+            }
         }
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -273,7 +271,7 @@ namespace Oracle.Components
                     
                     var dragData = new DataObject();
                     dragData.Set("card-data", $"{Category}:{ItemName}");
-                    dragData.Set("balatro-item", ItemName); // Add this for compatibility
+                    dragData.Set("balatro-item", $"{Category}|{ItemName}"); // Fixed format for drop handler
 
                     CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
                     DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
@@ -293,6 +291,14 @@ namespace Oracle.Components
         
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
+            var pointer = e.GetCurrentPoint(this);
+            
+            // If we had a drag start point and didn't drag, it's a click
+            if (_dragStartPoint.HasValue && !_isDragging && pointer.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+            {
+                CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, CardClickType.LeftClick));
+            }
+            
             // Clean up drag state
             _dragStartPoint = null;
             _isDragging = false;

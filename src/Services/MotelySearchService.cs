@@ -111,36 +111,168 @@ public class MotelySearchService : IDisposable
             return;
         }
         
-        // Create a temporary path to satisfy the existing StartSearchAsync method
-        var tempConfigPath = Path.GetTempFileName();
+        // Start search directly with the loaded config - no temp file needed!
+        await StartSearchWithConfigAsync(_currentConfig, config);
+    }
+    
+    /// <summary>
+    /// Start a search with an already-loaded config object (no temp files)
+    /// </summary>
+    public async Task StartSearchWithConfigAsync(Motely.Filters.OuijaConfig ouijaConfig, Views.Modals.SearchConfiguration config, IProgress<Oracle.Models.SearchProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"StartSearchWithConfigAsync called - NO TEMP FILES!");
+        Oracle.Helpers.DebugLogger.Log("MotelySearchService", $"Config: Threads={config.ThreadCount}, MinScore={config.MinScore}");
+
+        if (_isRunning)
+            return;
+
+        _isRunning = true;
+        _cancellationTokenSource = new CancellationTokenSource();
+        Results.Clear();
+        _searchStartTime = DateTime.UtcNow;
+        _currentConfig = ouijaConfig;
+        
+        // Raise search started event
+        SearchStarted?.Invoke(this, EventArgs.Empty);
+        ConsoleOutput?.Invoke(this, "Search started");
+
         try
         {
-            // Write current config to temp file
-            var json = System.Text.Json.JsonSerializer.Serialize(_currentConfig);
-            await File.WriteAllTextAsync(tempConfigPath, json);
-            
+            // Start a new search in DuckDB
+            var deck = config.Deck ?? "Red";
+            var stake = config.Stake ?? "White";
+            var filterName = "Direct Config";
+
+            _currentSearchId = await _historyService.StartNewSearchAsync(
+                filterName,
+                config.ThreadCount,
+                config.MinScore,
+                config.BatchSize,
+                deck,
+                stake,
+                39  // maxAnte default value
+            );
+
+            // Check if search was successfully created
+            if (_currentSearchId <= 0)
+            {
+                Oracle.Helpers.DebugLogger.LogError("MotelySearchService", "Failed to create new search in database");
+                progress?.Report(new Oracle.Models.SearchProgress
+                {
+                    Message = "Failed to initialize search in database",
+                    HasError = true,
+                    IsComplete = true
+                });
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            // Save filter configuration
+            await _historyService.SaveFilterItemsAsync(_currentSearchId, ouijaConfig);
+
+            // Start result capture service
+            _resultCapture = new MotelyResultCapture(_historyService);
+            _resultCapture.ResultCaptured += (result) =>
+            {
+                Results.Add(result);
+
+                // Raise result found event
+                ResultFound?.Invoke(this, new Views.Modals.SearchResultEventArgs 
+                { 
+                    Result = new Views.Modals.SearchResult 
+                    { 
+                        Seed = result.Seed, 
+                        Score = result.TotalScore, 
+                        Details = result.ScoreBreakdown 
+                    } 
+                });
+                
+                ConsoleOutput?.Invoke(this, $"Found seed: {result.Seed} (Score: {result.TotalScore})");
+
+                // Report new result through progress
+                progress?.Report(new Oracle.Models.SearchProgress
+                {
+                    NewResult = result,
+                    ResultsFound = Results.Count,
+                    Message = $"Found seed: {result.Seed} (Score: {result.TotalScore})"
+                });
+            };
+
+            await _resultCapture.StartCaptureAsync(_currentSearchId);
+
+            // Report initial progress
+            progress?.Report(new Oracle.Models.SearchProgress
+            {
+                Message = "Initializing Motely search engine...",
+                PercentComplete = 0,
+                SeedsSearched = 0
+            });
+
+            // Convert config to SearchCriteria for the existing search logic
             var criteria = new Oracle.Models.SearchCriteria
             {
-                ConfigPath = tempConfigPath,
+                ConfigPath = "", // Not used in RunSearchInProcess
                 ThreadCount = config.ThreadCount,
                 MinScore = config.MinScore,
                 BatchSize = config.BatchSize,
                 StartBatch = config.StartBatch,
                 EndBatch = config.EndBatch,
-                MaxSeeds = long.MaxValue, // No limit
+                MaxSeeds = long.MaxValue,
                 Deck = config.Deck,
                 Stake = config.Stake
             };
-            
-            await StartSearchAsync(criteria);
+
+            // Run the search in a background task
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Starting Task.Run for search");
+            await Task.Run(() => RunSearch(criteria, progress, _cancellationTokenSource.Token), _cancellationTokenSource.Token);
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Run completed");
+        }
+        catch (OperationCanceledException)
+        {
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search was cancelled");
+            progress?.Report(new Oracle.Models.SearchProgress
+            {
+                Message = "Search cancelled",
+                IsComplete = true,
+                SeedsSearched = 0,
+                ResultsFound = Results.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            progress?.Report(new Oracle.Models.SearchProgress
+            {
+                Message = $"Error: {ex.Message}",
+                HasError = true,
+                IsComplete = true
+            });
         }
         finally
         {
-            // Clean up temp file
-            if (File.Exists(tempConfigPath))
+            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "StartSearchWithConfigAsync finally block - cleaning up");
+
+            // Stop result capture
+            if (_resultCapture != null)
             {
-                try { File.Delete(tempConfigPath); } catch (Exception ex) { Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Failed to delete temp config file: {ex.Message}"); }
+                await _resultCapture.StopCaptureAsync();
+                _resultCapture.Dispose();
+                _resultCapture = null;
             }
+
+            // Complete the search in DuckDB
+            if (_currentSearchId > 0)
+            {
+                var duration = (DateTime.UtcNow - _searchStartTime).TotalSeconds;
+                var wasCancelled = _cancellationTokenSource?.IsCancellationRequested ?? false;
+                await _historyService.CompleteSearchAsync(_currentSearchId, 0, duration, wasCancelled);
+            }
+
+            _isRunning = false;
+            
+            // Raise search completed event
+            SearchCompleted?.Invoke(this, EventArgs.Empty);
+            ConsoleOutput?.Invoke(this, "Search completed");
         }
     }
 
@@ -315,8 +447,7 @@ public class MotelySearchService : IDisposable
 
         try
         {
-            // Run Motely as external process for better streaming
-            await RunMotelyProcess(criteria, progress, cancellationToken);
+            await RunSearchInProcess(criteria, progress, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -329,200 +460,6 @@ public class MotelySearchService : IDisposable
                 HasError = true,
                 IsComplete = true
             });
-        }
-    }
-
-    private async Task RunMotelyProcess(Oracle.Models.SearchCriteria criteria, IProgress<Oracle.Models.SearchProgress>? progress, CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Save config to temp file
-            var tempConfigPath = Path.GetTempFileName();
-            var json = JsonSerializer.Serialize(_currentConfig, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(tempConfigPath, json);
-
-            // Build Motely command
-            var motelyPath = Path.Combine(Directory.GetCurrentDirectory(), "external", "Motely", "Motely.csproj");
-            var arguments = new List<string>
-            {
-                "run",
-                "--project", motelyPath,
-                "--configuration", "Release",
-                "--",
-                "--config", tempConfigPath,
-                "--threads", criteria.ThreadCount.ToString(),
-                "--batchSize", criteria.BatchSize.ToString(),
-                "--cutoff", criteria.MinScore.ToString()
-            };
-
-            // Add deck and stake parameters
-            if (!string.IsNullOrEmpty(criteria.Deck))
-                arguments.AddRange(new[] { "--deck", criteria.Deck });
-            if (!string.IsNullOrEmpty(criteria.Stake))
-                arguments.AddRange(new[] { "--stake", criteria.Stake });
-
-            if (criteria.StartBatch > 0)
-                arguments.AddRange(new[] { "--start", criteria.StartBatch.ToString() });
-            if (criteria.EndBatch > 0)
-                arguments.AddRange(new[] { "--end", criteria.EndBatch.ToString() });
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = string.Join(" ", arguments),
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"Starting Motely process: {processStartInfo.FileName} {processStartInfo.Arguments}");
-            ConsoleOutput?.Invoke(this, $"Running: dotnet {processStartInfo.Arguments}");
-
-            using var process = new Process { StartInfo = processStartInfo };
-            
-            // Regex patterns for parsing output
-            var seedPattern = new Regex(@"Found seed: (\w+) \(Score: (\d+)\)", RegexOptions.Compiled);
-            var progressPattern = new Regex(@"Progress: Batch (\d+), ~([\d,]+) seeds, (\d+) results found", RegexOptions.Compiled);
-            var speedPattern = new Regex(@"Speed: ([\d,]+) seeds/sec", RegexOptions.Compiled);
-
-            var outputHandler = new DataReceivedEventHandler((sender, e) =>
-            {
-                if (e.Data == null) return;
-
-                // Send all output to console
-                ConsoleOutput?.Invoke(this, e.Data);
-
-                // Parse for seeds
-                var seedMatch = seedPattern.Match(e.Data);
-                if (seedMatch.Success)
-                {
-                    var seed = seedMatch.Groups[1].Value;
-                    var score = int.Parse(seedMatch.Groups[2].Value);
-                    
-                    var result = new Oracle.Models.SearchResult
-                    {
-                        Seed = seed,
-                        TotalScore = score,
-                        ScoreBreakdown = $"Score: {score}"
-                    };
-                    
-                    Results.Add(result);
-                    
-                    // Save to DuckDB through history service
-                    Task.Run(async () => 
-                    {
-                        try
-                        {
-                            await _historyService.AddSearchResultAsync(_currentSearchId, result);
-                        }
-                        catch (Exception ex)
-                        {
-                            Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Failed to save result: {ex.Message}");
-                        }
-                    });
-
-                    // Raise event
-                    ResultFound?.Invoke(this, new Views.Modals.SearchResultEventArgs 
-                    { 
-                        Result = new Views.Modals.SearchResult 
-                        { 
-                            Seed = seed, 
-                            Score = score, 
-                            Details = $"Score: {score}" 
-                        } 
-                    });
-                }
-
-                // Parse progress updates
-                var progressMatch = progressPattern.Match(e.Data);
-                if (progressMatch.Success)
-                {
-                    var batch = int.Parse(progressMatch.Groups[1].Value);
-                    var seeds = long.Parse(progressMatch.Groups[2].Value.Replace(",", ""));
-                    var results = int.Parse(progressMatch.Groups[3].Value);
-
-                    progress?.Report(new Oracle.Models.SearchProgress
-                    {
-                        SeedsSearched = seeds,
-                        ResultsFound = results,
-                        Message = e.Data
-                    });
-
-                    ProgressUpdated?.Invoke(this, new Views.Modals.SearchProgressEventArgs
-                    {
-                        SeedsSearched = (int)Math.Min(seeds, int.MaxValue),
-                        ResultsFound = results,
-                        SeedsPerSecond = 0 // Will be updated by speed pattern
-                    });
-                }
-
-                // Parse speed updates
-                var speedMatch = speedPattern.Match(e.Data);
-                if (speedMatch.Success)
-                {
-                    var speed = double.Parse(speedMatch.Groups[1].Value.Replace(",", ""));
-                    ProgressUpdated?.Invoke(this, new Views.Modals.SearchProgressEventArgs
-                    {
-                        SeedsSearched = Results.Count > 0 ? Results.Count * 1000 : 0,
-                        ResultsFound = Results.Count,
-                        SeedsPerSecond = speed
-                    });
-                }
-            });
-
-            process.OutputDataReceived += outputHandler;
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    ConsoleOutput?.Invoke(this, $"[ERROR] {e.Data}");
-                    Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Motely error: {e.Data}");
-                }
-            };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            // Wait for process to exit or cancellation
-            while (!process.HasExited && !cancellationToken.IsCancellationRequested)
-            {
-                await Task.Delay(100, cancellationToken);
-            }
-
-            if (cancellationToken.IsCancellationRequested && !process.HasExited)
-            {
-                Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Killing Motely process due to cancellation");
-                try
-                {
-                    process.Kill();
-                }
-                catch (Exception ex)
-                {
-                    Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"Failed to kill process: {ex.Message}");
-                }
-            }
-
-            await process.WaitForExitAsync();
-
-            // Clean up temp file
-            try { File.Delete(tempConfigPath); } catch { }
-
-            var finalMessage = cancellationToken.IsCancellationRequested ? "Search cancelled" : $"Search complete. Found {Results.Count} seeds";
-            progress?.Report(new Oracle.Models.SearchProgress
-            {
-                Message = finalMessage,
-                IsComplete = true,
-                ResultsFound = Results.Count
-            });
-
-            ConsoleOutput?.Invoke(this, finalMessage);
-        }
-        catch (Exception ex)
-        {
-            Oracle.Helpers.DebugLogger.LogError("MotelySearchService", $"RunMotelyProcess error: {ex.Message}");
-            throw;
         }
     }
 

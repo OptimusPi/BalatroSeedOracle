@@ -5,38 +5,37 @@
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="#374244"/>
-            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="Background" Value="{StaticResource MainBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BoxShadow" Value="4 4 8 #00000080"/>
         </Style>
         
         <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="Background" Value="{StaticResource Background}"/>
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="TextBox.score-input">
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#4a4a4a"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
         
         <Style Selector="Button.submit-button">
-            <Setter Property="Background" Value="#4BC292"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
         
         <Style Selector="Button.submit-button:pointerover">
-            <Setter Property="Background" Value="#5FD3A3"/>
+            <Setter Property="Background" Value="{StaticResource ToggleGreen}"/>
         </Style>
     </UserControl.Styles>
     
@@ -63,12 +62,12 @@
                                Text="Loading..." 
                                FontSize="14"
                                FontWeight="Bold"
-                               Foreground="#FE5F55"
+                               Foreground="{StaticResource ToggleRed}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,0,0,5"/>
                     <Border Name="NewDayBadge"
-                            Background="#FE5F55"
+                            Background="{StaticResource ToggleRed}"
                             CornerRadius="8"
                             Width="16" Height="16"
                             HorizontalAlignment="Right"
@@ -133,12 +132,12 @@
                                    Text="LOADING..."
                                    FontSize="24"
                                    FontWeight="Bold"
-                                   Foreground="#FE5F55"
+                                   Foreground="{StaticResource ToggleRed}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,15"/>
                         
                         <!-- Fun Run Card -->
-                        <Border Background="#2a2a2a"
+                        <Border Background="{StaticResource VeryDarkBackground}"
                                 CornerRadius="8"
                                 Padding="10"
                                 Margin="0,0,0,15">
@@ -200,7 +199,7 @@
                                    FontWeight="Bold"
                                    Margin="0,0,0,10"/>
                         
-                        <Border Background="#2a2a2a"
+                        <Border Background="{StaticResource VeryDarkBackground}"
                                 CornerRadius="6"
                                 Padding="10">
                             <Grid>
@@ -225,7 +224,7 @@
                                 <TextBlock Grid.Column="2"
                                            Name="TopScoreValue"
                                            Text="99999 Chips"
-                                           Foreground="#FDB462"
+                                           Foreground="{StaticResource DaytroOrange}"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"/>
                             </Grid>

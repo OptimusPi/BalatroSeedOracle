@@ -6,7 +6,7 @@
     <UserControl.Styles>
         <!-- Success message style -->
         <Style Selector="Border.success-message">
-            <Setter Property="Background" Value="#4BC292" />
+            <Setter Property="Background" Value="{StaticResource AccentGreen}" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="12,8" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -39,9 +39,9 @@
     <Border Name="RootGrid" CornerRadius="16" Padding="0">
         <Grid>
             <!-- Outer gray border -->
-            <Border Background="#7A9E9F" CornerRadius="16" />
+            <Border Background="{StaticResource Border}" CornerRadius="16" />
             <!-- Inner dark panel -->
-            <Border Background="#374244" CornerRadius="12" Margin="6">
+            <Border Background="{StaticResource MainBackground}" CornerRadius="12" Margin="6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -49,7 +49,7 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Header with buttons -->
-                    <Border Grid.Row="0" Background="#2a2a2a" CornerRadius="8,8,0,0" Padding="16,12">
+                    <Border Grid.Row="0" Background="{StaticResource VeryDarkBackground}" CornerRadius="8,8,0,0" Padding="16,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -62,7 +62,7 @@
                                        Text="✨ JSON Editor" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
-                                       Foreground="#eac058" 
+                                       Foreground="{StaticResource Gold}" 
                                        VerticalAlignment="Center" />
                             
                             <!-- Action buttons -->
@@ -83,7 +83,7 @@
                     
                     <!-- JSON Editor -->
                     <Border Grid.Row="1" 
-                            Background="#1e2b2d" 
+                            Background="{StaticResource ItemConfigDarkBg}" 
                             CornerRadius="0,0,8,8" 
                             Padding="0">
                         <avalonedit:TextEditor Name="JsonEditor"

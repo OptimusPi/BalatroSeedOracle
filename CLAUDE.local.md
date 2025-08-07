@@ -1,0 +1,2 @@
+- Always verify build with "dotnet build" in the X:/BalatroSeedOracle before declaring that it now runs without error.
+- No in-line styles scattered around. MUST always put a global style first, or use an existing color style in the app.axaml

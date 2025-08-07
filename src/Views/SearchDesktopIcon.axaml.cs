@@ -21,7 +21,9 @@ namespace Oracle.Views
         private TextBlock? _filterNameText;
         private TextBlock? _progressText;
         private ProgressBar? _searchProgress;
-        private MotelySearchService? _searchService;
+        private SearchInstance? _searchInstance;
+        private SearchManager? _searchManager;
+        private string _searchId = string.Empty;
         private string _configPath = string.Empty;
         private string _filterName = "No Filter";
         private int _resultCount = 0;
@@ -42,25 +44,38 @@ namespace Oracle.Views
             _progressText = this.FindControl<TextBlock>("ProgressText");
             _searchProgress = this.FindControl<ProgressBar>("SearchProgress");
             
-            // Subscribe to search service events
-            _searchService = App.GetService<MotelySearchService>();
-            if (_searchService != null)
-            {
-                _searchService.SearchStarted += OnSearchStarted;
-                _searchService.SearchCompleted += OnSearchCompleted;
-                _searchService.ResultFound += OnResultFound;
-                // ProgressUpdated event needs different handler
-            }
+            // Get search manager service
+            _searchManager = App.GetService<SearchManager>();
         }
         
-        public void Initialize(string configPath, string filterName)
+        public void Initialize(string searchId, string configPath, string filterName)
         {
+            _searchId = searchId;
             _configPath = configPath;
             _filterName = filterName;
             
             if (_filterNameText != null)
             {
                 _filterNameText.Text = _filterName;
+            }
+            
+            // Connect to the specific search instance
+            if (_searchManager != null && !string.IsNullOrEmpty(_searchId))
+            {
+                _searchInstance = _searchManager.GetSearch(_searchId);
+                if (_searchInstance != null)
+                {
+                    // Subscribe to search instance events
+                    _searchInstance.SearchStarted += OnSearchStarted;
+                    _searchInstance.SearchCompleted += OnSearchCompleted;
+                    _searchInstance.ResultFound += OnResultFound;
+                    _searchInstance.ProgressUpdated += OnProgressUpdated;
+                    
+                    // Update UI with current state
+                    _isSearching = _searchInstance.IsRunning;
+                    _resultCount = _searchInstance.ResultCount;
+                    UpdateBadge();
+                }
             }
             
             UpdateProgress(0);
@@ -73,8 +88,8 @@ namespace Oracle.Views
             
             if (mainMenu != null)
             {
-                // Show search modal with current results
-                mainMenu.ShowSearchModal(_configPath);
+                // Show search modal with current search instance
+                mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
             }
         }
         
@@ -179,19 +194,19 @@ namespace Oracle.Views
         
         private void OnPauseSearch(object? sender, RoutedEventArgs e)
         {
-            _searchService?.PauseSearch();
+            _searchInstance?.PauseSearch();
             _isSearching = false;
         }
         
         private void OnResumeSearch(object? sender, RoutedEventArgs e)
         {
-            _searchService?.ResumeSearch();
+            _searchInstance?.ResumeSearch();
             _isSearching = true;
         }
         
         private void OnStopSearch(object? sender, RoutedEventArgs e)
         {
-            _searchService?.StopSearch();
+            _searchInstance?.StopSearch();
             _isSearching = false;
             UpdateProgress(100);
         }
@@ -201,7 +216,13 @@ namespace Oracle.Views
             // Stop any running search
             if (_isSearching)
             {
-                _searchService?.StopSearch();
+                _searchInstance?.StopSearch();
+            }
+            
+            // Remove search from manager
+            if (!string.IsNullOrEmpty(_searchId) && _searchManager != null)
+            {
+                _searchManager.RemoveSearch(_searchId);
             }
             
             // Remove this icon from parent

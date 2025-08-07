@@ -10,14 +10,14 @@
         
         <!-- Label styles -->
         <Style Selector="TextBlock.label">
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
         
         <!-- Header style -->
         <Style Selector="TextBlock.header">
-            <Setter Property="Foreground" Value="#FEB95F"/>
+            <Setter Property="Foreground" Value="{StaticResource PaleOrange}"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
@@ -25,25 +25,25 @@
         
         <!-- Radio button styles -->
         <Style Selector="RadioButton">
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
         </Style>
         
         <Style Selector="RadioButton:checked /template/ ContentPresenter">
-            <Setter Property="TextElement.Foreground" Value="#FEB95F"/>
+            <Setter Property="TextElement.Foreground" Value="{StaticResource PaleOrange}"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
         <!-- CheckBox styles -->
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,2"/>
         </Style>
         
         <Style Selector="CheckBox:checked /template/ ContentPresenter">
-            <Setter Property="TextElement.Foreground" Value="#4BC292"/>
+            <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
@@ -58,18 +58,18 @@
         
         <!-- Default ante border style -->
         <Style Selector="CheckBox.ante-checkbox Border.ante-border">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="BorderBrush" Value="#1e2b2d"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
         </Style>
         
         <!-- Checked state for ante checkboxes -->
         <Style Selector="CheckBox.ante-checkbox:checked Border.ante-border">
-            <Setter Property="Background" Value="#2a3a2a"/>
-            <Setter Property="BorderBrush" Value="#4BC292"/>
+            <Setter Property="Background" Value="{StaticResource GreenAccentDark}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
         </Style>
         
         <Style Selector="CheckBox.ante-checkbox:checked TextBlock">
-            <Setter Property="Foreground" Value="#4BC292"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
         </Style>
         
         <!-- Edition radio button styles -->
@@ -83,30 +83,30 @@
         
         <!-- Default edition border style -->
         <Style Selector="RadioButton.edition-radio Border.edition-border">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="BorderBrush" Value="#1e2b2d"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
         </Style>
         
         <!-- Checked states for each edition -->
         <Style Selector="RadioButton.edition-radio:checked Border.edition-border">
-            <Setter Property="Background" Value="#1e2b2d"/>
-            <Setter Property="BorderBrush" Value="#eac058"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
         </Style>
         
         <Style Selector="RadioButton.edition-foil:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="#4A90E2"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
         </Style>
         
         <Style Selector="RadioButton.edition-holo:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="#FF6B6B"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PinkRed}"/>
         </Style>
         
         <Style Selector="RadioButton.edition-poly:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="#B19CD9"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LightPurple}"/>
         </Style>
         
         <Style Selector="RadioButton.edition-negative:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="#525db0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Purple}"/>
         </Style>
         
         <!-- Source checkbox styles -->
@@ -120,29 +120,29 @@
         
         <!-- Default source border style -->
         <Style Selector="CheckBox.source-checkbox Border.source-border">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="BorderBrush" Value="#1e2b2d"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
         </Style>
         
         <!-- Checked state for source checkboxes -->
         <Style Selector="CheckBox.source-checkbox:checked Border.source-border">
-            <Setter Property="Background" Value="#2a3a2a"/>
-            <Setter Property="BorderBrush" Value="#4BC292"/>
+            <Setter Property="Background" Value="{StaticResource GreenAccentDark}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
         </Style>
     </UserControl.Styles>
     
     <Border MinWidth="280" 
             MaxWidth="320"
-            Background="#3a5055"
-            BorderBrush="#1e2b2d"
+            Background="{StaticResource ItemConfigMediumBg}"
+            BorderBrush="{StaticResource ItemConfigDarkBg}"
             BorderThickness="3"
             CornerRadius="8"
             Padding="16"
-            BoxShadow="0 4 16 #000000CC">
+            BoxShadow="0 4 16 {StaticResource SemiTransparentBlack}">
         
         <StackPanel Spacing="10">
             <!-- Item Name Header with Balatro styling -->
-            <Border Background="#1e2b2d" 
+            <Border Background="{StaticResource ItemConfigDarkBg}" 
                     CornerRadius="4" 
                     Padding="8,6"
                     Margin="-16,-16,-16,0">
@@ -150,12 +150,12 @@
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="16"
                            FontWeight="Bold"
-                           Foreground="#eac058"
+                           Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
             </Border>
             
             <!-- Ante Selection with individual toggle buttons -->
-            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -165,14 +165,14 @@
                     <TextBlock Grid.Row="0" Text="ANTES" 
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11" 
-                               Foreground="#888888" 
+                               Foreground="{StaticResource LightGrey}" 
                                Margin="0,0,0,6"/>
                     
                     <UniformGrid Grid.Row="1" Columns="8" Margin="-2">
                         <CheckBox Name="Ante1" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -182,14 +182,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante2" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -199,14 +199,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante3" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -216,14 +216,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante4" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -233,14 +233,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante5" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -250,14 +250,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante6" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -267,14 +267,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante7" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -284,14 +284,14 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="Ante8" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="4,2"
@@ -301,7 +301,7 @@
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#CCCCCC"
+                                           Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
                         </CheckBox>
@@ -310,7 +310,7 @@
             </Border>
             
             <!-- Edition Selection with Balatro toggle style -->
-            <Border Name="EditionSection" Background="#1e2b2d" CornerRadius="4" Padding="10,8">
+            <Border Name="EditionSection" Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -320,19 +320,18 @@
                     <TextBlock Grid.Row="0" Text="EDITION" 
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11" 
-                               Foreground="#888888" 
+                               Foreground="{StaticResource LightGrey}" 
                                Margin="0,0,0,6"/>
                     
                     <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
                         <RadioButton Name="EditionNormal" IsChecked="True" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
-                                    Cursor="Hand"
-                                    PointerPressed="OnEditionClick">
+                                    Cursor="Hand">
                                 <Image Name="EditionNormalImage" 
                                        Width="35" 
                                        Height="47" 
@@ -342,13 +341,12 @@
                         </RadioButton>
                         <RadioButton Name="EditionFoil" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-foil" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
-                                    Cursor="Hand"
-                                    PointerPressed="OnEditionClick">
+                                    Cursor="Hand">
                                 <Image Name="EditionFoilImage" 
                                        Width="35" 
                                        Height="47" 
@@ -358,13 +356,12 @@
                         </RadioButton>
                         <RadioButton Name="EditionHolo" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-holo" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
-                                    Cursor="Hand"
-                                    PointerPressed="OnEditionClick">
+                                    Cursor="Hand">
                                 <Image Name="EditionHoloImage" 
                                        Width="35" 
                                        Height="47" 
@@ -374,13 +371,12 @@
                         </RadioButton>
                         <RadioButton Name="EditionPoly" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-poly" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
-                                    Cursor="Hand"
-                                    PointerPressed="OnEditionClick">
+                                    Cursor="Hand">
                                 <Image Name="EditionPolyImage" 
                                        Width="35" 
                                        Height="47" 
@@ -390,13 +386,12 @@
                         </RadioButton>
                         <RadioButton Name="EditionNegative" GroupName="ItemEdition" Padding="0" Margin="2" Classes="edition-radio edition-negative" Checked="OnEditionClick">
                             <Border Classes="edition-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="6,4"
-                                    Cursor="Hand"
-                                    PointerPressed="OnEditionClick">
+                                    Cursor="Hand">
                                 <Image Name="EditionNegativeImage" 
                                        Width="35" 
                                        Height="47" 
@@ -409,7 +404,7 @@
             </Border>
             
             <!-- Sources Selection with Balatro style -->
-            <Border Background="#1e2b2d" CornerRadius="4" Padding="10,8">
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -419,14 +414,14 @@
                     <TextBlock Grid.Row="0" Text="SOURCES" 
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11" 
-                               Foreground="#888888" 
+                               Foreground="{StaticResource LightGrey}" 
                                Margin="0,0,0,6"/>
                     
                     <StackPanel Grid.Row="1" Spacing="4">
                         <CheckBox Name="SourceTags" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -434,13 +429,13 @@
                                 <TextBlock Text="From Tags" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           Foreground="#CCCCCC"/>
+                                           Foreground="{StaticResource MediumGrey}"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="SourcePacks" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -448,13 +443,13 @@
                                 <TextBlock Text="From Packs" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           Foreground="#CCCCCC"/>
+                                           Foreground="{StaticResource MediumGrey}"/>
                             </Border>
                         </CheckBox>
                         <CheckBox Name="SourceShop" IsChecked="True" Classes="source-checkbox" Click="OnSourceClick">
                             <Border Classes="source-border" 
-                                    Background="#3a5055" 
-                                    BorderBrush="#1e2b2d" 
+                                    Background="{StaticResource ItemConfigMediumBg}" 
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}" 
                                     BorderThickness="1" 
                                     CornerRadius="4" 
                                     Padding="8,4"
@@ -462,7 +457,7 @@
                                 <TextBlock Text="From Shop" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           Foreground="#CCCCCC"/>
+                                           Foreground="{StaticResource MediumGrey}"/>
                             </Border>
                         </CheckBox>
                     </StackPanel>
@@ -484,15 +479,15 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#223322" 
-                                    BorderBrush="#4BC292" 
+                            <Border Background="{StaticResource GreenAccentVeryDark}" 
+                                    BorderBrush="{StaticResource AccentGreen}" 
                                     BorderThickness="2" 
                                     CornerRadius="4">
                                 <TextBlock Text="APPLY" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#4BC292" 
+                                           Foreground="{StaticResource AccentGreen}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
                             </Border>
@@ -507,15 +502,15 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#332222" 
-                                    BorderBrush="#FE5F55" 
+                            <Border Background="{StaticResource RedAccentDark}" 
+                                    BorderBrush="{StaticResource ToggleRed}" 
                                     BorderThickness="2" 
                                     CornerRadius="4">
                                 <TextBlock Text="DELETE" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#FE5F55" 
+                                           Foreground="{StaticResource ToggleRed}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
                             </Border>
@@ -530,15 +525,15 @@
                         Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate>
-                            <Border Background="#2a2a2a" 
-                                    BorderBrush="#888888" 
+                            <Border Background="{StaticResource VeryDarkBackground}" 
+                                    BorderBrush="{StaticResource LightGrey}" 
                                     BorderThickness="2" 
                                     CornerRadius="4">
                                 <TextBlock Text="CANCEL" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
                                            FontWeight="Bold"
-                                           Foreground="#888888" 
+                                           Foreground="{StaticResource LightGrey}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
                             </Border>

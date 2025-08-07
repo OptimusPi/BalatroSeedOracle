@@ -62,7 +62,7 @@ public partial class App : Application
     {
         // Register services
         services.AddSingleton<Services.SearchHistoryService>();
-        services.AddSingleton<Services.MotelySearchService>();
+        services.AddSingleton<Services.SearchManager>();
         services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
         services.AddSingleton<Services.FavoritesService>();
         services.AddSingleton<Services.UserProfileService>();

@@ -273,7 +273,7 @@
                 
                 <!-- Drop shadow triangle -->
                 <Polygon Points="10,20 20,5 0,5" 
-                         Fill="#44000000"
+                         Fill="{StaticResource SemiTransparentShadow}"
                          Margin="2,2,0,0"/>
                 
                 <!-- Main triangle that bounces -->
@@ -543,21 +543,24 @@
                                                             Label="CPU Threads"
                                                             Value="4" 
                                                             Minimum="1" 
-                                                            Maximum="16"/>
+                                                            Maximum="16"
+                                                            ShadowDirection="south-east"/>
                                     
                                     <!-- Batch Size -->
                                     <controls:SpinnerControl Name="BatchSizeSpinner" 
                                                             Label="BATCH SIZE"
                                                             Value="3" 
                                                             Minimum="1" 
-                                                            Maximum="4"/>
+                                                            Maximum="4"
+                                                            ShadowDirection="south-east"/>
                                     
                                     <!-- Min Score -->
                                     <controls:SpinnerControl Name="MinScoreSpinner" 
                                                             Label="MIN SCORE"
                                                             Value="0" 
                                                             Minimum="0" 
-                                                            Maximum="5"/>
+                                                            Maximum="5"
+                                                            ShadowDirection="south-east"/>
                                     
                                     <CheckBox Name="DebugCheckBox" 
                                               Content="Enable Debug Output"
@@ -868,7 +871,8 @@
                                                         Minimum="0" 
                                                         Maximum="7"
                                                         IsVisible="False"
-                                                        HorizontalAlignment="Center"/>
+                                                        HorizontalAlignment="Center"
+                                                        ShadowDirection="south-east"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -876,19 +880,17 @@
             </StackPanel>
             
             <!-- Search Panel -->
-            <StackPanel Name="SearchPanel" IsVisible="False" Spacing="24">
-                <!-- Inner dark panel like in Balatro -->
-                <Border Classes="modal-content-panel">
-                    <StackPanel Spacing="24">
+            <StackPanel Name="SearchPanel" IsVisible="False" Spacing="12">
+                    <StackPanel Spacing="12">
                     <!-- Console -->
                     <Border Classes="modal-content-box"
                             HorizontalAlignment="Center" 
-                            MinWidth="600">
+                            MinWidth="400">
                         <StackPanel Spacing="16">
                         <TextBlock Text="CONSOLE" 
                                    FontSize="20" 
                                    FontWeight="Bold" 
-                                   Foreground="#FEB95F"
+                                   Foreground="{StaticResource PaleOrange}"
                                    HorizontalAlignment="Center"/>
                         
                         <ScrollViewer Height="160" 
@@ -926,7 +928,6 @@
                         </StackPanel>
                     </Border>
                     </StackPanel>
-                </Border>
             </StackPanel>
             
             <!-- Results Panel -->

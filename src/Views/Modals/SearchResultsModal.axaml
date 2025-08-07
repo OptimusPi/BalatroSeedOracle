@@ -8,20 +8,20 @@
     <views:StandardModal.Styles>
         <!-- DataGrid styling to match Balatro theme -->
         <Style Selector="DataGrid">
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#3a3a3a"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource GridLineGrey}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
         
         <!-- Header styling -->
         <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="Foreground" Value="#E2E2E3"/>
-            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="0,0,1,2"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -35,16 +35,16 @@
         </Style>
         
         <Style Selector="DataGridRow:nth-child(2n)">
-            <Setter Property="Background" Value="#2e3f42"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         </Style>
         
         <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
-            <Setter Property="Fill" Value="#3a5055"/>
+            <Setter Property="Fill" Value="{StaticResource ItemConfigMediumBg}"/>
             <Setter Property="Opacity" Value="0.5"/>
         </Style>
         
         <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
-            <Setter Property="Fill" Value="#009dff"/>
+            <Setter Property="Fill" Value="{StaticResource ToggleBlue}"/>
             <Setter Property="Opacity" Value="0.3"/>
         </Style>
         
@@ -57,35 +57,35 @@
         
         <!-- Score color coding -->
         <Style Selector="TextBlock.score-high">
-            <Setter Property="Foreground" Value="#4BC292"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
         <Style Selector="TextBlock.score-medium">
-            <Setter Property="Foreground" Value="#FEB95F"/>
+            <Setter Property="Foreground" Value="{StaticResource PaleOrange}"/>
         </Style>
         
         <Style Selector="TextBlock.score-low">
-            <Setter Property="Foreground" Value="#FE5F55"/>
+            <Setter Property="Foreground" Value="{StaticResource ToggleRed}"/>
         </Style>
         
         <!-- Quick filter styles -->
         <Style Selector="TextBox#QuickFilterBox">
-            <Setter Property="Background" Value="#2a2a2a"/>
-            <Setter Property="BorderBrush" Value="#3a3a3a"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GridLineGrey}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
         
         <Style Selector="TextBox#QuickFilterBox:focus">
-            <Setter Property="BorderBrush" Value="#009dff"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ToggleBlue}"/>
         </Style>
         
         <!-- Toolbar button styling -->
         <Style Selector="Button.toolbar-button">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="Foreground" Value="#E2E2E3"/>
-            <Setter Property="BorderBrush" Value="#555a5c"/>
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Margin" Value="4,0"/>
@@ -94,19 +94,19 @@
         </Style>
         
         <Style Selector="Button.toolbar-button:pointerover">
-            <Setter Property="Background" Value="#4a6065"/>
-            <Setter Property="BorderBrush" Value="#009dff"/>
+            <Setter Property="Background" Value="{StaticResource SearchHighlight}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ToggleBlue}"/>
         </Style>
         
         <!-- Stats styling -->
         <Style Selector="TextBlock.stat-label">
-            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
         </Style>
         
         <Style Selector="TextBlock.stat-value">
-            <Setter Property="Foreground" Value="#E2E2E3"/>
+            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
@@ -115,8 +115,8 @@
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Toolbar -->
         <Border Grid.Row="0" 
-                Background="#2a2a2a" 
-                BorderBrush="#3a3a3a" 
+                Background="{StaticResource VeryDarkBackground}" 
+                BorderBrush="{StaticResource GridLineGrey}" 
                 BorderThickness="0,0,0,1"
                 Padding="12,8">
             <Grid ColumnDefinitions="Auto,*,Auto">
@@ -128,7 +128,7 @@
                               Text="Loading..."
                               VerticalAlignment="Center"/>
                     
-                    <Border Width="1" Background="#3a3a3a" Margin="8,0"/>
+                    <Border Width="1" Background="{StaticResource GridLineGrey}" Margin="8,0"/>
                     
                     <TextBlock Classes="stat-label" Text="Results:" VerticalAlignment="Center"/>
                     <TextBlock Name="ResultCountText" 
@@ -162,8 +162,8 @@
         
         <!-- Results DataGrid -->
         <Border Grid.Row="1" 
-                Background="#2e3f42"
-                BorderBrush="#3a3a3a"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource GridLineGrey}"
                 BorderThickness="0"
                 Margin="0">
             <Grid>
@@ -174,7 +174,7 @@
                 
                 <!-- Quick Filter Bar -->
                 <Border Grid.Row="0" 
-                        Background="#1a1a1a" 
+                        Background="{StaticResource DarkBackground2}" 
                         Padding="8"
                         IsVisible="{Binding ShowQuickFilter}">
                     <Grid ColumnDefinitions="Auto,200,Auto,Auto,Auto,*">
@@ -182,7 +182,7 @@
                                   Text="Filter:" 
                                   VerticalAlignment="Center"
                                   Margin="0,0,8,0"
-                                  Foreground="#888888"/>
+                                  Foreground="{StaticResource LightGrey}"/>
                         
                         <TextBox Grid.Column="1" 
                                 Name="QuickFilterBox"
@@ -197,7 +197,7 @@
                         
                         <Separator Grid.Column="3" 
                                   Width="1" 
-                                  Background="#3a3a3a"
+                                  Background="{StaticResource GridLineGrey}"
                                   Margin="8,0"/>
                         
                         <CheckBox Grid.Column="4" 
@@ -245,7 +245,7 @@
                                         <Button.Styles>
                                             <Style Selector="Button:pointerover">
                                                 <Setter Property="Opacity" Value="1"/>
-                                                <Setter Property="Background" Value="#3a3a3a"/>
+                                                <Setter Property="Background" Value="{StaticResource GridLineGrey}"/>
                                             </Style>
                                         </Button.Styles>
                                     </Button>
@@ -281,7 +281,7 @@
                                            SortMemberPath="Antes">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="#1a1a1a" 
+                                <Border Background="{StaticResource DarkBackground2}" 
                                        CornerRadius="4" 
                                        Padding="6,2"
                                        HorizontalAlignment="Center">
@@ -309,8 +309,8 @@
                                             <Border ToolTip.Tip="{Binding Tooltip}"
                                                    Margin="2"
                                                    CornerRadius="4"
-                                                   Background="#1a1a1a"
-                                                   BorderBrush="#3a3a3a"
+                                                   Background="{StaticResource DarkBackground2}"
+                                                   BorderBrush="{StaticResource GridLineGrey}"
                                                    BorderThickness="1"
                                                    Padding="2">
                                                 <Grid>
@@ -319,7 +319,7 @@
                                                           Height="32"/>
                                                     <!-- Ante indicator -->
                                                     <Border CornerRadius="6"
-                                                           Background="#000000"
+                                                           Background="{StaticResource PureBlack}"
                                                            Padding="2,0"
                                                            HorizontalAlignment="Right"
                                                            VerticalAlignment="Bottom"
@@ -328,7 +328,7 @@
                                                         <TextBlock Text="{Binding Ante}"
                                                                   FontSize="9"
                                                                   FontWeight="Bold"
-                                                                  Foreground="#FFFFFF"/>
+                                                                  Foreground="{StaticResource White}"/>
                                                     </Border>
                                                 </Grid>
                                             </Border>
@@ -350,8 +350,8 @@
         
         <!-- Footer Stats -->
         <Border Grid.Row="2" 
-                Background="#2a2a2a" 
-                BorderBrush="#3a3a3a" 
+                Background="{StaticResource VeryDarkBackground}" 
+                BorderBrush="{StaticResource GridLineGrey}" 
                 BorderThickness="0,1,0,0"
                 Padding="12,8">
             <Grid ColumnDefinitions="*,Auto">

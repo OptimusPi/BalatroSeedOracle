@@ -29,6 +29,8 @@ using Motely;
 using Motely.Filters;
 using DebugLogger = Oracle.Helpers.DebugLogger;
 using AvaloniaEdit;
+using AvaloniaEdit.TextMate;
+using TextMateSharp.Grammars;
 
 namespace Oracle.Views.Modals;
 
@@ -67,7 +69,6 @@ public partial class FiltersModalContent : UserControl
     private TextBlock? _statusText;
     private string? _currentFilePath;
     private bool _isDragging = false;
-    private Border? _dragGhost;
 
 
     public FiltersModalContent()
@@ -171,6 +172,161 @@ public partial class FiltersModalContent : UserControl
         
         if (visualTab != null) visualTab.IsEnabled = configLoaded;
         if (jsonTab != null) jsonTab.IsEnabled = configLoaded;
+    }
+    
+    private async void OnRunSearchClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Create Oracle.Models.OuijaConfig from current selections
+            var config = new Oracle.Models.OuijaConfig
+            {
+                name = _configNameBox?.Text ?? "Untitled Filter",
+                description = _configDescriptionBox?.Text ?? "",
+                filter_config = new Oracle.Models.FilterConfig
+                {
+                    Must = _selectedNeeds.Select(ParseItemKey).Where(x => x != null).Cast<Oracle.Models.FilterItem>().ToList(),
+                    Should = _selectedWants.Select(ParseItemKey).Where(x => x != null).Cast<Oracle.Models.FilterItem>().ToList(),
+                    MustNot = _selectedMustNot.Select(ParseItemKey).Where(x => x != null).Cast<Oracle.Models.FilterItem>().ToList()
+                }
+            };
+            
+            // Switch to Results tab
+            var resultsTab = this.FindControl<Button>("ResultsTab");
+            if (resultsTab != null)
+            {
+                resultsTab.IsEnabled = true;
+                OnTabClick(resultsTab, new RoutedEventArgs());
+            }
+            
+            // Update status
+            var resultsStatusText = this.FindControl<TextBlock>("ResultsStatusText");
+            if (resultsStatusText != null)
+            {
+                resultsStatusText.Text = "🔄 Running search...";
+            }
+            
+            // Run the search in background
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    // Build Motely.Filters.OuijaConfig from our Oracle.Models.OuijaConfig
+                    var motelyConfig = BuildOuijaConfigFromSelections();
+                    
+                    // Run the search using SearchModal's logic
+                    var searchModal = new SearchModal();
+                    
+                    // Create search parameters
+                    var searchParams = new
+                    {
+                        Config = motelyConfig,
+                        Threads = Environment.ProcessorCount,
+                        BatchSize = 4,
+                        Cutoff = 1,
+                        MaxResults = 100
+                    };
+                    
+                    // This is a simplified version - in reality we'd need to integrate with SearchModal's actual search logic
+                    var results = new List<SearchResultDisplay>();
+                    
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        // For now, show a message that search is not fully integrated
+                        if (resultsStatusText != null)
+                        {
+                            resultsStatusText.Text = "Search integration in progress. Please use the Search Modal for now.";
+                        }
+                        
+                        // Switch to the main search modal instead
+                        var modal = this.FindAncestorOfType<StandardModal>();
+                        if (modal != null)
+                        {
+                            // Close this modal first
+                            modal.IsVisible = false;
+                            
+                            // Open search modal
+                            if (this.GetVisualRoot() is Window window)
+                            {
+                                var mainMenu = window.Content as Views.BalatroMainMenu;
+                                if (mainMenu != null)
+                                {
+                                    // Open search modal with the config object directly - NO TEMP FILES!
+                                    mainMenu.ShowSearchModalWithConfig(motelyConfig);
+                                }
+                            }
+                        }
+                    });
+                }
+                catch (Exception searchEx)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (resultsStatusText != null)
+                        {
+                            resultsStatusText.Text = $"❌ Search error: {searchEx.Message}";
+                        }
+                    });
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error launching search: {ex.Message}");
+            UpdateStatus($"❌ Error launching search: {ex.Message}", true);
+        }
+    }
+    
+    private void DisplaySearchResults(List<SearchResultDisplay> results)
+    {
+        var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
+        var statusText = this.FindControl<TextBlock>("ResultsStatusText");
+        
+        if (dataGrid != null)
+        {
+            dataGrid.ItemsSource = results;
+        }
+        
+        if (statusText != null)
+        {
+            statusText.Text = $"✅ Found {results.Count} results";
+        }
+    }
+    
+    // Display class for search results
+    private class SearchResultDisplay
+    {
+        public string Seed { get; set; } = "";
+        public int Score { get; set; }
+        public string FoundItemsDisplay { get; set; } = "";
+        public int Ante { get; set; }
+        public int Round { get; set; }
+    }
+    
+    private Oracle.Models.FilterItem? ParseItemKey(string key)
+    {
+        var parts = key.Split(':');
+        if (parts.Length >= 2)
+        {
+            var category = parts[0].ToLower();
+            var itemName = parts[1].Split('#')[0]; // Remove any unique suffix
+            
+            return new Oracle.Models.FilterItem
+            {
+                Type = category switch
+                {
+                    "jokers" => "Joker",
+                    "tarots" => "Tarot",
+                    "spectrals" => "Spectral",
+                    "vouchers" => "Voucher",
+                    "tags" => "Tag",
+                    "bosses" => "Boss",
+                    _ => category
+                },
+                Value = itemName
+            };
+        }
+        return null;
     }
     
     private void OnCreateNewClick(object? sender, RoutedEventArgs e)
@@ -559,6 +715,12 @@ public partial class FiltersModalContent : UserControl
                 }
             }
         }
+        
+        // Clean up drag visuals after drop
+        RemoveDragOverlay();
+        _isDragging = false;
+        CleanupDragVisuals();
+        
         e.Handled = true;
     }
 
@@ -657,6 +819,12 @@ public partial class FiltersModalContent : UserControl
                 }
             }
         }
+        
+        // Clean up drag visuals after drop
+        RemoveDragOverlay();
+        _isDragging = false;
+        CleanupDragVisuals();
+        
         e.Handled = true;
     }
 
@@ -917,6 +1085,9 @@ public partial class FiltersModalContent : UserControl
 
                 // Set document and text after creation
                 textEditor.Document = new AvaloniaEdit.Document.TextDocument(jsonContent);
+                
+                // Setup TextMate for JSON with dark theme
+                SetupJsonSyntaxHighlighting(textEditor);
 
                 // Add a simple wheel handler that manually scrolls the editor
                 textEditor.PointerWheelChanged += (s, e) =>
@@ -2361,6 +2532,71 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
+    private void SetupJsonSyntaxHighlighting(AvaloniaEdit.TextEditor textEditor)
+    {
+        try
+        {
+            // Install TextMate with dark theme
+            var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
+            var installation = textEditor.InstallTextMate(registryOptions);
+            
+            // Set grammar for JSON
+            var jsonLanguage = registryOptions.GetLanguageByExtension(".json");
+            if (jsonLanguage != null)
+            {
+                installation.SetGrammar(registryOptions.GetScopeByLanguageId(jsonLanguage.Id));
+                
+                // Try to customize colors after TextMate is installed
+                Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        // Override specific colors with Balatro theme colors
+                        if (textEditor.SyntaxHighlighting != null)
+                        {
+                            // String values - Balatro Red
+                            var stringColor = textEditor.SyntaxHighlighting.GetNamedColor("String");
+                            if (stringColor != null)
+                            {
+                                stringColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#FE5F55"));
+                            }
+                            
+                            // Numbers - Balatro Blue  
+                            var numberColor = textEditor.SyntaxHighlighting.GetNamedColor("Number");
+                            if (numberColor != null)
+                            {
+                                numberColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#009dff"));
+                            }
+                            
+                            // Keywords (true/false/null) - Balatro Orange
+                            var keywordColor = textEditor.SyntaxHighlighting.GetNamedColor("Keyword");
+                            if (keywordColor != null)
+                            {
+                                keywordColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#FEB95F"));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error customizing syntax colors: {ex.Message}");
+                    }
+                }, DispatcherPriority.Background);
+                
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", "JSON syntax highlighting configured with TextMate");
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "JSON language not found in TextMate registry");
+            }
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error setting up JSON syntax highlighting: {ex.Message}");
+            // Fall back to basic colors
+            textEditor.Foreground = new SolidColorBrush(Color.Parse("#E0E0E0"));
+        }
+    }
+    
     private void FormatJsonForAvaloniaEdit(AvaloniaEdit.TextEditor textEditor)
     {
         if (textEditor == null) return;
@@ -2502,21 +2738,25 @@ public partial class FiltersModalContent : UserControl
         var visualTab = this.FindControl<Button>("VisualTab");
         var jsonTab = this.FindControl<Button>("JsonTab");
         var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
+        var resultsTab = this.FindControl<Button>("ResultsTab");
         
         // Get all panels
         var visualPanel = this.FindControl<Grid>("VisualPanel");
         var jsonPanel = this.FindControl<Grid>("JsonPanel");
         var loadSavePanel = this.FindControl<StackPanel>("LoadSavePanel");
+        var resultsPanel = this.FindControl<Grid>("ResultsPanel");
         
         // Remove active class from all tabs
         visualTab?.Classes.Remove("active");
         jsonTab?.Classes.Remove("active");
         loadSaveTab?.Classes.Remove("active");
+        resultsTab?.Classes.Remove("active");
         
         // Hide all panels
         if (visualPanel != null) visualPanel.IsVisible = false;
         if (jsonPanel != null) jsonPanel.IsVisible = false;
         if (loadSavePanel != null) loadSavePanel.IsVisible = false;
+        if (resultsPanel != null) resultsPanel.IsVisible = false;
         
         // Get triangle for animation
         _tabTriangle = this.FindControl<Polygon>("TabTriangle");
@@ -2545,6 +2785,12 @@ public partial class FiltersModalContent : UserControl
                 AnimateTriangleToTab(2);
                 EnterEditJsonMode();
                 UpdateJsonEditor();
+                break;
+                
+            case "ResultsTab":
+                button.Classes.Add("active");
+                if (resultsPanel != null) resultsPanel.IsVisible = true;
+                AnimateTriangleToTab(3);
                 break;
         }
     }
@@ -2767,24 +3013,24 @@ public partial class FiltersModalContent : UserControl
 
     private Control CreateDroppedItemControl(string itemName, string category)
     {
-        // Create a viewbox to make the item responsive - much smaller for drop zones
+        // Create a viewbox to make the item responsive
         var viewBox = new Viewbox
         {
             Stretch = Stretch.Uniform,
             StretchDirection = StretchDirection.DownOnly,
-            MaxWidth = 35,
-            MaxHeight = 44,
-            MinWidth = 28,
-            MinHeight = 35,
-            Margin = new Thickness(2)
+            MaxWidth = 71,  // Full card size
+            MaxHeight = 95, // Full card size
+            Width = double.NaN, // Auto width
+            Height = double.NaN, // Auto height
+            Margin = new Thickness(3)
         };
 
         var border = new Border
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 30,
-            Height = 38,
+            Width = 71,   // Natural card width
+            Height = 95,  // Natural card height
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}" // Store for later reference
         };
@@ -4332,6 +4578,12 @@ public partial class FiltersModalContent : UserControl
                 }
             }
         }
+        
+        // Clean up drag visuals after drop
+        RemoveDragOverlay();
+        _isDragging = false;
+        CleanupDragVisuals();
+        
         e.Handled = true;
     }
 

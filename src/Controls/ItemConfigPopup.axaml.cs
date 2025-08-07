@@ -17,9 +17,12 @@ namespace Oracle.Controls
         public event EventHandler<ItemConfigEventArgs>? ConfigApplied;
         public event EventHandler? DeleteRequested;
         public event EventHandler? Cancelled;
+        private static readonly bool[] DefaultMustAntes = [true, false, false, false, false, false, false, false];
+        private static readonly bool[] DefaultShouldAntes = [true, false, false, false, false, false, false, false];
+        private static readonly bool[] DefaultCouldAntes = [true, false, false, false, false, false, false, false];
 
         private string _itemKey = "";
-        private bool[] _selectedAntes = new bool[8] { true, true, true, true, true, true, true, true };
+        private bool[] _selectedAntes = DefaultMustAntes.ToArray();
         private bool _isJoker = false;
 
         public ItemConfigPopup()
@@ -45,9 +48,7 @@ namespace Oracle.Controls
             // Load Normal edition image
             var normalImage = this.Find<Image>("EditionNormalImage");
             if (normalImage != null)
-            {
                 normalImage.Source = spriteService.GetEditionImage("normal");
-            }
 
             // Load Foil edition image
             var foilImage = this.Find<Image>("EditionFoilImage");
@@ -294,50 +295,19 @@ namespace Oracle.Controls
 
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnAnteClick called. Sender type: {sender?.GetType().Name}, Handled: {e.Handled}");
+            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnAnteClick called. Sender type: {sender?.GetType().Name}");
             
-            // Prevent double-toggling
-            if (e.Handled) return;
-
-            CheckBox? checkBox = null;
-
-            // Handle both direct CheckBox clicks and clicks on child elements
-            if (sender is CheckBox cb)
-            {
-                checkBox = cb;
-            }
-            else if (sender is Border borderElement)
-            {
-                // Find parent CheckBox
-                checkBox = borderElement.Parent as CheckBox;
-            }
-            else if (sender is TextBlock textBlock)
-            {
-                // Find parent CheckBox through Border
-                var borderParent = textBlock.Parent as Border;
-                checkBox = borderParent?.Parent as CheckBox;
-            }
-
-            if (checkBox?.Name != null)
+            if (sender is CheckBox checkBox && checkBox.Name != null)
             {
                 // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
                 if (checkBox.Name.StartsWith("Ante") && int.TryParse(checkBox.Name.Substring(4), out int anteNum))
                 {
                     if (anteNum >= 1 && anteNum <= 8)
                     {
-                        // For child element clicks, toggle the checkbox
-                        if (sender is not CheckBox)
-                        {
-                            checkBox.IsChecked = !checkBox.IsChecked;
-                        }
-                        
-                        // Update internal state
+                        // Update internal state based on the checkbox's current checked state
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
                         
-                        Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Ante {anteNum} toggled to: {checkBox.IsChecked}");
-                        
-                        // Mark as handled to prevent bubbling
-                        e.Handled = true;
+                        Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Ante {anteNum} set to: {checkBox.IsChecked}");
                     }
                 }
             }
@@ -345,67 +315,23 @@ namespace Oracle.Controls
 
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnEditionClick called. Sender type: {sender?.GetType().Name}, Handled: {e.Handled}");
+            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnEditionClick called. Sender type: {sender?.GetType().Name}");
             
-            // Prevent double-handling
-            if (e.Handled) return;
-
-            RadioButton? radioButton = null;
-
-            // Handle both direct RadioButton clicks and clicks on child elements
+            // RadioButton Checked event is already handled properly by Avalonia
+            // Just log the change for debugging
             if (sender is RadioButton rb)
             {
-                radioButton = rb;
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Direct RadioButton click: {rb.Name}");
-            }
-            else if (sender is Border borderControl)
-            {
-                // Find parent RadioButton
-                radioButton = borderControl.Parent as RadioButton;
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Border click, found parent RadioButton: {radioButton?.Name}");
-            }
-            else if (sender is Image image)
-            {
-                // Find parent RadioButton through Border
-                var borderParent = image.Parent as Border;
-                radioButton = borderParent?.Parent as RadioButton;
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Image click, found parent RadioButton: {radioButton?.Name}");
-            }
-
-            if (radioButton != null)
-            {
-                // Set this radio button as checked
-                radioButton.IsChecked = true;
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Set RadioButton {radioButton.Name} to checked");
-                
-                // Mark as handled to prevent bubbling
-                e.Handled = true;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Edition RadioButton {rb.Name} checked: {rb.IsChecked}");
             }
         }
 
         private void OnSourceClick(object? sender, RoutedEventArgs e)
         {
-            // Prevent double-handling
-            if (e.Handled) return;
-            
-            CheckBox? checkBox = null;
-            
-            // Handle clicks on child elements
-            if (sender is CheckBox cb)
+            // Simple handler - checkbox state is already updated by Avalonia
+            if (sender is CheckBox checkBox)
             {
-                checkBox = cb;
+                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Source {checkBox.Name} set to: {checkBox.IsChecked}");
             }
-            else if (sender is Border border)
-            {
-                checkBox = border.Parent as CheckBox;
-                if (checkBox != null && sender is not CheckBox)
-                {
-                    checkBox.IsChecked = !checkBox.IsChecked;
-                }
-            }
-            
-            // Mark as handled
-            e.Handled = true;
         }
     }
 

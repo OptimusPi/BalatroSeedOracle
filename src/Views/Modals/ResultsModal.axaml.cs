@@ -167,10 +167,15 @@ namespace Oracle.Views.Modals
                     // Hide the modal
                     mainMenu.HideModalContent();
 
-                    // Show search desktop icon with the selected config
+                    // Create a new search instance and show desktop icon
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        mainMenu.ShowSearchDesktopIcon(filterPath);
+                        var searchManager = App.GetService<Services.SearchManager>();
+                        if (searchManager != null)
+                        {
+                            var searchId = searchManager.CreateSearch();
+                            mainMenu.ShowSearchDesktopIcon(searchId, filterPath);
+                        }
                     });
                 }
             }

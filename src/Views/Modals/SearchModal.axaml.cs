@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
@@ -26,7 +27,9 @@ namespace Oracle.Views.Modals
     {
         public event EventHandler<string>? CreateDesktopIconRequested;
         private readonly ObservableCollection<SearchResult> _searchResults = new();
-        private MotelySearchService? _searchService;
+        private SearchInstance? _searchInstance;
+        private SearchManager? _searchManager;
+        private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
         
         // Tab panels
@@ -221,16 +224,8 @@ namespace Oracle.Views.Modals
                 _threadsSpinner.Value = Math.Min(4, Environment.ProcessorCount);
             }
             
-            // Initialize search service
-            _searchService = App.GetService<MotelySearchService>();
-            if (_searchService != null)
-            {
-                _searchService.ProgressUpdated += OnSearchProgressUpdated;
-                _searchService.ResultFound += OnResultFound;
-                _searchService.ConsoleOutput += OnConsoleOutput;
-                _searchService.SearchStarted += OnSearchStarted;
-                _searchService.SearchCompleted += OnSearchCompleted;
-            }
+            // Initialize search manager
+            _searchManager = App.GetService<SearchManager>();
             
             // Initialize sprite service
             _spriteService = App.GetService<SpriteService>();
@@ -284,14 +279,30 @@ namespace Oracle.Views.Modals
         {
             _availableFilters.Clear();
             
+            var jsonFiles = new List<string>();
+            
             // Look for .json files in the root directory
             var directory = System.IO.Directory.GetCurrentDirectory();
-            var allJsonFiles = System.IO.Directory.GetFiles(directory, "*.json");
-            var jsonFiles = new List<string>();
-            foreach (var f in allJsonFiles)
+            var rootJsonFiles = System.IO.Directory.GetFiles(directory, "*.json");
+            foreach (var f in rootJsonFiles)
             {
                 if (!f.EndsWith("avalonia.json") && !f.EndsWith("userprofile.json") && !f.EndsWith("appsettings.json"))
                     jsonFiles.Add(f);
+            }
+            
+            // Also look for .json files in JsonItemConfigs directory
+            var jsonConfigsDir = System.IO.Path.Combine(directory, "JsonItemConfigs");
+            if (System.IO.Directory.Exists(jsonConfigsDir))
+            {
+                var configJsonFiles = System.IO.Directory.GetFiles(jsonConfigsDir, "*.json");
+                foreach (var f in configJsonFiles)
+                {
+                    // Don't add duplicates
+                    if (!jsonFiles.Any(existing => System.IO.Path.GetFileName(existing).Equals(System.IO.Path.GetFileName(f), StringComparison.OrdinalIgnoreCase)))
+                    {
+                        jsonFiles.Add(f);
+                    }
+                }
             }
             
             // Sort by filename
@@ -628,17 +639,50 @@ namespace Oracle.Views.Modals
             
             if (result?.Count > 0)
             {
-                var filePath = result[0].Path.LocalPath;
-                await LoadFilterAsync(filePath);
+                var importedFilePath = result[0].Path.LocalPath;
                 
-                // Add the imported file to available filters if not already there
-                if (!_availableFilters.Contains(filePath))
+                // Create JsonItemConfigs directory if it doesn't exist
+                var jsonConfigsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemConfigs");
+                if (!System.IO.Directory.Exists(jsonConfigsDir))
                 {
-                    _availableFilters.Add(filePath);
+                    System.IO.Directory.CreateDirectory(jsonConfigsDir);
                 }
                 
+                // Copy the imported file to JsonItemConfigs folder
+                var fileName = System.IO.Path.GetFileName(importedFilePath);
+                // Ensure it has .json extension
+                if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    fileName += ".json";
+                }
+                
+                var destinationPath = System.IO.Path.Combine(jsonConfigsDir, fileName);
+                
+                // If file already exists, add a number suffix
+                if (System.IO.File.Exists(destinationPath))
+                {
+                    var baseName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                    var extension = System.IO.Path.GetExtension(fileName);
+                    var counter = 1;
+                    do
+                    {
+                        fileName = $"{baseName}_{counter}{extension}";
+                        destinationPath = System.IO.Path.Combine(jsonConfigsDir, fileName);
+                        counter++;
+                    } while (System.IO.File.Exists(destinationPath));
+                }
+                
+                // Copy the file
+                System.IO.File.Copy(importedFilePath, destinationPath, overwrite: false);
+                
+                // Reload available filters to include the new one
+                LoadAvailableFilters();
+                
+                // Load the newly copied filter
+                await LoadFilterAsync(destinationPath);
+                
                 // Set the spinner to show the imported filter
-                _currentFilterIndex = _availableFilters.IndexOf(filePath);
+                _currentFilterIndex = _availableFilters.IndexOf(destinationPath);
                 if (_currentFilterIndex < 0)
                 {
                     _currentFilterIndex = _availableFilters.Count - 1;
@@ -646,6 +690,8 @@ namespace Oracle.Views.Modals
                 
                 // Update the preview to show the imported filter
                 UpdateFilterPreview();
+                
+                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Imported filter saved to: {destinationPath}");
             }
         }
         
@@ -672,44 +718,138 @@ namespace Oracle.Views.Modals
         {
             _currentFilterPath = filePath;
             
-            if (_searchService != null)
+            if (_searchInstance != null)
             {
-                var (success, message, name, author, description) = await _searchService.LoadConfigAsync(filePath);
-                if (success)
+                try
                 {
-                    // Just log that we loaded successfully
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Filter loaded successfully: {name}");
+                    // Load the config using Motely's loader
+                    var config = await Task.Run(() => Motely.Filters.OuijaConfig.LoadFromJson(filePath));
                     
-                    // Initialize the search history service with this filter
-                    var historyService = App.GetService<SearchHistoryService>();
-                    if (historyService != null)
+                    if (config != null)
                     {
-                        historyService.SetFilterName(filePath);
+                        // Just log that we loaded successfully
+                        Oracle.Helpers.DebugLogger.Log("SearchModal", $"Filter loaded successfully: {config.Name}");
+                        
+                        // Initialize the search history service with this filter
+                        var historyService = App.GetService<SearchHistoryService>();
+                        if (historyService != null)
+                        {
+                            historyService.SetFilterName(filePath);
+                        }
+                        
+                        // Cook button should always be enabled when a filter is loaded
+                        if (_cookButton != null)
+                        {
+                            _cookButton.IsEnabled = true;
+                        }
+                        
+                        // Enable tabs now that filter is loaded
+                        UpdateTabStates(true);
+                        
+                        // Add to console
+                        AddToConsole($"Filter loaded: {System.IO.Path.GetFileName(filePath)}");
+                        
+                        // If this is a temp file (from FiltersModal), automatically start the search
+                        if (filePath.Contains("temp_filter_") && filePath.Contains(".ouija.json"))
+                        {
+                            // Switch to Search tab
+                            if (_searchTab != null)
+                            {
+                                OnTabClick(_searchTab, new RoutedEventArgs());
+                            }
+                            
+                            // Wait a moment for UI to update, then start the search
+                            await Task.Delay(100);
+                            OnCookClick(null, new RoutedEventArgs());
+                        }
                     }
-                    
-                    // Cook button should always be enabled when a filter is loaded
-                    if (_cookButton != null)
+                    else
                     {
-                        _cookButton.IsEnabled = true;
+                        // Show error in console
+                        AddToConsole("Error: Failed to load filter configuration");
                     }
-                    
-                    // Enable tabs now that filter is loaded
-                    UpdateTabStates(true);
-                    
-                    // Add to console
-                    AddToConsole($"Filter loaded: {System.IO.Path.GetFileName(filePath)}");
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Show error in console
-                    AddToConsole($"Error: {message}");
+                    AddToConsole($"Failed to load filter: {ex.Message}");
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Load a config object directly and start search (no temp files!)
+        /// </summary>
+        public async Task LoadConfigDirectlyAsync(Motely.Filters.OuijaConfig config)
+        {
+            Oracle.Helpers.DebugLogger.Log("SearchModal", "LoadConfigDirectlyAsync - NO TEMP FILES!");
+            
+            // Create a new search instance if we don't have one
+            if (string.IsNullOrEmpty(_currentSearchId))
+            {
+                CreateNewSearchInstance();
+            }
+            
+            if (_searchInstance != null)
+            {
+                // Set the filter name for history tracking
+                var historyService = App.GetService<SearchHistoryService>();
+                if (historyService != null)
+                {
+                    historyService.SetFilterName($"Direct:{config.Name ?? "Unnamed"}");
+                }
+                
+                // Cook button should always be enabled when a filter is loaded
+                if (_cookButton != null)
+                {
+                    _cookButton.IsEnabled = true;
+                }
+                
+                // Enable tabs now that filter is loaded
+                UpdateTabStates(true);
+                
+                // Add to console
+                AddToConsole($"Filter loaded: {config.Name ?? "Unnamed"}");
+                
+                // Switch to Search tab
+                if (_searchTab != null)
+                {
+                    OnTabClick(_searchTab, new RoutedEventArgs());
+                }
+                
+                // Wait a moment for UI to update
+                await Task.Delay(100);
+                
+                // Start the search directly with the config object
+                var searchConfig = new SearchConfiguration
+                {
+                    ThreadCount = _threadsSpinner?.Value ?? 4,
+                    MinScore = _minScoreSpinner?.Value ?? 0,
+                    BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1,
+                    StartBatch = 0,
+                    EndBatch = -1,
+                    DebugMode = _debugCheckBox?.IsChecked ?? false,
+                    Deck = _decks[_currentDeckIndex].name,
+                    Stake = _stakes[_currentStakeIndex].name.Replace(" Stake", "")
+                };
+                
+                AddToConsole("Let Jimbo cook! Starting search...");
+                
+                // Start search with the config object directly
+                await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
             }
         }
         
         private async void OnCookClick(object? sender, RoutedEventArgs e)
         {
-            if (_searchService == null || string.IsNullOrEmpty(_currentFilterPath)) return;
+            if (string.IsNullOrEmpty(_currentFilterPath)) return;
+            
+            // Create a new search instance if we don't have one
+            if (string.IsNullOrEmpty(_currentSearchId))
+            {
+                CreateNewSearchInstance();
+            }
+            
+            if (_searchInstance == null) return;
             
             if (!_isSearching)
             {
@@ -732,12 +872,22 @@ namespace Oracle.Views.Modals
                 AddToConsole("Let Jimbo cook! Starting search...");
                 
                 // Start search
-                await _searchService.StartSearchAsync(config);
+                var searchCriteria = new Oracle.Models.SearchCriteria
+                {
+                    ConfigPath = _currentFilterPath,
+                    ThreadCount = config.ThreadCount,
+                    MinScore = config.MinScore,
+                    BatchSize = config.BatchSize,
+                    Deck = config.Deck,
+                    Stake = config.Stake
+                };
+                
+                await _searchInstance.StartSearchAsync(searchCriteria);
             }
             else
             {
                 // Stop search
-                _searchService.StopSearch();
+                _searchInstance.StopSearch();
                 AddToConsole("Jimbo stopped cooking!");
             }
         }
@@ -762,6 +912,11 @@ namespace Oracle.Views.Modals
                     _cookButton.Classes.Add("cook-button");
                     _cookButton.Classes.Add("stop");
                 }
+
+                // Enable results tab
+                // TODO - if user is searching a filter that already has a .duckdb file of results, 
+                // we should load that file and populate the results grid
+                if (_resultsTab != null) _resultsTab.IsEnabled = true;
                 
                 // Enable save widget button
                 if (_saveWidgetButton != null)
@@ -817,8 +972,7 @@ namespace Oracle.Views.Modals
                     _resultsSummary.Text = $"Found {_searchResults.Count} results";
                 }
                 
-                // Enable results tab and export button
-                if (_resultsTab != null) _resultsTab.IsEnabled = true;
+                // Enable results tab export button
                 if (_exportResultsButton != null) _exportResultsButton.IsEnabled = _searchResults.Count > 0;
             });
         }
@@ -989,6 +1143,106 @@ namespace Oracle.Views.Modals
                 }
             }
         }
+        
+        /// <summary>
+        /// Set the search instance to reconnect to an existing search
+        /// </summary>
+        public void SetSearchInstance(string searchId)
+        {
+            _currentSearchId = searchId;
+            
+            // Connect to existing search instance
+            if (_searchManager != null && !string.IsNullOrEmpty(searchId))
+            {
+                _searchInstance = _searchManager.GetSearch(searchId);
+                if (_searchInstance != null)
+                {
+                    // Subscribe to events
+                    _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
+                    _searchInstance.ResultFound += OnResultFound;
+                    _searchInstance.ConsoleOutput += OnConsoleOutput;
+                    _searchInstance.SearchStarted += OnSearchStarted;
+                    _searchInstance.SearchCompleted += OnSearchCompleted;
+                    
+                    // Load existing results
+                    _searchResults.Clear();
+                    foreach (var result in _searchInstance.Results)
+                    {
+                        _searchResults.Add(new SearchResult 
+                        { 
+                            Seed = result.Seed,
+                            Score = result.TotalScore,
+                            Details = result.ScoreBreakdown
+                        });
+                    }
+                    
+                    // Update UI state
+                    _isSearching = _searchInstance.IsRunning;
+                    _currentFilterPath = _searchInstance.ConfigPath;
+                    UpdateSearchUI();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Get the current search instance ID
+        /// </summary>
+        public string GetCurrentSearchId()
+        {
+            return _currentSearchId;
+        }
+        
+        /// <summary>
+        /// Create a new search instance for this modal
+        /// </summary>
+        private void CreateNewSearchInstance()
+        {
+            if (_searchManager != null)
+            {
+                _currentSearchId = _searchManager.CreateSearch();
+                _searchInstance = _searchManager.GetSearch(_currentSearchId);
+                
+                if (_searchInstance != null)
+                {
+                    // Subscribe to events
+                    _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
+                    _searchInstance.ResultFound += OnResultFound;
+                    _searchInstance.ConsoleOutput += OnConsoleOutput;
+                    _searchInstance.SearchStarted += OnSearchStarted;
+                    _searchInstance.SearchCompleted += OnSearchCompleted;
+                }
+            }
+        }
+        
+        private void UpdateSearchUI()
+        {
+            // Update UI based on search state
+            if (_cookButton != null)
+            {
+                _cookButton.Content = _isSearching ? "STOP COOKING" : "LET JIMBO COOK!";
+            }
+            
+            if (_searchTab != null)
+            {
+                _searchTab.IsEnabled = !_isSearching;
+            }
+            
+            if (_resultsTab != null)
+            {
+                _resultsTab.IsEnabled = true;
+            }
+            
+            if (_exportResultsButton != null)
+            {
+                _exportResultsButton.IsEnabled = _searchResults.Count > 0;
+            }
+            
+            // Update results summary
+            if (_resultsSummary != null)
+            {
+                _resultsSummary.Text = $"Found {_searchResults.Count} results";
+            }
+        }
     }
     
     // Supporting classes for the search functionality
@@ -1034,10 +1288,14 @@ namespace Oracle.Views.Modals
     
     public class SearchProgressEventArgs : EventArgs
     {
-        public int SeedsSearched { get; set; }
+        public string Message { get; set; } = "";
+        public int PercentComplete { get; set; }
+        public string CurrentSeed { get; set; } = "";
+        public long SeedsSearched { get; set; }
         public int ResultsFound { get; set; }
         public double SeedsPerSecond { get; set; }
-        public int PercentComplete { get; set; }
+        public bool IsComplete { get; set; }
+        public bool HasError { get; set; }
     }
     
     public class SearchResultEventArgs : EventArgs

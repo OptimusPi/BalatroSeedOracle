@@ -219,9 +219,9 @@ namespace Oracle.Services
                 using var insertCmd = connection.CreateCommand();
                 insertCmd.CommandText = @"
                     INSERT INTO search_results (search_id, seed, score, details)
-                    SELECT $1, seed, score, details FROM csv_import
+                    SELECT ?, seed, score, details FROM csv_import
                 ";
-                insertCmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+                insertCmd.Parameters.Add(new DuckDBParameter(searchId));
                 var rowsInserted = await insertCmd.ExecuteNonQueryAsync();
 
                 // Clean up temp table
@@ -284,20 +284,20 @@ namespace Oracle.Services
                 cmd.CommandText = @"
                     INSERT INTO searches (config_path, config_hash, thread_count, min_score, batch_size, 
                                           deck, stake, max_ante, results_found, search_status)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     RETURNING search_id
                 ";
 
-                cmd.Parameters.Add(new DuckDBParameter("$1", configPath));
-                cmd.Parameters.Add(new DuckDBParameter("$2", configHash ?? ""));
-                cmd.Parameters.Add(new DuckDBParameter("$3", threadCount));
-                cmd.Parameters.Add(new DuckDBParameter("$4", minScore));
-                cmd.Parameters.Add(new DuckDBParameter("$5", batchSize));
-                cmd.Parameters.Add(new DuckDBParameter("$6", deck));
-                cmd.Parameters.Add(new DuckDBParameter("$7", stake));
-                cmd.Parameters.Add(new DuckDBParameter("$8", maxAnte));
-                cmd.Parameters.Add(new DuckDBParameter("$9", 0)); // results_found starts at 0
-                cmd.Parameters.Add(new DuckDBParameter("$10", "running"));
+                cmd.Parameters.Add(new DuckDBParameter(configPath));
+                cmd.Parameters.Add(new DuckDBParameter(configHash ?? ""));
+                cmd.Parameters.Add(new DuckDBParameter(threadCount));
+                cmd.Parameters.Add(new DuckDBParameter(minScore));
+                cmd.Parameters.Add(new DuckDBParameter(batchSize));
+                cmd.Parameters.Add(new DuckDBParameter(deck));
+                cmd.Parameters.Add(new DuckDBParameter(stake));
+                cmd.Parameters.Add(new DuckDBParameter(maxAnte));
+                cmd.Parameters.Add(new DuckDBParameter(0)); // results_found starts at 0
+                cmd.Parameters.Add(new DuckDBParameter("running"));
 
                 var result = await cmd.ExecuteScalarAsync();
                 if (result == null)
@@ -395,9 +395,9 @@ namespace Oracle.Services
                            total_seeds_searched, duration_seconds, deck, stake
                     FROM searches
                     ORDER BY search_date DESC
-                    LIMIT $1
+                    LIMIT ?
                 ";
-                cmd.Parameters.Add(new DuckDBParameter("$1", limit));
+                cmd.Parameters.Add(new DuckDBParameter(limit));
 
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
@@ -436,10 +436,10 @@ namespace Oracle.Services
                 cmd.CommandText = @"
                     SELECT seed, score, score_breakdown
                     FROM search_results
-                    WHERE search_id = $1
+                    WHERE search_id = ?
                     ORDER BY score DESC
                 ";
-                cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
+                cmd.Parameters.Add(new DuckDBParameter(searchId));
 
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())

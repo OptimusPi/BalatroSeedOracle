@@ -319,9 +319,9 @@ namespace Oracle.Views
         /// <summary>
         /// Shows a search desktop icon on the desktop
         /// </summary>
-        public async void ShowSearchDesktopIcon(string? configPath = null)
+        public async void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchDesktopIcon called with config: {configPath}");
+            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}");
 
             // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
@@ -341,7 +341,7 @@ namespace Oracle.Views
                 filterName = Path.GetFileNameWithoutExtension(configPath);
             }
             
-            searchIcon.Initialize(configPath ?? string.Empty, filterName);
+            searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
 
             // Calculate position based on existing icons
             var leftMargin = 20 + (_widgetCounter % 8) * 120; // 8 icons per row, 120px apart

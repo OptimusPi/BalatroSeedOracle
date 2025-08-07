@@ -98,6 +98,12 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         
+        <!-- Responsive WrapPanel for drop zones -->
+        <Style Selector="WrapPanel.drop-zone-panel">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        
         <!-- Empty Drop Zone Placeholder -->
         <Style Selector="TextBlock.drop-placeholder">
             <Setter Property="Foreground" Value="{StaticResource Border}" />
@@ -422,6 +428,7 @@
                 <ColumnDefinition Width="148"/> <!-- Load/Save -->
                 <ColumnDefinition Width="148"/> <!-- Visual -->
                 <ColumnDefinition Width="148"/> <!-- JSON -->
+                <ColumnDefinition Width="148"/> <!-- Results -->
             </Grid.ColumnDefinitions>
             
             <!-- Triangle container -->
@@ -431,7 +438,7 @@
                 
                 <!-- Drop shadow triangle -->
                 <Polygon Points="10,20 20,5 0,5" 
-                         Fill="#44000000"
+                         Fill="{StaticResource SemiTransparentShadow}"
                          Margin="2,2,0,0"/>
                 
                 <!-- Main triangle that bounces -->
@@ -478,6 +485,11 @@
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>
+            <Button Name="ResultsTab"
+                    Content="Results"
+                    Classes="tab-button"
+                    IsEnabled="False"
+                    Click="OnTabClick"/>
         </StackPanel>
         
         <!-- Content area -->
@@ -516,7 +528,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" MinWidth="400" />
                                 <ColumnDefinition Width="15" />
-                                <ColumnDefinition Width="*" MinWidth="400" MaxWidth="600" />
+                                <ColumnDefinition Width="*" MinWidth="400" />
                             </Grid.ColumnDefinitions>
                             
                             <!-- LEFT: Item Palette -->
@@ -562,6 +574,8 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="6" />
                                     <RowDefinition Height="*" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
@@ -587,7 +601,7 @@
                                         <Grid Margin="30,0,0,0">
                                             <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop items that MUST appear" TextAlignment="Center" IsVisible="True" FontSize="14" />
                                             <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                <WrapPanel Name="NeedsPanel" Orientation="Horizontal" />
+                                                <WrapPanel Name="NeedsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearNeedsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -619,7 +633,7 @@
                                         <Grid Margin="30,0,0,0">
                                             <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop items you'd LIKE to see" TextAlignment="Center" IsVisible="True" FontSize="14" />
                                             <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                <WrapPanel Name="WantsPanel" Orientation="Horizontal" />
+                                                <WrapPanel Name="WantsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearWantsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -651,7 +665,7 @@
                                         <Grid Margin="40,0,0,0">
                                             <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop forbidden items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
                                             <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
-                                                <WrapPanel Name="MustNotPanel" Orientation="Horizontal" />
+                                                <WrapPanel Name="MustNotPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearMustNotButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -659,6 +673,16 @@
                                         </Grid>
                                     </Grid>
                                 </Border>
+                                
+                                <!-- Run Search Button -->
+                                <Button Grid.Row="6" 
+                                        Name="RunSearchButtonVisual"
+                                        Content="🔍 RUN SEARCH"
+                                        Classes="cook-button"
+                                        Height="50"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,6,0,0"
+                                        Click="OnRunSearchClick"/>
                             </Grid>
                         </Grid>
             </Grid>
@@ -699,7 +723,7 @@
                                             HorizontalAlignment="Stretch"
                                             Height="40"
                                             FontSize="16"
-                                            Click="OnBrowseFiltersClick"/>
+                                            Click="OnLoadClick"/>
                                     
                                     <TextBlock Name="LoadedFilterText"
                                                Text="No filter loaded"
@@ -745,6 +769,33 @@
                             </Grid>
                         </StackPanel>
                         
+                        <!-- Run Search Button -->
+                        <Border Background="{StaticResource ContainerDarkPrecise}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,20,0,0">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="RUN MOTELY SEARCH"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource Green}"
+                                           HorizontalAlignment="Center"/>
+                                <Button Name="RunSearchButton"
+                                        Content="🔍 START SEARCH"
+                                        Classes="cook-button"
+                                        Height="50"
+                                        MinWidth="200"
+                                        Click="OnRunSearchClick"/>
+                                <TextBlock Text="Launch Motely search with current filter configuration"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Border}"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        
                         <!-- Hidden input for loaded filter path -->
                         <TextBox Name="FilterPathInput"
                                  IsVisible="False"
@@ -782,6 +833,88 @@
                                                FontSize="14"
                                                Background="{StaticResource ContainerDarkPrecise}"
                                                Foreground="{StaticResource White}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+            
+            <!-- Results Panel -->
+            <Grid Name="ResultsPanel" IsVisible="False">
+                <Border Background="{StaticResource ContainerDarkPrecise}" 
+                        BorderThickness="0" 
+                        CornerRadius="8" 
+                        Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" 
+                                   Text="SEARCH RESULTS" 
+                                   FontSize="20" 
+                                   FontWeight="Bold" 
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <!-- Results DataGrid -->
+                        <ScrollViewer Grid.Row="2" 
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
+                            <DataGrid Name="ResultsDataGrid"
+                                      CanUserReorderColumns="True"
+                                      CanUserResizeColumns="True"
+                                      CanUserSortColumns="True"
+                                      GridLinesVisibility="All"
+                                      IsReadOnly="True"
+                                      Background="{StaticResource DarkBackground}"
+                                      Foreground="{StaticResource White}"
+                                      BorderThickness="1"
+                                      BorderBrush="{StaticResource ModalBorder}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Seed" 
+                                                        Binding="{Binding Seed}" 
+                                                        Width="100"/>
+                                    <DataGridTextColumn Header="Score" 
+                                                        Binding="{Binding Score}" 
+                                                        Width="80"/>
+                                    <DataGridTextColumn Header="Found Items" 
+                                                        Binding="{Binding FoundItemsDisplay}" 
+                                                        Width="*"/>
+                                    <DataGridTextColumn Header="Ante" 
+                                                        Binding="{Binding Ante}" 
+                                                        Width="60"/>
+                                    <DataGridTextColumn Header="Round" 
+                                                        Binding="{Binding Round}" 
+                                                        Width="60"/>
+                                </DataGrid.Columns>
+                                <DataGrid.Styles>
+                                    <Style Selector="DataGridRow">
+                                        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+                                    </Style>
+                                    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+                                        <Setter Property="Fill" Value="{StaticResource RedHover}"/>
+                                    </Style>
+                                    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+                                        <Setter Property="Fill" Value="{StaticResource Red}"/>
+                                    </Style>
+                                </DataGrid.Styles>
+                            </DataGrid>
+                        </ScrollViewer>
+                        
+                        <!-- Status Bar -->
+                        <Border Grid.Row="3" 
+                                Background="{StaticResource ContainerDarkPrecise}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="0,1,0,0"
+                                Padding="8,4"
+                                Margin="0,8,0,0">
+                            <TextBlock Name="ResultsStatusText"
+                                       Text="No results yet. Run a search to see results."
+                                       FontSize="12"
+                                       Foreground="{StaticResource Border}"/>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>

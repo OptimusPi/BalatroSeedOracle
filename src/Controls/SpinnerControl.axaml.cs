@@ -27,6 +27,9 @@ namespace Oracle.Controls
         public static readonly StyledProperty<string> SpinnerTypeProperty =
             AvaloniaProperty.Register<SpinnerControl, string>(nameof(SpinnerType), "default");
 
+        public static readonly StyledProperty<string> ShadowDirectionProperty =
+            AvaloniaProperty.Register<SpinnerControl, string>(nameof(ShadowDirection), "south-west");
+
         public string Label
         {
             get => GetValue(LabelProperty);
@@ -61,6 +64,12 @@ namespace Oracle.Controls
         {
             get => GetValue(SpinnerTypeProperty);
             set => SetValue(SpinnerTypeProperty, value);
+        }
+        
+        public string ShadowDirection
+        {
+            get => GetValue(ShadowDirectionProperty);
+            set => SetValue(ShadowDirectionProperty, value);
         }
 
         public event EventHandler<int>? ValueChanged;

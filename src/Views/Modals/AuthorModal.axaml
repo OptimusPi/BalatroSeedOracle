@@ -6,20 +6,20 @@
     <UserControl.Styles>
         <!-- TextBox styling -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#3a5055" />
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="#1e2b2d" />
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}" />
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="12,8" />
             <Setter Property="FontSize" Value="16" />
             <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="SelectionBrush" Value="#0093ff" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
         </Style>
         
         <Style Selector="TextBox:focus">
-            <Setter Property="BorderBrush" Value="#eac058" />
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
     </UserControl.Styles>
     
@@ -37,7 +37,7 @@
         <TextBlock Grid.Row="0" 
                    Text="Enter your author name for filter configs:"
                    FontSize="16"
-                   Foreground="#CCCCCC"
+                   Foreground="{StaticResource MediumGrey}"
                    HorizontalAlignment="Center" />
         
         <!-- Author Name Input -->

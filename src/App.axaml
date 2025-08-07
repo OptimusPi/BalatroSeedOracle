@@ -84,7 +84,7 @@
         <SolidColorBrush x:Key="DarkBackground">#2e3f42</SolidColorBrush>
         <SolidColorBrush x:Key="MediumBackground">#374147</SolidColorBrush>
         <SolidColorBrush x:Key="LightBackground">#536570</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentBlack">#00000088</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentBlack">#88000000</SolidColorBrush>
         <SolidColorBrush x:Key="VeryTransparentBlack">#22000000</SolidColorBrush>
         <SolidColorBrush x:Key="PureBlack">#000000</SolidColorBrush>
         <SolidColorBrush x:Key="ToggleRed">#FE5F55</SolidColorBrush>
@@ -108,6 +108,31 @@
         <SolidColorBrush x:Key="VeryDarkBackground">#2a2a2a</SolidColorBrush>
         <SolidColorBrush x:Key="DarkGreyBorder">#4a4a4a</SolidColorBrush>
         <SolidColorBrush x:Key="LightTextGrey">#D0D0D0</SolidColorBrush>
+        
+        <!-- Frequently used inline colors that need to be globalized -->
+        <SolidColorBrush x:Key="ItemConfigDarkBg">#1e2b2d</SolidColorBrush>
+        <SolidColorBrush x:Key="ItemConfigMediumBg">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="GridLineGrey">#3a3a3a</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenAccentDark">#2a3a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenAccentVeryDark">#223322</SolidColorBrush>
+        <SolidColorBrush x:Key="RedAccentDark">#332222</SolidColorBrush>
+        <SolidColorBrush x:Key="LightPurple">#B19CD9</SolidColorBrush>
+        <SolidColorBrush x:Key="RedHighlight">#ff4444</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBackground2">#1a1a1a</SolidColorBrush>
+        <SolidColorBrush x:Key="SearchHighlight">#4a6065</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleGreen">#5FD3A3</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleGreenHover">#4BC292</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleRedHover">#FF7F75</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardGreen">#1a2c2a</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardRed">#2a1a1a</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardGreenHover">#2a3c3a</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardRedHover">#3a2a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="GoldGradient1">#FFD700</SolidColorBrush>
+        <SolidColorBrush x:Key="GoldGradient2">#FFA500</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentShadow">#44000000</SolidColorBrush>
+        <SolidColorBrush x:Key="PaleOrange">#FEB95F</SolidColorBrush>
+        <SolidColorBrush x:Key="DaytroOrange">#FDB462</SolidColorBrush>
+        <SolidColorBrush x:Key="PinkRed">#FF6B6B</SolidColorBrush>
         
         <!-- AvaloniaEdit font size resources -->
         <x:Double x:Key="FontSizeNormal">14</x:Double>
