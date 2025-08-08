@@ -412,6 +412,33 @@
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="6"/>
         </Style>
+        
+        <!-- Reusable nav arrow style (copied from SearchModal) -->
+        <Style Selector="Button.nav-arrow">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
+                        <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
+                                </Transitions>
+                            </Border.Transitions>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.nav-arrow:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
     </UserControl.Styles>
     
     <!-- Main Layout with top nav -->
@@ -425,7 +452,7 @@
         <!-- Triangle pointer above tabs -->
         <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="148"/> <!-- Load/Save -->
+                <ColumnDefinition Width="148"/> <!-- Select Filter -->
                 <ColumnDefinition Width="148"/> <!-- Visual -->
                 <ColumnDefinition Width="148"/> <!-- JSON -->
                 <ColumnDefinition Width="148"/> <!-- Results -->
@@ -472,7 +499,7 @@
                     HorizontalAlignment="Center"
                     Margin="0,0,0,12">
             <Button Name="LoadSaveTab" 
-                    Content="Load/Save" 
+                    Content="Select Filter" 
                     Classes="tab-button active"
                     Click="OnTabClick"/>
             <Button Name="VisualTab" 
@@ -688,121 +715,49 @@
             </Grid>
             
             <!-- Load/Save Panel -->
-            <StackPanel Name="LoadSavePanel" IsVisible="True" Spacing="12">
-                <!-- Content box with proper Balatro modal styling - NO BORDER -->
-                <Border Background="{StaticResource ContainerDarkPrecise}"
-                        BorderThickness="0"
-                        CornerRadius="12"
-                        Padding="24"
-                        HorizontalAlignment="Center" 
-                        MinWidth="700"
-                        MinHeight="400">
-                    
-                    <StackPanel Spacing="24">
-                        <!-- Filter Config Section -->
-                        <StackPanel Spacing="16">
-                            <TextBlock Text="FILTER MANAGEMENT" 
-                                       FontSize="24" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource Gold}"
-                                       HorizontalAlignment="Center"/>
-                            
-                            <!-- Side-by-side Load/Create -->
-                            <Grid ColumnDefinitions="*,20,*">
-                                <!-- Left side: Load Existing Filter -->
-                                <StackPanel Grid.Column="0" Spacing="12">
-                                    <TextBlock Text="LOAD EXISTING FILTER" 
-                                               FontSize="16" 
-                                               FontWeight="Bold" 
-                                               Foreground="{StaticResource Orange}"
-                                               HorizontalAlignment="Center"/>
-                                    
-                                    <Button Content="Browse Filters"
-                                            Name="BrowseButton"
-                                            Classes="small-button"
-                                            HorizontalAlignment="Stretch"
-                                            Height="40"
-                                            FontSize="16"
-                                            Click="OnLoadClick"/>
-                                    
-                                    <TextBlock Name="LoadedFilterText"
-                                               Text="No filter loaded"
-                                               Foreground="{StaticResource MediumGrey}"
-                                               FontSize="14"
-                                               TextAlignment="Center"
-                                               TextWrapping="Wrap"/>
+            <Grid Name="LoadSavePanel" IsVisible="True">
+                <!-- Simplified Select Filter layout (no save UI) -->
+                <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Filter selection spinner/card -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Left Arrow -->
+                        <Button Grid.Column="0" Name="SelectFilterLeftArrow" Content="&lt;" Classes="nav-arrow" Click="OnFilterLeftArrowClick" Margin="0,0,24,0"/>
+                        <!-- Card -->
+                        <Border Grid.Column="1" Background="{StaticResource ContainerDarkPrecise}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="12" Padding="20" Width="500">
+                            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                <Border Background="{StaticResource Gold}" CornerRadius="6" Padding="12,4" HorizontalAlignment="Center" MinWidth="220">
+                                    <TextBlock Name="SelectFilterPreviewName" Text="No filters found" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DarkerGrey}" TextAlignment="Center"/>
+                                </Border>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Name="SelectFilterAuthorPanel" IsVisible="False">
+                                    <Border Background="{StaticResource ModalBorder}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="by" FontSize="14" Foreground="{StaticResource DarkerGrey}"/>
+                                    </Border>
+                                    <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Name="SelectFilterAuthorText" Text="" FontSize="14" FontWeight="Bold" Foreground="{StaticResource White}"/>
+                                    </Border>
                                 </StackPanel>
-                                
-                                <!-- Center divider -->
-                                <Border Grid.Column="1" 
-                                        Width="2" 
-                                        Background="{StaticResource ModalBorder}"
-                                        Margin="0,30,0,0"/>
-                                
-                                <!-- Right side: Create New Filter -->
-                                <StackPanel Grid.Column="2" Spacing="12">
-                                    <TextBlock Text="CREATE NEW FILTER" 
-                                               FontSize="16" 
-                                               FontWeight="Bold" 
-                                               Foreground="{StaticResource Green}"
-                                               HorizontalAlignment="Center"/>
-                                    
-                                    <!-- File Name Input with Save button -->
-                                    <Grid ColumnDefinitions="*,8,Auto" ColumnSpacing="0">
-                                        <TextBox Grid.Column="0"
-                                                 Name="ConfigNameBox"
-                                                 Classes="balatro-input"
-                                                 Watermark="Enter filter name..."/>
-                                        <Button Grid.Column="2"
-                                                Name="SaveButton"
-                                                Content="Save"
-                                                Classes="small-button"
-                                                Click="OnSaveClick"/>
-                                    </Grid>
-                                    
-                                    <Button Content="Start with Blank Filter"
-                                            Classes="small-button"
-                                            Background="{StaticResource Green}"
-                                            HorizontalAlignment="Stretch"
-                                            Click="OnCreateNewClick"/>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                        
-                        <!-- Run Search Button -->
-                        <Border Background="{StaticResource ContainerDarkPrecise}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                Padding="20"
-                                Margin="0,20,0,0">
-                            <StackPanel Spacing="12">
-                                <TextBlock Text="RUN MOTELY SEARCH"
-                                           FontSize="18"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource Green}"
-                                           HorizontalAlignment="Center"/>
-                                <Button Name="RunSearchButton"
-                                        Content="🔍 START SEARCH"
-                                        Classes="cook-button"
-                                        Height="50"
-                                        MinWidth="200"
-                                        Click="OnRunSearchClick"/>
-                                <TextBlock Text="Launch Motely search with current filter configuration"
-                                           FontSize="12"
-                                           Foreground="{StaticResource Border}"
-                                           HorizontalAlignment="Center"
-                                           TextWrapping="Wrap"/>
+                                <Canvas Name="SelectFilterCardsCanvas" Height="65" Width="220" HorizontalAlignment="Center"/>
+                                <Border Background="#2b3639" CornerRadius="6" Padding="10,8" MinHeight="34" MaxWidth="420" HorizontalAlignment="Center">
+                                    <TextBlock Name="SelectFilterPreviewDesc" Text="Browse or start a blank filter" FontSize="14" Foreground="{StaticResource MediumGrey}" TextAlignment="Center" TextWrapping="Wrap"/>
+                                </Border>
                             </StackPanel>
                         </Border>
-                        
-                        <!-- Hidden input for loaded filter path -->
-                        <TextBox Name="FilterPathInput"
-                                 IsVisible="False"
-                                 Text=""/>
+                        <!-- Right Arrow -->
+                        <Button Grid.Column="2" Name="SelectFilterRightArrow" Content=">" Classes="nav-arrow" Click="OnFilterRightArrowClick" Margin="24,0,0,0"/>
+                    </Grid>
+                    <!-- Action buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <Button Content="Import Filter..." Name="BrowseButton" Classes="small-button" Height="40" FontSize="14" Click="OnLoadClick"/>
+                        <Button Content="Start with Blank Filter" Classes="small-button" Background="{StaticResource Green}" Click="OnCreateNewClick" Height="40" FontSize="14"/>
                     </StackPanel>
-                </Border>
-            </StackPanel>
+                    <TextBlock Name="LoadedFilterText" Text="No filter loaded" Foreground="{StaticResource MediumGrey}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
 
             <!-- JSON Panel -->
             <Grid Name="JsonPanel" IsVisible="False">

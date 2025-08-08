@@ -61,19 +61,32 @@ private void LoadAvailableFilters()
     {
         _availableFilters.Clear();
         
-        // Check local filters directory
-        var filtersDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "filters");
-        if (Directory.Exists(filtersDir))
+        // Look for .json files in the root directory (same as SearchModal)
+        var directory = Directory.GetCurrentDirectory();
+        var rootJsonFiles = Directory.GetFiles(directory, "*.json");
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Found {rootJsonFiles.Length} files in root dir: {directory}");
+        foreach (var f in rootJsonFiles)
         {
-            var files = Directory.GetFiles(filtersDir, "*.json");
+            _availableFilters.Add(f);
+        }
+        
+        // Also look for .json files in JsonItemConfigs directory (where SearchModal looks)
+        var jsonConfigsDir = Path.Combine(directory, "JsonItemConfigs");
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Checking JsonItemConfigs dir: {jsonConfigsDir}");
+        if (Directory.Exists(jsonConfigsDir))
+        {
+            var files = Directory.GetFiles(jsonConfigsDir, "*.json");
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Found {files.Length} files in JsonItemConfigs dir");
             _availableFilters.AddRange(files);
         }
+        
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Total filters found: {_availableFilters.Count}");
         
         // If no filters found, show placeholder
         if (_availableFilters.Count == 0)
         {
-            var filterNameText = this.FindControl<TextBlock>("FilterPreviewName");
-            var filterDescText = this.FindControl<TextBlock>("FilterPreviewDesc");
+            var filterNameText = this.FindControl<TextBlock>("SelectFilterPreviewName");
+            var filterDescText = this.FindControl<TextBlock>("SelectFilterPreviewDesc");
             
             if (filterNameText != null)
                 filterNameText.Text = "No filters found";
@@ -110,8 +123,8 @@ private void UpdateFilterPreview()
         // Parse the filter to get name and description
         using var doc = JsonDocument.Parse(filterContent);
         
-        var filterNameText = this.FindControl<TextBlock>("FilterPreviewName");
-        var filterDescText = this.FindControl<TextBlock>("FilterPreviewDesc");
+        var filterNameText = this.FindControl<TextBlock>("SelectFilterPreviewName");
+        var filterDescText = this.FindControl<TextBlock>("SelectFilterPreviewDesc");
         var useButton = this.FindControl<Button>("UseSelectedFilterButton");
         
         // Get filter name
@@ -164,7 +177,7 @@ private void UpdateFilterPreview()
 
 private void UpdateFilterCardsPreview(JsonElement filterRoot)
 {
-    var canvas = this.FindControl<Canvas>("FilterCardsCanvas");
+    var canvas = this.FindControl<Canvas>("SelectFilterCardsCanvas");
     if (canvas == null) return;
     
     canvas.Children.Clear();

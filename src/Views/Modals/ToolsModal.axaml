@@ -8,50 +8,65 @@
         </Grid.RowDefinitions>
         
         <!-- Tools Section -->
-        <Border Grid.Row="0" Background="{StaticResource PureBlack}" Margin="20" CornerRadius="8">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+        <Border Grid.Row="0" 
+                Background="{StaticResource ContainerDarkPrecise}" 
+                BorderThickness="0"
+                Margin="20" 
+                CornerRadius="12"
+                Padding="20">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                
+                <!-- Title -->
+                <TextBlock Text="TOOLS" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="{StaticResource Gold}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
                 
                 <!-- Analyzer Button -->
                 <Button Name="AnalyzerButton"
                        Click="OnAnalyzerClick"
-                       Background="{StaticResource Green}"
-                       Foreground="{StaticResource White}"
-                       CornerRadius="8"
-                       Padding="20,15"
-                       MinWidth="200"
-                       HorizontalAlignment="Center"
-                       Cursor="Hand"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
-                       FontWeight="Bold">
-                    <TextBlock Text="ANALYZER" HorizontalAlignment="Center"/>
+                       Classes="btn-red"
+                       MinWidth="250"
+                       MinHeight="60"
+                       HorizontalAlignment="Center">
+                    <TextBlock Text="ANALYZER" 
+                               FontSize="20"
+                               FontWeight="Bold"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"/>
                 </Button>
                 
                 <!-- Word Lists Button -->
                 <Button Name="WordListsButton"
                        Click="OnWordListsClick"
-                       Background="{StaticResource Purple}"
-                       Foreground="{StaticResource White}"
-                       CornerRadius="8"
-                       Padding="20,15"
-                       MinWidth="200"
-                       HorizontalAlignment="Center"
-                       Cursor="Hand"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
-                       FontWeight="Bold">
-                    <TextBlock Text="WORD LISTS" HorizontalAlignment="Center"/>
+                       Classes="btn-red"
+                       MinWidth="250"
+                       MinHeight="60"
+                       HorizontalAlignment="Center">
+                    <TextBlock Text="WORD LISTS" 
+                               FontSize="20"
+                               FontWeight="Bold"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"/>
+                </Button>
+                
+                <!-- Credits Button -->
+                <Button Name="CreditsButton"
+                       Click="OnCreditsClick"
+                       Classes="btn-red"
+                       MinWidth="250"
+                       MinHeight="60"
+                       HorizontalAlignment="Center">
+                    <TextBlock Text="CREDITS" 
+                               FontSize="20"
+                               FontWeight="Bold"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"/>
                 </Button>
             </StackPanel>
         </Border>
     </Grid>
-    
-    <UserControl.Styles>
-        <Style Selector="Button#AnalyzerButton:pointerover">
-            <Setter Property="Background" Value="{StaticResource PaleGreen}"/>
-        </Style>
-        <Style Selector="Button#WordListsButton:pointerover">
-            <Setter Property="Background" Value="{StaticResource PurpleHover}"/>
-        </Style>
-    </UserControl.Styles>
 </UserControl>

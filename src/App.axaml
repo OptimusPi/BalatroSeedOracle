@@ -162,5 +162,8 @@
         <!-- Exact color picker precision styles -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroPreciseColors.axaml" />
 
+        <!-- Include new minimal flat theme style dictionary -->
+        <StyleInclude Source="avares://Oracle/Styles/MinimalFlatTheme.axaml" />
+
     </Application.Styles>
 </Application>

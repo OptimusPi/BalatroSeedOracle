@@ -59,7 +59,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Padding" Value="2,4"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,2"/>
@@ -92,7 +92,7 @@
             <components:DayLatroWidget x:Name="DayLatroWidget"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="0,20,20,0"/>
+                                     Margin="20,20,0,0"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
@@ -126,28 +126,29 @@
                     <!-- Main dock panel -->
                     <Border Background="{StaticResource DockGrey}"
                             CornerRadius="8"
-                            Padding="4,2,4,4"
+                            Padding="4,0,4,2"
                             Margin="0,0,0,4">
-                        <StackPanel Orientation="Vertical" Spacing="8">
+                        <StackPanel Orientation="Vertical" Spacing="4">
                             <!-- Author Label -->
-                            <TextBlock Text="AUTHOR" 
+                            <TextBlock Text="Author" 
+                                        Margin="4,6,4,2"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
-                                       Foreground="{StaticResource LightGrey}"
+                                       Foreground="{StaticResource White}"
                                        IsHitTestVisible="False"/>
                             
                             <!-- Author Button (Balatro style like language buttons) -->
                             <Button x:Name="AuthorButton"
                                     Width="120"
-                                    Height="48"
+                                    Height="40"
                                     Click="OnAuthorClick"
                                     Classes="author-button">
                                 <Grid>
                                     <!-- Display mode -->
                                     <TextBlock x:Name="AuthorDisplay"
-                                               Text=""
+                                               Text="Author"
                                                IsVisible="True"
                                                IsHitTestVisible="False"/>
                                     
@@ -200,7 +201,7 @@
                     <!-- OPTIONS button equivalent - EDITOR (orange) -->
                     <Button Classes="btn-orange"
                             Click="OnEditorClick"
-                            MinHeight="48"
+                            MinHeight="50"
                             MinWidth="100">
                         <TextBlock Text="Filter Editor" 
                                    FontSize="20" 
@@ -212,7 +213,7 @@
                     <!-- QUIT button (red) -->
                     <Button Classes="btn-red"
                             Click="OnExitClick"
-                            MinHeight="48"
+                            MinHeight="50"
                             MinWidth="100">
                         <TextBlock Text="QUIT" 
                                    FontSize="20" 
@@ -233,12 +234,12 @@
                                    IsHitTestVisible="False"/>
                     </Button>
 
-                    <!-- MODS button equivalent - TOOLS (purple) -->
+                    <!-- MODS button equivalent - MORE (purple) -->
                     <Button Classes="btn-purple"
                             Click="OnToolClick"
                             MinHeight="64"
                             MinWidth="64">
-                        <TextBlock Text="TOOLS" 
+                        <TextBlock Text="MORE" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"

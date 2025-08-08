@@ -105,7 +105,7 @@ public static class ModalHelper
     public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
     {
         var ToolView = new ToolsModal();
-        return menu.ShowModal("TOOLS", ToolView);
+        return menu.ShowModal("MORE", ToolView);
     }
 
     /// <summary>
@@ -176,6 +176,17 @@ public static class ModalHelper
     {
         var wordListsView = new WordListsModal();
         return menu.ShowModal("WORD LISTS", wordListsView);
+    }
+
+    /// <summary>
+    /// Creates and shows a credits modal
+    /// </summary>
+    /// <param name="menu">The main menu to show the modal on</param>
+    /// <returns>The created modal</returns>
+    public static StandardModal ShowCreditsModal(this Views.BalatroMainMenu menu)
+    {
+        var creditsView = new CreditsModal();
+        return menu.ShowModal("CREDITS", creditsView);
     }
 
 }

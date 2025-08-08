@@ -29,12 +29,12 @@
                     Background="{StaticResource DockGrey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="3"
+                    BorderThickness="4"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     MaxWidth="1000"
                     MaxHeight="700"
-                    BoxShadow="0 4 0 #777e89">
+                    BoxShadow="0 5 0 #777e89">
                 
                 <Grid>
                     <Grid.RowDefinitions>

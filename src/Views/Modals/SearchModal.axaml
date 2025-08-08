@@ -248,6 +248,33 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        
+        <!-- Reusable nav arrow style (shadowed red block) -->
+        <Style Selector="Button.nav-arrow">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
+                        <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
+                                </Transitions>
+                            </Border.Transitions>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.nav-arrow:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
     </UserControl.Styles>
     
     <Grid>
@@ -305,24 +332,24 @@
         <StackPanel Grid.Row="1" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
-                    Margin="0,0,0,12">
+                    Margin="0,4,0,4">
             <Button Name="FilterTab" 
                     Content="Select Filter" 
-                    Classes="tab-button active"
+                    Classes="tab-button active ActiveTab"
                     Click="OnTabClick"/>
             <Button Name="SettingsTab" 
                     Content="Settings" 
-                    Classes="tab-button"
+                    Classes="tab-button InactiveTab"
                     IsEnabled="False"
                     Click="OnTabClick"/>
             <Button Name="SearchTab" 
                     Content="Search" 
-                    Classes="tab-button"
+                    Classes="tab-button InactiveTab"
                     IsEnabled="False"
                     Click="OnTabClick"/>
             <Button Name="ResultsTab" 
                     Content="Results" 
-                    Classes="tab-button"
+                    Classes="tab-button InactiveTab"
                     IsEnabled="False"
                     Click="OnTabClick"/>
         </StackPanel>
@@ -331,188 +358,50 @@
         <Grid Grid.Row="2" Margin="24">
             
             <!-- Filter Selection Panel -->
-            <StackPanel Name="FilterPanel" IsVisible="True" Spacing="24">
-                <!-- Inner dark panel like in Balatro -->
-                <Border Classes="modal-content-panel">
-                    <StackPanel Spacing="12">
-                    <!-- Filter Config Section -->
-                    <StackPanel Spacing="16">
-                        <!-- Title -->
-                        <TextBlock Text="SELECT CONFIGURATION" 
-                                   FontSize="20" 
-                                   FontWeight="Bold" 
-                                   Foreground="{StaticResource Orange}"
-                                   HorizontalAlignment="Center"/>
-                                
-                                <!-- Filter Preview Spinner -->
-                                <Border Background="{StaticResource ContainerDarkPrecise}"
-                                        BorderThickness="0"
-                                        CornerRadius="12"
-                                        Padding="20"
-                                        MinHeight="140"
-                                        Width="600"
-                                        MaxWidth="600"
-                                        HorizontalAlignment="Center">
-                                    <Grid>
-                                        <!-- Left Arrow -->
-                                        <Button Name="FilterLeftArrow"
-                                                Content="&lt;"
-                                                Classes="btn-red"
-                                                Width="40" Height="60"
-                                                FontSize="32"
-                                                FontWeight="Bold"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"
-                                                Click="OnFilterLeftArrowClick">
-                                            <Button.Template>
-                                                <ControlTemplate>
-                                                    <Grid>
-                                                        <!-- Drop shadow -->
-                                                        <Border Background="{StaticResource DropShadow}"
-                                                                CornerRadius="4"
-                                                                Margin="0,2,0,0"/>
-                                                        <!-- Button -->
-                                                        <Border Background="{TemplateBinding Background}"
-                                                                CornerRadius="4"
-                                                                Margin="0,0,0,2">
-                                                            <ContentPresenter Content="{TemplateBinding Content}"
-                                                                              HorizontalAlignment="Center"
-                                                                              VerticalAlignment="Center"
-                                                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                        </Border>
-                                                    </Grid>
-                                                </ControlTemplate>
-                                            </Button.Template>
-                                        </Button>
-                                        
-                                        <!-- Right Arrow -->
-                                        <Button Name="FilterRightArrow"
-                                                Content="&gt;"
-                                                Classes="btn-red"
-                                                Width="40" Height="60"
-                                                FontSize="32"
-                                                FontWeight="Bold"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Center"
-                                                Click="OnFilterRightArrowClick">
-                                            <Button.Template>
-                                                <ControlTemplate>
-                                                    <Grid>
-                                                        <!-- Drop shadow -->
-                                                        <Border Background="{StaticResource DropShadow}"
-                                                                CornerRadius="4"
-                                                                Margin="0,2,0,0"/>
-                                                        <!-- Button -->
-                                                        <Border Background="{TemplateBinding Background}"
-                                                                CornerRadius="4"
-                                                                Margin="0,0,0,2">
-                                                            <ContentPresenter Content="{TemplateBinding Content}"
-                                                                              HorizontalAlignment="Center"
-                                                                              VerticalAlignment="Center"
-                                                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                        </Border>
-                                                    </Grid>
-                                                </ControlTemplate>
-                                            </Button.Template>
-                                        </Button>
-                                        
-                                        <!-- Filter Content -->
-                                        <Grid Margin="70,0">
-                                            <Grid.Transitions>
-                                                <Transitions>
-                                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
-                                                </Transitions>
-                                            </Grid.Transitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            
-                                            <!-- Filter Name with Gold Badge -->
-                                            <Border Grid.Row="0" 
-                                                    Background="{StaticResource Gold}"
-                                                    CornerRadius="6"
-                                                    Padding="16,6"
-                                                    MinWidth="200"
-                                                    HorizontalAlignment="Center"
-                                                    Margin="0,0,0,10">
-                                                <TextBlock Name="FilterPreviewName"
-                                                           Text="No filters found"
-                                                           FontSize="18"
-                                                           FontWeight="Bold"
-                                                           Foreground="{StaticResource DarkerGrey}"
-                                                           TextAlignment="Center"/>
-                                            </Border>
-                                            
-                                            <!-- Author Badge -->
-                                            <StackPanel Grid.Row="1" 
-                                                        Orientation="Horizontal" 
-                                                        HorizontalAlignment="Center"
-                                                        Margin="0,0,0,8"
-                                                        Name="AuthorPanel"
-                                                        IsVisible="False">
-                                                <Border Background="{StaticResource ModalBorder}"
-                                                        CornerRadius="4"
-                                                        Padding="8,2"
-                                                        Margin="0,0,4,0">
-                                                    <TextBlock Text="by" 
-                                                               FontSize="12"
-                                                               Foreground="{StaticResource DarkerGrey}"/>
-                                                </Border>
-                                                <Border Background="{StaticResource Blue}"
-                                                        CornerRadius="4"
-                                                        Padding="8,2">
-                                                    <TextBlock Name="FilterAuthorText"
-                                                               Text=""
-                                                               FontSize="12"
-                                                               FontWeight="Bold"
-                                                               Foreground="{StaticResource White}"/>
-                                                </Border>
-                                            </StackPanel>
-                                            
-                                            <!-- Fanned Cards Display -->
-                                            <Canvas Grid.Row="2"
-                                                    Name="FilterCardsCanvas"
-                                                    Height="65"
-                                                    Width="200"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,8"/>
-                                            
-                                            <!-- Filter Description in Dark Container -->
-                                            <Border Grid.Row="3" 
-                                                    Background="{StaticResource DarkBackground}"
-                                                    CornerRadius="6"
-                                                    Padding="12,8"
-                                                    MinHeight="30"
-                                                    MaxWidth="450"
-                                                    HorizontalAlignment="Center">
-                                                <TextBlock Name="FilterPreviewDesc"
-                                                           Text="Create a filter to start searching"
-                                                           FontSize="12"
-                                                           Foreground="{StaticResource MediumGrey}"
-                                                           TextAlignment="Center"
-                                                           TextWrapping="Wrap"/>
-                                            </Border>
-                                        </Grid>
-                                    </Grid>
+            <Grid Name="FilterPanel" IsVisible="True">
+                <!-- Simplified layout: no full-width dark slab, just centered card -->
+                <StackPanel Spacing="24" VerticalAlignment="Center">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Three-column inline grid for arrows + card -->
+                    <Grid HorizontalAlignment="Center" MaxWidth="700">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Left Arrow -->
+                        <Button Grid.Column="0" Name="FilterLeftArrow" Content="&lt;" Classes="nav-arrow" Click="OnFilterLeftArrowClick" Margin="0,0,24,0"/>
+                        <!-- Card Container -->
+                        <Border Grid.Column="1" Background="{StaticResource ContainerDarkPrecise}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="12" Padding="20" Width="500">
+                            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                <Border Background="{StaticResource Gold}" CornerRadius="6" Padding="12,4" HorizontalAlignment="Center" MinWidth="220">
+                                    <TextBlock Name="FilterPreviewName" Text="No filters found" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DarkerGrey}" TextAlignment="Center"/>
                                 </Border>
-                        
-                        <!-- Import Button -->
-                        <Button Content="Import File..."
-                                Classes="small-button"
-                                HorizontalAlignment="Center"
-                                Click="OnBrowseFilterClick"/>
-                    </StackPanel>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Name="AuthorPanel" IsVisible="False">
+                                    <Border Background="{StaticResource ModalBorder}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="by" FontSize="14" Foreground="{StaticResource DarkerGrey}"/>
+                                    </Border>
+                                    <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Name="FilterAuthorText" Text="" FontSize="14" FontWeight="Bold" Foreground="{StaticResource White}"/>
+                                    </Border>
+                                </StackPanel>
+                                <Canvas Name="FilterCardsCanvas" Height="65" Width="220" HorizontalAlignment="Center"/>
+                                <Border Background="#2b3639" CornerRadius="6" Padding="10,8" MinHeight="34" MaxWidth="420" HorizontalAlignment="Center">
+                                    <TextBlock Name="FilterPreviewDesc" Text="Create a filter to start searching" FontSize="14" Foreground="{StaticResource MediumGrey}" TextAlignment="Center" TextWrapping="Wrap"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <!-- Right Arrow -->
+                        <Button Grid.Column="2" Name="FilterRightArrow" Content=">" Classes="nav-arrow" Click="OnFilterRightArrowClick" Margin="24,0,0,0"/>
+                    </Grid>
+                </Grid>
+                <!-- Import Button placed below spinner/card -->
+                <Button Content="Import File..." Classes="small-button PrimaryAction" HorizontalAlignment="Center" Click="OnBrowseFilterClick" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Grid>
             
             <!-- Settings Panel -->
             <StackPanel Name="SettingsPanel" IsVisible="False" Spacing="24">
@@ -577,11 +466,11 @@
                         <Border Grid.Column="1" 
                                 Width="2" 
                                 Background="{StaticResource ModalBorder}"
-                                Margin="0,40,0,0"/>
+                                Margin="0,24,0,0"/>
                         
                         <!-- Right side: Game Settings -->
                         <StackPanel Grid.Column="2" Spacing="24">
-                            <TextBlock Text="GAME SETTINGS" 
+                            <TextBlock Text="Game Settings SETTINGS" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
                                        Foreground="{StaticResource Orange}"
@@ -600,84 +489,16 @@
                                 <!-- Left Arrow -->
                                 <Button Grid.Column="0" Name="DeckLeftArrow"
                                         Content="&lt;"
-                                        Width="32" Height="95"
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        VerticalAlignment="Center"
-                                        Margin="0,0,8,0">
-                                    <Button.Template>
-                                        <ControlTemplate>
-                                            <Grid>
-                                                <!-- Drop shadow -->
-                                                <Border Background="{StaticResource DropShadow}"
-                                                        CornerRadius="4"
-                                                        Margin="0,2,0,0"/>
-                                                <!-- Button -->
-                                                <Border Name="PART_Border" Background="{StaticResource Red}"
-                                                        CornerRadius="4"
-                                                        Margin="0,0,0,2">
-                                                    <Border.Transitions>
-                                                        <Transitions>
-                                                            <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                                        </Transitions>
-                                                    </Border.Transitions>
-                                                    <ContentPresenter Content="{TemplateBinding Content}"
-                                                                      HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"
-                                                                      TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                      TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                      TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                </Border>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                    <Button.Styles>
-                                        <Style Selector="Button:pointerover /template/ Border#PART_Border">
-                                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                        </Style>
-                                    </Button.Styles>
-                                </Button>
+                                        Classes="nav-arrow"
+                                        Width="40" Height="95"
+                                        Margin="0,0,8,0"/>
                                 
                                 <!-- Right Arrow -->
                                 <Button Grid.Column="2" Name="DeckRightArrow"
                                         Content="&gt;"
-                                        Width="32" Height="95"
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        VerticalAlignment="Center"
-                                        Margin="8,0,0,0">
-                                    <Button.Template>
-                                        <ControlTemplate>
-                                            <Grid>
-                                                <!-- Drop shadow -->
-                                                <Border Background="{StaticResource DropShadow}"
-                                                        CornerRadius="4"
-                                                        Margin="0,2,0,0"/>
-                                                <!-- Button -->
-                                                <Border Name="PART_Border" Background="{StaticResource Red}"
-                                                        CornerRadius="4"
-                                                        Margin="0,0,0,2">
-                                                    <Border.Transitions>
-                                                        <Transitions>
-                                                            <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                                        </Transitions>
-                                                    </Border.Transitions>
-                                                    <ContentPresenter Content="{TemplateBinding Content}"
-                                                                      HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"
-                                                                      TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                      TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                      TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                </Border>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                    <Button.Styles>
-                                        <Style Selector="Button:pointerover /template/ Border#PART_Border">
-                                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                        </Style>
-                                    </Button.Styles>
-                                </Button>
+                                        Classes="nav-arrow"
+                                        Width="40" Height="95"
+                                        Margin="8,0,0,0"/>
                                 
                                 <!-- Deck Content with Border -->
                                 <Border Grid.Column="1" 
@@ -685,7 +506,8 @@
                                         BorderBrush="{StaticResource ModalBorder}"
                                         BorderThickness="2"
                                         CornerRadius="12"
-                                        Padding="16">
+                                        Padding="12"
+                                        MaxWidth="280">
                                     <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -744,43 +566,9 @@
                                     <!-- Left Arrow -->
                                     <Button Grid.Column="0" Name="StakeLeftArrow"
                                             Content="&lt;"
-                                            Width="32" Height="80"
-                                            FontSize="20"
-                                            FontWeight="Bold"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,8,0">
-                                        <Button.Template>
-                                            <ControlTemplate>
-                                                <Grid>
-                                                    <!-- Drop shadow -->
-                                                    <Border Background="{StaticResource DropShadow}"
-                                                            CornerRadius="4"
-                                                            Margin="0,2,0,0"/>
-                                                    <!-- Button -->
-                                                    <Border Name="PART_Border" Background="{StaticResource Red}"
-                                                            CornerRadius="4"
-                                                            Margin="0,0,0,2">
-                                                        <Border.Transitions>
-                                                            <Transitions>
-                                                                <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                                            </Transitions>
-                                                        </Border.Transitions>
-                                                        <ContentPresenter Content="{TemplateBinding Content}"
-                                                                          HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"
-                                                                          TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                          TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                    </Border>
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                        <Button.Styles>
-                                            <Style Selector="Button:pointerover /template/ Border#PART_Border">
-                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                            </Style>
-                                        </Button.Styles>
-                                    </Button>
+                                            Classes="nav-arrow"
+                                            Width="40" Height="80"
+                                            Margin="0,0,8,0"/>
                                     
                                     <!-- Stake Content with Border -->
                                     <Border Grid.Column="1" 
@@ -788,8 +576,8 @@
                                             BorderBrush="{StaticResource ModalBorder}"
                                             BorderThickness="2"
                                             CornerRadius="12"
-                                            Padding="16"
-                                            MinHeight="100">
+                                            Padding="12"
+                                            MaxWidth="280">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="80"/>
@@ -824,43 +612,9 @@
                                     <!-- Right Arrow -->
                                     <Button Grid.Column="2" Name="StakeRightArrow"
                                             Content="&gt;"
-                                            Width="32" Height="80"
-                                            FontSize="20"
-                                            FontWeight="Bold"
-                                            VerticalAlignment="Center"
-                                            Margin="8,0,0,0">
-                                        <Button.Template>
-                                            <ControlTemplate>
-                                                <Grid>
-                                                    <!-- Drop shadow -->
-                                                    <Border Background="{StaticResource DropShadow}"
-                                                            CornerRadius="4"
-                                                            Margin="0,2,0,0"/>
-                                                    <!-- Button -->
-                                                    <Border Name="PART_Border" Background="{StaticResource Red}"
-                                                            CornerRadius="4"
-                                                            Margin="0,0,0,2">
-                                                        <Border.Transitions>
-                                                            <Transitions>
-                                                                <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                                            </Transitions>
-                                                        </Border.Transitions>
-                                                        <ContentPresenter Content="{TemplateBinding Content}"
-                                                                          HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"
-                                                                          TextBlock.FontSize="{TemplateBinding FontSize}"
-                                                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                                                          TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                                                    </Border>
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                        <Button.Styles>
-                                            <Style Selector="Button:pointerover /template/ Border#PART_Border">
-                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                            </Style>
-                                        </Button.Styles>
-                                    </Button>
+                                            Classes="nav-arrow"
+                                            Width="40" Height="80"
+                                            Margin="8,0,0,0"/>
                                 </Grid>
                                 
                                 <!-- Hidden spinner for value tracking -->

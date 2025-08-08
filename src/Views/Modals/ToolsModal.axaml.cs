@@ -54,5 +54,24 @@ namespace Oracle.Views.Modals
                 ModalHelper.ShowWordListsModal(mainMenu);
             }
         }
+        
+        private void OnCreditsClick(object? sender, RoutedEventArgs e)
+        {
+            // Get the parent modal container
+            var parent = this.Parent;
+            while (parent != null && !(parent is BalatroMainMenu))
+            {
+                parent = parent.Parent;
+            }
+            
+            if (parent is BalatroMainMenu mainMenu)
+            {
+                // Hide current modal
+                mainMenu.HideModalContent();
+                
+                // Show credits modal using ModalHelper extension
+                ModalHelper.ShowCreditsModal(mainMenu);
+            }
+        }
     }
 }
