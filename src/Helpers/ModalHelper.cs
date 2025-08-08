@@ -91,8 +91,9 @@ public static class ModalHelper
             }
         };
         
-        // Load the config object directly and start search
-        _ = searchContent.LoadConfigDirectlyAsync(config);
+        // Load the config object directly WITHOUT auto-starting search
+        // The user should stay on the filter tab and decide when to search
+        _ = searchContent.LoadConfigDirectlyAsync(config, autoStartSearch: false);
         
         return menu.ShowModal("MOTELY SEARCH", searchContent);
     }

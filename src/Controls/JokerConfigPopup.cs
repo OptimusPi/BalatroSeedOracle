@@ -70,7 +70,7 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(10, 8)
             };
@@ -110,8 +110,8 @@ namespace Oracle.Controls
 
                 var anteBorder = new Border
                 {
-                    Background = new SolidColorBrush(Color.Parse("#2a2a2a")),
-                    BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a")),
+                    Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                    BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(4, 2),
@@ -155,7 +155,7 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
                 border.BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 if (border.Child is TextBlock text)
                 {
@@ -164,8 +164,8 @@ namespace Oracle.Controls
             }
             else
             {
-                border.Background = new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 if (border.Child is TextBlock text)
                 {
                     text.Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
@@ -177,7 +177,7 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(10, 8)
             };
@@ -236,8 +236,8 @@ namespace Oracle.Controls
 
             var border = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(6, 4),
@@ -278,13 +278,13 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 border.BorderBrush = Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold;
             }
             else
             {
-                border.Background = new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
             }
         }
 
@@ -292,7 +292,7 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(10, 8)
             };
@@ -341,8 +341,8 @@ namespace Oracle.Controls
 
             var border = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4),
@@ -378,7 +378,7 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
                 border.BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 if (border.Child is TextBlock text)
                 {
@@ -387,8 +387,8 @@ namespace Oracle.Controls
             }
             else
             {
-                border.Background = new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 if (border.Child is TextBlock text)
                 {
                     text.Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;

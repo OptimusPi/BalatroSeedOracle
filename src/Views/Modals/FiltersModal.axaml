@@ -2,19 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
              xmlns:controls="using:Oracle.Controls"
+             xmlns:components="using:Oracle.Components"
              x:Class="Oracle.Views.Modals.FiltersModalContent">
              
     <UserControl.Styles>
-        
-        <!-- Small nav button style -->
+        <!-- Modal-specific styles ONLY. Global button/input/tab/nav styles removed to prevent drift. -->
         <Style Selector="Button.small-nav-button">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="MinHeight" Value="28" />
             <Setter Property="Padding" Value="6,2" />
             <Setter Property="Margin" Value="0,0,0,2" />
         </Style>
-        
-        <!-- Drop Zone Base Styling -->
         <Style Selector="Border.drop-zone">
             <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
@@ -29,32 +27,22 @@
                 </Transitions>
             </Setter>
         </Style>
-        
-        <!-- Drop Zone Hover State -->
         <Style Selector="Border.drop-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
             <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
         </Style>
-        
-        <!-- NEEDS Zone Specific Styling -->
         <Style Selector="Border.needs-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Red}" />
             <Setter Property="BoxShadow" Value="0 0 15 #ff4c4080" />
         </Style>
-        
-        <!-- WANTS Zone Specific Styling -->
         <Style Selector="Border.wants-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
             <Setter Property="BoxShadow" Value="0 0 15 #0093ff80" />
         </Style>
-        
-        <!-- MUST NOT Zone Specific Styling -->
         <Style Selector="Border.mustnot-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Orange}" />
             <Setter Property="BoxShadow" Value="0 0 15 #ff980080" />
         </Style>
-        
-        <!-- Draggable Item Styling -->
         <Style Selector="Border.draggable-item">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
@@ -70,20 +58,9 @@
                 </Transitions>
             </Setter>
         </Style>
-        
-        <!-- Draggable Item Hover -->
-        <Style Selector="Border.draggable-item:pointerover">
-            <!-- No additional styling needed - ResponsiveCard handles its own hover state -->
+        <Style Selector="Border.draggable-item:is-dragging">
+            <Setter Property="Opacity" Value="0.6" />
         </Style>
-        
-        <!-- Item Being Dragged -->
-        <Style Selector="Border.draggable-item.is-dragging">
-            <Setter Property="Opacity" Value="0.6" /> <!-- Keep some opacity for dragging feedback -->
-            <!-- No transform - don't make it bigger -->
-        </Style>
-        
-        
-        <!-- Dropped Item Styling - Minimal/transparent style -->
         <Style Selector="Border.dropped-item">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
@@ -92,19 +69,13 @@
             <Setter Property="Padding" Value="2" />
             <Setter Property="Margin" Value="4" />
         </Style>
-        
-        <!-- Dropped Item Hover - no animation, just cursor change -->
         <Style Selector="Border.dropped-item:pointerover">
             <Setter Property="Cursor" Value="Hand" />
         </Style>
-        
-        <!-- Responsive WrapPanel for drop zones -->
         <Style Selector="WrapPanel.drop-zone-panel">
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
-        
-        <!-- Empty Drop Zone Placeholder -->
         <Style Selector="TextBlock.drop-placeholder">
             <Setter Property="Foreground" Value="{StaticResource Border}" />
             <Setter Property="FontStyle" Value="Normal" />
@@ -113,8 +84,6 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Opacity" Value="0.7" />
         </Style>
-        
-        <!-- Clear Zone Button Style -->
         <Style Selector="Button.clear-zone-button">
             <Setter Property="Opacity" Value="0.5" />
             <Setter Property="Cursor" Value="Hand" />
@@ -128,27 +97,17 @@
             </Setter>
             <Setter Property="Template">
                 <ControlTemplate>
-                    <ContentPresenter Name="PART_ContentPresenter"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Content="{TemplateBinding Content}"
-                                    Padding="{TemplateBinding Padding}"
-                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    <ContentPresenter />
                 </ControlTemplate>
             </Setter>
         </Style>
-        
         <Style Selector="Button.clear-zone-button:pointerover">
             <Setter Property="Opacity" Value="1" />
         </Style>
-        
         <Style Selector="Button.clear-zone-button:pointerover Path">
             <Setter Property="Fill" Value="{StaticResource Red}" />
         </Style>
-        
-        <!-- FIX: Force TextBox styles to work in this modal -->
+        <!-- Local TextBox override (do not duplicate global balatro-input) -->
         <Style Selector="TextBox">
             <Setter Property="Background" Value="{StaticResource PureBlack}" />
             <Setter Property="Foreground" Value="White" />
@@ -160,149 +119,82 @@
             <Setter Property="IsHitTestVisible" Value="True" />
             <Setter Property="Focusable" Value="True" />
             <Setter Property="MinHeight" Value="32" />
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Name="PART_BorderElement"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}">
-                        <Grid>
-                            <ScrollViewer Name="PART_ContentHost"
-                                          Background="Transparent"
-                                          HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-                                          IsTabStop="False"
-                                          Margin="{TemplateBinding Padding}"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                                <TextPresenter Name="PART_TextPresenter"
-                                               Text="{TemplateBinding Text}"
-                                               CaretBrush="{TemplateBinding CaretBrush}"
-                                               SelectionBrush="{TemplateBinding SelectionBrush}"
-                                               SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                               TextAlignment="{TemplateBinding TextAlignment}"
-                                               TextWrapping="{TemplateBinding TextWrapping}" />
-                            </ScrollViewer>
-                            <TextBlock Name="PART_Watermark"
-                                       Text="{TemplateBinding Watermark}"
-                                       TextAlignment="{TemplateBinding TextAlignment}"
-                                       TextWrapping="{TemplateBinding TextWrapping}"
-                                       IsHitTestVisible="False"
-                                       Opacity="0.7"
-                                       Foreground="{StaticResource TextInactive}"
-                                       FontStyle="Italic"
-                                       Margin="{TemplateBinding Padding}"
-                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                       IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
         </Style>
-        
         <Style Selector="TextBox:focus">
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
         </Style>
-        
         <Style Selector="TextBox:pointerover">
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
-        
-        <!-- Watermark/Placeholder text fix - MORE AGGRESSIVE -->
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{StaticResource MediumLightGrey}" />
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="1" />
         </Style>
-        
-
         <Style Selector="TextBox:watermark">
             <Setter Property="Foreground" Value="{StaticResource TextInactive}" />
         </Style>
-        
-        <!-- Force TextPresenter visibility -->
         <Style Selector="TextBox /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="CaretBrush" Value="White" />
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
         </Style>
-        
-        <!-- ScrollViewer inside TextBox -->
         <Style Selector="TextBox /template/ ScrollViewer#PART_ContentHost">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        
-        
-        <!-- Mode Toggle Buttons -->
+        <!-- Mode toggles -->
         <Style Selector="Button.active">
             <Setter Property="Background" Value="{StaticResource Blue}" />
         </Style>
         <Style Selector="Button.active:pointerover">
             <Setter Property="Background" Value="{StaticResource BlueHover}" />
         </Style>
-        
         <Style Selector="Border.mode-inactive">
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Opacity" Value="0.6" />
         </Style>
-        
         <Style Selector="Border.mode-inactive:pointerover">
             <Setter Property="Opacity" Value="0.8" />
         </Style>
-        
-        <!-- Specific styling for active states -->
         <Style Selector="Border#DragDropModeButton.mode-active">
             <Setter Property="Background" Value="{StaticResource Gold}" />
             <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
-        
         <Style Selector="Border#DragDropModeButton.mode-inactive">
             <Setter Property="Background" Value="{StaticResource PureBlack}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
-        
         <Style Selector="Border#JsonEditorModeButton.mode-active">
             <Setter Property="Background" Value="{StaticResource Gold}" />
             <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
-        
         <Style Selector="Border#JsonEditorModeButton.mode-inactive">
             <Setter Property="Background" Value="{StaticResource PureBlack}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
-        
-        <!-- ScrollBar Styling -->
+        <!-- Scroll / editor -->
         <Style Selector="ScrollBar">
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
-        
         <Style Selector="ScrollBar /template/ Thumb">
             <Setter Property="Background" Value="{StaticResource Border}" />
             <Setter Property="MinHeight" Value="20" />
             <Setter Property="MinWidth" Value="10" />
             <Setter Property="Opacity" Value="1" />
         </Style>
-        
         <Style Selector="ScrollBar:vertical">
             <Setter Property="Width" Value="14" />
             <Setter Property="Margin" Value="0,0,2,0" />
         </Style>
-        
         <Style Selector="ScrollBar /template/ Thumb:pointerover">
             <Setter Property="Background" Value="{StaticResource TextInactive}" />
         </Style>
-        
-        <!-- ScrollViewer Styling -->
         <Style Selector="ScrollViewer">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        
-        <!-- AvaloniaEdit TextEditor Styling -->
         <Style Selector="avalonedit|TextEditor">
             <Setter Property="Background" Value="{StaticResource PureBlack}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
@@ -310,135 +202,11 @@
             <Setter Property="FontSize" Value="14" />
             <Setter Property="LineNumbersForeground" Value="{StaticResource TextInactive}" />
         </Style>
-        
-        <!-- Style the text area inside AvaloniaEdit -->
         <Style Selector="avalonedit|TextEditor /template/ avalonedit|TextArea">
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForeground" Value="{StaticResource White}" />
         </Style>
-        <!-- Tab button styles (from SearchModal) -->
-        <Style Selector="Button.tab-button">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Height" Value="48"/>
-            <Setter Property="MinWidth" Value="140"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <!-- Drop shadow behind button -->
-                    <Grid>
-                        <Border Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Button.tab-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        <Style Selector="Button.tab-button:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-            <Setter Property="Margin" Value="4,2,4,4"/>
-        </Style>
-        <Style Selector="Button.tab-button.active">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-        </Style>
-        <Style Selector="Button.tab-button:disabled">
-            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="Cursor" Value="Arrow"/>
-        </Style>
-        
-        <!-- Small button style (from SearchModal) -->
-        <Style Selector="Button.small-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.small-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        
-        <!-- Cook button style -->
-        <Style Selector="Button.cook-button">
-            <Setter Property="Background" Value="{StaticResource Green}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Height" Value="64"/>
-            <Setter Property="MinWidth" Value="280"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.cook-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource PaleGreen}"/>
-        </Style>
-        
-        <!-- Input field style -->
-        <Style Selector="TextBox.balatro-input">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="6"/>
-        </Style>
-        
-        <!-- Reusable nav arrow style (copied from SearchModal) -->
-        <Style Selector="Button.nav-arrow">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="60"/>
-            <Setter Property="FontSize" Value="32"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
-                        <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
-                            <Border.Transitions>
-                                <Transitions>
-                                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                </Transitions>
-                            </Border.Transitions>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Button.nav-arrow:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
+        <!-- Removed duplicate global styles: tab-button, small-button, cook-button, balatro-input, nav-arrow -->
     </UserControl.Styles>
     
     <!-- Main Layout with top nav -->
@@ -609,7 +377,7 @@
                                 <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
                                         <!-- Sideways Label -->
-                                        <TextBlock Text="MUST"
+                                        <TextBlock Text="MUST have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
                                                    FontWeight="Bold"
@@ -620,7 +388,10 @@
                                                    Margin="5,0,0,0"
                                                    RenderTransformOrigin="0.5,0.5">
                                             <TextBlock.RenderTransform>
-                                                <RotateTransform Angle="-90"/>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="-90"/>
+                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
                                         
@@ -641,7 +412,7 @@
                                 <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
                                         <!-- Sideways Label -->
-                                        <TextBlock Text="SHOULD"
+                                        <TextBlock Text="Should have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
                                                    FontWeight="Bold"
@@ -652,7 +423,10 @@
                                                    Margin="5,0,0,0"
                                                    RenderTransformOrigin="0.5,0.5">
                                             <TextBlock.RenderTransform>
-                                                <RotateTransform Angle="-90"/>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="-90"/>
+                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
                                         
@@ -673,7 +447,7 @@
                                 <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
                                     <Grid>
                                         <!-- Sideways Label -->
-                                        <TextBlock Text="MUST NOT"
+                                        <TextBlock Text="Must NOT Have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="12"
                                                    FontWeight="Bold"
@@ -684,7 +458,10 @@
                                                    Margin="2,0,0,0"
                                                    RenderTransformOrigin="0.5,0.5">
                                             <TextBlock.RenderTransform>
-                                                <RotateTransform Angle="-90"/>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="-90"/>
+                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
                                         
@@ -716,47 +493,10 @@
             
             <!-- Load/Save Panel -->
             <Grid Name="LoadSavePanel" IsVisible="True">
-                <!-- Simplified Select Filter layout (no save UI) -->
-                <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <!-- Filter selection spinner/card -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- Left Arrow -->
-                        <Button Grid.Column="0" Name="SelectFilterLeftArrow" Content="&lt;" Classes="nav-arrow" Click="OnFilterLeftArrowClick" Margin="0,0,24,0"/>
-                        <!-- Card -->
-                        <Border Grid.Column="1" Background="{StaticResource ContainerDarkPrecise}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="12" Padding="20" Width="500">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                <Border Background="{StaticResource Gold}" CornerRadius="6" Padding="12,4" HorizontalAlignment="Center" MinWidth="220">
-                                    <TextBlock Name="SelectFilterPreviewName" Text="No filters found" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DarkerGrey}" TextAlignment="Center"/>
-                                </Border>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Name="SelectFilterAuthorPanel" IsVisible="False">
-                                    <Border Background="{StaticResource ModalBorder}" CornerRadius="4" Padding="6,2">
-                                        <TextBlock Text="by" FontSize="14" Foreground="{StaticResource DarkerGrey}"/>
-                                    </Border>
-                                    <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
-                                        <TextBlock Name="SelectFilterAuthorText" Text="" FontSize="14" FontWeight="Bold" Foreground="{StaticResource White}"/>
-                                    </Border>
-                                </StackPanel>
-                                <Canvas Name="SelectFilterCardsCanvas" Height="65" Width="220" HorizontalAlignment="Center"/>
-                                <Border Background="#2b3639" CornerRadius="6" Padding="10,8" MinHeight="34" MaxWidth="420" HorizontalAlignment="Center">
-                                    <TextBlock Name="SelectFilterPreviewDesc" Text="Browse or start a blank filter" FontSize="14" Foreground="{StaticResource MediumGrey}" TextAlignment="Center" TextWrapping="Wrap"/>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                        <!-- Right Arrow -->
-                        <Button Grid.Column="2" Name="SelectFilterRightArrow" Content=">" Classes="nav-arrow" Click="OnFilterRightArrowClick" Margin="24,0,0,0"/>
-                    </Grid>
-                    <!-- Action buttons -->
-                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,8,0,0">
-                        <Button Content="Import Filter..." Name="BrowseButton" Classes="small-button" Height="40" FontSize="14" Click="OnLoadClick"/>
-                        <Button Content="Start with Blank Filter" Classes="small-button" Background="{StaticResource Green}" Click="OnCreateNewClick" Height="40" FontSize="14"/>
-                    </StackPanel>
-                    <TextBlock Name="LoadedFilterText" Text="No filter loaded" Foreground="{StaticResource MediumGrey}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap"/>
-                </StackPanel>
+                <!-- Use the FilterSelector component -->
+                <components:FilterSelector x:Name="FilterSelectorComponent" 
+                                         FilterLoaded="OnFilterLoaded"
+                                         NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
 
             <!-- JSON Panel -->

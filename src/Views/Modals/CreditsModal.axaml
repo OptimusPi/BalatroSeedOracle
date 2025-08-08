@@ -17,8 +17,8 @@
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
                 
                 <!-- Title -->
-                <TextBlock Text="CREDITS" 
-                           FontSize="28" 
+                <TextBlock Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
+                           FontSize="22" 
                            FontWeight="Bold" 
                            Foreground="{StaticResource Gold}"
                            FontFamily="{StaticResource BalatroFont}"

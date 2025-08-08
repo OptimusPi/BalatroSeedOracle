@@ -34,7 +34,7 @@
                     VerticalAlignment="Stretch"
                     MaxWidth="1000"
                     MaxHeight="700"
-                    BoxShadow="0 5 0 #777e89">
+                    BoxShadow="{StaticResource StandardModalShadow}">
                 
                 <Grid>
                     <Grid.RowDefinitions>

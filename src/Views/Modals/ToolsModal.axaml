@@ -3,70 +3,57 @@
              x:Class="Oracle.Views.Modals.ToolsModal">
     
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Tools Section -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource ContainerDarkPrecise}" 
-                BorderThickness="0"
-                Margin="20" 
-                CornerRadius="12"
-                Padding="20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-                
-                <!-- Title -->
-                <TextBlock Text="TOOLS" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{StaticResource Gold}"
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+            <!-- Title -->
+            <TextBlock Text="TOOLS" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="{StaticResource Gold}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+            
+            <!-- Analyzer Button -->
+            <Button Name="AnalyzerButton"
+                   Click="OnAnalyzerClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="ANALYZER" 
+                           FontSize="20"
+                           FontWeight="Bold"
                            FontFamily="{StaticResource BalatroFont}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,20"/>
-                
-                <!-- Analyzer Button -->
-                <Button Name="AnalyzerButton"
-                       Click="OnAnalyzerClick"
-                       Classes="btn-red"
-                       MinWidth="250"
-                       MinHeight="60"
-                       HorizontalAlignment="Center">
-                    <TextBlock Text="ANALYZER" 
-                               FontSize="20"
-                               FontWeight="Bold"
-                               FontFamily="{StaticResource BalatroFont}"
-                               IsHitTestVisible="False"/>
-                </Button>
-                
-                <!-- Word Lists Button -->
-                <Button Name="WordListsButton"
-                       Click="OnWordListsClick"
-                       Classes="btn-red"
-                       MinWidth="250"
-                       MinHeight="60"
-                       HorizontalAlignment="Center">
-                    <TextBlock Text="WORD LISTS" 
-                               FontSize="20"
-                               FontWeight="Bold"
-                               FontFamily="{StaticResource BalatroFont}"
-                               IsHitTestVisible="False"/>
-                </Button>
-                
-                <!-- Credits Button -->
-                <Button Name="CreditsButton"
-                       Click="OnCreditsClick"
-                       Classes="btn-red"
-                       MinWidth="250"
-                       MinHeight="60"
-                       HorizontalAlignment="Center">
-                    <TextBlock Text="CREDITS" 
-                               FontSize="20"
-                               FontWeight="Bold"
-                               FontFamily="{StaticResource BalatroFont}"
-                               IsHitTestVisible="False"/>
-                </Button>
-            </StackPanel>
-        </Border>
+                           IsHitTestVisible="False"/>
+            </Button>
+            
+            <!-- Word Lists Button -->
+            <Button Name="WordListsButton"
+                   Click="OnWordListsClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Word Lists" 
+                           FontSize="20"
+                           FontWeight="Bold"
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+            
+            <!-- Credits Button -->
+            <Button Name="CreditsButton"
+                   Click="OnCreditsClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Credits" 
+                           FontSize="20"
+                           FontWeight="Bold"
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+        </StackPanel>
     </Grid>
 </UserControl>

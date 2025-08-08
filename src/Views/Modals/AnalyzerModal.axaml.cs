@@ -271,7 +271,7 @@ namespace Oracle.Views.Modals
             // Add slot number badge
             var slotBadge = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#3a3a3a")),
+                Background = Application.Current?.FindResource("GridLineGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#3a3a3a")),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(6, 2),
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -405,10 +405,10 @@ namespace Oracle.Views.Modals
         {
             return edition switch
             {
-                MotelyItemEdition.Foil => new SolidColorBrush(Color.Parse("#8FC5FF")),
-                MotelyItemEdition.Holographic => new SolidColorBrush(Color.Parse("#FF8FFF")),
-                MotelyItemEdition.Polychrome => new SolidColorBrush(Color.Parse("#FFD700")),
-                MotelyItemEdition.Negative => new SolidColorBrush(Color.Parse("#FF5555")),
+                MotelyItemEdition.Foil => Application.Current?.FindResource("BrighterBlue") as IBrush ?? new SolidColorBrush(Color.Parse("#8FC5FF")),
+                MotelyItemEdition.Holographic => Application.Current?.FindResource("LightPurple") as IBrush ?? new SolidColorBrush(Color.Parse("#FF8FFF")),
+                MotelyItemEdition.Polychrome => Application.Current?.FindResource("GoldGradient1") as IBrush ?? new SolidColorBrush(Color.Parse("#FFD700")),
+                MotelyItemEdition.Negative => Application.Current?.FindResource("RedHighlight") as IBrush ?? new SolidColorBrush(Color.Parse("#FF5555")),
                 _ => Brushes.White
             };
         }

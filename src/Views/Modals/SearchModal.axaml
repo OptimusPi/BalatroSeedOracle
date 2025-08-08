@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:Oracle.Controls"
+             xmlns:components="using:Oracle.Components"
              x:Class="Oracle.Views.Modals.SearchModal">
     
     <UserControl.Styles>
@@ -136,7 +137,7 @@
             <Setter Property="Padding" Value="20"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BoxShadow" Value="0 4 8 #777e89"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
         </Style>
         
         <!-- Input field style matching Balatro -->
@@ -207,7 +208,7 @@
             <Setter Property="Padding" Value="16"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BoxShadow" Value="0 4 8 #777e89"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
             <Setter Property="MinHeight" Value="120"/>
         </Style>
         
@@ -218,7 +219,7 @@
             <Setter Property="Padding" Value="20"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BoxShadow" Value="0 4 8 #777e89"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
             <Setter Property="MinHeight" Value="200"/>
         </Style>
         
@@ -359,48 +360,11 @@
             
             <!-- Filter Selection Panel -->
             <Grid Name="FilterPanel" IsVisible="True">
-                <!-- Simplified layout: no full-width dark slab, just centered card -->
-                <StackPanel Spacing="24" VerticalAlignment="Center">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <!-- Three-column inline grid for arrows + card -->
-                    <Grid HorizontalAlignment="Center" MaxWidth="700">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- Left Arrow -->
-                        <Button Grid.Column="0" Name="FilterLeftArrow" Content="&lt;" Classes="nav-arrow" Click="OnFilterLeftArrowClick" Margin="0,0,24,0"/>
-                        <!-- Card Container -->
-                        <Border Grid.Column="1" Background="{StaticResource ContainerDarkPrecise}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="12" Padding="20" Width="500">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                <Border Background="{StaticResource Gold}" CornerRadius="6" Padding="12,4" HorizontalAlignment="Center" MinWidth="220">
-                                    <TextBlock Name="FilterPreviewName" Text="No filters found" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DarkerGrey}" TextAlignment="Center"/>
-                                </Border>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Name="AuthorPanel" IsVisible="False">
-                                    <Border Background="{StaticResource ModalBorder}" CornerRadius="4" Padding="6,2">
-                                        <TextBlock Text="by" FontSize="14" Foreground="{StaticResource DarkerGrey}"/>
-                                    </Border>
-                                    <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
-                                        <TextBlock Name="FilterAuthorText" Text="" FontSize="14" FontWeight="Bold" Foreground="{StaticResource White}"/>
-                                    </Border>
-                                </StackPanel>
-                                <Canvas Name="FilterCardsCanvas" Height="65" Width="220" HorizontalAlignment="Center"/>
-                                <Border Background="#2b3639" CornerRadius="6" Padding="10,8" MinHeight="34" MaxWidth="420" HorizontalAlignment="Center">
-                                    <TextBlock Name="FilterPreviewDesc" Text="Create a filter to start searching" FontSize="14" Foreground="{StaticResource MediumGrey}" TextAlignment="Center" TextWrapping="Wrap"/>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                        <!-- Right Arrow -->
-                        <Button Grid.Column="2" Name="FilterRightArrow" Content=">" Classes="nav-arrow" Click="OnFilterRightArrowClick" Margin="24,0,0,0"/>
-                    </Grid>
-                </Grid>
-                <!-- Import Button placed below spinner/card -->
-                <Button Content="Import File..." Classes="small-button PrimaryAction" HorizontalAlignment="Center" Click="OnBrowseFilterClick" Margin="0,8,0,0"/>
-                </StackPanel>
+                <components:FilterSelector Name="FilterSelector" 
+                                         HorizontalAlignment="Center" 
+                                         VerticalAlignment="Center"
+                                         FilterLoaded="OnFilterLoaded"
+                                         NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
             
             <!-- Settings Panel -->

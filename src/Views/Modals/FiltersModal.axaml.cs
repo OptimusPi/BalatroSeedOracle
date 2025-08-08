@@ -142,6 +142,41 @@ public partial class FiltersModalContent : UserControl
         
         // Keep track of current tab for triangle animation
         _currentTabIndex = 0;
+        
+        // Setup FilterSelector component
+        var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
+        if (filterSelector != null)
+        {
+            // DISABLE auto-loading in FiltersModal to prevent unwanted tab switching
+            filterSelector.AutoLoadEnabled = false;
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", "FilterSelector component found and setup - auto-load disabled");
+        }
+    }
+    
+    // FilterSelector event handlers
+    private async void OnFilterLoaded(object? sender, string filterPath)
+    {
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
+        
+        try
+        {
+            // Load the selected filter
+            await LoadConfigAsync(filterPath);
+            
+            // Enable tabs but DON'T switch - stay on Load/Save tab
+            UpdateTabStates(true);
+        }
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error loading filter: {ex.Message}");
+            UpdateStatus($"Error loading filter: {ex.Message}", true);
+        }
+    }
+    
+    private void OnNewFilterRequested(object? sender, EventArgs e)
+    {
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
+        OnCreateNewClick(null, new RoutedEventArgs());
     }
 
     private void OnModeToggleChanged(object? sender, bool isChecked)
@@ -980,7 +1015,7 @@ public partial class FiltersModalContent : UserControl
             {
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
+                Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
                 Margin = new Thickness(-8) // Negative margin to counteract parent padding
             };
 
@@ -1002,8 +1037,8 @@ public partial class FiltersModalContent : UserControl
                     Text = jsonContent,
                     AcceptsReturn = true,
                     TextWrapping = TextWrapping.NoWrap,
-                    Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
-                    Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
+                    Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
+                    Foreground = Application.Current?.FindResource("White") as IBrush ?? new SolidColorBrush(Color.Parse("#FFFFFF")),
                     FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,Monaco,monospace"),
                     FontSize = 14,
                     Padding = new Thickness(10),
@@ -1028,8 +1063,8 @@ public partial class FiltersModalContent : UserControl
 
                 var editorBorder = new Border
                 {
-                    Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
-                    BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
+                    Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
+                    BorderBrush = Application.Current?.FindResource("DarkGreyBorder") as IBrush ?? new SolidColorBrush(Color.Parse("#444444")),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
@@ -1045,8 +1080,8 @@ public partial class FiltersModalContent : UserControl
                 Oracle.Helpers.DebugLogger.Log("Creating AvaloniaEdit JSON editor");
                 var editorBorder = new Border
                 {
-                    Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
-                    BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
+                    Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
+                    BorderBrush = Application.Current?.FindResource("DarkGreyBorder") as IBrush ?? new SolidColorBrush(Color.Parse("#444444")),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(10),
@@ -1058,8 +1093,8 @@ public partial class FiltersModalContent : UserControl
                 var textEditor = new AvaloniaEdit.TextEditor
                 {
                     Name = "JsonTextEditor",
-                    Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
-                    Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
+                    Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
+                    Foreground = Application.Current?.FindResource("White") as IBrush ?? new SolidColorBrush(Color.Parse("#FFFFFF")),
                     FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,Monaco,monospace"),
                     FontSize = 14,
                     ShowLineNumbers = true,
@@ -1108,7 +1143,7 @@ public partial class FiltersModalContent : UserControl
                     try
                     {
                         // Ensure text is visible
-                        textEditor.TextArea.TextView.LinkTextForegroundBrush = new SolidColorBrush(Color.Parse("#569CD6"));
+                        textEditor.TextArea.TextView.LinkTextForegroundBrush = Application.Current?.FindResource("LightBlue") as IBrush ?? new SolidColorBrush(Color.Parse("#569CD6"));
 
                         // Force colors on the text view
                         var textView = textEditor.TextArea.TextView;
@@ -1178,9 +1213,9 @@ public partial class FiltersModalContent : UserControl
             Oracle.Helpers.DebugLogger.Log("Creating status bar");
             var statusBar = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#2e3f42")),
+                Background = Application.Current?.FindResource("DarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2e3f42")),
                 Padding = new Avalonia.Thickness(12, 6),
-                BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
+                BorderBrush = Application.Current?.FindResource("DarkGreyBorder") as IBrush ?? new SolidColorBrush(Color.Parse("#444444")),
                 BorderThickness = new Avalonia.Thickness(0, 1, 0, 0),
                 Height = 30
             };
@@ -1190,7 +1225,7 @@ public partial class FiltersModalContent : UserControl
                 Name = "StatusText",
                 Text = "Ready - JSON Editor",
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                Foreground = new SolidColorBrush(Color.Parse("#E2E2E2")),
+                Foreground = Application.Current?.FindResource("VeryLightGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#E2E2E2")),
                 FontSize = 12
             };
             statusBar.Child = statusText;
@@ -1227,7 +1262,7 @@ public partial class FiltersModalContent : UserControl
             // Return a simple error panel
             var errorPanel = new StackPanel
             {
-                Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
+                Background = Application.Current?.FindResource("PopupBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#1e1e1e")),
                 Margin = new Thickness(10)
             };
             errorPanel.Children.Add(new TextBlock
@@ -1265,8 +1300,8 @@ public partial class FiltersModalContent : UserControl
         {
             _statusText.Text = message;
             _statusText.Foreground = isError
-                ? new SolidColorBrush(Color.Parse("#FF6B6B"))
-                : new SolidColorBrush(Color.Parse("#4ECDC4"));
+                ? Application.Current?.FindResource("PinkRed") as IBrush ?? new SolidColorBrush(Color.Parse("#FF6B6B"))
+                : Application.Current?.FindResource("AccentGreen") as IBrush ?? new SolidColorBrush(Color.Parse("#4ECDC4"));
         }
     }
 
@@ -2151,7 +2186,7 @@ public partial class FiltersModalContent : UserControl
         itemsPanel.Children.Add(new Border
         {
             Height = 1,
-            Background = new SolidColorBrush(Color.Parse("#4a4a4a")),
+            Background = Application.Current?.FindResource("DarkGreyBorder") as IBrush ?? new SolidColorBrush(Color.Parse("#4a4a4a")),
             Margin = new Thickness(10, 10, 10, 20)
         });
 
@@ -2173,7 +2208,7 @@ public partial class FiltersModalContent : UserControl
             {
                 Text = "No items selected",
                 FontSize = 16,
-                Foreground = new SolidColorBrush(Color.Parse("#888888")),
+                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#888888")),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Thickness(0, 20)
             });
@@ -2355,11 +2390,11 @@ public partial class FiltersModalContent : UserControl
         return actualCategory switch
         {
             "Jokers" => GetJokerColorBrush(itemName),
-            "Tarots" => new SolidColorBrush(Color.Parse("#3498DB")),
-            "Spectrals" => new SolidColorBrush(Color.Parse("#1ABC9C")),
-            "Vouchers" => new SolidColorBrush(Color.Parse("#F39C12")),
-            "Tags" => new SolidColorBrush(Color.Parse("#E74C3C")),
-            _ => new SolidColorBrush(Color.Parse("#7F8C8D"))
+            "Tarots" => Application.Current?.FindResource("Blue") as IBrush ?? new SolidColorBrush(Color.Parse("#3498DB")),
+            "Spectrals" => Application.Current?.FindResource("Green") as IBrush ?? new SolidColorBrush(Color.Parse("#1ABC9C")),
+            "Vouchers" => Application.Current?.FindResource("Orange") as IBrush ?? new SolidColorBrush(Color.Parse("#F39C12")),
+            "Tags" => Application.Current?.FindResource("Red") as IBrush ?? new SolidColorBrush(Color.Parse("#E74C3C")),
+            _ => Application.Current?.FindResource("TealGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#7F8C8D"))
         };
     }
 
@@ -2367,15 +2402,15 @@ public partial class FiltersModalContent : UserControl
     {
         // Determine joker rarity and return appropriate color
         if (BalatroData.JokersByRarity["Legendary"].Contains(jokerName))
-            return new SolidColorBrush(Color.Parse("#FFD700")); // Gold
+            return Application.Current?.FindResource("GoldGradient1") as SolidColorBrush ?? new SolidColorBrush(Color.Parse("#FFD700")); // Gold
         if (BalatroData.JokersByRarity["Rare"].Contains(jokerName))
-            return new SolidColorBrush(Color.Parse("#9B59B6")); // Purple
+            return Application.Current?.FindResource("Purple") as SolidColorBrush ?? new SolidColorBrush(Color.Parse("#9B59B6")); // Purple
         if (BalatroData.JokersByRarity["Uncommon"].Contains(jokerName))
-            return new SolidColorBrush(Color.Parse("#3498DB")); // Blue
+            return Application.Current?.FindResource("Blue") as SolidColorBrush ?? new SolidColorBrush(Color.Parse("#3498DB")); // Blue
         if (BalatroData.JokersByRarity["Common"].Contains(jokerName))
-            return new SolidColorBrush(Color.Parse("#95A5A6")); // Gray
+            return Application.Current?.FindResource("LightGrey") as SolidColorBrush ?? new SolidColorBrush(Color.Parse("#95A5A6")); // Gray
 
-        return new SolidColorBrush(Color.Parse("#7F8C8D")); // Default gray
+        return Application.Current?.FindResource("TealGrey") as SolidColorBrush ?? new SolidColorBrush(Color.Parse("#7F8C8D")); // Default gray
     }
 
     private void UpdateCardSelection(ResponsiveCard card)
@@ -2558,21 +2593,21 @@ public partial class FiltersModalContent : UserControl
                             var stringColor = textEditor.SyntaxHighlighting.GetNamedColor("String");
                             if (stringColor != null)
                             {
-                                stringColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#FE5F55"));
+                                stringColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush((Application.Current?.FindResource("ToggleRed") as SolidColorBrush)?.Color ?? Color.Parse("#FE5F55"));
                             }
                             
                             // Numbers - Balatro Blue  
                             var numberColor = textEditor.SyntaxHighlighting.GetNamedColor("Number");
                             if (numberColor != null)
                             {
-                                numberColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#009dff"));
+                                numberColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush((Application.Current?.FindResource("ToggleBlue") as SolidColorBrush)?.Color ?? Color.Parse("#009dff"));
                             }
                             
                             // Keywords (true/false/null) - Balatro Orange
                             var keywordColor = textEditor.SyntaxHighlighting.GetNamedColor("Keyword");
                             if (keywordColor != null)
                             {
-                                keywordColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush(Color.Parse("#FEB95F"));
+                                keywordColor.Foreground = new AvaloniaEdit.Highlighting.SimpleHighlightingBrush((Application.Current?.FindResource("PaleOrange") as SolidColorBrush)?.Color ?? Color.Parse("#FEB95F"));
                             }
                         }
                     }
@@ -2593,7 +2628,7 @@ public partial class FiltersModalContent : UserControl
         {
             Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error setting up JSON syntax highlighting: {ex.Message}");
             // Fall back to basic colors
-            textEditor.Foreground = new SolidColorBrush(Color.Parse("#E0E0E0"));
+            textEditor.Foreground = Application.Current?.FindResource("LightTextGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#E0E0E0"));
         }
     }
     
@@ -2743,7 +2778,7 @@ public partial class FiltersModalContent : UserControl
         // Get all panels
         var visualPanel = this.FindControl<Grid>("VisualPanel");
         var jsonPanel = this.FindControl<Grid>("JsonPanel");
-        var loadSavePanel = this.FindControl<StackPanel>("LoadSavePanel");
+        var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
         var resultsPanel = this.FindControl<Grid>("ResultsPanel");
         
         // Remove active class from all tabs
@@ -3013,24 +3048,14 @@ public partial class FiltersModalContent : UserControl
 
     private Control CreateDroppedItemControl(string itemName, string category)
     {
-        // Create a viewbox to make the item responsive
-        var viewBox = new Viewbox
-        {
-            Stretch = Stretch.Uniform,
-            StretchDirection = StretchDirection.DownOnly,
-            MaxWidth = 71,  // Full card size
-            MaxHeight = 95, // Full card size
-            Width = double.NaN, // Auto width
-            Height = double.NaN, // Auto height
-            Margin = new Thickness(3)
-        };
-
+        // Create a simple border without ViewBox to prevent scaling
         var border = new Border
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 71,   // Natural card width
-            Height = 95,  // Natural card height
+            Width = 71,   // Fixed card width
+            Height = 95,  // Fixed card height
+            Margin = new Thickness(3),
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}" // Store for later reference
         };
@@ -3174,9 +3199,8 @@ public partial class FiltersModalContent : UserControl
             ShowItemConfigPopup(border, itemName, category);
         };
 
-        // Wrap in viewbox for responsive scaling
-        viewBox.Child = border;
-        return viewBox;
+        // Return the border directly without ViewBox wrapping
+        return border;
     }
 
     private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
@@ -3576,9 +3600,9 @@ public partial class FiltersModalContent : UserControl
                     EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                     GradientStops =
                     {
-                        new GradientStop(Color.Parse("#FFD700"), 0),
-                        new GradientStop(Color.Parse("#FFA500"), 0.5),
-                        new GradientStop(Color.Parse("#FFD700"), 1)
+                        new GradientStop((Application.Current?.FindResource("GoldGradient1") as SolidColorBrush)?.Color ?? Color.Parse("#FFD700"), 0),
+                        new GradientStop((Application.Current?.FindResource("GoldGradient2") as SolidColorBrush)?.Color ?? Color.Parse("#FFA500"), 0.5),
+                        new GradientStop((Application.Current?.FindResource("GoldGradient1") as SolidColorBrush)?.Color ?? Color.Parse("#FFD700"), 1)
                     }
                 },
                 CornerRadius = new CornerRadius(4)

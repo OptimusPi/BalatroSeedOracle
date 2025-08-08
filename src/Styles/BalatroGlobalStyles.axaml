@@ -103,6 +103,11 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="Transparent" />
     </Style>
+
+    <!-- Prevent text selection / dragging highlight inside buttons -->
+    <Style Selector="Button TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
     
     <!-- ALL Labels get Balatro font -->
     <Style Selector="Label">
@@ -125,24 +130,12 @@
         <Setter Property="CaretBrush" Value="{StaticResource TextLight}" />
     </Style>
     <Style Selector="TextBox:focus">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     <Style Selector="TextBox:pointerover">
-        <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#b9c2d2" />
-    </Style>
-    
-    <!-- ALL ComboBoxes get dark theme -->
-    <Style Selector="ComboBox">
-        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Background" Value="#2a2a2a" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="#555555" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="8,6" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}" />
     </Style>
     
     <!-- ALL CheckBoxes get dark theme -->
@@ -152,26 +145,13 @@
         <Setter Property="FontSize" Value="14" />
     </Style>
     
-    <!-- ALL NumericUpDowns get dark theme -->
-    <Style Selector="NumericUpDown">
-        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Background" Value="#2a2a2a" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="#555555" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="8,6" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="MinHeight" Value="32" />
-        <Setter Property="Height" Value="32" />
-    </Style>
     <Style Selector="NumericUpDown:focus">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     <Style Selector="NumericUpDown:pointerover">
-        <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#b9c2d2" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}" />
     </Style>
     
     <!-- ALL ListBoxes get dark theme -->

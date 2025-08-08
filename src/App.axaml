@@ -139,6 +139,12 @@
         <x:Double x:Key="FontSizeSmall">12</x:Double>
         <x:Double x:Key="FontSizeLarge">16</x:Double>
         
+        <!-- BoxShadow resources -->
+        <BoxShadows x:Key="ModalBoxShadow">0 4 8 #777e89</BoxShadows>
+        <BoxShadows x:Key="StandardModalShadow">0 5 0 #777e89</BoxShadows>
+        <BoxShadows x:Key="LightBoxShadow">0 2 10 #22000000</BoxShadows>
+        <BoxShadows x:Key="DeepBoxShadow">0 5 20 #000000AA</BoxShadows>
+        
     </Application.Resources>
 
     <Application.Styles>
@@ -161,9 +167,6 @@
         
         <!-- Exact color picker precision styles -->
         <StyleInclude Source="avares://Oracle/Styles/BalatroPreciseColors.axaml" />
-
-        <!-- Include new minimal flat theme style dictionary -->
-        <StyleInclude Source="avares://Oracle/Styles/MinimalFlatTheme.axaml" />
 
     </Application.Styles>
 </Application>

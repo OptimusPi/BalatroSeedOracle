@@ -11,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Oracle.Services;
 using Oracle.Controls;
+using Oracle.Components;
 using Oracle.Helpers;
 using ReactiveUI;
 using Avalonia.Media.Imaging;
@@ -115,17 +116,7 @@ namespace Oracle.Views.Modals
         
         // Current filter info
         private string? _currentFilterPath;
-        
-        // Filter preview
-        private Button? _filterLeftArrow;
-        private Button? _filterRightArrow;
-        private TextBlock? _filterPreviewName;
-        private TextBlock? _filterPreviewDesc;
-        private Canvas? _filterCardsCanvas;
-        private TextBlock? _filterAuthorText;
-        private StackPanel? _authorPanel;
-        private List<string> _availableFilters = new();
-        private int _currentFilterIndex = 0;
+        private FilterSelector? _filterSelector;
         
         // Results panel controls
         private DataGrid? _resultsDataGrid;
@@ -197,14 +188,8 @@ namespace Oracle.Views.Modals
             _stakeRightArrow = this.FindControl<Button>("StakeRightArrow");
             _debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
             
-            // Find filter preview elements
-            _filterLeftArrow = this.FindControl<Button>("FilterLeftArrow");
-            _filterRightArrow = this.FindControl<Button>("FilterRightArrow");
-            _filterPreviewName = this.FindControl<TextBlock>("FilterPreviewName");
-            _filterPreviewDesc = this.FindControl<TextBlock>("FilterPreviewDesc");
-            _filterCardsCanvas = this.FindControl<Canvas>("FilterCardsCanvas");
-            _filterAuthorText = this.FindControl<TextBlock>("FilterAuthorText");
-            _authorPanel = this.FindControl<StackPanel>("AuthorPanel");
+            // Find filter selector component
+            _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
             
             // Find results panel controls
             _resultsDataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
@@ -260,303 +245,33 @@ namespace Oracle.Views.Modals
                 _currentStakeIndex = 0;
             }
             
-            // Load available filters
-            LoadAvailableFilters();
-            
-            // Enable tabs and cook button since we auto-load a filter
-            UpdateTabStates(true);
-            
-            // If we have filters available, auto-load the first one
-            if (_availableFilters.Count > 0)
-            {
-                _currentFilterPath = _availableFilters[0];
-                // Actually load the filter into the search service
-                Task.Run(async () => await LoadFilterAsync(_currentFilterPath));
-            }
+            // The FilterSelector component will handle loading available filters
+            // Enable tabs only after a filter is loaded
+            UpdateTabStates(false);
         }
         
-        private void LoadAvailableFilters()
+        private async void OnFilterLoaded(object? sender, string filterPath)
         {
-            _availableFilters.Clear();
-            
-            var jsonFiles = new List<string>();
-            
-            // Look for .json files in the root directory
-            var directory = System.IO.Directory.GetCurrentDirectory();
-            var rootJsonFiles = System.IO.Directory.GetFiles(directory, "*.json");
-            foreach (var f in rootJsonFiles)
-            {
-                if (!f.EndsWith("avalonia.json") && !f.EndsWith("userprofile.json") && !f.EndsWith("appsettings.json"))
-                    jsonFiles.Add(f);
-            }
-            
-            // Also look for .json files in JsonItemConfigs directory
-            var jsonConfigsDir = System.IO.Path.Combine(directory, "JsonItemConfigs");
-            if (System.IO.Directory.Exists(jsonConfigsDir))
-            {
-                var configJsonFiles = System.IO.Directory.GetFiles(jsonConfigsDir, "*.json");
-                foreach (var f in configJsonFiles)
-                {
-                    // Don't add duplicates
-                    if (!jsonFiles.Any(existing => System.IO.Path.GetFileName(existing).Equals(System.IO.Path.GetFileName(f), StringComparison.OrdinalIgnoreCase)))
-                    {
-                        jsonFiles.Add(f);
-                    }
-                }
-            }
-            
-            // Sort by filename
-            jsonFiles.Sort((a, b) => System.IO.Path.GetFileName(a).CompareTo(System.IO.Path.GetFileName(b)));
-            
-            _availableFilters = jsonFiles;
-            
-            // Update filter preview
-            UpdateFilterPreview();
+            await LoadFilterAsync(filterPath);
         }
         
-        private void UpdateFilterPreview()
+        private void OnNewFilterRequested(object? sender, EventArgs e)
         {
-            if (_filterPreviewName == null || _filterPreviewDesc == null || _filterCardsCanvas == null)
-                return;
-                
-            if (_availableFilters.Count == 0)
+            // Close this modal and open the filters modal
+            var window = TopLevel.GetTopLevel(this) as Window;
+            if (window != null)
             {
-                _filterPreviewName.Text = "No filters found";
-                _filterPreviewDesc.Text = "Import a filter or create one in the Filter Builder";
-                _filterCardsCanvas.Children.Clear();
-                
-                // Add a placeholder card icon
-                var placeholderBorder = new Border
+                // Find and close the current modal
+                var modalHost = window.FindControl<Grid>("ModalHost");
+                if (modalHost != null && modalHost.Children.Count > 0)
                 {
-                    Width = 60,
-                    Height = 80,
-                    Background = new SolidColorBrush(Color.Parse("#1a1f26")),
-                    BorderBrush = new SolidColorBrush(Color.Parse("#3a424d")),
-                    BorderThickness = new Thickness(2),
-                    CornerRadius = new CornerRadius(6)
-                };
-                
-                placeholderBorder.Child = new TextBlock
-                {
-                    Text = "?",
-                    FontSize = 32,
-                    FontWeight = FontWeight.Bold,
-                    Foreground = new SolidColorBrush(Color.Parse("#3a424d")),
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                };
-                
-                Canvas.SetLeft(placeholderBorder, 70);
-                Canvas.SetTop(placeholderBorder, 0);
-                _filterCardsCanvas.Children.Add(placeholderBorder);
-                
-                return;
-            }
-            
-            // Get current filter
-            var filterPath = _availableFilters[_currentFilterIndex];
-            var filterName = System.IO.Path.GetFileNameWithoutExtension(filterPath);
-            
-            _filterPreviewName.Text = filterName;
-            
-            // Try to load and parse the filter
-            try
-            {
-                var json = System.IO.File.ReadAllText(filterPath);
-                var jsonDoc = JsonDocument.Parse(json);
-                var root = jsonDoc.RootElement;
-                
-                // Get description
-                string description = "No description";
-                if (root.TryGetProperty("description", out var descProp))
-                    description = descProp.GetString() ?? "No description";
-                _filterPreviewDesc.Text = description;
-                
-                // Get author if available
-                if (root.TryGetProperty("author", out var authorProp) && _authorPanel != null && _filterAuthorText != null)
-                {
-                    var author = authorProp.GetString();
-                    if (!string.IsNullOrEmpty(author))
-                    {
-                        _filterAuthorText.Text = author;
-                        _authorPanel.IsVisible = true;
-                    }
-                    else
-                    {
-                        _authorPanel.IsVisible = false;
-                    }
-                }
-                else if (_authorPanel != null)
-                {
-                    _authorPanel.IsVisible = false;
-                }
-                
-                // Clear canvas
-                _filterCardsCanvas.Children.Clear();
-                
-                // Get must items
-                if (root.TryGetProperty("must", out var mustProp) && mustProp.ValueKind == JsonValueKind.Object)
-                {
-                    var mustItems = new List<(string category, List<string> items)>();
+                    modalHost.Children.Clear();
                     
-                    // Collect all must items
-                    foreach (var category in mustProp.EnumerateObject())
-                    {
-                        if (category.Value.ValueKind == JsonValueKind.Array)
-                        {
-                            var itemsList = new List<string>();
-                            foreach (var item in category.Value.EnumerateArray())
-                            {
-                                var itemStr = item.GetString();
-                                if (!string.IsNullOrEmpty(itemStr))
-                                    itemsList.Add(itemStr);
-                            }
-                            
-                            if (itemsList.Count > 0)
-                                mustItems.Add((category.Name, itemsList));
-                        }
-                    }
-                    
-                    // Display up to 4 items as fanned cards
-                    int cardCount = 0;
-                    double fanAngle = 5; // degrees per card
-                    double cardWidth = 38;
-                    double cardHeight = 48;
-                    double cardSpacing = 25;
-                    double totalWidth = cardSpacing * 3; // Total width for 4 cards
-                    double startX = (200 - totalWidth) / 2; // Center in the 200px canvas
-                    
-                    foreach (var (category, items) in mustItems)
-                    {
-                        foreach (var item in items)
-                        {
-                            if (cardCount >= 4) break;
-                            
-                            // Create card border
-                            var border = new Border
-                            {
-                                Width = cardWidth,
-                                Height = cardHeight,
-                                Background = new SolidColorBrush(Color.Parse("#2c333a")),
-                                BorderBrush = new SolidColorBrush(Color.Parse("#596981")),
-                                BorderThickness = new Thickness(1),
-                                CornerRadius = new CornerRadius(4),
-                                RenderTransform = new RotateTransform(fanAngle * (cardCount - 1.5))
-                            };
-                            
-                            // Try to get sprite image
-                            Image? spriteImage = null;
-                            if (_spriteService != null)
-                            {
-                                switch (category.ToLower())
-                                {
-                                    case "jokers":
-                                        var jokerImage = _spriteService.GetJokerImage(item);
-                                        if (jokerImage != null)
-                                        {
-                                            spriteImage = new Image { Source = jokerImage };
-                                        }
-                                        break;
-                                    case "consumables":
-                                    case "tarots":
-                                        var tarotImage = _spriteService.GetTarotImage(item);
-                                        if (tarotImage != null)
-                                        {
-                                            spriteImage = new Image { Source = tarotImage };
-                                        }
-                                        break;
-                                    case "planets":
-                                        var planetImage = _spriteService.GetTarotImage(item);
-                                        if (planetImage != null)
-                                        {
-                                            spriteImage = new Image { Source = planetImage };
-                                        }
-                                        break;
-                                    case "spectrals":
-                                        var spectralImage = _spriteService.GetSpectralImage(item);
-                                        if (spectralImage != null)
-                                        {
-                                            spriteImage = new Image { Source = spectralImage };
-                                        }
-                                        break;
-                                    case "tags":
-                                        var tagImage = _spriteService.GetTagImage(item);
-                                        if (tagImage != null)
-                                        {
-                                            spriteImage = new Image { Source = tagImage };
-                                        }
-                                        break;
-                                    case "vouchers":
-                                        var voucherImage = _spriteService.GetVoucherImage(item);
-                                        if (voucherImage != null)
-                                        {
-                                            spriteImage = new Image { Source = voucherImage };
-                                        }
-                                        break;
-                                }
-                            }
-                            
-                            if (spriteImage != null)
-                            {
-                                spriteImage.Width = cardWidth - 4;
-                                spriteImage.Height = cardHeight - 4;
-                                spriteImage.Stretch = Stretch.Uniform;
-                                border.Child = spriteImage;
-                            }
-                            else
-                            {
-                                // Fallback text
-                                border.Child = new TextBlock
-                                {
-                                    Text = item.Replace("_", " "),
-                                    FontSize = 8,
-                                    Foreground = Brushes.White,
-                                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                                    TextWrapping = TextWrapping.Wrap,
-                                    TextAlignment = TextAlignment.Center
-                                };
-                            }
-                            
-                            // Position the card with proper centering
-                            Canvas.SetLeft(border, startX + cardCount * cardSpacing);
-                            Canvas.SetTop(border, 8);
-                            
-                            _filterCardsCanvas.Children.Add(border);
-                            cardCount++;
-                        }
-                        if (cardCount >= 4) break;
-                    }
+                    // Open the filters modal
+                    var filtersModal = new Oracle.Views.Modals.FiltersModalContent();
+                    modalHost.Children.Add(filtersModal);
                 }
             }
-            catch (Exception ex)
-            {
-                _filterPreviewDesc.Text = "Error loading filter";
-                _filterCardsCanvas.Children.Clear();
-                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading filter preview: {ex.Message}");
-            }
-        }
-        
-        private async void OnFilterLeftArrowClick(object? sender, RoutedEventArgs e)
-        {
-            if (_availableFilters.Count == 0) return;
-            _currentFilterIndex = (_currentFilterIndex - 1 + _availableFilters.Count) % _availableFilters.Count;
-            _currentFilterPath = _availableFilters[_currentFilterIndex];
-            UpdateFilterPreview();
-            
-            // Load the newly selected filter
-            await LoadFilterAsync(_currentFilterPath);
-        }
-        
-        private async void OnFilterRightArrowClick(object? sender, RoutedEventArgs e)
-        {
-            if (_availableFilters.Count == 0) return;
-            _currentFilterIndex = (_currentFilterIndex + 1) % _availableFilters.Count;
-            _currentFilterPath = _availableFilters[_currentFilterIndex];
-            UpdateFilterPreview();
-            
-            // Load the newly selected filter
-            await LoadFilterAsync(_currentFilterPath);
         }
         
         private void UpdateTabStates(bool filterLoaded)
@@ -619,109 +334,19 @@ namespace Oracle.Views.Modals
             }
         }
         
-        private async void OnBrowseFilterClick(object? sender, RoutedEventArgs e)
-        {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
-            
-            var options = new Avalonia.Platform.Storage.FilePickerOpenOptions
-            {
-                Title = "Select Filter Configuration",
-                AllowMultiple = false,
-                FileTypeFilter = new[]
-                {
-                    new Avalonia.Platform.Storage.FilePickerFileType("Filter Files") { Patterns = new[] { "*.json" } },
-                    new Avalonia.Platform.Storage.FilePickerFileType("All Files") { Patterns = new[] { "*" } }
-                }
-            };
-            
-            var result = await topLevel.StorageProvider.OpenFilePickerAsync(options);
-            
-            if (result?.Count > 0)
-            {
-                var importedFilePath = result[0].Path.LocalPath;
-                
-                // Create JsonItemConfigs directory if it doesn't exist
-                var jsonConfigsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemConfigs");
-                if (!System.IO.Directory.Exists(jsonConfigsDir))
-                {
-                    System.IO.Directory.CreateDirectory(jsonConfigsDir);
-                }
-                
-                // Copy the imported file to JsonItemConfigs folder
-                var fileName = System.IO.Path.GetFileName(importedFilePath);
-                // Ensure it has .json extension
-                if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                {
-                    fileName += ".json";
-                }
-                
-                var destinationPath = System.IO.Path.Combine(jsonConfigsDir, fileName);
-                
-                // If file already exists, add a number suffix
-                if (System.IO.File.Exists(destinationPath))
-                {
-                    var baseName = System.IO.Path.GetFileNameWithoutExtension(fileName);
-                    var extension = System.IO.Path.GetExtension(fileName);
-                    var counter = 1;
-                    do
-                    {
-                        fileName = $"{baseName}_{counter}{extension}";
-                        destinationPath = System.IO.Path.Combine(jsonConfigsDir, fileName);
-                        counter++;
-                    } while (System.IO.File.Exists(destinationPath));
-                }
-                
-                // Copy the file
-                System.IO.File.Copy(importedFilePath, destinationPath, overwrite: false);
-                
-                // Reload available filters to include the new one
-                LoadAvailableFilters();
-                
-                // Load the newly copied filter
-                await LoadFilterAsync(destinationPath);
-                
-                // Set the spinner to show the imported filter
-                _currentFilterIndex = _availableFilters.IndexOf(destinationPath);
-                if (_currentFilterIndex < 0)
-                {
-                    _currentFilterIndex = _availableFilters.Count - 1;
-                }
-                
-                // Update the preview to show the imported filter
-                UpdateFilterPreview();
-                
-                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Imported filter saved to: {destinationPath}");
-            }
-        }
-        
-        private void OnOpenFilterBuilderClick(object? sender, RoutedEventArgs e)
-        {
-            // Close this modal and open the filters modal
-            var window = TopLevel.GetTopLevel(this) as Window;
-            if (window != null)
-            {
-                // Find and close the current modal
-                var modalHost = window.FindControl<Grid>("ModalHost");
-                if (modalHost != null && modalHost.Children.Count > 0)
-                {
-                    modalHost.Children.Clear();
-                    
-                    // Open the filters modal
-                    var filtersModal = new Oracle.Views.Modals.FiltersModalContent();
-                    modalHost.Children.Add(filtersModal);
-                }
-            }
-        }
         
         public async Task LoadFilterAsync(string filePath)
         {
             _currentFilterPath = filePath;
             
-            if (_searchInstance != null)
+            // Create a search instance if we don't have one
+            if (string.IsNullOrEmpty(_currentSearchId))
             {
-                try
-                {
+                CreateNewSearchInstance();
+            }
+            
+            try
+            {
                     // Load the config using Motely's loader
                     var config = await Task.Run(() => Motely.Filters.OuijaConfig.LoadFromJson(filePath));
                     
@@ -752,6 +377,7 @@ namespace Oracle.Views.Modals
                         // If this is a temp file (from FiltersModal), automatically start the search
                         if (filePath.Contains("temp_filter_") && filePath.Contains(".ouija.json"))
                         {
+                            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Detected temp filter, auto-switching to search tab: {filePath}");
                             // Switch to Search tab
                             if (_searchTab != null)
                             {
@@ -761,6 +387,10 @@ namespace Oracle.Views.Modals
                             // Wait a moment for UI to update, then start the search
                             await Task.Delay(100);
                             OnCookClick(null, new RoutedEventArgs());
+                        }
+                        else
+                        {
+                            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Normal filter loaded, staying on current tab: {filePath}");
                         }
                     }
                     else
@@ -773,13 +403,12 @@ namespace Oracle.Views.Modals
                 {
                     AddToConsole($"Failed to load filter: {ex.Message}");
                 }
-            }
         }
         
         /// <summary>
         /// Load a config object directly and start search (no temp files!)
         /// </summary>
-        public async Task LoadConfigDirectlyAsync(Motely.Filters.OuijaConfig config)
+        public async Task LoadConfigDirectlyAsync(Motely.Filters.OuijaConfig config, bool autoStartSearch = true)
         {
             Oracle.Helpers.DebugLogger.Log("SearchModal", "LoadConfigDirectlyAsync - NO TEMP FILES!");
             
@@ -810,32 +439,39 @@ namespace Oracle.Views.Modals
                 // Add to console
                 AddToConsole($"Filter loaded: {config.Name ?? "Unnamed"}");
                 
-                // Switch to Search tab
-                if (_searchTab != null)
+                // Refresh the filter selector to show the current filter
+                _filterSelector?.RefreshFilters();
+                
+                // Only auto-start search if requested (e.g., from FiltersModal)
+                if (autoStartSearch)
                 {
-                    OnTabClick(_searchTab, new RoutedEventArgs());
+                    // Switch to Search tab
+                    if (_searchTab != null)
+                    {
+                        OnTabClick(_searchTab, new RoutedEventArgs());
+                    }
+                    
+                    // Wait a moment for UI to update
+                    await Task.Delay(100);
+                    
+                    // Start the search directly with the config object
+                    var searchConfig = new SearchConfiguration
+                    {
+                        ThreadCount = _threadsSpinner?.Value ?? 4,
+                        MinScore = _minScoreSpinner?.Value ?? 0,
+                        BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1,
+                        StartBatch = 0,
+                        EndBatch = -1,
+                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        Deck = _decks[_currentDeckIndex].name,
+                        Stake = _stakes[_currentStakeIndex].name.Replace(" Stake", "")
+                    };
+                    
+                    AddToConsole("Let Jimbo cook! Starting search...");
+                    
+                    // Start search with the config object directly
+                    await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
                 }
-                
-                // Wait a moment for UI to update
-                await Task.Delay(100);
-                
-                // Start the search directly with the config object
-                var searchConfig = new SearchConfiguration
-                {
-                    ThreadCount = _threadsSpinner?.Value ?? 4,
-                    MinScore = _minScoreSpinner?.Value ?? 0,
-                    BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1,
-                    StartBatch = 0,
-                    EndBatch = -1,
-                    DebugMode = _debugCheckBox?.IsChecked ?? false,
-                    Deck = _decks[_currentDeckIndex].name,
-                    Stake = _stakes[_currentStakeIndex].name.Replace(" Stake", "")
-                };
-                
-                AddToConsole("Let Jimbo cook! Starting search...");
-                
-                // Start search with the config object directly
-                await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
             }
         }
         
@@ -900,7 +536,7 @@ namespace Oracle.Views.Modals
         
         private void OnSearchStarted(object? sender, EventArgs e)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 _isSearching = true;
                 
@@ -914,9 +550,10 @@ namespace Oracle.Views.Modals
                 }
 
                 // Enable results tab
-                // TODO - if user is searching a filter that already has a .duckdb file of results, 
-                // we should load that file and populate the results grid
                 if (_resultsTab != null) _resultsTab.IsEnabled = true;
+                
+                // Load existing results from .duckdb file if available
+                await LoadExistingResultsAsync();
                 
                 // Enable save widget button
                 if (_saveWidgetButton != null)
@@ -1241,6 +878,65 @@ namespace Oracle.Views.Modals
             if (_resultsSummary != null)
             {
                 _resultsSummary.Text = $"Found {_searchResults.Count} results";
+            }
+        }
+        
+        private async Task LoadExistingResultsAsync()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_currentFilterPath))
+                    return;
+                    
+                var historyService = App.GetService<SearchHistoryService>();
+                if (historyService == null)
+                    return;
+                    
+                // Get recent searches for this filter
+                var recentSearches = await historyService.GetRecentSearchesAsync(1);
+                if (recentSearches.Count > 0)
+                {
+                    var lastSearch = recentSearches[0];
+                    
+                    // Check if it's the same filter
+                    if (System.IO.Path.GetFileName(lastSearch.ConfigPath) == System.IO.Path.GetFileName(_currentFilterPath))
+                    {
+                        // Load the results
+                        var existingResults = await historyService.GetSearchResultsAsync(lastSearch.SearchId);
+                        if (existingResults.Count > 0)
+                        {
+                            AddToConsole($"Loaded {existingResults.Count} existing results from previous search");
+                            
+                            // Clear current results and add the loaded ones
+                            _searchResults.Clear();
+                            foreach (var result in existingResults)
+                            {
+                                _searchResults.Add(new SearchResult
+                                {
+                                    Seed = result.Seed,
+                                    Score = result.TotalScore,
+                                    Details = result.ScoreBreakdown,
+                                    Timestamp = lastSearch.SearchDate
+                                });
+                            }
+                            
+                            // Update UI
+                            if (_resultsSummary != null)
+                            {
+                                _resultsSummary.Text = $"Found {_searchResults.Count} results (from previous search)";
+                            }
+                            if (_exportResultsButton != null)
+                            {
+                                _exportResultsButton.IsEnabled = true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading existing results: {ex.Message}");
+                AddToConsole($"Failed to load existing results: {ex.Message}");
             }
         }
     }

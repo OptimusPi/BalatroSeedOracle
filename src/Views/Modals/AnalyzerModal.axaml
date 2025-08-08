@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
         
         <!-- Input Section -->
-        <Border Grid.Row="0" Background="{StaticResource DarkerGrey}" CornerRadius="12" Margin="10" BoxShadow="0 2 10 #22000000">
+        <Border Grid.Row="0" Background="{StaticResource DarkerGrey}" CornerRadius="12" Margin="10" BoxShadow="{StaticResource LightBoxShadow}">
             <Border Background="{StaticResource DarkBackground}" CornerRadius="10" Margin="2">
                 <Grid Margin="15">
                     <Grid.RowDefinitions>
@@ -154,7 +154,7 @@
             <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Margin" Value="5,5,5,10"/>
-            <Setter Property="BoxShadow" Value="0 2 10 #22000000"/>
+            <Setter Property="BoxShadow" Value="{StaticResource LightBoxShadow}"/>
         </Style>
         
         <Style Selector="Border.ante-panel > Border">

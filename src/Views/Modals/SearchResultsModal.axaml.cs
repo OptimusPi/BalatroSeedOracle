@@ -106,12 +106,34 @@ namespace Oracle.Views.Modals
 
             try
             {
-                // TODO: Get search info from history service
-                // For now, just get the results
+                // Get search info from history service
+                var recentSearches = await _searchHistoryService.GetRecentSearchesAsync(100);
+                var searchInfo = recentSearches.FirstOrDefault(s => s.SearchId == searchId);
+                
+                var searchDate = DateTime.Now;
+                if (searchInfo != null)
+                {
+                    // Extract filter name from config path
+                    var configFileName = System.IO.Path.GetFileNameWithoutExtension(searchInfo.ConfigPath);
+                    _filterName = $"{configFileName} ({searchInfo.Deck} - {searchInfo.Stake} Stake)";
+                    searchDate = searchInfo.SearchDate;
+                    
+                    // Update search time display
+                    if (_searchTimeText != null && searchInfo.DurationSeconds > 0)
+                    {
+                        _searchTimeText.Text = TimeSpan.FromSeconds(searchInfo.DurationSeconds).ToString(@"hh\:mm\:ss");
+                    }
+                    if (_searchTimePanel != null)
+                    {
+                        _searchTimePanel.IsVisible = searchInfo.DurationSeconds > 0;
+                    }
+                }
+                else
+                {
+                    _filterName = "Historical Search";
+                }
 
                 var results = await _searchHistoryService.GetSearchResultsAsync(searchId);
-
-                _filterName = "Historical Search";
                 _results.Clear();
 
                 // Convert Oracle.Models.SearchResult to our local SearchResult format
@@ -123,7 +145,7 @@ namespace Oracle.Views.Modals
                         Score = result.TotalScore,
                         Antes = "",  // Ante was removed from SearchResult
                         ItemsJson = result.ScoreBreakdown,
-                        Timestamp = DateTime.Now
+                        Timestamp = searchDate  // Use the actual search date
                     };
                     _results.Add(new ResultRowViewModel(modalResult, _spriteService));
                 }

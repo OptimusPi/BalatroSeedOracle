@@ -2,14 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Oracle.Views.Modals.WordListsModal">
     
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Tab Navigation -->
-        <Border Grid.Row="0" Background="{StaticResource VeryDarkGrey}" CornerRadius="8,8,0,0">
+    <StackPanel Spacing="20" Margin="20">
+        <!-- Simple file list at the top -->
+        <Border Background="{StaticResource ContainerDarkPrecise}" 
+                CornerRadius="12" 
+                Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -17,87 +14,79 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- Triangle Indicator -->
-                <Polygon Name="TabTriangle"
-                         Grid.Column="0"
-                         Points="10,0 20,15 0,15" 
-                         Fill="{StaticResource Purple}"
-                         Margin="10,0,0,0"
-                         VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" 
+                           Text="Word List:" 
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"/>
                 
-                <!-- Tab Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                    <Button Name="EditorTab" 
-                            Content="EDITOR"
-                            Classes="tab-button active"
-                            Click="OnEditorTabClick"/>
-                    <Button Name="BrowseTab" 
-                            Content="BROWSE"
-                            Classes="tab-button"
-                            Click="OnBrowseTabClick"/>
+                <ComboBox Grid.Column="1" 
+                          Name="FileSelector"
+                          HorizontalAlignment="Stretch"
+                          SelectedIndex="0">
+                    <ComboBoxItem>keywords.txt</ComboBoxItem>
+                    <ComboBoxItem>banned_words.txt</ComboBoxItem>
+                    <ComboBoxItem>custom_list.txt</ComboBoxItem>
+                </ComboBox>
+                
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            Spacing="8"
+                            Margin="12,0,0,0">
+                    <Button Name="NewButton"
+                            Content="New List"
+                            Classes="small-button"
+                            Click="OnNewClick"/>
+                    <Button Name="SaveButton"
+                            Content="Save"
+                            Classes="small-button"
+                            Background="{StaticResource Green}"
+                            Click="OnSaveClick"/>
                 </StackPanel>
             </Grid>
         </Border>
         
-        <!-- Content Area -->
-        <Grid Grid.Row="1">
-            <!-- Editor Panel -->
-            <StackPanel Name="EditorPanel" IsVisible="True" Spacing="20" Margin="20">
-                <!-- File Controls -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBox Name="FileNameBox" 
-                             Grid.Column="0"
-                             Watermark="Enter filename (e.g., keywords.txt)"
-                             Classes="search-box"
-                             Margin="0,0,10,0"/>
-                    
-                    <Button Grid.Column="1"
-                            Name="NewButton"
-                            Content="NEW"
-                            Classes="small-button"
-                            Background="{StaticResource Blue}"
-                            Click="OnNewClick"
-                            Margin="0,0,5,0"/>
-                    
-                    <Button Grid.Column="2"
-                            Name="SaveButton"
-                            Content="SAVE"
-                            Classes="small-button"
-                            Background="{StaticResource Green}"
-                            Click="OnSaveClick"
-                            Margin="0,0,5,0"/>
-                    
-                    <Button Grid.Column="3"
-                            Name="LoadButton"
-                            Content="LOAD"
-                            Classes="small-button"
-                            Background="{StaticResource Orange}"
-                            Click="OnLoadClick"/>
-                </Grid>
+        <!-- Text Editor -->
+        <Border Background="{StaticResource VeryDarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="2"
+                CornerRadius="8"
+                Height="400">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 
-                <!-- Text Editor -->
-                <Border Classes="content-box" MinHeight="400">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Auto">
-                        <TextBox Name="TextEditor"
-                                 AcceptsReturn="True"
-                                 AcceptsTab="True"
-                                 TextWrapping="NoWrap"
-                                 FontFamily="Cascadia Code, Consolas, monospace"
-                                 FontSize="14"
-                                 Background="{StaticResource PureBlack}"
-                                 Foreground="{StaticResource White}"
-                                 Padding="10"
-                                 Text=""/>
-                    </ScrollViewer>
+                <!-- Editor header -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource DarkBackground}"
+                        CornerRadius="6,6,0,0"
+                        Padding="12,8">
+                    <TextBlock Text="One word or phrase per line"
+                               FontSize="14"
+                               Foreground="{StaticResource MediumGrey}"/>
                 </Border>
+                
+                <!-- Editor content -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <TextBox Name="TextEditor"
+                             AcceptsReturn="True"
+                             AcceptsTab="False"
+                             TextWrapping="NoWrap"
+                             FontFamily="Cascadia Code, Consolas, monospace"
+                             FontSize="14"
+                             Background="Transparent"
+                             Foreground="{StaticResource White}"
+                             BorderThickness="0"
+                             Padding="12"
+                             Text=""/>
+                </ScrollViewer>
+            </Grid>
+        </Border>
                 
                 <!-- Status Bar -->
                 <Border Background="{StaticResource VeryDarkGrey}" 
@@ -221,7 +210,7 @@
         </Style>
         
         <Style Selector="Button.tab-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource PalePurple}"/>
+            <Setter Property="Background" Value="{StaticResource PurpleHover}"/>
         </Style>
         
         <Style Selector="Button.tab-button:disabled">
