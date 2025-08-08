@@ -390,11 +390,8 @@ namespace Oracle.Services
 
             ProgressUpdated?.Invoke(this, eventArgs);
 
-            // Output to console if available
-            if (!string.IsNullOrEmpty(progress.Message))
-            {
-                ConsoleOutput?.Invoke(this, progress.Message);
-            }
+            // Don't output progress messages to console - the UI handles this through ProgressUpdated event
+            // This prevents duplicate messages in the console
         }
 
 

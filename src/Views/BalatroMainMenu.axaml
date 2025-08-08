@@ -222,12 +222,12 @@
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- COLLECTION button equivalent - RESULTS (green) -->
+                    <!-- COLLECTION button equivalent - ANALYZE (green) -->
                     <Button Classes="btn-green"
-                            Click="OnResultsClick"
+                            Click="OnAnalyzeClick"
                             MinHeight="64"
                             MinWidth="160">
-                        <TextBlock Text="RESULTS" 
+                        <TextBlock Text="ANALYZE" 
                                    FontSize="24" 
                                    FontWeight="Bold"
                                    FontFamily="{StaticResource BalatroFont}"

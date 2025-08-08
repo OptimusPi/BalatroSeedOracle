@@ -129,8 +129,12 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="2" />
-            <Setter Property="Margin" Value="4" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="Width" Value="71" />
+            <Setter Property="Height" Value="95" />
+            <Setter Property="MaxWidth" Value="71" />
+            <Setter Property="MaxHeight" Value="95" />
         </Style>
         <Style Selector="Border.dropped-item:pointerover">
             <Setter Property="Cursor" Value="Hand" />
@@ -445,7 +449,7 @@
                                             <TextBlock.RenderTransform>
                                                 <TransformGroup>
                                                     <RotateTransform Angle="-90"/>
-                                                    <TranslateTransform Y="0"/> <!-- Adjust Y to move label down -->
+                                                    <TranslateTransform Y="45"/> <!-- Adjust Y to move label down -->
                                                 </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
@@ -480,7 +484,7 @@
                                             <TextBlock.RenderTransform>
                                                 <TransformGroup>
                                                     <RotateTransform Angle="-90"/>
-                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                    <TranslateTransform Y="45"/> <!-- Adjust Y to move label down -->
                                                 </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
@@ -515,7 +519,7 @@
                                             <TextBlock.RenderTransform>
                                                 <TransformGroup>
                                                     <RotateTransform Angle="-90"/>
-                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                    <TranslateTransform Y="45"/> <!-- Adjust Y to move label down -->
                                                 </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>

@@ -270,8 +270,7 @@ namespace Oracle.Components
                     _isDragging = true;
                     
                     var dragData = new DataObject();
-                    dragData.Set("card-data", $"{Category}:{ItemName}");
-                    dragData.Set("balatro-item", $"{Category}|{ItemName}"); // Fixed format for drop handler
+                    dragData.Set("balatro-item", $"{Category}|{ItemName}");
 
                     CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
                     DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
@@ -282,6 +281,9 @@ namespace Oracle.Components
                     }
                     finally
                     {
+                        // IMPORTANT: Clean up drag visual state when drag ends
+                        this.Classes.Remove("is-dragging");
+                        this.RenderTransform = null; // Reset any transforms
                         _isDragging = false;
                         _dragStartPoint = null;
                     }

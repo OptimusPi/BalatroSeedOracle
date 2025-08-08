@@ -77,6 +77,26 @@ namespace Oracle.Views.Modals
         private Button? _stakeLeftArrow;
         private Button? _stakeRightArrow;
         
+        // New Search tab UI elements
+        private TextBlock? _progressPercentText;
+        private TextBlock? _batchesText;
+        private TextBlock? _totalSeedsText;
+        private TextBlock? _timeElapsedText;
+        private TextBlock? _resultsFoundText;
+        private TextBlock? _speedValueText;
+        private TextBlock? _currentSpeedText;
+        private TextBlock? _averageSpeedText;
+        private TextBlock? _peakSpeedText;
+        private Avalonia.Controls.Shapes.Path? _speedArc;
+        private Avalonia.Controls.Shapes.Path? _speedArcBackground;
+        
+        // Speed tracking
+        private double _peakSpeed = 0;
+        private double _totalSeeds = 0;
+        private DateTime _searchStartTime;
+        private int _lastBatchCount = 0;
+        private DateTime _lastSpeedUpdate = DateTime.Now;
+        
         private int _currentDeckIndex = 0;
         private int _currentStakeIndex = 0;
         private SpriteService? _spriteService;
@@ -194,6 +214,9 @@ namespace Oracle.Views.Modals
             {
                 // Hide the "New Blank Filter" button in SearchModal
                 _filterSelector.ShowCreateButton = false;
+                
+                // Connect the FilterLoaded event
+                _filterSelector.FilterLoaded += OnFilterLoaded;
             }
             
             // Find results panel controls
@@ -206,6 +229,19 @@ namespace Oracle.Views.Modals
             {
                 _resultsDataGrid.ItemsSource = _searchResults;
             }
+            
+            // Find new Search tab UI elements
+            _progressPercentText = this.FindControl<TextBlock>("ProgressPercentText");
+            _batchesText = this.FindControl<TextBlock>("BatchesText");
+            _totalSeedsText = this.FindControl<TextBlock>("TotalSeedsText");
+            _timeElapsedText = this.FindControl<TextBlock>("TimeElapsedText");
+            _resultsFoundText = this.FindControl<TextBlock>("ResultsFoundText");
+            _speedValueText = this.FindControl<TextBlock>("SpeedValueText");
+            _currentSpeedText = this.FindControl<TextBlock>("CurrentSpeedText");
+            _averageSpeedText = this.FindControl<TextBlock>("AverageSpeedText");
+            _peakSpeedText = this.FindControl<TextBlock>("PeakSpeedText");
+            _speedArc = this.FindControl<Avalonia.Controls.Shapes.Path>("SpeedArc");
+            _speedArcBackground = this.FindControl<Avalonia.Controls.Shapes.Path>("SpeedArcBackground");
             
             // Set up threads spinner with processor count
             if (_threadsSpinner != null)
@@ -283,7 +319,8 @@ namespace Oracle.Views.Modals
         {
             if (_settingsTab != null) _settingsTab.IsEnabled = filterLoaded;
             if (_searchTab != null) _searchTab.IsEnabled = filterLoaded;
-            if (_resultsTab != null) _resultsTab.IsEnabled = filterLoaded && _searchResults.Count > 0;
+            // Enable Results tab if filter is loaded (we'll show test data if no real results)
+            if (_resultsTab != null) _resultsTab.IsEnabled = filterLoaded;
         }
         
         private void OnTabClick(object? sender, RoutedEventArgs e)
@@ -336,6 +373,19 @@ namespace Oracle.Views.Modals
             {
                 clickedTab.Classes.Add("active");
                 if (_resultsPanel != null) _resultsPanel.IsVisible = true;
+                
+                // Always add test data when opening Results tab for debugging
+                Oracle.Helpers.DebugLogger.Log("SearchModal", "Adding test data to DataGrid for debugging");
+                AddTestResults();
+                
+                // Force DataGrid to refresh and ensure visibility
+                if (_resultsDataGrid != null)
+                {
+                    _resultsDataGrid.ItemsSource = null;
+                    _resultsDataGrid.ItemsSource = _searchResults;
+                    _resultsDataGrid.IsVisible = true;
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"DataGrid visibility: {_resultsDataGrid.IsVisible}, Items count: {_searchResults.Count}");
+                }
             }
         }
         
@@ -548,13 +598,17 @@ namespace Oracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 _isSearching = true;
+                _searchStartTime = DateTime.Now;
+                _peakSpeed = 0;
+                _totalSeeds = 0;
+                _lastBatchCount = 0;
+                _lastSpeedUpdate = DateTime.Now;
                 
                 // Update cook button
                 if (_cookButton != null)
                 {
                     _cookButton.Content = "Stop Jimbo!";
-                    _cookButton.Classes.Remove("cook-button");
-                    _cookButton.Classes.Add("cook-button");
+                    // Just add the stop class, don't remove and re-add cook-button
                     _cookButton.Classes.Add("stop");
                 }
 
@@ -602,6 +656,35 @@ namespace Oracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 AddToConsole($"Searched: {e.SeedsSearched:N0} | Found: {e.ResultsFound} | Speed: {e.SeedsPerSecond:N0}/s");
+                
+                // Update progress stats
+                if (_progressPercentText != null && e.TotalBatches > 0)
+                {
+                    double percent = (e.BatchesSearched / (double)e.TotalBatches) * 100;
+                    _progressPercentText.Text = $"{percent:F1}%";
+                }
+                
+                if (_batchesText != null)
+                    _batchesText.Text = $"{e.BatchesSearched:N0}";
+                
+                if (_totalSeedsText != null)
+                {
+                    _totalSeeds = e.SeedsSearched;
+                    _totalSeedsText.Text = $"{e.SeedsSearched:N0}";
+                }
+                
+                if (_resultsFoundText != null)
+                    _resultsFoundText.Text = e.ResultsFound.ToString();
+                
+                // Update time elapsed
+                if (_timeElapsedText != null)
+                {
+                    var elapsed = DateTime.Now - _searchStartTime;
+                    _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
+                }
+                
+                // Update speedometer
+                UpdateSpeedometer(e.SeedsPerSecond, e.BatchesSearched);
             });
         }
         
@@ -948,6 +1031,140 @@ namespace Oracle.Views.Modals
                 AddToConsole($"Failed to load existing results: {ex.Message}");
             }
         }
+        
+        private void AddTestResults()
+        {
+            // Add some test results to verify DataGrid is working
+            _searchResults.Clear();
+            
+            _searchResults.Add(new SearchResult 
+            { 
+                Seed = "TESTCODE1",
+                Score = 95.5,
+                Details = "Perkeo (Ante 1), Negative Tag (Ante 2)",
+                Timestamp = DateTime.Now.AddMinutes(-5)
+            });
+            
+            _searchResults.Add(new SearchResult 
+            { 
+                Seed = "TESTCODE2",
+                Score = 88.0,
+                Details = "Blueprint (Ante 2), Brainstorm (Ante 3)",
+                Timestamp = DateTime.Now.AddMinutes(-3)
+            });
+            
+            _searchResults.Add(new SearchResult 
+            { 
+                Seed = "TESTCODE3",
+                Score = 75.5,
+                Details = "Triboulet (Ante 3), Fool Tag (Ante 1)",
+                Timestamp = DateTime.Now.AddMinutes(-2)
+            });
+            
+            _searchResults.Add(new SearchResult 
+            { 
+                Seed = "TESTCODE4",
+                Score = 92.0,
+                Details = "Chicot (Ante 2), Negative Tag (Ante 3)",
+                Timestamp = DateTime.Now.AddMinutes(-1)
+            });
+            
+            _searchResults.Add(new SearchResult 
+            { 
+                Seed = "TESTCODE5",
+                Score = 83.0,
+                Details = "Yorick (Ante 1), Charm Tag (Ante 2)",
+                Timestamp = DateTime.Now
+            });
+            
+            // Update summary
+            if (_resultsSummary != null)
+            {
+                _resultsSummary.Text = $"Found {_searchResults.Count} results (test data)";
+            }
+            if (_exportResultsButton != null)
+            {
+                _exportResultsButton.IsEnabled = true;
+            }
+            
+            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Added {_searchResults.Count} test results to DataGrid");
+        }
+        
+        private void UpdateSpeedometer(double currentSpeed, int batchesSearched)
+        {
+            // Update speed values
+            if (_speedValueText != null)
+            {
+                _speedValueText.Text = $"{currentSpeed:N0}";
+            }
+            
+            if (_currentSpeedText != null)
+            {
+                _currentSpeedText.Text = $"{currentSpeed:N0} seeds/s";
+            }
+            
+            // Track peak speed
+            if (currentSpeed > _peakSpeed)
+            {
+                _peakSpeed = currentSpeed;
+                if (_peakSpeedText != null)
+                {
+                    _peakSpeedText.Text = $"{_peakSpeed:N0} seeds/s";
+                }
+            }
+            
+            // Calculate average speed
+            var elapsed = DateTime.Now - _searchStartTime;
+            if (elapsed.TotalSeconds > 0 && _totalSeeds > 0)
+            {
+                double avgSpeed = _totalSeeds / elapsed.TotalSeconds;
+                if (_averageSpeedText != null)
+                {
+                    _averageSpeedText.Text = $"{avgSpeed:N0} seeds/s";
+                }
+            }
+            
+            // Update speedometer arc
+            if (_speedArc != null && _peakSpeed > 0)
+            {
+                // Map current speed to arc angle (0-180 degrees)
+                double speedRatio = Math.Min(currentSpeed / _peakSpeed, 1.0);
+                double angle = speedRatio * 180; // 180 degree arc
+                
+                // Calculate arc path
+                double startAngle = 180; // Start at left side
+                double endAngle = startAngle + angle;
+                
+                // Convert to radians
+                double startRad = startAngle * Math.PI / 180;
+                double endRad = endAngle * Math.PI / 180;
+                
+                // Calculate arc endpoints
+                double centerX = 70;
+                double centerY = 110;
+                double radius = 55;
+                
+                double startX = centerX + radius * Math.Cos(startRad);
+                double startY = centerY + radius * Math.Sin(startRad);
+                double endX = centerX + radius * Math.Cos(endRad);
+                double endY = centerY + radius * Math.Sin(endRad);
+                
+                // Large arc flag (1 if angle > 180)
+                int largeArcFlag = angle > 180 ? 1 : 0;
+                
+                // Create arc path
+                string arcPath = $"M {startX:F1},{startY:F1} A {radius},{radius} 0 {largeArcFlag} 1 {endX:F1},{endY:F1}";
+                _speedArc.Data = Avalonia.Media.PathGeometry.Parse(arcPath);
+                
+                // Update arc color based on speed
+                if (speedRatio > 0.8)
+                    _speedArc.Stroke = new SolidColorBrush(Color.Parse("#FFD700")); // Gold
+                else if (speedRatio > 0.5)
+                    _speedArc.Stroke = new SolidColorBrush(Color.Parse("#90EE90")); // Light green
+                else
+                    _speedArc.Stroke = new SolidColorBrush(Color.Parse("#32CD32")); // Green
+            }
+        }
     }
     
     // Supporting classes for the search functionality
@@ -1001,6 +1218,8 @@ namespace Oracle.Views.Modals
         public double SeedsPerSecond { get; set; }
         public bool IsComplete { get; set; }
         public bool HasError { get; set; }
+        public int BatchesSearched { get; set; }
+        public int TotalBatches { get; set; }
     }
     
     public class SearchResultEventArgs : EventArgs

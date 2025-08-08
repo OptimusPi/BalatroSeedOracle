@@ -116,6 +116,16 @@ namespace Oracle.Views
             modal.BackClicked += (s, ev) => HideModalContent();
             ShowModalContent(modal);
         }
+        
+        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
+        {
+            // Show the analyze modal
+            var analyzeModal = new AnalyzeModal();
+            var modal = new StandardModal("ANALYZE");
+            modal.SetContent(analyzeModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal);
+        }
 
 
         private void OnToolClick(object? sender, RoutedEventArgs e)

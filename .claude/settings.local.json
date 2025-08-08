@@ -41,7 +41,8 @@
       "Bash(printf \"0x%X\\n\" 16408)",
       "Bash(pkill:*)",
       "Bash(sudo rm:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

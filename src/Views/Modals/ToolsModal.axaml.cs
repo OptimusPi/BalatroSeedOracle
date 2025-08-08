@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Oracle.Helpers;
 
 namespace Oracle.Views.Modals
@@ -19,58 +20,58 @@ namespace Oracle.Views.Modals
 
         private void OnAnalyzerClick(object? sender, RoutedEventArgs e)
         {
-            // Get the parent modal container
-            var parent = this.Parent;
-            while (parent != null && !(parent is BalatroMainMenu))
-            {
-                parent = parent.Parent;
-            }
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
             
-            if (parent is BalatroMainMenu mainMenu)
+            if (mainMenu != null)
             {
                 // Hide current modal
                 mainMenu.HideModalContent();
                 
                 // Show analyzer modal using ModalHelper extension
-                ModalHelper.ShowAnalyzerModal(mainMenu);
+                mainMenu.ShowAnalyzerModal();
+            }
+            else
+            {
+                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
             }
         }
         
         private void OnWordListsClick(object? sender, RoutedEventArgs e)
         {
-            // Get the parent modal container
-            var parent = this.Parent;
-            while (parent != null && !(parent is BalatroMainMenu))
-            {
-                parent = parent.Parent;
-            }
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
             
-            if (parent is BalatroMainMenu mainMenu)
+            if (mainMenu != null)
             {
                 // Hide current modal
                 mainMenu.HideModalContent();
                 
                 // Show word lists modal using ModalHelper extension
-                ModalHelper.ShowWordListsModal(mainMenu);
+                mainMenu.ShowWordListsModal();
+            }
+            else
+            {
+                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
             }
         }
         
         private void OnCreditsClick(object? sender, RoutedEventArgs e)
         {
-            // Get the parent modal container
-            var parent = this.Parent;
-            while (parent != null && !(parent is BalatroMainMenu))
-            {
-                parent = parent.Parent;
-            }
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
             
-            if (parent is BalatroMainMenu mainMenu)
+            if (mainMenu != null)
             {
                 // Hide current modal
                 mainMenu.HideModalContent();
                 
                 // Show credits modal using ModalHelper extension
-                ModalHelper.ShowCreditsModal(mainMenu);
+                mainMenu.ShowCreditsModal();
+            }
+            else
+            {
+                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
             }
         }
     }

@@ -2348,7 +2348,12 @@ public partial class FiltersModalContent : UserControl
         {
             ItemName = itemName,
             Category = actualCategory, // Use actual category for proper functionality
-            ImageSource = imageSource
+            ImageSource = imageSource,
+            // Set explicit size to prevent growing during drag/drop
+            Width = 80,
+            Height = 110,
+            MaxWidth = 80,
+            MaxHeight = 110
         };
 
         // Check if selected (use actual category for key)
@@ -3057,7 +3062,11 @@ public partial class FiltersModalContent : UserControl
         if (isLegendaryJoker)
         {
             // Create stacked layout for legendary joker
-            var grid = new Grid();
+            var grid = new Grid
+            {
+                Width = 71,
+                Height = 95
+            };
 
             // Joker face image on top
             var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
@@ -3067,6 +3076,8 @@ public partial class FiltersModalContent : UserControl
                 {
                     Source = jokerImageSource,
                     Stretch = Stretch.Uniform,
+                    Width = 71,  // Explicit width to prevent growing
+                    Height = 95, // Explicit height to prevent growing
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
                 };
@@ -3083,8 +3094,8 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 64,
-                        Height = 64,
+                        Width = 50,  // Smaller to fit within the card
+                        Height = 50, // Smaller to fit within the card
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = new RotateTransform()
@@ -3150,6 +3161,8 @@ public partial class FiltersModalContent : UserControl
                 {
                     Source = imageSource,
                     Stretch = Stretch.Uniform,
+                    Width = 71,  // Explicit width to prevent growing
+                    Height = 95, // Explicit height to prevent growing
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
                 };
@@ -3163,11 +3176,13 @@ public partial class FiltersModalContent : UserControl
                 var textBlock = new TextBlock
                 {
                     Text = displayText,
-                    FontSize = 6,
+                    FontSize = 10,
                     FontWeight = FontWeight.SemiBold,
                     Foreground = Brushes.White,
                     TextTrimming = TextTrimming.CharacterEllipsis,
                     TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 65,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
                 };
@@ -3204,9 +3219,7 @@ public partial class FiltersModalContent : UserControl
 
         var key = foundKey ?? actualKey;
 
-        _configPopupContent = new ItemConfigPopup();
-
-        // Create popup if it doesn't exist
+        // Create popup and content if they don't exist
         if (_configPopup == null)
         {
             _configPopup = new Popup
@@ -3214,11 +3227,11 @@ public partial class FiltersModalContent : UserControl
                 Placement = PlacementMode.Pointer,
                 IsLightDismissEnabled = true
             };
-
-
+            
+            _configPopupContent = new ItemConfigPopup();
             _configPopup.Child = _configPopupContent;
 
-            // Handle events
+            // Handle events (only subscribe once)
             _configPopupContent.ConfigApplied += OnItemConfigApplied;
             _configPopupContent.DeleteRequested += OnItemDeleteRequested;
             _configPopupContent.Cancelled += OnItemConfigCancelled;
@@ -3264,10 +3277,16 @@ public partial class FiltersModalContent : UserControl
             existingConfig = defaultConfig;
         }
 
-        _configPopupContent.SetItem(key, itemName, existingConfig);
+        if (_configPopupContent != null)
+        {
+            _configPopupContent.SetItem(key, itemName, existingConfig);
+        }
 
         // Show popup
-        _configPopup.IsOpen = true;
+        if (_configPopup != null)
+        {
+            _configPopup.IsOpen = true;
+        }
     }
 
     private void OnItemConfigApplied(object? sender, ItemConfigEventArgs e)
@@ -3722,6 +3741,8 @@ public partial class FiltersModalContent : UserControl
         foreach (var card in cards)
         {
             card.Classes.Remove("is-dragging");
+            // Reset any transforms that might have been applied
+            card.RenderTransform = null;
         }
         
         // Remove drag overlay

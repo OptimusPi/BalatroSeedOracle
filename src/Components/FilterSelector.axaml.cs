@@ -203,6 +203,13 @@ namespace Oracle.Components
             var shouldItems = new List<(string value, string? type)>();
             var mustNotItems = new List<(string value, string? type)>();
             
+            // Debug: Log all root properties
+            DebugLogger.Log("FilterSelector", $"Root properties in filter:");
+            foreach (var prop in filterRoot.EnumerateObject())
+            {
+                DebugLogger.Log("FilterSelector", $"  - {prop.Name}: {prop.Value.ValueKind}");
+            }
+            
             // Check for the new filter format
             if (filterRoot.TryGetProperty("filter_config", out var filterConfig))
             {
@@ -290,6 +297,53 @@ namespace Oracle.Components
                 if (filterRoot.TryGetProperty("mustNot", out var oldMustNot))
                     ExtractItems(oldMustNot, mustNotItems);
             }
+            else if (filterRoot.TryGetProperty("Must", out var rootMust))
+            {
+                // Direct Motely format with Must/Should/MustNot at root
+                DebugLogger.Log("FilterSelector", "Found direct Motely format");
+                
+                foreach (var item in rootMust.EnumerateArray())
+                {
+                    if (item.TryGetProperty("Value", out var value))
+                    {
+                        var val = value.GetString() ?? "";
+                        var type = item.TryGetProperty("Type", out var typeEl) ? typeEl.GetString() : null;
+                        mustItems.Add((val, type));
+                        DebugLogger.Log("FilterSelector", $"  Must item: {val} (type: {type})");
+                    }
+                }
+                
+                if (filterRoot.TryGetProperty("Should", out var rootShould))
+                {
+                    foreach (var item in rootShould.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("Value", out var value))
+                        {
+                            var val = value.GetString() ?? "";
+                            var type = item.TryGetProperty("Type", out var typeEl) ? typeEl.GetString() : null;
+                            shouldItems.Add((val, type));
+                            DebugLogger.Log("FilterSelector", $"  Should item: {val} (type: {type})");
+                        }
+                    }
+                }
+                
+                if (filterRoot.TryGetProperty("MustNot", out var rootMustNot))
+                {
+                    foreach (var item in rootMustNot.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("Value", out var value))
+                        {
+                            var val = value.GetString() ?? "";
+                            var type = item.TryGetProperty("Type", out var typeEl) ? typeEl.GetString() : null;
+                            mustNotItems.Add((val, type));
+                            DebugLogger.Log("FilterSelector", $"  MustNot item: {val} (type: {type})");
+                        }
+                    }
+                }
+            }
+            
+            // Debug: Log what we found
+            DebugLogger.Log("FilterSelector", $"Found {mustItems.Count} must items, {shouldItems.Count} should items, {mustNotItems.Count} mustNot items");
             
             // Build the cards to display
             var cardsToDisplay = new List<(string value, string? type, bool isMustNot)>();
