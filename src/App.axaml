@@ -148,7 +148,7 @@
     </Application.Resources>
 
     <Application.Styles>
-        <!-- Include base Fluent theme for ScrollViewer functionality -->
+        <!-- Include base Fluent theme for control templates (unfortunately needed for DataGrid, ComboBox, etc.) -->
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         
         <!-- Include AvaloniaEdit styles -->

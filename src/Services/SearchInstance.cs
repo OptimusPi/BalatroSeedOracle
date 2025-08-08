@@ -347,7 +347,31 @@ namespace Oracle.Services
             if (_isRunning)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
+                
+                // Set the cancellation flag that Motely checks
+                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
+                
+                // Also cancel the token
                 _cancellationTokenSource?.Cancel();
+                
+                // Force _isRunning to false immediately
+                _isRunning = false;
+                
+                // IMPORTANT: Stop the actual search service!
+                if (_currentSearch != null)
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Pausing and disposing search");
+                    
+                    // Pause first if it's running
+                    if (_currentSearch.Status == MotelySearchStatus.Running)
+                    {
+                        _currentSearch.Pause();
+                    }
+                    
+                    // Then dispose
+                    _currentSearch.Dispose();
+                    _currentSearch = null;
+                }
             }
         }
 
@@ -516,9 +540,27 @@ namespace Oracle.Services
 
         public void Dispose()
         {
+            // First stop the search if it's running
+            if (_isRunning)
+            {
+                StopSearch();
+            }
+            
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
-            _currentSearch?.Dispose();
+            
+            // Make sure to stop and dispose the search service
+            if (_currentSearch != null)
+            {
+                // Pause first if it's running
+                if (_currentSearch.Status == MotelySearchStatus.Running)
+                {
+                    _currentSearch.Pause();
+                }
+                _currentSearch.Dispose();
+                _currentSearch = null;
+            }
+            
             if (_resultCapture != null)
             {
                 Task.Run(async () => await _resultCapture.StopCaptureAsync()).Wait(1000);

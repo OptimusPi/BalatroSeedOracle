@@ -147,9 +147,9 @@ public partial class FiltersModalContent : UserControl
         var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
         if (filterSelector != null)
         {
-            // DISABLE auto-loading in FiltersModal to prevent unwanted tab switching
-            filterSelector.AutoLoadEnabled = false;
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "FilterSelector component found and setup - auto-load disabled");
+            // Keep auto-loading enabled so the first filter loads and enables tabs
+            // The FilterLoaded event handler will enable tabs without switching
+            Oracle.Helpers.DebugLogger.Log("FiltersModal", "FilterSelector component found and setup");
         }
     }
     
@@ -205,11 +205,13 @@ public partial class FiltersModalContent : UserControl
         var visualTab = this.FindControl<Button>("VisualTab");
         var jsonTab = this.FindControl<Button>("JsonTab");
         
-        if (visualTab != null) visualTab.IsEnabled = configLoaded;
-        if (jsonTab != null) jsonTab.IsEnabled = configLoaded;
+        // Always enable tabs in FiltersModal - users need to create filters!
+        if (visualTab != null) visualTab.IsEnabled = true;
+        if (jsonTab != null) jsonTab.IsEnabled = true;
     }
     
-    private async void OnRunSearchClick(object? sender, RoutedEventArgs e)
+    // Search functionality removed - use SearchModal instead
+    /*private async void OnRunSearchClick(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -227,8 +229,7 @@ public partial class FiltersModalContent : UserControl
             };
             
             // Switch to Results tab
-            var resultsTab = this.FindControl<Button>("ResultsTab");
-            if (resultsTab != null)
+                if (resultsTab != null)
             {
                 resultsTab.IsEnabled = true;
                 OnTabClick(resultsTab, new RoutedEventArgs());
@@ -310,9 +311,10 @@ public partial class FiltersModalContent : UserControl
             Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error launching search: {ex.Message}");
             UpdateStatus($"❌ Error launching search: {ex.Message}", true);
         }
-    }
+    }*/
     
-    private void DisplaySearchResults(List<SearchResultDisplay> results)
+    // Search results display removed - use SearchModal instead
+    /*private void DisplaySearchResults(List<SearchResultDisplay> results)
     {
         var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
         var statusText = this.FindControl<TextBlock>("ResultsStatusText");
@@ -326,17 +328,7 @@ public partial class FiltersModalContent : UserControl
         {
             statusText.Text = $"✅ Found {results.Count} results";
         }
-    }
-    
-    // Display class for search results
-    private class SearchResultDisplay
-    {
-        public string Seed { get; set; } = "";
-        public int Score { get; set; }
-        public string FoundItemsDisplay { get; set; } = "";
-        public int Ante { get; set; }
-        public int Round { get; set; }
-    }
+    }*/
     
     private Oracle.Models.FilterItem? ParseItemKey(string key)
     {
@@ -2773,25 +2765,21 @@ public partial class FiltersModalContent : UserControl
         var visualTab = this.FindControl<Button>("VisualTab");
         var jsonTab = this.FindControl<Button>("JsonTab");
         var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
-        var resultsTab = this.FindControl<Button>("ResultsTab");
         
         // Get all panels
         var visualPanel = this.FindControl<Grid>("VisualPanel");
         var jsonPanel = this.FindControl<Grid>("JsonPanel");
         var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
-        var resultsPanel = this.FindControl<Grid>("ResultsPanel");
         
         // Remove active class from all tabs
         visualTab?.Classes.Remove("active");
         jsonTab?.Classes.Remove("active");
         loadSaveTab?.Classes.Remove("active");
-        resultsTab?.Classes.Remove("active");
         
         // Hide all panels
         if (visualPanel != null) visualPanel.IsVisible = false;
         if (jsonPanel != null) jsonPanel.IsVisible = false;
         if (loadSavePanel != null) loadSavePanel.IsVisible = false;
-        if (resultsPanel != null) resultsPanel.IsVisible = false;
         
         // Get triangle for animation
         _tabTriangle = this.FindControl<Polygon>("TabTriangle");
@@ -2822,11 +2810,6 @@ public partial class FiltersModalContent : UserControl
                 UpdateJsonEditor();
                 break;
                 
-            case "ResultsTab":
-                button.Classes.Add("active");
-                if (resultsPanel != null) resultsPanel.IsVisible = true;
-                AnimateTriangleToTab(3);
-                break;
         }
     }
     

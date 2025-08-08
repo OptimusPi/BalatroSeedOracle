@@ -190,6 +190,11 @@ namespace Oracle.Views.Modals
             
             // Find filter selector component
             _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
+            if (_filterSelector != null)
+            {
+                // Hide the "New Blank Filter" button in SearchModal
+                _filterSelector.ShowCreateButton = false;
+            }
             
             // Find results panel controls
             _resultsDataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
@@ -525,6 +530,10 @@ namespace Oracle.Views.Modals
                 // Stop search
                 _searchInstance.StopSearch();
                 AddToConsole("Jimbo stopped cooking!");
+                
+                // Immediately update UI
+                _isSearching = false;
+                UpdateSearchUI();
             }
         }
         

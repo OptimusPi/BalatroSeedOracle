@@ -7,6 +7,69 @@
              
     <UserControl.Styles>
         <!-- Modal-specific styles ONLY. Global button/input/tab/nav styles removed to prevent drift. -->
+        <!-- Override Fluent's button template completely for tab buttons -->
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Name="PART_Border"
+                                Background="{StaticResource Red}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Hover state -->
+        <Style Selector="Button.tab-button:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        
+        <!-- Pressed state -->
+        <Style Selector="Button.tab-button:pressed">
+            <Setter Property="Margin" Value="4,2,4,2"/>
+        </Style>
+        
+        <!-- Active state - same as regular, no blue! -->
+        <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        
+        <!-- Active hover -->
+        <Style Selector="Button.tab-button.active:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        
+        <!-- Disabled state -->
+        <Style Selector="Button.tab-button:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+        </Style>
+        <Style Selector="Button.tab-button:disabled">
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+        
         <Style Selector="Button.small-nav-button">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="MinHeight" Value="28" />
@@ -223,7 +286,6 @@
                 <ColumnDefinition Width="148"/> <!-- Select Filter -->
                 <ColumnDefinition Width="148"/> <!-- Visual -->
                 <ColumnDefinition Width="148"/> <!-- JSON -->
-                <ColumnDefinition Width="148"/> <!-- Results -->
             </Grid.ColumnDefinitions>
             
             <!-- Triangle container -->
@@ -273,17 +335,10 @@
             <Button Name="VisualTab" 
                     Content="Visual" 
                     Classes="tab-button"
-                    IsEnabled="False"
                     Click="OnTabClick"/>
             <Button Name="JsonTab" 
                     Content="JSON" 
                     Classes="tab-button"
-                    IsEnabled="False"
-                    Click="OnTabClick"/>
-            <Button Name="ResultsTab"
-                    Content="Results"
-                    Classes="tab-button"
-                    IsEnabled="False"
                     Click="OnTabClick"/>
         </StackPanel>
         
@@ -390,7 +445,7 @@
                                             <TextBlock.RenderTransform>
                                                 <TransformGroup>
                                                     <RotateTransform Angle="-90"/>
-                                                    <TranslateTransform Y="10"/> <!-- Adjust Y to move label down -->
+                                                    <TranslateTransform Y="0"/> <!-- Adjust Y to move label down -->
                                                 </TransformGroup>
                                             </TextBlock.RenderTransform>
                                         </TextBlock>
@@ -478,15 +533,6 @@
                                     </Grid>
                                 </Border>
                                 
-                                <!-- Run Search Button -->
-                                <Button Grid.Row="6" 
-                                        Name="RunSearchButtonVisual"
-                                        Content="🔍 RUN SEARCH"
-                                        Classes="cook-button"
-                                        Height="50"
-                                        HorizontalAlignment="Stretch"
-                                        Margin="0,6,0,0"
-                                        Click="OnRunSearchClick"/>
                             </Grid>
                         </Grid>
             </Grid>
@@ -528,88 +574,6 @@
                                                FontSize="14"
                                                Background="{StaticResource ContainerDarkPrecise}"
                                                Foreground="{StaticResource White}"/>
-                    </Grid>
-                </Border>
-            </Grid>
-            
-            <!-- Results Panel -->
-            <Grid Name="ResultsPanel" IsVisible="False">
-                <Border Background="{StaticResource ContainerDarkPrecise}" 
-                        BorderThickness="0" 
-                        CornerRadius="8" 
-                        Padding="16">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <TextBlock Grid.Row="0" 
-                                   Text="SEARCH RESULTS" 
-                                   FontSize="20" 
-                                   FontWeight="Bold" 
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"/>
-                        
-                        <!-- Results DataGrid -->
-                        <ScrollViewer Grid.Row="2" 
-                                      HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Auto">
-                            <DataGrid Name="ResultsDataGrid"
-                                      CanUserReorderColumns="True"
-                                      CanUserResizeColumns="True"
-                                      CanUserSortColumns="True"
-                                      GridLinesVisibility="All"
-                                      IsReadOnly="True"
-                                      Background="{StaticResource DarkBackground}"
-                                      Foreground="{StaticResource White}"
-                                      BorderThickness="1"
-                                      BorderBrush="{StaticResource ModalBorder}">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Seed" 
-                                                        Binding="{Binding Seed}" 
-                                                        Width="100"/>
-                                    <DataGridTextColumn Header="Score" 
-                                                        Binding="{Binding Score}" 
-                                                        Width="80"/>
-                                    <DataGridTextColumn Header="Found Items" 
-                                                        Binding="{Binding FoundItemsDisplay}" 
-                                                        Width="*"/>
-                                    <DataGridTextColumn Header="Ante" 
-                                                        Binding="{Binding Ante}" 
-                                                        Width="60"/>
-                                    <DataGridTextColumn Header="Round" 
-                                                        Binding="{Binding Round}" 
-                                                        Width="60"/>
-                                </DataGrid.Columns>
-                                <DataGrid.Styles>
-                                    <Style Selector="DataGridRow">
-                                        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-                                    </Style>
-                                    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
-                                        <Setter Property="Fill" Value="{StaticResource RedHover}"/>
-                                    </Style>
-                                    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
-                                        <Setter Property="Fill" Value="{StaticResource Red}"/>
-                                    </Style>
-                                </DataGrid.Styles>
-                            </DataGrid>
-                        </ScrollViewer>
-                        
-                        <!-- Status Bar -->
-                        <Border Grid.Row="3" 
-                                Background="{StaticResource ContainerDarkPrecise}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="0,1,0,0"
-                                Padding="8,4"
-                                Margin="0,8,0,0">
-                            <TextBlock Name="ResultsStatusText"
-                                       Text="No results yet. Run a search to see results."
-                                       FontSize="12"
-                                       Foreground="{StaticResource Border}"/>
-                        </Border>
                     </Grid>
                 </Border>
             </Grid>

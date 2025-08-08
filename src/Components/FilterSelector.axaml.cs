@@ -29,6 +29,7 @@ namespace Oracle.Components
         private int _currentFilterIndex = 0;
         private string? _currentFilterPath = null;
         private bool _autoLoadEnabled = true;
+        private bool _showCreateButton = true;
         
         // Controls
         private TextBlock? _filterName;
@@ -589,6 +590,21 @@ namespace Oracle.Components
         {
             get => _autoLoadEnabled;
             set => _autoLoadEnabled = value;
+        }
+        
+        public bool ShowCreateButton
+        {
+            get => _showCreateButton;
+            set
+            {
+                _showCreateButton = value;
+                // Update visibility of the New Filter button
+                var newFilterButton = this.FindControl<Button>("NewFilterButton");
+                if (newFilterButton != null)
+                {
+                    newFilterButton.IsVisible = value;
+                }
+            }
         }
     }
 }

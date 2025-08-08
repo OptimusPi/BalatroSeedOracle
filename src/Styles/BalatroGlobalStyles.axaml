@@ -77,17 +77,6 @@
         <Setter Property="Background" Value="#70150f" />
     </Style>
     
-    <!-- Button pressed - move down to meet shadow -->
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#ButtonFace">
-        <Setter Property="Margin" Value="0,4,0,0" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-    
     <!-- Button disabled state -->
     <Style Selector="Button:not(.SystemCaptionButton):disabled">
         <Setter Property="Opacity" Value="0.6" />
@@ -407,6 +396,30 @@
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
         <Setter Property="Padding" Value="30"/>
+    </Style>
+    
+    <!-- Remove default focus rectangle / inner highlight on buttons -->
+    <Style Selector="Button:focus-visible">
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+    </Style>
+
+    <!-- Neutralize default pressed background flash (we'll rely on pointerover colors already set) -->
+    <Style Selector="Button:pressed">
+        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
+    </Style>
+
+    <!-- Disable keyboard navigation for main menu colored buttons -->
+    <Style Selector="Button.btn-blue, Button.btn-orange, Button.btn-green, Button.btn-red, Button.btn-purple">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+    </Style>
+    
+    <!-- (Remove this style or set Focusable/IsTabStop back to True if you later re-enable keyboard nav) -->
+    
+    <!-- Keep visual unchanged on focus (no background/border swap) -->
+    <Style Selector="Button:focus, Button:focus-visible">
+        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
+        <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
     </Style>
     
 </Styles>

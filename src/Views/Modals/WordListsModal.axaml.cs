@@ -4,28 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
 namespace Oracle.Views.Modals
 {
     public partial class WordListsModal : UserControl
     {
-        private TextBox? _fileNameBox;
+        private ComboBox? _fileSelector;
         private TextBox? _textEditor;
         private TextBlock? _statusText;
-        private ListBox? _fileList;
-        private TextBlock? _directoryPath;
-        private Button? _openButton;
-        private Button? _deleteButton;
-        private StackPanel? _editorPanel;
-        private StackPanel? _browsePanel;
-        private Button? _editorTab;
-        private Button? _browseTab;
-        private Polygon? _tabTriangle;
+        private Button? _saveButton;
         
         private string _wordListsPath = System.IO.Path.Combine(AppContext.BaseDirectory, "WordLists");
         private string? _currentFile;
@@ -35,32 +26,36 @@ namespace Oracle.Views.Modals
         {
             InitializeComponent();
             EnsureDirectoryExists();
-            _ = LoadFileListAsync();
+            LoadFileList();
         }
         
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
             
-            _fileNameBox = this.FindControl<TextBox>("FileNameBox");
+            _fileSelector = this.FindControl<ComboBox>("FileSelector");
             _textEditor = this.FindControl<TextBox>("TextEditor");
             _statusText = this.FindControl<TextBlock>("StatusText");
-            _fileList = this.FindControl<ListBox>("FileList");
-            _directoryPath = this.FindControl<TextBlock>("DirectoryPath");
-            _openButton = this.FindControl<Button>("OpenButton");
-            _deleteButton = this.FindControl<Button>("DeleteButton");
-            _editorPanel = this.FindControl<StackPanel>("EditorPanel");
-            _browsePanel = this.FindControl<StackPanel>("BrowsePanel");
-            _editorTab = this.FindControl<Button>("EditorTab");
-            _browseTab = this.FindControl<Button>("BrowseTab");
-            _tabTriangle = this.FindControl<Polygon>("TabTriangle");
+            _saveButton = this.FindControl<Button>("SaveButton");
             
-            if (_directoryPath != null)
-                _directoryPath.Text = _wordListsPath;
+            if (_fileSelector != null)
+            {
+                _fileSelector.SelectionChanged += OnFileSelectionChanged;
+            }
                 
             if (_textEditor != null)
             {
-                _textEditor.TextChanged += (s, e) => _hasUnsavedChanges = true;
+                _textEditor.TextChanged += (s, e) => 
+                {
+                    _hasUnsavedChanges = true;
+                    UpdateStatus("Modified - click Save to persist changes");
+                };
+            }
+            
+            // Load the first file by default
+            if (_fileSelector != null && _fileSelector.Items.Count > 0)
+            {
+                _fileSelector.SelectedIndex = 0;
             }
         }
         
@@ -69,215 +64,167 @@ namespace Oracle.Views.Modals
             if (!Directory.Exists(_wordListsPath))
             {
                 Directory.CreateDirectory(_wordListsPath);
+                // Create default files
+                CreateDefaultFiles();
             }
         }
         
-        private async Task LoadFileListAsync()
+        private void CreateDefaultFiles()
         {
-            await Task.Run(() =>
+            // Create default keywords.txt
+            var keywordsPath = Path.Combine(_wordListsPath, "keywords.txt");
+            if (!File.Exists(keywordsPath))
             {
-                var files = Directory.GetFiles(_wordListsPath, "*.txt")
-                    .Select(f => new FileItem
-                    {
-                        Name = System.IO.Path.GetFileName(f),
-                        Path = f,
-                        Size = FormatFileSize(new FileInfo(f).Length)
-                    })
-                    .OrderBy(f => f.Name)
-                    .ToList();
-                    
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (_fileList != null)
-                        _fileList.ItemsSource = files;
-                });
-            });
-        }
-        
-        private string FormatFileSize(long bytes)
-        {
-            if (bytes < 1024)
-                return $"{bytes} B";
-            if (bytes < 1024 * 1024)
-                return $"{bytes / 1024.0:F1} KB";
-            return $"{bytes / (1024.0 * 1024.0):F1} MB";
-        }
-        
-        private void OnEditorTabClick(object? sender, RoutedEventArgs e)
-        {
-            ShowEditorPanel();
-        }
-        
-        private void OnBrowseTabClick(object? sender, RoutedEventArgs e)
-        {
-            ShowBrowsePanel();
-        }
-        
-        private void ShowEditorPanel()
-        {
-            if (_editorPanel != null) _editorPanel.IsVisible = true;
-            if (_browsePanel != null) _browsePanel.IsVisible = false;
-            if (_editorTab != null) _editorTab.Classes.Add("active");
-            if (_browseTab != null) _browseTab.Classes.Remove("active");
-        }
-        
-        private void ShowBrowsePanel()
-        {
-            if (_editorPanel != null) _editorPanel.IsVisible = false;
-            if (_browsePanel != null) _browsePanel.IsVisible = true;
-            if (_editorTab != null) _editorTab.Classes.Remove("active");
-            if (_browseTab != null) _browseTab.Classes.Add("active");
-            _ = LoadFileListAsync();
-        }
-        
-        private async void OnNewClick(object? sender, RoutedEventArgs e)
-        {
-            if (_hasUnsavedChanges)
-            {
-                var result = await ConfirmUnsavedChanges();
-                if (!result) return;
+                File.WriteAllText(keywordsPath, @"# Keywords for filter matching
+# One word or phrase per line
+# Lines starting with # are comments
+
+joker
+tarot
+spectral
+voucher
+boss
+tag");
             }
             
-            if (_fileNameBox != null) _fileNameBox.Text = "";
-            if (_textEditor != null) _textEditor.Text = "";
-            _currentFile = null;
-            _hasUnsavedChanges = false;
-            UpdateStatus("New file created", Brushes.LightBlue);
+            // Create default banned_words.txt
+            var bannedPath = Path.Combine(_wordListsPath, "banned_words.txt");
+            if (!File.Exists(bannedPath))
+            {
+                File.WriteAllText(bannedPath, @"# Words to exclude from filters
+# One word per line
+
+test
+debug
+temp");
+            }
         }
         
-        private async void OnSaveClick(object? sender, RoutedEventArgs e)
+        private void LoadFileList()
         {
-            if (_fileNameBox == null || _textEditor == null) return;
+            if (_fileSelector == null) return;
             
-            var fileName = _fileNameBox.Text?.Trim();
-            if (string.IsNullOrEmpty(fileName))
-            {
-                UpdateStatus("Please enter a filename", Brushes.Orange);
-                return;
-            }
+            _fileSelector.Items.Clear();
             
-            if (!fileName.EndsWith(".txt"))
-                fileName += ".txt";
+            var files = Directory.GetFiles(_wordListsPath, "*.txt")
+                .Select(f => Path.GetFileName(f))
+                .OrderBy(f => f);
                 
-            var filePath = System.IO.Path.Combine(_wordListsPath, fileName);
-            
-            try
+            foreach (var file in files)
             {
-                await File.WriteAllTextAsync(filePath, _textEditor.Text ?? "");
-                _currentFile = filePath;
-                _hasUnsavedChanges = false;
-                UpdateStatus($"Saved: {fileName}", Brushes.LightGreen);
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Save failed: {ex.Message}", Brushes.Red);
-            }
-        }
-        
-        private async void OnLoadClick(object? sender, RoutedEventArgs e)
-        {
-            if (_hasUnsavedChanges)
-            {
-                var result = await ConfirmUnsavedChanges();
-                if (!result) return;
+                _fileSelector.Items.Add(new ComboBoxItem { Content = file });
             }
             
-            ShowBrowsePanel();
-        }
-        
-        private void OnFileSelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (_fileList?.SelectedItem is FileItem file)
+            if (_fileSelector.Items.Count > 0)
             {
-                if (_openButton != null) _openButton.IsEnabled = true;
-                if (_deleteButton != null) _deleteButton.IsEnabled = true;
-            }
-            else
-            {
-                if (_openButton != null) _openButton.IsEnabled = false;
-                if (_deleteButton != null) _deleteButton.IsEnabled = false;
+                _fileSelector.SelectedIndex = 0;
             }
         }
         
-        private async void OnOpenClick(object? sender, RoutedEventArgs e)
+        private async void OnFileSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (_fileList?.SelectedItem is FileItem file)
+            if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
             {
-                await LoadFile(file.Path);
-                ShowEditorPanel();
-            }
-        }
-        
-        private async Task LoadFile(string filePath)
-        {
-            try
-            {
-                var content = await File.ReadAllTextAsync(filePath);
-                if (_textEditor != null) _textEditor.Text = content;
-                if (_fileNameBox != null) _fileNameBox.Text = System.IO.Path.GetFileName(filePath);
-                _currentFile = filePath;
-                _hasUnsavedChanges = false;
-                UpdateStatus($"Loaded: {System.IO.Path.GetFileName(filePath)}", Brushes.LightGreen);
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Load failed: {ex.Message}", Brushes.Red);
-            }
-        }
-        
-        private async void OnDeleteClick(object? sender, RoutedEventArgs e)
-        {
-            if (_fileList?.SelectedItem is FileItem file)
-            {
-                var confirm = await ConfirmDelete(file.Name);
-                if (confirm)
+                if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                 {
-                    try
+                    // Ask to save changes
+                    var result = await ShowSavePrompt();
+                    if (result)
                     {
-                        File.Delete(file.Path);
-                        UpdateStatus($"Deleted: {file.Name}", Brushes.Orange);
-                        await LoadFileListAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        UpdateStatus($"Delete failed: {ex.Message}", Brushes.Red);
+                        SaveCurrentFile();
                     }
                 }
+                
+                LoadFile(fileName);
             }
         }
         
-        private async void OnRefreshClick(object? sender, RoutedEventArgs e)
+        private void LoadFile(string fileName)
         {
-            await LoadFileListAsync();
-            UpdateStatus("File list refreshed", Brushes.LightBlue);
+            try
+            {
+                var filePath = Path.Combine(_wordListsPath, fileName);
+                if (File.Exists(filePath) && _textEditor != null)
+                {
+                    _textEditor.Text = File.ReadAllText(filePath);
+                    _currentFile = fileName;
+                    _hasUnsavedChanges = false;
+                    UpdateStatus($"Loaded: {fileName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error loading file: {ex.Message}");
+            }
         }
         
-        private void UpdateStatus(string message, IBrush color)
+        private void OnNewClick(object? sender, RoutedEventArgs e)
+        {
+            var newFileName = $"custom_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var newFilePath = Path.Combine(_wordListsPath, newFileName);
+            
+            try
+            {
+                File.WriteAllText(newFilePath, "# New word list\n# One word or phrase per line\n\n");
+                LoadFileList();
+                
+                // Select the new file
+                if (_fileSelector != null)
+                {
+                    for (int i = 0; i < _fileSelector.Items.Count; i++)
+                    {
+                        if (_fileSelector.Items[i] is ComboBoxItem item && 
+                            item.Content?.ToString() == newFileName)
+                        {
+                            _fileSelector.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                UpdateStatus($"Created: {newFileName}");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error creating file: {ex.Message}");
+            }
+        }
+        
+        private void OnSaveClick(object? sender, RoutedEventArgs e)
+        {
+            SaveCurrentFile();
+        }
+        
+        private void SaveCurrentFile()
+        {
+            if (string.IsNullOrEmpty(_currentFile) || _textEditor == null) return;
+            
+            try
+            {
+                var filePath = Path.Combine(_wordListsPath, _currentFile);
+                File.WriteAllText(filePath, _textEditor.Text);
+                _hasUnsavedChanges = false;
+                UpdateStatus($"Saved: {_currentFile}");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error saving file: {ex.Message}");
+            }
+        }
+        
+        private void UpdateStatus(string message)
         {
             if (_statusText != null)
             {
                 _statusText.Text = message;
-                _statusText.Foreground = color;
             }
         }
         
-        private Task<bool> ConfirmUnsavedChanges()
+        private Task<bool> ShowSavePrompt()
         {
-            // For now, just return true. In a real app, show a confirmation dialog
-            return Task.FromResult(true);
-        }
-        
-        private Task<bool> ConfirmDelete(string fileName)
-        {
-            // For now, just return true. In a real app, show a confirmation dialog
-            return Task.FromResult(true);
-        }
-        
-        private class FileItem
-        {
-            public string Name { get; set; } = "";
-            public string Path { get; set; } = "";
-            public string Size { get; set; } = "";
+            // For now, just return false (don't save)
+            // In a real app, you'd show a dialog
+            return Task.FromResult(false);
         }
     }
 }

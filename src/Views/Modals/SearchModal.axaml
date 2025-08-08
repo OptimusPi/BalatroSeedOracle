@@ -380,7 +380,7 @@
                         
                         <!-- Left side: Search Settings -->
                         <StackPanel Grid.Column="0" Spacing="24">
-                            <TextBlock Text="SEARCH SETTINGS" 
+                            <TextBlock Text="Search Parameters" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
                                        Foreground="{StaticResource Orange}"
@@ -432,9 +432,9 @@
                                 Background="{StaticResource ModalBorder}"
                                 Margin="0,24,0,0"/>
                         
-                        <!-- Right side: Game Settings -->
+                        <!-- Right side: Deck Options -->
                         <StackPanel Grid.Column="2" Spacing="24">
-                            <TextBlock Text="Game Settings SETTINGS" 
+                            <TextBlock Text="Deck Options" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
                                        Foreground="{StaticResource Orange}"
