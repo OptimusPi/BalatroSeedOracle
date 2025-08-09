@@ -7,7 +7,7 @@ using Oracle.Helpers;
 namespace Oracle.Models;
 
 /// <summary>
-/// Complete Balatro game data for ouija.json configuration
+/// Complete Balatro game data for .json configuration
 /// Uses Motely enums as the source of truth for item names
 /// </summary>
 public static class BalatroData

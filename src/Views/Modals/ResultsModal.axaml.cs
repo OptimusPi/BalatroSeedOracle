@@ -37,8 +37,8 @@ namespace Oracle.Views.Modals
                     Directory.CreateDirectory(configDir);
                 }
 
-                // Find all .ouija.json files
-                var files = Directory.GetFiles(configDir, "*.ouija.json")
+                // Find all .json files
+                var files = Directory.GetFiles(configDir, "*.json")
                     .OrderBy(f => Path.GetFileName(f))
                     .ToList();
 
@@ -73,7 +73,7 @@ namespace Oracle.Views.Modals
             for (int i = startIndex; i < endIndex; i++)
             {
                 var filterPath = _filterFiles[i];
-                var fileName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filterPath)); // Remove .ouija.json
+                var fileName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filterPath));
 
                 var button = new Button
                 {

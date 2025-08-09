@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Motely -> X:\BalatroSeedOracle\external\Motely\bin\Debug\net9.0\Motely.dll
+  Oracle -> X:\BalatroSeedOracle\src\bin\Debug\net9.0\Oracle.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.76
