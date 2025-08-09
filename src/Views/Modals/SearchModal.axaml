@@ -679,7 +679,7 @@
                         <!-- Results Scroll Area -->
                         <ScrollViewer Grid.Row="1"
                                       VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="None">
+                                      HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl Name="ResultsItemsControl">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
