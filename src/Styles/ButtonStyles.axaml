@@ -207,7 +207,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid>
-                    <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
+                    <Border Name="DropShadow" Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
                     <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
                         <Border.Transitions>
                             <Transitions>
@@ -227,10 +227,14 @@
         <Setter Property="Background" Value="{StaticResource RedHover}"/>
     </Style>
     
-    <!-- Pressed state - move button down without shrinking -->
+    <!-- Pressed state - move button down and hide shadow -->
     <Style Selector="Button.nav-arrow:pressed">
         <Setter Property="RenderTransform">
             <TranslateTransform Y="2"/>
         </Setter>
+    </Style>
+    
+    <Style Selector="Button.nav-arrow:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False"/>
     </Style>
 </Styles>

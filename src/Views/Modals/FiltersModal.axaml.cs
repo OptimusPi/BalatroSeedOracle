@@ -56,6 +56,7 @@ public partial class FiltersModalContent : UserControl
     private string _searchFilter = "";
     private Popup? _configPopup;
     private ItemConfigPopupBase? _configPopupContent;
+    private EventHandler? _currentDeleteHandler;
     private Popup? _itemSelectionPopup;
     private string? _currentConfigPath;
     private TextBox? _searchBox;
@@ -93,6 +94,9 @@ public partial class FiltersModalContent : UserControl
 
         SetupControls();
         LoadAllCategories();
+        
+        // Start with tabs disabled until a filter is selected
+        UpdateTabStates(false);
     }
 
     private void InitializeComponent()
@@ -168,16 +172,9 @@ public partial class FiltersModalContent : UserControl
             // Enable tabs
             UpdateTabStates(true);
             
-            // Only switch to Visual tab if this came from the Select button
-            // The Select button sets a special flag in the event args
-            if (sender is FilterSelector filterSelector && filterSelector.ShouldSwitchToVisualTab)
-            {
-                var visualTabButton = this.FindControl<Button>("VisualTab");
-                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                
-                // Reset the flag
-                filterSelector.ShouldSwitchToVisualTab = false;
-            }
+            // Always switch to Visual tab when selecting a filter
+            var visualTabButton = this.FindControl<Button>("VisualTab");
+            visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
         catch (Exception ex)
         {
@@ -218,9 +215,9 @@ public partial class FiltersModalContent : UserControl
         var visualTab = this.FindControl<Button>("VisualTab");
         var jsonTab = this.FindControl<Button>("JsonTab");
         
-        // Always enable tabs in FiltersModal - users need to create filters!
-        if (visualTab != null) visualTab.IsEnabled = true;
-        if (jsonTab != null) jsonTab.IsEnabled = true;
+        // Enable tabs only when a filter is loaded
+        if (visualTab != null) visualTab.IsEnabled = configLoaded;
+        if (jsonTab != null) jsonTab.IsEnabled = configLoaded;
     }
     
     // Search functionality removed - use SearchModal instead
@@ -383,8 +380,8 @@ public partial class FiltersModalContent : UserControl
             configNameBox.Text = "";
         }
         
-        // Enable tabs and switch to Visual tab
-        UpdateTabStates(true);
+        // Don't enable tabs for new filter - wait until it's saved
+        // UpdateTabStates(true);  // Removed - tabs stay disabled until save
         
         // Switch to Visual tab
         var visualTab = this.FindControl<Button>("VisualTab");
@@ -1386,39 +1383,36 @@ public partial class FiltersModalContent : UserControl
 
             var content = await File.ReadAllTextAsync(configPath);
 
-            // Validate before loading
-            using var testDoc = JsonDocument.Parse(content);
-
-            // Update AvaloniaEdit if available
-            var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
-            if (textEditor != null)
+            // Parse the config
+            var config = Motely.Filters.OuijaConfig.LoadFromJson(configPath);
+            if (config != null)
             {
-                Oracle.Helpers.DebugLogger.Log($"Setting TextEditor text, length: {content.Length}");
-                textEditor.Text = content;
-                textEditor.IsVisible = true; // Ensure visibility
-            }
-            else
-            {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "WARNING: JsonTextEditor not found in LoadConfig");
-            }
-
-            // Also update the hidden TextBox for compatibility
-            if (_jsonTextBox != null)
-            {
-                _jsonTextBox.Text = content;
+                // Load into UI (this populates the visual drop zones)
+                LoadConfigIntoUI(config);
+                
+                // Also update the JSON editor
+                var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
+                if (textEditor != null)
+                {
+                    Oracle.Helpers.DebugLogger.Log($"Setting TextEditor text, length: {content.Length}");
+                    textEditor.Text = content;
+                    textEditor.IsVisible = true;
+                }
+                
+                // Update config name
+                var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+                if (configNameBox != null && !string.IsNullOrEmpty(config.Name))
+                {
+                    configNameBox.Text = config.Name;
+                }
             }
 
             _currentFilePath = configPath;
 
             // Format the JSON for better readability
             await Dispatcher.UIThread.InvokeAsync(() => FormatJson(), DispatcherPriority.Background);
-            
-            // Update the drop zones from the loaded JSON
-            await Dispatcher.UIThread.InvokeAsync(() => UpdateDropZonesFromJson(), DispatcherPriority.Background);
 
             UpdateStatus($"✓ Loaded: {IoPath.GetFileName(configPath)}");
-
-            // SearchWidget removed - using desktop icons now
         }
         catch (JsonException ex)
         {
@@ -2922,7 +2916,7 @@ public partial class FiltersModalContent : UserControl
             {
                 needsPlaceholder.IsVisible = false;
                 needsScrollViewer.IsVisible = true;
-                PopulateDropZonePanel(needsPanel, _selectedNeeds);
+                PopulateDropZonePanel(needsPanel, _selectedNeeds, "needs");
                 if (clearNeedsButton != null) clearNeedsButton.IsVisible = true;
             }
             else
@@ -2946,7 +2940,7 @@ public partial class FiltersModalContent : UserControl
             {
                 wantsPlaceholder.IsVisible = false;
                 wantsScrollViewer.IsVisible = true;
-                PopulateDropZonePanel(wantsPanel, _selectedWants);
+                PopulateDropZonePanel(wantsPanel, _selectedWants, "wants");
                 if (clearWantsButton != null) clearWantsButton.IsVisible = true;
             }
             else
@@ -2970,7 +2964,7 @@ public partial class FiltersModalContent : UserControl
             {
                 mustNotPlaceholder.IsVisible = false;
                 mustNotScrollViewer.IsVisible = true;
-                PopulateDropZonePanel(mustNotPanel, _selectedMustNot);
+                PopulateDropZonePanel(mustNotPanel, _selectedMustNot, "mustnot");
                 if (clearMustNotButton != null) clearMustNotButton.IsVisible = true;
             }
             else
@@ -2990,9 +2984,10 @@ public partial class FiltersModalContent : UserControl
         try
         {
             // Get the current JSON from the editor
-            var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
+            var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
             if (textEditor == null || string.IsNullOrWhiteSpace(textEditor.Text))
             {
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", "UpdateDropZonesFromJson: JsonEditor not found or empty");
                 return;
             }
 
@@ -3073,7 +3068,7 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
-    private void PopulateDropZonePanel(WrapPanel panel, HashSet<string> items)
+    private void PopulateDropZonePanel(WrapPanel panel, HashSet<string> items, string zoneName)
     {
         panel.Children.Clear();
 
@@ -3145,7 +3140,7 @@ public partial class FiltersModalContent : UserControl
         // 1. Fan out Jokers on the left
         if (jokers.Any())
         {
-            RenderFannedJokers(canvas, jokers, ref currentX);
+            RenderFannedJokers(canvas, jokers, ref currentX, zoneName, items);
             currentX += 20; // Gap after jokers
         }
 
@@ -3154,7 +3149,8 @@ public partial class FiltersModalContent : UserControl
         {
             foreach (var voucher in vouchers)
             {
-                var control = CreateDroppedItemControl(voucher.name, voucher.category);
+                var itemKey = items.First(i => i.Contains($":{voucher.name}"));
+                var control = CreateDroppedItemControl(voucher.name, voucher.category, itemKey, zoneName);
                 Canvas.SetLeft(control, currentX);
                 Canvas.SetTop(control, 10);
                 canvas.Children.Add(control);
@@ -3167,7 +3163,8 @@ public partial class FiltersModalContent : UserControl
         {
             foreach (var spectral in spectrals)
             {
-                var control = CreateDroppedItemControl(spectral.name, spectral.category);
+                var itemKey = items.First(i => i.Contains($":{spectral.name}"));
+                var control = CreateDroppedItemControl(spectral.name, spectral.category, itemKey, zoneName);
                 Canvas.SetLeft(control, currentX);
                 Canvas.SetTop(control, 10);
                 canvas.Children.Add(control);
@@ -3180,7 +3177,8 @@ public partial class FiltersModalContent : UserControl
         {
             foreach (var tarot in tarots)
             {
-                var control = CreateDroppedItemControl(tarot.name, tarot.category);
+                var itemKey = items.First(i => i.Contains($":{tarot.name}"));
+                var control = CreateDroppedItemControl(tarot.name, tarot.category, itemKey, zoneName);
                 Canvas.SetLeft(control, currentX);
                 Canvas.SetTop(control, 10);
                 canvas.Children.Add(control);
@@ -3192,7 +3190,7 @@ public partial class FiltersModalContent : UserControl
         // 3. Stack Tags vertically
         if (tags.Any())
         {
-            RenderVerticalStack(canvas, tags, currentX, "Tags");
+            RenderVerticalStack(canvas, tags, currentX, "Tags", items, zoneName);
             currentX += 80;
         }
 
@@ -3201,7 +3199,7 @@ public partial class FiltersModalContent : UserControl
         {
             // Position bosses at the far right
             double bossX = Math.Max(currentX, 520); // Adjusted for smaller canvas
-            RenderVerticalStack(canvas, bosses, bossX, "Bosses");
+            RenderVerticalStack(canvas, bosses, bossX, "Bosses", items, zoneName);
             currentX = bossX + 60; // Update currentX to include boss width
         }
         
@@ -3209,7 +3207,7 @@ public partial class FiltersModalContent : UserControl
         canvas.Width = Math.Max(currentX, 200); // Minimum width of 200
     }
 
-    private void RenderFannedJokers(Canvas canvas, List<(string name, string category)> jokers, ref double startX)
+    private void RenderFannedJokers(Canvas canvas, List<(string name, string category)> jokers, ref double startX, string zoneName, HashSet<string> items)
     {
         const double fanAngle = 4; // degrees per card
         const double overlapX = 15; // horizontal overlap
@@ -3217,7 +3215,8 @@ public partial class FiltersModalContent : UserControl
 
         for (int i = 0; i < jokers.Count; i++)
         {
-            var control = CreateDroppedItemControl(jokers[i].name, jokers[i].category);
+            var itemKey = items.First(item => item.Contains($":{jokers[i].name}"));
+            var control = CreateDroppedItemControl(jokers[i].name, jokers[i].category, itemKey, zoneName);
             
             // Position with overlap
             double x = startX + (i * overlapX);
@@ -3240,7 +3239,7 @@ public partial class FiltersModalContent : UserControl
                 int cardIndex = i; // Capture the index for the closure
                 
                 // Remove the default handlers by using a flag
-                border.Tag = $"{jokers[cardIndex].category}:{jokers[cardIndex].name}#fanned";
+                border.Tag = new { Key = itemKey, Zone = zoneName };
                 
                 border.PointerEntered += (s, e) =>
                 {
@@ -3275,14 +3274,15 @@ public partial class FiltersModalContent : UserControl
         startX += (jokers.Count * overlapX) + 40;
     }
 
-    private void RenderVerticalStack(Canvas canvas, List<(string name, string category)> items, double x, string stackType)
+    private void RenderVerticalStack(Canvas canvas, List<(string name, string category)> stackItems, double x, string stackType, HashSet<string> allItems, string zoneName)
     {
         const double verticalSpacing = 18; // Overlap vertically
         double startY = 15;
 
-        for (int i = 0; i < items.Count; i++)
+        for (int i = 0; i < stackItems.Count; i++)
         {
-            var control = CreateDroppedItemControl(items[i].name, items[i].category);
+            var itemKey = allItems.First(item => item.Contains($":{stackItems[i].name}"));
+            var control = CreateDroppedItemControl(stackItems[i].name, stackItems[i].category, itemKey, zoneName);
             
             Canvas.SetLeft(control, x);
             Canvas.SetTop(control, startY + (i * verticalSpacing));
@@ -3294,7 +3294,7 @@ public partial class FiltersModalContent : UserControl
         }
     }
 
-    private Control CreateDroppedItemControl(string itemName, string category)
+    private Control CreateDroppedItemControl(string itemName, string category, string itemKey, string zoneName)
     {
         // Create a simple border without ViewBox to prevent scaling
         var border = new Border
@@ -3305,7 +3305,7 @@ public partial class FiltersModalContent : UserControl
             Height = 71,  // Smaller card height (75% of original) 
             Margin = new Thickness(0),
             Padding = new Thickness(0),
-            Tag = $"{category}:{itemName}", // Store for later reference
+            Tag = new { Key = itemKey, Zone = zoneName }, // Store both key and zone for later reference
             RenderTransform = new ScaleTransform(1, 1),
             RenderTransformOrigin = RelativePoint.Center,
             Transitions = new Transitions
@@ -3533,21 +3533,31 @@ public partial class FiltersModalContent : UserControl
 
     private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
     {
-        // Get the actual key from the border's tag (includes unique suffix)
-        var actualKey = itemBorder.Tag as string ?? $"{category}:{itemName}";
+        // Get the actual key and zone from the border's tag
+        dynamic? tagData = itemBorder.Tag;
+        string actualKey;
+        string? zoneName = null;
+        
+        if (tagData != null)
+        {
+            try
+            {
+                actualKey = tagData.Key?.ToString() ?? $"{category}:{itemName}";
+                zoneName = tagData.Zone?.ToString();
+            }
+            catch
+            {
+                // If dynamic access fails, use fallback
+                actualKey = $"{category}:{itemName}";
+            }
+        }
+        else
+        {
+            // Fallback for old-style tags
+            actualKey = itemBorder.Tag as string ?? $"{category}:{itemName}";
+        }
 
-        // Find if this item exists in any of our sets
-        var isInNeeds = _selectedNeeds.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-        var isInWants = _selectedWants.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-        var isInMustNot = _selectedMustNot.Any(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-
-        // Find the actual key in use
-        string? foundKey = null;
-        if (isInNeeds) foundKey = _selectedNeeds.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-        else if (isInWants) foundKey = _selectedWants.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-        else if (isInMustNot) foundKey = _selectedMustNot.FirstOrDefault(k => k == actualKey || k.StartsWith($"{category}:{itemName}#"));
-
-        var key = foundKey ?? actualKey;
+        var key = actualKey;
 
         // Create popup if it doesn't exist
         if (_configPopup == null)
@@ -3564,7 +3574,8 @@ public partial class FiltersModalContent : UserControl
         {
             // Unsubscribe from previous events
             _configPopupContent.ConfigApplied -= OnItemConfigApplied;
-            _configPopupContent.DeleteRequested -= OnItemDeleteRequested;
+            if (_currentDeleteHandler != null)
+                _configPopupContent.DeleteRequested -= _currentDeleteHandler;
             _configPopupContent.Cancelled -= OnItemConfigCancelled;
         }
         
@@ -3583,11 +3594,13 @@ public partial class FiltersModalContent : UserControl
 
         // Handle events
         _configPopupContent.ConfigApplied += OnItemConfigApplied;
-        _configPopupContent.DeleteRequested += OnItemDeleteRequested;
+        // Create a wrapper to pass the zone name
+        _currentDeleteHandler = (s, e) => OnItemDeleteRequested(s, e, zoneName);
+        _configPopupContent.DeleteRequested += _currentDeleteHandler;
         _configPopupContent.Cancelled += OnItemConfigCancelled;
 
-        // Position popup based on whether item is in NEEDS or WANTS
-        if (isInNeeds)
+        // Position popup based on zone
+        if (zoneName == "needs")
         {
             _configPopup.Placement = PlacementMode.Bottom;
             _configPopup.VerticalOffset = 5;
@@ -3612,12 +3625,12 @@ public partial class FiltersModalContent : UserControl
                 Sources = new List<string> { "shop", "packs", "tags" }
             };
 
-            if (isInNeeds)
+            if (zoneName == "needs")
             {
                 // Must zone defaults to ante 1 only
                 defaultConfig.Antes = new List<int> { 1 };
             }
-            else if (isInWants)
+            else if (zoneName == "wants")
             {
                 // Should zone defaults to antes 1-2
                 defaultConfig.Antes = new List<int> { 1, 2 };
@@ -3648,44 +3661,43 @@ public partial class FiltersModalContent : UserControl
         RefreshItemPalette();
     }
 
-    private void OnItemDeleteRequested(object? sender, EventArgs e)
+    private void OnItemDeleteRequested(object? sender, EventArgs e, string? zoneName)
     {
         if (_configPopupContent != null)
         {
             var key = _configPopupContent.ItemKey;
 
-            // Remove all items with the same base key (handles unique key suffixes)
-            var keysToRemove = new List<string>();
-
-            // Get the base key without unique suffix
-            var colonIndex = key.IndexOf(':');
-            if (colonIndex > 0)
+            // Only remove from the specific zone where the item was clicked
+            bool removed = false;
+            switch (zoneName)
             {
-                var baseKey = key;
-                var hashIndex = key.IndexOf('#');
-                if (hashIndex > colonIndex)
-                {
-                    baseKey = key.Substring(0, hashIndex);
-                }
-
-                // Find all matching keys in all sets
-                keysToRemove.AddRange(_selectedNeeds.Where(k => k == key || k.StartsWith(baseKey + "#")));
-                keysToRemove.AddRange(_selectedWants.Where(k => k == key || k.StartsWith(baseKey + "#")));
-                keysToRemove.AddRange(_selectedMustNot.Where(k => k == key || k.StartsWith(baseKey + "#")));
+                case "needs":
+                    if (_selectedNeeds.Remove(key))
+                    {
+                        removed = true;
+                        Oracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
+                    }
+                    break;
+                case "wants":
+                    if (_selectedWants.Remove(key))
+                    {
+                        removed = true;
+                        Oracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
+                    }
+                    break;
+                case "mustnot":
+                    if (_selectedMustNot.Remove(key))
+                    {
+                        removed = true;
+                        Oracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
+                    }
+                    break;
             }
-            else
-            {
-                // Fallback to exact match
-                keysToRemove.Add(key);
-            }
 
-            // Remove from all sets
-            foreach (var k in keysToRemove)
+            // Remove the config if item was removed
+            if (removed)
             {
-                _selectedNeeds.Remove(k);
-                _selectedWants.Remove(k);
-                _selectedMustNot.Remove(k);
-                _itemConfigs.Remove(k);
+                _itemConfigs.Remove(key);
             }
 
             UpdateDropZoneVisibility();
@@ -3693,7 +3705,7 @@ public partial class FiltersModalContent : UserControl
             RefreshItemPalette();
 
             _configPopup!.IsOpen = false;
-            Oracle.Helpers.DebugLogger.Log($"Item(s) deleted: {string.Join(", ", keysToRemove)}");
+            Oracle.Helpers.DebugLogger.Log($"Item deleted: {key} from zone: {zoneName ?? "unknown"}");
         }
     }
 
@@ -4710,7 +4722,6 @@ public partial class FiltersModalContent : UserControl
         RefreshItemPalette();
 
         Oracle.Helpers.DebugLogger.Log($"LoadConfigIntoUI: Loaded {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not");
-        PopulateDropZones();
         RefreshItemPalette();
     }
 
@@ -4729,64 +4740,7 @@ public partial class FiltersModalContent : UserControl
         };
     }
 
-    private void PopulateDropZones()
-    {
-        // Get the panels
-        var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
-        var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
-        var mustNotPanel = this.FindControl<WrapPanel>("MustNotPanel");
-
-        // Clear and populate NEEDS panel
-        if (needsPanel != null)
-        {
-            needsPanel.Children.Clear();
-            foreach (var item in _selectedNeeds)
-            {
-                var parts = item.Split(':');
-                if (parts.Length >= 2)
-                {
-                    var category = parts[0];
-                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
-                    var droppedItem = CreateDroppedItemControl(itemName, category);
-                    needsPanel.Children.Add(droppedItem);
-                }
-            }
-        }
-
-        // Clear and populate WANTS panel
-        if (wantsPanel != null)
-        {
-            wantsPanel.Children.Clear();
-            foreach (var item in _selectedWants)
-            {
-                var parts = item.Split(':');
-                if (parts.Length >= 2)
-                {
-                    var category = parts[0];
-                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
-                    var droppedItem = CreateDroppedItemControl(itemName, category);
-                    wantsPanel.Children.Add(droppedItem);
-                }
-            }
-        }
-
-        // Clear and populate MUST NOT panel
-        if (mustNotPanel != null)
-        {
-            mustNotPanel.Children.Clear();
-            foreach (var item in _selectedMustNot)
-            {
-                var parts = item.Split(':');
-                if (parts.Length >= 2)
-                {
-                    var category = parts[0];
-                    var itemName = parts[1].Split('#')[0]; // Remove any suffix
-                    var droppedItem = CreateDroppedItemControl(itemName, category);
-                    mustNotPanel.Children.Add(droppedItem);
-                }
-            }
-        }
-    }
+    // Removed old PopulateDropZones method - now using UpdateDropZoneVisibility with fancy layout
 
     private void UpdatePersistentFavorites()
     {

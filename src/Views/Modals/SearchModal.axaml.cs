@@ -88,7 +88,7 @@ namespace Oracle.Views.Modals
         private FilterSelector? _filterSelector;
         
         // Results panel controls
-        private DataGrid? _resultsDataGrid;
+        private ItemsControl? _resultsItemsControl;
         private TextBlock? _resultsSummary;
         private Button? _exportResultsButton;
         private TextBlock? _jsonValidationStatus;
@@ -182,15 +182,14 @@ namespace Oracle.Views.Modals
             }
             
             // Find results panel controls
-            _resultsDataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
+            _resultsItemsControl = this.FindControl<ItemsControl>("ResultsItemsControl");
             _resultsSummary = this.FindControl<TextBlock>("ResultsSummary");
             _exportResultsButton = this.FindControl<Button>("ExportResultsButton");
             
-            // Set up results data grid
-            if (_resultsDataGrid != null)
+            // Set up results items control
+            if (_resultsItemsControl != null)
             {
-                _resultsDataGrid.ItemsSource = _searchResults;
-                _resultsDataGrid.DoubleTapped += OnResultsDataGridDoubleTapped;
+                _resultsItemsControl.ItemsSource = _searchResults;
             }
             
             // Find new Search tab UI elements
@@ -223,18 +222,27 @@ namespace Oracle.Views.Modals
             UpdateTabStates(false);
         }
 
-        private void OnResultsDataGridDoubleTapped(object? sender, RoutedEventArgs e)
+        private async void OnCopySeedClick(object? sender, RoutedEventArgs e)
         {
-            if (_resultsDataGrid?.SelectedItem is SearchResult sr)
+            if (sender is Button button && button.Tag is string seed)
             {
                 try
                 {
                     if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
                     {
                         var mainWindow = desktop.MainWindow;
-                        mainWindow?.Clipboard?.SetTextAsync(sr.Seed);
+                        if (mainWindow?.Clipboard != null)
+                        {
+                            await mainWindow.Clipboard.SetTextAsync(seed);
+                        }
                     }
-                    AddToConsole($"Copied seed {sr.Seed} to clipboard");
+                    AddToConsole($"Copied seed {seed} to clipboard");
+                    
+                    // Visual feedback
+                    var originalContent = button.Content;
+                    button.Content = "✓";
+                    await Task.Delay(1000);
+                    button.Content = originalContent;
                 }
                 catch (Exception ex)
                 {
@@ -326,10 +334,10 @@ namespace Oracle.Views.Modals
                 clickedTab.Classes.Add("active");
                 if (_resultsPanel != null) _resultsPanel.IsVisible = true;
                 
-                // Ensure DataGrid is bound (avoid test data injection in production)
-                if (_resultsDataGrid != null && _resultsDataGrid.ItemsSource != _searchResults)
+                // Ensure ItemsControl is bound (avoid test data injection in production)
+                if (_resultsItemsControl != null && _resultsItemsControl.ItemsSource != _searchResults)
                 {
-                    _resultsDataGrid.ItemsSource = _searchResults;
+                    _resultsItemsControl.ItemsSource = _searchResults;
                 }
                 
                 // Update summary when opening if no results yet
@@ -379,6 +387,12 @@ namespace Oracle.Views.Modals
                         
                         // Enable tabs now that filter is loaded
                         UpdateTabStates(true);
+                        
+                        // Switch to Deck/Stake tab when filter is selected
+                        if (_settingsTab != null)
+                        {
+                            OnTabClick(_settingsTab, new RoutedEventArgs());
+                        }
                         
                         // Add to console
                         AddToConsole($"Filter loaded: {System.IO.Path.GetFileName(filePath)}");
@@ -447,6 +461,12 @@ namespace Oracle.Views.Modals
                 // Enable tabs now that filter is loaded
                 UpdateTabStates(true);
                 
+                // Switch to Deck/Stake tab
+                if (_settingsTab != null)
+                {
+                    OnTabClick(_settingsTab, new RoutedEventArgs());
+                }
+                
                 // Add to console
                 AddToConsole($"Filter loaded: {config.Name ?? "Unnamed"}");
                 
@@ -514,6 +534,9 @@ namespace Oracle.Views.Modals
                     // Start search
                     _searchResults.Clear();
                     
+                    // Reset the Motely cancellation flag
+                    Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                    
                     // Get parameters from Balatro spinners
                     var config = new SearchConfiguration
                     {
@@ -545,10 +568,20 @@ namespace Oracle.Views.Modals
                 else
                 {
                     // Stop search
-                    _searchInstance.StopSearch();
-                    AddToConsole("Jimbo stopped cooking!");
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}");
+                    AddToConsole("Stopping search...");
                     
-                    // Immediately update UI
+                    if (_searchInstance != null)
+                    {
+                        _searchInstance.StopSearch();
+                        AddToConsole("Search stopped!");
+                    }
+                    else
+                    {
+                        AddToConsole("Warning: Search instance was null");
+                    }
+                    
+                    // Immediately update UI regardless
                     _isSearching = false;
                     UpdateSearchUI();
                 }
@@ -598,14 +631,11 @@ namespace Oracle.Views.Modals
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                Oracle.Helpers.DebugLogger.Log("SearchModal", "Search completed - resetting UI");
                 _isSearching = false;
                 
-                // Update cook button
-                if (_cookButton != null)
-                {
-                    _cookButton.Content = "Let Jimbo COOK!";
-                    _cookButton.Classes.Remove("stop");
-                }
+                // Update UI using the central method
+                UpdateSearchUI();
                 
                 AddToConsole("Jimbo finished cooking!");
             });
@@ -851,7 +881,15 @@ namespace Oracle.Views.Modals
             // Update UI based on search state
             if (_cookButton != null)
             {
-                _cookButton.Content = _isSearching ? "STOP COOKING" : "LET JIMBO COOK!";
+                _cookButton.Content = _isSearching ? "Stop Jimbo!" : "Let Jimbo COOK!";
+                if (_isSearching)
+                {
+                    _cookButton.Classes.Add("stop");
+                }
+                else
+                {
+                    _cookButton.Classes.Remove("stop");
+                }
             }
             
             if (_searchTab != null)

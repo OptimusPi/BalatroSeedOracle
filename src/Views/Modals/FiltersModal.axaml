@@ -22,7 +22,7 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
-                        <Border Name="PART_Shadow"
+                        <Border Name="DropShadow"
                                 Background="{StaticResource DropShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
@@ -358,10 +358,12 @@
             <Button Name="VisualTab" 
                     Content="Visual" 
                     Classes="tab-button"
+                    IsEnabled="False"
                     Click="OnTabClick"/>
             <Button Name="JsonTab" 
                     Content="JSON" 
                     Classes="tab-button"
+                    IsEnabled="False"
                     Click="OnTabClick"/>
         </StackPanel>
         
@@ -443,9 +445,9 @@
                             <Grid Grid.Column="2">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="20" />
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="20" />
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="16" />
                                     <RowDefinition Height="Auto" />
@@ -564,6 +566,9 @@
             <Grid Name="LoadSavePanel" IsVisible="True">
                 <!-- Use the FilterSelector component -->
                 <components:FilterSelector x:Name="FilterSelectorComponent" 
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         AutoLoadEnabled="False"
                                          FilterLoaded="OnFilterLoaded"
                                          NewFilterRequested="OnNewFilterRequested"/>
             </Grid>

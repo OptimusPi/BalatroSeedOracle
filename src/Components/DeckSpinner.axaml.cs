@@ -39,6 +39,8 @@ public partial class DeckSpinner : UserControl
     
     public event EventHandler<int>? DeckChanged;
     
+    private int _currentStakeIndex = 0;
+    
     public DeckSpinner()
     {
         InitializeComponent();
@@ -58,7 +60,7 @@ public partial class DeckSpinner : UserControl
                 Title = deck.name + " Deck",
                 Description = deck.description,
                 Value = deck.spriteName,
-                GetImage = () => _spriteService.GetDeckImage(deck.spriteName)
+                GetImage = () => GetDeckImageWithStake(deck.spriteName)
             }).ToList();
             
             _panelSpinner.Items = items;
@@ -88,4 +90,37 @@ public partial class DeckSpinner : UserControl
     
     public string SelectedDeckName => _decks[SelectedDeckIndex].name;
     public string SelectedDeckSpriteName => _decks[SelectedDeckIndex].spriteName;
+    
+    public void SetStakeIndex(int stakeIndex)
+    {
+        _currentStakeIndex = stakeIndex;
+        // Refresh the current deck image to show with new stake
+        if (_panelSpinner != null)
+        {
+            _panelSpinner.RefreshCurrentImage();
+        }
+    }
+    
+    private IImage? GetDeckImageWithStake(string deckSpriteName)
+    {
+        string stakeName = GetStakeName(_currentStakeIndex);
+        var compositeImage = _spriteService.GetDeckWithStakeSticker(deckSpriteName, stakeName);
+        return compositeImage ?? _spriteService.GetDeckImage(deckSpriteName);
+    }
+    
+    private string GetStakeName(int index)
+    {
+        return index switch
+        {
+            0 => "white",
+            1 => "red",
+            2 => "green", 
+            3 => "black",
+            4 => "blue",
+            5 => "purple",
+            6 => "orange",
+            7 => "gold",
+            _ => "white"
+        };
+    }
 }

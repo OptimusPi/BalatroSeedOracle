@@ -36,6 +36,8 @@ public partial class DeckAndStakeSelector : UserControl
         {
             _stakeSpinner.ValueChanged += (s, e) => 
             {
+                // Update deck spinner to show new stake
+                _deckSpinner?.SetStakeIndex(StakeIndex);
                 SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
             };
         }

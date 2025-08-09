@@ -154,6 +154,11 @@ public partial class PanelSpinner : UserControl
             _dotsPanel.Children.Add(dot);
         }
     }
+    
+    public void RefreshCurrentImage()
+    {
+        UpdateDisplay();
+    }
 }
 
 public class PanelItem

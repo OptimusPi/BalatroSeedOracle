@@ -94,6 +94,8 @@ namespace Oracle.Components
             _deckRightArrow = this.FindControl<Button>("DeckRightArrow");
             _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
             
+            Oracle.Helpers.DebugLogger.Log("DeckStakeSelector", $"Controls found - DeckImage: {_deckPreviewImage != null}, StakeOverlay: {_stakeChipOverlay != null}, Spinner: {_stakeSpinner != null}");
+            
             // Wire up event handlers
             if (_deckLeftArrow != null)
                 _deckLeftArrow.Click += (s, e) => NavigateDeck(-1);
@@ -105,6 +107,7 @@ namespace Oracle.Components
                 _stakeSpinner.ValueChanged += (s, e) => 
                 {
                     _currentStakeIndex = (int)_stakeSpinner.Value;
+                    Oracle.Helpers.DebugLogger.Log("DeckStakeSelector", $"Stake spinner changed to index: {_currentStakeIndex}");
                     UpdateStakeDisplay();
                 };
             }
@@ -148,28 +151,14 @@ namespace Oracle.Components
             _deckNameText.Text = deck.name + " Deck";
             _deckDescText.Text = deck.description;
             
-            // Get deck image from sprite service
-            try
-            {
-                var deckImage = _spriteService.GetDeckImage(deck.spriteName);
-                if (deckImage != null)
-                {
-                    _deckPreviewImage.Source = deckImage;
-                }
-            }
-            catch (Exception ex)
-            {
-                Oracle.Helpers.DebugLogger.LogError("DeckStakeSelector", $"Failed to load deck image: {ex.Message}");
-            }
-            
-            // Update stake overlay
-            UpdateStakeOverlay();
+            // Update the deck image with stake sticker
+            UpdateDeckImageWithStake();
         }
         
         private void UpdateStakeDisplay()
         {
-            // Update stake overlay on deck image
-            UpdateStakeOverlay();
+            // Update the deck image with new stake
+            UpdateDeckImageWithStake();
             
             // Fire stake changed event
             if (_currentStakeIndex >= 0 && _currentStakeIndex < _stakes.Count)
@@ -184,26 +173,48 @@ namespace Oracle.Components
             }
         }
         
-        private void UpdateStakeOverlay()
+        private void UpdateDeckImageWithStake()
         {
-            if (_stakeChipOverlay != null && _currentStakeIndex > 0 && _spriteService != null)
+            if (_deckPreviewImage == null || _spriteService == null)
+                return;
+                
+            if (_currentDeckIndex < 0 || _currentDeckIndex >= _decks.Count)
+                return;
+                
+            if (_currentStakeIndex < 0 || _currentStakeIndex >= _stakes.Count)
+                return;
+                
+            var deck = _decks[_currentDeckIndex];
+            var stake = _stakes[_currentStakeIndex];
+            
+            try
             {
-                try
+                // Get composite image with deck and stake sticker
+                var compositeImage = _spriteService.GetDeckWithStakeSticker(deck.spriteName, stake.spriteName);
+                if (compositeImage != null)
                 {
-                    var stake = _stakes[_currentStakeIndex];
-                    var overlaySprite = _spriteService.GetStickerImage($"stake_{stake.spriteName}");
-                    _stakeChipOverlay.Source = overlaySprite;
-                    _stakeChipOverlay.IsVisible = true;
+                    _deckPreviewImage.Source = compositeImage;
+                    Oracle.Helpers.DebugLogger.Log("DeckStakeSelector", $"✅ Deck with stake sticker set: {deck.spriteName} + {stake.spriteName}");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Oracle.Helpers.DebugLogger.LogError("DeckStakeSelector", $"Failed to load stake overlay: {ex.Message}");
+                    // Fallback to just deck image
+                    var deckImage = _spriteService.GetDeckImage(deck.spriteName);
+                    if (deckImage != null)
+                    {
+                        _deckPreviewImage.Source = deckImage;
+                    }
+                }
+                
+                // Hide the overlay since we're using a composite image now
+                if (_stakeChipOverlay != null)
+                {
                     _stakeChipOverlay.IsVisible = false;
                 }
             }
-            else if (_stakeChipOverlay != null)
+            catch (Exception ex)
             {
-                _stakeChipOverlay.IsVisible = false;
+                Oracle.Helpers.DebugLogger.LogError("DeckStakeSelector", $"Failed to update deck image: {ex.Message}");
             }
         }
         
@@ -242,6 +253,14 @@ namespace Oracle.Components
             if (index >= 0 && index < _stakes.Count)
             {
                 _currentStakeIndex = index;
+                Oracle.Helpers.DebugLogger.Log("DeckStakeSelector", $"SetStakeIndex called with index: {index}");
+                
+                // Update the spinner value if it exists
+                if (_stakeSpinner != null)
+                {
+                    _stakeSpinner.Value = index;
+                }
+                
                 UpdateStakeDisplay();
             }
         }

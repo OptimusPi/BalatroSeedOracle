@@ -408,6 +408,58 @@ public class SpriteService
         return GetSpriteImage(name, deckPositions, enhancersSheet, spriteWidth, spriteHeight, "deck");
     }
 
+    // Create a composite image with deck and stake sticker
+    public IImage? GetDeckWithStakeSticker(string deckName, string stakeName)
+    {
+        DebugLogger.Log("SpriteService", $"GetDeckWithStakeSticker called: deck={deckName}, stake={stakeName}");
+        
+        // Get the base deck image (full size 142x190)
+        var deckImage = GetDeckImage(deckName, 142, 190);
+        if (deckImage == null)
+        {
+            DebugLogger.LogError("SpriteService", $"Failed to get deck image for: {deckName}");
+            return null;
+        }
+
+        // No early return for white stake - we want to show the white stake sticker too!
+
+        // Get the stake sticker (142x190 like deck)
+        string stakeFormat = $"{char.ToUpper(stakeName[0])}{stakeName.Substring(1)}Stake";
+        DebugLogger.Log("SpriteService", $"Looking for stake sticker: {stakeFormat}");
+        
+        var stakeSticker = GetStickerImage(stakeFormat);
+        if (stakeSticker == null)
+        {
+            DebugLogger.LogError("SpriteService", $"Failed to get stake sticker for: {stakeFormat}");
+            // Fallback - just return deck scaled down
+            var pixelSizeFallback = new PixelSize(71, 95);
+            var renderTargetFallback = new RenderTargetBitmap(pixelSizeFallback);
+            using (var context = renderTargetFallback.CreateDrawingContext())
+            {
+                context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+            }
+            return renderTargetFallback;
+        }
+
+        DebugLogger.Log("SpriteService", $"Got stake sticker, creating composite");
+
+        // Create a render target to composite the images
+        var pixelSize = new PixelSize(71, 95); // Card display size
+        var renderTarget = new RenderTargetBitmap(pixelSize);
+
+        using (var context = renderTarget.CreateDrawingContext())
+        {
+            // Draw the deck image scaled down to 71x95
+            context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+            
+            // Draw the stake sticker on top (also scaled from 142x190 to 71x95)
+            context.DrawImage(stakeSticker, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+        }
+
+        DebugLogger.Log("SpriteService", "Composite created successfully");
+        return renderTarget;
+    }
+
     public IImage? GetEnhancementImage(string name, int spriteWidth = 142, int spriteHeight = 190)
     {
         return GetSpriteImage(name, enhancementPositions, enhancersSheet, spriteWidth, spriteHeight, "enhancement");
