@@ -116,7 +116,7 @@
             <Setter Property="Background" Value="{StaticResource Blue}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="26"/>
             
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BorderThickness" Value="0"/>

@@ -31,6 +31,7 @@ using DebugLogger = Oracle.Helpers.DebugLogger;
 using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using TextMateSharp.Grammars;
+using Avalonia.Animation;
 
 namespace Oracle.Views.Modals;
 
@@ -1411,6 +1412,9 @@ public partial class FiltersModalContent : UserControl
 
             // Format the JSON for better readability
             await Dispatcher.UIThread.InvokeAsync(() => FormatJson(), DispatcherPriority.Background);
+            
+            // Update the drop zones from the loaded JSON
+            await Dispatcher.UIThread.InvokeAsync(() => UpdateDropZonesFromJson(), DispatcherPriority.Background);
 
             UpdateStatus($"✓ Loaded: {IoPath.GetFileName(configPath)}");
 
@@ -3221,8 +3225,43 @@ public partial class FiltersModalContent : UserControl
 
             // Apply rotation for fan effect
             double angle = (i - jokers.Count / 2.0) * fanAngle;
-            control.RenderTransform = new RotateTransform(angle);
+            
+            // We need to combine the rotation with the scale transform
+            var transformGroup = new TransformGroup();
+            transformGroup.Children.Add(new ScaleTransform(1, 1));
+            transformGroup.Children.Add(new RotateTransform(angle));
+            
+            control.RenderTransform = transformGroup;
             control.RenderTransformOrigin = new RelativePoint(0.5, 0.9, RelativeUnit.Relative);
+            
+            // Update hover handlers to work with transform group
+            if (control is Border border)
+            {
+                int cardIndex = i; // Capture the index for the closure
+                
+                // Remove the default handlers by using a flag
+                border.Tag = $"{jokers[cardIndex].category}:{jokers[cardIndex].name}#fanned";
+                
+                border.PointerEntered += (s, e) =>
+                {
+                    if (s is Border b && b.RenderTransform is TransformGroup tg && tg.Children[0] is ScaleTransform scale)
+                    {
+                        scale.ScaleX = 1.2;
+                        scale.ScaleY = 1.2;
+                        b.ZIndex = 1000; // Bring to front
+                    }
+                };
+                
+                border.PointerExited += (s, e) =>
+                {
+                    if (s is Border b && b.RenderTransform is TransformGroup tg && tg.Children[0] is ScaleTransform scale)
+                    {
+                        scale.ScaleX = 1.0;
+                        scale.ScaleY = 1.0;
+                        b.ZIndex = cardIndex; // Reset to original z-index
+                    }
+                };
+            }
 
             Canvas.SetLeft(control, x);
             Canvas.SetTop(control, y);
@@ -3267,8 +3306,57 @@ public partial class FiltersModalContent : UserControl
             Margin = new Thickness(0),
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}", // Store for later reference
-            RenderTransform = null, // Explicitly reset any transforms
-            RenderTransformOrigin = RelativePoint.Center
+            RenderTransform = new ScaleTransform(1, 1),
+            RenderTransformOrigin = RelativePoint.Center,
+            Transitions = new Transitions
+            {
+                new TransformOperationsTransition 
+                { 
+                    Property = Border.RenderTransformProperty, 
+                    Duration = TimeSpan.FromMilliseconds(150) 
+                }
+            }
+        };
+        
+        // Add hover zoom effect for non-fanned cards
+        border.PointerEntered += (s, e) =>
+        {
+            if (s is Border b)
+            {
+                // Check if this is a fanned card (tag will be updated by RenderFannedJokers)
+                if (b.Tag?.ToString()?.Contains("#fanned") == true)
+                {
+                    // Handled by RenderFannedJokers
+                    return;
+                }
+                
+                if (b.RenderTransform is ScaleTransform scale)
+                {
+                    scale.ScaleX = 1.2;
+                    scale.ScaleY = 1.2;
+                    b.ZIndex = 1000; // Bring to front
+                }
+            }
+        };
+        
+        border.PointerExited += (s, e) =>
+        {
+            if (s is Border b)
+            {
+                // Check if this is a fanned card
+                if (b.Tag?.ToString()?.Contains("#fanned") == true)
+                {
+                    // Handled by RenderFannedJokers
+                    return;
+                }
+                
+                if (b.RenderTransform is ScaleTransform scale)
+                {
+                    scale.ScaleX = 1.0;
+                    scale.ScaleY = 1.0;
+                    b.ZIndex = b.Tag?.ToString()?.Contains("joker", StringComparison.OrdinalIgnoreCase) == true ? 10 : 0; // Reset z-index
+                }
+            }
         };
 
         Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 DROPPED ITEM: '{itemName}' (category: '{category}')");

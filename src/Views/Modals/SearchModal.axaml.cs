@@ -91,6 +91,7 @@ namespace Oracle.Views.Modals
         private DataGrid? _resultsDataGrid;
         private TextBlock? _resultsSummary;
         private Button? _exportResultsButton;
+        private TextBlock? _jsonValidationStatus;
         
         public SearchModal()
         {
@@ -154,6 +155,7 @@ namespace Oracle.Views.Modals
             
             // Find controls
             _consoleOutput = this.FindControl<TextBox>("ConsoleOutput");
+            _jsonValidationStatus = this.FindControl<TextBlock>("JsonValidationStatus");
             
             // Find buttons
             _cookButton = this.FindControl<Button>("CookButton");
@@ -359,6 +361,9 @@ namespace Oracle.Views.Modals
                         // Just log that we loaded successfully
                         Oracle.Helpers.DebugLogger.Log("SearchModal", $"Filter loaded successfully: {config.Name}");
                         
+                        // Update JSON validation status
+                        UpdateJsonValidationStatus(true, "Valid ✓");
+                        
                         // Initialize the search history service with this filter
                         var historyService = App.GetService<SearchHistoryService>();
                         if (historyService != null)
@@ -401,11 +406,13 @@ namespace Oracle.Views.Modals
                     {
                         // Show error in console
                         AddToConsole("Error: Failed to load filter configuration");
+                        UpdateJsonValidationStatus(false, "Invalid: Failed to load");
                     }
                 }
                 catch (Exception ex)
                 {
                     AddToConsole($"Failed to load filter: {ex.Message}");
+                    UpdateJsonValidationStatus(false, $"Invalid: {ex.Message}");
                 }
         }
         

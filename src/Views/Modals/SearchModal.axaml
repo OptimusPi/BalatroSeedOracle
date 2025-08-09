@@ -189,7 +189,7 @@
             <Setter Property="Background" Value="{StaticResource Blue}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontSize" Value="36"/>
             
             <Setter Property="Height" Value="64"/>
             <Setter Property="MinWidth" Value="280"/>
@@ -462,6 +462,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
                             <ScrollViewer Grid.Row="0" 
@@ -475,7 +476,22 @@
                                              Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             </ScrollViewer>
                             
-                            <StackPanel Grid.Row="1"
+                            <!-- JSON Validation Status -->
+                            <Border Grid.Row="1"
+                                    Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="0,1,0,0"
+                                    Padding="8,4"
+                                    Margin="0,4,0,0">
+                                <TextBlock Name="JsonValidationStatus"
+                                           Text="JSON: Valid ✓"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Green}"
+                                           HorizontalAlignment="Left"/>
+                            </Border>
+                            
+                            <StackPanel Grid.Row="2"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right"
                                         Spacing="8"

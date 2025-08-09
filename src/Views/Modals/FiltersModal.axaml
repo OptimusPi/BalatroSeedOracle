@@ -350,7 +350,7 @@
         <StackPanel Grid.Row="1" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
-                    Margin="0,0,0,8">
+                    Margin="0,0,0,2">
             <Button Name="LoadSaveTab" 
                     Content="Select Filter" 
                     Classes="tab-button active"
@@ -366,7 +366,7 @@
         </StackPanel>
         
         <!-- Content area -->
-        <Grid Grid.Row="2" Margin="12" DragDrop.AllowDrop="True">
+        <Grid Grid.Row="2" Margin="12,6,12,12" DragDrop.AllowDrop="True">
             
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="False" DragDrop.AllowDrop="True">
@@ -443,11 +443,11 @@
                             <Grid Grid.Column="2">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="6" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="6" />
+                                    <RowDefinition Height="12" />
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="12" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="16" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 

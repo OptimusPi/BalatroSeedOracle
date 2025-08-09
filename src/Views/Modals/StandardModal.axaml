@@ -58,7 +58,7 @@
                             BorderThickness="0"
                             CornerRadius="0,0,16,16"
                             Margin="3,0,3,3"
-                            Padding="10,4,10,6">
+                            Padding="10,2,10,6">
                         <Button x:Name="BackButton"
                                 Content="Back"
                                 Classes="back-button"
