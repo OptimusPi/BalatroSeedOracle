@@ -699,6 +699,17 @@ namespace Oracle.Views.Modals
                 _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
             }
         }
+        
+        private void UpdateJsonValidationStatus(bool isValid, string message)
+        {
+            if (_jsonValidationStatus != null)
+            {
+                _jsonValidationStatus.Text = $"JSON: {message}";
+                _jsonValidationStatus.Foreground = isValid 
+                    ? Application.Current?.FindResource("Green") as IBrush ?? new SolidColorBrush(Color.Parse("#4CAF50"))
+                    : Application.Current?.FindResource("Red") as IBrush ?? new SolidColorBrush(Color.Parse("#F44336"));
+            }
+        }
         private async void OnExportResultsClick(object? sender, RoutedEventArgs e)
         {
             if (_searchResults.Count == 0) return;
