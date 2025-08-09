@@ -35,7 +35,7 @@ namespace Oracle.Views.Modals
         
         // Tab panels
         private Panel? _filterPanel;
-        private Panel? _settingsPanel;
+        private ScrollViewer? _settingsPanel;
         private Panel? _searchPanel;
         private Panel? _resultsPanel;
         
@@ -132,7 +132,7 @@ namespace Oracle.Views.Modals
             {
                 // Find panels
                 _filterPanel = this.FindControl<Panel>("FilterPanel");
-                _settingsPanel = this.FindControl<Panel>("SettingsPanel");
+                _settingsPanel = this.FindControl<ScrollViewer>("SettingsPanel");
                 _searchPanel = this.FindControl<Panel>("SearchPanel");
                 _resultsPanel = this.FindControl<Panel>("ResultsPanel");
                 
