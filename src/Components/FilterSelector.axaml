@@ -1,184 +1,41 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Oracle.Controls"
              x:Class="Oracle.Components.FilterSelector">
     
-    <UserControl.Styles>
-        <!-- Nav arrow style -->
-        <Style Selector="Button.nav-arrow">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="220"/>
-            <Setter Property="FontSize" Value="32"/>
-            
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
-                        <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
-                            <Border.Transitions>
-                                <Transitions>
-                                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
-                                </Transitions>
-                            </Border.Transitions>
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"
-                                            Content="{TemplateBinding Content}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Button.nav-arrow:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
+    <StackPanel Spacing="20">
+        <!-- Filter browser using PanelSpinner -->
+        <controls:PanelSpinner Name="FilterSpinner" />
         
-        <!-- Small button style -->
-        <Style Selector="Button.small-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.small-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-    </UserControl.Styles>
-    
-    <Grid>
-        <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Filter selection spinner/card -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Left Arrow -->
-                <Button Grid.Column="0" 
-                        Name="LeftArrow" 
-                        Content="&lt;" 
-                        Classes="nav-arrow" 
-                        Click="OnLeftArrowClick" 
-                        Margin="0,0,24,0"/>
-                
-                <!-- Card -->
-                <Border Grid.Column="1" 
-                        Background="{StaticResource ContainerDarkPrecise}" 
-                        BorderBrush="{StaticResource ContainerDarkPrecise}" 
-                        BorderThickness="0" 
-                        CornerRadius="12" 
-                        Padding="20" 
-                        Width="400" 
-                        Height="200">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        
-                        <Border Grid.Row="0" 
-                                Background="{StaticResource Gold}" 
-                                CornerRadius="6" 
-                                Padding="12,4" 
-                                HorizontalAlignment="Center" 
-                                MinWidth="220" 
-                                Margin="0,0,0,2">
-                            <TextBlock Name="FilterName" 
-                                       Text="No filters found" 
-                                       FontSize="18" 
-                                        
-                                       Foreground="{StaticResource DarkerGrey}" 
-                                       TextAlignment="Center"/>
-                        </Border>
-                        
-                        <StackPanel Grid.Row="1" 
-                                    Orientation="Horizontal" 
-                                    HorizontalAlignment="Center" 
-                                    Spacing="4" 
-                                    Name="AuthorPanel" 
-                                    IsVisible="False" 
-                                    Margin="0,0,0,2">
-                            <Border Background="{StaticResource DockGrey}" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="by" FontSize="14" Foreground="{StaticResource White}"/>
-                            </Border>
-                            <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
-                                <TextBlock Name="AuthorText" Text="" FontSize="14"  Foreground="{StaticResource White}"/>
-                            </Border>
-                        </StackPanel>
-                        
-                        <Canvas Grid.Row="2" 
-                                Name="CardsCanvas" 
-                                Height="65" 
-                                Width="220" 
-                                HorizontalAlignment="Center" 
-                                Margin="0,0,0,2"/>
-                        
-                        <Border Grid.Row="3" 
-                                Background="{StaticResource ContainerDarkPrecise}" 
-                                CornerRadius="6" 
-                                Padding="10,8" 
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="Top" 
-                                MaxWidth="420">
-                            <TextBlock Name="FilterDescription" 
-                                       Text="Browse for a filter or create a new one" 
-                                       FontSize="14" 
-                                       Foreground="{StaticResource LightTextGrey}" 
-                                       TextAlignment="Center" 
-                                       TextWrapping="Wrap"/>
-                        </Border>
-                    </Grid>
-                </Border>
-                
-                <!-- Right Arrow -->
-                <Button Grid.Column="2" 
-                        Name="RightArrow" 
-                        Content="&gt;" 
-                        Classes="nav-arrow" 
-                        Click="OnRightArrowClick" 
-                        Margin="24,0,0,0"/>
-            </Grid>
+        <!-- Select Button -->
+        <Button Name="SelectButton" 
+                Content="Select" 
+                Classes="btn-red" 
+                MinWidth="200"
+                HorizontalAlignment="Center"
+                Click="OnSelectClick"/>
+        
+        <!-- Separator -->
+        <Border Height="2" 
+                Background="{StaticResource DockGrey}" 
+                Margin="60,0"
+                CornerRadius="1"/>
+        
+        <!-- Create new filter section -->
+        <StackPanel Spacing="12" HorizontalAlignment="Center">
+            <TextBox Name="FilterNameInput"
+                     Watermark="Enter filter name..."
+                     Width="320"
+                     FontSize="16"
+                     TextChanged="OnFilterNameTextChanged"/>
             
-            <!-- Select button -->
-            <Button Name="SelectButton" 
-                    Content="Select" 
-                    Classes="btn-red" 
+            <Button Name="CreateFilterButton" 
+                    Content="Create New Filter" 
+                    Classes="btn-green" 
                     MinWidth="200"
                     HorizontalAlignment="Center"
-                    Click="OnSelectClick"/>
-            
-            <!-- Horizontal Separator -->
-            <Border Height="2" 
-                    Background="{StaticResource DockGrey}" 
-                    Margin="5,8,5,8"
-                    CornerRadius="1"/>
-            
-            <!-- Create new filter section -->
-            <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <TextBox Name="FilterNameInput"
-                         Watermark="Enter Filter Name..."
-                         Width="300"
-                         FontSize="16"
-                         TextChanged="OnFilterNameTextChanged"/>
-                
-                <Button Name="CreateFilterButton" 
-                        Content="Create New Filter" 
-                        Classes="btn-green" 
-                        MinWidth="200"
-                        HorizontalAlignment="Center"
-                        IsEnabled="False"
-                        Click="OnCreateFilterClick"/>
-            </StackPanel>
+                    IsEnabled="False"
+                    Click="OnCreateFilterClick"/>
         </StackPanel>
-    </Grid>
+    </StackPanel>
 </UserControl>

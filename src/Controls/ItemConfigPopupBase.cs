@@ -106,13 +106,13 @@ namespace Oracle.Controls
         {
             return new Border
             {
-                MinWidth = 280,
-                MaxWidth = 320,
+                MinWidth = 282,
+                MaxWidth = 322,
                 Background = Application.Current?.FindResource("ItemConfigMediumBg") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
                 BorderBrush = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
-                BorderThickness = new Thickness(3),
+                BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(16),
+                Padding = new Thickness(15),
                 Child = content
             };
         }

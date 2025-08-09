@@ -1,0 +1,66 @@
+{
+    "name": "PirateEgg",
+    "description": "pifreak loves you! This filter configuration contains all the cards that pifreak loves.",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "SpectralCard",
+            "value": "Ankh",
+            "Antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "OopsAll6s",
+            "Antes": [1],
+            "Score": 1,
+            "sources": {
+                "packSlots": [0, 1],
+                "shopSlots": [0, 1]
+            }
+        },
+        {
+            "Type": "PlayingCard",
+            "Enhancement": "Lucky",
+            "Antes": [1, 2,3],
+            "sources": {
+                "packSlots": [0,1,2,3,4,5]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "Hack",
+            "Antes": [3,4],
+            "sources": {
+                "packSlots": [0, 1, 2, 3, 4, 5],
+                "shopSlots": [0, 1, 2, 3, 4, 5, 6]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "LuckyCat",
+            "Antes": [3,4,5],
+            "sources": {
+                "packSlots": [0, 1, 2, 3, 4, 5],
+                "shopSlots": [0, 1, 2, 3, 4, 5, 6]
+            }
+        }
+    ],
+    "should": [
+        {
+            "Type": "Joker",
+            "Value": "Hack",
+            "Antes": [2,3,4,5],
+            "Score": 1,
+            "sources": {
+                "packSlots": [0, 1, 2, 3, 4, 5],
+                "shopSlots": [0, 1, 2, 3, 4, 5]
+            }
+        }
+    ],
+    "mustNot": [],
+    "deck": "Ghost",
+    "stake": "White"
+}

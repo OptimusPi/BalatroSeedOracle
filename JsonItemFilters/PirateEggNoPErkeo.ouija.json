@@ -1,0 +1,78 @@
+{
+    "name": "PirateEgg",
+    "description": "pifreak loves you! This filter configuration contains all the cards that pifreak loves.",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "SmallBlindTag",
+            "value": "CharmTag",
+            "antes": [1]
+        },
+        {
+            "type": "SmallBlindTag",
+            "value": "CharmTag",
+            "antes": [2,3]
+        },
+        {
+            "type": "SmallBlindTag",
+            "value": "CharmTag",
+            "antes": [4,5]
+        },
+        {
+            "type": "SmallBlindTag",
+            "value": "CharmTag",
+            "antes": [6,7,8]
+        },
+        {
+            "type": "SoulJoker",
+            "value": "*",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            }
+        }
+    ],
+    "should": [
+                {
+            "type": "SoulJoker",
+            "value": "*",
+            "antes": [2,3,4,5,6,7,8],
+            "sources": {
+                "packSlots": [0,1,2,3,4,5]
+            },
+            "score": 1
+        },
+        {
+            "type": "SoulJoker",
+            "value": "*",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            },
+            "score": 1
+        },
+        {
+            "type": "SoulJoker",
+            "value": "*",
+            "edition": "negative",
+            "antes": [2,3,4,5,6,7,8],
+            "sources": {
+                "packSlots": [0,1,2,3,4,5]
+            },
+            "score": 100
+        },
+        {
+            "type": "SoulJoker",
+            "value": "*",
+            "edition": "negative",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            },
+            "score": 100
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "White"
+}

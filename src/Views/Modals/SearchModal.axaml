@@ -186,10 +186,10 @@
         
         <!-- Big COOK button style -->
         <Style Selector="Button.cook-button">
-            <Setter Property="Background" Value="{StaticResource Green}"/>
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="32"/>
             
             <Setter Property="Height" Value="64"/>
             <Setter Property="MinWidth" Value="280"/>
@@ -197,7 +197,7 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.cook-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource PaleGreen}"/>
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
         </Style>
         <Style Selector="Button.cook-button.stop">
             <Setter Property="Background" Value="{StaticResource Red}"/>

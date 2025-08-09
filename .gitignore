@@ -62,3 +62,5 @@ userprofile.json
 .claude/settings.local.json
 .claude/settings.local.json
 /.claude
+WordLists/sick.txt
+WordLists/nsfw.txt

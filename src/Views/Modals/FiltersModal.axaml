@@ -12,7 +12,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="24"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -22,7 +22,8 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
-                        <Border Background="{StaticResource DropShadow}"
+                        <Border Name="PART_Shadow"
+                                Background="{StaticResource DropShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <Border Name="PART_Border"
@@ -47,10 +48,7 @@
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
-        <!-- Pressed state -->
-        <Style Selector="Button.tab-button:pressed">
-            <Setter Property="Margin" Value="4,2,4,2"/>
-        </Style>
+        <!-- Tab button inherits pressed behavior from global styles -->
         
         <!-- Active state - same as regular, no blue! -->
         <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
@@ -91,6 +89,7 @@
             <Setter Property="Background" Value="{StaticResource Gold}" />
             <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
         </Style>
+        <!-- Nav button inherits pressed behavior from global styles -->
         <Style Selector="Button.small-nav-button">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="MinHeight" Value="24" />
@@ -102,7 +101,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="MinHeight" Value="120" />
+            <Setter Property="MinHeight" Value="150" />
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
@@ -151,11 +150,11 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="3" />
-            <Setter Property="Width" Value="71" />
-            <Setter Property="Height" Value="95" />
-            <Setter Property="MaxWidth" Value="71" />
-            <Setter Property="MaxHeight" Value="95" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Width" Value="53" />
+            <Setter Property="Height" Value="71" />
+            <Setter Property="MaxWidth" Value="53" />
+            <Setter Property="MaxHeight" Value="71" />
         </Style>
         <Style Selector="Border.dropped-item:pointerover">
             <Setter Property="Cursor" Value="Hand" />
@@ -294,7 +293,6 @@
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="SelectionForeground" Value="{StaticResource White}" />
         </Style>
-        <!-- Removed duplicate global styles: tab-button, small-button, cook-button, balatro-input, nav-arrow -->
     </UserControl.Styles>
     
     <!-- Main Layout with top nav -->
@@ -454,7 +452,7 @@
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
-                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="MUST have..."
@@ -478,7 +476,7 @@
                                         <!-- Drop Area -->
                                         <Grid Margin="30,0,0,0">
                                             <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop items that MUST appear" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                            <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
                                                 <WrapPanel Name="NeedsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearNeedsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
@@ -489,7 +487,7 @@
                                 </Border>
                                 
                                 <!-- SHOULD (WANTS) Panel -->
-                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Should have..."
@@ -513,7 +511,7 @@
                                         <!-- Drop Area -->
                                         <Grid Margin="30,0,0,0">
                                             <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop items you'd LIKE to see" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                            <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
                                                 <WrapPanel Name="WantsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearWantsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
@@ -524,7 +522,7 @@
                                 </Border>
                                 
                                 <!-- MUST NOT Panel -->
-                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="100">
+                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Must NOT Have..."
@@ -548,7 +546,7 @@
                                         <!-- Drop Area -->
                                         <Grid Margin="40,0,0,0">
                                             <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop forbidden items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+                                            <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
                                                 <WrapPanel Name="MustNotPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
                                             </ScrollViewer>
                                             <Button Name="ClearMustNotButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">

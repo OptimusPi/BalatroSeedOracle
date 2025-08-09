@@ -13,20 +13,6 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,20"/>
             
-            <!-- Analyzer Button -->
-            <Button Name="AnalyzerButton"
-                   Click="OnAnalyzerClick"
-                   Classes="btn-red"
-                   MinWidth="250"
-                   MinHeight="60"
-                   HorizontalAlignment="Center">
-                <TextBlock Text="ANALYZER" 
-                           FontSize="20"
-                           
-                           FontFamily="{StaticResource BalatroFont}"
-                           IsHitTestVisible="False"/>
-            </Button>
-            
             <!-- Import Files Button -->
             <Button Name="ImportFilesButton"
                    Click="OnImportFilesClick"

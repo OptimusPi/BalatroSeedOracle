@@ -1,0 +1,22 @@
+{
+    "name": "PirateEgg",
+    "description": "pifreak loves you! This filter configuration contains all the cards that pifreak loves.",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "Spectral",
+            "value": "Immolate",
+            "antes": [1],
+            "sources": {
+                "shopSlots": [0,1,2,3]
+            },
+            "score": 1
+        }
+        
+    ],
+    "should": [
+    ],
+    "mustNot": [],
+    "deck": "Ghost",
+    "stake": "White"
+}

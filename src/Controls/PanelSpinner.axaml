@@ -20,7 +20,8 @@
                 <ControlTemplate>
                     <Grid>
                         <!-- Drop shadow -->
-                        <Border Background="{StaticResource PureBlack}"
+                        <Border Name="PART_Shadow"
+                                Background="{StaticResource PureBlack}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <!-- Button face -->
@@ -40,28 +41,7 @@
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
-        <Style Selector="Button.panel-arrow:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-            <Setter Property="Margin" Value="0,2,0,2"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <!-- Drop shadow -->
-                        <Border Background="{StaticResource PureBlack}"
-                                CornerRadius="8"
-                                Margin="0,2,0,0"/>
-                        <!-- Button face -->
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="0,0,0,2">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
+        <!-- Panel arrow button inherits pressed behavior from global styles -->
         
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
@@ -163,9 +143,11 @@
                 </Viewbox>
                 
                 <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Name="DescriptionText"
-                           Classes="panel-description"/>
+                <Border Grid.Row="2" Height="40">
+                    <TextBlock Name="DescriptionText"
+                               Classes="panel-description"
+                               VerticalAlignment="Center"/>
+                </Border>
                 
                 <!-- Position dots -->
                 <StackPanel Grid.Row="3"

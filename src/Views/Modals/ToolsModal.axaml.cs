@@ -121,25 +121,6 @@ namespace Oracle.Views.Modals
             }
         }
 
-        private void OnAnalyzerClick(object? sender, RoutedEventArgs e)
-        {
-            // Find the main menu in the visual tree
-            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
-            
-            if (mainMenu != null)
-            {
-                // Hide current modal
-                mainMenu.HideModalContent();
-                
-                // Show analyzer modal using ModalHelper extension
-                mainMenu.ShowAnalyzerModal();
-            }
-            else
-            {
-                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
-            }
-        }
-        
         private void OnWordListsClick(object? sender, RoutedEventArgs e)
         {
             // Find the main menu in the visual tree

@@ -46,7 +46,7 @@ namespace Oracle.Controls
 
         private StackPanel BuildUI()
         {
-            var mainPanel = new StackPanel { Spacing = 10 };
+            var mainPanel = new StackPanel { Spacing = 8 };
 
             // Header
             mainPanel.Children.Add(CreateHeader());
@@ -83,9 +83,9 @@ namespace Oracle.Controls
             // Header
             var header = new TextBlock
             {
-                Text = "ANTES TO SEARCH",
+                Text = "Search Antes:",
                 FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
-                FontSize = 11,
+                FontSize = 12,
                 Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
                 Margin = new Thickness(0, 0, 0, 6)
             };
@@ -190,7 +190,7 @@ namespace Oracle.Controls
             // Header
             var header = new TextBlock
             {
-                Text = "EDITION",
+                Text = "Require Edition?",
                 FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                 FontSize = 11,
                 Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
@@ -240,21 +240,46 @@ namespace Oracle.Controls
                 BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(6, 4),
+                Padding = new Thickness(5, 4),
                 Cursor = new Cursor(StandardCursorType.Hand)
             };
 
             // Try to load edition image
-            var image = new Image
+            if (editionKey == "negative")
             {
-                Width = 35,
-                Height = 47,
-                Stretch = Stretch.Uniform,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Source = SpriteService.Instance.GetEditionImage(editionKey)
-            };
-
-            border.Child = image;
+                // Create a fake negative edition with inverted colors
+                var negativePanel = new Panel
+                {
+                    Width = 35,
+                    Height = 47,
+                    Background = new SolidColorBrush(Color.Parse("#1a1f2e")) // Dark blue-ish background
+                };
+                
+                var invertedRect = new Border
+                {
+                    Width = 29,
+                    Height = 41,
+                    Background = new SolidColorBrush(Color.Parse("#FFEFEE")), // Light inverted color
+                    CornerRadius = new CornerRadius(3),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                
+                negativePanel.Children.Add(invertedRect);
+                border.Child = negativePanel;
+            }
+            else
+            {
+                var image = new Image
+                {
+                    Width = 35,
+                    Height = 47,
+                    Stretch = Stretch.Uniform,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Source = SpriteService.Instance.GetEditionImage(editionKey)
+                };
+                border.Child = image;
+            }
             radio.Content = border;
 
             // Add handler

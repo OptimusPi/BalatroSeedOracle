@@ -10,7 +10,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="36"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -52,7 +52,7 @@
                     <Grid>
                         <Border Background="{StaticResource DropShadow}"
                                 CornerRadius="8"
-                                Margin="0,2,0,0"/>
+                                Margin="0,4,0,0"/>
                         <Border Background="{TemplateBinding Background}"
                                 CornerRadius="8"
                                 Margin="0,0,0,2">
@@ -180,7 +180,6 @@
         <!-- Triangle pointer above tabs -->
         <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="148"/> <!-- SELECT FILTER -->
                 <ColumnDefinition Width="148"/> <!-- SETTINGS -->
                 <ColumnDefinition Width="148"/> <!-- ANALYZE -->
             </Grid.ColumnDefinitions>
@@ -225,7 +224,6 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Margin="0,4,0,4">
-            <Button Name="FilterTab" Content="SELECT FILTER" Classes="tab-button active" Click="OnFilterTabClick"/>
             <Button Name="SettingsTab" Content="DECK/STAKE" Classes="tab-button" Click="OnSettingsTabClick"/>
             <Button Name="AnalyzerTab" Content="ANALYZE" Classes="tab-button" Click="OnAnalyzerTabClick"/>
         </StackPanel>

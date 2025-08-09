@@ -3073,24 +3073,185 @@ public partial class FiltersModalContent : UserControl
     {
         panel.Children.Clear();
 
+        // Create canvas for custom card positioning
+        var canvas = new Canvas
+        {
+            Height = 110, // Height for cards
+            ClipToBounds = false // Allow overflow for transforms
+        };
+
+        // Create a viewbox for responsive scaling
+        var viewbox = new Viewbox
+        {
+            Stretch = Stretch.Uniform,
+            StretchDirection = StretchDirection.DownOnly, // Only scale down, not up
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Child = canvas
+        };
+        
+        // Add viewbox to panel
+        panel.Children.Add(viewbox);
+
+        // Categorize items
+        var jokers = new List<(string name, string category)>();
+        var bosses = new List<(string name, string category)>();
+        var tags = new List<(string name, string category)>();
+        var vouchers = new List<(string name, string category)>();
+        var spectrals = new List<(string name, string category)>();
+        var tarots = new List<(string name, string category)>();
+
         foreach (var item in items)
         {
-            // Handle both formats: "Category:Item" and "Category:Item#123"
             var colonIndex = item.IndexOf(':');
             if (colonIndex > 0)
             {
                 var category = item.Substring(0, colonIndex);
                 var itemNameWithSuffix = item.Substring(colonIndex + 1);
-
-                // Remove the unique key suffix if present
                 var hashIndex = itemNameWithSuffix.IndexOf('#');
                 var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
 
-                Oracle.Helpers.DebugLogger.LogImportant("PopulateDropZonePanel", $"Processing item: '{item}' -> category:'{category}', itemName:'{itemName}'");
-
-                var droppedItem = CreateDroppedItemControl(itemName, category);
-                panel.Children.Add(droppedItem);
+                switch (category)
+                {
+                    case "Jokers":
+                        if (itemName == "The_Soul" || itemName == "Cavendish") // Bosses
+                            bosses.Add((itemName, category));
+                        else
+                            jokers.Add((itemName, category));
+                        break;
+                    case "Tags":
+                        tags.Add((itemName, category));
+                        break;
+                    case "Vouchers":
+                        vouchers.Add((itemName, category));
+                        break;
+                    case "Spectrals":
+                        spectrals.Add((itemName, category));
+                        break;
+                    case "Tarots":
+                        tarots.Add((itemName, category));
+                        break;
+                }
             }
+        }
+
+        // Render items with custom positioning
+        double currentX = 10;
+        
+        // 1. Fan out Jokers on the left
+        if (jokers.Any())
+        {
+            RenderFannedJokers(canvas, jokers, ref currentX);
+            currentX += 20; // Gap after jokers
+        }
+
+        // 2. Individual slots for Vouchers, Spectrals, Tarots
+        if (vouchers.Any())
+        {
+            foreach (var voucher in vouchers)
+            {
+                var control = CreateDroppedItemControl(voucher.name, voucher.category);
+                Canvas.SetLeft(control, currentX);
+                Canvas.SetTop(control, 10);
+                canvas.Children.Add(control);
+                currentX += 75;
+            }
+            currentX += 10;
+        }
+
+        if (spectrals.Any())
+        {
+            foreach (var spectral in spectrals)
+            {
+                var control = CreateDroppedItemControl(spectral.name, spectral.category);
+                Canvas.SetLeft(control, currentX);
+                Canvas.SetTop(control, 10);
+                canvas.Children.Add(control);
+                currentX += 75;
+            }
+            currentX += 10;
+        }
+
+        if (tarots.Any())
+        {
+            foreach (var tarot in tarots)
+            {
+                var control = CreateDroppedItemControl(tarot.name, tarot.category);
+                Canvas.SetLeft(control, currentX);
+                Canvas.SetTop(control, 10);
+                canvas.Children.Add(control);
+                currentX += 75;
+            }
+            currentX += 10;
+        }
+
+        // 3. Stack Tags vertically
+        if (tags.Any())
+        {
+            RenderVerticalStack(canvas, tags, currentX, "Tags");
+            currentX += 80;
+        }
+
+        // 4. Stack Bosses vertically on far right
+        if (bosses.Any())
+        {
+            // Position bosses at the far right
+            double bossX = Math.Max(currentX, 520); // Adjusted for smaller canvas
+            RenderVerticalStack(canvas, bosses, bossX, "Bosses");
+            currentX = bossX + 60; // Update currentX to include boss width
+        }
+        
+        // Set the canvas width to accommodate all items
+        canvas.Width = Math.Max(currentX, 200); // Minimum width of 200
+    }
+
+    private void RenderFannedJokers(Canvas canvas, List<(string name, string category)> jokers, ref double startX)
+    {
+        const double fanAngle = 4; // degrees per card
+        const double overlapX = 15; // horizontal overlap
+        const double centerY = 20; // Start from top
+
+        for (int i = 0; i < jokers.Count; i++)
+        {
+            var control = CreateDroppedItemControl(jokers[i].name, jokers[i].category);
+            
+            // Position with overlap
+            double x = startX + (i * overlapX);
+            double y = centerY;
+
+            // Apply rotation for fan effect
+            double angle = (i - jokers.Count / 2.0) * fanAngle;
+            control.RenderTransform = new RotateTransform(angle);
+            control.RenderTransformOrigin = new RelativePoint(0.5, 0.9, RelativeUnit.Relative);
+
+            Canvas.SetLeft(control, x);
+            Canvas.SetTop(control, y);
+            
+            // Higher z-index for later cards
+            control.ZIndex = i;
+            
+            canvas.Children.Add(control);
+        }
+
+        startX += (jokers.Count * overlapX) + 40;
+    }
+
+    private void RenderVerticalStack(Canvas canvas, List<(string name, string category)> items, double x, string stackType)
+    {
+        const double verticalSpacing = 18; // Overlap vertically
+        double startY = 15;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var control = CreateDroppedItemControl(items[i].name, items[i].category);
+            
+            Canvas.SetLeft(control, x);
+            Canvas.SetTop(control, startY + (i * verticalSpacing));
+            
+            // Bring later items to front
+            control.ZIndex = i;
+            
+            canvas.Children.Add(control);
         }
     }
 
@@ -3101,9 +3262,9 @@ public partial class FiltersModalContent : UserControl
         {
             Classes = { "dropped-item" },
             Cursor = new Cursor(StandardCursorType.Hand),
-            Width = 71,   // Fixed card width
-            Height = 95,  // Fixed card height
-            Margin = new Thickness(3),
+            Width = 53,   // Smaller card width (75% of original)
+            Height = 71,  // Smaller card height (75% of original) 
+            Margin = new Thickness(0),
             Padding = new Thickness(0),
             Tag = $"{category}:{itemName}", // Store for later reference
             RenderTransform = null, // Explicitly reset any transforms
@@ -3138,8 +3299,8 @@ public partial class FiltersModalContent : UserControl
                 {
                     Source = jokerImageSource,
                     Stretch = Stretch.Uniform,
-                    Width = 64,  // Correct joker sprite size
-                    Height = 64, // Correct joker sprite size
+                    Width = 48,  // Scaled for smaller cards
+                    Height = 48, // Scaled for smaller cards
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                     RenderTransform = null, // Explicitly reset any transforms
@@ -3158,8 +3319,8 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 64, 
-                        Height = 64, 
+                        Width = 48, 
+                        Height = 48, 
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = new RotateTransform()
@@ -3221,19 +3382,19 @@ public partial class FiltersModalContent : UserControl
             if (imageSource != null)
             {
                 Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"✅ Found image for '{itemName}'");
-                // Use correct size based on category (matching ResponsiveCard)
-                double imgWidth = 64;
-                double imgHeight = 64;
+                // Use correct size based on category (scaled for smaller cards)
+                double imgWidth = 48;
+                double imgHeight = 48;
                 
                 if (category == "Tags")
                 {
-                    imgWidth = 27;
-                    imgHeight = 27;
+                    imgWidth = 20;
+                    imgHeight = 20;
                 }
                 else if (category == "Bosses")
                 {
-                    imgWidth = 34;
-                    imgHeight = 34;
+                    imgWidth = 26;
+                    imgHeight = 26;
                 }
                 
                 var image = new Image

@@ -1,0 +1,105 @@
+{
+    "name": "SkipTagAnte2BlueprintAnte2",
+    "description": "runs of desired cards scored",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "souljoker",
+            "value": "perkeo",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            }
+        },
+        {
+            "type": "smallblindtag",
+            "value": "negativetag",
+            "antes": [2]
+        },
+        {
+            "type": "smallblindtag",
+            "value": "negativetag",
+            "antes": [8]
+        }
+    ],
+    "should": [
+        {
+            "type": "joker",
+            "value": "HangingChad",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Photograph",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Blueprint",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 10
+        },
+
+
+
+        {
+            "type": "joker",
+            "value": "HangingChad",
+            "antes": [8],
+            "sources": {
+                "shopSlots": [2,3,4,5]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Photograph",
+            "antes": [8],
+            "sources": {
+                "shopSlots": [2,3,4,5]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Blueprint",
+            "antes": [8],
+            "sources": {
+                "shopSlots": [2,3,4,5]
+            },
+            "score": 10
+        },
+        {
+            "type": "smallblindtag",
+            "value": "doubletag",
+            "antes": [3,4,5,6,7],
+            "sources": {
+                "shopSlots": [2,3,4,5]
+            },
+            "score": 1
+        },
+         {
+            "type": "bigblindtag",
+            "value": "doubletag",
+            "antes": [3,4,5,6,7],
+            "sources": {
+                "shopSlots": [2,3,4,5]
+            },
+            "score": 1
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "White"
+}

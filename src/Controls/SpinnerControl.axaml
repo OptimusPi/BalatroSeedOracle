@@ -11,7 +11,7 @@
     <UserControl.Styles>
         <!-- Arrow button style -->
         <Style Selector="Button.arrow-button">
-            <Setter Property="Width" Value="24"/>
+            <Setter Property="Width" Value="23"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
@@ -22,12 +22,13 @@
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="Margin" Value="0,1,0,4"/>
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
                         <!-- Drop shadow -->
-                        <Border Background="{StaticResource DropShadow}"
+                        <Border Name="PART_Shadow"
+                                Background="{StaticResource DropShadow}"
                                 CornerRadius="4"
                                 Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=button}"/>
                         <!-- Button -->
@@ -47,28 +48,7 @@
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
-        <Style Selector="Button.arrow-button:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-            <Setter Property="Margin" Value="0,2,0,2"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <!-- Drop shadow -->
-                        <Border Background="{StaticResource DropShadow}"
-                                CornerRadius="4"
-                                Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowPressedMarginConverter}, ConverterParameter=button}"/>
-                        <!-- Button -->
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4"
-                                Margin="0,0,0,2">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
+        <!-- Arrow button inherits pressed behavior from global styles -->
         
         <!-- Value display badge style -->
         <Style Selector="Border.value-badge">
