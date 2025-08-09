@@ -9,8 +9,8 @@
         
         <!-- Select Button -->
         <Button Name="SelectButton" 
-                Content="Select" 
-                Classes="btn-red" 
+                Content="Select Filter" 
+                Classes="btn-blue" 
                 MinWidth="200"
                 HorizontalAlignment="Center"
                 Click="OnSelectClick"/>
