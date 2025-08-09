@@ -464,6 +464,35 @@
                 </Grid>
             </Border>
             
+            <!-- Label Input -->
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="LABEL (OPTIONAL)" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11" 
+                               Foreground="{StaticResource LightGrey}" 
+                               Margin="0,0,0,6"/>
+                    
+                    <TextBox Grid.Row="1" 
+                             Name="LabelTextBox"
+                             Background="{StaticResource ItemConfigMediumBg}"
+                             BorderBrush="{StaticResource ItemConfigDarkBg}"
+                             BorderThickness="1"
+                             Foreground="{StaticResource White}"
+                             FontFamily="{StaticResource BalatroFont}"
+                             FontSize="12"
+                             Padding="8,4"
+                             CornerRadius="4"
+                             Watermark="e.g. NegativeBlueprint"
+                             Height="28"/>
+                </Grid>
+            </Border>
+            
             <!-- Buttons with Balatro style -->
             <Grid Margin="0,6,0,0">
                 <Grid.ColumnDefinitions>

@@ -10,12 +10,12 @@
         
         <!-- Stake Selection using regular spinner -->
         <controls:SpinnerControl Name="StakeSpinner" 
-                                Label="Stake"
+                                Label=""
                                 SpinnerType="stake"
                                 Minimum="0"
                                 Maximum="7"
                                 Value="0"
-                                MinWidth="170"
+                                Width="170"
                                 HorizontalAlignment="Center" />
     </StackPanel>
     

@@ -35,6 +35,15 @@ using Avalonia.Animation;
 
 namespace Oracle.Views.Modals;
 
+// Tag class for drop zone items
+internal class DropZoneItemTag
+{
+    public string Key { get; set; } = "";
+    public string Zone { get; set; } = "";
+    public bool Fanned { get; set; }
+    public int CardIndex { get; set; }
+}
+
 public partial class FiltersModalContent : UserControl
 {
 
@@ -348,7 +357,10 @@ public partial class FiltersModalContent : UserControl
             var category = parts[0].ToLower();
             var itemName = parts[1].Split('#')[0]; // Remove any unique suffix
             
-            return new Oracle.Models.FilterItem
+            // Get item configuration if exists
+            var itemConfig = _itemConfigs.ContainsKey(key) ? _itemConfigs[key] : null;
+            
+            var filterItem = new Oracle.Models.FilterItem
             {
                 Type = category switch
                 {
@@ -362,8 +374,65 @@ public partial class FiltersModalContent : UserControl
                 },
                 Value = itemName
             };
+            
+            // Set label from config or generate it
+            if (itemConfig != null)
+            {
+                filterItem.Label = itemConfig.Label;
+                
+                // Copy other config properties
+                filterItem.Antes = itemConfig.Antes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 };
+                filterItem.Edition = itemConfig.Edition != "none" ? itemConfig.Edition : null;
+                
+                // Convert sources to boolean flags
+                if (itemConfig.Sources != null)
+                {
+                    filterItem.IncludeBoosterPacks = itemConfig.Sources.Contains("booster");
+                    filterItem.IncludeShopStream = itemConfig.Sources.Contains("shop");
+                    filterItem.IncludeSkipTags = itemConfig.Sources.Contains("tag");
+                }
+            }
+            
+            // Generate label if not provided
+            if (string.IsNullOrWhiteSpace(filterItem.Label))
+            {
+                filterItem.Label = GenerateItemLabel(filterItem);
+            }
+            
+            return filterItem;
         }
         return null;
+    }
+    
+    private string GenerateItemLabel(Oracle.Models.FilterItem item)
+    {
+        // Generate a label based on edition and item name
+        var label = new System.Text.StringBuilder();
+        
+        // Add edition prefix if present
+        if (!string.IsNullOrWhiteSpace(item.Edition) && item.Edition != "none")
+        {
+            label.Append(char.ToUpper(item.Edition[0]) + item.Edition.Substring(1));
+        }
+        
+        // Add item name in PascalCase
+        if (!string.IsNullOrWhiteSpace(item.Value))
+        {
+            var words = item.Value.Split(new[] { '_', ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var word in words)
+            {
+                if (word.Length > 0)
+                {
+                    label.Append(char.ToUpper(word[0]));
+                    if (word.Length > 1)
+                    {
+                        label.Append(word.Substring(1).ToLower());
+                    }
+                }
+            }
+        }
+        
+        return label.ToString();
     }
     
     private void OnCreateNewClick(object? sender, RoutedEventArgs e)
@@ -3144,47 +3213,25 @@ public partial class FiltersModalContent : UserControl
             currentX += 20; // Gap after jokers
         }
 
-        // 2. Individual slots for Vouchers, Spectrals, Tarots
+        // 2. Fan out Vouchers
         if (vouchers.Any())
         {
-            foreach (var voucher in vouchers)
-            {
-                var itemKey = items.First(i => i.Contains($":{voucher.name}"));
-                var control = CreateDroppedItemControl(voucher.name, voucher.category, itemKey, zoneName);
-                Canvas.SetLeft(control, currentX);
-                Canvas.SetTop(control, 10);
-                canvas.Children.Add(control);
-                currentX += 75;
-            }
-            currentX += 10;
+            RenderFannedItems(canvas, vouchers, ref currentX, zoneName, items, "Vouchers");
+            currentX += 20; // Gap after vouchers
         }
 
+        // 3. Fan out Spectrals
         if (spectrals.Any())
         {
-            foreach (var spectral in spectrals)
-            {
-                var itemKey = items.First(i => i.Contains($":{spectral.name}"));
-                var control = CreateDroppedItemControl(spectral.name, spectral.category, itemKey, zoneName);
-                Canvas.SetLeft(control, currentX);
-                Canvas.SetTop(control, 10);
-                canvas.Children.Add(control);
-                currentX += 75;
-            }
-            currentX += 10;
+            RenderFannedItems(canvas, spectrals, ref currentX, zoneName, items, "Spectrals");
+            currentX += 20; // Gap after spectrals
         }
 
+        // 4. Fan out Tarots
         if (tarots.Any())
         {
-            foreach (var tarot in tarots)
-            {
-                var itemKey = items.First(i => i.Contains($":{tarot.name}"));
-                var control = CreateDroppedItemControl(tarot.name, tarot.category, itemKey, zoneName);
-                Canvas.SetLeft(control, currentX);
-                Canvas.SetTop(control, 10);
-                canvas.Children.Add(control);
-                currentX += 75;
-            }
-            currentX += 10;
+            RenderFannedItems(canvas, tarots, ref currentX, zoneName, items, "Tarots");
+            currentX += 20; // Gap after tarots
         }
 
         // 3. Stack Tags vertically
@@ -3273,6 +3320,77 @@ public partial class FiltersModalContent : UserControl
 
         startX += (jokers.Count * overlapX) + 40;
     }
+    
+    private void RenderFannedItems(Canvas canvas, List<(string name, string category)> items, ref double startX, string zoneName, HashSet<string> allItems, string itemType)
+    {
+        const double fanAngle = 4; // degrees per card
+        const double overlapX = 15; // horizontal overlap
+        const double centerY = 20; // Start from top
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var itemKey = allItems.First(item => item.Contains($":{items[i].name}"));
+            var control = CreateDroppedItemControl(items[i].name, items[i].category, itemKey, zoneName);
+            
+            // Position with overlap
+            double x = startX + (i * overlapX);
+            double y = centerY;
+
+            // Apply rotation for fan effect
+            double angle = (i - items.Count / 2.0) * fanAngle;
+            
+            // We need to combine the rotation with the scale transform
+            var transformGroup = new TransformGroup();
+            transformGroup.Children.Add(new ScaleTransform(1, 1));
+            transformGroup.Children.Add(new RotateTransform(angle));
+            
+            // Replace the existing transform with our group
+            if (control is Border border)
+            {
+                border.RenderTransform = transformGroup;
+                border.RenderTransformOrigin = new RelativePoint(0.5, 0.8, RelativeUnit.Relative);
+                
+                // Mark as fanned and store the card index
+                var originalTag = border.Tag as DropZoneItemTag;
+                int cardIndex = i;
+                if (originalTag != null)
+                {
+                    border.Tag = new DropZoneItemTag { Key = originalTag.Key, Zone = originalTag.Zone, Fanned = true, CardIndex = cardIndex };
+                }
+                
+                // Update hover behavior for fanned cards
+                border.PointerEntered += (s, e) =>
+                {
+                    if (s is Border b && b.RenderTransform is TransformGroup tg && tg.Children[0] is ScaleTransform scale)
+                    {
+                        scale.ScaleX = 1.2;
+                        scale.ScaleY = 1.2;
+                        b.ZIndex = 1000; // Bring to front when hovered
+                    }
+                };
+                
+                border.PointerExited += (s, e) =>
+                {
+                    if (s is Border b && b.RenderTransform is TransformGroup tg && tg.Children[0] is ScaleTransform scale)
+                    {
+                        scale.ScaleX = 1.0;
+                        scale.ScaleY = 1.0;
+                        b.ZIndex = cardIndex; // Reset to original z-index
+                    }
+                };
+            }
+
+            Canvas.SetLeft(control, x);
+            Canvas.SetTop(control, y);
+            
+            // Higher z-index for later cards
+            control.ZIndex = i;
+            
+            canvas.Children.Add(control);
+        }
+
+        startX += (items.Count * overlapX) + 40;
+    }
 
     private void RenderVerticalStack(Canvas canvas, List<(string name, string category)> stackItems, double x, string stackType, HashSet<string> allItems, string zoneName)
     {
@@ -3305,7 +3423,7 @@ public partial class FiltersModalContent : UserControl
             Height = 71,  // Smaller card height (75% of original) 
             Margin = new Thickness(0),
             Padding = new Thickness(0),
-            Tag = new { Key = itemKey, Zone = zoneName }, // Store both key and zone for later reference
+            Tag = new DropZoneItemTag { Key = itemKey, Zone = zoneName }, // Store both key and zone for later reference
             RenderTransform = new ScaleTransform(1, 1),
             RenderTransformOrigin = RelativePoint.Center,
             Transitions = new Transitions
@@ -3323,10 +3441,11 @@ public partial class FiltersModalContent : UserControl
         {
             if (s is Border b)
             {
-                // Check if this is a fanned card (tag will be updated by RenderFannedJokers)
-                if (b.Tag?.ToString()?.Contains("#fanned") == true)
+                // Check if this is a fanned card
+                var tag = b.Tag as DropZoneItemTag;
+                if (tag != null && tag.Fanned)
                 {
-                    // Handled by RenderFannedJokers
+                    // Handled by RenderFannedJokers/RenderFannedItems
                     return;
                 }
                 
@@ -3344,9 +3463,10 @@ public partial class FiltersModalContent : UserControl
             if (s is Border b)
             {
                 // Check if this is a fanned card
-                if (b.Tag?.ToString()?.Contains("#fanned") == true)
+                var tag = b.Tag as DropZoneItemTag;
+                if (tag != null && tag.Fanned)
                 {
-                    // Handled by RenderFannedJokers
+                    // Handled by RenderFannedJokers/RenderFannedItems
                     return;
                 }
                 
@@ -3354,7 +3474,8 @@ public partial class FiltersModalContent : UserControl
                 {
                     scale.ScaleX = 1.0;
                     scale.ScaleY = 1.0;
-                    b.ZIndex = b.Tag?.ToString()?.Contains("joker", StringComparison.OrdinalIgnoreCase) == true ? 10 : 0; // Reset z-index
+                    var itemTag = b.Tag as DropZoneItemTag;
+                    b.ZIndex = itemTag?.Key.Contains("joker", StringComparison.OrdinalIgnoreCase) == true ? 10 : 0; // Reset z-index
                 }
             }
         };

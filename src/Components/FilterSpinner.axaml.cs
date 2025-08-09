@@ -48,18 +48,29 @@ public partial class FilterSpinner : UserControl
         try
         {
             _availableFilters.Clear();
-            
+
             // Look for .json files in the root directory
-            var directory = Directory.GetCurrentDirectory();
-            var rootJsonFiles = Directory.GetFiles(directory, "*.json");
-            _availableFilters.AddRange(rootJsonFiles);
-            
-            // Also look for .json files in JsonItemConfigs directory
-            var jsonConfigsDir = Path.Combine(directory, "JsonItemConfigs");
-            if (Directory.Exists(jsonConfigsDir))
+            var directory =
+                $"{Directory.GetCurrentDirectory()}/JsonItemFilters"
+                .Replace("//", "/");
+
+            if (Directory.Exists(directory))
             {
-                var files = Directory.GetFiles(jsonConfigsDir, "*.json");
-                _availableFilters.AddRange(files);
+                // Look for both *.json and *.ouija.json files
+                var jsonFiles = Directory.GetFiles(directory, "*.json");
+                var ouijaFiles = Directory.GetFiles(directory, "*.ouija.json");
+                
+                // Add all json files first
+                _availableFilters.AddRange(jsonFiles);
+                
+                // Add ouija files that aren't already included (to avoid duplicates)
+                foreach (var ouijaFile in ouijaFiles)
+                {
+                    if (!_availableFilters.Contains(ouijaFile))
+                    {
+                        _availableFilters.Add(ouijaFile);
+                    }
+                }
             }
             
             DebugLogger.Log("FilterSpinner", $"Found {_availableFilters.Count} filters");

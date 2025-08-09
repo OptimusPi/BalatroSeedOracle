@@ -157,6 +157,14 @@ namespace Oracle.Controls
                     SetCheckBox("SourcePacks", existingConfig.Sources.Contains("booster"));
                     SetCheckBox("SourceShop", existingConfig.Sources.Contains("shop"));
                 }
+                
+                // Set label
+                if (!string.IsNullOrEmpty(existingConfig.Label))
+                {
+                    var labelTextBox = this.FindControl<TextBox>("LabelTextBox");
+                    if (labelTextBox != null)
+                        labelTextBox.Text = existingConfig.Label;
+                }
             }
         }
 
@@ -181,7 +189,8 @@ namespace Oracle.Controls
                 ItemKey = _itemKey,
                 Antes = GetSelectedAntes(),
                 Edition = GetSelectedEdition(),
-                Sources = GetSelectedSources()
+                Sources = GetSelectedSources(),
+                Label = GetLabel()
             };
 
             ConfigApplied?.Invoke(this, new ItemConfigEventArgs { Config = config });
@@ -258,6 +267,16 @@ namespace Oracle.Controls
             }
 
             return sources;
+        }
+        
+        private string? GetLabel()
+        {
+            var labelTextBox = this.FindControl<TextBox>("LabelTextBox");
+            if (labelTextBox != null && !string.IsNullOrWhiteSpace(labelTextBox.Text))
+            {
+                return labelTextBox.Text.Trim();
+            }
+            return null;
         }
 
         private bool IsJokerItem(string itemKey)
@@ -346,5 +365,6 @@ namespace Oracle.Controls
         public List<int>? Antes { get; set; }
         public string Edition { get; set; } = "none";
         public List<string> Sources { get; set; } = new();
+        public string? Label { get; set; }
     }
 }

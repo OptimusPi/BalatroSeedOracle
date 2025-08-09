@@ -1,3 +1,5 @@
+using System;
+
 namespace Oracle.Models;
 
 /// <summary>
@@ -6,6 +8,11 @@ namespace Oracle.Models;
 public class SearchResult
 {
     public string Seed { get; set; } = "";
-    public int TotalScore { get; set; }
+    public double TotalScore { get; set; }
     public string ScoreBreakdown { get; set; } = ""; // JSON array of individual scores
+    
+    // Enhanced fields for better display
+    public int[]? TallyScores { get; set; }
+    public string[]? ItemLabels { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }

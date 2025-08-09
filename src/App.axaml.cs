@@ -23,6 +23,9 @@ public partial class App : Application
         {
             DebugLogger.Log("Initializing services...");
 
+            // Ensure required directories exist
+            EnsureDirectoriesExist();
+
             // Set up services
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -69,6 +72,32 @@ public partial class App : Application
         // ClipboardService is static, no need to register
     }
     
+    private void EnsureDirectoriesExist()
+    {
+        try
+        {
+            // Create JsonItemFilters directory
+            var jsonFiltersDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemFilters");
+            if (!System.IO.Directory.Exists(jsonFiltersDir))
+            {
+                System.IO.Directory.CreateDirectory(jsonFiltersDir);
+                DebugLogger.Log($"Created directory: {jsonFiltersDir}");
+            }
+
+            // Create other required directories
+            var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
+            if (!System.IO.Directory.Exists(searchResultsDir))
+            {
+                System.IO.Directory.CreateDirectory(searchResultsDir);
+                DebugLogger.Log($"Created directory: {searchResultsDir}");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
+        }
+    }
+
     /// <summary>
     /// Get a service from the DI container
     /// </summary>

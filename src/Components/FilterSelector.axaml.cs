@@ -94,8 +94,15 @@ namespace Oracle.Components
             {
                 var filterItems = new List<PanelItem>();
                 
-                // Look for .json files in the root directory
-                var directory = Directory.GetCurrentDirectory();
+                // Look for .json files in JsonItemFilters directory
+                var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                
+                // Create directory if it doesn't exist
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
                 var rootJsonFiles = Directory.GetFiles(directory, "*.json");
                 
                 foreach (var file in rootJsonFiles)
@@ -103,19 +110,6 @@ namespace Oracle.Components
                     var item = CreateFilterPanelItem(file);
                     if (item != null)
                         filterItems.Add(item);
-                }
-                
-                // Also look for .json files in JsonItemConfigs directory
-                var jsonConfigsDir = Path.Combine(directory, "JsonItemConfigs");
-                if (Directory.Exists(jsonConfigsDir))
-                {
-                    var files = Directory.GetFiles(jsonConfigsDir, "*.json");
-                    foreach (var file in files)
-                    {
-                        var item = CreateFilterPanelItem(file);
-                        if (item != null)
-                            filterItems.Add(item);
-                    }
                 }
                 
                 DebugLogger.Log("FilterSelector", $"Found {filterItems.Count} filters");

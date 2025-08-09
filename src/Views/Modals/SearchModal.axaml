@@ -598,25 +598,12 @@
             <!-- Results Panel -->
             <Grid Name="ResultsPanel" IsVisible="False">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Header -->
-                <Border Grid.Row="0" 
-                        Background="{StaticResource DarkerGrey}"
-                        Padding="20"
-                        Margin="0,0,0,10">
-                    <TextBlock Text="SEARCH RESULTS" 
-                               FontSize="24" 
-                               FontWeight="Bold"
-                               Foreground="{StaticResource Yellow}"
-                               HorizontalAlignment="Center"/>
-                </Border>
-                
                 <!-- Results List -->
-                <Border Grid.Row="1"
+                <Border Grid.Row="0"
                         Background="{StaticResource ContainerDarkPrecise}"
                         BorderBrush="{StaticResource ModalBorder}"
                         BorderThickness="2"
@@ -692,7 +679,7 @@
                         <!-- Results Scroll Area -->
                         <ScrollViewer Grid.Row="1"
                                       VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Auto">
+                                      HorizontalScrollBarVisibility="None">
                             <ItemsControl Name="ResultsItemsControl">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -725,7 +712,7 @@
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding Seed}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="14"
+                                                       FontSize="12"
                                                        FontWeight="Bold"
                                                        Foreground="{StaticResource Yellow}"
                                                        VerticalAlignment="Center"/>
@@ -734,7 +721,7 @@
                                             <TextBlock Grid.Column="1"
                                                        Text="{Binding Score, StringFormat='Score: {0:F1}'}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="13"
+                                                       FontSize="11"
                                                        Foreground="{StaticResource Green}"
                                                        VerticalAlignment="Center"/>
                                             
@@ -742,7 +729,7 @@
                                             <TextBlock Grid.Column="2"
                                                        Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
+                                                       FontSize="11"
                                                        Foreground="{StaticResource MediumGrey}"
                                                        VerticalAlignment="Center"/>
                                             
@@ -750,7 +737,7 @@
                                             <TextBlock Grid.Column="3"
                                                        Text="{Binding Details}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
+                                                       FontSize="11"
                                                        Foreground="{StaticResource White}"
                                                        TextWrapping="Wrap"
                                                        VerticalAlignment="Center"
@@ -762,7 +749,7 @@
                                                     Classes="btn-blue"
                                                     FontSize="12"
                                                     Padding="12,4"
-                                                    Height="28"
+                                                    Height="26"
                                                     Click="OnCopySeedClick"
                                                     Tag="{Binding Seed}"/>
                                         </Grid>
@@ -775,21 +762,21 @@
                 </Border>
                 
                 <!-- Footer -->
-                <Border Grid.Row="2"
+                <Border Grid.Row="1"
                         Background="{StaticResource DarkerGrey}"
-                        Padding="20"
+                        Padding="8"
                         BorderThickness="0,2,0,0"
                         BorderBrush="{StaticResource ModalBorder}">
                     <Grid>
                         <TextBlock Name="ResultsSummary"
                                    Text="No results yet"
-                                   FontSize="16"
+                                   FontSize="12"
                                    Foreground="{StaticResource Yellow}"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"/>
                         
                         <Button Name="ExportResultsButton"
-                                Content="Export All to CSV"
+                                Content="Export Results for Excel/CSV"
                                 Classes="btn-green"
                                 IsEnabled="False"
                                 HorizontalAlignment="Right"

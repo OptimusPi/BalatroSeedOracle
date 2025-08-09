@@ -21,6 +21,9 @@ public class OuijaConfig
 
     [JsonPropertyName("filter_config")]
     public FilterConfig filter_config { get; set; } = new();
+    
+    [JsonPropertyName("labels")]
+    public List<string>? labels { get; set; }
 
     public string ToJson()
     {
@@ -90,4 +93,8 @@ public class FilterItem
 
     [JsonPropertyName("IncludeSkipTags")]
     public bool? IncludeSkipTags { get; set; }
+    
+    // Label for display in results table headers
+    [JsonPropertyName("Label")]
+    public string? Label { get; set; }
 }

@@ -20,8 +20,7 @@
                     <Grid>
                         <!-- Drop shadow (first = behind) -->
                         <Border Name="DropShadow"
-                                Background="#000000"
-                                Opacity="0.4"
+                                Background="{StaticResource DropShadow}"
                                 CornerRadius="8"
                                 Margin="2,3,0,0"/>
                         <!-- Main button -->

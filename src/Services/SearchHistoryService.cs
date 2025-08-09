@@ -76,13 +76,16 @@ namespace Oracle.Services
             {
                 var connection = GetConnection();
 
-                // Create single simple results table
+                // Create enhanced results table with JSON support
                 using var createTable = connection.CreateCommand();
                 createTable.CommandText = @"
                     CREATE TABLE IF NOT EXISTS results (
                         seed VARCHAR PRIMARY KEY,
-                        score INTEGER,
-                        details VARCHAR
+                        score DOUBLE,
+                        details VARCHAR,
+                        tally_scores JSON,
+                        item_labels JSON,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ";
                 createTable.ExecuteNonQuery();

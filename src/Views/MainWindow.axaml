@@ -3,18 +3,18 @@
         xmlns:local="using:Oracle.Views"
         x:Class="Oracle.Views.MainWindow"
         Title="🃏Balatro Seed Oracle🥠"
-        Width="1200"
-        Height="700">
+        Width="1280"
+        Height="720">
     
     <Window.Styles>
         <Style Selector="TextBlock.attribution">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource Border}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="{StaticResource LightBlue}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>

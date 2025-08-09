@@ -383,17 +383,17 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Spacing="1">
                                     <!-- Category Tabs - RED CHUNKY BUTTONS like Balatro -->
-                                    <Button Name="FavoritesTab" Content="Favorites ⭐" Classes="nav-button" />
+                                    <Button Name="FavoritesTab" Content="⭐Favorite" Classes="nav-button" />
                                     <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />
                                     <Button Name="RareJokersTab" Content="Rare" Classes="nav-button" />
                                     <Button Name="UncommonJokersTab" Content="Uncommon" Classes="nav-button" />
                                     <Button Name="CommonJokersTab" Content="Common" Classes="nav-button" />
                                     <Button Name="VouchersTab" Content="Voucher" Classes="nav-button" />
-                                    <Button Name="TarotsTab" Content="Tarot Card" Classes="nav-button" />
-                                    <Button Name="SpectralsTab" Content="Spectral Card" Classes="nav-button" />
+                                    <Button Name="TarotsTab" Content="Tarot" Classes="nav-button" />
+                                    <Button Name="SpectralsTab" Content="Spectral" Classes="nav-button" />
                                     <Button Name="TagsTab" Content="Tag" Classes="nav-button" />
                                     <Button Name="BossesTab" Content="Boss" Classes="nav-button" />
-                                    <Button Name="ClearTab" Content="CLEAR ALL" Classes="nav-button" />
+                                    <Button Name="ClearTab" Content="🗑️ Clear ALL" Classes="nav-button" />
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>

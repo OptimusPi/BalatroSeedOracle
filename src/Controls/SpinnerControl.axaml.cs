@@ -104,6 +104,13 @@ namespace Oracle.Controls
                 valueText.Text = GetDisplayValue();
             }
             
+            // Hide label if empty
+            var labelText = this.FindControl<TextBlock>("LabelText");
+            if (labelText != null)
+            {
+                labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
+            }
+            
             // Update button states
             var decrementButton = this.FindControl<Button>("DecrementButton");
             var incrementButton = this.FindControl<Button>("IncrementButton");
@@ -170,6 +177,16 @@ namespace Oracle.Controls
                 if (valueText != null)
                 {
                     valueText.Text = GetDisplayValue();
+                }
+                
+                // Update label visibility if label changed
+                if (change.Property == LabelProperty)
+                {
+                    var labelText = this.FindControl<TextBlock>("LabelText");
+                    if (labelText != null)
+                    {
+                        labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
+                    }
                 }
                 
                 if (change.Property == ValueProperty)

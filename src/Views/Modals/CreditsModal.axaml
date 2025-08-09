@@ -18,8 +18,7 @@
                 
                 <!-- Title -->
                 <TextBlock Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
-                           FontSize="22" 
-                            
+                           FontSize="18"
                            Foreground="{StaticResource Gold}"
                            FontFamily="{StaticResource BalatroFont}"
                            HorizontalAlignment="Center"

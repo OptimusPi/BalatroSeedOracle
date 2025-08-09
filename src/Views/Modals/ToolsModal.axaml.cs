@@ -43,8 +43,8 @@ namespace Oracle.Views.Modals
             {
                 try
                 {
-                    // Create JsonItemConfigs directory if it doesn't exist
-                    var jsonConfigsDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemConfigs");
+                    // Create JsonItemFilters directory if it doesn't exist
+                    var jsonConfigsDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                     if (!Directory.Exists(jsonConfigsDir))
                     {
                         Directory.CreateDirectory(jsonConfigsDir);
