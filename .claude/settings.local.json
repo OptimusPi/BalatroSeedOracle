@@ -42,7 +42,8 @@
       "Bash(pkill:*)",
       "Bash(sudo rm:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

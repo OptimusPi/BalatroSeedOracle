@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Oracle.Views.Modals;
@@ -47,26 +48,34 @@ public static class ModalHelper
     /// <returns>The created modal</returns>
     public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu, string? configPath = null)
     {
-        var searchContent = new SearchModal();
-        
-        // Handle desktop icon creation when modal closes with active search
-        searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
+        try
         {
-            Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
-            // Get the search ID from the modal
-            var searchId = searchContent.GetCurrentSearchId();
-            if (!string.IsNullOrEmpty(searchId))
+            var searchContent = new SearchModal();
+            
+            // Handle desktop icon creation when modal closes with active search
+            searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
             {
-                menu.ShowSearchDesktopIcon(searchId, cfgPath);
+                Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
+                // Get the search ID from the modal
+                var searchId = searchContent.GetCurrentSearchId();
+                if (!string.IsNullOrEmpty(searchId))
+                {
+                    menu.ShowSearchDesktopIcon(searchId, cfgPath);
+                }
+            };
+            
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                // Load the config file into the search modal
+                _ = searchContent.LoadFilterAsync(configPath);
             }
-        };
-        
-        if (!string.IsNullOrEmpty(configPath))
-        {
-            // Load the config file into the search modal
-            _ = searchContent.LoadFilterAsync(configPath);
+            return menu.ShowModal("MOTELY SEARCH", searchContent);
         }
-        return menu.ShowModal("MOTELY SEARCH", searchContent);
+        catch (Exception ex)
+        {
+            Oracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
+            throw;
+        }
     }
     
     /// <summary>

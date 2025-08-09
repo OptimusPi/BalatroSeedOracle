@@ -59,23 +59,10 @@ namespace Oracle.Views.Modals
         private SpinnerControl? _threadsSpinner;
         private SpinnerControl? _batchSizeSpinner;
         private SpinnerControl? _minScoreSpinner;
-        private ComboBox? _deckComboBox;
-        private ComboBox? _stakeComboBox;
         private CheckBox? _debugCheckBox;
         
-        // Deck and Stake selection
-        private Image? _deckPreviewImage;
-        private Image? _stakeChipOverlay;
-        private Canvas? _stakeChipsCanvas;
-        private TextBlock? _deckNameText;
-        private TextBlock? _deckDescText;
-        private Button? _deckLeftArrow;
-        private Button? _deckRightArrow;
-        private SpinnerControl? _stakeSpinner;
-        private TextBlock? _stakeNameText;
-        private TextBlock? _stakeDescText;
-        private Button? _stakeLeftArrow;
-        private Button? _stakeRightArrow;
+        // Deck and Stake selector component
+        private DeckStakeSelector? _deckStakeSelector;
         
         // New Search tab UI elements
         private TextBlock? _progressPercentText;
@@ -94,45 +81,7 @@ namespace Oracle.Views.Modals
         private double _peakSpeed = 0;
         private double _totalSeeds = 0;
         private DateTime _searchStartTime;
-        private int _lastBatchCount = 0;
         private DateTime _lastSpeedUpdate = DateTime.Now;
-        
-        private int _currentDeckIndex = 0;
-        private int _currentStakeIndex = 0;
-        private SpriteService? _spriteService;
-        
-        // Deck data
-        private readonly List<(string name, string description, int x, int y)> _decks = new()
-        {
-            ("Red", "+1 Discard every round", 0, 0),
-            ("Blue", "+1 Hand every round", 0, 2),
-            ("Yellow", "+$10 at start", 1, 2),
-            ("Green", "No interest\nAt end of round: +$2 per\nremaining Hand\n$1 per remaining Discard", 2, 2),
-            ("Black", "+1 Joker slot\n-1 Hand every round", 3, 2),
-            ("Magic", "Start run with the\n'Crystal Ball' voucher\nand 2 copies of 'The Fool'", 0, 3),
-            ("Nebula", "Start run with the\n'Telescope' voucher", 4, 0),
-            ("Ghost", "Spectral cards may\nappear in the shop\nStart with a Hex spectral card", 6, 2),
-            ("Abandoned", "Start run with no\nFace Cards in your deck", 3, 3),
-            ("Checkered", "Start run with 26 Spades\nand 26 Hearts in deck", 1, 3),
-            ("Zodiac", "Start run with\n'Overstock', 'Overstock Plus',\nand 'Crystal Ball' vouchers", 3, 4),
-            ("Painted", "Start run with 2 Hands,\n+1 Hand size", 4, 3),
-            ("Anaglyph", "After defeating each\nBlind, gain a Double Tag", 2, 4),
-            ("Plasma", "Balance Chips and Mult\nwhen calculating score for played hand\nBase Blind size increased", 4, 2),
-            ("Erratic", "All Ranks and Suits\nin deck are randomized", 2, 3)
-        };
-        
-        // Stake data
-        private readonly List<(string name, string description, int x, int y)> _stakes = new()
-        {
-            ("White Stake", "No modifiers", 0, 1),
-            ("Red Stake", "Small Blind gives\nno reward money", 2, 0),
-            ("Green Stake", "Required score scales\nfaster per Ante", 3, 0),
-            ("Black Stake", "Shop can have Eternal\nJokers (can't be sold or destroyed)", 1, 0),
-            ("Blue Stake", "-1 Discard", 4, 0),
-            ("Purple Stake", "Required score scales\nfaster per Ante", 1, 1),
-            ("Orange Stake", "Shop can have Perishable\nJokers (Debuffed after 5 Rounds)", 2, 1),
-            ("Gold Stake", "Shop can have Rental\nJokers (Costs $3 per round)", 3, 1)
-        };
         
         // Current filter info
         private string? _currentFilterPath;
@@ -145,8 +94,16 @@ namespace Oracle.Views.Modals
         
         public SearchModal()
         {
-            InitializeComponent();
-            this.Unloaded += OnUnloaded;
+            try
+            {
+                InitializeComponent();
+                this.Unloaded += OnUnloaded;
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Constructor error: {ex}");
+                throw;
+            }
         }
         
         private void OnUnloaded(object? sender, EventArgs e)
@@ -161,19 +118,35 @@ namespace Oracle.Views.Modals
         
         private void InitializeComponent()
         {
-            AvaloniaXamlLoader.Load(this);
+            try
+            {
+                AvaloniaXamlLoader.Load(this);
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load XAML: {ex}");
+                throw;
+            }
             
-            // Find panels
-            _filterPanel = this.FindControl<Panel>("FilterPanel");
-            _settingsPanel = this.FindControl<Panel>("SettingsPanel");
-            _searchPanel = this.FindControl<Panel>("SearchPanel");
-            _resultsPanel = this.FindControl<Panel>("ResultsPanel");
-            
-            // Find tab buttons
-            _filterTab = this.FindControl<Button>("FilterTab");
-            _settingsTab = this.FindControl<Button>("SettingsTab");
-            _searchTab = this.FindControl<Button>("SearchTab");
-            _resultsTab = this.FindControl<Button>("ResultsTab");
+            try
+            {
+                // Find panels
+                _filterPanel = this.FindControl<Panel>("FilterPanel");
+                _settingsPanel = this.FindControl<Panel>("SettingsPanel");
+                _searchPanel = this.FindControl<Panel>("SearchPanel");
+                _resultsPanel = this.FindControl<Panel>("ResultsPanel");
+                
+                // Find tab buttons
+                _filterTab = this.FindControl<Button>("FilterTab");
+                _settingsTab = this.FindControl<Button>("SettingsTab");
+                _searchTab = this.FindControl<Button>("SearchTab");
+                _resultsTab = this.FindControl<Button>("ResultsTab");
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to find panels/tabs: {ex}");
+                throw;
+            }
             
             // Find triangle pointer's parent Grid (for animation)
             var tabTriangle = this.FindControl<Polygon>("TabTriangle");
@@ -190,22 +163,9 @@ namespace Oracle.Views.Modals
             _threadsSpinner = this.FindControl<SpinnerControl>("ThreadsSpinner");
             _batchSizeSpinner = this.FindControl<SpinnerControl>("BatchSizeSpinner");
             _minScoreSpinner = this.FindControl<SpinnerControl>("MinScoreSpinner");
-            _deckComboBox = this.FindControl<ComboBox>("DeckComboBox");
-            _stakeComboBox = this.FindControl<ComboBox>("StakeComboBox");
             
-            // Find deck/stake UI elements
-            _deckPreviewImage = this.FindControl<Image>("DeckPreviewImage");
-            _stakeChipOverlay = this.FindControl<Image>("StakeChipOverlay");
-            _stakeChipsCanvas = this.FindControl<Canvas>("StakeChipsCanvas");
-            _deckNameText = this.FindControl<TextBlock>("DeckNameText");
-            _deckDescText = this.FindControl<TextBlock>("DeckDescText");
-            _deckLeftArrow = this.FindControl<Button>("DeckLeftArrow");
-            _deckRightArrow = this.FindControl<Button>("DeckRightArrow");
-            _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
-            _stakeNameText = this.FindControl<TextBlock>("StakeNameText");
-            _stakeDescText = this.FindControl<TextBlock>("StakeDescText");
-            _stakeLeftArrow = this.FindControl<Button>("StakeLeftArrow");
-            _stakeRightArrow = this.FindControl<Button>("StakeRightArrow");
+            // Find deck/stake selector component
+            _deckStakeSelector = this.FindControl<DeckStakeSelector>("DeckStakeSelector");
             _debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
             
             // Find filter selector component
@@ -228,6 +188,7 @@ namespace Oracle.Views.Modals
             if (_resultsDataGrid != null)
             {
                 _resultsDataGrid.ItemsSource = _searchResults;
+                _resultsDataGrid.DoubleTapped += OnResultsDataGridDoubleTapped;
             }
             
             // Find new Search tab UI elements
@@ -253,42 +214,31 @@ namespace Oracle.Views.Modals
             // Initialize search manager
             _searchManager = App.GetService<SearchManager>();
             
-            // Initialize sprite service
-            _spriteService = App.GetService<SpriteService>();
-            
-            // Set up deck/stake navigation
-            if (_deckLeftArrow != null)
-                _deckLeftArrow.Click += (s, e) => NavigateDeck(-1);
-            if (_deckRightArrow != null)
-                _deckRightArrow.Click += (s, e) => NavigateDeck(1);
-            if (_stakeLeftArrow != null)
-                _stakeLeftArrow.Click += (s, e) => NavigateStake(-1);
-            if (_stakeRightArrow != null)
-                _stakeRightArrow.Click += (s, e) => NavigateStake(1);
-            if (_stakeSpinner != null)
-            {
-                _stakeSpinner.ValueChanged += (s, e) => 
-                {
-                    _currentStakeIndex = (int)_stakeSpinner.Value;
-                    UpdateStakeDisplay();
-                };
-            }
-            
-            // Initialize deck and stake display
-            UpdateDeckDisplay();
-            UpdateStakeDisplay();
-            
-            // Initialize stake spinner with stake names
-            if (_stakeSpinner != null)
-            {
-                // The SpinnerControl will automatically show stake names when SpinnerType="stake"
-                _stakeSpinner.Value = 0;
-                _currentStakeIndex = 0;
-            }
+            // DeckStakeSelector is already initialized and will handle its own display
             
             // The FilterSelector component will handle loading available filters
             // Enable tabs only after a filter is loaded
             UpdateTabStates(false);
+        }
+
+        private void OnResultsDataGridDoubleTapped(object? sender, RoutedEventArgs e)
+        {
+            if (_resultsDataGrid?.SelectedItem is SearchResult sr)
+            {
+                try
+                {
+                    if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        var mainWindow = desktop.MainWindow;
+                        mainWindow?.Clipboard?.SetTextAsync(sr.Seed);
+                    }
+                    AddToConsole($"Copied seed {sr.Seed} to clipboard");
+                }
+                catch (Exception ex)
+                {
+                    AddToConsole($"Failed to copy seed: {ex.Message}");
+                }
+            }
         }
         
         private async void OnFilterLoaded(object? sender, string filterPath)
@@ -374,17 +324,16 @@ namespace Oracle.Views.Modals
                 clickedTab.Classes.Add("active");
                 if (_resultsPanel != null) _resultsPanel.IsVisible = true;
                 
-                // Always add test data when opening Results tab for debugging
-                Oracle.Helpers.DebugLogger.Log("SearchModal", "Adding test data to DataGrid for debugging");
-                AddTestResults();
-                
-                // Force DataGrid to refresh and ensure visibility
-                if (_resultsDataGrid != null)
+                // Ensure DataGrid is bound (avoid test data injection in production)
+                if (_resultsDataGrid != null && _resultsDataGrid.ItemsSource != _searchResults)
                 {
-                    _resultsDataGrid.ItemsSource = null;
                     _resultsDataGrid.ItemsSource = _searchResults;
-                    _resultsDataGrid.IsVisible = true;
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"DataGrid visibility: {_resultsDataGrid.IsVisible}, Items count: {_searchResults.Count}");
+                }
+                
+                // Update summary when opening if no results yet
+                if (_resultsSummary != null && _searchResults.Count == 0)
+                {
+                    _resultsSummary.Text = "No results yet";
                 }
             }
         }
@@ -518,8 +467,8 @@ namespace Oracle.Views.Modals
                         StartBatch = 0,
                         EndBatch = -1,
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
-                        Deck = _decks[_currentDeckIndex].name,
-                        Stake = _stakes[_currentStakeIndex].name.Replace(" Stake", "")
+                        Deck = _deckStakeSelector?.GetSelectedDeck() ?? "Red",
+                        Stake = _deckStakeSelector?.GetSelectedStake() ?? "White"
                     };
                     
                     AddToConsole("Let Jimbo cook! Starting search...");
@@ -532,65 +481,78 @@ namespace Oracle.Views.Modals
         
         private async void OnCookClick(object? sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentFilterPath)) return;
-            
-            // Create a new search instance if we don't have one
-            if (string.IsNullOrEmpty(_currentSearchId))
+            try
             {
-                CreateNewSearchInstance();
-            }
-            
-            if (_searchInstance == null) return;
-            
-            if (!_isSearching)
-            {
-                // Start search
-                _searchResults.Clear();
-                
-                // Get parameters from Balatro spinners
-                var config = new SearchConfiguration
+                if (string.IsNullOrEmpty(_currentFilterPath)) 
                 {
-                    ThreadCount = _threadsSpinner?.Value ?? 4,
-                    MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-5 = actual values
-                    BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1, // Convert 1-4 to 2-5 for actual batch size
-                    StartBatch = 0,
-                    EndBatch = 999999,
-                    DebugMode = _debugCheckBox?.IsChecked ?? false,
-                    Deck = _decks[_currentDeckIndex].name,
-                    Stake = _stakes[_currentStakeIndex].name.Replace(" Stake", "")
-                };
+                    AddToConsole("Error: No filter loaded. Please select a filter first.");
+                    return;
+                }
                 
-                AddToConsole("Let Jimbo cook! Starting search...");
-                
-                // Start search
-                var searchCriteria = new Oracle.Models.SearchCriteria
+                // Create a new search instance if we don't have one
+                if (string.IsNullOrEmpty(_currentSearchId))
                 {
-                    ConfigPath = _currentFilterPath,
-                    ThreadCount = config.ThreadCount,
-                    MinScore = config.MinScore,
-                    BatchSize = config.BatchSize,
-                    Deck = config.Deck,
-                    Stake = config.Stake
-                };
+                    CreateNewSearchInstance();
+                }
                 
-                await _searchInstance.StartSearchAsync(searchCriteria);
+                if (_searchInstance == null) 
+                {
+                    AddToConsole("Error: Failed to create search instance. Search manager might not be initialized.");
+                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "SearchInstance is null after CreateNewSearchInstance");
+                    return;
+                }
+                
+                if (!_isSearching)
+                {
+                    // Start search
+                    _searchResults.Clear();
+                    
+                    // Get parameters from Balatro spinners
+                    var config = new SearchConfiguration
+                    {
+                        ThreadCount = _threadsSpinner?.Value ?? 4,
+                        MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-5 = actual values
+                        BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1, // Convert 1-4 to 2-5 for actual batch size
+                        StartBatch = 0,
+                        EndBatch = 999999,
+                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        Deck = _deckStakeSelector?.GetSelectedDeck() ?? "Red",
+                        Stake = _deckStakeSelector?.GetSelectedStake() ?? "White"
+                    };
+                    
+                    AddToConsole("Let Jimbo cook! Starting search...");
+                    
+                    // Start search
+                    var searchCriteria = new Oracle.Models.SearchCriteria
+                    {
+                        ConfigPath = _currentFilterPath,
+                        ThreadCount = config.ThreadCount,
+                        MinScore = config.MinScore,
+                        BatchSize = config.BatchSize,
+                        Deck = config.Deck,
+                        Stake = config.Stake
+                    };
+                    
+                    await _searchInstance.StartSearchAsync(searchCriteria);
+                }
+                else
+                {
+                    // Stop search
+                    _searchInstance.StopSearch();
+                    AddToConsole("Jimbo stopped cooking!");
+                    
+                    // Immediately update UI
+                    _isSearching = false;
+                    UpdateSearchUI();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Stop search
-                _searchInstance.StopSearch();
-                AddToConsole("Jimbo stopped cooking!");
-                
-                // Immediately update UI
+                AddToConsole($"Error starting search: {ex.Message}");
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"OnCookClick error: {ex}");
                 _isSearching = false;
                 UpdateSearchUI();
             }
-        }
-        
-        private void OnSaveWidgetClick(object? sender, RoutedEventArgs e)
-        {
-            // This would create a desktop widget from the current search
-            AddToConsole("Widget functionality coming soon!");
         }
         
         private void OnSearchStarted(object? sender, EventArgs e)
@@ -601,7 +563,6 @@ namespace Oracle.Views.Modals
                 _searchStartTime = DateTime.Now;
                 _peakSpeed = 0;
                 _totalSeeds = 0;
-                _lastBatchCount = 0;
                 _lastSpeedUpdate = DateTime.Now;
                 
                 // Update cook button
@@ -725,112 +686,6 @@ namespace Oracle.Views.Modals
                 _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
             }
         }
-        
-        private void NavigateDeck(int direction)
-        {
-            _currentDeckIndex = (_currentDeckIndex + direction + _decks.Count) % _decks.Count;
-            UpdateDeckDisplay();
-        }
-        
-        private void NavigateStake(int direction)
-        {
-            _currentStakeIndex = (_currentStakeIndex + direction + _stakes.Count) % _stakes.Count;
-            UpdateStakeDisplay();
-        }
-        
-        private void UpdateDeckDisplay()
-        {
-            if (_deckNameText == null || _deckDescText == null || _deckPreviewImage == null || _spriteService == null)
-                return;
-                
-            var deck = _decks[_currentDeckIndex];
-            _deckNameText.Text = deck.name + " Deck";
-            _deckDescText.Text = deck.description;
-            
-            // Get deck image from sprite service
-            var deckImage = _spriteService.GetDeckImage(deck.name);
-            if (deckImage != null)
-            {
-                _deckPreviewImage.Source = deckImage;
-            }
-        }
-        
-        private void UpdateStakeDisplay()
-        {
-            if (_stakeChipsCanvas == null || _spriteService == null)
-                return;
-                
-            var stake = _stakes[_currentStakeIndex];
-            
-            // Update stake text
-            if (_stakeNameText != null)
-                _stakeNameText.Text = stake.name;
-            if (_stakeDescText != null)
-                _stakeDescText.Text = stake.description;
-            
-            // Clear and update stake chips display
-            _stakeChipsCanvas.Children.Clear();
-            
-            // Get stake chip image
-            var stakeName = stake.name.Replace(" Stake", "");
-            var chipImage = _spriteService.GetStakeChipImage(stakeName);
-            
-            if (chipImage != null)
-            {
-                // Display a single chip centered in the canvas
-                var image = new Image
-                {
-                    Source = chipImage,
-                    Width = 29,
-                    Height = 29
-                };
-                
-                // Center the chip in the 80x80 canvas
-                double x = (80 - 29) / 2.0;
-                double y = (80 - 29) / 2.0;
-                
-                Canvas.SetLeft(image, x);
-                Canvas.SetTop(image, y);
-                
-                _stakeChipsCanvas.Children.Add(image);
-            }
-            
-            // Update spinner value if available
-            if (_stakeSpinner != null)
-            {
-                _stakeSpinner.Value = _currentStakeIndex;
-            }
-            
-            // Update stake sticker overlay on deck card
-            if (_stakeChipOverlay != null)
-            {
-                // Get stake sticker image from sprite service
-                var stickerName = stake.name.Replace(" ", "");
-                var stakeSticker = _spriteService.GetStickerImage(stickerName);
-                if (stakeSticker != null)
-                {
-                    _stakeChipOverlay.Source = stakeSticker;
-                    _stakeChipOverlay.IsVisible = true;
-                }
-                else
-                {
-                    _stakeChipOverlay.IsVisible = false;
-                }
-            }
-        }
-        
-        public string GetSelectedDeck()
-        {
-            return _decks[_currentDeckIndex].name;
-        }
-        
-        public string GetSelectedStake()
-        {
-            // Return stake name without "Stake" suffix
-            var stakeName = _stakes[_currentStakeIndex].name;
-            return stakeName.Replace(" Stake", "");
-        }
-        
         private async void OnExportResultsClick(object? sender, RoutedEventArgs e)
         {
             if (_searchResults.Count == 0) return;
@@ -926,8 +781,20 @@ namespace Oracle.Views.Modals
         /// </summary>
         private void CreateNewSearchInstance()
         {
-            if (_searchManager != null)
+            try
             {
+                if (_searchManager == null)
+                {
+                    // Try to get search manager again
+                    _searchManager = App.GetService<SearchManager>();
+                    if (_searchManager == null)
+                    {
+                        Oracle.Helpers.DebugLogger.LogError("SearchModal", "SearchManager is null - service not registered?");
+                        AddToConsole("Error: Search manager service not available");
+                        return;
+                    }
+                }
+                
                 _currentSearchId = _searchManager.CreateSearch();
                 _searchInstance = _searchManager.GetSearch(_currentSearchId);
                 
@@ -939,7 +806,19 @@ namespace Oracle.Views.Modals
                     _searchInstance.ConsoleOutput += OnConsoleOutput;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
+                    
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Created new search instance: {_currentSearchId}");
                 }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "Failed to get search instance after creation");
+                    AddToConsole("Error: Failed to create search instance");
+                }
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"CreateNewSearchInstance error: {ex}");
+                AddToConsole($"Error creating search instance: {ex.Message}");
             }
         }
         

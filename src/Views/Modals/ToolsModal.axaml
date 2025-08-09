@@ -7,7 +7,7 @@
             <!-- Title -->
             <TextBlock Text="TOOLS" 
                        FontSize="24" 
-                       FontWeight="Bold" 
+                        
                        Foreground="{StaticResource Gold}"
                        FontFamily="{StaticResource BalatroFont}"
                        HorizontalAlignment="Center"
@@ -22,7 +22,7 @@
                    HorizontalAlignment="Center">
                 <TextBlock Text="ANALYZER" 
                            FontSize="20"
-                           FontWeight="Bold"
+                           
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
@@ -36,7 +36,7 @@
                    HorizontalAlignment="Center">
                 <TextBlock Text="Word Lists" 
                            FontSize="20"
-                           FontWeight="Bold"
+                           
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
@@ -50,7 +50,7 @@
                    HorizontalAlignment="Center">
                 <TextBlock Text="Credits" 
                            FontSize="20"
-                           FontWeight="Bold"
+                           
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>

@@ -381,7 +381,13 @@ public static class BalatroData
             { "triboulet", "Triboulet" },
             { "yorick", "Yorick" },
             { "chicot", "Chicot" },
-            { "perkeo", "Perkeo" }
+            { "perkeo", "Perkeo" },
+            // Wildcard entries
+            { "anyjoker", "Any Joker" },
+            { "anycommon", "Any Common" },
+            { "anyuncommon", "Any Uncommon" },
+            { "anyrare", "Any Rare" },
+            { "anylegendary", "Any Legendary" }
         };
 
         if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))

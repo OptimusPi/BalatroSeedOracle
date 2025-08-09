@@ -37,7 +37,6 @@ namespace Oracle.Components
         private TextBlock? _authorText;
         private StackPanel? _authorPanel;
         private Canvas? _cardsCanvas;
-        private TextBlock? _statusText;
         private SpriteService? _spriteService;
         
         public FilterSelector()
@@ -55,7 +54,6 @@ namespace Oracle.Components
             _authorText = this.FindControl<TextBlock>("AuthorText");
             _authorPanel = this.FindControl<StackPanel>("AuthorPanel");
             _cardsCanvas = this.FindControl<Canvas>("CardsCanvas");
-            _statusText = this.FindControl<TextBlock>("StatusText");
             
             // Initialize sprite service
             _spriteService = App.GetService<SpriteService>();
@@ -171,20 +169,6 @@ namespace Oracle.Components
                 {
                     DebugLogger.Log("FilterSelector", $"Auto-loading filter: {filterPath}");
                     FilterLoaded?.Invoke(this, filterPath);
-                    
-                    // Update status to show it's loaded
-                    if (_statusText != null && _filterName != null)
-                    {
-                        _statusText.Text = $"Loaded: {_filterName.Text}";
-                    }
-                }
-                else
-                {
-                    // Just show selected status
-                    if (_statusText != null && _filterName != null)
-                    {
-                        _statusText.Text = $"Selected: {_filterName.Text}";
-                    }
                 }
             }
             catch (Exception ex)

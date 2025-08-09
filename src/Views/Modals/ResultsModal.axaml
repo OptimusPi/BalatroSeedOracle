@@ -56,7 +56,7 @@
                 <TextBlock Text="SAVED FILTERS" 
                           FontFamily="{StaticResource BalatroFont}"
                           FontSize="28"
-                          FontWeight="Bold"
+                          
                           Foreground="{StaticResource PaleOrange}"/>
                 <TextBlock Text="Click to load and search"
                           FontFamily="{StaticResource BalatroFont}"

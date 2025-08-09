@@ -104,7 +104,7 @@
             <TextBlock Text="Balatro Seed Oracle"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
-                        FontWeight="Bold"
+                        
                         Foreground="{StaticResource TextLight}"
                         HorizontalAlignment="Center"
                         Margin="0,5,5,5"/>
@@ -134,7 +134,7 @@
                                         Margin="4,6,4,2"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"
-                                       FontWeight="Bold"
+                                       
                                        HorizontalAlignment="Center"
                                        Foreground="{StaticResource White}"
                                        IsHitTestVisible="False"/>
@@ -157,7 +157,7 @@
                                              Text=""
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
-                                             FontWeight="Bold"
+                                             
                                              Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
@@ -193,7 +193,7 @@
                             MinWidth="160">
                         <TextBlock Text="SEED SEARCH" 
                                    FontSize="24" 
-                                   FontWeight="Bold"
+                                   
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -205,7 +205,7 @@
                             MinWidth="100">
                         <TextBlock Text="Filter Editor" 
                                    FontSize="20" 
-                                   FontWeight="Bold"
+                                   
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -217,7 +217,7 @@
                             MinWidth="100">
                         <TextBlock Text="QUIT" 
                                    FontSize="20" 
-                                   FontWeight="Bold"
+                                   
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -229,7 +229,7 @@
                             MinWidth="160">
                         <TextBlock Text="ANALYZE" 
                                    FontSize="24" 
-                                   FontWeight="Bold"
+                                   
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -241,7 +241,7 @@
                             MinWidth="64">
                         <TextBlock Text="MORE" 
                                    FontSize="20" 
-                                   FontWeight="Bold"
+                                   
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>

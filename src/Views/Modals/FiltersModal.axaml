@@ -70,11 +70,32 @@
             <Setter Property="Cursor" Value="Arrow"/>
         </Style>
         
+        <Style Selector="Button.nav-button">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.nav-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+        </Style>
+        <Style Selector="Button.nav-button.active">
+            <Setter Property="Background" Value="{StaticResource Gold}" />
+            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
+        </Style>
         <Style Selector="Button.small-nav-button">
             <Setter Property="FontSize" Value="12" />
-            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="MinHeight" Value="24" />
             <Setter Property="Padding" Value="6,2" />
-            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
         <Style Selector="Border.drop-zone">
             <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
@@ -253,7 +274,7 @@
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="ScrollBar:vertical">
-            <Setter Property="Width" Value="14" />
+            <Setter Property="Width" Value="8" />
             <Setter Property="Margin" Value="0,0,2,0" />
         </Style>
         <Style Selector="ScrollBar /template/ Thumb:pointerover">
@@ -331,7 +352,7 @@
         <StackPanel Grid.Row="1" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
-                    Margin="0,0,0,12">
+                    Margin="0,0,0,8">
             <Button Name="LoadSaveTab" 
                     Content="Select Filter" 
                     Classes="tab-button active"
@@ -347,20 +368,20 @@
         </StackPanel>
         
         <!-- Content area -->
-        <Grid Grid.Row="2" Margin="24" DragDrop.AllowDrop="True">
+        <Grid Grid.Row="2" Margin="12" DragDrop.AllowDrop="True">
             
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="False" DragDrop.AllowDrop="True">
                     <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="6" />
                     <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                         
                         <!-- Left Sidebar - Dark panel with NO border -->
-                        <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8">
+                        <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="6">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel Spacing="2">
+                                <StackPanel Spacing="1">
                                     <!-- Category Tabs - RED CHUNKY BUTTONS like Balatro -->
                                     <Button Name="FavoritesTab" Content="Favorites ⭐" Classes="nav-button" />
                                     <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />
@@ -439,7 +460,7 @@
                                         <TextBlock Text="MUST have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   FontWeight="Bold"
+                                                   
                                                    Foreground="{StaticResource Border}"
                                                    Opacity="0.5"
                                                    VerticalAlignment="Center"
@@ -474,7 +495,7 @@
                                         <TextBlock Text="Should have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   FontWeight="Bold"
+                                                   
                                                    Foreground="{StaticResource Border}"
                                                    Opacity="0.5"
                                                    VerticalAlignment="Center"
@@ -509,7 +530,7 @@
                                         <TextBlock Text="Must NOT Have..."
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="12"
-                                                   FontWeight="Bold"
+                                                   
                                                    Foreground="{StaticResource Border}"
                                                    Opacity="0.5"
                                                    VerticalAlignment="Center"
@@ -566,7 +587,7 @@
                         <TextBlock Grid.Row="0" 
                                    Text="JSON EDITOR" 
                                    FontSize="20" 
-                                   FontWeight="Bold" 
+                                    
                                    Foreground="{StaticResource Gold}"
                                    HorizontalAlignment="Center"/>
                         

@@ -149,7 +149,7 @@
                 <TextBlock Name="ItemNameText" 
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="16"
-                           FontWeight="Bold"
+                           
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
             </Border>
@@ -181,7 +181,7 @@
                                 <TextBlock Text="1" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -198,7 +198,7 @@
                                 <TextBlock Text="2" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -215,7 +215,7 @@
                                 <TextBlock Text="3" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -232,7 +232,7 @@
                                 <TextBlock Text="4" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -249,7 +249,7 @@
                                 <TextBlock Text="5" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -266,7 +266,7 @@
                                 <TextBlock Text="6" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -283,7 +283,7 @@
                                 <TextBlock Text="7" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -300,7 +300,7 @@
                                 <TextBlock Text="8" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -486,7 +486,7 @@
                                 <TextBlock Text="APPLY" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource AccentGreen}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
@@ -509,7 +509,7 @@
                                 <TextBlock Text="DELETE" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource ToggleRed}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
@@ -532,7 +532,7 @@
                                 <TextBlock Text="CANCEL" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12" 
-                                           FontWeight="Bold"
+                                           
                                            Foreground="{StaticResource LightGrey}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>

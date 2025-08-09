@@ -1,0 +1,182 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Oracle.Controls"
+             x:Class="Oracle.Components.DeckStakeSelector">
+    
+    <UserControl.Styles>
+        <Style Selector="TextBlock.deck-name">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource Gold}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+        <Style Selector="TextBlock.deck-desc">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="LineHeight" Value="14" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.stake-name">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource Gold}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+        <Style Selector="TextBlock.stake-desc">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="LineHeight" Value="12" />
+        </Style>
+    </UserControl.Styles>
+    
+    <StackPanel Spacing="12">
+        
+        <!-- Deck Selection -->
+        <Border 
+                Background="{StaticResource ContainerDarkPrecise}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- Deck Name -->
+                <TextBlock Grid.Row="0" 
+                           Name="DeckNameText" 
+                           Classes="deck-name"
+                           Text="Red Deck" />
+                
+                <!-- Deck Description -->
+                <TextBlock Grid.Row="1" 
+                           Name="DeckDescText" 
+                           Classes="deck-desc"
+                           Text="+1 Discard every round" />
+                
+                <!-- Deck Preview with stake overlay -->
+                <Grid Grid.Row="2" 
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center"
+                      Width="71" 
+                      Height="95"
+                      Margin="0,8,0,8">
+                    <Image Name="DeckPreviewImage" 
+                           Stretch="UniformToFill" />
+                    <Image Name="StakeChipOverlay" 
+                           Width="29" 
+                           Height="29" 
+                           HorizontalAlignment="Right" 
+                           VerticalAlignment="Top" 
+                           Margin="0,-5,-5,0" 
+                           IsVisible="False" />
+                </Grid>
+                
+                <!-- Navigation -->
+                <Grid Grid.Row="3" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0" 
+                            Name="DeckLeftArrow" 
+                            Classes="nav-arrow" 
+                            Content="◀" 
+                            Width="30" 
+                            Height="30" />
+                    
+                    <Button Grid.Column="2" 
+                            Name="DeckRightArrow" 
+                            Classes="nav-arrow" 
+                            Content="▶" 
+                            Width="30" 
+                            Height="30" />
+                </Grid>
+            </Grid>
+        </Border>
+        
+        <!-- Stake Selection -->
+        <Border 
+                Background="{StaticResource ContainerDarkPrecise}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- Stake Name -->
+                <TextBlock Grid.Row="0" 
+                           Name="StakeNameText" 
+                           Classes="stake-name"
+                           Text="White Stake" />
+                
+                <!-- Stake Description -->
+                <TextBlock Grid.Row="1" 
+                           Name="StakeDescText" 
+                           Classes="stake-desc"
+                           Text="Base Difficulty" />
+                
+                <!-- Stake Chips Display -->
+                <Canvas Grid.Row="2" 
+                        Name="StakeChipsCanvas" 
+                        Width="60" 
+                        Height="60" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        Margin="0,8,0,8" />
+                
+                <!-- Navigation OR Spinner -->
+                <Grid Grid.Row="3" Margin="0,8,0,0">
+                    <!-- Arrow navigation (default) -->
+                    <Grid Name="ArrowNavigation">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button Grid.Column="0" 
+                                Name="StakeLeftArrow" 
+                                Classes="nav-arrow" 
+                                Content="◀" 
+                                Width="30" 
+                                Height="30" />
+                        
+                        <Button Grid.Column="2" 
+                                Name="StakeRightArrow" 
+                                Classes="nav-arrow" 
+                                Content="▶" 
+                                Width="30" 
+                                Height="30" />
+                    </Grid>
+                    
+                    <!-- Spinner navigation (optional) -->
+                    <controls:SpinnerControl Name="StakeSpinner" 
+                                           SpinnerType="stake"
+                                           Minimum="0"
+                                           Maximum="7"
+                                           Value="0"
+                                           IsVisible="False" />
+                </Grid>
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

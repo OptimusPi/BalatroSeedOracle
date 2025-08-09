@@ -22,7 +22,7 @@
                     <TextBlock Grid.Row="0" 
                               Text="SEED ANALYZER" 
                               FontSize="20"
-                              FontWeight="Bold"
+                              
                               HorizontalAlignment="Center"
                               Foreground="{StaticResource Gold}"
                               Margin="0,0,0,15"/>
@@ -103,7 +103,7 @@
                                MinWidth="120"
                                Background="{StaticResource AccentGreen}"
                                Foreground="{StaticResource White}"
-                               FontWeight="Bold"
+                               
                                FontSize="16"
                                CornerRadius="6"
                                Height="40"

@@ -6,7 +6,7 @@
         <!-- Nav arrow style -->
         <Style Selector="Button.nav-arrow">
             <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="60"/>
+            <Setter Property="Height" Value="220"/>
             <Setter Property="FontSize" Value="32"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -72,11 +72,11 @@
                 <!-- Card -->
                 <Border Grid.Column="1" 
                         Background="{StaticResource ContainerDarkPrecise}" 
-                        BorderBrush="{StaticResource ModalBorder}" 
-                        BorderThickness="2" 
+                        BorderBrush="{StaticResource ContainerDarkPrecise}" 
+                        BorderThickness="0" 
                         CornerRadius="12" 
                         Padding="20" 
-                        Width="500" 
+                        Width="400" 
                         Height="220">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -96,7 +96,7 @@
                             <TextBlock Name="FilterName" 
                                        Text="No filters found" 
                                        FontSize="18" 
-                                       FontWeight="Bold" 
+                                        
                                        Foreground="{StaticResource DarkerGrey}" 
                                        TextAlignment="Center"/>
                         </Border>
@@ -108,11 +108,11 @@
                                     Name="AuthorPanel" 
                                     IsVisible="False" 
                                     Margin="0,0,0,2">
-                            <Border Background="{StaticResource ModalBorder}" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="by" FontSize="14" Foreground="{StaticResource DarkerGrey}"/>
+                            <Border Background="{StaticResource DockGrey}" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="by" FontSize="14" Foreground="{StaticResource White}"/>
                             </Border>
                             <Border Background="{StaticResource Blue}" CornerRadius="4" Padding="6,2">
-                                <TextBlock Name="AuthorText" Text="" FontSize="14" FontWeight="Bold" Foreground="{StaticResource White}"/>
+                                <TextBlock Name="AuthorText" Text="" FontSize="14"  Foreground="{StaticResource White}"/>
                             </Border>
                         </StackPanel>
                         
@@ -133,7 +133,7 @@
                             <TextBlock Name="FilterDescription" 
                                        Text="Browse for a filter or create a new one" 
                                        FontSize="14" 
-                                       Foreground="{StaticResource MediumGrey}" 
+                                       Foreground="{StaticResource LightTextGrey}" 
                                        TextAlignment="Center" 
                                        TextWrapping="Wrap"/>
                         </Border>
@@ -151,7 +151,7 @@
             
             <!-- Horizontal Separator -->
             <Border Height="2" 
-                    Background="{StaticResource ModalBorder}" 
+                    Background="{StaticResource DockGrey}" 
                     Margin="40,8,40,8"
                     CornerRadius="1"/>
             
@@ -167,13 +167,6 @@
                         Background="{StaticResource Green}" 
                         Click="OnNewFilterClick"/>
             </StackPanel>
-            
-            <TextBlock Name="StatusText" 
-                       Text="No filter loaded" 
-                       Foreground="{StaticResource MediumGrey}" 
-                       FontSize="14" 
-                       TextAlignment="Center" 
-                       TextWrapping="Wrap"/>
         </StackPanel>
     </Grid>
 </UserControl>

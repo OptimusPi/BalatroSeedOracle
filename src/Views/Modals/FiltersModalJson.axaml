@@ -61,7 +61,7 @@
                             <TextBlock Grid.Column="0" 
                                        Text="✨ JSON Editor" 
                                        FontSize="20" 
-                                       FontWeight="Bold" 
+                                        
                                        Foreground="{StaticResource Gold}" 
                                        VerticalAlignment="Center" />
                             
@@ -101,7 +101,7 @@
                             Classes="success-message"
                             IsVisible="False">
                         <TextBlock Text="✓ JSON formatted successfully" 
-                                   FontWeight="Bold" 
+                                    
                                    Foreground="White" />
                     </Border>
                 </Grid>

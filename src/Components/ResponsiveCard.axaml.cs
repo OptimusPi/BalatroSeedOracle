@@ -8,6 +8,7 @@ using Oracle.Models;
 using Oracle.Services;
 using Oracle.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Threading;
 
@@ -284,6 +285,8 @@ namespace Oracle.Components
                         // IMPORTANT: Clean up drag visual state when drag ends
                         this.Classes.Remove("is-dragging");
                         this.RenderTransform = null; // Reset any transforms
+                        this.Width = double.NaN; // Reset to auto width
+                        this.Height = double.NaN; // Reset to auto height
                         _isDragging = false;
                         _dragStartPoint = null;
                     }
@@ -391,7 +394,7 @@ namespace Oracle.Components
                         }
                     }
                 });
-            }, null, 0, 33); // ~30 FPS
+            }, null, 0, 15);
         }
 
         private void StopSoulAnimation()
@@ -408,14 +411,25 @@ namespace Oracle.Components
             // For jokers, check if we have a sprite name that needs display name lookup
             if (Category == "Jokers")
             {
-                // First check if the sprite service has the image (meaning it's a lowercase sprite name)
-                var spriteService = SpriteService.Instance;
-                var jokerImg = spriteService.GetJokerImage(name);
-                if (jokerImg is not null)
+                // Special handling for wildcard jokers
+                var wildcardNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    // This is a sprite name, get the display name
-                    return BalatroData.GetDisplayNameFromSprite(name);
+                    { "anyjoker", "Any Joker" },
+                    { "anycommon", "Any Common" },
+                    { "anyuncommon", "Any Uncommon" },
+                    { "anyrare", "Any Rare" },
+                    { "anylegendary", "Any Legendary" }
+                };
+                
+                if (wildcardNames.TryGetValue(name, out var wildcardDisplay))
+                {
+                    return wildcardDisplay;
                 }
+                
+                // Otherwise try to get display name from sprite mapping
+                var displayName = BalatroData.GetDisplayNameFromSprite(name);
+                Oracle.Helpers.DebugLogger.Log("ResponsiveCard", $"FormatItemName: name='{name}', displayName='{displayName}', Category='{Category}'");
+                return displayName;
             }
 
             // Otherwise use the existing formatting

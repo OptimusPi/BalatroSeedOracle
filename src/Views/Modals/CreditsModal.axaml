@@ -19,7 +19,7 @@
                 <!-- Title -->
                 <TextBlock Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
                            FontSize="22" 
-                           FontWeight="Bold" 
+                            
                            Foreground="{StaticResource Gold}"
                            FontFamily="{StaticResource BalatroFont}"
                            HorizontalAlignment="Center"
@@ -33,7 +33,7 @@
                     <TextBlock Text="pifreak" 
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="20"
-                               FontWeight="Bold"
+                               
                                Foreground="{StaticResource DarkerGrey}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
@@ -47,7 +47,7 @@
                     <TextBlock Text="WheatCoin" 
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="20"
-                               FontWeight="Bold"
+                               
                                Foreground="{StaticResource DarkerGrey}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>

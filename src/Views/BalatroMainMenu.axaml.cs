@@ -97,8 +97,26 @@ namespace Oracle.Views
         // Main menu button event handlers
         private void OnSeedSearchClick(object? sender, RoutedEventArgs e)
         {
-            // Open the search modal
-            this.ShowSearchModal();
+            try
+            {
+                // Open the search modal
+                this.ShowSearchModal();
+            }
+            catch (Exception ex)
+            {
+                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", $"Failed to open search modal: {ex}");
+                // Show error in UI
+                var errorModal = new StandardModal("ERROR");
+                var errorText = new TextBlock
+                {
+                    Text = $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.",
+                    Margin = new Avalonia.Thickness(20),
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                };
+                errorModal.SetContent(errorText);
+                errorModal.BackClicked += (s, ev) => HideModalContent();
+                ShowModalContent(errorModal);
+            }
         }
 
         private void OnEditorClick(object? sender, RoutedEventArgs e)

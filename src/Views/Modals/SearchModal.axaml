@@ -7,19 +7,17 @@
     <UserControl.Styles>
         <!-- Modal content styles -->
         <Style Selector="Border.modal-content-panel">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="24"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <Style Selector="Border.modal-content-box">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="16"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <!-- Balatro-style tab buttons -->
@@ -249,9 +247,9 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         
-        <!-- Dark grey container for dynamic values -->
+        <!-- Dark grey container for dynamic values - alternates color when nested -->
         <Style Selector="Border.dark-value-container">
-            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -356,7 +354,7 @@
                     Classes="tab-button active ActiveTab"
                     Click="OnTabClick"/>
             <Button Name="SettingsTab" 
-                    Content="Settings" 
+                    Content="Deck/Stake" 
                     Classes="tab-button InactiveTab"
                     IsEnabled="False"
                     Click="OnTabClick"/>
@@ -384,480 +382,221 @@
                                          NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
             
-            <!-- Settings Panel -->
-            <StackPanel Name="SettingsPanel" IsVisible="False" Spacing="24">
-                <!-- Inner dark panel like in Balatro -->
-                <Border Classes="modal-content-panel">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Left side: Search Settings -->
-                        <StackPanel Grid.Column="0" Spacing="24">
-                            <TextBlock Text="Search Parameters" 
-                                       FontSize="20" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource Orange}"
-                                       HorizontalAlignment="Center"/>
-                            
-                            <!-- Settings in a dark container -->
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
-                                    CornerRadius="12"
-                                    Padding="20">
-                                <StackPanel Spacing="16" HorizontalAlignment="Center">
-                                    <!-- Threads -->
-                                    <controls:SpinnerControl Name="ThreadsSpinner" 
-                                                            Label="CPU Threads"
-                                                            Value="4" 
-                                                            Minimum="1" 
-                                                            Maximum="16"
-                                                            ShadowDirection="south-east"/>
-                                    
-                                    <!-- Batch Size -->
-                                    <controls:SpinnerControl Name="BatchSizeSpinner" 
-                                                            Label="BATCH SIZE"
-                                                            Value="3" 
-                                                            Minimum="1" 
-                                                            Maximum="4"
-                                                            ShadowDirection="south-east"/>
-                                    
-                                    <!-- Min Score -->
-                                    <controls:SpinnerControl Name="MinScoreSpinner" 
-                                                            Label="MIN SCORE"
-                                                            Value="0" 
-                                                            Minimum="0" 
-                                                            Maximum="5"
-                                                            ShadowDirection="south-east"/>
-                                    
-                                    <CheckBox Name="DebugCheckBox" 
-                                              Content="Enable Debug Output"
-                                              Foreground="White"
-                                              HorizontalAlignment="Center"
-                                              FontFamily="{StaticResource BalatroFont}"
-                                              FontSize="14"
-                                              Margin="0,10"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                        
-                        <!-- Center divider -->
-                        <Border Grid.Column="1" 
-                                Width="2" 
-                                Background="{StaticResource ModalBorder}"
-                                Margin="0,24,0,0"/>
-                        
-                        <!-- Right side: Deck Options -->
-                        <StackPanel Grid.Column="2" Spacing="24">
-                            <TextBlock Text="Deck Options" 
-                                       FontSize="20" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource Orange}"
-                                       HorizontalAlignment="Center"/>
-                            
-                            <!-- Deck Selection Panel - Balatro Style -->
-                            <StackPanel Spacing="16">
-                        
-                        <!-- Deck Selector Card -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                                <!-- Left Arrow -->
-                                <Button Grid.Column="0" Name="DeckLeftArrow"
-                                        Content="&lt;"
-                                        Classes="nav-arrow"
-                                        Width="40" Height="95"
-                                        Margin="0,0,2,0"/>
-                                
-                                <!-- Right Arrow -->
-                                <Button Grid.Column="2" Name="DeckRightArrow"
-                                        Content="&gt;"
-                                        Classes="nav-arrow"
-                                        Width="40" Height="95"
-                                        Margin="2,0,0,0"/>
-                                
-                                <!-- Deck Content with Border -->
-                                <Border Grid.Column="1" 
-                                        Background="{StaticResource ContainerDarkPrecise}"
-                                        BorderBrush="{StaticResource ModalBorder}"
-                                        BorderThickness="2"
-                                        CornerRadius="12"
-                                        Padding="12"
-                                        MaxWidth="280">
-                                    <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="16"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <!-- Deck Card Image with Stake Sticker Overlay -->
-                                    <Grid Grid.Column="0">
-                                        <Border Background="{StaticResource DockGrey}"
-                                                CornerRadius="8"
-                                                Width="71" Height="95"
-                                                VerticalAlignment="Center">
-                                            <Image Name="DeckPreviewImage"
-                                                   Width="71" Height="95"
-                                                   Stretch="Uniform"/>
-                                        </Border>
-                                        <!-- Stake Sticker Overlay -->
-                                        <Image Name="StakeChipOverlay"
-                                               Width="71" Height="95"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               Stretch="Uniform"
-                                               IsHitTestVisible="False"/>
-                                    </Grid>
-                                    
-                                    <!-- Deck Info -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                        <TextBlock Name="DeckNameText"
-                                                   Text="Red Deck"
-                                                   FontSize="18"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource White}"/>
-                                        <TextBlock Name="DeckDescText"
-                                                   Text="+1 Discard every round"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource MediumGrey}"
-                                                   TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </Grid>
-                            </StackPanel>
-                            
-                            <!-- Stake Selection Panel - Balatro Style -->
-                            <StackPanel Spacing="16">
-                                
-                                <!-- Stake Display Panel with navigation arrows -->
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <!-- Left Arrow -->
-                                    <Button Grid.Column="0" Name="StakeLeftArrow"
-                                            Content="&lt;"
-                                            Classes="nav-arrow"
-                                            Width="40" Height="80"
-                                            Margin="0,0,2,0"/>
-                                    
-                                    <!-- Stake Content with Border -->
-                                    <Border Grid.Column="1" 
-                                            Background="{StaticResource ContainerDarkPrecise}"
-                                            BorderBrush="{StaticResource ModalBorder}"
-                                            BorderThickness="2"
-                                            CornerRadius="12"
-                                            Padding="12"
-                                            MaxWidth="280">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="80"/>
-                                                <ColumnDefinition Width="16"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <!-- Stake Chip Visual -->
-                                            <Canvas Grid.Column="0" 
-                                                    Name="StakeChipsCanvas" 
-                                                    Width="80" Height="80"
-                                                    VerticalAlignment="Center">
-                                                <!-- Chips will be added here programmatically -->
-                                            </Canvas>
-                                            
-                                            <!-- Stake Info -->
-                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                                <TextBlock Name="StakeNameText" 
-                                                           Text="White Stake"
-                                                           FontSize="18"
-                                                           FontWeight="Bold"
-                                                           Foreground="{StaticResource White}"/>
-                                                <TextBlock Name="StakeDescText" 
-                                                           Text="Base Difficulty"
-                                                           FontSize="14"
-                                                           Foreground="{StaticResource MediumGrey}"
-                                                           TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                    
-                                    <!-- Right Arrow -->
-                                    <Button Grid.Column="2" Name="StakeRightArrow"
-                                            Content="&gt;"
-                                            Classes="nav-arrow"
-                                            Width="40" Height="80"
-                                            Margin="2,0,0,0"/>
-                                </Grid>
-                                
-                                <!-- Hidden spinner for value tracking -->
-                                <controls:SpinnerControl Name="StakeSpinner" 
-                                                        Label=""
-                                                        SpinnerType="stake"
-                                                        Value="0" 
-                                                        Minimum="0" 
-                                                        Maximum="7"
-                                                        IsVisible="False"
-                                                        HorizontalAlignment="Center"
-                                                        ShadowDirection="south-east"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </StackPanel>
+            <!-- Settings Panel (now just Deck/Stake) -->
+            <ScrollViewer Name="SettingsPanel" IsVisible="False" 
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="24" Margin="24">
+                    <!-- Inner dark panel like in Balatro -->
+                    <Border Classes="modal-content-panel" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Top"
+                            MaxWidth="400">
+                        <!-- Deck and Stake Selection -->
+                        <components:DeckStakeSelector Name="DeckStakeSelector" 
+                                                     UseSpinnerForStake="True"/>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
             
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
                 <!-- 3 Column Layout -->
-                <Grid Grid.Row="0">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="180"/> <!-- Left skinny column -->
-                        <ColumnDefinition Width="*"/>   <!-- Fat middle column -->
-                        <ColumnDefinition Width="180"/> <!-- Right skinny column -->
+                        <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
+                        <ColumnDefinition Width="*"/>   <!-- Middle for console -->
+                        <ColumnDefinition Width="200"/> <!-- Right column for stats -->
                     </Grid.ColumnDefinitions>
                     
-                    <!-- Left Column - Stats -->
+                    <!-- Left Column - Search Parameters -->
                     <Border Grid.Column="0" 
                             Classes="modal-content-box"
                             Margin="0,0,6,0">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="STATS" 
-                                       FontSize="18" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource Gold}"
-                                       HorizontalAlignment="Center"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             
-                            <StackPanel Spacing="8">
-                                <!-- Progress -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Progress" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="ProgressPercentText"
-                                                   Text="0%"
-                                                   FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource Yellow}"/>
-                                    </StackPanel>
-                                </Border>
+                            <StackPanel Grid.Row="0" Spacing="10">
+                                <!-- Threads -->
+                                <controls:SpinnerControl Name="ThreadsSpinner" 
+                                                        Label="Threads"
+                                                        Value="4" 
+                                                        Minimum="1" 
+                                                        Maximum="16"
+                                                        Width="140"
+                                                        ShadowDirection="south-east"/>
                                 
-                                <!-- Batches -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Batches" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="BatchesText"
-                                                   Text="0"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource LightCream}"/>
-                                    </StackPanel>
-                                </Border>
+                                <!-- Batch Size -->
+                                <controls:SpinnerControl Name="BatchSizeSpinner" 
+                                                        Label="Batch"
+                                                        Value="3" 
+                                                        Minimum="1" 
+                                                        Maximum="4"
+                                                        Width="140"
+                                                        ShadowDirection="south-east"/>
                                 
-                                <!-- Seeds -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Seeds Searched" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="TotalSeedsText"
-                                                   Text="0"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource LightCream}"/>
-                                    </StackPanel>
-                                </Border>
+                                <!-- Min Score -->
+                                <controls:SpinnerControl Name="MinScoreSpinner" 
+                                                        Label="Min Score"
+                                                        Value="0" 
+                                                        Minimum="0" 
+                                                        Maximum="5"
+                                                        Width="140"
+                                                        ShadowDirection="south-east"/>
                                 
-                                <!-- Time -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Time Elapsed" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="TimeElapsedText"
-                                                   Text="00:00:00"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource LightCream}"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Results Found -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Results Found" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="ResultsFoundText"
-                                                   Text="0"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource Green}"/>
-                                    </StackPanel>
-                                </Border>
+                                <!-- Debug checkbox -->
+                                <CheckBox Name="DebugCheckBox" 
+                                          Content="Debug Mode"
+                                          Foreground="White"
+                                          HorizontalAlignment="Center"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          FontSize="12"
+                                          Margin="0,10"/>
                             </StackPanel>
-                        </StackPanel>
+                            
+                            <!-- Let Jimbo COOK button at bottom -->
+                            <Button Grid.Row="1"
+                                    Name="CookButton"
+                                    Content="Let Jimbo COOK!"
+                                    Classes="cook-button"
+                                    IsEnabled="False"
+                                    Click="OnCookClick"
+                                    Margin="0,12,0,0"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
                     </Border>
                     
                     <!-- Middle Column - Console -->
                     <Border Grid.Column="1" 
                             Classes="modal-content-box"
-                            Margin="6,0">
-                        <StackPanel Spacing="16">
-                            <TextBlock Text="CONSOLE" 
-                                       FontSize="20" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource PaleOrange}"
-                                       HorizontalAlignment="Center"/>
+                            Margin="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             
-                            <ScrollViewer Height="400" 
+                            <ScrollViewer Grid.Row="0" 
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Auto">
                                 <TextBox Name="ConsoleOutput" 
-                                         Classes="terminal" 
-                                         IsReadOnly="True"
-                                         AcceptsReturn="True"
-                                         TextWrapping="NoWrap"
-                                         Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
+                                             Classes="terminal" 
+                                             IsReadOnly="True"
+                                             AcceptsReturn="True"
+                                             TextWrapping="NoWrap"
+                                             Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             </ScrollViewer>
-                        </StackPanel>
+                            
+                            <Button Grid.Row="1"
+                                    Content="Clear Console"
+                                    Classes="small-button"
+                                    Click="OnClearConsoleClick"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Right"/>
+                        </Grid>
                     </Border>
                     
-                    <!-- Right Column - Speedometer -->
+                    <!-- Right Column - Stats -->
                     <Border Grid.Column="2" 
                             Classes="modal-content-box"
                             Margin="6,0,0,0">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="SPEED" 
-                                       FontSize="18" 
-                                       FontWeight="Bold" 
-                                       Foreground="{StaticResource Gold}"
-                                       HorizontalAlignment="Center"/>
-                            
-                            <!-- Speedometer Visual -->
-                            <Grid Height="140" Width="140">
-                                <!-- Background circle -->
-                                <Ellipse Width="140" Height="140"
-                                         Fill="{StaticResource ContainerDarkPrecise}"
-                                         Stroke="{StaticResource ModalBorder}"
-                                         StrokeThickness="2"/>
-                                
-                                <!-- Speed arc background -->
-                                <Path Name="SpeedArcBackground"
-                                      Stroke="{StaticResource DarkGray}"
-                                      StrokeThickness="12"
-                                      StrokeLineCap="Round"
-                                      Data="M 30,110 A 55,55 0 0 1 110,110"/>
-                                
-                                <!-- Speed arc (will be updated dynamically) -->
-                                <Path Name="SpeedArc"
-                                      Stroke="{StaticResource Green}"
-                                      StrokeThickness="12"
-                                      StrokeLineCap="Round"
-                                      Data="M 30,110 A 55,55 0 0 1 30,110"/>
-                                
-                                <!-- Center circle -->
-                                <Ellipse Width="60" Height="60"
-                                         Fill="{StaticResource DockGrey}"
-                                         Stroke="{StaticResource Gold}"
-                                         StrokeThickness="2"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"/>
-                                
-                                <!-- Speed text -->
-                                <StackPanel HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Name="SpeedValueText"
-                                               Text="0"
-                                               FontSize="20"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource Yellow}"
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock Text="seeds/s"
-                                               FontSize="10"
+                        <StackPanel Spacing="8">
+                            <!-- Progress -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Progress" 
+                                               FontSize="12"
                                                Foreground="{StaticResource MediumGrey}"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="ProgressPercentText"
+                                               Text="0%"
+                                               FontSize="14"
+                                               
+                                               Foreground="{StaticResource Yellow}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
                             
-                            <!-- Speed stats -->
-                            <StackPanel Spacing="8">
-                                <!-- Current Speed -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Current" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="CurrentSpeedText"
-                                                   Text="0 seeds/s"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource Green}"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Average Speed -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Average" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="AverageSpeedText"
-                                                   Text="0 seeds/s"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource LightCream}"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Peak Speed -->
-                                <Border Classes="dark-value-container">
-                                    <StackPanel>
-                                        <TextBlock Text="Peak" 
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"/>
-                                        <TextBlock Name="PeakSpeedText"
-                                                   Text="0 seeds/s"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource Yellow}"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
+                            <!-- Speed -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Speed" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="SpeedText"
+                                               Text="0 seeds/s"
+                                               FontSize="14"
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Batches -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Batches" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="BatchesText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Seeds Searched -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Seeds" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TotalSeedsText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Time -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Time" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TimeElapsedText"
+                                               Text="00:00:00"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Results Found -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Found" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="ResultsFoundText"
+                                               Text="0"
+                                               FontSize="16"
+                                               
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </Border>
-                </Grid>
-                
-                <!-- Bottom Controls -->
-                <Grid Grid.Row="1" Margin="0,12,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <Button Grid.Column="1"
-                            Name="CookButton"
-                            Content="Let Jimbo COOK!"
-                            Classes="cook-button"
-                            IsEnabled="False"
-                            Click="OnCookClick"
-                            Margin="0,0,6,0"/>
-                    
-                    <Button Grid.Column="2"
-                            Content="Clear Console"
-                            Classes="small-button"
-                            Click="OnClearConsoleClick"
-                            Margin="6,0,0,0"/>
                 </Grid>
             </Grid>
             
@@ -868,7 +607,7 @@
                     <StackPanel Spacing="24">
                         <TextBlock Text="SEARCH RESULTS" 
                                    FontSize="20" 
-                                   FontWeight="Bold" 
+                                    
                                    Foreground="{StaticResource Blue}"
                                    HorizontalAlignment="Center"/>
                         
@@ -894,19 +633,20 @@
                                           HorizontalAlignment="Stretch"
                                           VerticalAlignment="Stretch"
                                           SelectionMode="Single">
+                            <DataGrid.Resources>
+                                <MenuFlyout x:Key="ResultRowFlyout">
+                                    <MenuItem Header="Copy Seed"/>
+                                    <MenuItem Header="Copy Row CSV"/>
+                                    <MenuItem Header="Open in Analyzer"/>
+                                    <MenuItem Header="-"/>
+                                    <MenuItem Header="Export Selected..."/>
+                                </MenuFlyout>
+                            </DataGrid.Resources>
                                     <DataGrid.Styles>
-                                        <Style Selector="DataGridColumnHeader">
-                                            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                            <Setter Property="FontSize" Value="14"/>
-                                            <Setter Property="Height" Value="32"/>
-                                            <Setter Property="Padding" Value="8,4"/>
-                                        </Style>
                                         <Style Selector="DataGridRow">
                                             <Setter Property="MinHeight" Value="28"/>
                                             <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+                                            <Setter Property="ContextFlyout" Value="{StaticResource ResultRowFlyout}"/>
                                         </Style>
                                         <Style Selector="DataGridRow:nth-child(2n)">
                                             <Setter Property="Background" Value="{StaticResource DropShadow}"/>

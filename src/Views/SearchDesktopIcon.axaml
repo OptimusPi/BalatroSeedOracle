@@ -70,7 +70,7 @@
                                    Text="0"
                                    Foreground="White"
                                    FontSize="11"
-                                   FontWeight="Bold"
+                                   
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Margin="4,0"/>

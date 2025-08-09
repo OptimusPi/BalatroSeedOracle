@@ -2432,14 +2432,15 @@ public partial class FiltersModalContent : UserControl
                 if (match != null)
                 {
                     properNames.Add(match);
-                    if (subCategory == "Legendary")
+                    if (subCategory == "Legendary" || lcItem.StartsWith("any"))
                     {
-                        Oracle.Helpers.DebugLogger.Log($"🎴 Legendary Joker found: {match} (from lowercase: {lcItem})");
+                        Oracle.Helpers.DebugLogger.Log($"🎴 Joker found: {match} (from lowercase: {lcItem})");
                     }
                 }
                 else
                 {
                     // Fallback to the lowercase name if no match found
+                    Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"No match found for joker: {lcItem}");
                     properNames.Add(lcItem);
                 }
             }
@@ -3045,7 +3046,9 @@ public partial class FiltersModalContent : UserControl
             Height = 95,  // Fixed card height
             Margin = new Thickness(3),
             Padding = new Thickness(0),
-            Tag = $"{category}:{itemName}" // Store for later reference
+            Tag = $"{category}:{itemName}", // Store for later reference
+            RenderTransform = null, // Explicitly reset any transforms
+            RenderTransformOrigin = RelativePoint.Center
         };
 
         Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"🎴 DROPPED ITEM: '{itemName}' (category: '{category}')");
@@ -3076,10 +3079,12 @@ public partial class FiltersModalContent : UserControl
                 {
                     Source = jokerImageSource,
                     Stretch = Stretch.Uniform,
-                    Width = 71,  // Explicit width to prevent growing
-                    Height = 95, // Explicit height to prevent growing
+                    Width = 64,  // Correct joker sprite size
+                    Height = 64, // Correct joker sprite size
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    RenderTransform = null, // Explicitly reset any transforms
+                    RenderTransformOrigin = RelativePoint.Center
                 };
                 grid.Children.Add(jokerFace);
             }
@@ -3094,8 +3099,8 @@ public partial class FiltersModalContent : UserControl
                     {
                         Source = faceSource,
                         Stretch = Stretch.Uniform,
-                        Width = 50,  // Smaller to fit within the card
-                        Height = 50, // Smaller to fit within the card
+                        Width = 64, 
+                        Height = 64, 
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = new RotateTransform()
@@ -3157,14 +3162,31 @@ public partial class FiltersModalContent : UserControl
             if (imageSource != null)
             {
                 Oracle.Helpers.DebugLogger.LogImportant("CreateDroppedItem", $"✅ Found image for '{itemName}'");
+                // Use correct size based on category (matching ResponsiveCard)
+                double imgWidth = 64;
+                double imgHeight = 64;
+                
+                if (category == "Tags")
+                {
+                    imgWidth = 27;
+                    imgHeight = 27;
+                }
+                else if (category == "Bosses")
+                {
+                    imgWidth = 34;
+                    imgHeight = 34;
+                }
+                
                 var image = new Image
                 {
                     Source = imageSource,
                     Stretch = Stretch.Uniform,
-                    Width = 71,  // Explicit width to prevent growing
-                    Height = 95, // Explicit height to prevent growing
+                    Width = imgWidth,
+                    Height = imgHeight,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    RenderTransform = null,
+                    RenderTransformOrigin = RelativePoint.Center
                 };
                 border.Child = image;
             }
@@ -4282,14 +4304,6 @@ public partial class FiltersModalContent : UserControl
                         configNameBox.Text = IoPath.GetFileNameWithoutExtension(IoPath.GetFileNameWithoutExtension(file.Path.LocalPath));
                     }
                     
-                    // Update LoadedFilterText
-                    var loadedFilterText = this.FindControl<TextBlock>("LoadedFilterText");
-                    if (loadedFilterText != null)
-                    {
-                        loadedFilterText.Text = $"Loaded: {IoPath.GetFileName(file.Path.LocalPath)}";
-                        loadedFilterText.Foreground = new SolidColorBrush(Colors.White);
-                    }
-                    
                     // Update hidden FilterPathInput
                     var filterPathInput = this.FindControl<TextBox>("FilterPathInput");
                     if (filterPathInput != null)
@@ -4450,16 +4464,6 @@ public partial class FiltersModalContent : UserControl
             }
         }
     }
-
-    // SearchWidget removed - using desktop icons now
-
-
-
-    // Removed custom scroll handler - AvaloniaEdit handles scrolling natively
-    // private void OnEditorPointerWheelChanged(object? sender, PointerWheelEventArgs e)
-    // {
-    //     // AvaloniaEdit handles scrolling automatically
-    // }
 
     private void UpdatePersistentFavorites()
     {
