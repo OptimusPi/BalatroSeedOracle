@@ -5,14 +5,14 @@
         "type": "Joker",
         "name": "Blueprint"
       },
-      "searchAntes": [1, 2, 3, 4, 5, 6, 7, 8]
+      "Antes": [1, 2, 3, 4, 5, 6, 7, 8]
     },
     {
       "item": {
         "type": "Tag",
         "name": "StandardTag"
       },
-      "searchAntes": [1, 2]
+      "Antes": [1, 2]
     }
   ],
   "should": [
@@ -21,7 +21,7 @@
         "type": "Joker",
         "name": "Brainstorm"
       },
-      "searchAntes": [1, 2, 3, 4, 5, 6, 7, 8],
+      "Antes": [1, 2, 3, 4, 5, 6, 7, 8],
       "score": 1
     }
   ],

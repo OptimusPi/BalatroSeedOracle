@@ -98,7 +98,7 @@ namespace Oracle.Controls
             if (existingConfig != null)
             {
                 // Load existing ante configuration
-                if (existingConfig.SearchAntes != null && existingConfig.SearchAntes.Count > 0)
+                if (existingConfig.Antes != null && existingConfig.Antes.Count > 0)
                 {
                     // Clear all antes first
                     for (int i = 0; i < 8; i++)
@@ -107,7 +107,7 @@ namespace Oracle.Controls
                     }
 
                     // Set selected antes
-                    foreach (var ante in existingConfig.SearchAntes)
+                    foreach (var ante in existingConfig.Antes)
                     {
                         if (ante >= 1 && ante <= 8)
                         {
@@ -179,7 +179,7 @@ namespace Oracle.Controls
             var config = new ItemConfig
             {
                 ItemKey = _itemKey,
-                SearchAntes = GetSelectedAntes(),
+                Antes = GetSelectedAntes(),
                 Edition = GetSelectedEdition(),
                 Sources = GetSelectedSources()
             };
@@ -343,7 +343,7 @@ namespace Oracle.Controls
     public class ItemConfig
     {
         public string ItemKey { get; set; } = "";
-        public List<int>? SearchAntes { get; set; }
+        public List<int>? Antes { get; set; }
         public string Edition { get; set; } = "none";
         public List<string> Sources { get; set; } = new();
     }

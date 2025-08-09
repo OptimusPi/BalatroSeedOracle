@@ -6,7 +6,7 @@
         {
             "Type": "Tarot",
             "Value": "TheMagician",
-            "SearchAntes": [1, 2],
+            "Antes": [1, 2],
             "sources": {
                 "packSlots": [0, 1, 2, 3],
                 "shopSlots": [0, 1, 2, 3]

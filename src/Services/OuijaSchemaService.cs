@@ -176,7 +176,7 @@ namespace Oracle.Services
                         ["enum"] = new JsonArray(EditionNames.Select(e => JsonValue.Create(e)).ToArray()),
                         ["description"] = "Edition requirement (None, Foil, Holographic, Polychrome, Negative)"
                     },
-                    ["searchAntes"] = new JsonObject
+                    ["Antes"] = new JsonObject
                     {
                         ["type"] = "array",
                         ["items"] = new JsonObject
@@ -218,7 +218,7 @@ namespace Oracle.Services
                         ["description"] = "Rank for playing cards"
                     }
                 },
-                ["required"] = new JsonArray("type", "searchAntes"),
+                ["required"] = new JsonArray("type", "Antes"),
                 ["additionalProperties"] = false
             };
         }
@@ -263,7 +263,7 @@ namespace Oracle.Services
                 yield return new CompletionItem("type", "Type of item", CompletionItemType.Property);
                 yield return new CompletionItem("value", "Item name", CompletionItemType.Property);
                 yield return new CompletionItem("edition", "Edition requirement", CompletionItemType.Property);
-                yield return new CompletionItem("searchAntes", "Antes to search", CompletionItemType.Property);
+                yield return new CompletionItem("Antes", "Antes to search", CompletionItemType.Property);
                 yield return new CompletionItem("score", "Score value (for should)", CompletionItemType.Property);
                 yield return new CompletionItem("sources", "Where to search", CompletionItemType.Property);
                 yield return new CompletionItem("suit", "Card suit", CompletionItemType.Property);

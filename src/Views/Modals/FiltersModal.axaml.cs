@@ -3288,12 +3288,12 @@ public partial class FiltersModalContent : UserControl
             if (isInNeeds)
             {
                 // Must zone defaults to ante 1 only
-                defaultConfig.SearchAntes = new List<int> { 1 };
+                defaultConfig.Antes = new List<int> { 1 };
             }
             else if (isInWants)
             {
                 // Should zone defaults to antes 1-2
-                defaultConfig.SearchAntes = new List<int> { 1, 2 };
+                defaultConfig.Antes = new List<int> { 1, 2 };
             }
 
             existingConfig = defaultConfig;
@@ -4023,7 +4023,7 @@ public partial class FiltersModalContent : UserControl
     {
         var filterItem = new Motely.Filters.OuijaConfig.FilterItem
         {
-            SearchAntes = config.SearchAntes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 }
+            Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 }
         };
 
         // Set sources as SourcesConfig object
@@ -4085,8 +4085,8 @@ public partial class FiltersModalContent : UserControl
         }
 
         // Don't call Initialize() - we want to keep the nested format
-        // Set the antes array (instead of SearchAntes) for the nested format
-        filterItem.Antes = filterItem.SearchAntes;
+        // Set the antes array (instead of Antes) for the nested format
+        filterItem.Antes = filterItem.Antes;
 
         return filterItem;
     }
@@ -4104,7 +4104,7 @@ public partial class FiltersModalContent : UserControl
                 {
                     Type = "Joker",
                     Value = "Perkeo",
-                    SearchAntes = new[] { 1, 2 },
+                    Antes = new[] { 1, 2 },
                     Sources = new Motely.Filters.OuijaConfig.SourcesConfig
                     {
                         ShopSlots = new[] { 0, 1, 2, 3 },
@@ -4120,14 +4120,14 @@ public partial class FiltersModalContent : UserControl
                     Type = "Tag",
                     Value = "NegativeTag",
                     Score = 50,
-                    SearchAntes = new[] { 1, 2, 3 }
+                    Antes = new[] { 1, 2, 3 }
                 },
                 new Motely.Filters.OuijaConfig.FilterItem
                 {
                     Type = "Joker",
                     Value = "Blueprint",
                     Score = 30,
-                    SearchAntes = new[] { 1, 2, 3, 4 },
+                    Antes = new[] { 1, 2, 3, 4 },
                     Sources = new Motely.Filters.OuijaConfig.SourcesConfig
                     {
                         ShopSlots = new[] { 0, 1, 2, 3 },
@@ -4142,7 +4142,7 @@ public partial class FiltersModalContent : UserControl
                 {
                     Type = "Voucher",
                     Value = "CreditCard",
-                    SearchAntes = new[] { 1 }
+                    Antes = new[] { 1 }
                 }
             }
         };

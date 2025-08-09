@@ -417,7 +417,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var must in _currentConfig.Must)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, SearchAntes=[{string.Join(",", must.EffectiveAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, Antes=[{string.Join(",", must.EffectiveAntes)}]");
                 }
             }
 
@@ -425,7 +425,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var should in _currentConfig.Should)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, SearchAntes=[{string.Join(",", should.EffectiveAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, Antes=[{string.Join(",", should.EffectiveAntes)}]");
                 }
             }
 
@@ -433,7 +433,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var mustNot in _currentConfig.MustNot)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, SearchAntes=[{string.Join(",", mustNot.EffectiveAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, Antes=[{string.Join(",", mustNot.EffectiveAntes)}]");
                 }
             }
 

@@ -401,7 +401,7 @@ namespace Oracle.Controls
             if (config == null) return;
 
             // Load antes
-            if (config.SearchAntes != null && config.SearchAntes.Count > 0)
+            if (config.Antes != null && config.Antes.Count > 0)
             {
                 // Clear all first
                 for (int i = 0; i < 8; i++)
@@ -411,7 +411,7 @@ namespace Oracle.Controls
                 }
 
                 // Set selected antes
-                foreach (var ante in config.SearchAntes)
+                foreach (var ante in config.Antes)
                 {
                     if (ante >= 1 && ante <= 8)
                     {
@@ -465,7 +465,7 @@ namespace Oracle.Controls
             var config = new ItemConfig
             {
                 ItemKey = _itemKey,
-                SearchAntes = GetSelectedAntes(),
+                Antes = GetSelectedAntes(),
                 Edition = _selectedEdition,
                 Sources = _selectedSources.ToList()
             };

@@ -56,8 +56,8 @@ public class FilterItem
     [JsonPropertyName("Value")]
     public string Value { get; set; } = "";
 
-    [JsonPropertyName("SearchAntes")]
-    public List<int> SearchAntes { get; set; } = new() { 1 };
+    [JsonPropertyName("Antes")]
+    public List<int> Antes { get; set; } = new() { 1 };
 
     [JsonPropertyName("Score")]
     public int Score { get; set; } = 1;
