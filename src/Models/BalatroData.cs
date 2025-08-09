@@ -132,9 +132,9 @@ public static class BalatroData
     private static void InitializeTags()
     {
         // Add wildcard entries first
-        Tags["anytag"] = "Any Tag";
-        Tags["anysmall"] = "Any Small";
-        Tags["anybig"] = "Any Big";
+        //Tags["anytag"] = "Any Tag";
+        //Tags["anysmall"] = "Any Small";
+        //Tags["anybig"] = "Any Big";
 
         foreach (var tag in Enum.GetValues<MotelyTag>())
         {

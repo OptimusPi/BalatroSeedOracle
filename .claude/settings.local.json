@@ -43,7 +43,8 @@
       "Bash(sudo rm:*)",
       "Bash(git cherry-pick:*)",
       "Bash(touch:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(pwsh ./find-unused.ps1)"
     ],
     "deny": []
   }

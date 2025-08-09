@@ -141,6 +141,7 @@ public class MotelySearchService : IDisposable
 
             // Start result capture service
             _resultCapture = new MotelyResultCapture(_historyService);
+            _resultCapture.SetFilterConfig(ouijaConfig);
             _resultCapture.ResultCaptured += async (result) =>
             {
                 Results.Add(result);
@@ -282,6 +283,8 @@ public class MotelySearchService : IDisposable
 
             // Start result capture service
             _resultCapture = new MotelyResultCapture(_historyService);
+            if (_currentConfig != null)
+                _resultCapture.SetFilterConfig(_currentConfig);
             _resultCapture.ResultCaptured += async (result) =>
             {
                 Results.Add(result);

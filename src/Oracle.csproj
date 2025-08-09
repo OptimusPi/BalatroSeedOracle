@@ -6,6 +6,15 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    
+    <!-- Enable all warnings and code analysis -->
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>9999</WarningLevel>
+    
+    <!-- Keep the CS0108 suppression for now -->
     <NoWarn>$(NoWarn);CS0108</NoWarn>
   </PropertyGroup>
 

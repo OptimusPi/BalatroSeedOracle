@@ -33,6 +33,9 @@ namespace Oracle.Components
             set => _autoLoadEnabled = value; 
         }
         
+        // Services
+        private readonly SpriteService _spriteService;
+        
         public bool ShowCreateButton { get; set; } = true;
         public bool ShouldSwitchToVisualTab { get; set; } = false;
         
@@ -45,6 +48,7 @@ namespace Oracle.Components
         public FilterSelector()
         {
             InitializeComponent();
+            _spriteService = ServiceHelper.GetRequiredService<SpriteService>();
         }
         
         private void InitializeComponent()
@@ -171,12 +175,15 @@ namespace Oracle.Components
                     description = $"by {author}\n{description}";
                 }
                 
+                // Clone the root element to use after the document is disposed
+                var clonedRoot = doc.RootElement.Clone();
+                
                 return new PanelItem
                 {
                     Title = filterName,
                     Description = description,
                     Value = filterPath,
-                    GetImage = () => GetFilterPreviewImage(doc.RootElement)
+                    GetImage = () => GetFilterPreviewImage(clonedRoot)
                 };
             }
             catch (Exception ex)
@@ -188,9 +195,55 @@ namespace Oracle.Components
         
         private IImage? GetFilterPreviewImage(JsonElement filterRoot)
         {
-            // For now, return null - we could generate a preview image later
-            // showing the first few items from the filter
-            return null;
+            try
+            {
+                // Collect items from different categories
+                var previewItems = new List<(string value, string? type)>();
+                
+                // Check for items in the filter
+                if (filterRoot.TryGetProperty("items", out var items))
+                {
+                    foreach (var item in items.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            var val = value.GetString() ?? "";
+                            var typeStr = type.GetString();
+                            previewItems.Add((val, typeStr));
+                            if (previewItems.Count >= 3) break; // Limit preview to 3 items
+                        }
+                    }
+                }
+                
+                // If no items found, return null
+                if (previewItems.Count == 0)
+                    return null;
+                
+                // Get the first item's image as the preview
+                var (firstValue, firstType) = previewItems[0];
+                return GetItemImage(firstValue, firstType);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"Error creating preview image: {ex.Message}");
+                return null;
+            }
+        }
+        
+        private IImage? GetItemImage(string value, string? type)
+        {
+            // Get image based on type
+            return type?.ToLower() switch
+            {
+                "joker" => _spriteService.GetJokerImage(value),
+                "voucher" => _spriteService.GetVoucherImage(value),
+                "tag" => _spriteService.GetTagImage(value),
+                "boss" => _spriteService.GetBossImage(value),
+                "spectral" => _spriteService.GetSpectralImage(value),
+                "tarot" => _spriteService.GetTarotImage(value),
+                _ => null
+            };
         }
         
         private void OnFilterSelectionChanged(object? sender, PanelItem? item)

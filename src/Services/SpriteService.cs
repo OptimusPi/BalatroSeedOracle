@@ -808,12 +808,7 @@ public class SpriteService
         public Dictionary<string, EnhancerSprite>? special { get; set; }
     }
 
-    private class EnhancerSprite
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public string? description { get; set; }
-    }
+    private record EnhancerSprite(int x, int y, string? description);
 
     private class PlayingCardMetadataJson
     {

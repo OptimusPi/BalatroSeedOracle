@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Motely.Filters;
@@ -18,6 +19,7 @@ namespace Oracle.Services
         private CancellationTokenSource? _cts;
         private Task? _captureTask;
         private int _resultCount = 0;
+        private Motely.Filters.OuijaConfig? _filterConfig;
 
         public event Action<SearchResult>? ResultCaptured;
         public event Action<int>? ResultCountChanged;
@@ -28,6 +30,14 @@ namespace Oracle.Services
         public MotelyResultCapture(SearchHistoryService searchHistory)
         {
             _searchHistory = searchHistory ?? throw new ArgumentNullException(nameof(searchHistory));
+        }
+        
+        /// <summary>
+        /// Set the filter configuration to extract labels
+        /// </summary>
+        public void SetFilterConfig(Motely.Filters.OuijaConfig config)
+        {
+            _filterConfig = config;
         }
 
         /// <summary>
@@ -57,7 +67,8 @@ namespace Oracle.Services
                             {
                                 Seed = result.Seed,
                                 TotalScore = result.TotalScore,
-                                ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants)
+                                ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants),
+                                ScoreLabels = ExtractScoreLabels()
                             };
 
                             // Store in DuckDB
@@ -126,6 +137,25 @@ namespace Oracle.Services
                 return "[]";
 
             return JsonSerializer.Serialize(scores);
+        }
+
+        /// <summary>
+        /// Extract score labels from the filter configuration
+        /// </summary>
+        private string[] ExtractScoreLabels()
+        {
+            if (_filterConfig?.Should == null)
+                return Array.Empty<string>();
+
+            var labels = new List<string>();
+            foreach (var item in _filterConfig.Should)
+            {
+                // Create a label from the item value and type
+                var label = $"{item.Value ?? "Unknown"} ({item.Type ?? "Item"})";
+                labels.Add(label);
+            }
+
+            return labels.ToArray();
         }
 
         /// <summary>

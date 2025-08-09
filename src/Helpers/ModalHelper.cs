@@ -118,16 +118,6 @@ public static class ModalHelper
         return menu.ShowModal("MORE", ToolView);
     }
 
-    /// <summary>
-    /// Creates and shows an analyzer modal
-    /// </summary>
-    /// <param name="menu">The main menu to show the modal on</param>
-    /// <returns>The created modal</returns>
-    public static StandardModal ShowAnalyzerModal(this Views.BalatroMainMenu menu)
-    {
-        var analyzerView = new AnalyzerModal();
-        return menu.ShowModal("SEED ANALYZER", analyzerView);
-    }
 
     /// <summary>
     /// Creates and shows a search modal

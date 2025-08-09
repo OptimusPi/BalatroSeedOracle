@@ -14,5 +14,6 @@ public class SearchResult
     // Enhanced fields for better display
     public int[]? TallyScores { get; set; }
     public string[]? ItemLabels { get; set; }
+    public string[]? ScoreLabels { get; set; } // Labels for each score in ScoreBreakdown
     public DateTime Timestamp { get; set; } = DateTime.Now;
 }

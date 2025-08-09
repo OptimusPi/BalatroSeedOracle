@@ -9,8 +9,10 @@ public partial class DeckAndStakeSelector : UserControl
 {
     private DeckSpinner? _deckSpinner;
     private SpinnerControl? _stakeSpinner;
+    private Button? _selectButton;
     
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
+    public event EventHandler? DeckSelected;
     
     public DeckAndStakeSelector()
     {
@@ -23,6 +25,7 @@ public partial class DeckAndStakeSelector : UserControl
         
         _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
         _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
+        _selectButton = this.FindControl<Button>("SelectButton");
         
         if (_deckSpinner != null)
         {
@@ -41,6 +44,12 @@ public partial class DeckAndStakeSelector : UserControl
                 SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
             };
         }
+    }
+    
+    private void OnSelectClick(object? sender, RoutedEventArgs e)
+    {
+        // Fire the DeckSelected event to notify the parent modal
+        DeckSelected?.Invoke(this, EventArgs.Empty);
     }
     
     public int DeckIndex

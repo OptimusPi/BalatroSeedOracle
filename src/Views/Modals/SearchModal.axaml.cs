@@ -168,6 +168,11 @@ namespace Oracle.Views.Modals
             
             // Find deck/stake selector component
             _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
+            if (_deckAndStakeSelector != null)
+            {
+                // Connect the DeckSelected event to automatically advance to Search tab
+                _deckAndStakeSelector.DeckSelected += OnDeckSelected;
+            }
             _debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
             
             // Find filter selector component
@@ -254,6 +259,15 @@ namespace Oracle.Views.Modals
         private async void OnFilterLoaded(object? sender, string filterPath)
         {
             await LoadFilterAsync(filterPath);
+        }
+        
+        private void OnDeckSelected(object? sender, EventArgs e)
+        {
+            // Automatically advance to the Search tab when deck is selected
+            if (_searchTab != null)
+            {
+                OnTabClick(_searchTab, new RoutedEventArgs());
+            }
         }
         
         private void OnNewFilterRequested(object? sender, EventArgs e)
@@ -571,19 +585,36 @@ namespace Oracle.Views.Modals
                     Oracle.Helpers.DebugLogger.Log("SearchModal", $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}");
                     AddToConsole("Stopping search...");
                     
-                    if (_searchInstance != null)
+                    try
                     {
-                        _searchInstance.StopSearch();
-                        AddToConsole("Search stopped!");
+                        if (_searchInstance != null)
+                        {
+                            _searchInstance.StopSearch();
+                            AddToConsole("Search stopped!");
+                        }
+                        else
+                        {
+                            AddToConsole("Warning: Search instance was null");
+                        }
                     }
-                    else
+                    catch (Exception stopEx)
                     {
-                        AddToConsole("Warning: Search instance was null");
+                        Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Error stopping search: {stopEx}");
+                        AddToConsole($"Error stopping search: {stopEx.Message}");
                     }
-                    
-                    // Immediately update UI regardless
-                    _isSearching = false;
-                    UpdateSearchUI();
+                    finally
+                    {
+                        // ALWAYS update UI to restore normal state
+                        _isSearching = false;
+                        UpdateSearchUI();
+                        
+                        // Force enable the cook button to ensure UI isn't stuck
+                        if (_cookButton != null)
+                        {
+                            _cookButton.IsEnabled = true;
+                            _cookButton.Content = "Let Jimbo COOK!";
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -631,13 +662,34 @@ namespace Oracle.Views.Modals
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                Oracle.Helpers.DebugLogger.Log("SearchModal", "Search completed - resetting UI");
-                _isSearching = false;
-                
-                // Update UI using the central method
-                UpdateSearchUI();
-                
-                AddToConsole("Jimbo finished cooking!");
+                try
+                {
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", "Search completed - resetting UI");
+                    _isSearching = false;
+                    
+                    // Update UI using the central method
+                    UpdateSearchUI();
+                    
+                    // Only show finished message if we have results (not cancelled)
+                    if (_searchResults.Count > 0)
+                    {
+                        AddToConsole("Jimbo finished cooking!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Error in OnSearchCompleted: {ex}");
+                }
+                finally
+                {
+                    // Ensure UI is never stuck
+                    _isSearching = false;
+                    if (_cookButton != null)
+                    {
+                        _cookButton.IsEnabled = true;
+                        _cookButton.Content = "Let Jimbo COOK!";
+                    }
+                }
             });
         }
         
@@ -701,12 +753,6 @@ namespace Oracle.Views.Modals
                 
                 // Enable results tab export button
                 if (_exportResultsButton != null) _exportResultsButton.IsEnabled = _searchResults.Count > 0;
-                
-                // Auto-switch to Results tab on first result
-                if (_searchResults.Count == 1 && _resultsTab != null && _resultsTab.IsEnabled)
-                {
-                    OnTabClick(_resultsTab, new RoutedEventArgs());
-                }
             });
         }
         
