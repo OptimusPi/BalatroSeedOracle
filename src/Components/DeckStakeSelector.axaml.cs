@@ -21,15 +21,9 @@ namespace Oracle.Components
         private Image? _stakeChipOverlay;
         private TextBlock? _deckNameText;
         private TextBlock? _deckDescText;
-        private TextBlock? _stakeNameText;
-        private TextBlock? _stakeDescText;
-        private Canvas? _stakeChipsCanvas;
         private Button? _deckLeftArrow;
         private Button? _deckRightArrow;
-        private Button? _stakeLeftArrow;
-        private Button? _stakeRightArrow;
         private SpinnerControl? _stakeSpinner;
-        private Grid? _arrowNavigation;
         
         private int _currentDeckIndex = 0;
         private int _currentStakeIndex = 0;
@@ -96,25 +90,15 @@ namespace Oracle.Components
             _stakeChipOverlay = this.FindControl<Image>("StakeChipOverlay");
             _deckNameText = this.FindControl<TextBlock>("DeckNameText");
             _deckDescText = this.FindControl<TextBlock>("DeckDescText");
-            _stakeNameText = this.FindControl<TextBlock>("StakeNameText");
-            _stakeDescText = this.FindControl<TextBlock>("StakeDescText");
-            _stakeChipsCanvas = this.FindControl<Canvas>("StakeChipsCanvas");
             _deckLeftArrow = this.FindControl<Button>("DeckLeftArrow");
             _deckRightArrow = this.FindControl<Button>("DeckRightArrow");
-            _stakeLeftArrow = this.FindControl<Button>("StakeLeftArrow");
-            _stakeRightArrow = this.FindControl<Button>("StakeRightArrow");
             _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
-            _arrowNavigation = this.FindControl<Grid>("ArrowNavigation");
             
             // Wire up event handlers
             if (_deckLeftArrow != null)
                 _deckLeftArrow.Click += (s, e) => NavigateDeck(-1);
             if (_deckRightArrow != null)
                 _deckRightArrow.Click += (s, e) => NavigateDeck(1);
-            if (_stakeLeftArrow != null)
-                _stakeLeftArrow.Click += (s, e) => NavigateStake(-1);
-            if (_stakeRightArrow != null)
-                _stakeRightArrow.Click += (s, e) => NavigateStake(1);
             
             if (_stakeSpinner != null)
             {
@@ -135,24 +119,6 @@ namespace Oracle.Components
             UpdateStakeDisplay();
         }
         
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-            
-            if (change.Property == UseSpinnerForStakeProperty)
-            {
-                UpdateStakeNavigationMode();
-            }
-        }
-        
-        private void UpdateStakeNavigationMode()
-        {
-            if (_arrowNavigation != null && _stakeSpinner != null)
-            {
-                _arrowNavigation.IsVisible = !UseSpinnerForStake;
-                _stakeSpinner.IsVisible = UseSpinnerForStake;
-            }
-        }
         
         private void NavigateDeck(int direction)
         {
@@ -168,19 +134,6 @@ namespace Oracle.Components
             });
         }
         
-        private void NavigateStake(int direction)
-        {
-            _currentStakeIndex = (_currentStakeIndex + direction + _stakes.Count) % _stakes.Count;
-            UpdateStakeDisplay();
-            
-            var stake = _stakes[_currentStakeIndex];
-            StakeChanged?.Invoke(this, new StakeChangedEventArgs 
-            { 
-                StakeIndex = _currentStakeIndex,
-                StakeName = stake.name.Replace(" Stake", ""),
-                StakeDescription = stake.description
-            });
-        }
         
         private void UpdateDeckDisplay()
         {
@@ -215,63 +168,20 @@ namespace Oracle.Components
         
         private void UpdateStakeDisplay()
         {
-            if (_stakeChipsCanvas == null || _spriteService == null)
-                return;
-            
-            // Safety check for list bounds
-            if (_stakes == null || _stakes.Count == 0 || _currentStakeIndex < 0 || _currentStakeIndex >= _stakes.Count)
-                return;
-                
-            var stake = _stakes[_currentStakeIndex];
-            
-            // Update stake text
-            if (_stakeNameText != null)
-                _stakeNameText.Text = stake.name;
-            if (_stakeDescText != null)
-                _stakeDescText.Text = stake.description;
-            
-            // Clear and update stake chips display
-            _stakeChipsCanvas.Children.Clear();
-            
-            try
-            {
-                // Get stake chip image
-                var chipImage = _spriteService.GetStakeChipImage(stake.spriteName);
-                
-                if (chipImage != null)
-                {
-                    // Create stacked chips effect
-                    for (int i = 0; i <= _currentStakeIndex; i++)
-                    {
-                        var chip = new Image
-                        {
-                            Source = chipImage,
-                            Width = 29,
-                            Height = 29,
-                            Stretch = Stretch.Uniform
-                        };
-                        
-                        Canvas.SetLeft(chip, 25 + (i % 4) * 6);
-                        Canvas.SetTop(chip, 25 - (i / 4) * 6);
-                        chip.ZIndex = i;
-                        
-                        _stakeChipsCanvas.Children.Add(chip);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Oracle.Helpers.DebugLogger.LogError("DeckStakeSelector", $"Failed to load stake chip image: {ex.Message}");
-            }
-            
-            // Update spinner value if using spinner
-            if (_stakeSpinner != null && UseSpinnerForStake)
-            {
-                _stakeSpinner.Value = _currentStakeIndex;
-            }
-            
-            // Update stake overlay on deck
+            // Update stake overlay on deck image
             UpdateStakeOverlay();
+            
+            // Fire stake changed event
+            if (_currentStakeIndex >= 0 && _currentStakeIndex < _stakes.Count)
+            {
+                var stake = _stakes[_currentStakeIndex];
+                StakeChanged?.Invoke(this, new StakeChangedEventArgs 
+                { 
+                    StakeIndex = _currentStakeIndex,
+                    StakeName = stake.name.Replace(" Stake", ""),
+                    StakeDescription = stake.description
+                });
+            }
         }
         
         private void UpdateStakeOverlay()
@@ -281,7 +191,7 @@ namespace Oracle.Components
                 try
                 {
                     var stake = _stakes[_currentStakeIndex];
-                    var overlaySprite = _spriteService.GetStakeChipImage(stake.spriteName);
+                    var overlaySprite = _spriteService.GetStickerImage($"stake_{stake.spriteName}");
                     _stakeChipOverlay.Source = overlaySprite;
                     _stakeChipOverlay.IsVisible = true;
                 }

@@ -27,6 +27,20 @@
                            IsHitTestVisible="False"/>
             </Button>
             
+            <!-- Import Files Button -->
+            <Button Name="ImportFilesButton"
+                   Click="OnImportFilesClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Import Files" 
+                           FontSize="20"
+                           
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+            
             <!-- Word Lists Button -->
             <Button Name="WordListsButton"
                    Click="OnWordListsClick"

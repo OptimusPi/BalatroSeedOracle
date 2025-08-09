@@ -22,7 +22,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="32,24,32,24"/>
-        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/> <!-- South-only, no blur -->
+        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
     </Style>
     
     <!-- Inner content panel - Dark grey with no borders like in Balatro -->

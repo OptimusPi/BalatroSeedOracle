@@ -27,7 +27,7 @@ namespace Oracle.Views.Modals
         private readonly UserProfileService _userProfileService;
         
         // Deck and Stake selector component
-        private DeckStakeSelector? _deckStakeSelector;
+        private DeckAndStakeSelector? _deckAndStakeSelector;
         
         // UI Elements
         private Button? _filterTab;
@@ -78,7 +78,7 @@ namespace Oracle.Views.Modals
             }
             
             // Get deck/stake selector component
-            _deckStakeSelector = this.FindControl<DeckStakeSelector>("DeckStakeSelector");
+            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
             
             // Get analyzer UI elements
             _seedInput = this.FindControl<TextBox>("SeedInput");
@@ -141,8 +141,8 @@ namespace Oracle.Views.Modals
             if (_placeholderText != null) _placeholderText.IsVisible = false;
 
             // Get deck and stake from selector component
-            var deckIndex = _deckStakeSelector?.GetDeckIndex() ?? 0;
-            var stakeIndex = _deckStakeSelector?.GetStakeIndex() ?? 0;
+            var deckIndex = _deckAndStakeSelector?.DeckIndex ?? 0;
+            var stakeIndex = _deckAndStakeSelector?.StakeIndex ?? 0;
             var deck = (MotelyDeck)deckIndex;
             var stake = (MotelyStake)stakeIndex;
 

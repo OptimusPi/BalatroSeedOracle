@@ -63,11 +63,28 @@ namespace Oracle.Views
         }
 
         private UserControl? _activeModalContent;
+        private TextBlock? _mainTitleText;
+
+        /// <summary>
+        /// Updates the main title text
+        /// </summary>
+        public void SetTitle(string title)
+        {
+            if (_mainTitleText == null)
+            {
+                _mainTitleText = this.FindControl<TextBlock>("MainTitleText");
+            }
+            
+            if (_mainTitleText != null)
+            {
+                _mainTitleText.Text = title;
+            }
+        }
 
         /// <summary>
         /// Show a UserControl as a modal overlay in the main menu, styled as a Balatro card
         /// </summary>
-        public void ShowModalContent(UserControl content)
+        public void ShowModalContent(UserControl content, string? title = null)
         {
             if (_modalContainer == null)
                 return;
@@ -79,6 +96,12 @@ namespace Oracle.Views
             _modalContainer.Children.Add(content);
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
+            
+            // Update title if provided
+            if (!string.IsNullOrEmpty(title))
+            {
+                SetTitle(title);
+            }
         }
 
         /// <summary>
@@ -92,6 +115,9 @@ namespace Oracle.Views
             _modalContainer.Children.Clear();
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
+            
+            // Reset title to Welcome!
+            SetTitle("Welcome!");
         }
 
         // Main menu button event handlers
@@ -115,7 +141,7 @@ namespace Oracle.Views
                 };
                 errorModal.SetContent(errorText);
                 errorModal.BackClicked += (s, ev) => HideModalContent();
-                ShowModalContent(errorModal);
+                ShowModalContent(errorModal, "ERROR");
             }
         }
 
@@ -132,7 +158,7 @@ namespace Oracle.Views
             var modal = new StandardModal("SAVED FILTERS");
             modal.SetContent(resultsModal);
             modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal);
+            ShowModalContent(modal, "SAVED FILTERS");
         }
         
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
@@ -142,7 +168,7 @@ namespace Oracle.Views
             var modal = new StandardModal("ANALYZE");
             modal.SetContent(analyzeModal);
             modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal);
+            ShowModalContent(modal, "SEED ANALYZER");
         }
 
 

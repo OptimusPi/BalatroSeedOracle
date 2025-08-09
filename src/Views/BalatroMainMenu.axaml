@@ -11,25 +11,11 @@
              x:CompileBindings="False">
 
     <UserControl.Styles>
-        <!-- Modal overlay style - semi-transparent background only -->
-        <Style Selector="Grid.modal-overlay">
-            <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
-        </Style>
-        
-        <!-- Blur backdrop style - this is what gets blurred -->
-        <Style Selector="Grid.blur-backdrop">
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <BlurEffect Radius="40"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
         <!-- Modal panel style - Balatro card style with beveled border -->
         <Style Selector="Border.modal-panel">
             <Setter Property="Background" Value="{StaticResource LightBackground}"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="4"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Padding" Value="2"/>
             <Setter Property="BorderBrush" Value="{StaticResource PureBlack}"/>
             <Setter Property="BorderThickness" Value="3"/>
         </Style>
@@ -37,9 +23,9 @@
         <!-- Inner content panel (darker) -->
         <Style Selector="Border.inner-panel">
             <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
-            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Padding" Value="2"/>
         </Style>
         
         <!-- Kill any weird focus/selection effects -->
@@ -101,7 +87,8 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="Balatro Seed Oracle"
+            <TextBlock Name="MainTitleText"
+                        Text="Welcome!"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
                         
@@ -203,7 +190,7 @@
                             Click="OnEditorClick"
                             MinHeight="50"
                             MinWidth="100">
-                        <TextBlock Text="Filter Editor" 
+                        <TextBlock Text="EDIT FILTER"
                                    FontSize="20" 
                                    
                                    FontFamily="{StaticResource BalatroFont}"

@@ -19,11 +19,18 @@ namespace Oracle.Views.Modals
     public partial class AnalyzerModal : UserControl
     {
         private readonly SpriteService _spriteService;
+        private DeckAndStakeSelector? _deckAndStakeSelector;
 
         public AnalyzerModal()
         {
             InitializeComponent();
             _spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+        }
+
+        protected override void OnLoaded(RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
         }
 
         private async void OnAnalyzeClick(object? sender, RoutedEventArgs e)
@@ -38,8 +45,21 @@ namespace Oracle.Views.Modals
             ResultsPanel.Children.Clear();
             PlaceholderText.IsVisible = false;
 
-            // Get deck and stake from combo box
-            var (deck, stake) = ParseDeckStake(DeckStakeCombo.SelectedIndex);
+            // Get deck and stake from DeckAndStakeSelector
+            if (_deckAndStakeSelector == null) return;
+            var deckName = _deckAndStakeSelector.SelectedDeckName;
+            var stakeName = _deckAndStakeSelector.SelectedStakeName;
+            
+            // Parse deck and stake names to enums
+            if (!Enum.TryParse<MotelyDeck>(deckName.Replace(" Deck", ""), out var deck))
+            {
+                deck = MotelyDeck.Red; // Default
+            }
+            
+            if (!Enum.TryParse<MotelyStake>(stakeName, out var stake))
+            {
+                stake = MotelyStake.White; // Default
+            }
 
             // Show loading indicator
             var loadingText = new TextBlock
@@ -413,35 +433,6 @@ namespace Oracle.Views.Modals
             };
         }
 
-        private (MotelyDeck deck, MotelyStake stake) ParseDeckStake(int selectedIndex)
-        {
-            return selectedIndex switch
-            {
-                0 => (MotelyDeck.Red, MotelyStake.White),
-                1 => (MotelyDeck.Red, MotelyStake.Red),
-                2 => (MotelyDeck.Red, MotelyStake.Green),
-                3 => (MotelyDeck.Red, MotelyStake.Black),
-                4 => (MotelyDeck.Red, MotelyStake.Blue),
-                5 => (MotelyDeck.Red, MotelyStake.Purple),
-                6 => (MotelyDeck.Red, MotelyStake.Orange),
-                7 => (MotelyDeck.Red, MotelyStake.Gold),
-                8 => (MotelyDeck.Blue, MotelyStake.White),
-                9 => (MotelyDeck.Yellow, MotelyStake.White),
-                10 => (MotelyDeck.Green, MotelyStake.White),
-                11 => (MotelyDeck.Black, MotelyStake.White),
-                12 => (MotelyDeck.Magic, MotelyStake.White),
-                13 => (MotelyDeck.Nebula, MotelyStake.White),
-                14 => (MotelyDeck.Ghost, MotelyStake.White),
-                15 => (MotelyDeck.Abandoned, MotelyStake.White),
-                16 => (MotelyDeck.Checkered, MotelyStake.White),
-                17 => (MotelyDeck.Zodiac, MotelyStake.White),
-                18 => (MotelyDeck.Painted, MotelyStake.White),
-                19 => (MotelyDeck.Anaglyph, MotelyStake.White),
-                20 => (MotelyDeck.Plasma, MotelyStake.White),
-                21 => (MotelyDeck.Erratic, MotelyStake.White),
-                _ => (MotelyDeck.Red, MotelyStake.White)
-            };
-        }
 
         private string GetAnteIcon(int ante)
         {

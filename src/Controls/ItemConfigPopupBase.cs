@@ -23,6 +23,9 @@ namespace Oracle.Controls
         protected string _itemKey = "";
         protected string _itemName = "";
         protected string _itemCategory = "";
+        
+        // Public property to get the item key
+        public string ItemKey => _itemKey;
 
         // Common UI elements
         protected TextBlock? ItemNameText;

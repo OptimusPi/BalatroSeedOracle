@@ -46,6 +46,9 @@ namespace Oracle.Components
         public static readonly StyledProperty<bool> IsSelectedWantProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedWant));
 
+        public static readonly StyledProperty<bool> IsSelectedMustNotProperty =
+            AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedMustNot));
+
         public static readonly StyledProperty<string> EditionProperty =
             AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Edition), "none");
 
@@ -77,6 +80,12 @@ namespace Oracle.Components
         {
             get => GetValue(IsSelectedWantProperty);
             set => SetValue(IsSelectedWantProperty, value);
+        }
+
+        public bool IsSelectedMustNot
+        {
+            get => GetValue(IsSelectedMustNotProperty);
+            set => SetValue(IsSelectedMustNotProperty, value);
         }
 
         public string Edition
@@ -226,6 +235,19 @@ namespace Oracle.Components
                 else
                 {
                     _cardBorder.Classes.Remove("selected-want");
+                }
+            }
+            else if (e.Property == IsSelectedMustNotProperty)
+            {
+                if (IsSelectedMustNot)
+                {
+                    _cardBorder.Classes.Add("selected-mustnot");
+                    _cardBorder.Classes.Remove("selected-need");
+                    _cardBorder.Classes.Remove("selected-want");
+                }
+                else
+                {
+                    _cardBorder.Classes.Remove("selected-mustnot");
                 }
             }
             else if (e.Property == EditionProperty)

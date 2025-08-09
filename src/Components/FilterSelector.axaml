@@ -77,7 +77,7 @@
                         CornerRadius="12" 
                         Padding="20" 
                         Width="400" 
-                        Height="220">
+                        Height="200">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -149,23 +149,35 @@
                         Margin="24,0,0,0"/>
             </Grid>
             
+            <!-- Select button -->
+            <Button Name="SelectButton" 
+                    Content="Select" 
+                    Classes="btn-red" 
+                    MinWidth="200"
+                    HorizontalAlignment="Center"
+                    Click="OnSelectClick"/>
+            
             <!-- Horizontal Separator -->
             <Border Height="2" 
                     Background="{StaticResource DockGrey}" 
-                    Margin="40,8,40,8"
+                    Margin="5,8,5,8"
                     CornerRadius="1"/>
             
-            <!-- Action buttons -->
-            <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
-                <Button Name="ImportButton" 
-                        Content="Import File..." 
-                        Classes="small-button" 
-                        Click="OnImportClick"/>
-                <Button Name="NewFilterButton" 
-                        Content="New Blank Filter" 
-                        Classes="small-button" 
-                        Background="{StaticResource Green}" 
-                        Click="OnNewFilterClick"/>
+            <!-- Create new filter section -->
+            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBox Name="FilterNameInput"
+                         Watermark="Enter Filter Name..."
+                         Width="300"
+                         FontSize="16"
+                         TextChanged="OnFilterNameTextChanged"/>
+                
+                <Button Name="CreateFilterButton" 
+                        Content="Create New Filter" 
+                        Classes="btn-green" 
+                        MinWidth="200"
+                        HorizontalAlignment="Center"
+                        IsEnabled="False"
+                        Click="OnCreateFilterClick"/>
             </StackPanel>
         </StackPanel>
     </Grid>

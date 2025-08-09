@@ -62,7 +62,7 @@ namespace Oracle.Views.Modals
         private CheckBox? _debugCheckBox;
         
         // Deck and Stake selector component
-        private DeckStakeSelector? _deckStakeSelector;
+        private DeckAndStakeSelector? _deckAndStakeSelector;
         
         // New Search tab UI elements
         private TextBlock? _progressPercentText;
@@ -165,7 +165,7 @@ namespace Oracle.Views.Modals
             _minScoreSpinner = this.FindControl<SpinnerControl>("MinScoreSpinner");
             
             // Find deck/stake selector component
-            _deckStakeSelector = this.FindControl<DeckStakeSelector>("DeckStakeSelector");
+            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
             _debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
             
             // Find filter selector component
@@ -467,8 +467,8 @@ namespace Oracle.Views.Modals
                         StartBatch = 0,
                         EndBatch = -1,
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
-                        Deck = _deckStakeSelector?.GetSelectedDeck() ?? "Red",
-                        Stake = _deckStakeSelector?.GetSelectedStake() ?? "White"
+                        Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
+                        Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White"
                     };
                     
                     AddToConsole("Let Jimbo cook! Starting search...");
@@ -516,8 +516,8 @@ namespace Oracle.Views.Modals
                         StartBatch = 0,
                         EndBatch = 999999,
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
-                        Deck = _deckStakeSelector?.GetSelectedDeck() ?? "Red",
-                        Stake = _deckStakeSelector?.GetSelectedStake() ?? "White"
+                        Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
+                        Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White"
                     };
                     
                     AddToConsole("Let Jimbo cook! Starting search...");
@@ -664,6 +664,12 @@ namespace Oracle.Views.Modals
                 
                 // Enable results tab export button
                 if (_exportResultsButton != null) _exportResultsButton.IsEnabled = _searchResults.Count > 0;
+                
+                // Auto-switch to Results tab on first result
+                if (_searchResults.Count == 1 && _resultsTab != null && _resultsTab.IsEnabled)
+                {
+                    OnTabClick(_resultsTab, new RoutedEventArgs());
+                }
             });
         }
         

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -22,7 +23,6 @@ using Oracle.Services;
 using Avalonia.Markup.Xaml;
 using System.IO;
 using IoPath = System.IO.Path;
-using Avalonia.Threading;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using Motely;
@@ -54,7 +54,8 @@ public partial class FiltersModalContent : UserControl
     }
     private string _searchFilter = "";
     private Popup? _configPopup;
-    private ItemConfigPopup? _configPopupContent;
+    private ItemConfigPopupBase? _configPopupContent;
+    private Popup? _itemSelectionPopup;
     private string? _currentConfigPath;
     private TextBox? _searchBox;
     private ScrollViewer? _mainScrollViewer;
@@ -163,8 +164,19 @@ public partial class FiltersModalContent : UserControl
             // Load the selected filter
             await LoadConfigAsync(filterPath);
             
-            // Enable tabs but DON'T switch - stay on Load/Save tab
+            // Enable tabs
             UpdateTabStates(true);
+            
+            // Only switch to Visual tab if this came from the Select button
+            // The Select button sets a special flag in the event args
+            if (sender is FilterSelector filterSelector && filterSelector.ShouldSwitchToVisualTab)
+            {
+                var visualTabButton = this.FindControl<Button>("VisualTab");
+                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                
+                // Reset the flag
+                filterSelector.ShouldSwitchToVisualTab = false;
+            }
         }
         catch (Exception ex)
         {
@@ -534,6 +546,7 @@ public partial class FiltersModalContent : UserControl
             needsBorder.AddHandler(DragDrop.DragOverEvent, OnNeedsDragOver);
             needsBorder.AddHandler(DragDrop.DragEnterEvent, OnNeedsDragEnter);
             needsBorder.AddHandler(DragDrop.DragLeaveEvent, OnNeedsDragLeave);
+            needsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("needs", needsBorder);
         }
 
         if (wantsBorder != null)
@@ -543,6 +556,7 @@ public partial class FiltersModalContent : UserControl
             wantsBorder.AddHandler(DragDrop.DragOverEvent, OnWantsDragOver);
             wantsBorder.AddHandler(DragDrop.DragEnterEvent, OnWantsDragEnter);
             wantsBorder.AddHandler(DragDrop.DragLeaveEvent, OnWantsDragLeave);
+            wantsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("wants", wantsBorder);
         }
 
         if (mustNotBorder != null)
@@ -552,6 +566,7 @@ public partial class FiltersModalContent : UserControl
             mustNotBorder.AddHandler(DragDrop.DragOverEvent, OnMustNotDragOver);
             mustNotBorder.AddHandler(DragDrop.DragEnterEvent, OnMustNotDragEnter);
             mustNotBorder.AddHandler(DragDrop.DragLeaveEvent, OnMustNotDragLeave);
+            mustNotBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("mustnot", mustNotBorder);
         }
 
         // Clear buttons removed from headers - using clearTab button in navigation instead
@@ -1722,8 +1737,11 @@ public partial class FiltersModalContent : UserControl
         // Add scroll event handler for auto-highlighting tabs
         _mainScrollViewer.ScrollChanged += OnScrollChanged;
 
-        // Update initial tab highlight
-        UpdateTabHighlight("FavoritesTab");
+        // Only update to FavoritesTab if no tab is currently active
+        if (string.IsNullOrEmpty(_currentActiveTab))
+        {
+            UpdateTabHighlight("FavoritesTab");
+        }
 
         // Update drop zones
         UpdateDropZoneVisibility();
@@ -2024,14 +2042,55 @@ public partial class FiltersModalContent : UserControl
 
     private void RefreshItemPalette()
     {
-        // Reload current category to refresh selection states
-        if (_currentActiveTab == "FavoritesTab")
+        // Instead of reloading everything, just update the selection states of existing cards
+        UpdateAllCardSelectionStates();
+    }
+    
+    private void UpdateAllCardSelectionStates()
+    {
+        // Find all ResponsiveCard controls in the current view and update their selection states
+        var container = this.FindControl<ContentControl>("ItemPaletteContent");
+        if (container?.Content is DockPanel dockPanel)
         {
-            ShowFavorites();
+            if (dockPanel.Children.FirstOrDefault() is ScrollViewer scrollViewer)
+            {
+                if (scrollViewer.Content is StackPanel itemsPanel)
+                {
+                    foreach (var child in itemsPanel.Children)
+                    {
+                        if (child is WrapPanel wrapPanel)
+                        {
+                            foreach (var card in wrapPanel.Children.OfType<ResponsiveCard>())
+                            {
+                                UpdateCardSelectionState(card);
+                            }
+                        }
+                    }
+                }
+            }
         }
-        else
+    }
+    
+    private void UpdateCardSelectionState(ResponsiveCard card)
+    {
+        // Get the item info from the card
+        var itemName = card.Tag as string;
+        var category = card.DataContext as string;
+        
+        if (itemName != null && category != null)
         {
-            LoadAllCategories();
+            var storageCategory = category == "SoulJokers" ? "Jokers" : category;
+            var itemKey = $"{storageCategory}:{itemName}";
+            
+            // Check if this item is in any of the selection lists
+            bool isInNeeds = _selectedNeeds.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+            bool isInWants = _selectedWants.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+            bool isInMustNot = _selectedMustNot.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+            
+            // Update the card's visual state
+            card.IsSelectedNeed = isInNeeds;
+            card.IsSelectedWant = isInWants;
+            card.IsSelectedMustNot = isInMustNot;
         }
     }
 
@@ -3241,7 +3300,7 @@ public partial class FiltersModalContent : UserControl
 
         var key = foundKey ?? actualKey;
 
-        // Create popup and content if they don't exist
+        // Create popup if it doesn't exist
         if (_configPopup == null)
         {
             _configPopup = new Popup
@@ -3249,15 +3308,34 @@ public partial class FiltersModalContent : UserControl
                 Placement = PlacementMode.Pointer,
                 IsLightDismissEnabled = true
             };
-            
-            _configPopupContent = new ItemConfigPopup();
-            _configPopup.Child = _configPopupContent;
-
-            // Handle events (only subscribe once)
-            _configPopupContent.ConfigApplied += OnItemConfigApplied;
-            _configPopupContent.DeleteRequested += OnItemDeleteRequested;
-            _configPopupContent.Cancelled += OnItemConfigCancelled;
         }
+        
+        // Create or replace popup content based on category
+        if (_configPopupContent != null)
+        {
+            // Unsubscribe from previous events
+            _configPopupContent.ConfigApplied -= OnItemConfigApplied;
+            _configPopupContent.DeleteRequested -= OnItemDeleteRequested;
+            _configPopupContent.Cancelled -= OnItemConfigCancelled;
+        }
+        
+        // Create appropriate popup based on category
+        _configPopupContent = category switch
+        {
+            "Jokers" or "SoulJokers" => new JokerConfigPopup(),
+            "Tarots" => new TarotConfigPopup(),
+            "Spectrals" => new SpectralConfigPopup(),
+            "Vouchers" => new VoucherConfigPopup(),
+            "Tags" => new TagConfigPopup(),
+            _ => new JokerConfigPopup() // Fallback to joker config
+        };
+        
+        _configPopup.Child = _configPopupContent;
+
+        // Handle events
+        _configPopupContent.ConfigApplied += OnItemConfigApplied;
+        _configPopupContent.DeleteRequested += OnItemDeleteRequested;
+        _configPopupContent.Cancelled += OnItemConfigCancelled;
 
         // Position popup based on whether item is in NEEDS or WANTS
         if (isInNeeds)
@@ -3315,7 +3393,7 @@ public partial class FiltersModalContent : UserControl
     {
         _itemConfigs[e.Config.ItemKey] = e.Config;
         _configPopup!.IsOpen = false;
-        Oracle.Helpers.DebugLogger.LogError($"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}");
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}");
 
         // Refresh the item palette to show edition overlays
         RefreshItemPalette();
@@ -3325,7 +3403,7 @@ public partial class FiltersModalContent : UserControl
     {
         if (_configPopupContent != null)
         {
-            var key = _configPopupContent.GetItem();
+            var key = _configPopupContent.ItemKey;
 
             // Remove all items with the same base key (handles unique key suffixes)
             var keysToRemove = new List<string>();
@@ -4681,5 +4759,185 @@ public partial class FiltersModalContent : UserControl
 
         // Set the generated name
         configNameBox.Text = filterName;
+    }
+
+    private void ShowItemSelectionPopup(string dropZoneType, Border dropZoneBorder)
+    {
+        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"ShowItemSelectionPopup called for {dropZoneType}");
+        
+        // Don't show popup if dragging
+        if (_isDragging) return;
+        
+        // Create popup if it doesn't exist
+        if (_itemSelectionPopup == null)
+        {
+            _itemSelectionPopup = new Popup
+            {
+                Placement = PlacementMode.Pointer,
+                IsLightDismissEnabled = true
+            };
+        }
+
+        // Create popup content with current category items
+        var popupContent = new Border
+        {
+            Background = Application.Current?.FindResource("DarkModalGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+            BorderBrush = Application.Current?.FindResource("ModalBorder") as IBrush ?? new SolidColorBrush(Color.Parse("#444444")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12),
+            MaxWidth = 600,
+            MaxHeight = 500
+        };
+
+        var contentStack = new StackPanel { Spacing = 10 };
+        
+        // Header
+        var header = new TextBlock
+        {
+            Text = dropZoneType switch
+            {
+                "needs" => "Select items that MUST appear",
+                "wants" => "Select items you'd LIKE to see",
+                "mustnot" => "Select forbidden items",
+                _ => "Select items"
+            },
+            FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+            FontSize = 18,
+            Foreground = Application.Current?.FindResource("Gold") as IBrush,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+        contentStack.Children.Add(header);
+
+        // ScrollViewer for items
+        var scrollViewer = new ScrollViewer
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            MaxHeight = 400
+        };
+
+        var itemsPanel = new WrapPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            MaxWidth = 580
+        };
+
+        // Get current category items from the item palette
+        var itemPaletteContent = this.FindControl<ContentControl>("ItemPaletteContent");
+        if (itemPaletteContent?.Content is ScrollViewer paletteScrollViewer)
+        {
+            if (paletteScrollViewer.Content is StackPanel categoriesStack)
+            {
+                // Find the currently active category
+                foreach (var child in categoriesStack.Children)
+                {
+                    if (child is StackPanel categoryPanel && categoryPanel.IsVisible)
+                    {
+                        // Look for the items wrap panel in this category
+                        foreach (var categoryChild in categoryPanel.Children)
+                        {
+                            if (categoryChild is WrapPanel wrapPanel)
+                            {
+                                // Clone each item for the popup
+                                foreach (var item in wrapPanel.Children)
+                                {
+                                    if (item is ResponsiveCard card)
+                                    {
+                                        var clonedCard = CreateItemCardForPopup(card.ItemName, card.Category, dropZoneType);
+                                        itemsPanel.Children.Add(clonedCard);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        scrollViewer.Content = itemsPanel;
+        contentStack.Children.Add(scrollViewer);
+
+        // Close button
+        var closeButton = new Button
+        {
+            Content = "Close",
+            Classes = { "btn-red" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        closeButton.Click += (s, e) => _itemSelectionPopup.IsOpen = false;
+        contentStack.Children.Add(closeButton);
+
+        popupContent.Child = contentStack;
+        _itemSelectionPopup.Child = popupContent;
+        _itemSelectionPopup.PlacementTarget = dropZoneBorder;
+        _itemSelectionPopup.IsOpen = true;
+    }
+
+    private ResponsiveCard CreateItemCardForPopup(string itemName, string category, string dropZoneType)
+    {
+        var card = new ResponsiveCard
+        {
+            ItemName = itemName,
+            Category = category,
+            ImageSource = GetItemImageForCategory(itemName, category),
+            Margin = new Thickness(4),
+            Cursor = new Cursor(StandardCursorType.Hand)
+        };
+
+        // Handle click to add to the appropriate zone
+        card.CardClicked += (sender, args) =>
+        {
+            if (args.ClickType == CardClickType.LeftClick)
+            {
+                var storageCategory = category == "SoulJokers" ? "Jokers" : category;
+                var key = CreateUniqueKey(storageCategory, itemName);
+
+                // Add to the appropriate set based on dropZoneType
+                switch (dropZoneType)
+                {
+                    case "needs":
+                        _selectedNeeds.Add(key);
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to NEEDS via popup");
+                        break;
+                    case "wants":
+                        _selectedWants.Add(key);
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to WANTS via popup");
+                        break;
+                    case "mustnot":
+                        _selectedMustNot.Add(key);
+                        Oracle.Helpers.DebugLogger.Log("FiltersModal", $"✅ Added {itemName} to MUST NOT via popup");
+                        break;
+                }
+
+                UpdateDropZoneVisibility();
+                UpdatePersistentFavorites();
+                RefreshItemPalette();
+                
+                // Close the popup
+                if (_itemSelectionPopup != null) _itemSelectionPopup.IsOpen = false;
+            }
+        };
+
+        return card;
+    }
+
+    private IImage? GetItemImageForCategory(string itemName, string category)
+    {
+        return category switch
+        {
+            "Jokers" or "SoulJokers" => SpriteService.Instance.GetJokerImage(itemName),
+            "Tarots" => SpriteService.Instance.GetTarotImage(itemName),
+            "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
+            "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
+            "Tags" => SpriteService.Instance.GetTagImage(itemName),
+            "Bosses" => SpriteService.Instance.GetBossImage(itemName),
+            "Decks" => SpriteService.Instance.GetDeckImage(itemName),
+            "Stakes" => SpriteService.Instance.GetStickerImage(itemName + "Stake"),
+            "Boosters" or "Packs" => SpriteService.Instance.GetBoosterImage(itemName),
+            _ => SpriteService.Instance.GetItemImage(itemName, category)
+        };
     }
 }

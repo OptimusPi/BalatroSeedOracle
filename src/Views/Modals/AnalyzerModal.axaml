@@ -10,8 +10,8 @@
         </Grid.RowDefinitions>
         
         <!-- Input Section -->
-        <Border Grid.Row="0" Background="{StaticResource DarkerGrey}" CornerRadius="12" Margin="10" BoxShadow="{StaticResource LightBoxShadow}">
-            <Border Background="{StaticResource DarkBackground}" CornerRadius="10" Margin="2">
+        <Border Grid.Row="0" Background="{StaticResource DockGrey}" CornerRadius="12" Margin="10" BoxShadow="{StaticResource LightBoxShadow}">
+            <Border Background="{StaticResource DarkModalGrey}" CornerRadius="10" Margin="2">
                 <Grid Margin="15">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -56,44 +56,13 @@
                                 Margin="0,0,15,0"
                                 CornerRadius="6"
                                 Background="{StaticResource DarkerGrey}"
-                                BorderBrush="{StaticResource DarkBorder}"
-                                BorderThickness="2"/>
+                                BorderThickness="0"/>
                         
                         <!-- Deck/Stake Selection -->
-                        <ComboBox Grid.Column="2" 
-                                 Name="DeckStakeCombo"
-                                 SelectedIndex="0"
-                                 MinWidth="200"
-                                 Height="40"
-                                 Margin="0,0,15,0"
-                                 VerticalAlignment="Center"
-                                 CornerRadius="6"
-                                 Background="{StaticResource DarkerGrey}"
-                                 BorderBrush="{StaticResource DarkBorder}"
-                                 BorderThickness="2">
-                            <ComboBoxItem>Red Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Red Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Green Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Black Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Blue Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Purple Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Orange Stake</ComboBoxItem>
-                            <ComboBoxItem>Red Deck - Gold Stake</ComboBoxItem>
-                            <ComboBoxItem>Blue Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Yellow Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Green Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Black Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Magic Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Nebula Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Ghost Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Abandoned Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Checkered Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Zodiac Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Painted Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Anaglyph Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Plasma Deck - White Stake</ComboBoxItem>
-                            <ComboBoxItem>Erratic Deck - White Stake</ComboBoxItem>
-                        </ComboBox>
+                        <components:DeckAndStakeSelector Grid.Column="2" 
+                                                        Name="DeckAndStakeSelector"
+                                                        Margin="0,0,15,0"
+                                                        VerticalAlignment="Center"/>
                         
                         <!-- Analyze Button -->
                         <Button Grid.Column="3" 
@@ -118,7 +87,7 @@
             <StackPanel Name="ResultsPanel" Margin="5">
                 <!-- Placeholder -->
                 <Border Name="PlaceholderPanel" 
-                       Background="{StaticResource DarkBackground}" 
+                       Background="{StaticResource DarkModalGrey}" 
                        CornerRadius="12" 
                        Padding="40"
                        HorizontalAlignment="Center"
@@ -151,14 +120,14 @@
     <UserControl.Styles>
         <!-- Ante Panel Style -->
         <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Margin" Value="5,5,5,10"/>
             <Setter Property="BoxShadow" Value="{StaticResource LightBoxShadow}"/>
         </Style>
         
         <Style Selector="Border.ante-panel > Border">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Padding" Value="20"/>
@@ -185,14 +154,12 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="MinWidth" Value="90"/>
             <Setter Property="MinHeight" Value="130"/>
         </Style>
         
         <Style Selector="Border.shop-slot:pointerover">
-            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
             <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
@@ -202,13 +169,11 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="MinWidth" Value="120"/>
         </Style>
         
         <Style Selector="Border.pack-display:pointerover">
-            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
             <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
@@ -218,18 +183,16 @@
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <Style Selector="Border.tag-display:pointerover">
-            <Setter Property="BorderBrush" Value="{StaticResource MediumBorder}"/>
             <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
         </Style>
         
         <!-- Loading Spinner Style -->
         <Style Selector="Border.loading-panel">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="40"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>

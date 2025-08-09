@@ -246,8 +246,7 @@
                         Padding="40"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                    <components:DeckStakeSelector Name="DeckStakeSelector" 
-                                                 UseSpinnerForStake="False"/>
+                    <components:DeckAndStakeSelector Name="DeckAndStakeSelector"/>
                 </Border>
             </StackPanel>
             

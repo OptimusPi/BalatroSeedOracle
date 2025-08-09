@@ -32,6 +32,7 @@
         <SolidColorBrush x:Key="DropShadow">#1e2e32</SolidColorBrush>
         <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
         <SolidColorBrush x:Key="ModalShadow">#777e89</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkModalGrey">#1e2b2d</SolidColorBrush>
         
         <!-- UI Colors from C.UI -->
         <SolidColorBrush x:Key="TextLight">#FFFFFF</SolidColorBrush>
@@ -85,7 +86,7 @@
         <SolidColorBrush x:Key="MediumBackground">#374147</SolidColorBrush>
         <SolidColorBrush x:Key="LightBackground">#536570</SolidColorBrush>
         <SolidColorBrush x:Key="SemiTransparentBlack">#88000000</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryTransparentBlack">#22000000</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryTransparentBlack">#12010001</SolidColorBrush>
         <SolidColorBrush x:Key="PureBlack">#000000</SolidColorBrush>
         <SolidColorBrush x:Key="ToggleRed">#FE5F55</SolidColorBrush>
         <SolidColorBrush x:Key="ToggleBlue">#009dff</SolidColorBrush>

@@ -72,6 +72,11 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     
+    <!-- Prevent text selection in all buttons -->
+    <Style Selector="Button TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    
     <!-- Enhanced red button hover shadow using exact color -->
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
         <Setter Property="Background" Value="#70150f" />

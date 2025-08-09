@@ -25,7 +25,7 @@ public static class ModalHelper
         var modal = new StandardModal(title);
         modal.SetContent(content);
         modal.BackClicked += (s, ev) => menu.HideModalContent();
-        menu.ShowModalContent(modal);
+        menu.ShowModalContent(modal, title);
         return modal;
     }
 

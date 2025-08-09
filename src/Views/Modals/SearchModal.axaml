@@ -388,10 +388,9 @@
                           HorizontalScrollBarVisibility="Disabled">
                 <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
                     <!-- Deck and Stake Selection -->
-                    <components:DeckStakeSelector Name="DeckStakeSelector" 
-                                                 UseSpinnerForStake="True"
-                                                 HorizontalAlignment="Stretch"
-                                                 VerticalAlignment="Center"/>
+                    <components:DeckAndStakeSelector Name="DeckAndStakeSelector" 
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"/>
                 </Grid>
             </ScrollViewer>
             

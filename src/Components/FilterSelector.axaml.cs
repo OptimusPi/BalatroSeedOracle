@@ -12,8 +12,10 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Oracle.Helpers;
 using Oracle.Services;
+using Oracle.Views.Modals;
 
 namespace Oracle.Components
 {
@@ -30,6 +32,7 @@ namespace Oracle.Components
         private string? _currentFilterPath = null;
         private bool _autoLoadEnabled = true;
         private bool _showCreateButton = true;
+        public bool ShouldSwitchToVisualTab { get; set; } = false;
         
         // Controls
         private TextBlock? _filterName;
@@ -539,78 +542,128 @@ namespace Oracle.Components
         }
         
         
-        private async void OnImportClick(object? sender, RoutedEventArgs e)
+        // Import functionality moved to ToolsModal
+        // private async void OnImportClick(object? sender, RoutedEventArgs e)
+        // {
+        //     // This functionality has been moved to ToolsModal -> Import Files button
+        // }
+        
+        private void OnSelectClick(object? sender, RoutedEventArgs e)
         {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
-            
-            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            // Fire the FilterLoaded event with a special flag to indicate tab switch is requested
+            if (!string.IsNullOrEmpty(_currentFilterPath) && File.Exists(_currentFilterPath))
             {
-                Title = "Import Filter Configuration",
-                AllowMultiple = false,
-                FileTypeFilter = new[]
-                {
-                    new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
-                    new FilePickerFileType("All Files") { Patterns = new[] { "*" } }
-                }
-            });
-            
-            if (files.Count > 0)
-            {
-                try
-                {
-                    var importedFilePath = files[0].Path.LocalPath;
-                    
-                    // Create JsonItemConfigs directory if it doesn't exist
-                    var jsonConfigsDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemConfigs");
-                    if (!Directory.Exists(jsonConfigsDir))
-                    {
-                        Directory.CreateDirectory(jsonConfigsDir);
-                    }
-                    
-                    // Copy the imported file
-                    var fileName = Path.GetFileName(importedFilePath);
-                    var destinationPath = Path.Combine(jsonConfigsDir, fileName);
-                    
-                    // Handle duplicate names
-                    if (File.Exists(destinationPath))
-                    {
-                        var baseName = Path.GetFileNameWithoutExtension(fileName);
-                        var extension = Path.GetExtension(fileName);
-                        var counter = 1;
-                        do
-                        {
-                            fileName = $"{baseName}_{counter}{extension}";
-                            destinationPath = Path.Combine(jsonConfigsDir, fileName);
-                            counter++;
-                        } while (File.Exists(destinationPath));
-                    }
-                    
-                    File.Copy(importedFilePath, destinationPath, overwrite: false);
-                    
-                    // Reload and select the new filter
-                    LoadAvailableFilters();
-                    
-                    // Find and select the newly imported filter
-                    var index = _availableFilters.FindIndex(f => f.Equals(destinationPath, StringComparison.OrdinalIgnoreCase));
-                    if (index >= 0)
-                    {
-                        _currentFilterIndex = index;
-                        UpdateFilterPreview();
-                    }
-                    
-                    DebugLogger.Log("FilterSelector", $"Imported filter: {fileName}");
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("FilterSelector", $"Error importing filter: {ex.Message}");
-                }
+                // Set flag to indicate we want to switch to Visual tab
+                ShouldSwitchToVisualTab = true;
+                
+                // The FiltersModal will handle both loading the filter AND switching tabs
+                FilterLoaded?.Invoke(this, _currentFilterPath);
             }
         }
         
-        private void OnNewFilterClick(object? sender, RoutedEventArgs e)
+        private void OnFilterNameTextChanged(object? sender, TextChangedEventArgs e)
         {
-            NewFilterRequested?.Invoke(this, EventArgs.Empty);
+            var textBox = sender as TextBox;
+            var createButton = this.FindControl<Button>("CreateFilterButton");
+            
+            if (textBox != null && createButton != null)
+            {
+                // Enable/disable the create button based on whether there's text
+                createButton.IsEnabled = !string.IsNullOrWhiteSpace(textBox.Text);
+            }
+        }
+        
+        private void OnCreateFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            if (filterNameInput == null || string.IsNullOrWhiteSpace(filterNameInput.Text))
+                return;
+            
+            try
+            {
+                // Normalize the filename
+                var normalizedName = NormalizeFileName(filterNameInput.Text);
+                
+                // Create JsonItemConfigs directory if it doesn't exist
+                var jsonConfigsDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemConfigs");
+                if (!Directory.Exists(jsonConfigsDir))
+                {
+                    Directory.CreateDirectory(jsonConfigsDir);
+                }
+                
+                // Create the full file path
+                var filePath = Path.Combine(jsonConfigsDir, normalizedName);
+                
+                // Create a blank filter configuration
+                var blankConfig = new
+                {
+                    name = filterNameInput.Text.Trim(),
+                    author = "",
+                    description = "",
+                    must = new object[] { },
+                    should = new object[] { },
+                    mustNot = new object[] { }
+                };
+                
+                // Save the file
+                var json = System.Text.Json.JsonSerializer.Serialize(blankConfig, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+                File.WriteAllText(filePath, json);
+                
+                // Clear the input
+                filterNameInput.Text = "";
+                
+                // Reload filters and select the new one
+                LoadAvailableFilters();
+                var index = _availableFilters.FindIndex(f => f.Equals(filePath, StringComparison.OrdinalIgnoreCase));
+                if (index >= 0)
+                {
+                    _currentFilterIndex = index;
+                    UpdateFilterPreview();
+                }
+                
+                // Fire the NewFilterRequested event with the new file path
+                NewFilterRequested?.Invoke(this, EventArgs.Empty);
+                
+                // Auto-load the new filter
+                if (File.Exists(filePath))
+                {
+                    FilterLoaded?.Invoke(this, filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"Failed to create new filter: {ex.Message}");
+            }
+        }
+        
+        private string NormalizeFileName(string input)
+        {
+            // Trim and lowercase
+            var normalized = input.Trim().ToLower();
+            
+            // Replace spaces with hyphens
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"\s+", "-");
+            
+            // Remove all non-alphanumeric characters except hyphens
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"[^a-z0-9\-]", "-");
+            
+            // Replace multiple consecutive hyphens with a single hyphen
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"-+", "-");
+            
+            // Remove leading and trailing hyphens
+            normalized = normalized.Trim('-');
+            
+            // Ensure it's not empty
+            if (string.IsNullOrEmpty(normalized))
+            {
+                normalized = "untitled";
+            }
+            
+            // Add the .ouija.json extension
+            return $"{normalized}.ouija.json";
         }
         
         // Public methods
