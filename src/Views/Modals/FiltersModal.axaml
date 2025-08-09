@@ -13,7 +13,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
@@ -75,7 +75,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="Bold" />
+            
             <Setter Property="MinHeight" Value="32" />
             <Setter Property="Padding" Value="12,4" />
             <Setter Property="Margin" Value="0,0,0,2" />

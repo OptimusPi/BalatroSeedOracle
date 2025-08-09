@@ -17,7 +17,6 @@ namespace Oracle.Services
         private readonly SearchHistoryService _searchHistory;
         private CancellationTokenSource? _cts;
         private Task? _captureTask;
-        private long _currentSearchId = -1;
         private int _resultCount = 0;
 
         public event Action<SearchResult>? ResultCaptured;
@@ -34,18 +33,17 @@ namespace Oracle.Services
         /// <summary>
         /// Start capturing results from Motely's queue
         /// </summary>
-        public async Task StartCaptureAsync(long searchId)
+        public async Task StartCaptureAsync()
         {
             if (_captureTask != null && !_captureTask.IsCompleted)
             {
                 throw new InvalidOperationException("Capture is already running");
             }
 
-            _currentSearchId = searchId;
             _resultCount = 0;
             _cts = new CancellationTokenSource();
 
-            DebugLogger.Log("MotelyResultCapture", $"Starting capture for search {searchId}");
+            DebugLogger.Log("MotelyResultCapture", "Starting result capture");
 
             _captureTask = Task.Run(async () =>
             {
@@ -63,7 +61,7 @@ namespace Oracle.Services
                             };
 
                             // Store in DuckDB
-                            await _searchHistory.AddSearchResultAsync(searchId, searchResult);
+                            await _searchHistory.AddSearchResultAsync(searchResult);
 
                             // Update count and raise events
                             Interlocked.Increment(ref _resultCount);
@@ -101,7 +99,7 @@ namespace Oracle.Services
             if (_cts == null || _captureTask == null)
                 return;
 
-            DebugLogger.Log("MotelyResultCapture", $"Stopping capture for search {_currentSearchId}. Captured {_resultCount} results.");
+            DebugLogger.Log("MotelyResultCapture", $"Stopping capture. Captured {_resultCount} results.");
 
             _cts.Cancel();
 

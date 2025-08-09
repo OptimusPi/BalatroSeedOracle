@@ -1815,7 +1815,7 @@ public partial class FiltersModalContent : UserControl
             {
                 Text = group.Key,
                 FontSize = 16,
-                FontWeight = FontWeight.Bold,
+
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Thickness(5, 10, 5, 5)
@@ -2219,7 +2219,7 @@ public partial class FiltersModalContent : UserControl
                 {
                     Text = group.Key,
                     FontSize = 20,
-                    FontWeight = FontWeight.Bold,
+    
                     Foreground = Brushes.White,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                     Margin = new Thickness(5, 20, 5, 10)
@@ -3704,7 +3704,7 @@ public partial class FiltersModalContent : UserControl
             {
                 Text = itemName,
                 FontSize = UIConstants.SmallFontSize,
-                FontWeight = FontWeight.Bold,
+
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -3910,17 +3910,17 @@ public partial class FiltersModalContent : UserControl
     {
         writer.WriteStartObject();
 
-        // Write nested item object
-        if (item.Item != null)
+        // Write type and value
+        writer.WriteString("type", item.Type);
+        if (!string.IsNullOrEmpty(item.Value))
         {
-            writer.WriteStartObject("item");
-            writer.WriteString("type", item.Item.Type);
-            writer.WriteString("name", item.Item.Name);
-            if (!string.IsNullOrEmpty(item.Item.Edition))
-            {
-                writer.WriteString("edition", item.Item.Edition);
-            }
-            writer.WriteEndObject();
+            writer.WriteString("value", item.Value);
+        }
+        
+        // Write edition if present
+        if (!string.IsNullOrEmpty(item.Edition))
+        {
+            writer.WriteString("edition", item.Edition);
         }
 
         // Write antes array
@@ -4050,48 +4050,34 @@ public partial class FiltersModalContent : UserControl
         var normalizedCategory = category.ToLower();
         if (normalizedCategory == "souljokers") normalizedCategory = "jokers";
 
-        // Set item info using nested format
+        // Set type and value directly
         switch (normalizedCategory)
         {
             case "jokers":
-                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
-                {
-                    Type = "joker",
-                    Name = itemName,
-                    Edition = config.Edition?.ToString()
-                };
+                filterItem.Type = "joker";
+                filterItem.Value = itemName;
+                if (config.Edition != null)
+                    filterItem.Edition = config.Edition.ToString();
                 break;
 
             case "tarots":
-                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
-                {
-                    Type = "tarot",
-                    Name = itemName
-                };
+                filterItem.Type = "tarot";
+                filterItem.Value = itemName;
                 break;
 
             case "spectrals":
-                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
-                {
-                    Type = "spectral",
-                    Name = itemName
-                };
+                filterItem.Type = "spectral";
+                filterItem.Value = itemName;
                 break;
 
             case "vouchers":
-                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
-                {
-                    Type = "voucher",
-                    Name = itemName
-                };
+                filterItem.Type = "voucher";
+                filterItem.Value = itemName;
                 break;
 
             case "tags":
-                filterItem.Item = new Motely.Filters.OuijaConfig.ItemInfo
-                {
-                    Type = "tag",
-                    Name = itemName
-                };
+                filterItem.Type = "tag";
+                filterItem.Value = itemName;
                 break;
 
             default:
@@ -4119,7 +4105,12 @@ public partial class FiltersModalContent : UserControl
                     Type = "Joker",
                     Value = "Perkeo",
                     SearchAntes = new[] { 1, 2 },
-                    Sources = new List<string> { "shop", "booster" }
+                    Sources = new Motely.Filters.OuijaConfig.SourcesConfig
+                    {
+                        ShopSlots = new[] { 0, 1, 2, 3 },
+                        PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
+                        Tags = false
+                    }
                 }
             },
             Should = new List<Motely.Filters.OuijaConfig.FilterItem>
@@ -4137,7 +4128,12 @@ public partial class FiltersModalContent : UserControl
                     Value = "Blueprint",
                     Score = 30,
                     SearchAntes = new[] { 1, 2, 3, 4 },
-                    Sources = new List<string> { "shop", "booster" }
+                    Sources = new Motely.Filters.OuijaConfig.SourcesConfig
+                    {
+                        ShopSlots = new[] { 0, 1, 2, 3 },
+                        PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
+                        Tags = false
+                    }
                 }
             },
             MustNot = new List<Motely.Filters.OuijaConfig.FilterItem>

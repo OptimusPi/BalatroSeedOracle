@@ -17,7 +17,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="0"/>
@@ -74,9 +74,9 @@
         <Style Selector="Border.value-badge">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="MinWidth" Value="60"/>
             <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
         
@@ -89,7 +89,7 @@
         <Style Selector="TextBlock.spinner-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
@@ -99,7 +99,7 @@
         <Style Selector="TextBlock.value-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -133,7 +133,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -150,12 +150,12 @@
                 <!-- Drop shadow -->
                 <Border Background="{StaticResource DropShadow}"
                         CornerRadius="6"
-                        MinWidth="140"
+                        HorizontalAlignment="Stretch"
                         Height="32"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
                 <Border Classes="value-badge"
-                        MinWidth="140">
+                        HorizontalAlignment="Stretch">
                     <Grid>
                         <TextBlock Name="ValueText"
                                    Classes="value-text"/>

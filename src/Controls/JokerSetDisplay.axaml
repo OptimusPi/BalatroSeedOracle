@@ -20,7 +20,7 @@
         </Style>
         
         <Style Selector="TextBlock.set-name">
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,5"/>

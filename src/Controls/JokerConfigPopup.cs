@@ -122,7 +122,7 @@ namespace Oracle.Controls
                         Text = anteNum.ToString(),
                         FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                         FontSize = 12,
-                        FontWeight = FontWeight.Bold,
+        
                         Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray,
                         HorizontalAlignment = HorizontalAlignment.Center
                     }

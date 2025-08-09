@@ -7,7 +7,7 @@
         <Style Selector="TextBlock.deck-name">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="Bold" />
+            
             <Setter Property="Foreground" Value="{StaticResource Gold}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,0,4" />
@@ -23,7 +23,7 @@
         <Style Selector="TextBlock.stake-name">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="Bold" />
+            
             <Setter Property="Foreground" Value="{StaticResource Gold}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,0,4" />
@@ -37,15 +37,10 @@
         </Style>
     </UserControl.Styles>
     
-    <StackPanel Spacing="12">
+    <StackPanel Spacing="24">
         
         <!-- Deck Selection -->
-        <Border 
-                Background="{StaticResource ContainerDarkPrecise}" 
-                BorderThickness="0" 
-                CornerRadius="8" 
-                Padding="10">
-            <Grid>
+        <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -105,16 +100,10 @@
                             Width="30" 
                             Height="30" />
                 </Grid>
-            </Grid>
-        </Border>
+        </Grid>
         
         <!-- Stake Selection -->
-        <Border 
-                Background="{StaticResource ContainerDarkPrecise}" 
-                BorderThickness="0" 
-                CornerRadius="8" 
-                Padding="10">
-            <Grid>
+        <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -176,7 +165,6 @@
                                            Value="0"
                                            IsVisible="False" />
                 </Grid>
-            </Grid>
-        </Border>
+        </Grid>
     </StackPanel>
 </UserControl>

@@ -863,44 +863,33 @@ namespace Oracle.Views.Modals
                 if (historyService == null)
                     return;
                     
-                // Get recent searches for this filter
-                var recentSearches = await historyService.GetRecentSearchesAsync(1);
-                if (recentSearches.Count > 0)
+                // Load existing results from the database
+                var existingResults = await historyService.GetSearchResultsAsync();
+                if (existingResults.Count > 0)
                 {
-                    var lastSearch = recentSearches[0];
+                    AddToConsole($"Loaded {existingResults.Count} existing results from database");
                     
-                    // Check if it's the same filter
-                    if (System.IO.Path.GetFileName(lastSearch.ConfigPath) == System.IO.Path.GetFileName(_currentFilterPath))
+                    // Clear current results and add the loaded ones
+                    _searchResults.Clear();
+                    foreach (var result in existingResults)
                     {
-                        // Load the results
-                        var existingResults = await historyService.GetSearchResultsAsync(lastSearch.SearchId);
-                        if (existingResults.Count > 0)
+                        _searchResults.Add(new SearchResult
                         {
-                            AddToConsole($"Loaded {existingResults.Count} existing results from previous search");
-                            
-                            // Clear current results and add the loaded ones
-                            _searchResults.Clear();
-                            foreach (var result in existingResults)
-                            {
-                                _searchResults.Add(new SearchResult
-                                {
-                                    Seed = result.Seed,
-                                    Score = result.TotalScore,
-                                    Details = result.ScoreBreakdown,
-                                    Timestamp = lastSearch.SearchDate
-                                });
-                            }
-                            
-                            // Update UI
-                            if (_resultsSummary != null)
-                            {
-                                _resultsSummary.Text = $"Found {_searchResults.Count} results (from previous search)";
-                            }
-                            if (_exportResultsButton != null)
-                            {
-                                _exportResultsButton.IsEnabled = true;
-                            }
-                        }
+                            Seed = result.Seed,
+                            Score = result.TotalScore,
+                            Details = result.ScoreBreakdown,
+                            Timestamp = DateTime.Now
+                        });
+                    }
+                    
+                    // Update UI
+                    if (_resultsSummary != null)
+                    {
+                        _resultsSummary.Text = $"Found {_searchResults.Count} results (from database)";
+                    }
+                    if (_exportResultsButton != null)
+                    {
+                        _exportResultsButton.IsEnabled = true;
                     }
                 }
             }

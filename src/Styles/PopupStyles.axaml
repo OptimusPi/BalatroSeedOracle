@@ -40,7 +40,7 @@
     
     <Style Selector="FlyoutPresenter RadioButton:checked /template/ ContentPresenter">
         <Setter Property="TextElement.Foreground" Value="{StaticResource Orange}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        
     </Style>
     
     <!-- CheckBox in Popups -->
@@ -52,7 +52,7 @@
     
     <Style Selector="FlyoutPresenter CheckBox:checked /template/ ContentPresenter">
         <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        
     </Style>
     
     <!-- TextBlock in Popups -->
@@ -63,7 +63,7 @@
     <!-- Headers in Popups -->
     <Style Selector="FlyoutPresenter TextBlock.header">
         <Setter Property="Foreground" Value="{StaticResource Orange}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        
         <Setter Property="FontSize" Value="16"/>
     </Style>
     

@@ -26,7 +26,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
@@ -190,7 +190,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Height" Value="64"/>
             <Setter Property="MinWidth" Value="280"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -259,7 +259,7 @@
         <Style Selector="TextBlock.silver-badge-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Foreground" Value="{StaticResource DarkerGrey}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -271,7 +271,7 @@
             <Setter Property="Height" Value="60"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="32"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -386,17 +386,13 @@
             <ScrollViewer Name="SettingsPanel" IsVisible="False" 
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="24" Margin="24">
-                    <!-- Inner dark panel like in Balatro -->
-                    <Border Classes="modal-content-panel" 
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Top"
-                            MaxWidth="400">
-                        <!-- Deck and Stake Selection -->
-                        <components:DeckStakeSelector Name="DeckStakeSelector" 
-                                                     UseSpinnerForStake="True"/>
-                    </Border>
-                </StackPanel>
+                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
+                    <!-- Deck and Stake Selection -->
+                    <components:DeckStakeSelector Name="DeckStakeSelector" 
+                                                 UseSpinnerForStake="True"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Center"/>
+                </Grid>
             </ScrollViewer>
             
             <!-- Search Panel -->
@@ -426,7 +422,7 @@
                                                         Value="4" 
                                                         Minimum="1" 
                                                         Maximum="16"
-                                                        Width="140"
+                                                        HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
                                 <!-- Batch Size -->
@@ -435,7 +431,7 @@
                                                         Value="3" 
                                                         Minimum="1" 
                                                         Maximum="4"
-                                                        Width="140"
+                                                        HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
                                 <!-- Min Score -->
@@ -444,7 +440,7 @@
                                                         Value="0" 
                                                         Minimum="0" 
                                                         Maximum="5"
-                                                        Width="140"
+                                                        HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
                                 <!-- Debug checkbox -->
@@ -456,16 +452,6 @@
                                           FontSize="12"
                                           Margin="0,10"/>
                             </StackPanel>
-                            
-                            <!-- Let Jimbo COOK button at bottom -->
-                            <Button Grid.Row="1"
-                                    Name="CookButton"
-                                    Content="Let Jimbo COOK!"
-                                    Classes="cook-button"
-                                    IsEnabled="False"
-                                    Click="OnCookClick"
-                                    Margin="0,12,0,0"
-                                    HorizontalAlignment="Stretch"/>
                         </Grid>
                     </Border>
                     
@@ -490,12 +476,20 @@
                                              Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             </ScrollViewer>
                             
-                            <Button Grid.Row="1"
-                                    Content="Clear Console"
-                                    Classes="small-button"
-                                    Click="OnClearConsoleClick"
-                                    Margin="0,8,0,0"
-                                    HorizontalAlignment="Right"/>
+                            <StackPanel Grid.Row="1"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Spacing="8"
+                                        Margin="0,8,0,0">
+                                <Button Name="CookButton"
+                                        Content="Let Jimbo COOK!"
+                                        Classes="cook-button"
+                                        IsEnabled="False"
+                                        Click="OnCookClick"/>
+                                <Button Content="Clear Console"
+                                        Classes="small-button"
+                                        Click="OnClearConsoleClick"/>
+                            </StackPanel>
                         </Grid>
                     </Border>
                     

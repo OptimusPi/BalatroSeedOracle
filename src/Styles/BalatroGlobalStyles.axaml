@@ -12,7 +12,7 @@
     <!-- ALL Buttons get Balatro styling by default (except window chrome buttons) -->
     <Style Selector="Button:not(.SystemCaptionButton)">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Background" Value="{StaticResource DockGrey}" /> <!-- Default gray like in Balatro -->
@@ -170,7 +170,7 @@
     <!-- DataGrid headers -->
     <Style Selector="DataGridColumnHeader">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="BorderBrush" Value="#555555" />
@@ -209,7 +209,7 @@
     <Style Selector="TextBlock.balatro-section-header">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontSize" Value="20" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Margin" Value="0,0,0,12" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -219,7 +219,7 @@
     <Style Selector="TextBlock.balatro-modal-title">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,0,20" />
@@ -314,7 +314,7 @@
     <Style Selector="TextBlock.info-display">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="Transparent" />
     </Style>
@@ -354,7 +354,7 @@
     
     <Style Selector="TabItem">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Background" Value="{StaticResource DarkBackground}" />

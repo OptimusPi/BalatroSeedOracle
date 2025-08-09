@@ -29,7 +29,7 @@
         <Style Selector="Button.submit-button">
             <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>

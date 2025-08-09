@@ -123,7 +123,7 @@ namespace Oracle.Controls
             {
                 FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                 FontSize = 16,
-                FontWeight = FontWeight.Bold,
+
                 Foreground = Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             };
@@ -192,7 +192,7 @@ namespace Oracle.Controls
                         Text = text,
                         FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                         FontSize = 12,
-                        FontWeight = FontWeight.Bold,
+        
                         Foreground = new SolidColorBrush(Color.Parse(borderColor)),
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center

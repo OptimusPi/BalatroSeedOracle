@@ -167,7 +167,7 @@
         <!-- Section Header Style -->
         <Style Selector="TextBlock.section-header">
             <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Margin" Value="0,0,0,15"/>
             <Setter Property="Foreground" Value="{StaticResource Gold}"/>
         </Style>

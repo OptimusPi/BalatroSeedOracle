@@ -28,7 +28,6 @@ public class MotelySearchService : IDisposable
     private IMotelySearch? _currentSearch;
     private readonly SearchHistoryService _historyService;
     private MotelyResultCapture? _resultCapture;
-    private long _currentSearchId = -1;
     private DateTime _searchStartTime;
 
     public bool IsRunning => _isRunning;
@@ -138,44 +137,16 @@ public class MotelySearchService : IDisposable
 
         try
         {
-            // Start a new search in DuckDB
-            var deck = config.Deck ?? "Red";
-            var stake = config.Stake ?? "White";
-            var filterName = "Direct Config";
-
-            _currentSearchId = await _historyService.StartNewSearchAsync(
-                filterName,
-                config.ThreadCount,
-                config.MinScore,
-                config.BatchSize,
-                deck,
-                stake,
-                39  // maxAnte default value
-            );
-
-            // Check if search was successfully created
-            if (_currentSearchId <= 0)
-            {
-                Oracle.Helpers.DebugLogger.LogError("MotelySearchService", "Failed to create new search in database");
-                progress?.Report(new Oracle.Models.SearchProgress
-                {
-                    Message = "Failed to initialize search in database",
-                    HasError = true,
-                    IsComplete = true
-                });
-                _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-
-            // Save filter configuration
-            await _historyService.SaveFilterItemsAsync(_currentSearchId, ouijaConfig);
+            // No need to start a search or save filter items - just use the filter name
 
             // Start result capture service
             _resultCapture = new MotelyResultCapture(_historyService);
-            _resultCapture.ResultCaptured += (result) =>
+            _resultCapture.ResultCaptured += async (result) =>
             {
                 Results.Add(result);
+
+                // Save to database
+                await _historyService.AddSearchResultAsync(result);
 
                 // Raise result found event
                 ResultFound?.Invoke(this, new Views.Modals.SearchResultEventArgs 
@@ -199,7 +170,7 @@ public class MotelySearchService : IDisposable
                 });
             };
 
-            await _resultCapture.StartCaptureAsync(_currentSearchId);
+            await _resultCapture.StartCaptureAsync();
 
             // Report initial progress
             progress?.Report(new Oracle.Models.SearchProgress
@@ -260,13 +231,7 @@ public class MotelySearchService : IDisposable
                 _resultCapture = null;
             }
 
-            // Complete the search in DuckDB
-            if (_currentSearchId > 0)
-            {
-                var duration = (DateTime.UtcNow - _searchStartTime).TotalSeconds;
-                var wasCancelled = _cancellationTokenSource?.IsCancellationRequested ?? false;
-                await _historyService.CompleteSearchAsync(_currentSearchId, 0, duration, wasCancelled);
-            }
+            // No need to complete search - database just stores results
 
             _isRunning = false;
             
@@ -313,46 +278,16 @@ public class MotelySearchService : IDisposable
                 return;
             }
 
-            // Start a new search in DuckDB
-            var deck = criteria.Deck ?? "Red";
-            var stake = criteria.Stake ?? "White";
-
-            _currentSearchId = await _historyService.StartNewSearchAsync(
-                criteria.ConfigPath,
-                criteria.ThreadCount,
-                criteria.MinScore,
-                criteria.BatchSize,
-                deck,
-                stake,
-                39  // maxAnte default value
-            );
-
-            // Check if search was successfully created
-            if (_currentSearchId <= 0)
-            {
-                Oracle.Helpers.DebugLogger.LogError("MotelySearchService", "Failed to create new search in database");
-                progress?.Report(new Oracle.Models.SearchProgress
-                {
-                    Message = "Failed to initialize search in database",
-                    HasError = true,
-                    IsComplete = true
-                });
-                _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-
-            // Save filter configuration
-            if (_currentConfig != null)
-            {
-                await _historyService.SaveFilterItemsAsync(_currentSearchId, _currentConfig);
-            }
+            // No need to start a search or save filter items - just use the filter name
 
             // Start result capture service
             _resultCapture = new MotelyResultCapture(_historyService);
-            _resultCapture.ResultCaptured += (result) =>
+            _resultCapture.ResultCaptured += async (result) =>
             {
                 Results.Add(result);
+
+                // Save to database
+                await _historyService.AddSearchResultAsync(result);
 
                 // Raise result found event
                 ResultFound?.Invoke(this, new Views.Modals.SearchResultEventArgs 
@@ -376,7 +311,7 @@ public class MotelySearchService : IDisposable
                 });
             };
 
-            await _resultCapture.StartCaptureAsync(_currentSearchId);
+            await _resultCapture.StartCaptureAsync();
 
             // Report initial progress
             progress?.Report(new Oracle.Models.SearchProgress
@@ -424,13 +359,7 @@ public class MotelySearchService : IDisposable
                 _resultCapture = null;
             }
 
-            // Complete the search in DuckDB
-            if (_currentSearchId > 0)
-            {
-                var duration = (DateTime.UtcNow - _searchStartTime).TotalSeconds;
-                var wasCancelled = _cancellationTokenSource?.IsCancellationRequested ?? false;
-                await _historyService.CompleteSearchAsync(_currentSearchId, 0, duration, wasCancelled);
-            }
+            // No need to complete search - database just stores results
 
             _isRunning = false;
             // Don't dispose/null _currentSearch here - we might need it in the catch block
@@ -488,7 +417,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var must in _currentConfig.Must)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, SearchAntes=[{string.Join(",", must.SearchAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, SearchAntes=[{string.Join(",", must.EffectiveAntes)}]");
                 }
             }
 
@@ -496,7 +425,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var should in _currentConfig.Should)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, SearchAntes=[{string.Join(",", should.SearchAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, SearchAntes=[{string.Join(",", should.EffectiveAntes)}]");
                 }
             }
 
@@ -504,7 +433,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var mustNot in _currentConfig.MustNot)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, SearchAntes=[{string.Join(",", mustNot.SearchAntes)}]");
+                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, SearchAntes=[{string.Join(",", mustNot.EffectiveAntes)}]");
                 }
             }
 

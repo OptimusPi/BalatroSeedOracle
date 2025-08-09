@@ -11,14 +11,14 @@
         <!-- Label styles -->
         <Style Selector="TextBlock.label">
             <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="FontSize" Value="14"/>
         </Style>
         
         <!-- Header style -->
         <Style Selector="TextBlock.header">
             <Setter Property="Foreground" Value="{StaticResource PaleOrange}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
@@ -32,7 +32,7 @@
         
         <Style Selector="RadioButton:checked /template/ ContentPresenter">
             <Setter Property="TextElement.Foreground" Value="{StaticResource PaleOrange}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
         </Style>
         
         <!-- CheckBox styles -->
@@ -44,7 +44,7 @@
         
         <Style Selector="CheckBox:checked /template/ ContentPresenter">
             <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
         </Style>
         
         <!-- Ante checkbox styles -->
@@ -138,7 +138,7 @@
             BorderThickness="3"
             CornerRadius="8"
             Padding="16"
-            BoxShadow="0 4 16 {StaticResource SemiTransparentBlack}">
+            BoxShadow="{StaticResource DeepBoxShadow}">
         
         <StackPanel Spacing="10">
             <!-- Item Name Header with Balatro styling -->

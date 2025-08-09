@@ -4,7 +4,7 @@
     <!-- Base Oracle Button Style -->
     <Style Selector="Button.oracle-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="24" /> <!-- Default size, can be overridden -->
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Padding" Value="10,8" />
@@ -169,7 +169,7 @@
     <Style Selector="Button.vertical-tab-button">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Border}" />

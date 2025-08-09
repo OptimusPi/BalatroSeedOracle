@@ -70,7 +70,7 @@ namespace Oracle.Views.Modals
             {
                 Text = $"Seed: {seed}",
                 FontSize = 24,
-                FontWeight = FontWeight.Bold,
+
                 HorizontalAlignment = HorizontalAlignment.Center
             });
             headerPanel.Children.Add(new TextBlock
@@ -102,7 +102,7 @@ namespace Oracle.Views.Modals
                     {
                         Text = "VOUCHER",
                         FontSize = 16,
-                        FontWeight = FontWeight.Bold,
+        
                         Margin = new Thickness(0, 10, 0, 5)
                     });
 
@@ -122,7 +122,7 @@ namespace Oracle.Views.Modals
                     {
                         Text = "SHOP",
                         FontSize = 16,
-                        FontWeight = FontWeight.Bold,
+        
                         Margin = new Thickness(0, 10, 0, 5)
                     });
 
@@ -142,7 +142,7 @@ namespace Oracle.Views.Modals
                     {
                         Text = "BOOSTER PACKS",
                         FontSize = 16,
-                        FontWeight = FontWeight.Bold,
+        
                         Margin = new Thickness(0, 15, 0, 5)
                     });
 
@@ -162,7 +162,7 @@ namespace Oracle.Views.Modals
                     {
                         Text = "SKIP TAGS",
                         FontSize = 16,
-                        FontWeight = FontWeight.Bold,
+        
                         Margin = new Thickness(0, 15, 0, 5)
                     });
 

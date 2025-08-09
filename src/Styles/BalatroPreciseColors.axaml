@@ -8,7 +8,7 @@
     <!-- Base precise button style -->
     <Style x:Key="PreciseBaseButton" Selector="Button">
       <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-      <Setter Property="FontWeight" Value="Bold"/>
+      
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="Padding" Value="16,8"/>
@@ -32,7 +32,7 @@
   <!-- Badges -->
   <Style Selector="TextBlock.info-badge">
     <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="FontSize" Value="12"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="Background" Value="Transparent"/>
@@ -44,7 +44,7 @@
   </Style>
   <Style Selector="TextBlock.info-badge-large">
     <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="FontSize" Value="16"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="Background" Value="Transparent"/>
@@ -62,7 +62,7 @@
     <Setter Property="Background" Value="{StaticResource Red}"/>
     <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="16,8"/>
@@ -79,7 +79,7 @@
     <Setter Property="Background" Value="{StaticResource Orange}"/>
     <Setter Property="Foreground" Value="#000000"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="16,8"/>
@@ -107,7 +107,7 @@
   <!-- Stats -->
   <Style Selector="TextBlock.stats-value">
     <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="FontSize" Value="18"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -124,7 +124,7 @@
     <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
     <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="CornerRadius" Value="6,6,0,0"/>

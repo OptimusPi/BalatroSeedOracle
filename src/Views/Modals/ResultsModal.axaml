@@ -13,7 +13,7 @@
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="4"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Transitions">

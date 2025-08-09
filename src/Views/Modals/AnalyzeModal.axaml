@@ -11,7 +11,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
@@ -117,7 +117,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
@@ -164,7 +164,7 @@
         <!-- Section Header Style -->
         <Style Selector="TextBlock.section-header">
             <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Margin" Value="0,0,0,15"/>
             <Setter Property="Foreground" Value="{StaticResource Gold}"/>
         </Style>

@@ -46,7 +46,7 @@
     <Style Selector="TextBlock.oracle-modal-text">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="20"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,0,0,16"/>
@@ -56,7 +56,7 @@
     <Style Selector="Button.oracle-modal-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="30"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="BorderBrush" Value="{StaticResource Purple}" />
@@ -116,7 +116,7 @@
                                     <Style Selector="TextBlock">
                                         <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
                                         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        
                                     </Style>
                                 </ContentPresenter.Styles>
                             </ContentPresenter>

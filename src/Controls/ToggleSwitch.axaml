@@ -46,7 +46,7 @@
         
         <Style Selector="TextBlock.toggle-label.active">
             <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
         </Style>
     </UserControl.Styles>
     

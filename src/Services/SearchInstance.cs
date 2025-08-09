@@ -28,7 +28,6 @@ namespace Oracle.Services
         private OuijaConfig? _currentConfig;
         private IMotelySearch? _currentSearch;
         private MotelyResultCapture? _resultCapture;
-        private long _currentSearchDbId = -1;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<Oracle.Models.SearchResult> _results;
 
@@ -102,40 +101,16 @@ namespace Oracle.Services
                     Stake = config.Stake ?? "White"
                 };
 
-                // Start a new search in DuckDB
-                var deck = config.Deck ?? "Red";
-                var stake = config.Stake ?? "White";
-
-                _currentSearchDbId = await _historyService.StartNewSearchAsync(
-                    FilterName,
-                    config.ThreadCount,
-                    config.MinScore,
-                    config.BatchSize,
-                    deck,
-                    stake,
-                    39  // maxAnte default value
-                );
-
-                if (_currentSearchDbId <= 0)
-                {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", "Failed to create new search in database");
-                    progress?.Report(new SearchProgress
-                    {
-                        Message = "Failed to initialize search in database",
-                        HasError = true,
-                        IsComplete = true
-                    });
-                    return;
-                }
-
-                // Save filter configuration
-                await _historyService.SaveFilterItemsAsync(_currentSearchDbId, ouijaConfig);
+                // No need to start a search in database - just store results as they come
                 
                 // Set up result capture
                 _resultCapture = new MotelyResultCapture(_historyService);
-                _resultCapture.ResultCaptured += (result) =>
+                _resultCapture.ResultCaptured += async (result) =>
                 {
                     _results.Add(result);
+                    
+                    // Save to database
+                    await _historyService.AddSearchResultAsync(result);
                     
                     // Notify UI
                     ResultFound?.Invoke(this, new SearchResultEventArgs 
@@ -152,7 +127,7 @@ namespace Oracle.Services
                 };
                 
                 // Start capturing
-                await _resultCapture.StartCaptureAsync(_currentSearchDbId);
+                await _resultCapture.StartCaptureAsync();
 
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
@@ -230,43 +205,16 @@ namespace Oracle.Services
                     HandleSearchProgress(p);
                 });
 
-                // Start a new search in DuckDB
-                var deck = criteria.Deck ?? "Red";
-                var stake = criteria.Stake ?? "White";
-
-                _currentSearchDbId = await _historyService.StartNewSearchAsync(
-                    criteria.ConfigPath ?? string.Empty,
-                    criteria.ThreadCount,
-                    criteria.MinScore,
-                    criteria.BatchSize,
-                    deck,
-                    stake,
-                    39  // maxAnte default value
-                );
-
-                if (_currentSearchDbId <= 0)
-                {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", "Failed to create new search in database");
-                    progress?.Report(new SearchProgress
-                    {
-                        Message = "Failed to initialize search in database",
-                        HasError = true,
-                        IsComplete = true
-                    });
-                    return;
-                }
-
-                // Save filter configuration
-                if (_currentConfig != null)
-                {
-                    await _historyService.SaveFilterItemsAsync(_currentSearchDbId, _currentConfig);
-                }
+                // No need to start a search in database - just store results as they come
                 
                 // Set up result capture
                 _resultCapture = new MotelyResultCapture(_historyService);
-                _resultCapture.ResultCaptured += (result) =>
+                _resultCapture.ResultCaptured += async (result) =>
                 {
                     _results.Add(result);
+                    
+                    // Save to database
+                    await _historyService.AddSearchResultAsync(result);
                     
                     // Notify UI
                     ResultFound?.Invoke(this, new SearchResultEventArgs 
@@ -283,7 +231,7 @@ namespace Oracle.Services
                 };
                 
                 // Start capturing
-                await _resultCapture.StartCaptureAsync(_currentSearchDbId);
+                await _resultCapture.StartCaptureAsync();
 
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
@@ -395,20 +343,10 @@ namespace Oracle.Services
         }
 
 
-        private async Task CompleteSearch(bool wasCancelled)
+        private Task CompleteSearch(bool wasCancelled)
         {
-            if (_currentSearchDbId > 0)
-            {
-                var duration = SearchDuration.TotalSeconds;
-                var totalSeeds = 0; // Will be calculated from batch count
-                
-                await _historyService.CompleteSearchAsync(
-                    _currentSearchDbId, 
-                    totalSeeds, 
-                    duration, 
-                    wasCancelled
-                );
-            }
+            // No need to complete search in database
+            return Task.CompletedTask;
         }
 
         private async Task RunSearchInProcess(OuijaConfig config, SearchCriteria criteria, IProgress<SearchProgress>? progress, CancellationToken cancellationToken)
