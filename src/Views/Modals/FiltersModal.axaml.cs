@@ -171,6 +171,19 @@ namespace Oracle.Views.Modals
                     "FilterSelector component found and setup"
                 );
             }
+
+            // Setup Save Filter functionality
+            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            var saveFilterButton = this.FindControl<Button>("SaveFilterButton");
+
+            if (filterNameInput != null && saveFilterButton != null)
+            {
+                // Enable/disable save button based on filter name
+                filterNameInput.TextChanged += (s, e) =>
+                {
+                    saveFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(filterNameInput.Text);
+                };
+            }
         }
 
         // FilterSelector event handlers
@@ -350,8 +363,8 @@ namespace Oracle.Views.Modals
                 configNameBox.Text = "";
             }
 
-            // Don't enable tabs for new filter - wait until it's saved
-            // UpdateTabStates(true);  // Removed - tabs stay disabled until save
+            // Enable tabs for new filter
+            UpdateTabStates(true);
 
             // Switch to Visual tab
             var visualTab = this.FindControl<Button>("VisualTab");
@@ -361,6 +374,94 @@ namespace Oracle.Views.Modals
             }
 
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
+        }
+
+        private async void OnSaveFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            if (filterNameInput == null || string.IsNullOrWhiteSpace(filterNameInput.Text))
+            {
+                UpdateStatus("Please enter a filter name", true);
+                return;
+            }
+
+            try
+            {
+                var filterName = filterNameInput.Text.Trim();
+
+                // Create the JSON structure directly (don't use OuijaConfig)
+                var filterJson = new
+                {
+                    name = filterName,
+                    description = "Created with visual filter builder",
+                    author = "User",
+                    items = new List<object>()
+                };
+
+                // Convert needs/wants/mustnot to items format
+                foreach (var item in _selectedNeeds)
+                {
+                    var parts = item.Split(':');
+                    if (parts.Length >= 2)
+                    {
+                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "must" });
+                    }
+                }
+
+                foreach (var item in _selectedWants)
+                {
+                    var parts = item.Split(':');
+                    if (parts.Length >= 2)
+                    {
+                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "should" });
+                    }
+                }
+
+                foreach (var item in _selectedMustNot)
+                {
+                    var parts = item.Split(':');
+                    if (parts.Length >= 2)
+                    {
+                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "mustnot" });
+                    }
+                }
+
+                // Save to file
+                var directory = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                var fileName = $"{filterName.Replace(" ", "_")}.json";
+                var filePath = IoPath.Combine(directory, fileName);
+
+                // Check if file already exists
+                if (File.Exists(filePath))
+                {
+                    UpdateStatus($"Filter '{filterName}' already exists. Please choose a different name.", true);
+                    return;
+                }
+
+                // Write the JSON file
+                var json = JsonSerializer.Serialize(filterJson, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(filePath, json);
+
+                UpdateStatus($"Filter '{filterName}' saved successfully!", false);
+                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
+
+                // Clear the filter name input
+                filterNameInput.Text = "";
+
+                // Refresh the filter selector to show the new filter
+                var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
+                filterSelector?.RefreshFilters();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error saving filter: {ex.Message}", true);
+                Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving filter: {ex.Message}");
+            }
         }
 
         private void SetupTabButtons()
@@ -1496,6 +1597,16 @@ namespace Oracle.Views.Modals
                     : Application.Current?.FindResource("AccentGreen") as IBrush
                         ?? new SolidColorBrush(Color.Parse("#4ECDC4"));
             }
+            
+            // Also update the JSON validation status bar
+            var jsonValidationStatus = this.FindControl<TextBlock>("JsonValidationStatus");
+            if (jsonValidationStatus != null)
+            {
+                jsonValidationStatus.Text = message;
+                jsonValidationStatus.Foreground = isError
+                    ? Application.Current?.FindResource("Red") as IBrush ?? Brushes.Red
+                    : Application.Current?.FindResource("Green") as IBrush ?? Brushes.Green;
+            }
         }
 
         private bool ValidateJsonSyntax()
@@ -1857,6 +1968,22 @@ namespace Oracle.Views.Modals
                 OnGlobalDragOver,
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble
             );
+            
+            // Set up JSON editor text changed handler
+            var jsonEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
+            if (jsonEditor != null)
+            {
+                jsonEditor.TextChanged += (s, e) =>
+                {
+                    Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            ValidateJsonSyntaxForAvaloniaEdit(jsonEditor);
+                        },
+                        DispatcherPriority.Background
+                    );
+                };
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -4260,6 +4387,7 @@ namespace Oracle.Views.Modals
             {
                 "Jokers" or "SoulJokers" => new JokerConfigPopup(),
                 "Tarots" => new TarotConfigPopup(),
+                "Planets" => new TarotConfigPopup(), // Planet cards use same config as Tarot (no editions)
                 "Spectrals" => new SpectralConfigPopup(),
                 "Vouchers" => new VoucherConfigPopup(),
                 "Tags" => new TagConfigPopup(),

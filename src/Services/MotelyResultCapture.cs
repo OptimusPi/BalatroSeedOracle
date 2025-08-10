@@ -39,6 +39,10 @@ namespace Oracle.Services
         public void SetFilterConfig(Motely.Filters.OuijaConfig config)
         {
             _filterConfig = config;
+            DebugLogger.Log(
+                "MotelyResultCapture",
+                $"Filter config set: {config?.Name ?? "null"}, Should items: {config?.Should?.Count ?? 0}"
+            );
         }
 
         /// <summary>
@@ -78,6 +82,25 @@ namespace Oracle.Services
                                     TallyScores = result.ScoreWants,
                                     ItemLabels = ExtractScoreLabels(),
                                 };
+                                
+                                DebugLogger.Log(
+                                    "MotelyResultCapture",
+                                    $"Result for {result.Seed}: TallyScores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.ItemLabels?.Length ?? 0}"
+                                );
+                                if (searchResult.ItemLabels != null && searchResult.ItemLabels.Length > 0)
+                                {
+                                    DebugLogger.Log(
+                                        "MotelyResultCapture",
+                                        $"Labels: {string.Join(", ", searchResult.ItemLabels)}"
+                                    );
+                                }
+                                if (searchResult.TallyScores != null && searchResult.TallyScores.Length > 0)
+                                {
+                                    DebugLogger.Log(
+                                        "MotelyResultCapture",
+                                        $"Scores: {string.Join(", ", searchResult.TallyScores)}"
+                                    );
+                                }
 
                                 // Store in DuckDB
                                 await _searchHistory.AddSearchResultAsync(searchResult);
@@ -161,16 +184,20 @@ namespace Oracle.Services
         private string[] ExtractScoreLabels()
         {
             if (_filterConfig?.Should == null)
+            {
+                DebugLogger.Log("MotelyResultCapture", "ExtractScoreLabels: No filter config or Should items");
                 return Array.Empty<string>();
+            }
 
             var labels = new List<string>();
             foreach (var item in _filterConfig.Should)
             {
-                // Create a label from the item value and type
-                var label = $"{item.Value ?? "Unknown"} ({item.Type ?? "Item"})";
+                // Just use the item value as the label
+                var label = item.Value ?? "Unknown";
                 labels.Add(label);
             }
 
+            DebugLogger.Log("MotelyResultCapture", $"ExtractScoreLabels: Found {labels.Count} labels: {string.Join(", ", labels)}");
             return labels.ToArray();
         }
 

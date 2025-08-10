@@ -7,10 +7,7 @@
         <!-- Filter browser using PanelSpinner -->
         <controls:PanelSpinner Name="FilterSpinner" />
         
-        <!-- Spacer to match stake selector height for visual consistency -->
-        <Border Height="48" />
-        
-        <!-- Select Button -->
+        <!-- Select Button (moved higher up, no spacer) -->
         <Button Name="SelectButton" 
                 Content="Select Filter" 
                 Classes="btn-blue" 
@@ -25,20 +22,11 @@
                 CornerRadius="1"/>
         
         <!-- Create new filter section -->
-        <StackPanel Spacing="12" HorizontalAlignment="Center">
-            <TextBox Name="FilterNameInput"
-                     Watermark="Enter filter name..."
-                     Width="320"
-                     FontSize="16"
-                     TextChanged="OnFilterNameTextChanged"/>
-            
-            <Button Name="CreateFilterButton" 
-                    Content="Create New Filter" 
-                    Classes="btn-green" 
-                    MinWidth="200"
-                    HorizontalAlignment="Center"
-                    IsEnabled="False"
-                    Click="OnCreateFilterClick"/>
-        </StackPanel>
+        <Button Name="CreateFilterButton" 
+                Content="Create New Filter" 
+                Classes="btn-green" 
+                MinWidth="200"
+                HorizontalAlignment="Center"
+                Click="OnCreateFilterClick"/>
     </StackPanel>
 </UserControl>

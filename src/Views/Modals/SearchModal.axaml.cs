@@ -870,10 +870,10 @@ namespace Oracle.Views.Modals
                 var header = new TextBlock
                 {
                     Text = label,
-                    FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                     FontWeight = FontWeight.Bold,
                     FontSize = 12,
-                    Foreground = App.Current?.FindResource("Gold") as IBrush,
+                    Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
                     Width = 60,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -893,6 +893,7 @@ namespace Oracle.Views.Modals
                 _searchInstance.ResultFound -= OnResultFound;
                 _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
+                _searchInstance.CutoffChanged -= OnCutoffChanged;
             }
         }
 
@@ -982,6 +983,23 @@ namespace Oracle.Views.Modals
             }
         }
         
+        private void OnCutoffChanged(object? sender, int newCutoff)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (_minScoreSpinner != null)
+                {
+                    _minScoreSpinner.Value = newCutoff;
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Auto-cutoff updated spinner to: {newCutoff}");
+                    AddToConsole($"Auto-cutoff adjusted to: {newCutoff}");
+                }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "MinScoreSpinner is null in OnCutoffChanged");
+                }
+            });
+        }
+        
         private void ProcessBatchedResults(object? state)
         {
             List<SearchResult> resultsToAdd;
@@ -1003,6 +1021,24 @@ namespace Oracle.Views.Modals
                 // If search was stopped, don't add any more results
                 if (!_isSearching)
                     return;
+                    
+                // Log first result to debug tally scores
+                if (resultsToAdd.Count > 0 && _searchResults.Count == 0)
+                {
+                    var firstResult = resultsToAdd[0];
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                        $"First result: TallyScores={firstResult.TallyScores?.Length ?? 0}, ItemLabels={firstResult.ItemLabels?.Length ?? 0}");
+                    if (firstResult.TallyScores != null && firstResult.TallyScores.Length > 0)
+                    {
+                        Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                            $"Tally scores: {string.Join(", ", firstResult.TallyScores)}");
+                    }
+                    if (firstResult.ItemLabels != null && firstResult.ItemLabels.Length > 0)
+                    {
+                        Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                            $"Item labels: {string.Join(", ", firstResult.ItemLabels)}");
+                    }
+                }
                     
                 // Add all pending results at once
                 foreach (var result in resultsToAdd)
@@ -1149,6 +1185,7 @@ namespace Oracle.Views.Modals
                     _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
+                    _searchInstance.CutoffChanged += OnCutoffChanged;
 
                     // Load existing results
                     _searchResults.Clear();
@@ -1217,6 +1254,7 @@ namespace Oracle.Views.Modals
                     _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
+                    _searchInstance.CutoffChanged += OnCutoffChanged;
 
                     Oracle.Helpers.DebugLogger.Log(
                         "SearchModal",

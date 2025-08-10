@@ -283,11 +283,11 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="avalonedit|TextEditor">
-            <Setter Property="Background" Value="{StaticResource PureBlack}" />
-            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="Background" Value="#FFF5F5DC" />
+            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
             <Setter Property="FontFamily" Value="Cascadia Code,Consolas,Menlo,Monaco,monospace" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="LineNumbersForeground" Value="{StaticResource TextInactive}" />
+            <Setter Property="LineNumbersForeground" Value="{StaticResource DockGrey}" />
         </Style>
         <Style Selector="avalonedit|TextEditor /template/ avalonedit|TextArea">
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
@@ -451,6 +451,7 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="16" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
@@ -558,6 +559,31 @@
                                     </Grid>
                                 </Border>
                                 
+                                <!-- Save Filter Row -->
+                                <Grid Grid.Row="7" Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBox Grid.Column="0" 
+                                             Name="FilterNameInput"
+                                             Watermark="Enter filter name..."
+                                             FontSize="16"
+                                             Height="40"
+                                             VerticalContentAlignment="Center"
+                                             Margin="0,0,10,0"/>
+                                    
+                                    <Button Grid.Column="1"
+                                            Name="SaveFilterButton"
+                                            Content="Save Filter"
+                                            Classes="btn-green"
+                                            MinWidth="120"
+                                            Height="40"
+                                            IsEnabled="False"
+                                            Click="OnSaveFilterClick"/>
+                                </Grid>
+                                
                             </Grid>
                         </Grid>
             </Grid>
@@ -585,6 +611,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
                         <TextBlock Grid.Row="0" 
@@ -599,9 +626,22 @@
                                                SyntaxHighlighting="Json"
                                                ShowLineNumbers="True"
                                                FontFamily="Cascadia Code, Consolas, monospace"
-                                               FontSize="14"
-                                               Background="{StaticResource ContainerDarkPrecise}"
-                                               Foreground="{StaticResource White}"/>
+                                               FontSize="14"/>
+                        
+                        <!-- JSON Validation Status Bar -->
+                        <Border Grid.Row="3"
+                                Background="{StaticResource DockGrey}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="0,1,0,0"
+                                Padding="8,4"
+                                Margin="0,4,0,0">
+                            <TextBlock Name="JsonValidationStatus"
+                                       Text="JSON: Valid ✓"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource Green}"
+                                       HorizontalAlignment="Left"/>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>

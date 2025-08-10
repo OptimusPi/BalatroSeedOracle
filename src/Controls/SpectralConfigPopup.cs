@@ -28,16 +28,10 @@ namespace Oracle.Controls
             true,
             true,
         };
-        private string _selectedEdition = "none";
         private HashSet<string> _selectedSources = new() { "shop", "pack" };
 
         // UI Controls
         private CheckBox[] _anteCheckBoxes = new CheckBox[8];
-        private RadioButton? _editionNormal;
-        private RadioButton? _editionFoil;
-        private RadioButton? _editionHolo;
-        private RadioButton? _editionPoly;
-        private RadioButton? _editionNegative;
         private CheckBox? _sourceShop;
         private CheckBox? _sourcePack;
 
@@ -62,10 +56,7 @@ namespace Oracle.Controls
             // Antes section
             mainPanel.Children.Add(CreateAntesSection());
 
-            // Edition section
-            mainPanel.Children.Add(CreateEditionSection());
-
-            // Sources section
+            // Sources section - no Edition for Spectral cards
             mainPanel.Children.Add(CreateSourcesSection());
 
             // Button bar
@@ -197,138 +188,6 @@ namespace Oracle.Controls
             }
         }
 
-        private Border CreateEditionSection()
-        {
-            var border = new Border
-            {
-                Background =
-                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
-                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
-                CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8),
-            };
-
-            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
-
-            // Header
-            var header = new TextBlock
-            {
-                Text = "EDITION",
-                FontFamily =
-                    Application.Current?.FindResource("BalatroFont") as FontFamily
-                    ?? FontFamily.Default,
-                FontSize = 11,
-                Foreground =
-                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6),
-            };
-            Grid.SetRow(header, 0);
-            grid.Children.Add(header);
-
-            // Edition buttons
-            var editionGrid = new WrapPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(-2),
-            };
-
-            _editionNormal = CreateEditionRadioButton("Normal", "normal", true);
-            _editionFoil = CreateEditionRadioButton("Foil", "foil", false);
-            _editionHolo = CreateEditionRadioButton("Holo", "holographic", false);
-            _editionPoly = CreateEditionRadioButton("Poly", "polychrome", false);
-            _editionNegative = CreateEditionRadioButton("Negative", "negative", false);
-
-            editionGrid.Children.Add(_editionNormal);
-            editionGrid.Children.Add(_editionFoil);
-            editionGrid.Children.Add(_editionHolo);
-            editionGrid.Children.Add(_editionPoly);
-            editionGrid.Children.Add(_editionNegative);
-
-            Grid.SetRow(editionGrid, 1);
-            grid.Children.Add(editionGrid);
-
-            border.Child = grid;
-            return border;
-        }
-
-        private RadioButton CreateEditionRadioButton(
-            string displayName,
-            string editionKey,
-            bool isChecked
-        )
-        {
-            var radio = new RadioButton
-            {
-                GroupName = "ItemEdition",
-                IsChecked = isChecked,
-                Margin = new Thickness(2),
-            };
-
-            var border = new Border
-            {
-                Background =
-                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush =
-                    Application.Current?.FindResource("DarkerGrey") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(6, 4),
-                Cursor = new Cursor(StandardCursorType.Hand),
-            };
-
-            // Try to load edition image
-            var image = new Image
-            {
-                Width = 35,
-                Height = 47,
-                Stretch = Stretch.Uniform,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Source = SpriteService.Instance.GetEditionImage(editionKey),
-            };
-
-            border.Child = image;
-            radio.Content = border;
-
-            // Add handler
-            radio.IsCheckedChanged += (s, e) =>
-            {
-                if (radio.IsChecked == true)
-                {
-                    _selectedEdition = editionKey;
-                    UpdateEditionVisual(border, true);
-                }
-                else
-                {
-                    UpdateEditionVisual(border, false);
-                }
-            };
-
-            return radio;
-        }
-
-        private void UpdateEditionVisual(Border border, bool isSelected)
-        {
-            if (isSelected)
-            {
-                border.Background =
-                    Application.Current?.FindResource("DarkerGrey") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
-                border.BorderBrush =
-                    Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold;
-            }
-            else
-            {
-                border.Background =
-                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush =
-                    Application.Current?.FindResource("DarkerGrey") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
-            }
-        }
 
         private Border CreateSourcesSection()
         {
@@ -478,29 +337,7 @@ namespace Oracle.Controls
                 }
             }
 
-            // Load edition
-            if (!string.IsNullOrEmpty(config.Edition))
-            {
-                _selectedEdition = config.Edition;
-                switch (config.Edition.ToLower())
-                {
-                    case "foil":
-                        _editionFoil?.SetCurrentValue(RadioButton.IsCheckedProperty, true);
-                        break;
-                    case "holographic":
-                        _editionHolo?.SetCurrentValue(RadioButton.IsCheckedProperty, true);
-                        break;
-                    case "polychrome":
-                        _editionPoly?.SetCurrentValue(RadioButton.IsCheckedProperty, true);
-                        break;
-                    case "negative":
-                        _editionNegative?.SetCurrentValue(RadioButton.IsCheckedProperty, true);
-                        break;
-                    default:
-                        _editionNormal?.SetCurrentValue(RadioButton.IsCheckedProperty, true);
-                        break;
-                }
-            }
+            // Spectral cards don't have editions, so skip edition loading
 
             // Load sources
             if (config.Sources != null)
@@ -528,7 +365,7 @@ namespace Oracle.Controls
             {
                 ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
-                Edition = _selectedEdition,
+                Edition = "none", // Spectral cards don't have editions
                 Sources = _selectedSources.ToList(),
             };
 

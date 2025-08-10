@@ -42,7 +42,6 @@ namespace Oracle.Components
         // Controls
         private PanelSpinner? _filterSpinner;
         private Button? _selectButton;
-        private TextBox? _filterNameInput;
         private Button? _createFilterButton;
 
         public FilterSelector()
@@ -58,7 +57,6 @@ namespace Oracle.Components
             // Get controls
             _filterSpinner = this.FindControl<PanelSpinner>("FilterSpinner");
             _selectButton = this.FindControl<Button>("SelectButton");
-            _filterNameInput = this.FindControl<TextBox>("FilterNameInput");
             _createFilterButton = this.FindControl<Button>("CreateFilterButton");
 
             // Setup panel spinner
@@ -74,17 +72,16 @@ namespace Oracle.Components
             LoadAvailableFilters();
 
             // Hide create section if not needed
-            if (!ShowCreateButton && _filterNameInput != null && _createFilterButton != null)
+            if (!ShowCreateButton && _createFilterButton != null)
             {
-                _filterNameInput.IsVisible = false;
                 _createFilterButton.IsVisible = false;
 
                 // Also hide the separator
-                var parent = _filterNameInput.Parent as StackPanel;
-                if (parent?.Parent is StackPanel grandParent && grandParent.Children.Count > 2)
+                var parent = _createFilterButton.Parent as StackPanel;
+                if (parent != null && parent.Children.Count > 2)
                 {
                     // Hide the separator (should be the 3rd child)
-                    if (grandParent.Children[2] is Border separator)
+                    if (parent.Children[2] is Border separator)
                     {
                         separator.IsVisible = false;
                     }
@@ -293,21 +290,11 @@ namespace Oracle.Components
             }
         }
 
-        private void OnFilterNameTextChanged(object? sender, TextChangedEventArgs e)
-        {
-            if (_createFilterButton != null && _filterNameInput != null)
-            {
-                _createFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(_filterNameInput.Text);
-            }
-        }
 
         private void OnCreateFilterClick(object? sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(_filterNameInput?.Text))
-            {
-                ShouldSwitchToVisualTab = true;
-                NewFilterRequested?.Invoke(this, EventArgs.Empty);
-            }
+            ShouldSwitchToVisualTab = true;
+            NewFilterRequested?.Invoke(this, EventArgs.Empty);
         }
 
         public void RefreshFilters()
@@ -315,9 +302,5 @@ namespace Oracle.Components
             LoadAvailableFilters();
         }
 
-        public string? GetNewFilterName()
-        {
-            return _filterNameInput?.Text;
-        }
     }
 }
