@@ -75,6 +75,8 @@ namespace Oracle.Services
                                     TotalScore = result.TotalScore,
                                     ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants),
                                     ScoreLabels = ExtractScoreLabels(),
+                                    TallyScores = result.ScoreWants,
+                                    ItemLabels = ExtractScoreLabels(),
                                 };
 
                                 // Store in DuckDB
@@ -170,16 +172,6 @@ namespace Oracle.Services
             }
 
             return labels.ToArray();
-        }
-
-        /// <summary>
-        /// Extract ante information from result if available
-        /// </summary>
-        private int ExtractAnteFromResult(OuijaResult result)
-        {
-            // Extract ante information when OuijaResult is extended with ante data
-            // Currently returns default ante 1; will be updated with actual ante extraction
-            return 1;
         }
 
         public void Dispose()

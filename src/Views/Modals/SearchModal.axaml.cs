@@ -12,9 +12,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Oracle.Components;
 using Oracle.Controls;
@@ -24,7 +26,7 @@ using ReactiveUI;
 
 namespace Oracle.Views.Modals
 {
-    public partial class SearchModal : UserControl
+    public partial class SearchModal : UserControl, IDisposable
     {
         public event EventHandler<string>? CreateDesktopIconRequested;
         private readonly ObservableCollection<SearchResult> _searchResults = new();
@@ -87,9 +89,17 @@ namespace Oracle.Views.Modals
         // Current filter info
         private string? _currentFilterPath;
         private FilterSelector? _filterSelector;
+        
+        // Result batching for UI performance
+        private readonly List<SearchResult> _pendingResults = new();
+        private System.Threading.Timer? _resultBatchTimer;
+        private readonly object _resultBatchLock = new object();
+        private DateTime _lastResultBatchUpdate = DateTime.Now;
+        private DateTime _lastProgressUpdate = DateTime.Now;
 
         // Results panel controls
         private ItemsControl? _resultsItemsControl;
+        private StackPanel? _tallyHeadersPanel;
         private TextBlock? _resultsSummary;
         private Button? _exportResultsButton;
         private TextBlock? _jsonValidationStatus;
@@ -195,6 +205,7 @@ namespace Oracle.Views.Modals
 
             // Find results panel controls
             _resultsItemsControl = this.FindControl<ItemsControl>("ResultsItemsControl");
+            _tallyHeadersPanel = this.FindControl<StackPanel>("TallyHeadersPanel");
             _resultsSummary = this.FindControl<TextBlock>("ResultsSummary");
             _exportResultsButton = this.FindControl<Button>("ExportResultsButton");
 
@@ -202,6 +213,11 @@ namespace Oracle.Views.Modals
             if (_resultsItemsControl != null)
             {
                 _resultsItemsControl.ItemsSource = _searchResults;
+                Oracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl initialized with {_searchResults.Count} items");
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.LogError("SearchModal", "Failed to find ResultsItemsControl!");
             }
 
             // Find new Search tab UI elements
@@ -401,22 +417,31 @@ namespace Oracle.Views.Modals
                 if (_resultsPanel != null)
                 {
                     _resultsPanel.IsVisible = true;
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Results panel visible: {_resultsPanel.IsVisible}");
                 }
 
-                // Ensure ItemsControl is bound (avoid test data injection in production)
-
-                if (
-                    _resultsItemsControl != null
-                    && _resultsItemsControl.ItemsSource != _searchResults
-                )
+                // Ensure ItemsControl is bound 
+                if (_resultsItemsControl != null)
                 {
-                    _resultsItemsControl.ItemsSource = _searchResults;
+                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl HasItems: {_searchResults.Count}");
+                    
+                    if (_resultsItemsControl.ItemsSource != _searchResults)
+                    {
+                        _resultsItemsControl.ItemsSource = _searchResults;
+                    }
+                    
+                    // Set up dynamic column headers for tally scores if not already done
+                    UpdateTallyHeaders();
+                }
+                else
+                {
+                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "ResultsItemsControl is null!");
                 }
 
-                // Update summary when opening if no results yet
-                if (_resultsSummary != null && _searchResults.Count == 0)
+                // Update summary when opening
+                if (_resultsSummary != null)
                 {
-                    _resultsSummary.Text = "No results yet";
+                    _resultsSummary.Text = _searchResults.Count == 0 ? "No results yet" : $"Found {_searchResults.Count} results";
                 }
             }
         }
@@ -661,18 +686,35 @@ namespace Oracle.Views.Modals
                 }
                 else
                 {
-                    // Stop search
+                    // Stop search - immediately disable button to prevent multiple clicks
+                    if (_cookButton != null)
+                    {
+                        _cookButton.IsEnabled = false;
+                    }
+                    
                     Oracle.Helpers.DebugLogger.Log(
                         "SearchModal",
                         $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}"
                     );
                     AddToConsole("Stopping search...");
 
+                    // Clear any pending results
+                    lock (_resultBatchLock)
+                    {
+                        _pendingResults.Clear();
+                    }
+
                     try
                     {
                         if (_searchInstance != null)
                         {
+                            // Stop the search
                             _searchInstance.StopSearch();
+                            
+                            // Immediately update UI to show stopped state
+                            _isSearching = false;
+                            UpdateSearchUI();
+                            
                             AddToConsole("Search stopped!");
                         }
                         else
@@ -798,6 +840,51 @@ namespace Oracle.Views.Modals
             }
         }
         
+        private void UpdateTallyHeaders()
+        {
+            Oracle.Helpers.DebugLogger.Log("SearchModal", $"UpdateTallyHeaders called - Results count: {_searchResults.Count}");
+            
+            if (_tallyHeadersPanel == null || _searchResults.Count == 0)
+                return;
+                
+            // Check if we already have headers
+            if (_tallyHeadersPanel.Children.Count > 0)
+            {
+                Oracle.Helpers.DebugLogger.Log("SearchModal", "Tally headers already exist, skipping");
+                return;
+            }
+                
+            // Get the first result to determine headers
+            var firstResult = _searchResults.FirstOrDefault();
+            if (firstResult?.ItemLabels == null || firstResult.ItemLabels.Length == 0)
+            {
+                Oracle.Helpers.DebugLogger.Log("SearchModal", "No item labels in first result");
+                return;
+            }
+                
+            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Adding {firstResult.ItemLabels.Length} tally headers");
+                
+            // Add headers for each tally score
+            foreach (var label in firstResult.ItemLabels)
+            {
+                var header = new TextBlock
+                {
+                    Text = label,
+                    FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily,
+                    FontWeight = FontWeight.Bold,
+                    FontSize = 12,
+                    Foreground = App.Current?.FindResource("Gold") as IBrush,
+                    Width = 60,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 4)
+                };
+                
+                _tallyHeadersPanel.Children.Add(header);
+                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Added header: {label}");
+            }
+        }
+        
         private void UnsubscribeFromSearchEvents()
         {
             if (_searchInstance != null)
@@ -811,11 +898,21 @@ namespace Oracle.Views.Modals
 
         private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
         {
+            // Throttle progress updates to reduce UI load
+            var now = DateTime.Now;
+            if ((now - _lastProgressUpdate).TotalMilliseconds < 500)
+                return;
+                
+            _lastProgressUpdate = now;
+            
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                // Don't update if search was stopped
+                if (!_isSearching)
+                    return;
+                    
                 // Don't show progress with zero seeds or zero speed - this happens on cancellation
-                // Also ignore if search is not running to prevent duplicate final messages
-                if (_isSearching && e.SeedsSearched > 0 && e.SeedsPerSecond > 0)
+                if (e.SeedsSearched > 0 && e.SeedsPerSecond > 0)
                 {
                     AddToConsole(
                         $"Searched: {e.SeedsSearched:N0} | Found: {_newResultsCount} new | Speed: {e.SeedsPerSecond:N0}/s"
@@ -861,16 +958,83 @@ namespace Oracle.Views.Modals
 
         private void OnResultFound(object? sender, SearchResultEventArgs e)
         {
+            // Instead of immediately updating UI, batch the results
+            lock (_resultBatchLock)
+            {
+                _pendingResults.Add(e.Result);
+                _newResultsCount++; // Increment new results counter
+                
+                // Start or reset the batch timer
+                if (_resultBatchTimer == null)
+                {
+                    _resultBatchTimer = new System.Threading.Timer(
+                        ProcessBatchedResults,
+                        null,
+                        100, // Initial delay of 100ms
+                        System.Threading.Timeout.Infinite // Don't repeat
+                    );
+                }
+                else
+                {
+                    // Reset the timer to delay processing if more results are coming
+                    _resultBatchTimer.Change(100, System.Threading.Timeout.Infinite);
+                }
+            }
+        }
+        
+        private void ProcessBatchedResults(object? state)
+        {
+            List<SearchResult> resultsToAdd;
+            int totalNewResults;
+            
+            lock (_resultBatchLock)
+            {
+                if (_pendingResults.Count == 0)
+                    return;
+                    
+                resultsToAdd = new List<SearchResult>(_pendingResults);
+                _pendingResults.Clear();
+                totalNewResults = _newResultsCount;
+            }
+            
+            // Post to UI thread
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                _searchResults.Add(e.Result);
-                _newResultsCount++; // Increment new results counter
-                AddToConsole($"🎉 Found seed: {e.Result.Seed} (Score: {e.Result.Score})");
+                // If search was stopped, don't add any more results
+                if (!_isSearching)
+                    return;
+                    
+                // Add all pending results at once
+                foreach (var result in resultsToAdd)
+                {
+                    _searchResults.Add(result);
+                }
+                
+                // Log only the first few results to console to avoid spam
+                if (_searchResults.Count <= 10)
+                {
+                    foreach (var result in resultsToAdd)
+                    {
+                        AddToConsole($"🎉 Found seed: {result.Seed} (Score: {result.Score})");
+                    }
+                }
+                else if ((DateTime.Now - _lastResultBatchUpdate).TotalSeconds >= 1)
+                {
+                    // Only log summary every second when there are many results
+                    AddToConsole($"🎉 Found {resultsToAdd.Count} more seeds (Total: {_searchResults.Count})");
+                    _lastResultBatchUpdate = DateTime.Now;
+                }
 
                 // Update results summary
                 if (_resultsSummary != null)
                 {
-                    _resultsSummary.Text = $"Found {_searchResults.Count} results ({_newResultsCount} new)";
+                    _resultsSummary.Text = $"Found {_searchResults.Count} results ({totalNewResults} new)";
+                }
+                
+                // Update tally headers if this is the first batch
+                if (_searchResults.Count == resultsToAdd.Count)
+                {
+                    UpdateTallyHeaders();
                 }
 
                 // Enable results tab export button
@@ -878,7 +1042,6 @@ namespace Oracle.Views.Modals
                 {
                     _exportResultsButton.IsEnabled = _searchResults.Count > 0;
                 }
-
             });
         }
 
@@ -997,6 +1160,8 @@ namespace Oracle.Views.Modals
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
                                 Details = result.ScoreBreakdown,
+                                TallyScores = result.TallyScores,
+                                ItemLabels = result.ItemLabels
                             }
                         );
                     }
@@ -1150,6 +1315,8 @@ namespace Oracle.Views.Modals
                                     Score = result.TotalScore,
                                     Details = result.ScoreBreakdown,
                                     Timestamp = DateTime.Now,
+                                    TallyScores = result.TallyScores,
+                                    ItemLabels = result.ItemLabels
                                 }
                             );
                         }
@@ -1357,6 +1524,8 @@ namespace Oracle.Views.Modals
         public string? Antes { get; set; }
         public string? ItemsJson { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
+        public int[]? TallyScores { get; set; }
+        public string[]? ItemLabels { get; set; }
 
         public ReactiveCommand<string, Unit> CopyCommand { get; }
 
@@ -1397,5 +1566,26 @@ namespace Oracle.Views.Modals
     public class SearchResultEventArgs : EventArgs
     {
         public SearchResult Result { get; set; } = new();
+    }
+    
+    public partial class SearchModal
+    {
+        public void Dispose()
+        {
+            // Clean up timer
+            _resultBatchTimer?.Dispose();
+            _resultBatchTimer = null;
+            
+            // Clear pending results
+            lock (_resultBatchLock)
+            {
+                _pendingResults.Clear();
+            }
+            
+            // Unsubscribe from events
+            UnsubscribeFromSearchEvents();
+            
+            GC.SuppressFinalize(this);
+        }
     }
 }

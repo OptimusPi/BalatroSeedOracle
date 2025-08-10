@@ -596,104 +596,90 @@
             </Grid>
             
             <!-- Results Panel -->
-            <Grid Name="ResultsPanel" IsVisible="False" Margin="40">
+            <Grid Name="ResultsPanel" IsVisible="False" Margin="20">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*" MinHeight="450"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Results List -->
-                <Border Grid.Row="0"
-                        Background="{StaticResource ContainerDarkPrecise}"
-                        BorderBrush="{StaticResource ModalBorder}"
-                        BorderThickness="2"
-                        CornerRadius="8"
-                        Margin="20,0,20,10"
-                        Padding="10">
+                <!-- Results Table Container -->
+                <ScrollViewer Grid.Row="0" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              Margin="0,0,0,10">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         
-                        <!-- Header Row -->
+                        <!-- Table Header -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkerGrey}"
-                                CornerRadius="6"
-                                Padding="12,8"
-                                Margin="0,0,0,4">
-                            <Grid>
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2,2,2,1">
+                            <Grid Name="ResultsHeaderGrid">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="120"/>  <!-- Seed -->
+                                    <ColumnDefinition Width="80"/>   <!-- Total -->
+                                    <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
+                                    <ColumnDefinition Width="80"/>   <!-- Time -->
+                                    <ColumnDefinition Width="80"/>   <!-- Action -->
                                 </Grid.ColumnDefinitions>
                                 
-                                <TextBlock Grid.Column="0"
-                                           Text="Seed"
+                                <TextBlock Grid.Column="0" Text="Seed" 
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
                                            FontWeight="Bold"
+                                           FontSize="12"
                                            Foreground="{StaticResource Gold}"
-                                           VerticalAlignment="Center"/>
-                                
-                                <TextBlock Grid.Column="1"
-                                           Text="Total Score"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource Gold}"
-                                           VerticalAlignment="Center"/>
-                                
-                                <TextBlock Grid.Column="2"
-                                           Text="Time Found"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource Gold}"
-                                           VerticalAlignment="Center"/>
-                                
-                                <TextBlock Grid.Column="3"
-                                           Text="Item Scores"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource Gold}"
-                                           VerticalAlignment="Center"
-                                           Margin="10,0"/>
-                                
-                                <TextBlock Grid.Column="4"
-                                           Text="Action"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource Gold}"
-                                           VerticalAlignment="Center"
                                            HorizontalAlignment="Center"
-                                           Width="60"/>
+                                           VerticalAlignment="Center"
+                                           Margin="8,4"/>
+                                           
+                                <TextBlock Grid.Column="1" Text="Total" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="8,4"/>
+                                           
+                                <!-- Dynamic tally score headers will be added here -->
+                                <StackPanel Grid.Column="2" 
+                                            Name="TallyHeadersPanel"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Center"/>
+                                           
+                                <TextBlock Grid.Column="3" Text="Time" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="8,4"/>
+                                           
+                                <TextBlock Grid.Column="4" Text="Action" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="8,4"/>
                             </Grid>
                         </Border>
                         
-                        <!-- Results Scroll Area -->
-                        <ScrollViewer Grid.Row="1"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                            <ItemsControl Name="ResultsItemsControl">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Spacing="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                        <!-- Table Body -->
+                        <ItemsControl Grid.Row="1" 
+                                      Name="ResultsItemsControl"
+                                      ItemsSource="{Binding}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="{StaticResource DockGrey}"
                                             BorderBrush="{StaticResource ModalBorder}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Padding="12,8"
-                                            Cursor="Hand">
+                                            BorderThickness="2,0,2,1">
                                         <Border.Styles>
                                             <Style Selector="Border:pointerover">
                                                 <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
@@ -701,55 +687,70 @@
                                         </Border.Styles>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="100"/>
-                                                <ColumnDefinition Width="120"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="120"/>  <!-- Seed -->
+                                                <ColumnDefinition Width="80"/>   <!-- Total -->
+                                                <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
+                                                <ColumnDefinition Width="80"/>   <!-- Time -->
+                                                <ColumnDefinition Width="80"/>   <!-- Action -->
                                             </Grid.ColumnDefinitions>
                                             
-                                            <!-- Seed -->
-                                            <TextBlock Grid.Column="0"
+                                            <TextBlock Grid.Column="0" 
                                                        Text="{Binding Seed}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource Yellow}"
-                                                       VerticalAlignment="Center"/>
-                                            
-                                            <!-- Score -->
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{Binding Score, StringFormat='Score: {0:F1}'}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource Green}"
-                                                       VerticalAlignment="Center"/>
-                                            
-                                            <!-- Time -->
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource MediumGrey}"
-                                                       VerticalAlignment="Center"/>
-                                            
-                                            <!-- Details -->
-                                            <TextBlock Grid.Column="3"
-                                                       Text="{Binding Details}"
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="11"
                                                        Foreground="{StaticResource White}"
-                                                       TextWrapping="Wrap"
+                                                       HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
-                                                       Margin="10,0"/>
-                                            
-                                            <!-- Copy Button -->
+                                                       Margin="8,4"/>
+                                                       
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding Score, StringFormat='{}{0:F1}'}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                                       
+                                            <!-- Dynamic tally scores will be added here -->
+                                            <ItemsControl Grid.Column="2" 
+                                                          ItemsSource="{Binding TallyScores}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="{StaticResource White}"
+                                                                   Width="60"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="8,4"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                                       
+                                            <TextBlock Grid.Column="3" 
+                                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                                       
                                             <Button Grid.Column="4"
                                                     Content="COPY"
                                                     Classes="btn-blue"
-                                                    FontSize="12"
-                                                    Padding="12,4"
-                                                    Height="26"
+                                                    FontSize="10"
+                                                    Padding="8,2"
+                                                    Height="24"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
                                                     Click="OnCopySeedClick"
                                                     Tag="{Binding Seed}"/>
                                         </Grid>
@@ -757,9 +758,8 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
                     </Grid>
-                </Border>
+                </ScrollViewer>
                 
                 <!-- Footer -->
                 <Border Grid.Row="1"

@@ -133,6 +133,8 @@ namespace Oracle.Services
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
                                 Details = result.ScoreBreakdown,
+                                TallyScores = result.TallyScores,
+                                ItemLabels = result.ItemLabels
                             },
                         }
                     );
@@ -265,6 +267,8 @@ namespace Oracle.Services
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
                                 Details = result.ScoreBreakdown,
+                                TallyScores = result.TallyScores,
+                                ItemLabels = result.ItemLabels
                             },
                         }
                     );
@@ -362,20 +366,56 @@ namespace Oracle.Services
                 // Force _isRunning to false immediately
                 _isRunning = false;
 
+                // Stop result capture first
+                if (_resultCapture != null)
+                {
+                    try
+                    {
+                        var stopTask = _resultCapture.StopCaptureAsync();
+                        if (!stopTask.Wait(TimeSpan.FromSeconds(1)))
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Result capture stop timed out");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error stopping result capture: {ex.Message}");
+                    }
+                }
+
                 // IMPORTANT: Stop the actual search service!
                 if (_currentSearch != null)
                 {
                     DebugLogger.Log($"SearchInstance[{_searchId}]", "Pausing and disposing search");
 
-                    // Pause first if it's running
-                    if (_currentSearch.Status == MotelySearchStatus.Running)
+                    try
                     {
-                        _currentSearch.Pause();
-                    }
+                        // Pause first if it's running
+                        if (_currentSearch.Status == MotelySearchStatus.Running)
+                        {
+                            _currentSearch.Pause();
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", "Search paused");
+                        }
 
-                    // Then dispose
-                    _currentSearch.Dispose();
-                    _currentSearch = null;
+                        // Then dispose with a timeout
+                        var disposeTask = Task.Run(() => _currentSearch.Dispose());
+                        if (!disposeTask.Wait(TimeSpan.FromSeconds(2)))
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search disposal timed out");
+                        }
+                        else
+                        {
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", "Search disposed successfully");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing search: {ex.Message}");
+                    }
+                    finally
+                    {
+                        _currentSearch = null;
+                    }
                 }
             }
         }
@@ -537,7 +577,19 @@ namespace Oracle.Services
                         );
                     }
 
-                    await Task.Delay(1000, cancellationToken); // Update every second instead of 50ms
+                    // Use shorter delay and catch cancellation
+                    try
+                    {
+                        await Task.Delay(100, cancellationToken); // Check more frequently for cancellation
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            "Task.Delay cancelled - stopping search immediately"
+                        );
+                        break;
+                    }
                 }
 
                 DebugLogger.LogImportant(

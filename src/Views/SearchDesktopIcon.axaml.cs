@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Oracle.Helpers;
 using Oracle.Services;
 using Oracle.Views.Modals;
@@ -83,11 +84,44 @@ namespace Oracle.Views
 
         private void OnIconClick(object? sender, RoutedEventArgs e)
         {
-            var window = TopLevel.GetTopLevel(this) as Window;
-            var mainMenu = window?.Content as BalatroMainMenu;
+            DebugLogger.Log("SearchDesktopIcon", $"OnIconClick called - SearchId: {_searchId}, ConfigPath: {_configPath}");
+            
+            // Find the BalatroMainMenu by traversing up the visual tree
+            BalatroMainMenu? mainMenu = null;
+            var current = this as Visual;
+            
+            while (current != null && mainMenu == null)
+            {
+                current = current.GetVisualParent<Visual>();
+                mainMenu = current as BalatroMainMenu;
+            }
+            
+            DebugLogger.Log("SearchDesktopIcon", $"MainMenu found via parent traversal: {mainMenu != null}");
 
-            // Show search modal with current search instance
-            mainMenu?.ShowSearchModalForInstance(_searchId, _configPath);
+            if (mainMenu == null)
+            {
+                // Try window content as fallback
+                var window = TopLevel.GetTopLevel(this) as Window;
+                mainMenu = window?.Content as BalatroMainMenu;
+                DebugLogger.Log("SearchDesktopIcon", $"MainMenu found via window content: {mainMenu != null}");
+            }
+
+            if (mainMenu == null)
+            {
+                DebugLogger.LogError("SearchDesktopIcon", "Could not find BalatroMainMenu to show search modal");
+                return;
+            }
+
+            try
+            {
+                // Show search modal with current search instance
+                mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
+                DebugLogger.Log("SearchDesktopIcon", "ShowSearchModalForInstance called successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchDesktopIcon", $"Error showing search modal: {ex}");
+            }
         }
 
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
