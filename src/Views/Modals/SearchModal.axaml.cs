@@ -82,6 +82,7 @@ namespace Oracle.Views.Modals
         private double _totalSeeds = 0;
         private DateTime _searchStartTime;
         private DateTime _lastSpeedUpdate = DateTime.Now;
+        private int _newResultsCount = 0; // Track only new results found in current search
 
         // Current filter info
         private string? _currentFilterPath;
@@ -625,6 +626,7 @@ namespace Oracle.Views.Modals
                 {
                     // Start search
                     _searchResults.Clear();
+                    _newResultsCount = 0; // Reset new results counter
 
                     // Reset the Motely cancellation flag
                     Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
@@ -719,6 +721,7 @@ namespace Oracle.Views.Modals
                 _peakSpeed = 0;
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.Now;
+                _newResultsCount = 0; // Reset new results counter
 
                 // Update cook button
                 if (_cookButton != null)
@@ -810,9 +813,14 @@ namespace Oracle.Views.Modals
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                AddToConsole(
-                    $"Searched: {e.SeedsSearched:N0} | Found: {e.ResultsFound} | Speed: {e.SeedsPerSecond:N0}/s"
-                );
+                // Don't show progress with zero seeds or zero speed - this happens on cancellation
+                // Also ignore if search is not running to prevent duplicate final messages
+                if (_isSearching && e.SeedsSearched > 0 && e.SeedsPerSecond > 0)
+                {
+                    AddToConsole(
+                        $"Searched: {e.SeedsSearched:N0} | Found: {_newResultsCount} new | Speed: {e.SeedsPerSecond:N0}/s"
+                    );
+                }
 
                 // Update progress stats
                 if (_progressPercentText != null && e.TotalBatches > 0)
@@ -835,7 +843,7 @@ namespace Oracle.Views.Modals
 
                 if (_resultsFoundText != null)
                 {
-                    _resultsFoundText.Text = e.ResultsFound.ToString();
+                    _resultsFoundText.Text = _newResultsCount.ToString();
                 }
 
                 // Update time elapsed
@@ -856,12 +864,13 @@ namespace Oracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _searchResults.Add(e.Result);
-                //AddToConsole($"🎉 Found seed: {e.Result.Seed} (Score: {e.Result.Score})");
+                _newResultsCount++; // Increment new results counter
+                AddToConsole($"🎉 Found seed: {e.Result.Seed} (Score: {e.Result.Score})");
 
                 // Update results summary
                 if (_resultsSummary != null)
                 {
-                    _resultsSummary.Text = $"Found {_searchResults.Count} results";
+                    _resultsSummary.Text = $"Found {_searchResults.Count} results ({_newResultsCount} new)";
                 }
 
                 // Enable results tab export button
@@ -1122,27 +1131,29 @@ namespace Oracle.Views.Modals
                     return;
                 }
 
-                // Load existing results from the database
-
-                var existingResults = await historyService.GetSearchResultsAsync();
+                // Load existing results from the database on background thread
+                var existingResults = await Task.Run(() => historyService.GetSearchResultsAsync());
                 if (existingResults.Count > 0)
                 {
                     AddToConsole($"Loaded {existingResults.Count} existing results from database");
 
-                    // Clear current results and add the loaded ones
-                    _searchResults.Clear();
-                    foreach (var result in existingResults)
+                    // Clear current results and add the loaded ones on UI thread
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        _searchResults.Add(
-                            new SearchResult
-                            {
-                                Seed = result.Seed,
-                                Score = result.TotalScore,
-                                Details = result.ScoreBreakdown,
-                                Timestamp = DateTime.Now,
-                            }
-                        );
-                    }
+                        _searchResults.Clear();
+                        foreach (var result in existingResults)
+                        {
+                            _searchResults.Add(
+                                new SearchResult
+                                {
+                                    Seed = result.Seed,
+                                    Score = result.TotalScore,
+                                    Details = result.ScoreBreakdown,
+                                    Timestamp = DateTime.Now,
+                                }
+                            );
+                        }
+                    });
 
                     // Update UI
                     if (_resultsSummary != null)

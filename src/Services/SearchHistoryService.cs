@@ -168,6 +168,7 @@ namespace Oracle.Services
                     SELECT seed, score, details
                     FROM results
                     ORDER BY score DESC
+                    LIMIT 1000
                 ";
 
                 using var reader = await cmd.ExecuteReaderAsync();
