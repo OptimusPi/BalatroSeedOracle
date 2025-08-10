@@ -1,15 +1,15 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Oracle.Services;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Oracle.Models;
+using Oracle.Services;
 
 namespace Oracle.Controls;
 
@@ -21,7 +21,7 @@ public partial class PanelSpinner : UserControl
     private TextBlock? _descriptionText;
     private Image? _spriteImage;
     private StackPanel? _dotsPanel;
-    
+
     private int _currentIndex = 0;
     private List<PanelItem> _items = new();
 
@@ -29,18 +29,21 @@ public partial class PanelSpinner : UserControl
         AvaloniaProperty.RegisterDirect<PanelSpinner, List<PanelItem>>(
             nameof(Items),
             o => o.Items,
-            (o, v) => o.Items = v);
+            (o, v) => o.Items = v
+        );
 
     public static readonly DirectProperty<PanelSpinner, int> SelectedIndexProperty =
         AvaloniaProperty.RegisterDirect<PanelSpinner, int>(
             nameof(SelectedIndex),
             o => o.SelectedIndex,
-            (o, v) => o.SelectedIndex = v);
+            (o, v) => o.SelectedIndex = v
+        );
 
     public static readonly DirectProperty<PanelSpinner, PanelItem?> SelectedItemProperty =
         AvaloniaProperty.RegisterDirect<PanelSpinner, PanelItem?>(
             nameof(SelectedItem),
-            o => o.SelectedItem);
+            o => o.SelectedItem
+        );
 
     public List<PanelItem> Items
     {
@@ -68,7 +71,8 @@ public partial class PanelSpinner : UserControl
         }
     }
 
-    public PanelItem? SelectedItem => _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
+    public PanelItem? SelectedItem =>
+        _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
 
     public event EventHandler<PanelItem?>? SelectionChanged;
 
@@ -109,7 +113,8 @@ public partial class PanelSpinner : UserControl
 
     private void UpdateDisplay()
     {
-        if (_items.Count == 0) return;
+        if (_items.Count == 0)
+            return;
 
         var item = _items[_currentIndex];
 
@@ -135,7 +140,8 @@ public partial class PanelSpinner : UserControl
 
     private void UpdateDots()
     {
-        if (_dotsPanel == null) return;
+        if (_dotsPanel == null)
+            return;
 
         // Clear existing dots
         _dotsPanel.Children.Clear();
@@ -145,16 +151,16 @@ public partial class PanelSpinner : UserControl
         {
             var dot = new TextBlock();
             dot.Classes.Add("position-dot");
-            
+
             if (i == _currentIndex)
             {
                 dot.Classes.Add("active");
             }
-            
+
             _dotsPanel.Children.Add(dot);
         }
     }
-    
+
     public void RefreshCurrentImage()
     {
         UpdateDisplay();
@@ -175,17 +181,21 @@ public static class PanelItemFactory
     public static List<PanelItem> CreateDeckItems()
     {
         var items = new List<PanelItem>();
-        
+
         foreach (var deck in BalatroData.Decks)
         {
             var deckKey = deck.Key;
-            items.Add(new PanelItem
-            {
-                Title = deck.Value,
-                Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc) ? desc : "",
-                Value = $"{deckKey}_Deck",
-                GetImage = () => SpriteService.Instance.GetDeckImage(deckKey)
-            });
+            items.Add(
+                new PanelItem
+                {
+                    Title = deck.Value,
+                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc)
+                        ? desc
+                        : "",
+                    Value = $"{deckKey}_Deck",
+                    GetImage = () => SpriteService.Instance.GetDeckImage(deckKey),
+                }
+            );
         }
 
         return items;
@@ -200,57 +210,57 @@ public static class PanelItemFactory
                 Title = "White Stake",
                 Description = "Base Difficulty",
                 Value = "White_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("WhiteStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("WhiteStake"),
             },
             new PanelItem
             {
                 Title = "Red Stake",
                 Description = "Small Blind gives no money reward",
                 Value = "Red_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("RedStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("RedStake"),
             },
             new PanelItem
             {
                 Title = "Green Stake",
                 Description = "Required score scales faster for each Ante",
                 Value = "Green_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("GreenStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("GreenStake"),
             },
             new PanelItem
             {
                 Title = "Black Stake",
                 Description = "Shop can have Eternal Jokers (Can't be sold or destroyed)",
                 Value = "Black_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("BlackStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("BlackStake"),
             },
             new PanelItem
             {
                 Title = "Blue Stake",
                 Description = "-1 Discard",
                 Value = "Blue_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("BlueStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("BlueStake"),
             },
             new PanelItem
             {
                 Title = "Purple Stake",
                 Description = "Required score scales faster for each Ante",
                 Value = "Purple_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("PurpleStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("PurpleStake"),
             },
             new PanelItem
             {
                 Title = "Orange Stake",
                 Description = "Shop can have Perishable Jokers (Debuffed after 5 rounds)",
                 Value = "Orange_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("OrangeStake")
+                GetImage = () => SpriteService.Instance.GetStickerImage("OrangeStake"),
             },
             new PanelItem
             {
                 Title = "Gold Stake",
                 Description = "Shop can have Rental Jokers (Costs $3 per round)",
                 Value = "Gold_Stake",
-                GetImage = () => SpriteService.Instance.GetStickerImage("GoldStake")
-            }
+                GetImage = () => SpriteService.Instance.GetStickerImage("GoldStake"),
+            },
         };
 
         return items;

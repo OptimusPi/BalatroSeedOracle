@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using System;
-using System.Threading.Tasks;
 using Oracle.Helpers;
 
 namespace Oracle.Views.Modals
@@ -29,7 +29,8 @@ namespace Oracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
-        public StandardModal(string title) : this()
+        public StandardModal(string title)
+            : this()
         {
             SetTitle(title);
         }
@@ -91,41 +92,46 @@ namespace Oracle.Views.Modals
         /// <param name="title">The modal title</param>
         /// <param name="content">The content to display</param>
         /// <param name="showBackButton">Whether to show the back button</param>
-        public static async Task ShowModal(Window parent, string title, Control content, bool showBackButton = true)
+        public static async Task ShowModal(
+            Window parent,
+            string title,
+            Control content,
+            bool showBackButton = true
+        )
         {
             var modal = new StandardModal();
             modal.SetTitle(title);
             modal.SetContent(content);
-            
+
             var backButton = modal.FindControl<Button>("BackButton");
             if (backButton != null)
             {
                 backButton.IsVisible = showBackButton;
             }
-            
+
             // Create overlay and show
             var overlay = new Grid();
             overlay.Children.Add(modal);
-            
+
             var mainGrid = parent.Content as Grid;
             if (mainGrid != null)
             {
                 mainGrid.Children.Add(overlay);
-                
+
                 // Handle back button click
                 modal.BackClicked += (s, e) =>
                 {
                     mainGrid.Children.Remove(overlay);
                 };
-                
+
                 // Create task completion source to await modal close
                 var tcs = new TaskCompletionSource<bool>();
-                
+
                 modal.BackClicked += (s, e) =>
                 {
                     tcs.SetResult(true);
                 };
-                
+
                 await tcs.Task;
             }
         }

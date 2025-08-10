@@ -59,7 +59,10 @@ public partial class MainWindow : Window
                 var disposeTask = Task.Run(() => _mainMenu?.Dispose());
                 if (await Task.WhenAny(disposeTask, Task.Delay(5000)) != disposeTask)
                 {
-                    DebugLogger.LogError("MainWindow", "Main menu disposal timed out after 5 seconds - forcing close");
+                    DebugLogger.LogError(
+                        "MainWindow",
+                        "Main menu disposal timed out after 5 seconds - forcing close"
+                    );
                 }
                 else
                 {
@@ -95,11 +98,7 @@ public partial class MainWindow : Window
         {
             // Open the Balatro website in the default browser
             var url = "https://www.playbalatro.com/";
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = url,
-                UseShellExecute = true
-            });
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
         }
         catch (Exception ex)
         {

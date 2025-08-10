@@ -8,14 +8,20 @@ namespace Oracle.Controls
 {
     public partial class ModeToggleSwitch : UserControl
     {
-        public static readonly StyledProperty<string> LeftTextProperty =
-            AvaloniaProperty.Register<ModeToggleSwitch, string>(nameof(LeftText), "OFF");
+        public static readonly StyledProperty<string> LeftTextProperty = AvaloniaProperty.Register<
+            ModeToggleSwitch,
+            string
+        >(nameof(LeftText), "OFF");
 
-        public static readonly StyledProperty<string> RightTextProperty =
-            AvaloniaProperty.Register<ModeToggleSwitch, string>(nameof(RightText), "ON");
+        public static readonly StyledProperty<string> RightTextProperty = AvaloniaProperty.Register<
+            ModeToggleSwitch,
+            string
+        >(nameof(RightText), "ON");
 
-        public static readonly StyledProperty<bool> IsCheckedProperty =
-            AvaloniaProperty.Register<ModeToggleSwitch, bool>(nameof(IsChecked), false);
+        public static readonly StyledProperty<bool> IsCheckedProperty = AvaloniaProperty.Register<
+            ModeToggleSwitch,
+            bool
+        >(nameof(IsChecked), false);
 
         public string LeftText
         {

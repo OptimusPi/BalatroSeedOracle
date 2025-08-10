@@ -1,21 +1,21 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.LogicalTree;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Models;
-using Oracle.Services;
-using Oracle.Views.Modals;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml;
+using Oracle.Controls;
+using Oracle.Helpers;
+using Oracle.Models;
+using Oracle.Services;
+using Oracle.Views.Modals;
 
 namespace Oracle.Views
 {
@@ -56,7 +56,10 @@ namespace Oracle.Views
             if (_animationToggleButton != null)
             {
                 // Find the TextBlock inside the button using logical tree traversal
-                _animationButtonText = LogicalExtensions.GetLogicalChildren(_animationToggleButton).OfType<TextBlock>().FirstOrDefault();
+                _animationButtonText = LogicalExtensions
+                    .GetLogicalChildren(_animationToggleButton)
+                    .OfType<TextBlock>()
+                    .FirstOrDefault();
             }
 
             // Don't initialize service here - wait for OnLoaded
@@ -74,7 +77,7 @@ namespace Oracle.Views
             {
                 _mainTitleText = this.FindControl<TextBlock>("MainTitleText");
             }
-            
+
             if (_mainTitleText != null)
             {
                 _mainTitleText.Text = title;
@@ -96,7 +99,7 @@ namespace Oracle.Views
             _modalContainer.Children.Add(content);
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
-            
+
             // Update title if provided
             if (!string.IsNullOrEmpty(title))
             {
@@ -111,11 +114,11 @@ namespace Oracle.Views
         {
             if (_modalContainer == null)
                 return;
-                
+
             _modalContainer.Children.Clear();
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
-            
+
             // Reset title to Welcome!
             SetTitle("Welcome!");
         }
@@ -130,14 +133,18 @@ namespace Oracle.Views
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", $"Failed to open search modal: {ex}");
+                Oracle.Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to open search modal: {ex}"
+                );
                 // Show error in UI
                 var errorModal = new StandardModal("ERROR");
                 var errorText = new TextBlock
                 {
-                    Text = $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.",
+                    Text =
+                        $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.",
                     Margin = new Avalonia.Thickness(20),
-                    TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
                 };
                 errorModal.SetContent(errorText);
                 errorModal.BackClicked += (s, ev) => HideModalContent();
@@ -160,7 +167,7 @@ namespace Oracle.Views
             modal.BackClicked += (s, ev) => HideModalContent();
             ShowModalContent(modal, "SAVED FILTERS");
         }
-        
+
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
         {
             // Show the analyze modal
@@ -171,17 +178,18 @@ namespace Oracle.Views
             ShowModalContent(modal, "SEED ANALYZER");
         }
 
-
         private void OnToolClick(object? sender, RoutedEventArgs e)
         {
             // Use the modal helper extension method
             this.ShowToolsModal();
         }
 
-
         private void OnExitClick(object? sender, RoutedEventArgs e)
         {
-            if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            if (
+                Application.Current?.ApplicationLifetime
+                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+            )
             {
                 desktop.Shutdown();
             }
@@ -198,7 +206,10 @@ namespace Oracle.Views
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", $"⚠️  Error during disposal: {ex.Message}");
+                Oracle.Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"⚠️  Error during disposal: {ex.Message}"
+                );
             }
         }
 
@@ -208,15 +219,14 @@ namespace Oracle.Views
             {
                 // Open the Balatro website in the default browser
                 var url = "https://playbalatro.com/";
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", $"Error opening Balatro website: {ex.Message}");
+                Oracle.Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Error opening Balatro website: {ex.Message}"
+                );
             }
         }
 
@@ -225,7 +235,8 @@ namespace Oracle.Views
         /// </summary>
         private void OnThemeCycleClick(object? sender, RoutedEventArgs e)
         {
-            if (_background == null) return;
+            if (_background == null)
+                return;
 
             // Get the current theme and cycle to the next one
             var currentTheme = _background.Theme;
@@ -242,7 +253,8 @@ namespace Oracle.Views
         /// </summary>
         private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
         {
-            if (_background == null) return;
+            if (_background == null)
+                return;
 
             // Toggle animation state
             _isAnimating = !_isAnimating;
@@ -254,7 +266,6 @@ namespace Oracle.Views
                 _animationButtonText.Text = _isAnimating ? "⏸" : "▶";
             }
         }
-
 
         /// <summary>
         /// Switches to edit mode for author name
@@ -328,7 +339,10 @@ namespace Oracle.Views
                 {
                     _userProfileService.SetAuthorName(newName);
                     authorDisplay.Text = newName;
-                    Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Author name updated to: {newName}");
+                    Oracle.Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"Author name updated to: {newName}"
+                    );
                 }
 
                 // Switch back to display mode
@@ -336,9 +350,6 @@ namespace Oracle.Views
                 authorEdit.IsVisible = false;
             }
         }
-
-
-
 
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
@@ -348,7 +359,10 @@ namespace Oracle.Views
                 _userProfileService = ServiceHelper.GetService<UserProfileService>();
                 if (_userProfileService == null)
                 {
-                    Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "UserProfileService is null after initialization attempt");
+                    Oracle.Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        "UserProfileService is null after initialization attempt"
+                    );
                     return;
                 }
             }
@@ -359,23 +373,31 @@ namespace Oracle.Views
             if (authorDisplay != null && authorEdit != null)
             {
                 var authorName = _userProfileService.GetAuthorName();
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Setting author display to: '{authorName}'");
+                Oracle.Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"Setting author display to: '{authorName}'"
+                );
                 authorDisplay.Text = authorName;
                 authorEdit.Text = authorName;
             }
             else
             {
-                Oracle.Helpers.DebugLogger.LogError("BalatroMainMenu", "Could not find AuthorDisplay or AuthorEdit controls");
+                Oracle.Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    "Could not find AuthorDisplay or AuthorEdit controls"
+                );
             }
         }
 
-        
         /// <summary>
         /// Shows a search desktop icon on the desktop
         /// </summary>
         public async void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}");
+            Oracle.Helpers.DebugLogger.Log(
+                "BalatroMainMenu",
+                $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
+            );
 
             // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
@@ -387,14 +409,14 @@ namespace Oracle.Views
 
             // Create a new SearchDesktopIcon instance
             var searchIcon = new SearchDesktopIcon();
-            
+
             // Get filter name from config path
             string filterName = "Unknown Filter";
             if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
             {
                 filterName = Path.GetFileNameWithoutExtension(configPath);
             }
-            
+
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
 
             // Calculate position based on existing icons
@@ -410,7 +432,10 @@ namespace Oracle.Views
             desktopCanvas.Children.Add(searchIcon);
             _widgetCounter++;
 
-            Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})");
+            Oracle.Helpers.DebugLogger.Log(
+                "BalatroMainMenu",
+                $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})"
+            );
 
             // If config path provided, start the search
             if (!string.IsNullOrEmpty(configPath))
@@ -424,13 +449,12 @@ namespace Oracle.Views
                         ConfigPath = configPath,
                         ThreadCount = 4,
                         MinScore = 0,
-                        BatchSize = 3
+                        BatchSize = 3,
                     };
                     await searchService.StartSearchAsync(criteria);
                 }
             }
         }
-
 
         /// <summary>
         /// Updates the visibility of the search desktop icon based on minimized widget count
@@ -464,7 +488,10 @@ namespace Oracle.Views
                     if (filtersModal != null)
                     {
                         // FiltersModal may have active searches to stop
-                        DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
+                        DebugLogger.LogImportant(
+                            "BalatroMainMenu",
+                            "Checking FiltersModal for active searches..."
+                        );
                         // Note: FiltersModal doesn't have a StopSearch method
                         // but we keep this structure in case it's needed later
                     }

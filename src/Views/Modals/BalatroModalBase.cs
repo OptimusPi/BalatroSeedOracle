@@ -1,6 +1,6 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using System;
 using Oracle.Helpers;
 
 namespace Oracle.Views.Modals

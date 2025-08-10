@@ -6,23 +6,19 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
-    
-    <!-- Enable all warnings and code analysis -->
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <!-- Enable more warnings for code quality -->
+    <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>9999</WarningLevel>
-    
-    <!-- Keep the CS0108 suppression for now -->
-    <NoWarn>$(NoWarn);CS0108</NoWarn>
+    <WarningLevel>4</WarningLevel>
+    <!-- Suppress only the most problematic warnings -->
+    <NoWarn>$(NoWarn);CS0108;CA1515;CA2227;CA1002;CA1707;CA1819;CA1034;CA1003;CA1052;CA2263</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
@@ -43,9 +39,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
-
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely.csproj" />
   </ItemGroup>

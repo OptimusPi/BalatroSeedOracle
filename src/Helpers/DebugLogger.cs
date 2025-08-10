@@ -8,8 +8,8 @@ namespace Oracle.Helpers;
 public static class DebugLogger
 {
     // Set to false for production builds
-    private static bool EnableDebugLogging = false;  // Disabled by default
-    private static bool EnableVerboseLogging = false;  // For extra verbose output
+    private static bool EnableDebugLogging = false; // Disabled by default
+    private static bool EnableVerboseLogging = false; // For extra verbose output
 
     /// <summary>
     /// Sets whether debug logging is enabled
@@ -83,7 +83,9 @@ public static class DebugLogger
     {
         if (EnableDebugLogging)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] {string.Format(format, args)}");
+            Console.WriteLine(
+                $"[{DateTime.Now:HH:mm:ss}] [{category}] {string.Format(format, args)}"
+            );
         }
     }
 }

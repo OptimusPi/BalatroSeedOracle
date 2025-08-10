@@ -19,19 +19,16 @@ namespace Oracle.Controls
         public event EventHandler? DeleteRequested;
         public event EventHandler? Cancelled;
 
-        // Protected fields for derived classes
-        protected string _itemKey = "";
-        protected string _itemName = "";
-        protected string _itemCategory = "";
-        
-        // Public property to get the item key
-        public string ItemKey => _itemKey;
+        // Properties for derived classes
+        public string ItemKey { get; protected set; } = "";
+        protected string ItemName { get; set; } = "";
+        protected string ItemCategory { get; set; } = "";
 
         // Common UI elements
-        protected TextBlock? ItemNameText;
-        protected Button? ApplyButton;
-        protected Button? DeleteButton;
-        protected Button? CancelButton;
+        protected TextBlock? ItemNameText { get; set; }
+        protected Button? ApplyButton { get; set; }
+        protected Button? DeleteButton { get; set; }
+        protected Button? CancelButton { get; set; }
 
         protected ItemConfigPopupBase()
         {
@@ -41,16 +38,20 @@ namespace Oracle.Controls
         /// <summary>
         /// Initialize the item with its key and name
         /// </summary>
-        public virtual void SetItem(string itemKey, string itemName, ItemConfig? existingConfig = null)
+        public virtual void SetItem(
+            string itemKey,
+            string itemName,
+            ItemConfig? existingConfig = null
+        )
         {
-            _itemKey = itemKey;
-            _itemName = itemName;
+            ItemKey = itemKey;
+            ItemName = itemName;
 
             // Extract category from key
             var parts = itemKey.Split(':');
             if (parts.Length >= 1)
             {
-                _itemCategory = parts[0];
+                ItemCategory = parts[0];
             }
 
             // Update item name display
@@ -79,7 +80,7 @@ namespace Oracle.Controls
         protected virtual void OnApplyClick(object? sender, RoutedEventArgs e)
         {
             var config = BuildConfiguration();
-            config.ItemKey = _itemKey;
+            config.ItemKey = ItemKey;
             ConfigApplied?.Invoke(this, new ItemConfigEventArgs { Config = config });
         }
 
@@ -108,12 +109,16 @@ namespace Oracle.Controls
             {
                 MinWidth = 282,
                 MaxWidth = 322,
-                Background = Application.Current?.FindResource("ItemConfigMediumBg") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigMediumBg") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(15),
-                Child = content
+                Child = content,
             };
         }
 
@@ -124,20 +129,24 @@ namespace Oracle.Controls
         {
             ItemNameText = new TextBlock
             {
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 16,
 
                 Foreground = Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             };
 
             return new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 6),
                 Margin = new Thickness(-16, -16, -16, 0),
-                Child = ItemNameText
+                Child = ItemNameText,
             };
         }
 
@@ -149,7 +158,7 @@ namespace Oracle.Controls
             var grid = new Grid
             {
                 Margin = new Thickness(0, 6, 0, 0),
-                ColumnDefinitions = new ColumnDefinitions("*,*,*")
+                ColumnDefinitions = new ColumnDefinitions("*,*,*"),
             };
 
             // Apply button
@@ -171,38 +180,48 @@ namespace Oracle.Controls
             return grid;
         }
 
-        private Button CreateStyledButton(string text, string bgColor, string borderColor, int column)
+        private Button CreateStyledButton(
+            string text,
+            string bgColor,
+            string borderColor,
+            int column
+        )
         {
             var button = new Button
             {
                 Height = 32,
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-                Margin = column == 0 ? new Thickness(0, 0, 4, 0) :
-                         column == 1 ? new Thickness(2, 0) :
-                         new Thickness(4, 0, 0, 0)
+                Margin =
+                    column == 0 ? new Thickness(0, 0, 4, 0)
+                    : column == 1 ? new Thickness(2, 0)
+                    : new Thickness(4, 0, 0, 0),
             };
 
-            button.Template = new Avalonia.Controls.Templates.FuncControlTemplate<Button>((btn, scope) =>
-            {
-                var border = new Border
+            button.Template = new Avalonia.Controls.Templates.FuncControlTemplate<Button>(
+                (btn, scope) =>
                 {
-                    Background = new SolidColorBrush(Color.Parse(bgColor)),
-                    BorderBrush = new SolidColorBrush(Color.Parse(borderColor)),
-                    BorderThickness = new Thickness(2),
-                    CornerRadius = new CornerRadius(4),
-                    Child = new TextBlock
+                    var border = new Border
                     {
-                        Text = text,
-                        FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
-                        FontSize = 12,
-        
-                        Foreground = new SolidColorBrush(Color.Parse(borderColor)),
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                    }
-                };
-                return border;
-            });
+                        Background = new SolidColorBrush(Color.Parse(bgColor)),
+                        BorderBrush = new SolidColorBrush(Color.Parse(borderColor)),
+                        BorderThickness = new Thickness(2),
+                        CornerRadius = new CornerRadius(4),
+                        Child = new TextBlock
+                        {
+                            Text = text,
+                            FontFamily =
+                                Application.Current?.FindResource("BalatroFont") as FontFamily
+                                ?? FontFamily.Default,
+                            FontSize = 12,
+
+                            Foreground = new SolidColorBrush(Color.Parse(borderColor)),
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        },
+                    };
+                    return border;
+                }
+            );
 
             Grid.SetColumn(button, column);
             return button;

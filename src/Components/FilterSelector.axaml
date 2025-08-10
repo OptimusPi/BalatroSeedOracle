@@ -7,6 +7,9 @@
         <!-- Filter browser using PanelSpinner -->
         <controls:PanelSpinner Name="FilterSpinner" />
         
+        <!-- Spacer to match stake selector height for visual consistency -->
+        <Border Height="48" />
+        
         <!-- Select Button -->
         <Button Name="SelectButton" 
                 Content="Select Filter" 

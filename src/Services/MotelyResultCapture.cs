@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Motely.Filters;
-using Oracle.Models;
 using Oracle.Helpers;
-using System.Text.Json;
+using Oracle.Models;
 
 namespace Oracle.Services
 {
@@ -29,9 +29,10 @@ namespace Oracle.Services
 
         public MotelyResultCapture(SearchHistoryService searchHistory)
         {
-            _searchHistory = searchHistory ?? throw new ArgumentNullException(nameof(searchHistory));
+            _searchHistory =
+                searchHistory ?? throw new ArgumentNullException(nameof(searchHistory));
         }
-        
+
         /// <summary>
         /// Set the filter configuration to extract labels
         /// </summary>
@@ -55,49 +56,59 @@ namespace Oracle.Services
 
             DebugLogger.Log("MotelyResultCapture", "Starting result capture");
 
-            _captureTask = Task.Run(async () =>
-            {
-                try
+            _captureTask = Task.Run(
+                async () =>
                 {
-                    while (!_cts.Token.IsCancellationRequested)
+                    try
                     {
-                        if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out var result))
+                        while (!_cts.Token.IsCancellationRequested)
                         {
-                            var searchResult = new SearchResult
+                            if (
+                                OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(
+                                    out var result
+                                )
+                            )
                             {
-                                Seed = result.Seed,
-                                TotalScore = result.TotalScore,
-                                ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants),
-                                ScoreLabels = ExtractScoreLabels()
-                            };
+                                var searchResult = new SearchResult
+                                {
+                                    Seed = result.Seed,
+                                    TotalScore = result.TotalScore,
+                                    ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants),
+                                    ScoreLabels = ExtractScoreLabels(),
+                                };
 
-                            // Store in DuckDB
-                            await _searchHistory.AddSearchResultAsync(searchResult);
+                                // Store in DuckDB
+                                await _searchHistory.AddSearchResultAsync(searchResult);
 
-                            // Update count and raise events
-                            Interlocked.Increment(ref _resultCount);
-                            ResultCaptured?.Invoke(searchResult);
-                            ResultCountChanged?.Invoke(_resultCount);
+                                // Update count and raise events
+                                Interlocked.Increment(ref _resultCount);
+                                ResultCaptured?.Invoke(searchResult);
+                                ResultCountChanged?.Invoke(_resultCount);
 
-                            DebugLogger.Log("MotelyResultCapture", $"Captured result: {result.Seed} (Score: {result.TotalScore})");
-                        }
-                        else
-                        {
-                            // No results available, wait a bit
-                            await Task.Delay(500, _cts.Token);
+                                DebugLogger.Log(
+                                    "MotelyResultCapture",
+                                    $"Captured result: {result.Seed} (Score: {result.TotalScore})"
+                                );
+                            }
+                            else
+                            {
+                                // No results available, wait a bit
+                                await Task.Delay(500, _cts.Token);
+                            }
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
-                    throw;
-                }
-            }, _cts.Token);
+                    catch (OperationCanceledException)
+                    {
+                        DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
+                        throw;
+                    }
+                },
+                _cts.Token
+            );
 
             await Task.CompletedTask;
         }
@@ -110,7 +121,10 @@ namespace Oracle.Services
             if (_cts == null || _captureTask == null)
                 return;
 
-            DebugLogger.Log("MotelyResultCapture", $"Stopping capture. Captured {_resultCount} results.");
+            DebugLogger.Log(
+                "MotelyResultCapture",
+                $"Stopping capture. Captured {_resultCount} results."
+            );
 
             _cts.Cancel();
 

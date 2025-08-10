@@ -87,7 +87,7 @@ namespace Oracle.Components
                 ("Spectral Sprint", "Find a Spectral card before Ante 2 boss", "Soul"),
                 ("Voucher Victory", "Get 3 vouchers by Ante 4", "Overstock"),
                 ("Tag Team", "Use 5 different tags in one run", "Ethereal Tag"),
-                ("Boss Blitz", "Defeat Ante 8 boss with style", "The Manacle")
+                ("Boss Blitz", "Defeat Ante 8 boss with style", "The Manacle"),
             };
 
             // Use seed to pick theme
@@ -139,13 +139,15 @@ namespace Oracle.Components
             }
         }
 
-
         private void OnSubmitScore(object? sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(_scoreInput?.Text))
                 return;
 
-            DebugLogger.Log("DayLatroWidget", $"Submitted score: {_scoreInput.Text} for seed {_todaySeed}");
+            DebugLogger.Log(
+                "DayLatroWidget",
+                $"Submitted score: {_scoreInput.Text} for seed {_todaySeed}"
+            );
 
             // TODO: Save score to database/file
             // For now, just clear the input
@@ -157,11 +159,12 @@ namespace Oracle.Components
             var theme = _themeText?.Text ?? "Daily Challenge";
             var challengeUrl = $"https://balatrogenie.app/challenge/{_todaySeed}";
 
-            var message = $"Today's Balatro Daily Challenge! " +
-                         $"The seed is {_todaySeed}. " +
-                         $"The theme is {theme}. " +
-                         $"Can you beat the top score? Good luck!\n\n" +
-                         $"Challenge link: {challengeUrl}";
+            var message =
+                $"Today's Balatro Daily Challenge! "
+                + $"The seed is {_todaySeed}. "
+                + $"The theme is {theme}. "
+                + $"Can you beat the top score? Good luck!\n\n"
+                + $"Challenge link: {challengeUrl}";
 
             await ClipboardService.CopyToClipboardAsync(message);
             DebugLogger.Log("DayLatroWidget", "Copied daily challenge to clipboard");

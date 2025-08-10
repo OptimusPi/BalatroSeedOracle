@@ -14,14 +14,14 @@
         <!-- Modal positioning grid -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.05*"/>
-                <ColumnDefinition Width="0.9*"/>
-                <ColumnDefinition Width="0.05*"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.05*"/>
-                <RowDefinition Height="0.9*"/>
-                <RowDefinition Height="0.05*"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style -->
@@ -34,7 +34,8 @@
                     VerticalAlignment="Stretch"
                     MaxWidth="1000"
                     MaxHeight="700"
-                    BoxShadow="{StaticResource StandardModalShadow}">
+                    BoxShadow="{StaticResource StandardModalShadow}"
+                    ClipToBounds="True">
                 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -43,22 +44,19 @@
                     </Grid.RowDefinitions>
 
                     <!-- Content area -->
-                    <!-- Removed dark background - content shows on medium grey modal background -->
-                            
-                    <!-- Actual content -->
                     <ContentPresenter Grid.Row="0" 
                                       x:Name="ModalContent"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch"
-                                      Margin="4,4,4,2"/>
+                                      Margin="4,2,4,4"/>
 
                     <!-- Footer with back button -->
                     <Border Grid.Row="1"
-                            Background="{StaticResource DockGrey}"
+                            Background="Transparent"
                             BorderThickness="0"
                             CornerRadius="0,0,16,16"
                             Margin="3,0,3,3"
-                            Padding="10,2,10,6">
+                            Padding="10,0,10,6">
                         <Button x:Name="BackButton"
                                 Content="Back"
                                 Classes="back-button"

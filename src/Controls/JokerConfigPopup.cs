@@ -6,9 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Markup.Xaml;
-
+using Avalonia.Media;
 using Oracle.Services;
 
 namespace Oracle.Controls
@@ -18,7 +17,17 @@ namespace Oracle.Controls
     /// </summary>
     public partial class JokerConfigPopup : ItemConfigPopupBase
     {
-        private bool[] _selectedAntes = new bool[8] { true, true, true, true, true, true, true, true };
+        private bool[] _selectedAntes = new bool[8]
+        {
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+        };
         private string _selectedEdition = "none";
         private HashSet<string> _selectedSources = new() { "tag", "booster", "shop" };
 
@@ -70,24 +79,27 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8)
+                Padding = new Thickness(10, 8),
             };
 
-            var grid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,Auto")
-            };
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
 
             // Header
             var header = new TextBlock
             {
                 Text = "Search Antes:",
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 12,
-                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6)
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
             };
             Grid.SetRow(header, 0);
             grid.Children.Add(header);
@@ -96,22 +108,22 @@ namespace Oracle.Controls
             var anteGrid = new WrapPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(-2)
+                Margin = new Thickness(-2),
             };
 
             for (int i = 0; i < 8; i++)
             {
                 var anteNum = i + 1;
-                var checkbox = new CheckBox
-                {
-                    IsChecked = true,
-                    Margin = new Thickness(2)
-                };
+                var checkbox = new CheckBox { IsChecked = true, Margin = new Thickness(2) };
 
                 var anteBorder = new Border
                 {
-                    Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                    BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                    Background =
+                        Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                        ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                    BorderBrush =
+                        Application.Current?.FindResource("DarkerGrey") as IBrush
+                        ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(4, 2),
@@ -120,22 +132,26 @@ namespace Oracle.Controls
                     Child = new TextBlock
                     {
                         Text = anteNum.ToString(),
-                        FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                        FontFamily =
+                            Application.Current?.FindResource("BalatroFont") as FontFamily
+                            ?? FontFamily.Default,
                         FontSize = 12,
-        
-                        Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray,
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    }
+
+                        Foreground =
+                            Application.Current?.FindResource("MediumGrey") as IBrush
+                            ?? Brushes.Gray,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    },
                 };
 
                 checkbox.Content = anteBorder;
-                
+
                 // Store reference
                 _anteCheckBoxes[i] = checkbox;
-                
+
                 // Add handler
                 int index = i; // Capture for closure
-                checkbox.Click += (s, e) => 
+                checkbox.Click += (s, e) =>
                 {
                     _selectedAntes[index] = checkbox.IsChecked == true;
                     UpdateAnteVisual(anteBorder, checkbox.IsChecked == true);
@@ -155,20 +171,29 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
-                border.BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                border.Background =
+                    Application.Current?.FindResource("GreenAccentVeryDark") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                    text.Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 }
             }
             else
             {
-                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
+                    text.Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
                 }
             }
         }
@@ -177,24 +202,27 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8)
+                Padding = new Thickness(10, 8),
             };
 
-            var grid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,Auto")
-            };
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
 
             // Header
             var header = new TextBlock
             {
                 Text = "Require Edition?",
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 11,
-                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6)
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
             };
             Grid.SetRow(header, 0);
             grid.Children.Add(header);
@@ -203,7 +231,7 @@ namespace Oracle.Controls
             var editionGrid = new WrapPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(-2)
+                Margin = new Thickness(-2),
             };
 
             _editionNormal = CreateEditionRadioButton("Normal", "normal", true);
@@ -225,23 +253,31 @@ namespace Oracle.Controls
             return border;
         }
 
-        private RadioButton CreateEditionRadioButton(string displayName, string editionKey, bool isChecked)
+        private RadioButton CreateEditionRadioButton(
+            string displayName,
+            string editionKey,
+            bool isChecked
+        )
         {
             var radio = new RadioButton
             {
                 GroupName = "ItemEdition",
                 IsChecked = isChecked,
-                Margin = new Thickness(2)
+                Margin = new Thickness(2),
             };
 
             var border = new Border
             {
-                Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(5, 4),
-                Cursor = new Cursor(StandardCursorType.Hand)
+                Cursor = new Cursor(StandardCursorType.Hand),
             };
 
             // Try to load edition image
@@ -252,9 +288,9 @@ namespace Oracle.Controls
                 {
                     Width = 35,
                     Height = 47,
-                    Background = new SolidColorBrush(Color.Parse("#1a1f2e")) // Dark blue-ish background
+                    Background = new SolidColorBrush(Color.Parse("#1a1f2e")), // Dark blue-ish background
                 };
-                
+
                 var invertedRect = new Border
                 {
                     Width = 29,
@@ -262,9 +298,9 @@ namespace Oracle.Controls
                     Background = new SolidColorBrush(Color.Parse("#FFEFEE")), // Light inverted color
                     CornerRadius = new CornerRadius(3),
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
+                    VerticalAlignment = VerticalAlignment.Center,
                 };
-                
+
                 negativePanel.Children.Add(invertedRect);
                 border.Child = negativePanel;
             }
@@ -276,7 +312,7 @@ namespace Oracle.Controls
                     Height = 47,
                     Stretch = Stretch.Uniform,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Source = SpriteService.Instance.GetEditionImage(editionKey)
+                    Source = SpriteService.Instance.GetEditionImage(editionKey),
                 };
                 border.Child = image;
             }
@@ -303,13 +339,20 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
-                border.BorderBrush = Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold;
+                border.Background =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold;
             }
             else
             {
-                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
             }
         }
 
@@ -317,24 +360,27 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8)
+                Padding = new Thickness(10, 8),
             };
 
-            var grid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,Auto")
-            };
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
 
             // Header
             var header = new TextBlock
             {
                 Text = "SOURCES",
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 11,
-                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6)
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
             };
             Grid.SetRow(header, 0);
             grid.Children.Add(header);
@@ -359,15 +405,16 @@ namespace Oracle.Controls
 
         private CheckBox CreateSourceCheckBox(string displayName, string sourceKey)
         {
-            var checkbox = new CheckBox
-            {
-                IsChecked = true
-            };
+            var checkbox = new CheckBox { IsChecked = true };
 
             var border = new Border
             {
-                Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4),
@@ -375,10 +422,13 @@ namespace Oracle.Controls
                 Child = new TextBlock
                 {
                     Text = displayName,
-                    FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                    FontFamily =
+                        Application.Current?.FindResource("BalatroFont") as FontFamily
+                        ?? FontFamily.Default,
                     FontSize = 12,
-                    Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray
-                }
+                    Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray,
+                },
             };
 
             checkbox.Content = border;
@@ -403,27 +453,39 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
-                border.BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                border.Background =
+                    Application.Current?.FindResource("GreenAccentVeryDark") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                    text.Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 }
             }
             else
             {
-                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
+                    text.Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
                 }
             }
         }
 
         protected override void LoadConfiguration(ItemConfig? config)
         {
-            if (config == null) return;
+            if (config == null)
+            {
+                return;
+            }
 
             // Load antes
             if (config.Antes != null && config.Antes.Count > 0)
@@ -479,9 +541,18 @@ namespace Oracle.Controls
                     _selectedSources.Add(source);
                 }
 
-                _sourceTag?.SetCurrentValue(CheckBox.IsCheckedProperty, _selectedSources.Contains("tag"));
-                _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, _selectedSources.Contains("booster"));
-                _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, _selectedSources.Contains("shop"));
+                _sourceTag?.SetCurrentValue(
+                    CheckBox.IsCheckedProperty,
+                    _selectedSources.Contains("tag")
+                );
+                _sourceBooster?.SetCurrentValue(
+                    CheckBox.IsCheckedProperty,
+                    _selectedSources.Contains("booster")
+                );
+                _sourceShop?.SetCurrentValue(
+                    CheckBox.IsCheckedProperty,
+                    _selectedSources.Contains("shop")
+                );
             }
         }
 
@@ -489,10 +560,10 @@ namespace Oracle.Controls
         {
             var config = new ItemConfig
             {
-                ItemKey = _itemKey,
+                ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
                 Edition = _selectedEdition,
-                Sources = _selectedSources.ToList()
+                Sources = _selectedSources.ToList(),
             };
 
             return config;

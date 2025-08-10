@@ -356,34 +356,34 @@
         </StackPanel>
         
         <!-- Content area -->
-        <Grid Grid.Row="2" Margin="24">
+        <Grid Grid.Row="2">
             
             <!-- Filter Selection Panel -->
             <Grid Name="FilterPanel" IsVisible="True">
-                <components:FilterSelector Name="FilterSelector" 
-                                         HorizontalAlignment="Center" 
-                                         VerticalAlignment="Center"
-                                         AutoLoadEnabled="False"
-                                         FilterLoaded="OnFilterLoaded"
-                                         NewFilterRequested="OnNewFilterRequested"/>
+                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
+                    <components:FilterSelector Name="FilterSelector" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Stretch"
+                                             AutoLoadEnabled="False"
+                                             FilterLoaded="OnFilterLoaded"
+                                             NewFilterRequested="OnNewFilterRequested"/>
+                </Grid>
             </Grid>
             
             <!-- Settings Panel (now just Deck/Stake) -->
-            <ScrollViewer Name="SettingsPanel" IsVisible="False" 
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
+            <Grid Name="SettingsPanel" IsVisible="False">
                 <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
                     <!-- Deck and Stake Selection -->
                     <components:DeckAndStakeSelector Name="DeckAndStakeSelector" 
                                                     HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Center"/>
+                                                    VerticalAlignment="Stretch"/>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
             
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
                 <!-- 3 Column Layout -->
-                <Grid>
+                <Grid Margin="40">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
                         <ColumnDefinition Width="*"/>   <!-- Middle for console -->
@@ -596,7 +596,7 @@
             </Grid>
             
             <!-- Results Panel -->
-            <Grid Name="ResultsPanel" IsVisible="False">
+            <Grid Name="ResultsPanel" IsVisible="False" Margin="40">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>

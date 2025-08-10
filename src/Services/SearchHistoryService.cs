@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
-using Oracle.Models;
 using Oracle.Helpers;
+using Oracle.Models;
 
 namespace Oracle.Services
 {
@@ -78,7 +78,8 @@ namespace Oracle.Services
 
                 // Create enhanced results table with JSON support
                 using var createTable = connection.CreateCommand();
-                createTable.CommandText = @"
+                createTable.CommandText =
+                    @"
                     CREATE TABLE IF NOT EXISTS results (
                         seed VARCHAR PRIMARY KEY,
                         score DOUBLE,
@@ -92,7 +93,8 @@ namespace Oracle.Services
 
                 // Simple index on score for sorting
                 using var createIndex = connection.CreateCommand();
-                createIndex.CommandText = @"
+                createIndex.CommandText =
+                    @"
                     CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);
                 ";
                 createIndex.ExecuteNonQuery();
@@ -101,7 +103,10 @@ namespace Oracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to initialize database: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to initialize database: {ex.Message}"
+                );
             }
         }
 
@@ -125,7 +130,8 @@ namespace Oracle.Services
                 var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
+                cmd.CommandText =
+                    @"
                     INSERT OR REPLACE INTO results (seed, score, details)
                     VALUES (?, ?, ?)
                 ";
@@ -138,7 +144,10 @@ namespace Oracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to add search result: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to add search result: {ex.Message}"
+                );
             }
         }
 
@@ -154,7 +163,8 @@ namespace Oracle.Services
                 var connection = GetConnection();
 
                 using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
+                cmd.CommandText =
+                    @"
                     SELECT seed, score, details
                     FROM results
                     ORDER BY score DESC
@@ -163,17 +173,22 @@ namespace Oracle.Services
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    results.Add(new SearchResult
-                    {
-                        Seed = reader.GetString(0),
-                        TotalScore = reader.GetInt32(1),
-                        ScoreBreakdown = reader.IsDBNull(2) ? "" : reader.GetString(2)
-                    });
+                    results.Add(
+                        new SearchResult
+                        {
+                            Seed = reader.GetString(0),
+                            TotalScore = reader.GetInt32(1),
+                            ScoreBreakdown = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        }
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to get search results: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to get search results: {ex.Message}"
+                );
             }
 
             return results;
@@ -189,7 +204,8 @@ namespace Oracle.Services
                 var connection = GetConnection();
 
                 using var exportCmd = connection.CreateCommand();
-                exportCmd.CommandText = $@"
+                exportCmd.CommandText =
+                    $@"
                     COPY (
                         SELECT seed, score, details 
                         FROM results 

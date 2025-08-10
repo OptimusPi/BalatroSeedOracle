@@ -6,9 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Markup.Xaml;
-
+using Avalonia.Media;
 using Oracle.Services;
 
 namespace Oracle.Controls
@@ -18,7 +17,17 @@ namespace Oracle.Controls
     /// </summary>
     public partial class TagConfigPopup : ItemConfigPopupBase
     {
-        private bool[] _selectedAntes = new bool[8] { true, true, true, true, true, true, true, true };
+        private bool[] _selectedAntes = new bool[8]
+        {
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+        };
         private HashSet<string> _selectedSources = new() { "skip" };
 
         // UI Controls
@@ -59,24 +68,27 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8)
+                Padding = new Thickness(10, 8),
             };
 
-            var grid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,Auto")
-            };
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
 
             // Header
             var header = new TextBlock
             {
                 Text = "ANTES TO SEARCH",
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 11,
-                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6)
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
             };
             Grid.SetRow(header, 0);
             grid.Children.Add(header);
@@ -85,22 +97,22 @@ namespace Oracle.Controls
             var anteGrid = new WrapPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(-2)
+                Margin = new Thickness(-2),
             };
 
             for (int i = 0; i < 8; i++)
             {
                 var anteNum = i + 1;
-                var checkbox = new CheckBox
-                {
-                    IsChecked = true,
-                    Margin = new Thickness(2)
-                };
+                var checkbox = new CheckBox { IsChecked = true, Margin = new Thickness(2) };
 
                 var anteBorder = new Border
                 {
-                    Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
-                    BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                    Background =
+                        Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                        ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                    BorderBrush =
+                        Application.Current?.FindResource("DarkerGrey") as IBrush
+                        ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(4, 2),
@@ -108,23 +120,27 @@ namespace Oracle.Controls
                     Cursor = new Cursor(StandardCursorType.Hand),
                     Child = new TextBlock
                     {
-                        Text = anteNum.ToString(),
-                        FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                        Text = anteNum.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        FontFamily =
+                            Application.Current?.FindResource("BalatroFont") as FontFamily
+                            ?? FontFamily.Default,
                         FontSize = 12,
-        
-                        Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray,
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    }
+
+                        Foreground =
+                            Application.Current?.FindResource("MediumGrey") as IBrush
+                            ?? Brushes.Gray,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    },
                 };
 
                 checkbox.Content = anteBorder;
-                
+
                 // Store reference
                 _anteCheckBoxes[i] = checkbox;
-                
+
                 // Add handler
                 int index = i; // Capture for closure
-                checkbox.Click += (s, e) => 
+                checkbox.Click += (s, e) =>
                 {
                     _selectedAntes[index] = checkbox.IsChecked == true;
                     UpdateAnteVisual(anteBorder, checkbox.IsChecked == true);
@@ -144,20 +160,29 @@ namespace Oracle.Controls
         {
             if (isSelected)
             {
-                border.Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
-                border.BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                border.Background =
+                    Application.Current?.FindResource("GreenAccentVeryDark") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                    text.Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
                 }
             }
             else
             {
-                border.Background = Application.Current?.FindResource("VeryDarkBackground") as IBrush ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
-                border.BorderBrush = Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                border.Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
                 if (border.Child is TextBlock text)
                 {
-                    text.Foreground = Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
+                    text.Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
                 }
             }
         }
@@ -166,24 +191,27 @@ namespace Oracle.Controls
         {
             var border = new Border
             {
-                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? Application.Current?.FindResource("DarkerGrey") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 8)
+                Padding = new Thickness(10, 8),
             };
 
-            var grid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,Auto")
-            };
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
 
             // Header
             var header = new TextBlock
             {
                 Text = "SOURCES",
-                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 11,
-                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
-                Margin = new Thickness(0, 0, 0, 6)
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
             };
             Grid.SetRow(header, 0);
             grid.Children.Add(header);
@@ -206,13 +234,16 @@ namespace Oracle.Controls
             var checkbox = new CheckBox
             {
                 IsChecked = true,
-                IsEnabled = false // Tags always come from skipping blinds
+                IsEnabled = false, // Tags always come from skipping blinds
             };
 
             var border = new Border
             {
-                Background = Application.Current?.FindResource("GreenAccentVeryDark") as IBrush ?? new SolidColorBrush(Color.Parse("#1a5f1a")),
-                BorderBrush = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green,
+                Background =
+                    Application.Current?.FindResource("GreenAccentVeryDark") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a5f1a")),
+                BorderBrush =
+                    Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4),
@@ -220,10 +251,13 @@ namespace Oracle.Controls
                 Child = new TextBlock
                 {
                     Text = displayName + " (Always)",
-                    FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                    FontFamily =
+                        Application.Current?.FindResource("BalatroFont") as FontFamily
+                        ?? FontFamily.Default,
                     FontSize = 12,
-                    Foreground = Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green
-                }
+                    Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green,
+                },
             };
 
             checkbox.Content = border;
@@ -232,7 +266,8 @@ namespace Oracle.Controls
 
         protected override void LoadConfiguration(ItemConfig? config)
         {
-            if (config == null) return;
+            if (config == null)
+                return;
 
             // Load antes
             if (config.Antes != null && config.Antes.Count > 0)
@@ -262,10 +297,10 @@ namespace Oracle.Controls
         {
             var config = new ItemConfig
             {
-                ItemKey = _itemKey,
+                ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
                 Edition = "none", // Tags don't have editions
-                Sources = new List<string> { "skip" } // Always from skipping
+                Sources = new List<string> { "skip" }, // Always from skipping
             };
 
             return config;

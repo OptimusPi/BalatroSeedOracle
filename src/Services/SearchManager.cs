@@ -28,13 +28,13 @@ namespace Oracle.Services
         {
             var searchId = Guid.NewGuid().ToString();
             var searchInstance = new SearchInstance(searchId, _historyService);
-            
+
             if (_activeSearches.TryAdd(searchId, searchInstance))
             {
                 DebugLogger.Log("SearchManager", $"Created new search instance: {searchId}");
                 return searchId;
             }
-            
+
             throw new InvalidOperationException("Failed to create search instance");
         }
 
@@ -100,12 +100,12 @@ namespace Oracle.Services
         public void Dispose()
         {
             StopAllSearches();
-            
+
             foreach (var search in _activeSearches.Values)
             {
                 search.Dispose();
             }
-            
+
             _activeSearches.Clear();
         }
     }

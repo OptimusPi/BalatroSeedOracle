@@ -13,12 +13,18 @@ public static class ServiceHelper
     /// </summary>
     /// <typeparam name="T">The type of service to retrieve</typeparam>
     /// <returns>The service instance or null if not found</returns>
-    public static T? GetService<T>() where T : class
+    public static T? GetService<T>()
+        where T : class
     {
         var app = (App)App.Current!;
-        var serviceProvider = app.GetType().GetField("_serviceProvider",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-            ?.GetValue(app) as IServiceProvider;
+        var serviceProvider =
+            app.GetType()
+                .GetField(
+                    "_serviceProvider",
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
+                )
+                ?.GetValue(app) as IServiceProvider;
         return serviceProvider?.GetService(typeof(T)) as T;
     }
 
@@ -28,8 +34,10 @@ public static class ServiceHelper
     /// <typeparam name="T">The type of service to retrieve</typeparam>
     /// <returns>The service instance</returns>
     /// <exception cref="InvalidOperationException">Thrown when the service is not found</exception>
-    public static T GetRequiredService<T>() where T : class
+    public static T GetRequiredService<T>()
+        where T : class
     {
-        return GetService<T>() ?? throw new InvalidOperationException($"Service of type {typeof(T).Name} not found");
+        return GetService<T>()
+            ?? throw new InvalidOperationException($"Service of type {typeof(T).Name} not found");
     }
 }

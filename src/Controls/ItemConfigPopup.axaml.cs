@@ -17,9 +17,39 @@ namespace Oracle.Controls
         public event EventHandler<ItemConfigEventArgs>? ConfigApplied;
         public event EventHandler? DeleteRequested;
         public event EventHandler? Cancelled;
-        private static readonly bool[] DefaultMustAntes = [true, false, false, false, false, false, false, false];
-        private static readonly bool[] DefaultShouldAntes = [true, false, false, false, false, false, false, false];
-        private static readonly bool[] DefaultCouldAntes = [true, false, false, false, false, false, false, false];
+        private static readonly bool[] DefaultMustAntes =
+        [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ];
+        private static readonly bool[] DefaultShouldAntes =
+        [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ];
+        private static readonly bool[] DefaultCouldAntes =
+        [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ];
 
         private string _itemKey = "";
         private bool[] _selectedAntes = DefaultMustAntes.ToArray();
@@ -157,7 +187,7 @@ namespace Oracle.Controls
                     SetCheckBox("SourcePacks", existingConfig.Sources.Contains("booster"));
                     SetCheckBox("SourceShop", existingConfig.Sources.Contains("shop"));
                 }
-                
+
                 // Set label
                 if (!string.IsNullOrEmpty(existingConfig.Label))
                 {
@@ -190,7 +220,7 @@ namespace Oracle.Controls
                 Antes = GetSelectedAntes(),
                 Edition = GetSelectedEdition(),
                 Sources = GetSelectedSources(),
-                Label = GetLabel()
+                Label = GetLabel(),
             };
 
             ConfigApplied?.Invoke(this, new ItemConfigEventArgs { Config = config });
@@ -245,10 +275,14 @@ namespace Oracle.Controls
 
         private string GetSelectedEdition()
         {
-            if (this.FindControl<RadioButton>("EditionFoil")?.IsChecked == true) return "foil";
-            if (this.FindControl<RadioButton>("EditionHolo")?.IsChecked == true) return "holographic";
-            if (this.FindControl<RadioButton>("EditionPoly")?.IsChecked == true) return "polychrome";
-            if (this.FindControl<RadioButton>("EditionNegative")?.IsChecked == true) return "negative";
+            if (this.FindControl<RadioButton>("EditionFoil")?.IsChecked == true)
+                return "foil";
+            if (this.FindControl<RadioButton>("EditionHolo")?.IsChecked == true)
+                return "holographic";
+            if (this.FindControl<RadioButton>("EditionPoly")?.IsChecked == true)
+                return "polychrome";
+            if (this.FindControl<RadioButton>("EditionNegative")?.IsChecked == true)
+                return "negative";
             return "none";
         }
 
@@ -256,9 +290,12 @@ namespace Oracle.Controls
         {
             var sources = new List<string>();
 
-            if (this.FindControl<CheckBox>("SourceTags")?.IsChecked == true) sources.Add("tag");
-            if (this.FindControl<CheckBox>("SourcePacks")?.IsChecked == true) sources.Add("booster");
-            if (this.FindControl<CheckBox>("SourceShop")?.IsChecked == true) sources.Add("shop");
+            if (this.FindControl<CheckBox>("SourceTags")?.IsChecked == true)
+                sources.Add("tag");
+            if (this.FindControl<CheckBox>("SourcePacks")?.IsChecked == true)
+                sources.Add("booster");
+            if (this.FindControl<CheckBox>("SourceShop")?.IsChecked == true)
+                sources.Add("shop");
 
             // Default to main sources if none selected
             if (sources.Count == 0)
@@ -268,7 +305,7 @@ namespace Oracle.Controls
 
             return sources;
         }
-        
+
         private string? GetLabel()
         {
             var labelTextBox = this.FindControl<TextBox>("LabelTextBox");
@@ -287,11 +324,12 @@ namespace Oracle.Controls
             // - Vouchers (in some cases)
             // For now, we'll enable editions for jokers only
             // TODO: Extend to support playing cards when that feature is added
-            
-            return itemKey.Contains("joker") ||
-                   itemKey.Contains("Joker") ||
-                   itemKey.StartsWith("j_") || // Common joker prefix pattern
-                   IsSpecificJoker(itemKey);
+
+            return itemKey.Contains("joker")
+                || itemKey.Contains("Joker")
+                || itemKey.StartsWith("j_")
+                || // Common joker prefix pattern
+                IsSpecificJoker(itemKey);
         }
 
         private bool IsSpecificJoker(string itemKey)
@@ -299,13 +337,35 @@ namespace Oracle.Controls
             // Add specific joker names that might not follow the pattern
             var jokerKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "blueprint", "brainstorm", "satellite", "showman", "flower_pot",
-                "merry_andy", "oops_all_6s", "the_idol", "seeing_double",
-                "matador", "hit_the_road", "the_duo", "the_trio", "the_family",
-                "the_order", "the_tribe", "stuntman", "invisible_joker",
-                "brainstorm", "satellite", "showman", "flower_pot",
-                "blueprint", "wee_joker", "joker", "greedy_joker",
-                "lusty_joker", "wrathful_joker", "gluttonous_joker"
+                "blueprint",
+                "brainstorm",
+                "satellite",
+                "showman",
+                "flower_pot",
+                "merry_andy",
+                "oops_all_6s",
+                "the_idol",
+                "seeing_double",
+                "matador",
+                "hit_the_road",
+                "the_duo",
+                "the_trio",
+                "the_family",
+                "the_order",
+                "the_tribe",
+                "stuntman",
+                "invisible_joker",
+                "brainstorm",
+                "satellite",
+                "showman",
+                "flower_pot",
+                "blueprint",
+                "wee_joker",
+                "joker",
+                "greedy_joker",
+                "lusty_joker",
+                "wrathful_joker",
+                "gluttonous_joker",
                 // Add more as needed
             };
 
@@ -314,19 +374,28 @@ namespace Oracle.Controls
 
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnAnteClick called. Sender type: {sender?.GetType().Name}");
-            
+            Oracle.Helpers.DebugLogger.Log(
+                "ItemConfigPopup",
+                $"OnAnteClick called. Sender type: {sender?.GetType().Name}"
+            );
+
             if (sender is CheckBox checkBox && checkBox.Name != null)
             {
                 // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
-                if (checkBox.Name.StartsWith("Ante") && int.TryParse(checkBox.Name.Substring(4), out int anteNum))
+                if (
+                    checkBox.Name.StartsWith("Ante")
+                    && int.TryParse(checkBox.Name.Substring(4), out int anteNum)
+                )
                 {
                     if (anteNum >= 1 && anteNum <= 8)
                     {
                         // Update internal state based on the checkbox's current checked state
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
-                        
-                        Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Ante {anteNum} set to: {checkBox.IsChecked}");
+
+                        Oracle.Helpers.DebugLogger.Log(
+                            "ItemConfigPopup",
+                            $"Ante {anteNum} set to: {checkBox.IsChecked}"
+                        );
                     }
                 }
             }
@@ -334,13 +403,19 @@ namespace Oracle.Controls
 
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"OnEditionClick called. Sender type: {sender?.GetType().Name}");
-            
+            Oracle.Helpers.DebugLogger.Log(
+                "ItemConfigPopup",
+                $"OnEditionClick called. Sender type: {sender?.GetType().Name}"
+            );
+
             // RadioButton Checked event is already handled properly by Avalonia
             // Just log the change for debugging
             if (sender is RadioButton rb)
             {
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Edition RadioButton {rb.Name} checked: {rb.IsChecked}");
+                Oracle.Helpers.DebugLogger.Log(
+                    "ItemConfigPopup",
+                    $"Edition RadioButton {rb.Name} checked: {rb.IsChecked}"
+                );
             }
         }
 
@@ -349,7 +424,10 @@ namespace Oracle.Controls
             // Simple handler - checkbox state is already updated by Avalonia
             if (sender is CheckBox checkBox)
             {
-                Oracle.Helpers.DebugLogger.Log("ItemConfigPopup", $"Source {checkBox.Name} set to: {checkBox.IsChecked}");
+                Oracle.Helpers.DebugLogger.Log(
+                    "ItemConfigPopup",
+                    $"Source {checkBox.Name} set to: {checkBox.IsChecked}"
+                );
             }
         }
     }

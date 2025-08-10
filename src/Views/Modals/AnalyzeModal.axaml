@@ -180,7 +180,7 @@
         <!-- Triangle pointer above tabs -->
         <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="148"/> <!-- SETTINGS -->
+                <ColumnDefinition Width="148"/> <!-- DECK/STAKE -->
                 <ColumnDefinition Width="148"/> <!-- ANALYZE -->
             </Grid.ColumnDefinitions>
             
@@ -224,21 +224,14 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Margin="0,4,0,4">
-            <Button Name="SettingsTab" Content="DECK/STAKE" Classes="tab-button" Click="OnSettingsTabClick"/>
+            <Button Name="SettingsTab" Content="DECK/STAKE" Classes="tab-button active" Click="OnSettingsTabClick"/>
             <Button Name="AnalyzerTab" Content="ANALYZE" Classes="tab-button" Click="OnAnalyzerTabClick"/>
         </StackPanel>
         
         <!-- Content panels -->
         <Grid Grid.Row="2">
-            <!-- Filter Selection Panel -->
-            <ScrollViewer Name="FilterPanel" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="20" Margin="20">
-                    <components:FilterSelector Name="FilterSelector" AutoLoadEnabled="False"/>
-                </StackPanel>
-            </ScrollViewer>
-            
             <!-- Settings Panel (Deck/Stake) -->
-            <StackPanel Name="SettingsPanel" IsVisible="False" Spacing="24">
+            <StackPanel Name="SettingsPanel" IsVisible="True" Spacing="24">
                 <Border Background="{StaticResource DarkerGrey}" 
                         CornerRadius="12" 
                         Padding="40"

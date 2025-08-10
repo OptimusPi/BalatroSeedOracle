@@ -38,7 +38,8 @@ namespace Oracle.Views.Modals
                 }
 
                 // Find all .json files
-                var files = Directory.GetFiles(configDir, "*.json")
+                var files = Directory
+                    .GetFiles(configDir, "*.json")
                     .OrderBy(f => Path.GetFileName(f))
                     .ToList();
 
@@ -46,7 +47,10 @@ namespace Oracle.Views.Modals
                 _filterFiles.AddRange(files);
 
                 // Calculate pages
-                _totalPages = Math.Max(1, (int)Math.Ceiling(_filterFiles.Count / (double)FILTERS_PER_PAGE));
+                _totalPages = Math.Max(
+                    1,
+                    (int)Math.Ceiling(_filterFiles.Count / (double)FILTERS_PER_PAGE)
+                );
                 _currentPage = 0;
 
                 // Display first page
@@ -61,7 +65,10 @@ namespace Oracle.Views.Modals
         private void DisplayCurrentPage()
         {
             var filterPanel = this.FindControl<WrapPanel>("FilterListPanel");
-            if (filterPanel == null) return;
+            if (filterPanel == null)
+            {
+                return;
+            }
 
             filterPanel.Children.Clear();
 
@@ -73,22 +80,27 @@ namespace Oracle.Views.Modals
             for (int i = startIndex; i < endIndex; i++)
             {
                 var filterPath = _filterFiles[i];
-                var fileName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filterPath));
+                var fileName = Path.GetFileNameWithoutExtension(
+                    Path.GetFileNameWithoutExtension(filterPath)
+                );
 
                 var button = new Button
                 {
                     Classes = { "filter-button" },
                     Width = 200,
-                    Height = 80
+                    Height = 80,
                 };
 
-                var content = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal };
+                var content = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                };
 
                 // Icon
                 var icon = new TextBlock
                 {
                     Text = GetFilterIcon(fileName),
-                    Classes = { "filter-icon" }
+                    Classes = { "filter-icon" },
                 };
                 content.Children.Add(icon);
 
@@ -98,12 +110,12 @@ namespace Oracle.Views.Modals
                 {
                     Text = fileName,
                     FontWeight = Avalonia.Media.FontWeight.Bold,
-                    TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis
+                    TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
                 };
                 var descText = new TextBlock
                 {
                     Text = "Click to load",
-                    Classes = { "filter-desc" }
+                    Classes = { "filter-desc" },
                 };
                 textPanel.Children.Add(nameText);
                 textPanel.Children.Add(descText);
@@ -123,16 +135,56 @@ namespace Oracle.Views.Modals
         private string GetFilterIcon(string fileName)
         {
             // Return different icons based on filter name patterns
-            if (fileName.ToLower().Contains("joker")) return "🃏";
-            if (fileName.ToLower().Contains("tag")) return "🏷️";
-            if (fileName.ToLower().Contains("soul")) return "👻";
-            if (fileName.ToLower().Contains("rare")) return "💎";
-            if (fileName.ToLower().Contains("uncommon")) return "✨";
-            if (fileName.ToLower().Contains("common")) return "🎴";
-            if (fileName.ToLower().Contains("spectral")) return "🌟";
-            if (fileName.ToLower().Contains("tarot")) return "🔮";
-            if (fileName.ToLower().Contains("voucher")) return "🎫";
-            if (fileName.ToLower().Contains("planet")) return "🪐";
+            if (fileName.Contains("joker", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🃏";
+            }
+
+            if (fileName.Contains("tag", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🏷️";
+            }
+
+            if (fileName.Contains("soul", StringComparison.OrdinalIgnoreCase))
+            {
+                return "👻";
+            }
+
+            if (fileName.Contains("rare", StringComparison.OrdinalIgnoreCase))
+            {
+                return "💎";
+            }
+
+            if (fileName.Contains("uncommon", StringComparison.OrdinalIgnoreCase))
+            {
+                return "✨";
+            }
+
+            if (fileName.Contains("common", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🎴";
+            }
+
+            if (fileName.Contains("spectral", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🌟";
+            }
+
+            if (fileName.Contains("tarot", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🔮";
+            }
+
+            if (fileName.Contains("voucher", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🎫";
+            }
+
+            if (fileName.Contains("planet", StringComparison.OrdinalIgnoreCase))
+            {
+                return "🪐";
+            }
+
             return "📄";
         }
 
@@ -143,13 +195,19 @@ namespace Oracle.Views.Modals
             var pageIndicator = this.FindControl<TextBlock>("PageIndicator");
 
             if (prevButton != null)
+            {
                 prevButton.IsEnabled = _currentPage > 0;
+            }
 
             if (nextButton != null)
+            {
                 nextButton.IsEnabled = _currentPage < _totalPages - 1;
+            }
 
             if (pageIndicator != null)
+            {
                 pageIndicator.Text = $"Page {_currentPage + 1} of {_totalPages}";
+            }
         }
 
         private async void OnFilterButtonClick(object? sender, RoutedEventArgs e)
@@ -198,7 +256,5 @@ namespace Oracle.Views.Modals
                 DisplayCurrentPage();
             }
         }
-
-
     }
 }

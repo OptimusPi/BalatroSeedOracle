@@ -21,15 +21,39 @@ namespace Oracle.Controls
         // Predefined tags for autocomplete
         private readonly HashSet<string> _availableTags = new HashSet<string>
         {
-            "#WeeJoker", "#Chips", "#Mult", "#XMult", "#Faceless",
-            "#Legendary", "#Spectral", "#Voucher", "#Boss", "#Tarot",
-            "#Money", "#Gold", "#EarlyGame", "#LateGame", "#Ante8",
-            "#HandSize", "#Discards", "#Rerolls", "#Negative", "#Foil",
-            "#Holographic", "#Polychrome", "#Blueprint", "#Brainstorm",
-            "#Soul", "#Ankh", "#Wraith", "#Immolate", "#Cryptid"
+            "#WeeJoker",
+            "#Chips",
+            "#Mult",
+            "#XMult",
+            "#Faceless",
+            "#Legendary",
+            "#Spectral",
+            "#Voucher",
+            "#Boss",
+            "#Tarot",
+            "#Money",
+            "#Gold",
+            "#EarlyGame",
+            "#LateGame",
+            "#Ante8",
+            "#HandSize",
+            "#Discards",
+            "#Rerolls",
+            "#Negative",
+            "#Foil",
+            "#Holographic",
+            "#Polychrome",
+            "#Blueprint",
+            "#Brainstorm",
+            "#Soul",
+            "#Ankh",
+            "#Wraith",
+            "#Immolate",
+            "#Cryptid",
         };
 
-        private readonly ObservableCollection<string> _currentTags = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _currentTags =
+            new ObservableCollection<string>();
 
         public static readonly StyledProperty<List<string>> TagsProperty =
             AvaloniaProperty.Register<TagEditor, List<string>>(nameof(Tags), new List<string>());
@@ -98,30 +122,21 @@ namespace Oracle.Controls
 
         private void AddTagChip(string tag)
         {
-            if (_tagContainer == null || _tagInput == null) return;
+            if (_tagContainer == null || _tagInput == null)
+                return;
 
             // Create tag chip
-            var chip = new Border
-            {
-                Classes = { "tag-chip" }
-            };
+            var chip = new Border { Classes = { "tag-chip" } };
 
-            var panel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal
-            };
+            var panel = new StackPanel { Orientation = Orientation.Horizontal };
 
-            var tagText = new TextBlock
-            {
-                Text = tag,
-                Classes = { "tag-text" }
-            };
+            var tagText = new TextBlock { Text = tag, Classes = { "tag-text" } };
 
             var removeButton = new Button
             {
                 Content = "×",
                 Classes = { "tag-remove" },
-                Tag = tag
+                Tag = tag,
             };
 
             removeButton.Click += OnRemoveTag;
@@ -151,7 +166,8 @@ namespace Oracle.Controls
 
         private void OnTagInputKeyDown(object? sender, KeyEventArgs e)
         {
-            if (_tagInput == null || string.IsNullOrWhiteSpace(_tagInput.Text)) return;
+            if (_tagInput == null || string.IsNullOrWhiteSpace(_tagInput.Text))
+                return;
 
             if (e.Key == Key.Enter || e.Key == Key.Tab)
             {

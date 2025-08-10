@@ -22,13 +22,21 @@ namespace Oracle.Services
         public int Index
         {
             get => _index;
-            set { _index = value; OnPropertyChanged(); }
+            set
+            {
+                _index = value;
+                OnPropertyChanged();
+            }
         }
 
         public string Seed
         {
             get => _seed;
-            set { _seed = value; OnPropertyChanged(); }
+            set
+            {
+                _seed = value;
+                OnPropertyChanged();
+            }
         }
 
         public int Score
@@ -46,7 +54,11 @@ namespace Oracle.Services
         public string Details
         {
             get => _details;
-            set { _details = value; OnPropertyChanged(); }
+            set
+            {
+                _details = value;
+                OnPropertyChanged();
+            }
         }
 
         public string ScoreBreakdown
@@ -114,13 +126,19 @@ namespace Oracle.Services
 
             try
             {
-                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                if (
+                    Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                )
                 {
                     var clipboard = desktop.MainWindow?.Clipboard;
                     if (clipboard != null)
                     {
                         await clipboard.SetTextAsync(seed);
-                        DebugLogger.Log("SearchResultViewModel", $"Copied seed to clipboard: {seed}");
+                        DebugLogger.Log(
+                            "SearchResultViewModel",
+                            $"Copied seed to clipboard: {seed}"
+                        );
                     }
                 }
             }

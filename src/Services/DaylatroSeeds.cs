@@ -104,11 +104,13 @@ namespace Oracle.Services
             //         (q, s1) = s `divMod` 2147483562
             //         s2      = q `mod` 2147483398
 
-            if (s < 0) s = -s;
+            if (s < 0)
+                s = -s;
 
             int q = Math.DivRem(s, 2147483562, out int s1);
             int s2 = q % 2147483398;
-            if (s2 < 0) s2 += 2147483398;
+            if (s2 < 0)
+                s2 += 2147483398;
 
             return new StdGen(s1 + 1, s2 + 1);
         }
@@ -154,14 +156,17 @@ namespace Oracle.Services
 
             int k = s1 / 53668;
             s1 = 40014 * (s1 - k * 53668) - k * 12211;
-            if (s1 < 0) s1 += 2147483563;
+            if (s1 < 0)
+                s1 += 2147483563;
 
             k = s2 / 52774;
             s2 = 40692 * (s2 - k * 52774) - k * 3791;
-            if (s2 < 0) s2 += 2147483399;
+            if (s2 < 0)
+                s2 += 2147483399;
 
             int z = s1 - s2;
-            if (z < 1) z += 2147483562;
+            if (z < 1)
+                z += 2147483562;
 
             return (z, new StdGen(s1, s2));
         }

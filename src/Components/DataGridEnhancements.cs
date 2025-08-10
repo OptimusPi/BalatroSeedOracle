@@ -7,7 +7,12 @@ namespace Oracle.Components
 {
     public class ScoreToColorConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is double score)
             {
@@ -20,7 +25,12 @@ namespace Oracle.Components
             return Brushes.Gray;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -28,7 +38,12 @@ namespace Oracle.Components
 
     public class ScoreToBackgroundConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is double score)
             {
@@ -45,7 +60,12 @@ namespace Oracle.Components
             return new SolidColorBrush(Colors.Transparent);
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -53,18 +73,30 @@ namespace Oracle.Components
 
     public class ScoreToIconConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is double score)
             {
-                if (score >= 100) return "⭐";
-                if (score >= 50) return "✨";
+                if (score >= 100)
+                    return "⭐";
+                if (score >= 50)
+                    return "✨";
                 return "·";
             }
             return "";
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -89,7 +121,7 @@ namespace Oracle.Components
                 6 => "#AF7AC5", // Purple
                 7 => "#5D6D7E", // Dark Gray
                 8 => "#FFFFFF", // White
-                _ => "#ABB2B9"  // Gray
+                _ => "#ABB2B9", // Gray
             };
         }
     }

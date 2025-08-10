@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Services;
-using Oracle.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Threading;
 
 namespace Oracle.Components
 {
-    public partial class ResponsiveCard : UserControl
+    public partial class ResponsiveCard : UserControl, IDisposable
     {
         private Border _cardBorder;
         private Image _cardImage;
@@ -23,7 +23,7 @@ namespace Oracle.Components
         private TextBlock _cardName;
         private Grid _imageContainer;
         private Border _legendaryBackground;
-        
+
         // Drag tracking
         private Point? _dragStartPoint;
         private bool _isDragging;
@@ -31,11 +31,15 @@ namespace Oracle.Components
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
 
-        public static readonly StyledProperty<string> ItemNameProperty =
-            AvaloniaProperty.Register<ResponsiveCard, string>(nameof(ItemName), "");
+        public static readonly StyledProperty<string> ItemNameProperty = AvaloniaProperty.Register<
+            ResponsiveCard,
+            string
+        >(nameof(ItemName), "");
 
-        public static readonly StyledProperty<string> CategoryProperty =
-            AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Category), "");
+        public static readonly StyledProperty<string> CategoryProperty = AvaloniaProperty.Register<
+            ResponsiveCard,
+            string
+        >(nameof(Category), "");
 
         public static readonly StyledProperty<IImage?> ImageSourceProperty =
             AvaloniaProperty.Register<ResponsiveCard, IImage?>(nameof(ImageSource));
@@ -49,8 +53,10 @@ namespace Oracle.Components
         public static readonly StyledProperty<bool> IsSelectedMustNotProperty =
             AvaloniaProperty.Register<ResponsiveCard, bool>(nameof(IsSelectedMustNot));
 
-        public static readonly StyledProperty<string> EditionProperty =
-            AvaloniaProperty.Register<ResponsiveCard, string>(nameof(Edition), "none");
+        public static readonly StyledProperty<string> EditionProperty = AvaloniaProperty.Register<
+            ResponsiveCard,
+            string
+        >(nameof(Edition), "none");
 
         public string ItemName
         {
@@ -154,7 +160,7 @@ namespace Oracle.Components
                 < 768 => "mobile",
                 < 1024 => "tablet",
                 < 1440 => "desktop",
-                _ => "large-desktop"
+                _ => "large-desktop",
             };
 
             if (newBreakpoint != _currentBreakpoint)
@@ -259,45 +265,55 @@ namespace Oracle.Components
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(this);
-            
+
             // Store the drag start point for left button
             if (pointer.Properties.IsLeftButtonPressed)
             {
                 _dragStartPoint = pointer.Position;
                 _isDragging = false;
             }
-            
+
             // Don't fire click event yet - wait to see if it's a drag
             // Right click should fire immediately though
             if (pointer.Properties.IsRightButtonPressed)
             {
-                CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, CardClickType.RightClick));
+                CardClicked?.Invoke(
+                    this,
+                    new CardClickEventArgs(ItemName, Category, CardClickType.RightClick)
+                );
             }
         }
 
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
         {
             var currentPoint = e.GetCurrentPoint(_cardBorder);
-            
-            if (currentPoint.Properties.IsLeftButtonPressed && _dragStartPoint.HasValue && !_isDragging)
+
+            if (
+                currentPoint.Properties.IsLeftButtonPressed
+                && _dragStartPoint.HasValue
+                && !_isDragging
+            )
             {
                 // Calculate distance moved
                 var distance = Math.Sqrt(
-                    Math.Pow(currentPoint.Position.X - _dragStartPoint.Value.X, 2) +
-                    Math.Pow(currentPoint.Position.Y - _dragStartPoint.Value.Y, 2)
+                    Math.Pow(currentPoint.Position.X - _dragStartPoint.Value.X, 2)
+                        + Math.Pow(currentPoint.Position.Y - _dragStartPoint.Value.Y, 2)
                 );
-                
+
                 // Only start drag if we've moved enough
                 if (distance >= MinimumDragDistance)
                 {
                     _isDragging = true;
-                    
+
                     var dragData = new DataObject();
                     dragData.Set("balatro-item", $"{Category}|{ItemName}");
 
-                    CardDragStarted?.Invoke(this, new CardDragEventArgs(ItemName, Category, dragData));
+                    CardDragStarted?.Invoke(
+                        this,
+                        new CardDragEventArgs(ItemName, Category, dragData)
+                    );
                     DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
-                    
+
                     try
                     {
                         await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
@@ -315,17 +331,24 @@ namespace Oracle.Components
                 }
             }
         }
-        
+
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(this);
-            
+
             // If we had a drag start point and didn't drag, it's a click
-            if (_dragStartPoint.HasValue && !_isDragging && pointer.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+            if (
+                _dragStartPoint.HasValue
+                && !_isDragging
+                && pointer.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased
+            )
             {
-                CardClicked?.Invoke(this, new CardClickEventArgs(ItemName, Category, CardClickType.LeftClick));
+                CardClicked?.Invoke(
+                    this,
+                    new CardClickEventArgs(ItemName, Category, CardClickType.LeftClick)
+                );
             }
-            
+
             // Clean up drag state
             _dragStartPoint = null;
             _isDragging = false;
@@ -333,43 +356,71 @@ namespace Oracle.Components
 
         private void CheckAndLoadLegendarySoul()
         {
-            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')");
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "CheckAndLoadLegendarySoul",
+                $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')"
+            );
 
             // Check if this is a legendary joker
             if (Category == "Jokers")
             {
-                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}");
-                Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 ItemName.ToLower(): '{ItemName.ToLower()}'");
+                Oracle.Helpers.DebugLogger.LogImportant(
+                    "CheckAndLoadLegendarySoul",
+                    $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}"
+                );
+                Oracle.Helpers.DebugLogger.LogImportant(
+                    "CheckAndLoadLegendarySoul",
+                    $"🎴 ItemName.ToLowerInvariant(): '{ItemName.ToLowerInvariant()}'"
+                );
 
-                if (BalatroData.LegendaryJokers.Contains(ItemName.ToLower()))
+                if (BalatroData.LegendaryJokers.Contains(ItemName.ToLowerInvariant()))
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' IS a legendary joker!");
+                    Oracle.Helpers.DebugLogger.LogImportant(
+                        "CheckAndLoadLegendarySoul",
+                        $"🎴 '{ItemName}' IS a legendary joker!"
+                    );
 
                     // Don't show gold background in item palette - it looks weird
                     _legendaryBackground.IsVisible = false;
 
                     // Check if this is one of the 5 with animated faces
-                    var animatedLegendaryJokers = new[] { "canio", "triboulet", "yorick", "chicot", "perkeo" };
-                    if (animatedLegendaryJokers.Contains(ItemName.ToLower()))
+                    var animatedLegendaryJokers = new[]
+                    {
+                        "canio",
+                        "triboulet",
+                        "yorick",
+                        "chicot",
+                        "perkeo",
+                    };
+                    if (animatedLegendaryJokers.Contains(ItemName.ToLowerInvariant()))
                     {
                         // Load the soul sprite (one row below in the sprite sheet)
                         var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
                         if (soulImage != null)
                         {
-                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Soul image loaded successfully for '{ItemName}'");
+                            Oracle.Helpers.DebugLogger.LogImportant(
+                                "CheckAndLoadLegendarySoul",
+                                $"🎴 Soul image loaded successfully for '{ItemName}'"
+                            );
                             _soulImage.Source = soulImage;
                             _soulImage.IsVisible = true;
                             StartSoulAnimation();
                         }
                         else
                         {
-                            Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 Failed to load soul image for '{ItemName}'");
+                            Oracle.Helpers.DebugLogger.LogImportant(
+                                "CheckAndLoadLegendarySoul",
+                                $"🎴 Failed to load soul image for '{ItemName}'"
+                            );
                         }
                     }
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant("CheckAndLoadLegendarySoul", $"🎴 '{ItemName}' is NOT a legendary joker");
+                    Oracle.Helpers.DebugLogger.LogImportant(
+                        "CheckAndLoadLegendarySoul",
+                        $"🎴 '{ItemName}' is NOT a legendary joker"
+                    );
                     _legendaryBackground.IsVisible = false;
                     _soulImage.IsVisible = false;
                     StopSoulAnimation();
@@ -388,35 +439,40 @@ namespace Oracle.Components
             StopSoulAnimation();
 
             var startTime = DateTime.Now;
-            _soulAnimationTimer = new System.Threading.Timer(_ =>
-            {
-                Dispatcher.UIThread.Post(() =>
+            _soulAnimationTimer = new System.Threading.Timer(
+                _ =>
                 {
-                    if (_soulImage.IsVisible)
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        var elapsed = (DateTime.Now - startTime).TotalSeconds;
-
-                        // Floating scale animation
-                        var scale = 1.0 + 0.07 + 0.02 * Math.Sin(1.8 * elapsed);
-
-                        // Floating rotation animation
-                        var rotation = 5 * Math.Sin(1.219 * elapsed);
-
-                        if (_soulImage.RenderTransform is TransformGroup group)
+                        if (_soulImage.IsVisible)
                         {
-                            if (group.Children[0] is ScaleTransform scaleTransform)
+                            var elapsed = (DateTime.Now - startTime).TotalSeconds;
+
+                            // Floating scale animation
+                            var scale = 1.0 + 0.07 + 0.02 * Math.Sin(1.8 * elapsed);
+
+                            // Floating rotation animation
+                            var rotation = 5 * Math.Sin(1.219 * elapsed);
+
+                            if (_soulImage.RenderTransform is TransformGroup group)
                             {
-                                scaleTransform.ScaleX = scale;
-                                scaleTransform.ScaleY = scale;
-                            }
-                            if (group.Children[1] is RotateTransform rotateTransform)
-                            {
-                                rotateTransform.Angle = rotation;
+                                if (group.Children[0] is ScaleTransform scaleTransform)
+                                {
+                                    scaleTransform.ScaleX = scale;
+                                    scaleTransform.ScaleY = scale;
+                                }
+                                if (group.Children[1] is RotateTransform rotateTransform)
+                                {
+                                    rotateTransform.Angle = rotation;
+                                }
                             }
                         }
-                    }
-                });
-            }, null, 0, 15);
+                    });
+                },
+                null,
+                0,
+                15
+            );
         }
 
         private void StopSoulAnimation()
@@ -440,17 +496,20 @@ namespace Oracle.Components
                     { "anycommon", "Any Common" },
                     { "anyuncommon", "Any Uncommon" },
                     { "anyrare", "Any Rare" },
-                    { "anylegendary", "Any Legendary" }
+                    { "anylegendary", "Any Legendary" },
                 };
-                
+
                 if (wildcardNames.TryGetValue(name, out var wildcardDisplay))
                 {
                     return wildcardDisplay;
                 }
-                
+
                 // Otherwise try to get display name from sprite mapping
                 var displayName = BalatroData.GetDisplayNameFromSprite(name);
-                Oracle.Helpers.DebugLogger.Log("ResponsiveCard", $"FormatItemName: name='{name}', displayName='{displayName}', Category='{Category}'");
+                Oracle.Helpers.DebugLogger.Log(
+                    "ResponsiveCard",
+                    $"FormatItemName: name='{name}', displayName='{displayName}', Category='{Category}'"
+                );
                 return displayName;
             }
 
@@ -467,7 +526,7 @@ namespace Oracle.Components
             }
 
             var spriteService = SpriteService.Instance;
-            var editionImage = spriteService.GetEditionImage(Edition.ToLower());
+            var editionImage = spriteService.GetEditionImage(Edition.ToLowerInvariant());
 
             if (editionImage != null)
             {
@@ -478,6 +537,13 @@ namespace Oracle.Components
             {
                 _editionOverlay.IsVisible = false;
             }
+        }
+
+        public void Dispose()
+        {
+            _soulAnimationTimer?.Dispose();
+            _soulAnimationTimer = null;
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -512,6 +578,6 @@ namespace Oracle.Components
     public enum CardClickType
     {
         LeftClick,
-        RightClick
+        RightClick,
     }
 }

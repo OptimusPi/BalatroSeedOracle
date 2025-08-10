@@ -4,13 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Motely;
+using Motely.Filters;
 using Oracle.Helpers;
 using Oracle.Models;
 using Oracle.Views.Modals;
-using Motely;
-using Motely.Filters;
-using OuijaConfig = Motely.Filters.OuijaConfig;
 using DebugLogger = Oracle.Helpers.DebugLogger;
+using OuijaConfig = Motely.Filters.OuijaConfig;
 using SearchResult = Oracle.Models.SearchResult;
 
 namespace Oracle.Services
@@ -32,7 +32,10 @@ namespace Oracle.Services
         private readonly ObservableCollection<Oracle.Models.SearchResult> _results;
 
         // Properties
-        public string SearchId { get => _searchId; }
+        public string SearchId
+        {
+            get => _searchId;
+        }
         public bool IsRunning => _isRunning;
         public bool IsPaused => _isPaused;
         public ObservableCollection<Oracle.Models.SearchResult> Results => _results;
@@ -46,7 +49,6 @@ namespace Oracle.Services
         public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
         public event EventHandler<SearchResultEventArgs>? ResultFound;
-        public event EventHandler<string>? ConsoleOutput;
 
         public SearchInstance(string searchId, SearchHistoryService historyService)
         {
@@ -58,8 +60,12 @@ namespace Oracle.Services
         /// <summary>
         /// Start searching with a direct config object
         /// </summary>
-        public async Task StartSearchWithConfigAsync(OuijaConfig ouijaConfig, SearchConfiguration config, 
-            IProgress<SearchProgress>? progress = null, CancellationToken cancellationToken = default)
+        public async Task StartSearchWithConfigAsync(
+            OuijaConfig ouijaConfig,
+            SearchConfiguration config,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
         {
             if (_isRunning)
             {
@@ -69,14 +75,19 @@ namespace Oracle.Services
 
             try
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "StartSearchWithConfigAsync called - NO TEMP FILES!");
-                
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "StartSearchWithConfigAsync called - NO TEMP FILES!"
+                );
+
                 _currentConfig = ouijaConfig;
                 ConfigPath = "Direct Config";
                 FilterName = $"Search {_searchId.Substring(0, 8)}";
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
-                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
 
                 // Clear previous results
                 _results.Clear();
@@ -98,41 +109,51 @@ namespace Oracle.Services
                     MinScore = config.MinScore,
                     BatchSize = config.BatchSize,
                     Deck = config.Deck ?? "Red",
-                    Stake = config.Stake ?? "White"
+                    Stake = config.Stake ?? "White",
                 };
 
                 // No need to start a search in database - just store results as they come
-                
+
                 // Set up result capture
                 _resultCapture = new MotelyResultCapture(_historyService);
                 _resultCapture.ResultCaptured += async (result) =>
                 {
                     _results.Add(result);
-                    
+
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
-                    
+
                     // Notify UI
-                    ResultFound?.Invoke(this, new SearchResultEventArgs 
-                    { 
-                        Result = new Oracle.Views.Modals.SearchResult 
-                        { 
-                            Seed = result.Seed, 
-                            Score = result.TotalScore, 
-                            Details = result.ScoreBreakdown 
-                        } 
-                    });
-                    
-                    ConsoleOutput?.Invoke(this, $"Found seed: {result.Seed} (Score: {result.TotalScore})");
+                    ResultFound?.Invoke(
+                        this,
+                        new SearchResultEventArgs
+                        {
+                            Result = new Oracle.Views.Modals.SearchResult
+                            {
+                                Seed = result.Seed,
+                                Score = result.TotalScore,
+                                Details = result.ScoreBreakdown,
+                            },
+                        }
+                    );
                 };
-                
+
                 // Start capturing
                 await _resultCapture.StartCaptureAsync();
 
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
-                
-                await Task.Run(() => RunSearchInProcess(ouijaConfig, searchCriteria, progressWrapper, _cancellationTokenSource.Token), _cancellationTokenSource.Token);
+
+                await Task.Run(
+                    () =>
+                        RunSearchInProcess(
+                            ouijaConfig,
+                            searchCriteria,
+                            progressWrapper,
+                            _cancellationTokenSource.Token
+                        ),
+                    _cancellationTokenSource.Token
+                );
 
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
             }
@@ -143,13 +164,18 @@ namespace Oracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Search failed: {ex.Message}");
-                progress?.Report(new SearchProgress
-                {
-                    Message = $"Search failed: {ex.Message}",
-                    HasError = true,
-                    IsComplete = true
-                });
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
             }
             finally
             {
@@ -161,8 +187,11 @@ namespace Oracle.Services
         /// <summary>
         /// Start searching with a config file path
         /// </summary>
-        public async Task StartSearchAsync(SearchCriteria criteria, IProgress<SearchProgress>? progress = null, 
-            CancellationToken cancellationToken = default)
+        public async Task StartSearchAsync(
+            SearchCriteria criteria,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
         {
             if (_isRunning)
             {
@@ -172,13 +201,20 @@ namespace Oracle.Services
 
             try
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", $"Starting search with config: {criteria.ConfigPath}");
-                
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    $"Starting search with config: {criteria.ConfigPath}"
+                );
+
                 ConfigPath = criteria.ConfigPath ?? string.Empty;
-                FilterName = System.IO.Path.GetFileNameWithoutExtension(criteria.ConfigPath ?? string.Empty);
+                FilterName = System.IO.Path.GetFileNameWithoutExtension(
+                    criteria.ConfigPath ?? string.Empty
+                );
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
-                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
 
                 // Clear previous results
                 _results.Clear();
@@ -188,11 +224,14 @@ namespace Oracle.Services
                 {
                     throw new ArgumentException("Config path is required");
                 }
-                _currentConfig = await Task.Run(() => OuijaConfig.LoadFromJson(criteria.ConfigPath));
+                _currentConfig = await Task.Run(() => OuijaConfig.LoadFromJson(criteria.ConfigPath)
+                );
 
                 if (_currentConfig == null)
                 {
-                    throw new InvalidOperationException($"Failed to load config from {criteria.ConfigPath}");
+                    throw new InvalidOperationException(
+                        $"Failed to load config from {criteria.ConfigPath}"
+                    );
                 }
 
                 // Notify UI that search started
@@ -206,39 +245,49 @@ namespace Oracle.Services
                 });
 
                 // No need to start a search in database - just store results as they come
-                
+
                 // Set up result capture
                 _resultCapture = new MotelyResultCapture(_historyService);
                 _resultCapture.ResultCaptured += async (result) =>
                 {
                     _results.Add(result);
-                    
+
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
-                    
+
                     // Notify UI
-                    ResultFound?.Invoke(this, new SearchResultEventArgs 
-                    { 
-                        Result = new Oracle.Views.Modals.SearchResult 
-                        { 
-                            Seed = result.Seed, 
-                            Score = result.TotalScore, 
-                            Details = result.ScoreBreakdown 
-                        } 
-                    });
-                    
-                    ConsoleOutput?.Invoke(this, $"Found seed: {result.Seed} (Score: {result.TotalScore})");
+                    ResultFound?.Invoke(
+                        this,
+                        new SearchResultEventArgs
+                        {
+                            Result = new Oracle.Views.Modals.SearchResult
+                            {
+                                Seed = result.Seed,
+                                Score = result.TotalScore,
+                                Details = result.ScoreBreakdown,
+                            },
+                        }
+                    );
                 };
-                
+
                 // Start capturing
                 await _resultCapture.StartCaptureAsync();
 
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
-                
+
                 if (_currentConfig != null)
                 {
-                    await Task.Run(() => RunSearchInProcess(_currentConfig, criteria, progressWrapper, _cancellationTokenSource.Token), _cancellationTokenSource.Token);
+                    await Task.Run(
+                        () =>
+                            RunSearchInProcess(
+                                _currentConfig,
+                                criteria,
+                                progressWrapper,
+                                _cancellationTokenSource.Token
+                            ),
+                        _cancellationTokenSource.Token
+                    );
                 }
 
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
@@ -251,13 +300,18 @@ namespace Oracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Search failed: {ex.Message}");
-                progress?.Report(new SearchProgress
-                {
-                    Message = $"Search failed: {ex.Message}",
-                    HasError = true,
-                    IsComplete = true
-                });
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
             }
             finally
             {
@@ -286,7 +340,10 @@ namespace Oracle.Services
                 _isPaused = false;
                 // Motely doesn't have a Resume method - search has to be restarted
                 // For now, just update the paused flag
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Resume not supported - search needs to be restarted");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "Resume not supported - search needs to be restarted"
+                );
             }
         }
 
@@ -295,27 +352,27 @@ namespace Oracle.Services
             if (_isRunning)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
-                
+
                 // Set the cancellation flag that Motely checks
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
-                
+
                 // Also cancel the token
                 _cancellationTokenSource?.Cancel();
-                
+
                 // Force _isRunning to false immediately
                 _isRunning = false;
-                
+
                 // IMPORTANT: Stop the actual search service!
                 if (_currentSearch != null)
                 {
                     DebugLogger.Log($"SearchInstance[{_searchId}]", "Pausing and disposing search");
-                    
+
                     // Pause first if it's running
                     if (_currentSearch.Status == MotelySearchStatus.Running)
                     {
                         _currentSearch.Pause();
                     }
-                    
+
                     // Then dispose
                     _currentSearch.Dispose();
                     _currentSearch = null;
@@ -333,7 +390,7 @@ namespace Oracle.Services
                 SeedsSearched = (int)progress.SeedsSearched,
                 ResultsFound = progress.ResultsFound,
                 IsComplete = progress.IsComplete,
-                HasError = progress.HasError
+                HasError = progress.HasError,
             };
 
             ProgressUpdated?.Invoke(this, eventArgs);
@@ -342,17 +399,29 @@ namespace Oracle.Services
             // This prevents duplicate messages in the console
         }
 
-
         private Task CompleteSearch(bool wasCancelled)
         {
             // No need to complete search in database
             return Task.CompletedTask;
         }
 
-        private async Task RunSearchInProcess(OuijaConfig config, SearchCriteria criteria, IProgress<SearchProgress>? progress, CancellationToken cancellationToken)
+        private async Task RunSearchInProcess(
+            OuijaConfig config,
+            SearchCriteria criteria,
+            IProgress<SearchProgress>? progress,
+            CancellationToken cancellationToken
+        )
         {
+            // Capture original console output
+            var originalOut = Console.Out;
+            FilteredConsoleWriter? filteredWriter = null;
+            
             try
             {
+                // Redirect console output to filter out duplicate seed reports
+                filteredWriter = new FilteredConsoleWriter(originalOut);
+                Console.SetOut(filteredWriter);
+                
                 // Reset cancellation flag
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
 
@@ -362,12 +431,14 @@ namespace Oracle.Services
 
                 // Create search settings - following Motely Program.cs pattern
                 var batchSize = criteria.BatchSize;
-                var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(filterDesc)
+                var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
+                    filterDesc
+                )
                     .WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
                     .WithStartBatchIndex(criteria.StartBatch)
                     .WithSequentialSearch();
-                
+
                 // Calculate total batches if end batch is specified
                 long? totalBatches = null;
                 if (criteria.EndBatch > 0)
@@ -375,20 +446,35 @@ namespace Oracle.Services
                     totalBatches = criteria.EndBatch - criteria.StartBatch;
                 }
 
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}"
+                );
 
                 // Start the search
                 _currentSearch = searchSettings.Start();
 
                 var startTime = DateTime.UtcNow;
                 int lastCompletedCount = 0;
+                var lastProgressTime = DateTime.UtcNow;
 
                 // Monitor the search
-                while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
+                while (
+                    _currentSearch.Status == MotelySearchStatus.Running
+                    && !cancellationToken.IsCancellationRequested
+                    && _isRunning
+                )
                 {
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
+                    if (
+                        !_isRunning
+                        || cancellationToken.IsCancellationRequested
+                        || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled
+                    )
                     {
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Breaking out of search loop - cancellation requested");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            "Breaking out of search loop - cancellation requested"
+                        );
                         break;
                     }
 
@@ -400,46 +486,64 @@ namespace Oracle.Services
                     long currentSeeds = (long)currentBatchCount * seedsPerBatch;
 
                     var elapsed = DateTime.UtcNow - startTime;
-                    var seedsPerSecond = elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
+                    var seedsPerSecond =
+                        elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
 
-                    // Report progress when batch count changes
-                    if (currentBatchCount > lastCompletedCount)
+                    // Report progress when batch count changes OR every second
+                    var shouldReportProgress =
+                        currentBatchCount > lastCompletedCount
+                        || (DateTime.UtcNow - lastProgressTime).TotalSeconds >= 1.0;
+
+                    if (shouldReportProgress)
                     {
                         lastCompletedCount = currentBatchCount;
-                        
+                        lastProgressTime = DateTime.UtcNow;
+
                         // Calculate percentage if we have total batches
                         double percentComplete = 0;
                         if (totalBatches.HasValue && totalBatches.Value > 0)
                         {
                             var batchesCompleted = currentBatchCount - criteria.StartBatch;
-                            percentComplete = Math.Min(100, (double)batchesCompleted / totalBatches.Value * 100);
+                            percentComplete = Math.Min(
+                                100,
+                                (double)batchesCompleted / totalBatches.Value * 100
+                            );
                         }
-                        
-                        progress?.Report(new SearchProgress
-                        {
-                            SeedsSearched = currentSeeds,
-                            SeedsPerSecond = seedsPerSecond,
-                            PercentComplete = percentComplete,
-                            Message = percentComplete > 0 ? 
-                                $"Searched ~{currentSeeds:N0} seeds ({percentComplete:F1}%) at {seedsPerSecond:F0}/s" :
-                                $"Searched ~{currentSeeds:N0} seeds at {seedsPerSecond:F0}/s",
-                            ResultsFound = Results.Count
-                        });
-                        
+
+                        progress?.Report(
+                            new SearchProgress
+                            {
+                                SeedsSearched = currentSeeds,
+                                SeedsPerSecond = seedsPerSecond,
+                                PercentComplete = percentComplete,
+                                Message =
+                                    percentComplete > 0
+                                        ? $"Searched ~{currentSeeds:N0} seeds ({percentComplete:F1}%) at {seedsPerSecond:F0}/s"
+                                        : $"Searched ~{currentSeeds:N0} seeds at {seedsPerSecond:F0}/s",
+                                ResultsFound = Results.Count,
+                            }
+                        );
+
                         // Raise progress updated event
-                        ProgressUpdated?.Invoke(this, new SearchProgressEventArgs
-                        {
-                            SeedsSearched = (int)currentSeeds,
-                            ResultsFound = Results.Count,
-                            SeedsPerSecond = seedsPerSecond,
-                            PercentComplete = (int)percentComplete
-                        });
+                        ProgressUpdated?.Invoke(
+                            this,
+                            new SearchProgressEventArgs
+                            {
+                                SeedsSearched = (int)currentSeeds,
+                                ResultsFound = Results.Count,
+                                SeedsPerSecond = seedsPerSecond,
+                                PercentComplete = (int)percentComplete,
+                            }
+                        );
                     }
 
-                    await Task.Delay(50, cancellationToken);
+                    await Task.Delay(1000, cancellationToken); // Update every second instead of 50ms
                 }
 
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Search loop ended. Status={_currentSearch.Status}");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search loop ended. Status={_currentSearch.Status}"
+                );
 
                 // Give capture service a moment to catch any final results
                 if (_resultCapture != null && !cancellationToken.IsCancellationRequested)
@@ -450,26 +554,44 @@ namespace Oracle.Services
                 // Report completion
                 var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0;
                 long finalSeeds = (long)finalBatchCount * (long)Math.Pow(35, batchSize);
-                
-                progress?.Report(new SearchProgress
-                {
-                    Message = cancellationToken.IsCancellationRequested || !_isRunning ? "Search cancelled" :
-                        $"Search complete. Found {Results.Count} seeds",
-                    IsComplete = true,
-                    SeedsSearched = finalSeeds,
-                    ResultsFound = Results.Count,
-                    PercentComplete = 100
-                });
+
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message =
+                            cancellationToken.IsCancellationRequested || !_isRunning
+                                ? "Search cancelled"
+                                : $"Search complete. Found {Results.Count} seeds",
+                        IsComplete = true,
+                        SeedsSearched = finalSeeds,
+                        ResultsFound = Results.Count,
+                        PercentComplete = 100,
+                    }
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"RunSearchInProcess exception: {ex.Message}");
-                progress?.Report(new SearchProgress
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"RunSearchInProcess exception: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search error: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                // Restore original console output
+                if (originalOut != null)
                 {
-                    Message = $"Search error: {ex.Message}",
-                    HasError = true,
-                    IsComplete = true
-                });
+                    Console.SetOut(originalOut);
+                }
+                filteredWriter?.Dispose();
             }
         }
 
@@ -480,10 +602,10 @@ namespace Oracle.Services
             {
                 StopSearch();
             }
-            
+
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
-            
+
             // Make sure to stop and dispose the search service
             if (_currentSearch != null)
             {
@@ -495,13 +617,15 @@ namespace Oracle.Services
                 _currentSearch.Dispose();
                 _currentSearch = null;
             }
-            
+
             if (_resultCapture != null)
             {
                 Task.Run(async () => await _resultCapture.StopCaptureAsync()).Wait(1000);
                 _resultCapture.Dispose();
             }
             _resultCapture = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

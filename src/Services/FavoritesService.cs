@@ -28,7 +28,6 @@ namespace Oracle.Services
             public string Description { get; set; } = "";
             public List<string> Items { get; set; } = new List<string>(); // Can be jokers, tarots, etc
             public List<string> Tags { get; set; } = new List<string>();
-
         }
 
         private FavoritesService()
@@ -77,71 +76,106 @@ namespace Oracle.Services
                         Name = "Photo Chad",
                         Description = "Picture perfect combo",
                         Items = new List<string> { "photograph", "hangingchad" },
-                        Tags = new List<string> { "#FaceCards", "#Mult", "#Synergy" }
+                        Tags = new List<string> { "#FaceCards", "#Mult", "#Synergy" },
                     },
                     new JokerSet
                     {
                         Name = "BaronMime",
                         Description = "Kings multiply and copy",
                         Items = new List<string> { "baron", "mime" },
-                        Tags = new List<string> { "#Kings", "#Copy", "#XMult" }
+                        Tags = new List<string> { "#Kings", "#Copy", "#XMult" },
                     },
                     new JokerSet
                     {
                         Name = "Double Vision",
                         Description = "Copy your best joker twice",
                         Items = new List<string> { "brainstorm", "blueprint" },
-                        Tags = new List<string> { "#Copy", "#Legendary", "#Synergy" }
+                        Tags = new List<string> { "#Copy", "#Legendary", "#Synergy" },
                     },
                     new JokerSet
                     {
                         Name = "Lucky",
                         Description = "Maximum luck manipulation",
                         Items = new List<string> { "oopsall6s", "luckycat", "themagician" },
-                        Tags = new List<string> { "#Luck", "#Cat", "#LuckyCat", "#Tarot" }
+                        Tags = new List<string> { "#Luck", "#Cat", "#LuckyCat", "#Tarot" },
                     },
                     new JokerSet
                     {
                         Name = "Legendary Lineup",
                         Description = "The legendary joker collection",
-                        Items = new List<string> { "chicot", "perkeo", "triboulet", "yorick", "canio" },
-                        Tags = new List<string> { "#Legendary", "#LateGame", "#XMult" }
+                        Items = new List<string>
+                        {
+                            "chicot",
+                            "perkeo",
+                            "triboulet",
+                            "yorick",
+                            "canio",
+                        },
+                        Tags = new List<string> { "#Legendary", "#LateGame", "#XMult" },
                     },
                     new JokerSet
                     {
                         Name = "ReTrigger",
                         Description = "Maximum retrigger synergy",
-                        Items = new List<string> { "sockandbuskin", "hangingchad", "dusk", "dejavu" },
-                        Tags = new List<string> { "#Retrigger", "#FaceCards", "#Spectral" }
+                        Items = new List<string>
+                        {
+                            "sockandbuskin",
+                            "hangingchad",
+                            "dusk",
+                            "dejavu",
+                        },
+                        Tags = new List<string> { "#Retrigger", "#FaceCards", "#Spectral" },
                     },
                     new JokerSet
                     {
                         Name = "Money Makers",
                         Description = "Economic powerhouse combo",
-                        Items = new List<string> { "businesscard", "bull", "tothemoon", "bootstraps", "egg" },
-                        Tags = new List<string> { "#Money", "#Gold", "#Economy" }
+                        Items = new List<string>
+                        {
+                            "businesscard",
+                            "bull",
+                            "tothemoon",
+                            "bootstraps",
+                            "egg",
+                        },
+                        Tags = new List<string> { "#Money", "#Gold", "#Economy" },
                     },
                     new JokerSet
                     {
                         Name = "HandSize",
                         Description = "Maximum hand size expansion",
-                        Items = new List<string> { "turtlebean", "juggler", "giftcard", "palette", "troubadour" },
-                        Tags = new List<string> { "#HandSize", "#Voucher", "#Utility" }
+                        Items = new List<string>
+                        {
+                            "turtlebean",
+                            "juggler",
+                            "giftcard",
+                            "palette",
+                            "troubadour",
+                        },
+                        Tags = new List<string> { "#HandSize", "#Voucher", "#Utility" },
                     },
                     new JokerSet
                     {
                         Name = "Blueprint Bros",
                         Description = "Copy and enhance strategy",
                         Items = new List<string> { "blueprint", "brainstorm", "showman", "dna" },
-                        Tags = new List<string> { "#Copy", "#Synergy", "#LateGame" }
+                        Tags = new List<string> { "#Copy", "#Synergy", "#LateGame" },
                     },
                     new JokerSet
                     {
                         Name = "Economy",
                         Description = "Build your gold empire",
-                        Items = new List<string> { "goldenticket", "thedevil", "businesscard", "tradingcard", "reservedparking", "facelessjoker" },
-                        Tags = new List<string> { "#Gold", "#Economy", "#Scaling", "#Tarot" }
-                    }
+                        Items = new List<string>
+                        {
+                            "goldenticket",
+                            "thedevil",
+                            "businesscard",
+                            "tradingcard",
+                            "reservedparking",
+                            "facelessjoker",
+                        },
+                        Tags = new List<string> { "#Gold", "#Economy", "#Scaling", "#Tarot" },
+                    },
                 };
                 _ = SaveFavorites();
             }
@@ -151,10 +185,10 @@ namespace Oracle.Services
         {
             try
             {
-                var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                var json = JsonSerializer.Serialize(
+                    _data,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 await File.WriteAllTextAsync(_favoritesPath, json);
                 DebugLogger.Log("FavoritesService", "Favorites saved successfully");
             }

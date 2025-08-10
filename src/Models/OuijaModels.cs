@@ -10,6 +10,12 @@ namespace Oracle.Models;
 /// </summary>
 public class OuijaConfig
 {
+    private static readonly JsonSerializerOptions s_jsonOptionsIndented = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
     [JsonPropertyName("name")]
     public string name { get; set; } = "My Filter Config";
 
@@ -21,18 +27,13 @@ public class OuijaConfig
 
     [JsonPropertyName("filter_config")]
     public FilterConfig filter_config { get; set; } = new();
-    
+
     [JsonPropertyName("labels")]
     public List<string>? labels { get; set; }
 
     public string ToJson()
     {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        return JsonSerializer.Serialize(this, options);
+        return JsonSerializer.Serialize(this, s_jsonOptionsIndented);
     }
 }
 
@@ -93,7 +94,7 @@ public class FilterItem
 
     [JsonPropertyName("IncludeSkipTags")]
     public bool? IncludeSkipTags { get; set; }
-    
+
     // Label for display in results table headers
     [JsonPropertyName("Label")]
     public string? Label { get; set; }

@@ -28,13 +28,25 @@ namespace Oracle.Services
             var possiblePaths = new[]
             {
                 Path.Combine(currentDir, PROFILE_FILENAME),
-                Path.Combine(Directory.GetParent(currentDir)?.FullName ?? currentDir, PROFILE_FILENAME),
+                Path.Combine(
+                    Directory.GetParent(currentDir)?.FullName ?? currentDir,
+                    PROFILE_FILENAME
+                ),
                 Path.Combine(baseDir, PROFILE_FILENAME),
                 Path.Combine(Directory.GetParent(baseDir)?.FullName ?? baseDir, PROFILE_FILENAME),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", PROFILE_FILENAME)
+                Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "..",
+                    "..",
+                    "..",
+                    PROFILE_FILENAME
+                ),
             };
 
-            DebugLogger.Log("UserProfileService", $"Checking {possiblePaths.Length} possible paths for profile:");
+            DebugLogger.Log(
+                "UserProfileService",
+                $"Checking {possiblePaths.Length} possible paths for profile:"
+            );
             foreach (var path in possiblePaths)
             {
                 DebugLogger.Log("UserProfileService", $"  {path} - Exists: {File.Exists(path)}");
@@ -55,7 +67,10 @@ namespace Oracle.Services
             if (string.IsNullOrEmpty(_profilePath))
             {
                 _profilePath = Path.Combine(currentDir, PROFILE_FILENAME);
-                DebugLogger.Log("UserProfileService", $"No existing profile found, will create at: {_profilePath}");
+                DebugLogger.Log(
+                    "UserProfileService",
+                    $"No existing profile found, will create at: {_profilePath}"
+                );
             }
 
             _currentProfile = LoadProfile();
@@ -71,7 +86,10 @@ namespace Oracle.Services
         /// </summary>
         public string GetAuthorName()
         {
-            DebugLogger.Log("UserProfileService", $"GetAuthorName() returning: '{_currentProfile.AuthorName}'");
+            DebugLogger.Log(
+                "UserProfileService",
+                $"GetAuthorName() returning: '{_currentProfile.AuthorName}'"
+            );
             return _currentProfile.AuthorName;
         }
 
@@ -117,7 +135,10 @@ namespace Oracle.Services
                     var profile = JsonSerializer.Deserialize<UserProfile>(json);
                     if (profile != null)
                     {
-                        DebugLogger.Log("UserProfileService", $"Loaded profile for author: {profile.AuthorName}");
+                        DebugLogger.Log(
+                            "UserProfileService",
+                            $"Loaded profile for author: {profile.AuthorName}"
+                        );
                         return profile;
                     }
                 }
@@ -128,7 +149,10 @@ namespace Oracle.Services
             }
 
             // Return default profile with "pifreak" as the author
-            DebugLogger.Log("UserProfileService", "Creating new profile with default author: pifreak");
+            DebugLogger.Log(
+                "UserProfileService",
+                "Creating new profile with default author: pifreak"
+            );
             return new UserProfile();
         }
 
@@ -146,16 +170,22 @@ namespace Oracle.Services
                     Directory.CreateDirectory(directory);
                 }
 
-                var json = JsonSerializer.Serialize(_currentProfile, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                var json = JsonSerializer.Serialize(
+                    _currentProfile,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 File.WriteAllText(_profilePath, json);
-                DebugLogger.Log("UserProfileService", $"Profile saved successfully to: {_profilePath}");
+                DebugLogger.Log(
+                    "UserProfileService",
+                    $"Profile saved successfully to: {_profilePath}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("UserProfileService", $"Error saving profile to {_profilePath}: {ex.Message}");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    $"Error saving profile to {_profilePath}: {ex.Message}"
+                );
             }
         }
     }

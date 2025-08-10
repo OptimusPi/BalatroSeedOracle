@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Oracle.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Oracle.Components
 {
@@ -83,7 +83,7 @@ namespace Oracle.Components
                 < LargeBreakpoint => LargeBreakpointClass,
                 < XtraLargeBreakpoint => XtraLargeBreakpointClass,
                 < XtraXtraLargeBreakpoint => XtraXtraLargeBreakpointClass,
-                _ => XtraLargeBreakpointClass
+                _ => XtraLargeBreakpointClass,
             };
 
             if (newBreakpoint != _currentBreakpoint)
@@ -105,7 +105,8 @@ namespace Oracle.Components
             _mainGrid.Children.Clear();
             _mainGrid.RowDefinitions.Clear();
 
-            if (!_children.Any()) return;
+            if (_children.Count == 0)
+                return;
 
             int columnsPerRow = GetColumnsPerRow();
             int totalRows = (int)Math.Ceiling((double)_children.Count / columnsPerRow);
@@ -144,7 +145,7 @@ namespace Oracle.Components
                 LargeBreakpointClass => 8,
                 XtraLargeBreakpointClass => 9,
                 XtraXtraLargeBreakpointClass => 8,
-                _ => 6
+                _ => 6,
             };
         }
 

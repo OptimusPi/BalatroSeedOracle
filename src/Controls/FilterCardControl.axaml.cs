@@ -4,8 +4,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Oracle.Services;
 using Oracle.Helpers;
+using Oracle.Services;
 
 namespace Oracle.Controls
 {
@@ -15,13 +15,22 @@ namespace Oracle.Controls
         private IImage? _debuffedOverlay;
 
         public static readonly StyledProperty<List<string>> NeedsProperty =
-            AvaloniaProperty.Register<FilterCardControl, List<string>>(nameof(Needs), new List<string>());
+            AvaloniaProperty.Register<FilterCardControl, List<string>>(
+                nameof(Needs),
+                new List<string>()
+            );
 
         public static readonly StyledProperty<List<string>> WantsProperty =
-            AvaloniaProperty.Register<FilterCardControl, List<string>>(nameof(Wants), new List<string>());
+            AvaloniaProperty.Register<FilterCardControl, List<string>>(
+                nameof(Wants),
+                new List<string>()
+            );
 
         public static readonly StyledProperty<List<string>> MustNotsProperty =
-            AvaloniaProperty.Register<FilterCardControl, List<string>>(nameof(MustNots), new List<string>());
+            AvaloniaProperty.Register<FilterCardControl, List<string>>(
+                nameof(MustNots),
+                new List<string>()
+            );
 
         public List<string> Needs
         {
@@ -59,9 +68,11 @@ namespace Oracle.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == NeedsProperty ||
-                change.Property == WantsProperty ||
-                change.Property == MustNotsProperty)
+            if (
+                change.Property == NeedsProperty
+                || change.Property == WantsProperty
+                || change.Property == MustNotsProperty
+            )
             {
                 UpdatePreview();
             }
@@ -150,7 +161,8 @@ namespace Oracle.Controls
 
         private Image? CreateItemImage(string itemName)
         {
-            if (_spriteService == null) return null;
+            if (_spriteService == null)
+                return null;
 
             // Try to get sprite - check jokers first, then other types
             IImage? sprite = null;
@@ -183,11 +195,7 @@ namespace Oracle.Controls
 
             if (sprite != null)
             {
-                return new Image
-                {
-                    Source = sprite,
-                    Classes = { "mini-item" }
-                };
+                return new Image { Source = sprite, Classes = { "mini-item" } };
             }
 
             return null;
@@ -196,12 +204,10 @@ namespace Oracle.Controls
         private Panel? CreateDebuffedItem(string itemName)
         {
             var baseImage = CreateItemImage(itemName);
-            if (baseImage == null) return null;
+            if (baseImage == null)
+                return null;
 
-            var panel = new Panel
-            {
-                Classes = { "debuffed-item" }
-            };
+            var panel = new Panel { Classes = { "debuffed-item" } };
 
             // Add base image
             panel.Children.Add(baseImage);
@@ -214,7 +220,7 @@ namespace Oracle.Controls
                     Source = _debuffedOverlay,
                     Width = 24,
                     Height = 24,
-                    Opacity = 0.8
+                    Opacity = 0.8,
                 };
                 panel.Children.Add(overlay);
             }

@@ -9,26 +9,39 @@ namespace Oracle.Controls
 {
     public partial class SpinnerControl : UserControl
     {
-        public static readonly StyledProperty<string> LabelProperty =
-            AvaloniaProperty.Register<SpinnerControl, string>(nameof(Label), "");
+        public static readonly StyledProperty<string> LabelProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            string
+        >(nameof(Label), "");
 
-        public static readonly StyledProperty<int> ValueProperty =
-            AvaloniaProperty.Register<SpinnerControl, int>(nameof(Value), 1);
+        public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            int
+        >(nameof(Value), 1);
 
-        public static readonly StyledProperty<int> MinimumProperty =
-            AvaloniaProperty.Register<SpinnerControl, int>(nameof(Minimum), 1);
+        public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            int
+        >(nameof(Minimum), 1);
 
-        public static readonly StyledProperty<int> MaximumProperty =
-            AvaloniaProperty.Register<SpinnerControl, int>(nameof(Maximum), 100);
+        public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            int
+        >(nameof(Maximum), 100);
 
-        public static readonly StyledProperty<int> IncrementProperty =
-            AvaloniaProperty.Register<SpinnerControl, int>(nameof(Increment), 1);
-            
+        public static readonly StyledProperty<int> IncrementProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            int
+        >(nameof(Increment), 1);
+
         public static readonly StyledProperty<string> SpinnerTypeProperty =
             AvaloniaProperty.Register<SpinnerControl, string>(nameof(SpinnerType), "default");
 
         public static readonly StyledProperty<string> ShadowDirectionProperty =
-            AvaloniaProperty.Register<SpinnerControl, string>(nameof(ShadowDirection), "south-west");
+            AvaloniaProperty.Register<SpinnerControl, string>(
+                nameof(ShadowDirection),
+                "south-west"
+            );
 
         public string Label
         {
@@ -59,13 +72,13 @@ namespace Oracle.Controls
             get => GetValue(IncrementProperty);
             set => SetValue(IncrementProperty, value);
         }
-        
+
         public string SpinnerType
         {
             get => GetValue(SpinnerTypeProperty);
             set => SetValue(SpinnerTypeProperty, value);
         }
-        
+
         public string ShadowDirection
         {
             get => GetValue(ShadowDirectionProperty);
@@ -73,51 +86,61 @@ namespace Oracle.Controls
         }
 
         public event EventHandler<int>? ValueChanged;
-        
+
         private readonly Dictionary<string, string[]> _displayValues = new()
         {
             ["batch-size"] = new[] { "minimal", "low", "default", "high" },
             ["min-score"] = new[] { "Auto", "1", "2", "3", "4", "5" },
-            ["stake"] = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" }
+            ["stake"] = new[]
+            {
+                "White",
+                "Red",
+                "Green",
+                "Black",
+                "Blue",
+                "Purple",
+                "Orange",
+                "Gold",
+            },
         };
 
         public SpinnerControl()
         {
             InitializeComponent();
             DataContext = this;
-            
+
             // Set up threads maximum based on processor count
             if (Label == "THREADS")
             {
                 Maximum = Environment.ProcessorCount;
             }
         }
-        
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            
+
             // Update the initial display value
             var valueText = this.FindControl<TextBlock>("ValueText");
             if (valueText != null)
             {
                 valueText.Text = GetDisplayValue();
             }
-            
+
             // Hide label if empty
             var labelText = this.FindControl<TextBlock>("LabelText");
             if (labelText != null)
             {
                 labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
             }
-            
+
             // Update button states
             var decrementButton = this.FindControl<Button>("DecrementButton");
             var incrementButton = this.FindControl<Button>("IncrementButton");
-            
+
             if (decrementButton != null)
                 decrementButton.IsEnabled = Value > Minimum;
-                
+
             if (incrementButton != null)
                 incrementButton.IsEnabled = Value < Maximum;
         }
@@ -126,51 +149,60 @@ namespace Oracle.Controls
         {
             Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
         }
-        
+
         private string GetDisplayValue()
         {
             var lowerLabel = Label.ToLowerInvariant();
             var spinnerType = SpinnerType.ToLowerInvariant();
-            
+
             // Check SpinnerType first
-            if (spinnerType == "stake" && _displayValues.ContainsKey("stake"))
+            if (spinnerType == "stake" && _displayValues.TryGetValue("stake", out var stakeValues))
             {
-                var values = _displayValues["stake"];
-                var index = Math.Max(0, Math.Min(Value, values.Length - 1));
-                return values[index] + " Stake";
+                var index = Math.Max(0, Math.Min(Value, stakeValues.Length - 1));
+                return stakeValues[index] + " Stake";
             }
-            
+
             // Handle special display values based on label
-            if (lowerLabel.Contains("batch") && _displayValues.ContainsKey("batch-size"))
+            if (
+                lowerLabel.Contains("batch")
+                && _displayValues.TryGetValue("batch-size", out var batchValues)
+            )
             {
-                var values = _displayValues["batch-size"];
-                var index = Math.Max(0, Math.Min(Value - 1, values.Length - 1));
-                return values[index];
+                var index = Math.Max(0, Math.Min(Value - 1, batchValues.Length - 1));
+                return batchValues[index];
             }
-            
-            if (lowerLabel.Contains("score") && _displayValues.ContainsKey("min-score"))
+
+            if (
+                lowerLabel.Contains("score")
+                && _displayValues.TryGetValue("min-score", out var scoreValues)
+            )
             {
-                var values = _displayValues["min-score"];
-                var index = Math.Max(0, Math.Min(Value, values.Length - 1));
-                return values[index];
+                var index = Math.Max(0, Math.Min(Value, scoreValues.Length - 1));
+                return scoreValues[index];
             }
-            
-            if (lowerLabel.Contains("stake") && _displayValues.ContainsKey("stake"))
+
+            if (
+                lowerLabel.Contains("stake")
+                && _displayValues.TryGetValue("stake", out var labelStakeValues)
+            )
             {
-                var values = _displayValues["stake"];
-                var index = Math.Max(0, Math.Min(Value, values.Length - 1));
-                return values[index];
+                var index = Math.Max(0, Math.Min(Value, labelStakeValues.Length - 1));
+                return labelStakeValues[index];
             }
-            
+
             // Default to showing the numeric value
-            return Value.ToString();
+            return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ValueProperty || change.Property == LabelProperty || change.Property == SpinnerTypeProperty)
+            if (
+                change.Property == ValueProperty
+                || change.Property == LabelProperty
+                || change.Property == SpinnerTypeProperty
+            )
             {
                 // Update display text
                 var valueText = this.FindControl<TextBlock>("ValueText");
@@ -178,7 +210,7 @@ namespace Oracle.Controls
                 {
                     valueText.Text = GetDisplayValue();
                 }
-                
+
                 // Update label visibility if label changed
                 if (change.Property == LabelProperty)
                 {
@@ -188,7 +220,7 @@ namespace Oracle.Controls
                         labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
                     }
                 }
-                
+
                 if (change.Property == ValueProperty)
                 {
                     var newValue = (int)change.NewValue!;
@@ -221,7 +253,7 @@ namespace Oracle.Controls
         {
             Value = Math.Min(Maximum, Value + Increment);
         }
-        
+
         /// <summary>
         /// Sets a custom display text for the current value
         /// </summary>

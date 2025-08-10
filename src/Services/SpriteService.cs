@@ -1,879 +1,1203 @@
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia;
-using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Oracle.Constants;
 using Oracle.Helpers;
 
-namespace Oracle.Services;
-
-public class SpriteService
+namespace Oracle.Services
 {
-    private static SpriteService _instance = null!;
-    public static SpriteService Instance => _instance ??= new SpriteService();
-
-    private Dictionary<string, SpritePosition> jokerPositions = null!;
-    private Dictionary<string, SpritePosition> tagPositions = null!;
-    private Dictionary<string, SpritePosition> tarotPositions = null!;
-    private Dictionary<string, SpritePosition> spectralPositions = null!;
-    private Dictionary<string, SpritePosition> voucherPositions = null!;
-    private Dictionary<string, SpritePosition> uiAssetPositions = null!;
-    private Dictionary<string, SpritePosition> deckPositions = null!;
-    private Dictionary<string, SpritePosition> enhancementPositions = null!;
-    private Dictionary<string, SpritePosition> sealPositions = null!;
-    private Dictionary<string, SpritePosition> specialPositions = null!;
-    private Dictionary<string, Dictionary<string, SpritePosition>> playingCardPositions = null!;
-    private Dictionary<string, SpritePosition> bossPositions = null!;
-    private Dictionary<string, SpritePosition> blindPositions = null!;
-    private Dictionary<string, SpritePosition> stickerPositions = null!;
-    private Dictionary<string, SpritePosition> boosterPositions = null!;
-    private Bitmap? jokerSheet;
-    private Bitmap? tagSheet;
-    private Bitmap? tarotSheet;
-    private Bitmap? spectralSheet;
-    private Bitmap? voucherSheet;
-    private Bitmap? uiAssetsSheet;
-    private Bitmap? enhancersSheet;
-    private Bitmap? playingCardsSheet;
-    private Bitmap? bossSheet;
-    private Bitmap? stickersSheet;
-    private Bitmap? boosterSheet;
-    private Bitmap? stakeChipsSheet;
-
-    private SpriteService()
+    public class SpriteService
     {
-        LoadAssets();
-    }
+        private static SpriteService _instance = null!;
+        public static SpriteService Instance => _instance ??= new SpriteService();
 
-    private void LoadAssets()
-    {
-        try
+        private Dictionary<string, SpritePosition> jokerPositions = null!;
+        private Dictionary<string, SpritePosition> tagPositions = null!;
+        private Dictionary<string, SpritePosition> tarotPositions = null!;
+        private Dictionary<string, SpritePosition> spectralPositions = null!;
+        private Dictionary<string, SpritePosition> voucherPositions = null!;
+        private Dictionary<string, SpritePosition> uiAssetPositions = null!;
+        private Dictionary<string, SpritePosition> deckPositions = null!;
+        private Dictionary<string, SpritePosition> enhancementPositions = null!;
+        private Dictionary<string, SpritePosition> sealPositions = null!;
+        private Dictionary<string, SpritePosition> specialPositions = null!;
+        private Dictionary<string, Dictionary<string, SpritePosition>> playingCardPositions = null!;
+        private Dictionary<string, SpritePosition> bossPositions = null!;
+        private Dictionary<string, SpritePosition> blindPositions = null!;
+        private Dictionary<string, SpritePosition> stickerPositions = null!;
+        private Dictionary<string, SpritePosition> boosterPositions = null!;
+        private Bitmap? jokerSheet;
+        private Bitmap? tagSheet;
+        private Bitmap? tarotSheet;
+        private Bitmap? spectralSheet;
+        private Bitmap? voucherSheet;
+        private Bitmap? uiAssetsSheet;
+        private Bitmap? enhancersSheet;
+        private Bitmap? playingCardsSheet;
+        private Bitmap? bossSheet;
+        private Bitmap? stickersSheet;
+        private Bitmap? boosterSheet;
+        private Bitmap? stakeChipsSheet;
+
+        private SpriteService()
         {
-            // Load joker positions from json
-            jokerPositions = LoadSpritePositions("avares://Oracle/Assets/Jokers/jokers.json");
+            LoadAssets();
+        }
 
-            // Load tag positions from json
-            tagPositions = LoadSpritePositions("avares://Oracle/Assets/Tags/tags.json");
-
-            // Load tarot positions from json
-            tarotPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/tarots.json");
-
-            // Load spectral positions from json
-            // Load spectral positions from json (they're in the tarots sprite sheet)
-            spectralPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/spectrals.json");
-
-            // Load voucher positions from json
-            voucherPositions = LoadSpritePositions("avares://Oracle/Assets/Vouchers/vouchers.json");
-
-            // Load UI asset positions from json
-            uiAssetPositions = LoadSpritePositions("avares://Oracle/Assets/Other/ui_assets.json");
-
-            // Load booster pack positions from json
-            boosterPositions = LoadSpritePositions("avares://Oracle/Assets/Other/Boosters.json");
-
-            // Load deck, enhancement, and seal positions from enhancers metadata
-            var enhancersMetadata = LoadEnhancersMetadata("avares://Oracle/Assets/Decks/enhancers_metadata.json");
-            if (enhancersMetadata != null)
+        private void LoadAssets()
+        {
+            try
             {
-                deckPositions = enhancersMetadata.decks;
-                enhancementPositions = enhancersMetadata.enhancements;
-                sealPositions = enhancersMetadata.seals;
-                specialPositions = enhancersMetadata.special;
-            }
+                // Load joker positions from json
+                jokerPositions = LoadSpritePositions("avares://Oracle/Assets/Jokers/jokers.json");
 
-            // Load playing card positions
-            playingCardPositions = LoadPlayingCardMetadata("avares://Oracle/Assets/Decks/playing_cards_metadata.json");
+                // Load tag positions from json
+                tagPositions = LoadSpritePositions("avares://Oracle/Assets/Tags/tags.json");
 
-            // Load boss blind positions
-            var bossMetadata = LoadBossMetadata("avares://Oracle/Assets/Bosses/blinds_metadata.json");
-            if (bossMetadata != null)
-            {
-                blindPositions = bossMetadata.blinds;
-                bossPositions = new Dictionary<string, SpritePosition>();
-                // Merge all boss types into one dictionary
-                foreach (var kvp in bossMetadata.bosses)
-                    bossPositions[kvp.Key.ToLower()] = kvp.Value;
-                foreach (var kvp in bossMetadata.finisherBosses)
-                    bossPositions[kvp.Key.ToLower()] = kvp.Value;
-                foreach (var kvp in bossMetadata.special)
-                    bossPositions[kvp.Key.ToLower()] = kvp.Value;
-            }
+                // Load tarot positions from json
+                tarotPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/tarots.json");
 
-            // Load sticker positions
-            var stickerMetadata = LoadStickersMetadata("avares://Oracle/Assets/Jokers/stickers_metadata.json");
-            if (stickerMetadata != null)
-            {
-                stickerPositions = new Dictionary<string, SpritePosition>();
-                // Merge all sticker types into one dictionary
-                foreach (var kvp in stickerMetadata.jokerStickers)
-                    stickerPositions[kvp.Key.ToLower()] = kvp.Value;
-                foreach (var kvp in stickerMetadata.stakeStickers)
+                // Load spectral positions from json
+                // Load spectral positions from json (they're in the tarots sprite sheet)
+                spectralPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/spectrals.json");
+
+                // Load voucher positions from json
+                voucherPositions = LoadSpritePositions("avares://Oracle/Assets/Vouchers/vouchers.json");
+
+                // Load UI asset positions from json
+                uiAssetPositions = LoadSpritePositions("avares://Oracle/Assets/Other/ui_assets.json");
+
+                // Load booster pack positions from json
+                boosterPositions = LoadSpritePositions("avares://Oracle/Assets/Other/Boosters.json");
+
+                // Load deck, enhancement, and seal positions from enhancers metadata
+                var enhancersMetadata = LoadEnhancersMetadata(
+                    "avares://Oracle/Assets/Decks/enhancers_metadata.json"
+                );
+                if (enhancersMetadata != null)
                 {
-                    // Store stake stickers with lowercase keys
-                    stickerPositions[kvp.Key.ToLower()] = kvp.Value;
-                    DebugLogger.Log("SpriteService", $"Added stake sticker: {kvp.Key} -> {kvp.Key.ToLower()}");
+                    deckPositions = enhancersMetadata.Decks;
+                    enhancementPositions = enhancersMetadata.Enhancements;
+                    sealPositions = enhancersMetadata.Seals;
+                    specialPositions = enhancersMetadata.Special;
                 }
-            }
 
-            // Load spritesheets
-            jokerSheet = LoadBitmap("avares://Oracle/Assets/Jokers/Jokers.png");
-            tagSheet = LoadBitmap("avares://Oracle/Assets/Tags/tags.png");
-            tarotSheet = LoadBitmap("avares://Oracle/Assets/Tarots/Tarots.png");
-            voucherSheet = LoadBitmap("avares://Oracle/Assets/Vouchers/Vouchers.png");
-            spectralSheet = tarotSheet;
-            uiAssetsSheet = LoadBitmap("avares://Oracle/Assets/Other/ui_assets.png");
-            enhancersSheet = LoadBitmap("avares://Oracle/Assets/Decks/Enhancers.png");
-            playingCardsSheet = LoadBitmap("avares://Oracle/Assets/Decks/8BitDeck.png");
-            bossSheet = LoadBitmap("avares://Oracle/Assets/Bosses/BlindChips.png");
-            stickersSheet = LoadBitmap("avares://Oracle/Assets/Jokers/stickers.png");
-            boosterSheet = LoadBitmap("avares://Oracle/Assets/Other/boosters.png");
-            stakeChipsSheet = LoadBitmap("avares://Oracle/Assets/Decks/balatro-stake-chips.png");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error loading sprite assets: {ex.Message}");
-            // Initialize empty dictionaries to prevent null reference errors
-            jokerPositions ??= new Dictionary<string, SpritePosition>();
-            tagPositions ??= new Dictionary<string, SpritePosition>();
-            tarotPositions ??= new Dictionary<string, SpritePosition>();
-            spectralPositions ??= new Dictionary<string, SpritePosition>();
-            voucherPositions ??= new Dictionary<string, SpritePosition>();
-            uiAssetPositions ??= new Dictionary<string, SpritePosition>();
-            deckPositions ??= new Dictionary<string, SpritePosition>();
-            enhancementPositions ??= new Dictionary<string, SpritePosition>();
-            sealPositions ??= new Dictionary<string, SpritePosition>();
-            specialPositions ??= new Dictionary<string, SpritePosition>();
-            playingCardPositions ??= new Dictionary<string, Dictionary<string, SpritePosition>>();
-            bossPositions ??= new Dictionary<string, SpritePosition>();
-            blindPositions ??= new Dictionary<string, SpritePosition>();
-            stickerPositions ??= new Dictionary<string, SpritePosition>();
-            boosterPositions ??= new Dictionary<string, SpritePosition>();
+                // Load playing card positions
+                playingCardPositions = LoadPlayingCardMetadata(
+                    "avares://Oracle/Assets/Decks/playing_cards_metadata.json"
+                );
 
-            // Bitmaps will remain null if loading failed
-        }
-    }
-
-    private Dictionary<string, SpritePosition> LoadSpritePositions(string jsonUri)
-    {
-        try
-        {
-            var uri = new Uri(jsonUri);
-            using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
-
-            var positionsList = JsonSerializer.Deserialize<List<SpritePosition>>(json);
-            var positions = new Dictionary<string, SpritePosition>();
-
-            foreach (var pos in positionsList ?? new List<SpritePosition>())
-            {
-                if (pos?.Name != null)
+                // Load boss blind positions
+                var bossMetadata = LoadBossMetadata(
+                    "avares://Oracle/Assets/Bosses/blinds_metadata.json"
+                );
+                if (bossMetadata != null)
                 {
-                    positions[pos.Name.ToLower()] = pos;
+                    blindPositions = bossMetadata.Blinds;
+                    bossPositions = new Dictionary<string, SpritePosition>();
+                    // Merge all boss types into one dictionary
+                    foreach (var kvp in bossMetadata.Bosses)
+                    {
+                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                    }
+
+                    foreach (var kvp in bossMetadata.FinisherBosses)
+                    {
+                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                    }
+
+                    foreach (var kvp in bossMetadata.Special)
+                    {
+                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                    }
                 }
-            }
 
-            return positions;
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error loading sprite positions from {jsonUri}: {ex.Message}");
-            return new Dictionary<string, SpritePosition>();
-        }
-    }
-
-    private Bitmap? LoadBitmap(string bitmapUri)
-    {
-        try
-        {
-            var uri = new Uri(bitmapUri);
-            return new Bitmap(AssetLoader.Open(uri));
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error loading bitmap from {bitmapUri}: {ex.Message}");
-            return null;
-        }
-    }
-
-    private IImage? GetSpriteImage(string name_in, Dictionary<string, SpritePosition> positions, Bitmap? spriteSheet, int spriteWidth, int spriteHeight, string category)
-    {
-        if (string.IsNullOrEmpty(name_in) || positions == null || spriteSheet == null)
-            return null;
-
-        // Simple approach: just convert to lowercase and remove all spaces
-        string name = name_in.Trim().Replace(" ", "").ToLower();
-
-        // Try the normalized name
-        if (positions!.TryGetValue(name, out var pos))
-        {
-            int x = pos.Pos.X * spriteWidth;
-            int y = pos.Pos.Y * spriteHeight;
-            return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-        }
-        else
-        {
-            DebugLogger.Log("SpriteService", $"INFO: Could not find sprite for {category} '{name_in}' (tried: '{name}')");
-            return null;
-        }
-    }
-
-    public IImage? GetJokerImage(string name, int spriteWidth = UIConstants.JokerSpriteWidth, int spriteHeight = UIConstants.JokerSpriteHeight)
-    {
-        // Special handling for "any" soul joker
-        if (name.ToLower() == "any")
-        {
-            // Return a special "any" icon or the first legendary joker as a placeholder
-            // For now, use Perkeo as the representative for "any" soul joker
-            return GetSpriteImage("perkeo", jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
-        }
-        return GetSpriteImage(name, jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
-    }
-
-    public IImage? GetJokerSoulImage(string name_in, int spriteWidth = UIConstants.JokerSpriteWidth, int spriteHeight = UIConstants.JokerSpriteHeight)
-    {
-        var name = name_in.Trim().Replace(" ", "").Replace("_", "").ToLower();
-        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'");
-
-        // For legendary jokers, the soul is one row below (y+1)
-        if (jokerPositions == null || jokerSheet == null || !jokerPositions.TryGetValue(name, out var basePos))
-        {
-            Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Failed to find position for: {name}. Available positions: {string.Join(", ", jokerPositions?.Keys.Where(k => k.Contains(name.Substring(0, Math.Min(3, name.Length)))).Take(5) ?? new List<string>())}");
-            return null;
-        }
-
-        // Create a new position one row below
-        var soulPos = new SpritePosition
-        {
-            Name = name + "_soul",
-            Pos = new Pos { X = basePos.Pos.X, Y = basePos.Pos.Y + 1 }
-        };
-
-        int x = soulPos.Pos.X * spriteWidth;
-        int y = soulPos.Pos.Y * spriteHeight;
-
-        // Validate coordinates
-        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Sheet dimensions: {jokerSheet.PixelSize.Width}x{jokerSheet.PixelSize.Height}");
-        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Trying to crop at ({x}, {y}) with size {spriteWidth}x{spriteHeight}");
-        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 Bottom-right corner would be at ({x + spriteWidth}, {y + spriteHeight})");
-
-        if (x >= 0 && y >= 0 && x + spriteWidth <= jokerSheet.PixelSize.Width && y + spriteHeight <= jokerSheet.PixelSize.Height)
-        {
-            Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}");
-            return new CroppedBitmap(jokerSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-        }
-
-        Oracle.Helpers.DebugLogger.LogImportant("GetJokerSoulImage", $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}");
-        return null;
-    }
-
-    public IImage? GetTagImage(string name, int spriteWidth = UIConstants.TagSpriteWidth, int spriteHeight = UIConstants.TagSpriteHeight)
-    {
-        return GetSpriteImage(name, tagPositions, tagSheet, spriteWidth, spriteHeight, "tag");
-    }
-
-    public IImage? GetTarotImage(string name, int spriteWidth = UIConstants.TarotSpriteWidth, int spriteHeight = UIConstants.TarotSpriteHeight)
-    {
-        return GetSpriteImage(name, tarotPositions, tarotSheet, spriteWidth, spriteHeight, "tarot");
-    }
-
-    public IImage? GetSpectralImage(string name, int spriteWidth = UIConstants.SpectralSpriteWidth, int spriteHeight = UIConstants.SpectralSpriteHeight)
-    {
-        return GetSpriteImage(name, spectralPositions, spectralSheet, spriteWidth, spriteHeight, "spectral");
-    }
-
-    public IImage? GetVoucherImage(string name, int spriteWidth = UIConstants.VoucherSpriteWidth, int spriteHeight = UIConstants.VoucherSpriteHeight)
-    {
-        return GetSpriteImage(name, voucherPositions, voucherSheet, spriteWidth, spriteHeight, "voucher");
-    }
-
-    /// <summary>
-    /// Get an image for any type of item - automatically determines the type
-    /// </summary>
-    public IImage? GetItemImage(string name, string? type = null)
-    {
-        if (string.IsNullOrEmpty(name))
-            return null;
-
-        // If type is specified, use it directly
-        if (!string.IsNullOrEmpty(type))
-        {
-            return type.ToLower() switch
-            {
-                "joker" or "jokers" => GetJokerImage(name),
-                "tag" or "tags" => GetTagImage(name),
-                "tarot" or "tarots" => GetTarotImage(name),
-                "spectral" or "spectrals" => GetSpectralImage(name),
-                "voucher" or "vouchers" => GetVoucherImage(name),
-                "boss" or "bosses" => GetBossImage(name),
-                "blind" or "blinds" => GetBlindImage(name),
-                "sticker" or "stickers" => GetStickerImage(name),
-                "booster" or "boosters" or "pack" or "packs" => GetBoosterImage(name),
-                _ => null
-            };
-        }
-
-        // Normalize the name for lookup
-        var normalizedName = name.Trim().Replace(" ", "").Replace("_", "").ToLower();
-
-        // Check jokers first (most common)
-        if (jokerPositions.ContainsKey(normalizedName))
-            return GetJokerImage(name);
-
-        // Check tags
-        if (tagPositions.ContainsKey(normalizedName))
-            return GetTagImage(name);
-
-        // Check tarots
-        if (tarotPositions.ContainsKey(normalizedName))
-            return GetTarotImage(name);
-
-        // Check spectrals
-        if (spectralPositions.ContainsKey(normalizedName))
-            return GetSpectralImage(name);
-
-        // Check vouchers
-        if (voucherPositions.ContainsKey(normalizedName))
-            return GetVoucherImage(name);
-
-        return null;
-    }
-
-    private Bitmap? editionsSheet;
-
-    public IImage? GetEditionImage(string edition)
-    {
-        try
-        {
-            // Lazy load the editions sheet
-            if (editionsSheet == null)
-            {
-                var editionsUri = "avares://Oracle/Assets/Jokers/Editions.png";
-                editionsSheet = LoadBitmap(editionsUri);
-                if (editionsSheet != null)
+                // Load sticker positions
+                var stickerMetadata = LoadStickersMetadata(
+                    "avares://Oracle/Assets/Jokers/stickers_metadata.json"
+                );
+                if (stickerMetadata != null)
                 {
-                    DebugLogger.Log("SpriteService", "Loaded editions sprite sheet");
+                    stickerPositions = new Dictionary<string, SpritePosition>();
+                    // Merge all sticker types into one dictionary
+                    foreach (var kvp in stickerMetadata.JokerStickers)
+                    {
+                        stickerPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                    }
+
+                    foreach (var kvp in stickerMetadata.StakeStickers)
+                    {
+                        // Store stake stickers with lowercase keys
+                        var lower = kvp.Key.ToLowerInvariant();
+                        stickerPositions[lower] = kvp.Value;
+                        DebugLogger.Log("SpriteService", $"Added stake sticker: {kvp.Key} -> {lower}");
+                    }
                 }
-                else
+
+                // Load spritesheets
+                jokerSheet = LoadBitmap("avares://Oracle/Assets/Jokers/Jokers.png");
+                tagSheet = LoadBitmap("avares://Oracle/Assets/Tags/tags.png");
+                tarotSheet = LoadBitmap("avares://Oracle/Assets/Tarots/Tarots.png");
+                voucherSheet = LoadBitmap("avares://Oracle/Assets/Vouchers/Vouchers.png");
+                spectralSheet = tarotSheet;
+                uiAssetsSheet = LoadBitmap("avares://Oracle/Assets/Other/ui_assets.png");
+                enhancersSheet = LoadBitmap("avares://Oracle/Assets/Decks/Enhancers.png");
+                playingCardsSheet = LoadBitmap("avares://Oracle/Assets/Decks/8BitDeck.png");
+                bossSheet = LoadBitmap("avares://Oracle/Assets/Bosses/BlindChips.png");
+                stickersSheet = LoadBitmap("avares://Oracle/Assets/Jokers/stickers.png");
+                boosterSheet = LoadBitmap("avares://Oracle/Assets/Other/boosters.png");
+                stakeChipsSheet = LoadBitmap("avares://Oracle/Assets/Decks/balatro-stake-chips.png");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Error loading sprite assets: {ex.Message}");
+                // Initialize empty dictionaries to prevent null reference errors
+                jokerPositions ??= new Dictionary<string, SpritePosition>();
+                tagPositions ??= new Dictionary<string, SpritePosition>();
+                tarotPositions ??= new Dictionary<string, SpritePosition>();
+                spectralPositions ??= new Dictionary<string, SpritePosition>();
+                voucherPositions ??= new Dictionary<string, SpritePosition>();
+                uiAssetPositions ??= new Dictionary<string, SpritePosition>();
+                deckPositions ??= new Dictionary<string, SpritePosition>();
+                enhancementPositions ??= new Dictionary<string, SpritePosition>();
+                sealPositions ??= new Dictionary<string, SpritePosition>();
+                specialPositions ??= new Dictionary<string, SpritePosition>();
+                playingCardPositions ??= new Dictionary<string, Dictionary<string, SpritePosition>>();
+                bossPositions ??= new Dictionary<string, SpritePosition>();
+                blindPositions ??= new Dictionary<string, SpritePosition>();
+                stickerPositions ??= new Dictionary<string, SpritePosition>();
+                boosterPositions ??= new Dictionary<string, SpritePosition>();
+
+                // Bitmaps will remain null if loading failed
+            }
+        }
+
+        private static Dictionary<string, SpritePosition> LoadSpritePositions(string jsonUri)
+        {
+            try
+            {
+                var uri = new Uri(jsonUri);
+                using var stream = AssetLoader.Open(uri);
+                using var reader = new StreamReader(stream);
+                string json = reader.ReadToEnd();
+
+                var positionsList = JsonSerializer.Deserialize<List<SpritePosition>>(json);
+                var positions = new Dictionary<string, SpritePosition>();
+
+                foreach (var pos in positionsList ?? new List<SpritePosition>())
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to load editions sprite sheet");
-                    return null;
+                    if (pos?.Name != null)
+                    {
+                        positions[pos.Name.ToLowerInvariant()] = pos;
+                    }
                 }
+
+                return positions;
             }
-
-            // Each edition is 71x94 pixels (355 width / 5 editions = 71)
-            int spriteWidth = 71;
-            int spriteHeight = 94;
-
-            // Map edition names to positions (0-4)
-            int position = edition.ToLower() switch
+            catch (Exception ex)
             {
-                "none" or "normal" => 0,
-                "foil" => 1,
-                "holographic" or "holo" => 2,
-                "polychrome" or "poly" => 3,
-                "negative" or "neg" => 4,  // Position 4 is Negative (not debuffed/red X)
-                _ => 0
-            };
-
-            int x = position * spriteWidth;
-
-            if (x + spriteWidth <= editionsSheet.PixelSize.Width && spriteHeight <= editionsSheet.PixelSize.Height)
-            {
-                return new CroppedBitmap(editionsSheet, new PixelRect(x, 0, spriteWidth, spriteHeight));
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading sprite positions from {jsonUri}: {ex.Message}"
+                );
+                return new Dictionary<string, SpritePosition>();
             }
         }
-        catch (Exception ex)
+
+        private static Bitmap? LoadBitmap(string bitmapUri)
         {
-            DebugLogger.LogError("SpriteService", $"Failed to get edition image: {ex.Message}");
-        }
-
-        return null;
-    }
-
-    public IImage? GetUIAssetImage(string name, int spriteWidth = 18, int spriteHeight = 18)
-    {
-        return GetSpriteImage(name, uiAssetPositions, uiAssetsSheet, spriteWidth, spriteHeight, "ui_asset");
-    }
-
-    // New methods for deck, enhancement, and seal sprites
-    public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
-    {
-        return GetSpriteImage(name, deckPositions, enhancersSheet, spriteWidth, spriteHeight, "deck");
-    }
-
-    // Create a composite image with deck and stake sticker
-    public IImage? GetDeckWithStakeSticker(string deckName, string stakeName)
-    {
-        DebugLogger.Log("SpriteService", $"GetDeckWithStakeSticker called: deck={deckName}, stake={stakeName}");
-        
-        // Get the base deck image (full size 142x190)
-        var deckImage = GetDeckImage(deckName, 142, 190);
-        if (deckImage == null)
-        {
-            DebugLogger.LogError("SpriteService", $"Failed to get deck image for: {deckName}");
-            return null;
-        }
-
-        // No early return for white stake - we want to show the white stake sticker too!
-
-        // Get the stake sticker (142x190 like deck)
-        string stakeFormat = $"{char.ToUpper(stakeName[0])}{stakeName.Substring(1)}Stake";
-        DebugLogger.Log("SpriteService", $"Looking for stake sticker: {stakeFormat}");
-        
-        var stakeSticker = GetStickerImage(stakeFormat);
-        if (stakeSticker == null)
-        {
-            DebugLogger.LogError("SpriteService", $"Failed to get stake sticker for: {stakeFormat}");
-            // Fallback - just return deck scaled down
-            var pixelSizeFallback = new PixelSize(71, 95);
-            var renderTargetFallback = new RenderTargetBitmap(pixelSizeFallback);
-            using (var context = renderTargetFallback.CreateDrawingContext())
+            try
             {
-                context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+                var uri = new Uri(bitmapUri);
+                return new Bitmap(AssetLoader.Open(uri));
             }
-            return renderTargetFallback;
-        }
-
-        DebugLogger.Log("SpriteService", $"Got stake sticker, creating composite");
-
-        // Create a render target to composite the images
-        var pixelSize = new PixelSize(71, 95); // Card display size
-        var renderTarget = new RenderTargetBitmap(pixelSize);
-
-        using (var context = renderTarget.CreateDrawingContext())
-        {
-            // Draw the deck image scaled down to 71x95
-            context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
-            
-            // Draw the stake sticker on top (also scaled from 142x190 to 71x95)
-            context.DrawImage(stakeSticker, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
-        }
-
-        DebugLogger.Log("SpriteService", "Composite created successfully");
-        return renderTarget;
-    }
-
-    public IImage? GetEnhancementImage(string name, int spriteWidth = 142, int spriteHeight = 190)
-    {
-        return GetSpriteImage(name, enhancementPositions, enhancersSheet, spriteWidth, spriteHeight, "enhancement");
-    }
-
-    public IImage? GetSealImage(string name, int spriteWidth = 142, int spriteHeight = 190)
-    {
-        return GetSpriteImage(name, sealPositions, enhancersSheet, spriteWidth, spriteHeight, "seal");
-    }
-
-    public IImage? GetSpecialImage(string name, int spriteWidth = 142, int spriteHeight = 190)
-    {
-        // Special images like Soul gem, mystery icons, etc.
-        return GetSpriteImage(name, specialPositions, enhancersSheet, spriteWidth, spriteHeight, "special");
-    }
-
-    // Get a composite playing card image (enhancement + card pattern)
-    public IImage? GetPlayingCardImage(string suit, string rank, string? enhancement = null, string? seal = null, string? edition = null)
-    {
-        try
-        {
-            // Start with base card or enhancement
-            IImage? baseCard = null;
-            if (!string.IsNullOrEmpty(enhancement))
+            catch (Exception ex)
             {
-                baseCard = GetEnhancementImage(enhancement);
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading bitmap from {bitmapUri}: {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        private static IImage? GetSpriteImage(
+            string name_in,
+            Dictionary<string, SpritePosition> positions,
+            Bitmap? spriteSheet,
+            int spriteWidth,
+            int spriteHeight,
+            string category
+        )
+        {
+            if (string.IsNullOrEmpty(name_in) || positions == null || spriteSheet == null)
+            {
+                return null;
+            }
+
+            // Simple approach: just convert to lowercase and remove all spaces
+            string name = name_in
+                .Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+
+            // Try the normalized name
+            if (positions!.TryGetValue(name, out var pos))
+            {
+                int x = pos.Pos.X * spriteWidth;
+                int y = pos.Pos.Y * spriteHeight;
+                return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
             }
             else
             {
-                // Use blank card as base
-                baseCard = GetSpecialImage("BlankCard");
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"INFO: Could not find sprite for {category} '{name_in}' (tried: '{name}')"
+                );
+                return null;
+            }
+        }
+
+        public IImage? GetJokerImage(
+            string name,
+            int spriteWidth = UIConstants.JokerSpriteWidth,
+            int spriteHeight = UIConstants.JokerSpriteHeight
+        )
+        {
+            ArgumentNullException.ThrowIfNull(name);
+            // Special handling for "any" soul joker
+            if (name.Equals("any", StringComparison.OrdinalIgnoreCase))
+            {
+                // Return a special "any" icon or the first legendary joker as a placeholder
+                // For now, use Perkeo as the representative for "any" soul joker
+                return GetSpriteImage(
+                    "perkeo",
+                    jokerPositions,
+                    jokerSheet,
+                    spriteWidth,
+                    spriteHeight,
+                    "joker"
+                );
+            }
+            return GetSpriteImage(name, jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
+        }
+
+        public IImage? GetJokerSoulImage(
+            string name_in,
+            int spriteWidth = UIConstants.JokerSpriteWidth,
+            int spriteHeight = UIConstants.JokerSpriteHeight
+        )
+        {
+            ArgumentNullException.ThrowIfNull(name_in);
+            var name = name_in
+                .Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "GetJokerSoulImage",
+                $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'"
+            );
+
+            // For legendary jokers, the soul is one row below (y+1)
+            if (
+                jokerPositions == null
+                || jokerSheet == null
+                || !jokerPositions.TryGetValue(name, out var basePos)
+            )
+            {
+                var prefix = name.Substring(0, Math.Min(3, name.Length));
+                Oracle.Helpers.DebugLogger.LogImportant(
+                    "GetJokerSoulImage",
+                    $"🎴 Failed to find position for: {name}. Available positions: {string.Join(", ", jokerPositions?.Keys.Where(k => k.Contains(prefix, StringComparison.OrdinalIgnoreCase)).Take(5) ?? new List<string>())}"
+                );
+                return null;
             }
 
-            if (baseCard == null) return null;
-
-            // Get the card pattern overlay
-            var cardPattern = GetPlayingCardPattern(suit, rank);
-            if (cardPattern == null) return baseCard; // Return just the base if no pattern found
-
-            // Composite the images together using Avalonia's image manipulation
-            // Note: Full compositing implementation requires RenderTargetBitmap
-            // For now, return the pattern overlay as the primary visual
-            return cardPattern;
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error creating playing card image: {ex.Message}");
-            return null;
-        }
-    }
-
-    // Get boss blind image (first frame of animation, similar size to tags)
-    public IImage? GetBossImage(string name, int frameIndex = 0)
-    {
-        if (bossPositions == null || bossSheet == null)
-        {
-            DebugLogger.LogError("SpriteService", $"Boss positions or sheet not loaded for: {name}");
-            return null;
-        }
-
-        var normalizedName = name.Trim().Replace(" ", "").ToLower();
-        if (!bossPositions.TryGetValue(normalizedName, out var position))
-        {
-            DebugLogger.LogError("SpriteService", $"Boss position not found for: {name} (normalized: {normalizedName})");
-            DebugLogger.Log("SpriteService", $"Available boss names: {string.Join(", ", bossPositions.Keys)}");
-            return null;
-        }
-
-        // Boss blind sprites are 68x68 (1428px / 21 cols = 68px per sprite)
-        int spriteWidth = 68;
-        int spriteHeight = 68;
-
-        // Use the specified frame (0-20)
-        // All bosses start at column 0, so just use frameIndex for x position
-        int x = frameIndex * spriteWidth;
-        int y = position.Pos.Y * spriteHeight;
-
-        return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-    }
-
-    // Get sticker image (Eternal, Perishable, Rental, or stake stickers)
-    public IImage? GetStickerImage(string stickerType)
-    {
-        DebugLogger.Log("SpriteService", $"GetStickerImage called with: '{stickerType}'");
-        if (stickerPositions != null)
-        {
-            DebugLogger.Log("SpriteService", $"Available sticker keys: {string.Join(", ", stickerPositions.Keys)}");
-        }
-        else
-        {
-            DebugLogger.LogError("SpriteService", "stickerPositions is null!");
-        }
-        return GetSpriteImage(stickerType, stickerPositions!, stickersSheet, 142, 190, "sticker");
-    }
-    
-    // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
-    public IImage? GetStakeChipImage(string stakeName)
-    {
-        if (stakeChipsSheet == null)
-        {
-            DebugLogger.LogError("SpriteService", "Stake chips sheet not loaded!");
-            return null;
-        }
-        
-        // Stake chips are 29x29 pixels arranged in a 5x2 grid
-        int spriteWidth = 29;
-        int spriteHeight = 29;
-        
-        // Map stake names to grid positions
-        // Top row: White, Red, Green, Blue, Black
-        // Bottom row: Purple, Orange, Gold1, Gold2, Special
-        int x, y;
-        switch (stakeName.ToLower().Replace("stake", "").Trim())
-        {
-            case "white": x = 0; y = 0; break;
-            case "red": x = 1; y = 0; break;
-            case "green": x = 2; y = 0; break;
-            case "blue": x = 3; y = 0; break;
-            case "black": x = 4; y = 0; break;
-            case "purple": x = 0; y = 1; break;
-            case "orange": x = 1; y = 1; break;
-            case "gold": x = 2; y = 1; break; // Use Gold1 for now
-            default: return null;
-        }
-        
-        int pixelX = x * spriteWidth;
-        int pixelY = y * spriteHeight;
-        
-        try
-        {
-            return new CroppedBitmap(stakeChipsSheet, new PixelRect(pixelX, pixelY, spriteWidth, spriteHeight));
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error getting stake chip image: {ex.Message}");
-            return null;
-        }
-    }
-
-    public IImage? GetBoosterImage(string packType)
-    {
-        // Booster pack sprites are 142x285 (width of 568/4, height of 1710/6)
-        return GetSpriteImage(packType, boosterPositions, boosterSheet, 142, 285, "booster");
-    }
-
-    // Get blind chip image (small/big blind indicators)
-    public IImage? GetBlindImage(string blindType, int frameIndex = 0)
-    {
-        if (blindPositions == null || bossSheet == null) return null;
-
-        var normalizedName = blindType.Trim().Replace(" ", "").ToLower();
-        if (!blindPositions.TryGetValue(normalizedName, out var position)) return null;
-
-        // Same dimensions as boss sprites - 68x68 pixels
-        int spriteWidth = 68;
-        int spriteHeight = 68;
-
-        // Blinds also start at column 0, so just use frameIndex for x position
-        int x = frameIndex * spriteWidth;
-        int y = position.Pos.Y * spriteHeight;
-
-        return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-    }
-
-    // Get just the playing card pattern (suit/rank)
-    private IImage? GetPlayingCardPattern(string suit, string rank)
-    {
-        if (playingCardPositions == null || playingCardsSheet == null) return null;
-
-        if (!playingCardPositions.TryGetValue(suit, out var suitCards)) return null;
-        if (!suitCards.TryGetValue(rank, out var position)) return null;
-
-        // Calculate sprite dimensions (1846x760 with 13x4 grid)
-        int spriteWidth = 142;  // 1846 / 13
-        int spriteHeight = 190; // 760 / 4
-
-        int x = position.Pos.X * spriteWidth;
-        int y = position.Pos.Y * spriteHeight;
-
-        return new CroppedBitmap(playingCardsSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-    }
-
-    // Helper method to load stickers metadata
-    private StickersMetadata? LoadStickersMetadata(string jsonUri)
-    {
-        try
-        {
-            var uri = new Uri(jsonUri);
-            using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
-
-            var metadata = JsonSerializer.Deserialize<StickersMetadataJson>(json);
-            if (metadata == null) return null;
-
-            var result = new StickersMetadata
+            // Create a new position one row below
+            var soulPos = new SpritePosition
             {
-                jokerStickers = ConvertToSpritePositions(metadata.sprites?.jokerStickers),
-                stakeStickers = ConvertToSpritePositions(metadata.sprites?.stakeStickers)
+                Name = name + "_soul",
+                Pos = new Pos { X = basePos.Pos.X, Y = basePos.Pos.Y + 1 },
             };
 
-            return result;
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error loading stickers metadata: {ex.Message}");
+            int x = soulPos.Pos.X * spriteWidth;
+            int y = soulPos.Pos.Y * spriteHeight;
+
+            // Validate coordinates
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "GetJokerSoulImage",
+                $"🎴 Sheet dimensions: {jokerSheet.PixelSize.Width}x{jokerSheet.PixelSize.Height}"
+            );
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "GetJokerSoulImage",
+                $"🎴 Trying to crop at ({x}, {y}) with size {spriteWidth}x{spriteHeight}"
+            );
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "GetJokerSoulImage",
+                $"🎴 Bottom-right corner would be at ({x + spriteWidth}, {y + spriteHeight})"
+            );
+
+            if (
+                x >= 0
+                && y >= 0
+                && x + spriteWidth <= jokerSheet.PixelSize.Width
+                && y + spriteHeight <= jokerSheet.PixelSize.Height
+            )
+            {
+                Oracle.Helpers.DebugLogger.LogImportant(
+                    "GetJokerSoulImage",
+                    $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}"
+                );
+                return new CroppedBitmap(jokerSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+            }
+
+            Oracle.Helpers.DebugLogger.LogImportant(
+                "GetJokerSoulImage",
+                $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}"
+            );
             return null;
         }
-    }
 
-    // Helper method to load boss metadata
-    private BossMetadata? LoadBossMetadata(string jsonUri)
-    {
-        try
+        public IImage? GetTagImage(
+            string name,
+            int spriteWidth = UIConstants.TagSpriteWidth,
+            int spriteHeight = UIConstants.TagSpriteHeight
+        )
         {
-            var uri = new Uri(jsonUri);
-            using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
-
-            var metadata = JsonSerializer.Deserialize<BossMetadataJson>(json);
-            if (metadata == null) return null;
-
-            var result = new BossMetadata
-            {
-                blinds = ConvertToSpritePositions(metadata.sprites?.blinds),
-                bosses = ConvertToSpritePositions(metadata.sprites?.bosses),
-                finisherBosses = ConvertToSpritePositions(metadata.sprites?.finisherBosses),
-                special = ConvertToSpritePositions(metadata.sprites?.special)
-            };
-
-            return result;
+            ArgumentNullException.ThrowIfNull(name);
+            return GetSpriteImage(name, tagPositions, tagSheet, spriteWidth, spriteHeight, "tag");
         }
-        catch (Exception ex)
+
+        public IImage? GetTarotImage(
+            string name,
+            int spriteWidth = UIConstants.TarotSpriteWidth,
+            int spriteHeight = UIConstants.TarotSpriteHeight
+        )
         {
-            DebugLogger.LogError("SpriteService", $"Error loading boss metadata: {ex.Message}");
-            return null;
+            ArgumentNullException.ThrowIfNull(name);
+            return GetSpriteImage(name, tarotPositions, tarotSheet, spriteWidth, spriteHeight, "tarot");
         }
-    }
 
-    // Helper method to load playing card metadata
-    private Dictionary<string, Dictionary<string, SpritePosition>> LoadPlayingCardMetadata(string jsonUri)
-    {
-        try
+        public IImage? GetSpectralImage(
+            string name,
+            int spriteWidth = UIConstants.SpectralSpriteWidth,
+            int spriteHeight = UIConstants.SpectralSpriteHeight
+        )
         {
-            var uri = new Uri(jsonUri);
-            using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
+            ArgumentNullException.ThrowIfNull(name);
+            return GetSpriteImage(
+                name,
+                spectralPositions,
+                spectralSheet,
+                spriteWidth,
+                spriteHeight,
+                "spectral"
+            );
+        }
 
-            var metadata = JsonSerializer.Deserialize<PlayingCardMetadataJson>(json);
-            if (metadata?.sprites == null) return new();
+        public IImage? GetVoucherImage(
+            string name,
+            int spriteWidth = UIConstants.VoucherSpriteWidth,
+            int spriteHeight = UIConstants.VoucherSpriteHeight
+        )
+        {
+            ArgumentNullException.ThrowIfNull(name);
+            return GetSpriteImage(
+                name,
+                voucherPositions,
+                voucherSheet,
+                spriteWidth,
+                spriteHeight,
+                "voucher"
+            );
+        }
 
-            var result = new Dictionary<string, Dictionary<string, SpritePosition>>();
-
-            foreach (var suitKvp in metadata.sprites)
+        /// <summary>
+        /// Get an image for any type of item - automatically determines the type
+        /// </summary>
+        public IImage? GetItemImage(string name, string? type = null)
+        {
+            if (string.IsNullOrEmpty(name))
             {
-                var suitPositions = new Dictionary<string, SpritePosition>();
-                foreach (var rankKvp in suitKvp.Value)
+                return null;
+            }
+
+            // If type is specified, use it directly
+            if (!string.IsNullOrEmpty(type))
+            {
+                return type.ToLowerInvariant() switch
                 {
-                    suitPositions[rankKvp.Key] = new SpritePosition
+                    "joker" or "jokers" => GetJokerImage(name),
+                    "tag" or "tags" => GetTagImage(name),
+                    "tarot" or "tarots" => GetTarotImage(name),
+                    "spectral" or "spectrals" => GetSpectralImage(name),
+                    "voucher" or "vouchers" => GetVoucherImage(name),
+                    "boss" or "bosses" => GetBossImage(name),
+                    "blind" or "blinds" => GetBlindImage(name),
+                    "sticker" or "stickers" => GetStickerImage(name),
+                    "booster" or "boosters" or "pack" or "packs" => GetBoosterImage(name),
+                    _ => null,
+                };
+            }
+
+            // Normalize the name for lookup
+            var normalizedName = name.Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+
+            // Check jokers first (most common)
+            if (jokerPositions.ContainsKey(normalizedName))
+            {
+                return GetJokerImage(name);
+            }
+
+            // Check tags
+            if (tagPositions.ContainsKey(normalizedName))
+            {
+                return GetTagImage(name);
+            }
+
+            // Check tarots
+            if (tarotPositions.ContainsKey(normalizedName))
+            {
+                return GetTarotImage(name);
+            }
+
+            // Check spectrals
+            if (spectralPositions.ContainsKey(normalizedName))
+            {
+                return GetSpectralImage(name);
+            }
+
+            // Check vouchers
+            if (voucherPositions.ContainsKey(normalizedName))
+            {
+                return GetVoucherImage(name);
+            }
+
+            return null;
+        }
+
+        private Bitmap? editionsSheet;
+
+        public IImage? GetEditionImage(string edition)
+        {
+            try
+            {
+                // Lazy load the editions sheet
+                if (editionsSheet == null)
+                {
+                    var editionsUri = "avares://Oracle/Assets/Jokers/Editions.png";
+                    editionsSheet = LoadBitmap(editionsUri);
+                    if (editionsSheet != null)
                     {
-                        Name = $"{rankKvp.Key} of {suitKvp.Key}",
-                        Pos = new Pos { X = rankKvp.Value.x, Y = rankKvp.Value.y }
-                    };
+                        DebugLogger.Log("SpriteService", "Loaded editions sprite sheet");
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("SpriteService", $"Failed to load editions sprite sheet");
+                        return null;
+                    }
                 }
-                result[suitKvp.Key] = suitPositions;
+
+                // Each edition is 71x94 pixels (355 width / 5 editions = 71)
+                int spriteWidth = 71;
+                int spriteHeight = 94;
+
+                // Map edition names to positions (0-4)
+                int position = edition.ToLowerInvariant() switch
+                {
+                    "none" or "normal" => 0,
+                    "foil" => 1,
+                    "holographic" or "holo" => 2,
+                    "polychrome" or "poly" => 3,
+                    "negative" or "neg" => 4, // Position 4 is Negative (not debuffed/red X)
+                    _ => 0,
+                };
+
+                int x = position * spriteWidth;
+
+                if (
+                    x + spriteWidth <= editionsSheet.PixelSize.Width
+                    && spriteHeight <= editionsSheet.PixelSize.Height
+                )
+                {
+                    return new CroppedBitmap(
+                        editionsSheet,
+                        new PixelRect(x, 0, spriteWidth, spriteHeight)
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Failed to get edition image: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public IImage? GetUIAssetImage(string name, int spriteWidth = 18, int spriteHeight = 18)
+        {
+            return GetSpriteImage(
+                name,
+                uiAssetPositions,
+                uiAssetsSheet,
+                spriteWidth,
+                spriteHeight,
+                "ui_asset"
+            );
+        }
+
+        // New methods for deck, enhancement, and seal sprites
+        public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        {
+            return GetSpriteImage(
+                name,
+                deckPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "deck"
+            );
+        }
+
+        // Create a composite image with deck and stake sticker
+        public IImage? GetDeckWithStakeSticker(string deckName, string stakeName)
+        {
+            ArgumentNullException.ThrowIfNull(deckName);
+            ArgumentNullException.ThrowIfNull(stakeName);
+            DebugLogger.Log(
+                "SpriteService",
+                $"GetDeckWithStakeSticker called: deck={deckName}, stake={stakeName}"
+            );
+
+            // Get the base deck image (full size 142x190)
+            var deckImage = GetDeckImage(deckName, 142, 190);
+            if (deckImage == null)
+            {
+                DebugLogger.LogError("SpriteService", $"Failed to get deck image for: {deckName}");
+                return null;
+            }
+
+            // No early return for white stake - we want to show the white stake sticker too!
+
+            // Get the stake sticker (142x190 like deck)
+            string stakeFormat =
+                $"{char.ToUpper(stakeName[0], CultureInfo.InvariantCulture)}{stakeName.Substring(1)}Stake";
+            DebugLogger.Log("SpriteService", $"Looking for stake sticker: {stakeFormat}");
+
+            var stakeSticker = GetStickerImage(stakeFormat);
+            if (stakeSticker == null)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to get stake sticker for: {stakeFormat}"
+                );
+                // Fallback - just return deck scaled down
+                var pixelSizeFallback = new PixelSize(71, 95);
+                var renderTargetFallback = new RenderTargetBitmap(pixelSizeFallback);
+                using (var context = renderTargetFallback.CreateDrawingContext())
+                {
+                    context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+                }
+                return renderTargetFallback;
+            }
+
+            DebugLogger.Log("SpriteService", $"Got stake sticker, creating composite");
+
+            // Create a render target to composite the images
+            var pixelSize = new PixelSize(71, 95); // Card display size
+            var renderTarget = new RenderTargetBitmap(pixelSize);
+
+            using (var context = renderTarget.CreateDrawingContext())
+            {
+                // Draw the deck image scaled down to 71x95
+                context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+
+                // Draw the stake sticker on top (also scaled from 142x190 to 71x95)
+                context.DrawImage(stakeSticker, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+            }
+
+            DebugLogger.Log("SpriteService", "Composite created successfully");
+            return renderTarget;
+        }
+
+        public IImage? GetEnhancementImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        {
+            return GetSpriteImage(
+                name,
+                enhancementPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "enhancement"
+            );
+        }
+
+        public IImage? GetSealImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        {
+            return GetSpriteImage(
+                name,
+                sealPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "seal"
+            );
+        }
+
+        public IImage? GetSpecialImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        {
+            // Special images like Soul gem, mystery icons, etc.
+            return GetSpriteImage(
+                name,
+                specialPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "special"
+            );
+        }
+
+        // Get a composite playing card image (enhancement + card pattern)
+        public IImage? GetPlayingCardImage(
+            string suit,
+            string rank,
+            string? enhancement = null,
+            string? seal = null,
+            string? edition = null
+        )
+        {
+            try
+            {
+                // Start with base card or enhancement
+                IImage? baseCard = null;
+                if (!string.IsNullOrEmpty(enhancement))
+                {
+                    baseCard = GetEnhancementImage(enhancement);
+                }
+                else
+                {
+                    // Use blank card as base
+                    baseCard = GetSpecialImage("BlankCard");
+                }
+
+                if (baseCard == null)
+                {
+                    return null;
+                }
+
+                // Get the card pattern overlay
+                var cardPattern = GetPlayingCardPattern(suit, rank);
+                if (cardPattern == null)
+                {
+                    return baseCard; // Return just the base if no pattern found
+                }
+
+                // Composite the images together using Avalonia's image manipulation
+                // Note: Full compositing implementation requires RenderTargetBitmap
+                // For now, return the pattern overlay as the primary visual
+                return cardPattern;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error creating playing card image: {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        // Get boss blind image (first frame of animation, similar size to tags)
+        public IImage? GetBossImage(string name, int frameIndex = 0)
+        {
+            ArgumentNullException.ThrowIfNull(name);
+            if (bossPositions == null || bossSheet == null)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Boss positions or sheet not loaded for: {name}"
+                );
+                return null;
+            }
+
+            var normalizedName = name.Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+            if (!bossPositions.TryGetValue(normalizedName, out var position))
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Boss position not found for: {name} (normalized: {normalizedName})"
+                );
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"Available boss names: {string.Join(", ", bossPositions.Keys)}"
+                );
+                return null;
+            }
+
+            // Boss blind sprites are 68x68 (1428px / 21 cols = 68px per sprite)
+            int spriteWidth = 68;
+            int spriteHeight = 68;
+
+            // Use the specified frame (0-20)
+            // All bosses start at column 0, so just use frameIndex for x position
+            int x = frameIndex * spriteWidth;
+            int y = position.Pos.Y * spriteHeight;
+
+            return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+        }
+
+        // Get sticker image (Eternal, Perishable, Rental, or stake stickers)
+        public IImage? GetStickerImage(string stickerType)
+        {
+            ArgumentNullException.ThrowIfNull(stickerType);
+            DebugLogger.Log("SpriteService", $"GetStickerImage called with: '{stickerType}'");
+            if (stickerPositions != null)
+            {
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"Available sticker keys: {string.Join(", ", stickerPositions.Keys)}"
+                );
+            }
+            else
+            {
+                DebugLogger.LogError("SpriteService", "stickerPositions is null!");
+            }
+            return GetSpriteImage(stickerType, stickerPositions!, stickersSheet, 142, 190, "sticker");
+        }
+
+        // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
+        public IImage? GetStakeChipImage(string stakeName)
+        {
+            ArgumentNullException.ThrowIfNull(stakeName);
+            if (stakeChipsSheet == null)
+            {
+                DebugLogger.LogError("SpriteService", "Stake chips sheet not loaded!");
+                return null;
+            }
+
+            // Stake chips are 29x29 pixels arranged in a 5x2 grid
+            int spriteWidth = 29;
+            int spriteHeight = 29;
+
+            // Map stake names to grid positions
+            // Top row: White, Red, Green, Blue, Black
+            // Bottom row: Purple, Orange, Gold1, Gold2, Special
+            int x,
+                y;
+            switch (
+                stakeName
+                    .ToLowerInvariant()
+                    .Replace("stake", string.Empty, StringComparison.Ordinal)
+                    .Trim()
+            )
+            {
+                case "white":
+                    x = 0;
+                    y = 0;
+                    break;
+                case "red":
+                    x = 1;
+                    y = 0;
+                    break;
+                case "green":
+                    x = 2;
+                    y = 0;
+                    break;
+                case "blue":
+                    x = 3;
+                    y = 0;
+                    break;
+                case "black":
+                    x = 4;
+                    y = 0;
+                    break;
+                case "purple":
+                    x = 0;
+                    y = 1;
+                    break;
+                case "orange":
+                    x = 1;
+                    y = 1;
+                    break;
+                case "gold":
+                    x = 2;
+                    y = 1;
+                    break; // Use Gold1 for now
+                default:
+                    return null;
+            }
+
+            int pixelX = x * spriteWidth;
+            int pixelY = y * spriteHeight;
+
+            try
+            {
+                return new CroppedBitmap(
+                    stakeChipsSheet,
+                    new PixelRect(pixelX, pixelY, spriteWidth, spriteHeight)
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Error getting stake chip image: {ex.Message}");
+                return null;
+            }
+        }
+
+        public IImage? GetBoosterImage(string packType)
+        {
+            ArgumentNullException.ThrowIfNull(packType);
+            // Booster pack sprites are 142x285 (width of 568/4, height of 1710/6)
+            return GetSpriteImage(packType, boosterPositions, boosterSheet, 142, 285, "booster");
+        }
+
+        // Get blind chip image (small/big blind indicators)
+        public IImage? GetBlindImage(string blindType, int frameIndex = 0)
+        {
+            ArgumentNullException.ThrowIfNull(blindType);
+            if (blindPositions == null || bossSheet == null)
+            {
+                return null;
+            }
+
+            var normalizedName = blindType
+                .Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+            if (!blindPositions.TryGetValue(normalizedName, out var position))
+            {
+                return null;
+            }
+
+            // Same dimensions as boss sprites - 68x68 pixels
+            int spriteWidth = 68;
+            int spriteHeight = 68;
+
+            // Blinds also start at column 0, so just use frameIndex for x position
+            int x = frameIndex * spriteWidth;
+            int y = position.Pos.Y * spriteHeight;
+
+            return new CroppedBitmap(bossSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+        }
+
+        // Get just the playing card pattern (suit/rank)
+        private IImage? GetPlayingCardPattern(string suit, string rank)
+        {
+            if (playingCardPositions == null || playingCardsSheet == null)
+            {
+                return null;
+            }
+
+            if (!playingCardPositions.TryGetValue(suit, out var suitCards))
+            {
+                return null;
+            }
+
+            if (!suitCards.TryGetValue(rank, out var position))
+            {
+                return null;
+            }
+
+            // Calculate sprite dimensions (1846x760 with 13x4 grid)
+            int spriteWidth = 142; // 1846 / 13
+            int spriteHeight = 190; // 760 / 4
+
+            int x = position.Pos.X * spriteWidth;
+            int y = position.Pos.Y * spriteHeight;
+
+            return new CroppedBitmap(playingCardsSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+        }
+
+        // Helper method to load stickers metadata
+        private static StickersMetadata? LoadStickersMetadata(string jsonUri)
+        {
+            try
+            {
+                var uri = new Uri(jsonUri);
+                using var stream = AssetLoader.Open(uri);
+                using var reader = new StreamReader(stream);
+                string json = reader.ReadToEnd();
+
+                var metadata = JsonSerializer.Deserialize<StickersMetadataJson>(json);
+                if (metadata == null)
+                {
+                    return null;
+                }
+
+                var result = new StickersMetadata
+                {
+                    JokerStickers = ConvertToSpritePositions(metadata.Sprites?.JokerStickers),
+                    StakeStickers = ConvertToSpritePositions(metadata.Sprites?.StakeStickers),
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Error loading stickers metadata: {ex.Message}");
+                return null;
+            }
+        }
+
+        // Helper method to load boss metadata
+        private static BossMetadata? LoadBossMetadata(string jsonUri)
+        {
+            try
+            {
+                var uri = new Uri(jsonUri);
+                using var stream = AssetLoader.Open(uri);
+                using var reader = new StreamReader(stream);
+                string json = reader.ReadToEnd();
+
+                var metadata = JsonSerializer.Deserialize<BossMetadataJson>(json);
+                if (metadata == null)
+                {
+                    return null;
+                }
+
+                var result = new BossMetadata
+                {
+                    Blinds = ConvertToSpritePositions(metadata.Sprites?.Blinds),
+                    Bosses = ConvertToSpritePositions(metadata.Sprites?.Bosses),
+                    FinisherBosses = ConvertToSpritePositions(metadata.Sprites?.FinisherBosses),
+                    Special = ConvertToSpritePositions(metadata.Sprites?.Special),
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Error loading boss metadata: {ex.Message}");
+                return null;
+            }
+        }
+
+        // Helper method to load playing card metadata
+        private static Dictionary<string, Dictionary<string, SpritePosition>> LoadPlayingCardMetadata(
+            string jsonUri
+        )
+        {
+            try
+            {
+                var uri = new Uri(jsonUri);
+                using var stream = AssetLoader.Open(uri);
+                using var reader = new StreamReader(stream);
+                string json = reader.ReadToEnd();
+
+                var metadata = JsonSerializer.Deserialize<PlayingCardMetadataJson>(json);
+                if (metadata?.Sprites == null)
+                {
+                    return new();
+                }
+
+                var result = new Dictionary<string, Dictionary<string, SpritePosition>>();
+
+                foreach (var suitKvp in metadata.Sprites)
+                {
+                    var suitPositions = new Dictionary<string, SpritePosition>();
+                    foreach (var rankKvp in suitKvp.Value)
+                    {
+                        suitPositions[rankKvp.Key] = new SpritePosition
+                        {
+                            Name = $"{rankKvp.Key} of {suitKvp.Key}",
+                            Pos = new Pos { X = rankKvp.Value.X, Y = rankKvp.Value.Y },
+                        };
+                    }
+                    result[suitKvp.Key] = suitPositions;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading playing card metadata: {ex.Message}"
+                );
+                return new();
+            }
+        }
+
+        // Helper method to load enhancers metadata with custom structure
+        private static EnhancersMetadata? LoadEnhancersMetadata(string jsonUri)
+        {
+            try
+            {
+                var uri = new Uri(jsonUri);
+                using var stream = AssetLoader.Open(uri);
+                using var reader = new StreamReader(stream);
+                string json = reader.ReadToEnd();
+
+                var metadata = JsonSerializer.Deserialize<EnhancersMetadataJson>(json);
+                if (metadata == null)
+                {
+                    return null;
+                }
+
+                // Convert the JSON structure to SpritePosition dictionaries
+                var result = new EnhancersMetadata
+                {
+                    Decks = ConvertToSpritePositions(metadata.Sprites?.Decks),
+                    Enhancements = ConvertToSpritePositions(metadata.Sprites?.Enhancements),
+                    Seals = ConvertToSpritePositions(metadata.Sprites?.Seals),
+                    Special = ConvertToSpritePositions(metadata.Sprites?.Special),
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading enhancers metadata: {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        private static Dictionary<string, SpritePosition> ConvertToSpritePositions(
+            Dictionary<string, EnhancerSprite>? sprites
+        )
+        {
+            var result = new Dictionary<string, SpritePosition>();
+            if (sprites == null)
+            {
+                return result;
+            }
+
+            foreach (var kvp in sprites)
+            {
+                result[kvp.Key.ToLowerInvariant()] = new SpritePosition
+                {
+                    Name = kvp.Key,
+                    Pos = new Pos { X = kvp.Value.X, Y = kvp.Value.Y },
+                };
             }
 
             return result;
         }
-        catch (Exception ex)
+
+        // Internal classes for metadata deserialization
+        private sealed class EnhancersMetadata
         {
-            DebugLogger.LogError("SpriteService", $"Error loading playing card metadata: {ex.Message}");
-            return new();
+            public Dictionary<string, SpritePosition> Decks { get; set; } = new();
+            public Dictionary<string, SpritePosition> Enhancements { get; set; } = new();
+            public Dictionary<string, SpritePosition> Seals { get; set; } = new();
+            public Dictionary<string, SpritePosition> Special { get; set; } = new();
+        }
+
+        private sealed class EnhancersMetadataJson
+        {
+            [JsonPropertyName("sprites")]
+            public EnhancersSprites? Sprites { get; set; }
+        }
+
+        private sealed record EnhancersSprites(
+            [property: JsonPropertyName("decks")] Dictionary<string, EnhancerSprite>? Decks,
+            [property: JsonPropertyName("enhancements")]
+                Dictionary<string, EnhancerSprite>? Enhancements,
+            [property: JsonPropertyName("seals")] Dictionary<string, EnhancerSprite>? Seals,
+            [property: JsonPropertyName("special")] Dictionary<string, EnhancerSprite>? Special
+        );
+
+        private sealed record EnhancerSprite(
+            [property: JsonPropertyName("x")] int X,
+            [property: JsonPropertyName("y")] int Y,
+            [property: JsonPropertyName("description")] string? Description
+        );
+
+        private sealed class PlayingCardMetadataJson
+        {
+            [JsonPropertyName("sprites")]
+            public Dictionary<string, Dictionary<string, CardPosition>>? Sprites { get; set; }
+        }
+
+        private sealed class CardPosition
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        private sealed class BossMetadata
+        {
+            public Dictionary<string, SpritePosition> Blinds { get; set; } = new();
+            public Dictionary<string, SpritePosition> Bosses { get; set; } = new();
+            public Dictionary<string, SpritePosition> FinisherBosses { get; set; } = new();
+            public Dictionary<string, SpritePosition> Special { get; set; } = new();
+        }
+
+        private sealed class BossMetadataJson
+        {
+            [JsonPropertyName("sprites")]
+            public BossSprites? Sprites { get; set; }
+        }
+
+        private sealed class BossSprites
+        {
+            [JsonPropertyName("blinds")]
+            public Dictionary<string, EnhancerSprite>? Blinds { get; set; }
+
+            [JsonPropertyName("bosses")]
+            public Dictionary<string, EnhancerSprite>? Bosses { get; set; }
+
+            [JsonPropertyName("finisherBosses")]
+            public Dictionary<string, EnhancerSprite>? FinisherBosses { get; set; }
+
+            [JsonPropertyName("special")]
+            public Dictionary<string, EnhancerSprite>? Special { get; set; }
+        }
+
+        private sealed class StickersMetadata
+        {
+            public Dictionary<string, SpritePosition> JokerStickers { get; set; } = new();
+            public Dictionary<string, SpritePosition> StakeStickers { get; set; } = new();
+        }
+
+        private sealed class StickersMetadataJson
+        {
+            [JsonPropertyName("sprites")]
+            public StickersSprites? Sprites { get; set; }
+        }
+
+        private sealed class StickersSprites
+        {
+            [JsonPropertyName("jokerStickers")]
+            public Dictionary<string, EnhancerSprite>? JokerStickers { get; set; }
+
+            [JsonPropertyName("stakeStickers")]
+            public Dictionary<string, EnhancerSprite>? StakeStickers { get; set; }
         }
     }
 
-    // Helper method to load enhancers metadata with custom structure
-    private EnhancersMetadata? LoadEnhancersMetadata(string jsonUri)
+    public class SpritePosition
     {
-        try
-        {
-            var uri = new Uri(jsonUri);
-            using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
+        [JsonPropertyName("name")]
+        public required string Name { get; set; }
 
-            var metadata = JsonSerializer.Deserialize<EnhancersMetadataJson>(json);
-            if (metadata == null) return null;
-
-            // Convert the JSON structure to SpritePosition dictionaries
-            var result = new EnhancersMetadata
-            {
-                decks = ConvertToSpritePositions(metadata.sprites?.decks),
-                enhancements = ConvertToSpritePositions(metadata.sprites?.enhancements),
-                seals = ConvertToSpritePositions(metadata.sprites?.seals),
-                special = ConvertToSpritePositions(metadata.sprites?.special)
-            };
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SpriteService", $"Error loading enhancers metadata: {ex.Message}");
-            return null;
-        }
+        [JsonPropertyName("pos")]
+        public required Pos Pos { get; set; }
     }
 
-    private Dictionary<string, SpritePosition> ConvertToSpritePositions(Dictionary<string, EnhancerSprite>? sprites)
+    public class Pos
     {
-        var result = new Dictionary<string, SpritePosition>();
-        if (sprites == null) return result;
+        [JsonPropertyName("x")]
+        public required int X { get; set; }
 
-        foreach (var kvp in sprites)
-        {
-            result[kvp.Key.ToLower()] = new SpritePosition
-            {
-                Name = kvp.Key,
-                Pos = new Pos { X = kvp.Value.x, Y = kvp.Value.y }
-            };
-        }
-
-        return result;
+        [JsonPropertyName("y")]
+        public required int Y { get; set; }
     }
-
-    // Internal classes for metadata deserialization
-    private class EnhancersMetadata
-    {
-        public Dictionary<string, SpritePosition> decks { get; set; } = new();
-        public Dictionary<string, SpritePosition> enhancements { get; set; } = new();
-        public Dictionary<string, SpritePosition> seals { get; set; } = new();
-        public Dictionary<string, SpritePosition> special { get; set; } = new();
-    }
-
-    private class EnhancersMetadataJson
-    {
-        public EnhancersSprites? sprites { get; set; }
-    }
-
-    private class EnhancersSprites
-    {
-        public Dictionary<string, EnhancerSprite>? decks { get; set; }
-        public Dictionary<string, EnhancerSprite>? enhancements { get; set; }
-        public Dictionary<string, EnhancerSprite>? seals { get; set; }
-        public Dictionary<string, EnhancerSprite>? special { get; set; }
-    }
-
-    private record EnhancerSprite(int x, int y, string? description);
-
-    private class PlayingCardMetadataJson
-    {
-        public Dictionary<string, Dictionary<string, CardPosition>>? sprites { get; set; }
-    }
-
-    private class CardPosition
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-    }
-
-    private class BossMetadata
-    {
-        public Dictionary<string, SpritePosition> blinds { get; set; } = new();
-        public Dictionary<string, SpritePosition> bosses { get; set; } = new();
-        public Dictionary<string, SpritePosition> finisherBosses { get; set; } = new();
-        public Dictionary<string, SpritePosition> special { get; set; } = new();
-    }
-
-    private class BossMetadataJson
-    {
-        public BossSprites? sprites { get; set; }
-    }
-
-    private class BossSprites
-    {
-        public Dictionary<string, EnhancerSprite>? blinds { get; set; }
-        public Dictionary<string, EnhancerSprite>? bosses { get; set; }
-        public Dictionary<string, EnhancerSprite>? finisherBosses { get; set; }
-        public Dictionary<string, EnhancerSprite>? special { get; set; }
-    }
-
-    private class StickersMetadata
-    {
-        public Dictionary<string, SpritePosition> jokerStickers { get; set; } = new();
-        public Dictionary<string, SpritePosition> stakeStickers { get; set; } = new();
-    }
-
-    private class StickersMetadataJson
-    {
-        public StickersSprites? sprites { get; set; }
-    }
-
-    private class StickersSprites
-    {
-        public Dictionary<string, EnhancerSprite>? jokerStickers { get; set; }
-        public Dictionary<string, EnhancerSprite>? stakeStickers { get; set; }
-    }
-}
-
-public class SpritePosition
-{
-    [JsonPropertyName("name")]
-    public required string Name { get; set; }
-
-    [JsonPropertyName("pos")]
-    public required Pos Pos { get; set; }
-}
-
-public class Pos
-{
-    [JsonPropertyName("x")]
-    public required int X { get; set; }
-
-    [JsonPropertyName("y")]
-    public required int Y { get; set; }
 }
