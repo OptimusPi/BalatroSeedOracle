@@ -1,0 +1,70 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Oracle.Helpers
+{
+    /// <summary>
+    /// A TextWriter that filters out duplicate seed report lines from Motely's console output
+    /// </summary>
+    public class FilteredConsoleWriter : TextWriter
+    {
+        private readonly TextWriter _originalWriter;
+        private readonly Action<string>? _onOutput;
+        
+        // Regex to match Motely's CSV output format: SEED,SCORE,TALLY1,TALLY2,...
+        private static readonly Regex SeedLineRegex = new Regex(@"^[A-Z0-9]+,\d+(?:,\d+)*$", RegexOptions.Compiled);
+        
+        public FilteredConsoleWriter(TextWriter originalWriter, Action<string>? onOutput = null)
+        {
+            _originalWriter = originalWriter;
+            _onOutput = onOutput;
+        }
+        
+        public override Encoding Encoding => _originalWriter.Encoding;
+        
+        public override void WriteLine(string? value)
+        {
+            if (value != null)
+            {
+                // Filter out seed result lines (CSV format)
+                if (SeedLineRegex.IsMatch(value.Trim()))
+                {
+                    // Skip this line - it's a duplicate seed report
+                    return;
+                }
+            }
+            
+            // Pass through all other output
+            _originalWriter.WriteLine(value);
+            _onOutput?.Invoke(value + Environment.NewLine);
+        }
+        
+        public override void Write(string? value)
+        {
+            // For partial writes, just pass through
+            _originalWriter.Write(value);
+            if (value != null)
+            {
+                _onOutput?.Invoke(value);
+            }
+        }
+        
+        public override void Write(char value)
+        {
+            _originalWriter.Write(value);
+            _onOutput?.Invoke(value.ToString());
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Don't dispose the original writer - we don't own it
+                _originalWriter.Flush();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

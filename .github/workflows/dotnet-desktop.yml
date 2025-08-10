@@ -1,8 +1,8 @@
-name: Build BalatroSeedOracle (No Signing)
+name: Build and Release BalatroSeedOracle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "development" ]
     tags:
       - 'v*'
   pull_request:
@@ -15,10 +15,20 @@ jobs:
         include:
           - os: windows-latest
             runtime: win-x64
+            archive_type: zip
+            archive_ext: .zip
           - os: ubuntu-latest
             runtime: linux-x64
+            archive_type: tar
+            archive_ext: .tar.gz
           - os: macos-latest
             runtime: osx-x64
+            archive_type: tar
+            archive_ext: .tar.gz
+          - os: macos-latest
+            runtime: osx-arm64
+            archive_type: tar
+            archive_ext: .tar.gz
 
     runs-on: ${{ matrix.os }}
 
@@ -33,42 +43,97 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: Restore
-      run: dotnet restore
+    - name: Restore dependencies
+      run: dotnet restore src/Oracle.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build src/Oracle.csproj --configuration Release --no-restore
 
+    # Publish as self-contained single-file executable with trimming and compression
     - name: Publish
-      run: dotnet publish src/Oracle.csproj -c Release -r ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -o ./publish
+      run: |
+        dotnet publish src/Oracle.csproj \
+          --configuration Release \
+          --runtime ${{ matrix.runtime }} \
+          --self-contained true \
+          -p:PublishSingleFile=true \
+          -p:PublishTrimmed=true \
+          -p:TrimMode=partial \
+          -p:PublishReadyToRun=true \
+          -p:EnableCompressionInSingleFile=true \
+          -p:IncludeNativeLibrariesForSelfExtract=true \
+          -p:DebugType=none \
+          -p:DebugSymbols=false \
+          --output ./publish/${{ matrix.runtime }}
 
-    - name: Upload Build
+    # Create version info file
+    - name: Create version info
+      shell: bash
+      run: |
+        echo "BalatroSeedOracle" > ./publish/${{ matrix.runtime }}/VERSION.txt
+        echo "Runtime: ${{ matrix.runtime }}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
+        echo "Build Date: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> ./publish/${{ matrix.runtime }}/VERSION.txt
+        echo "Git Commit: ${GITHUB_SHA::8}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          echo "Version: ${GITHUB_REF#refs/tags/}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
+        else
+          echo "Version: ${GITHUB_REF#refs/heads/}-${GITHUB_SHA::8}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
+        fi
+
+    # Create README for the release
+    - name: Create README
+      shell: bash
+      run: |
+        cat > ./publish/${{ matrix.runtime }}/README.txt << 'EOF'
+        BalatroSeedOracle - Balatro Seed Searching Tool
+        ================================================
+
+        This is a self-contained executable. No .NET runtime installation required!
+
+        HOW TO RUN:
+        -----------
+        Windows: Double-click Oracle.exe
+        Linux:   chmod +x Oracle && ./Oracle
+        macOS:   chmod +x Oracle && ./Oracle
+
+        For macOS users: If you get a security warning, right-click the app and select "Open"
+        or run: xattr -d com.apple.quarantine Oracle
+
+        TROUBLESHOOTING:
+        ----------------
+        - Linux: Requires libx11, libice6, libsm6, and libfontconfig1
+          Ubuntu/Debian: sudo apt-get install libx11-6 libice6 libsm6 libfontconfig1
+          Fedora: sudo dnf install libX11 libICE libSM fontconfig
+
+        - Windows: If Windows Defender blocks the app, click "More info" then "Run anyway"
+
+        For more information, visit: https://github.com/yourusername/BalatroSeedOracle
+        EOF
+
+    # Package for Windows (ZIP)
+    - name: Package Windows
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        $version = if ($env:GITHUB_REF -match 'refs/tags/(.+)') { $matches[1] } else { "latest" }
+        Compress-Archive -Path ./publish/${{ matrix.runtime }}/* -DestinationPath ./BalatroSeedOracle-$version-${{ matrix.runtime }}.zip
+
+    # Package for Linux/macOS (TAR.GZ)
+    - name: Package Unix
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: |
+        version="${GITHUB_REF#refs/tags/}"
+        if [[ "$version" == "$GITHUB_REF" ]]; then
+          version="latest"
+        fi
+        cd ./publish/${{ matrix.runtime }}
+        chmod +x Oracle
+        cd ../..
+        tar -czf BalatroSeedOracle-$version-${{ matrix.runtime }}.tar.gz -C ./publish/${{ matrix.runtime }} .
+
+    # Upload artifacts for release job
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: BalatroSeedOracle-${{ matrix.runtime }}
-        path: ./publish/
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: ./artifacts
-
-    - name: List Artifacts
-      run: ls -R ./artifacts
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ./artifacts/**/*
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: BalatroSeedOracle-${{ matrix

@@ -1,0 +1,60 @@
+{
+    "name": "SkipTagAnte2BlueprintAnte2",
+    "description": "BNegative Skip Tag Ante 2 lands on a Blueprint",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "souljoker",
+            "value": "perkeo",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0,1,2,3]
+            }
+        },
+        {
+            "type": "smallblindtag",
+            "value": "negativetag",
+            "antes": [2]
+        },
+        {
+            "type": "joker",
+            "value": "blueprint",
+            "antes": [2],
+            "sources": {
+                "packSlots": [2,3]
+            }
+        }
+    ],
+    "should": [
+        {
+            "type": "joker",
+            "value": "HangingChad",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Photograph",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 1
+        },
+        {
+            "type": "joker",
+            "value": "Blueprint",
+            "antes": [2],
+            "sources": {
+                "shopSlots": [2,3]
+            },
+            "score": 10
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "White"
+}

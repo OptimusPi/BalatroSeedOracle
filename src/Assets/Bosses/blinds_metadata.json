@@ -1,7 +1,7 @@
 {
   "spriteSheet": "BlindChips.png",
-  "spriteWidth": 34,
-  "spriteHeight": 34,
+  "spriteWidth": 68,
+  "spriteHeight": 68,
   "columns": 21,
   "rows": 31,
   "animated": true,

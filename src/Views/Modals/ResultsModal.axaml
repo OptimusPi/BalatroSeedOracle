@@ -5,15 +5,15 @@
     <UserControl.Styles>
         <!-- Filter button styling -->
         <Style Selector="Button.filter-button">
-            <Setter Property="Background" Value="#4f6367"/>
+            <Setter Property="Background" Value="{StaticResource Background}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#7A9E9F"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="4"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Transitions">
@@ -25,12 +25,12 @@
         </Style>
         
         <Style Selector="Button.filter-button:pointerover">
-            <Setter Property="Background" Value="#5a6d71"/>
+            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
             <Setter Property="Margin" Value="4,2,4,6"/>
         </Style>
         
         <Style Selector="Button.filter-button:pressed">
-            <Setter Property="Background" Value="#009dff"/>
+            <Setter Property="Background" Value="{StaticResource ToggleBlue}"/>
         </Style>
         
         <!-- Filter icon style -->
@@ -43,7 +43,7 @@
         <!-- Filter description style -->
         <Style Selector="TextBlock.filter-desc">
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
             <Setter Property="Margin" Value="0,2,0,0"/>
         </Style>
     </UserControl.Styles>
@@ -56,12 +56,12 @@
                 <TextBlock Text="SAVED FILTERS" 
                           FontFamily="{StaticResource BalatroFont}"
                           FontSize="28"
-                          FontWeight="Bold"
-                          Foreground="#FEB95F"/>
+                          
+                          Foreground="{StaticResource PaleOrange}"/>
                 <TextBlock Text="Click to load and search"
                           FontFamily="{StaticResource BalatroFont}"
                           FontSize="14"
-                          Foreground="#CCCCCC"
+                          Foreground="{StaticResource MediumGrey}"
                           HorizontalAlignment="Center"/>
             </StackPanel>
         </StackPanel>
@@ -73,29 +73,10 @@
             </WrapPanel>
         </ScrollViewer>
         
-        <!-- Navigation buttons and Analyze -->
+        <!-- Navigation buttons -->
         <Grid Grid.Row="2" Margin="0,20,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Analyze button on the left -->
-            <Button Grid.Column="0"
-                    Name="AnalyzeButton"
-                    Classes="btn-blue"
-                    Background="#17a2b8"
-                    Content="ANALYZE"
-                    FontSize="16"
-                    MinWidth="120"
-                    MinHeight="40"
-                    Margin="0,0,20,0"
-                    Click="OnAnalyzeClick"
-                    ToolTip.Tip="Analyze seed data"/>
-            
             <!-- Navigation in the center -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
                 <Button Name="PrevPageButton" 
                         Classes="btn-orange"
                         Content="← PREVIOUS"
@@ -108,7 +89,7 @@
                 <TextBlock Name="PageIndicator"
                           Text="Page 1 of 1"
                           FontSize="16"
-                          Foreground="#CCCCCC"
+                          Foreground="{StaticResource MediumGrey}"
                           VerticalAlignment="Center"/>
                 
                 <Button Name="NextPageButton"

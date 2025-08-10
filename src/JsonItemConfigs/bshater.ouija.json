@@ -1,0 +1,89 @@
+{
+    "name": "Steeleo",
+    "description": "Steel joker, Perkeo, and bp/bs by ante 5/6",
+    "author": "#1 Bootstraps hater (c++)",
+    "must": [
+        {
+            "type": "joker",
+            "value": "SteelJoker",
+            "antes": [2,3,4,5],
+            "sources": {
+                "shopSlots": [0, 1],
+                "packSlots": [0, 1]
+            }
+        },
+        {
+            "type": "souljoker",
+            "value": "Perkeo",
+            "antes": [1,2,3,4],
+            "sources": {
+                "packSlots": [0, 1, 2, 3],
+                "requireMega": false,
+                "tags": true
+            }
+        },
+        {
+            "type": "Joker",
+            "value": "DNA",
+            "antes": [1,2,3,4,5,6,7,8],
+            "sources": {
+                "shopSlots": [0, 1,2,3,4,5,6,7,8],
+                "packSlots": [0, 1,2,3,4,5]
+            }
+        }
+    ],
+    "should": [
+         {
+            "type": "joker",
+            "value": "Blueprint",
+            "antes": [1,2,3,4,5,6],
+            "sources": {
+                "packSlots": [0, 1, 2, 3]
+            },
+            "score": 7
+        },
+        {
+            "type": "joker",
+            "value": "Brainstorm",
+            "antes": [1,2,3,4,5,6],
+            "sources": {
+                "packSlots": [0, 1, 2, 3]
+            },
+            "score": 7
+        },
+        {
+            "type": "TarotCard",
+            "enhancement": "TheChariot",
+            "antes": [1],
+            "sources": {
+                "shopSlots": [0, 1, 2, 3],
+                "packSlots": [0, 1, 2, 3]
+            },
+            "score": 1
+        },
+        {
+            "type": "playingcard",
+            "enhancement": "Steel",
+            "antes": [1,2,3],
+            "sources": {
+                "shopSlots": [0, 1, 2, 3],
+                "packSlots": [0, 1, 2, 3]
+            },
+            "score": 1
+        },
+         {
+            "type": "playingcard",
+            "enhancement": "Steel",
+            "seal": "red",
+            "antes": [1,2,3],
+            "sources": {
+                "shopSlots": [0, 1, 2, 3],
+                "packSlots": [0, 1, 2, 3]
+            },
+            "score": 2
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "Black"
+}

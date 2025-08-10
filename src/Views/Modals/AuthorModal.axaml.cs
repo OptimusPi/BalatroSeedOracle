@@ -10,13 +10,13 @@ namespace Oracle.Views.Modals
     public partial class AuthorModalContent : UserControl
     {
         private readonly UserProfileService? _userProfileService;
-        
+
         public AuthorModalContent()
         {
             InitializeComponent();
-            
+
             _userProfileService = ServiceHelper.GetService<UserProfileService>();
-            
+
             // Load current author name
             if (_userProfileService != null)
             {
@@ -27,25 +27,25 @@ namespace Oracle.Views.Modals
                 }
             }
         }
-        
+
         private void InitializeComponent()
         {
             Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void OnSaveClick(object? sender, RoutedEventArgs e)
         {
             try
             {
                 var authorBox = this.FindControl<TextBox>("AuthorNameBox");
                 var newName = authorBox?.Text?.Trim();
-                
+
                 if (!string.IsNullOrEmpty(newName) && _userProfileService != null)
                 {
                     _userProfileService.SetAuthorName(newName);
                     DebugLogger.Log("AuthorModal", $"Author name updated to: {newName}");
                 }
-                
+
                 // Close the modal
                 CloseModal();
             }
@@ -54,12 +54,12 @@ namespace Oracle.Views.Modals
                 DebugLogger.LogError("AuthorModal", $"Error saving author name: {ex.Message}");
             }
         }
-        
+
         private void OnCancelClick(object? sender, RoutedEventArgs e)
         {
             CloseModal();
         }
-        
+
         private void CloseModal()
         {
             // Find the main menu and hide the modal

@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.ToolsModal">
+    
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+            <!-- Title -->
+            <TextBlock Text="TOOLS" 
+                       FontSize="24" 
+                        
+                       Foreground="{StaticResource Gold}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+            
+            <!-- Import Files Button -->
+            <Button Name="ImportFilesButton"
+                   Click="OnImportFilesClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Import Files" 
+                           FontSize="20"
+                           
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+            
+            <!-- Word Lists Button -->
+            <Button Name="WordListsButton"
+                   Click="OnWordListsClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Word Lists" 
+                           FontSize="20"
+                           
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+            
+            <!-- Credits Button -->
+            <Button Name="CreditsButton"
+                   Click="OnCreditsClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Credits" 
+                           FontSize="20"
+                           
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

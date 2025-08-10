@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using DuckDB.NET.Data;
-using Oracle.Models;
 using Oracle.Helpers;
+using Oracle.Models;
 
 namespace Oracle.Services
 {
@@ -49,13 +45,13 @@ namespace Oracle.Services
                 _connection = null;
             }
 
-            // Set up new database path
+            // Set up new database path - simple: filterName.duckdb
             var searchResultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
             Directory.CreateDirectory(searchResultsDir);
-            
-            _dbPath = Path.Combine(searchResultsDir, $"{_currentFilterName}.ouija.duckdb");
+
+            _dbPath = Path.Combine(searchResultsDir, $"{_currentFilterName}.duckdb");
             _connectionString = $"Data Source={_dbPath}";
-            
+
             DebugLogger.Log("SearchHistoryService", $"Database path set to: {_dbPath}");
             InitializeDatabase();
         }
@@ -81,79 +77,37 @@ namespace Oracle.Services
             {
                 var connection = GetConnection();
 
-                // Create searches table
-                using var createSearchesTable = connection.CreateCommand();
-                createSearchesTable.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS searches (
-                        search_id INTEGER PRIMARY KEY,
-                        config_path VARCHAR,
-                        config_hash VARCHAR,
-                        search_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        thread_count INTEGER,
-                        min_score INTEGER,
-                        batch_size INTEGER,
-                        deck VARCHAR,
-                        stake VARCHAR,
-                        max_ante INTEGER,
-                        total_seeds_searched BIGINT,
-                        results_found INTEGER,
-                        duration_seconds DOUBLE,
-                        search_status VARCHAR DEFAULT 'running'
+                // Create enhanced results table with JSON support
+                using var createTable = connection.CreateCommand();
+                createTable.CommandText =
+                    @"
+                    CREATE TABLE IF NOT EXISTS results (
+                        seed VARCHAR PRIMARY KEY,
+                        score DOUBLE,
+                        details VARCHAR,
+                        tally_scores JSON,
+                        item_labels JSON,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ";
-                createSearchesTable.ExecuteNonQuery();
+                createTable.ExecuteNonQuery();
 
-                // Create results table
-                using var createResultsTable = connection.CreateCommand();
-                createResultsTable.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS search_results (
-                        result_id INTEGER PRIMARY KEY,
-                        search_id INTEGER,
-                        seed VARCHAR,
-                        score INTEGER,
-                        details TEXT,
-                        ante INTEGER,
-                        score_breakdown TEXT,
-                        found_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (search_id) REFERENCES searches(search_id)
-                    )
+                // Simple index on score for sorting
+                using var createIndex = connection.CreateCommand();
+                createIndex.CommandText =
+                    @"
+                    CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);
                 ";
-                createResultsTable.ExecuteNonQuery();
-
-                // Create filter items table for search reconstruction
-                using var createFilterTable = connection.CreateCommand();
-                createFilterTable.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS filter_items (
-                        item_id INTEGER PRIMARY KEY,
-                        search_id INTEGER,
-                        filter_type VARCHAR,
-                        item_type VARCHAR,
-                        item_value VARCHAR,
-                        edition VARCHAR,
-                        score INTEGER,
-                        antes TEXT,
-                        FOREIGN KEY (search_id) REFERENCES searches(search_id)
-                    )
-                ";
-                createFilterTable.ExecuteNonQuery();
-
-                // Create indexes for better performance
-                using var createIndexes = connection.CreateCommand();
-                createIndexes.CommandText = @"
-                    CREATE INDEX IF NOT EXISTS idx_search_date ON searches(search_date);
-                    CREATE INDEX IF NOT EXISTS idx_seed ON search_results(seed);
-                    CREATE INDEX IF NOT EXISTS idx_score ON search_results(score DESC);
-                    CREATE INDEX IF NOT EXISTS idx_search_id ON search_results(search_id);
-                    CREATE INDEX IF NOT EXISTS idx_config_hash ON searches(config_hash);
-                    CREATE INDEX IF NOT EXISTS idx_filter_search ON filter_items(search_id);
-                ";
-                createIndexes.ExecuteNonQuery();
+                createIndex.ExecuteNonQuery();
 
                 DebugLogger.Log("SearchHistoryService", "Database initialized successfully");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to initialize database: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to initialize database: {ex.Message}"
+                );
             }
         }
 
@@ -168,77 +122,107 @@ namespace Oracle.Services
         }
 
         /// <summary>
-        /// Import search results from a CSV file directly into DuckDB
+        /// Add a search result to the database
         /// </summary>
-        public async Task<int> ImportFromCsvAsync(long searchId, string csvPath)
+        public async Task AddSearchResultAsync(SearchResult result)
         {
             try
             {
-                if (!File.Exists(csvPath))
-                {
-                    DebugLogger.LogError("SearchHistoryService", $"CSV file not found: {csvPath}");
-                    return 0;
-                }
-
                 var connection = GetConnection();
 
-                // Create a temporary table to hold the CSV data
-                using var createTempTable = connection.CreateCommand();
-                createTempTable.CommandText = @"
-                    CREATE TEMPORARY TABLE IF NOT EXISTS csv_import (
-                        seed VARCHAR,
-                        score INTEGER,
-                        details VARCHAR
-                    )
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText =
+                    @"
+                    INSERT OR REPLACE INTO results (seed, score, details, tally_scores, item_labels, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ";
-                await createTempTable.ExecuteNonQueryAsync();
 
-                // Import CSV data
-                using var importCmd = connection.CreateCommand();
-                importCmd.CommandText = $@"
-                    COPY csv_import FROM '{csvPath}' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
-                ";
-                await importCmd.ExecuteNonQueryAsync();
+                cmd.Parameters.Add(new DuckDBParameter(result.Seed));
+                cmd.Parameters.Add(new DuckDBParameter(result.TotalScore));
+                cmd.Parameters.Add(new DuckDBParameter("")); // ScoreBreakdown removed
+                
+                // Convert arrays to JSON strings for storage
+                var tallyScoresJson = result.Scores != null 
+                    ? JsonSerializer.Serialize(result.Scores)
+                    : null;
+                var itemLabelsJson = result.Labels != null
+                    ? JsonSerializer.Serialize(result.Labels) 
+                    : null;
+                    
+                cmd.Parameters.Add(new DuckDBParameter(tallyScoresJson ?? (object)DBNull.Value));
+                cmd.Parameters.Add(new DuckDBParameter(itemLabelsJson ?? (object)DBNull.Value));
+                cmd.Parameters.Add(new DuckDBParameter(result.Timestamp));
 
-                // Insert into search_results with the search_id
-                using var insertCmd = connection.CreateCommand();
-                insertCmd.CommandText = @"
-                    INSERT INTO search_results (search_id, seed, score, details)
-                    SELECT $1, seed, score, details FROM csv_import
-                ";
-                insertCmd.Parameters.Add(new DuckDBParameter("$1", searchId));
-                var rowsInserted = await insertCmd.ExecuteNonQueryAsync();
-
-                // Clean up temp table
-                using var dropCmd = connection.CreateCommand();
-                dropCmd.CommandText = "DROP TABLE csv_import";
-                await dropCmd.ExecuteNonQueryAsync();
-
-                DebugLogger.Log("SearchHistoryService", $"Imported {rowsInserted} results from CSV");
-                return rowsInserted;
+                await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to import CSV: {ex.Message}");
-                return 0;
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to add search result: {ex.Message}"
+                );
             }
         }
 
         /// <summary>
-        /// Export search results to a CSV file
+        /// Get all results from the database
         /// </summary>
-        public async Task<bool> ExportToCsvAsync(long searchId, string csvPath)
+        public async Task<List<SearchResult>> GetSearchResultsAsync()
+        {
+            var results = new List<SearchResult>();
+
+            try
+            {
+                var connection = GetConnection();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText =
+                    @"
+                    SELECT seed, score, details
+                    FROM results
+                    ORDER BY score DESC
+                    LIMIT 1000
+                ";
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    results.Add(
+                        new SearchResult
+                        {
+                            Seed = reader.GetString(0),
+                            TotalScore = reader.GetInt32(1),
+                            // ScoreBreakdown removed, but still reading from column 2 for compatibility
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchHistoryService",
+                    $"Failed to get search results: {ex.Message}"
+                );
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Export results to a CSV file
+        /// </summary>
+        public async Task<bool> ExportToCsvAsync(string csvPath)
         {
             try
             {
                 var connection = GetConnection();
 
                 using var exportCmd = connection.CreateCommand();
-                exportCmd.CommandText = $@"
+                exportCmd.CommandText =
+                    $@"
                     COPY (
                         SELECT seed, score, details 
-                        FROM search_results 
-                        WHERE search_id = {searchId}
+                        FROM results 
                         ORDER BY score DESC, seed
                     ) TO '{csvPath}' (FORMAT CSV, HEADER TRUE)
                 ";
@@ -254,274 +238,72 @@ namespace Oracle.Services
             }
         }
 
-        public async Task<long> StartNewSearchAsync(string configPath, int threadCount, int minScore, 
-            int batchSize, string deck, string stake, int maxAnte = 39, string? configHash = null)
-        {
-            try
-            {
-                // Update filter name based on config path
-                SetFilterName(configPath);
-                
-                var connection = GetConnection();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    INSERT INTO searches (config_path, config_hash, thread_count, min_score, batch_size, 
-                                          deck, stake, max_ante, results_found, search_status)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                    RETURNING search_id
-                ";
-                
-                cmd.Parameters.Add(new DuckDBParameter("$1", configPath));
-                cmd.Parameters.Add(new DuckDBParameter("$2", configHash ?? ""));
-                cmd.Parameters.Add(new DuckDBParameter("$3", threadCount));
-                cmd.Parameters.Add(new DuckDBParameter("$4", minScore));
-                cmd.Parameters.Add(new DuckDBParameter("$5", batchSize));
-                cmd.Parameters.Add(new DuckDBParameter("$6", deck));
-                cmd.Parameters.Add(new DuckDBParameter("$7", stake));
-                cmd.Parameters.Add(new DuckDBParameter("$8", maxAnte));
-                cmd.Parameters.Add(new DuckDBParameter("$9", 0)); // results_found starts at 0
-                cmd.Parameters.Add(new DuckDBParameter("$10", "running"));
-
-                var searchId = Convert.ToInt64(await cmd.ExecuteScalarAsync());
-                DebugLogger.Log("SearchHistoryService", $"Started new search with ID: {searchId}");
-                return searchId;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to start new search: {ex.Message}");
-                return -1;
-            }
-        }
-
-        public async Task AddSearchResultAsync(long searchId, SearchResult result)
-        {
-            try
-            {
-                var connection = GetConnection();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    INSERT INTO search_results (search_id, seed, score, details, ante, score_breakdown)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                ";
-                
-                cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
-                cmd.Parameters.Add(new DuckDBParameter("$2", result.Seed));
-                cmd.Parameters.Add(new DuckDBParameter("$3", result.Score));
-                cmd.Parameters.Add(new DuckDBParameter("$4", result.Details ?? ""));
-                cmd.Parameters.Add(new DuckDBParameter("$5", result.Ante));
-                cmd.Parameters.Add(new DuckDBParameter("$6", result.ScoreBreakdown ?? ""));
-
-                await cmd.ExecuteNonQueryAsync();
-                
-                // Update the results count
-                using var updateCmd = connection.CreateCommand();
-                updateCmd.CommandText = @"
-                    UPDATE searches 
-                    SET results_found = results_found + 1 
-                    WHERE search_id = $1
-                ";
-                updateCmd.Parameters.Add(new DuckDBParameter("$1", searchId));
-                await updateCmd.ExecuteNonQueryAsync();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to add search result: {ex.Message}");
-            }
-        }
-
-        public async Task CompleteSearchAsync(long searchId, long totalSeedsSearched, double durationSeconds, bool wasCancelled = false)
-        {
-            try
-            {
-                var connection = GetConnection();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    UPDATE searches 
-                    SET total_seeds_searched = $1, duration_seconds = $2, search_status = $3
-                    WHERE search_id = $4
-                ";
-                
-                cmd.Parameters.Add(new DuckDBParameter("$1", totalSeedsSearched));
-                cmd.Parameters.Add(new DuckDBParameter("$2", durationSeconds));
-                cmd.Parameters.Add(new DuckDBParameter("$3", wasCancelled ? "cancelled" : "completed"));
-                cmd.Parameters.Add(new DuckDBParameter("$4", searchId));
-
-                await cmd.ExecuteNonQueryAsync();
-                var status = wasCancelled ? "cancelled" : "completed";
-                DebugLogger.Log("SearchHistoryService", $"Search {searchId} {status}: {totalSeedsSearched} seeds in {durationSeconds:F2}s");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to complete search: {ex.Message}");
-            }
-        }
-
-        public async Task<List<SearchHistorySummary>> GetRecentSearchesAsync(int limit = 10)
-        {
-            var results = new List<SearchHistorySummary>();
-            
-            try
-            {
-                var connection = GetConnection();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    SELECT search_id, config_path, search_date, results_found, 
-                           total_seeds_searched, duration_seconds, deck, stake
-                    FROM searches
-                    ORDER BY search_date DESC
-                    LIMIT $1
-                ";
-                cmd.Parameters.Add(new DuckDBParameter("$1", limit));
-
-                using var reader = await cmd.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    results.Add(new SearchHistorySummary
-                    {
-                        SearchId = reader.GetInt64(0),
-                        ConfigPath = reader.GetString(1),
-                        SearchDate = reader.GetDateTime(2),
-                        ResultsFound = reader.GetInt32(3),
-                        TotalSeedsSearched = reader.IsDBNull(4) ? 0 : reader.GetInt64(4),
-                        DurationSeconds = reader.IsDBNull(5) ? 0 : reader.GetDouble(5),
-                        Deck = reader.GetString(6),
-                        Stake = reader.GetString(7)
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to get recent searches: {ex.Message}");
-            }
-
-            return results;
-        }
-
-        public async Task<List<SearchResult>> GetSearchResultsAsync(long searchId)
-        {
-            var results = new List<SearchResult>();
-            
-            try
-            {
-                var connection = GetConnection();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    SELECT seed, score, details, ante, score_breakdown
-                    FROM search_results
-                    WHERE search_id = $1
-                    ORDER BY score DESC
-                ";
-                cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
-
-                using var reader = await cmd.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    results.Add(new SearchResult
-                    {
-                        Seed = reader.GetString(0),
-                        Score = reader.GetInt32(1),
-                        Details = reader.GetString(2),
-                        Ante = reader.GetInt32(3),
-                        ScoreBreakdown = reader.IsDBNull(4) ? "" : reader.GetString(4)
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to get search results: {ex.Message}");
-            }
-
-            return results;
-        }
-        
         /// <summary>
-        /// Get live results as an observable collection that updates automatically
+        /// Export all results from DuckDB to a file (CSV or JSON) with all columns
         /// </summary>
-        public async Task<ObservableCollection<SearchResultViewModel>> GetLiveResultsObservableAsync(long searchId)
+        public async Task<int> ExportResultsAsync(string filePath)
         {
-            var collection = new ObservableCollection<SearchResultViewModel>();
-            
+            var connection = GetConnection();
+            var extension = Path.GetExtension(filePath)?.ToLowerInvariant();
+
             try
             {
-                // Initial load of existing results
-                var results = await GetSearchResultsAsync(searchId);
-                int index = 1;
-                foreach (var result in results)
+                using var cmd = connection.CreateCommand();
+                
+                if (extension == ".json")
                 {
-                    collection.Add(new SearchResultViewModel
-                    {
-                        Index = index++,
-                        Seed = result.Seed,
-                        Score = result.Score,
-                        Details = result.Details,
-                        ScoreBreakdown = result.ScoreBreakdown
-                    });
+                    // Export as JSON with all columns
+                    cmd.CommandText = @"
+                        COPY (
+                            SELECT 
+                                seed,
+                                score,
+                                details,
+                                tally_scores,
+                                item_labels,
+                                timestamp
+                            FROM results
+                            ORDER BY score DESC
+                        ) TO ? (FORMAT JSON, ARRAY true)
+                    ";
+                    var param = new DuckDBParameter();
+                    param.Value = filePath;
+                    cmd.Parameters.Add(param);
+                    await cmd.ExecuteNonQueryAsync();
                 }
+                else
+                {
+                    // Export as CSV - for now, just export the basic columns plus JSON as strings
+                    // DuckDB doesn't support complex JSON flattening in COPY TO
+                    cmd.CommandText = $@"
+                        COPY (
+                            SELECT 
+                                seed,
+                                score,
+                                timestamp,
+                                details,
+                                COALESCE(tally_scores::VARCHAR, '') as tally_scores,
+                                COALESCE(item_labels::VARCHAR, '') as item_labels
+                            FROM results
+                            ORDER BY score DESC
+                        ) TO '{filePath.Replace("'", "''")}' (FORMAT CSV, HEADER TRUE)
+                    ";
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                // Get count of exported rows
+                using var countCmd = connection.CreateCommand();
+                countCmd.CommandText = "SELECT COUNT(*) FROM results";
+                var count = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
+                
+                DebugLogger.Log("SearchHistoryService", $"Exported {count} results to: {filePath}");
+                return count;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to get live results: {ex.Message}");
+                DebugLogger.LogError("SearchHistoryService", $"Error exporting results: {ex.Message}");
+                throw;
             }
-            
-            return collection;
-        }
-        
-        /// <summary>
-        /// Save filter configuration for a search
-        /// </summary>
-        public async Task SaveFilterItemsAsync(long searchId, Motely.Filters.OuijaConfig config)
-        {
-            try
-            {
-                var connection = GetConnection();
-                
-                // Save MUST items
-                foreach (var item in config.Must)
-                {
-                    await SaveFilterItemAsync(connection, searchId, "must", item);
-                }
-                
-                // Save SHOULD items
-                foreach (var item in config.Should)
-                {
-                    await SaveFilterItemAsync(connection, searchId, "should", item);
-                }
-                
-                // Save MUST NOT items
-                foreach (var item in config.MustNot)
-                {
-                    await SaveFilterItemAsync(connection, searchId, "mustnot", item);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to save filter items: {ex.Message}");
-            }
-        }
-        
-        private async Task SaveFilterItemAsync(DuckDBConnection connection, long searchId, string filterType, 
-            Motely.Filters.OuijaConfig.FilterItem item)
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
-                INSERT INTO filter_items (search_id, filter_type, item_type, item_value, edition, score, antes)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ";
-            
-            cmd.Parameters.Add(new DuckDBParameter("$1", searchId));
-            cmd.Parameters.Add(new DuckDBParameter("$2", filterType));
-            cmd.Parameters.Add(new DuckDBParameter("$3", item.Type));
-            cmd.Parameters.Add(new DuckDBParameter("$4", item.Value));
-            cmd.Parameters.Add(new DuckDBParameter("$5", item.Edition ?? ""));
-            cmd.Parameters.Add(new DuckDBParameter("$6", item.Score));
-            cmd.Parameters.Add(new DuckDBParameter("$7", System.Text.Json.JsonSerializer.Serialize(item.SearchAntes)));
-            
-            await cmd.ExecuteNonQueryAsync();
         }
     }
 

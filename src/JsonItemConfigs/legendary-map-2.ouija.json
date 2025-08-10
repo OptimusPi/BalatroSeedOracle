@@ -1,0 +1,76 @@
+{
+    "name": "PirateEgg",
+    "description": "pifreak loves you! This filter configuration contains all the cards that pifreak loves.",
+    "author": "pifreak",
+    "must": [
+        {
+            "type": "soulJoker",
+            "value": "Triboulet",
+            "antes": [1],
+            "sources": {
+                "packSlots": [1]
+            },
+            "score": 1
+        }
+        
+    ],
+    "should": [
+        {
+            "Type": "Joker",
+            "Value": "Blueprint",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "Brainstorm",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "HangingChad",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "Dusk",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "SockAndBuskin",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "Type": "Joker",
+            "Value": "Seltzer",
+            "antes": [1],
+            "sources": {
+                "packSlots": [0],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "White"
+}

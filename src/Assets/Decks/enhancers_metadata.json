@@ -21,7 +21,7 @@
       "Challenge": { "x": 0, "y": 4 },
       "Anaglyph": { "x": 2, "y": 4 },
       "Zodiac": { "x": 3, "y": 4 },
-      "Nebula": { "x": 4, "y": 0 }
+      "Nebula": { "x": 3, "y": 0 }
     },
     "enhancements": {
       "Bonus": { "x": 1, "y": 1 },

@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Motely.Filters;
-using Oracle.Models;
 using Oracle.Helpers;
-using System.Text.Json;
+using Oracle.Models;
 
 namespace Oracle.Services
 {
@@ -17,84 +18,124 @@ namespace Oracle.Services
         private readonly SearchHistoryService _searchHistory;
         private CancellationTokenSource? _cts;
         private Task? _captureTask;
-        private long _currentSearchId = -1;
         private int _resultCount = 0;
-        
+        private Motely.Filters.OuijaConfig? _filterConfig;
+
         public event Action<SearchResult>? ResultCaptured;
         public event Action<int>? ResultCountChanged;
-        
+
         public int CapturedCount => _resultCount;
         public bool IsCapturing => _captureTask != null && !_captureTask.IsCompleted;
-        
+
         public MotelyResultCapture(SearchHistoryService searchHistory)
         {
-            _searchHistory = searchHistory ?? throw new ArgumentNullException(nameof(searchHistory));
+            _searchHistory =
+                searchHistory ?? throw new ArgumentNullException(nameof(searchHistory));
         }
-        
+
+        /// <summary>
+        /// Set the filter configuration to extract labels
+        /// </summary>
+        public void SetFilterConfig(Motely.Filters.OuijaConfig config)
+        {
+            _filterConfig = config;
+            DebugLogger.Log(
+                "MotelyResultCapture",
+                $"Filter config set: {config?.Name ?? "null"}, Should items: {config?.Should?.Count ?? 0}"
+            );
+        }
+
         /// <summary>
         /// Start capturing results from Motely's queue
         /// </summary>
-        public async Task StartCaptureAsync(long searchId)
+        public async Task StartCaptureAsync()
         {
             if (_captureTask != null && !_captureTask.IsCompleted)
             {
                 throw new InvalidOperationException("Capture is already running");
             }
-            
-            _currentSearchId = searchId;
+
             _resultCount = 0;
             _cts = new CancellationTokenSource();
-            
-            DebugLogger.Log("MotelyResultCapture", $"Starting capture for search {searchId}");
-            
-            _captureTask = Task.Run(async () =>
-            {
-                try
+
+            DebugLogger.Log("MotelyResultCapture", "Starting result capture");
+
+            _captureTask = Task.Run(
+                async () =>
                 {
-                    while (!_cts.Token.IsCancellationRequested)
+                    try
                     {
-                        if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out var result))
+                        while (!_cts.Token.IsCancellationRequested)
                         {
-                            var searchResult = new SearchResult
+                            if (
+                                OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(
+                                    out var result
+                                )
+                            )
                             {
-                                Seed = result.Seed,
-                                Score = result.TotalScore,
-                                Details = GenerateDetails(result),
-                                Ante = ExtractAnteFromResult(result), 
-                                ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants)
-                            };
-                            
-                            // Store in DuckDB
-                            await _searchHistory.AddSearchResultAsync(searchId, searchResult);
-                            
-                            // Update count and raise events
-                            Interlocked.Increment(ref _resultCount);
-                            ResultCaptured?.Invoke(searchResult);
-                            ResultCountChanged?.Invoke(_resultCount);
-                            
-                            DebugLogger.Log("MotelyResultCapture", $"Captured result: {result.Seed} (Score: {result.TotalScore})");
-                        }
-                        else
-                        {
-                            // No results available, wait a bit
-                            await Task.Delay(10, _cts.Token);
+                                var searchResult = new SearchResult
+                                {
+                                    Seed = result.Seed,
+                                    TotalScore = result.TotalScore,
+                                    Scores = result.ScoreWants,
+                                    Labels = ExtractScoreLabels(),
+                                };
+                                
+                                DebugLogger.Log(
+                                    "MotelyResultCapture",
+                                    $"Result for {result.Seed}: Scores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
+                                );
+                                if (searchResult.Labels != null && searchResult.Labels.Length > 0)
+                                {
+                                    DebugLogger.Log(
+                                        "MotelyResultCapture",
+                                        $"Labels: {string.Join(", ", searchResult.Labels)}"
+                                    );
+                                }
+                                if (searchResult.Scores != null && searchResult.Scores.Length > 0)
+                                {
+                                    DebugLogger.Log(
+                                        "MotelyResultCapture",
+                                        $"Scores: {string.Join(", ", searchResult.Scores)}"
+                                    );
+                                }
+
+                                // Store in DuckDB
+                                await _searchHistory.AddSearchResultAsync(searchResult);
+
+                                // Update count and raise events
+                                Interlocked.Increment(ref _resultCount);
+                                ResultCaptured?.Invoke(searchResult);
+                                ResultCountChanged?.Invoke(_resultCount);
+
+                                DebugLogger.Log(
+                                    "MotelyResultCapture",
+                                    $"Captured result: {result.Seed} (Score: {result.TotalScore})"
+                                );
+                            }
+                            else
+                            {
+                                // No results available, wait a bit
+                                await Task.Delay(500, _cts.Token);
+                            }
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
-                    throw;
-                }
-            }, _cts.Token);
-            
+                    catch (OperationCanceledException)
+                    {
+                        DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
+                        throw;
+                    }
+                },
+                _cts.Token
+            );
+
             await Task.CompletedTask;
         }
-        
+
         /// <summary>
         /// Stop capturing results
         /// </summary>
@@ -102,11 +143,14 @@ namespace Oracle.Services
         {
             if (_cts == null || _captureTask == null)
                 return;
-                
-            DebugLogger.Log("MotelyResultCapture", $"Stopping capture for search {_currentSearchId}. Captured {_resultCount} results.");
-            
+
+            DebugLogger.Log(
+                "MotelyResultCapture",
+                $"Stopping capture. Captured {_resultCount} results."
+            );
+
             _cts.Cancel();
-            
+
             try
             {
                 await _captureTask;
@@ -115,51 +159,36 @@ namespace Oracle.Services
             {
                 // Expected
             }
-            
+
             _cts.Dispose();
             _cts = null;
             _captureTask = null;
         }
-        
+
+
         /// <summary>
-        /// Generate human-readable details from the result
+        /// Extract score labels from the filter configuration
         /// </summary>
-        private string GenerateDetails(OuijaResult result)
+        private string[] ExtractScoreLabels()
         {
-            if (!result.Success)
-                return "Failed";
-                
-            // TODO: Generate more detailed information based on the filter configuration
-            // For now, just show the score breakdown
-            if (result.ScoreWants != null && result.ScoreWants.Length > 0)
+            if (_filterConfig?.Should == null)
             {
-                return $"Scores: {string.Join(", ", result.ScoreWants)}";
+                DebugLogger.Log("MotelyResultCapture", "ExtractScoreLabels: No filter config or Should items");
+                return Array.Empty<string>();
             }
-            
-            return "";
+
+            var labels = new List<string>();
+            foreach (var item in _filterConfig.Should)
+            {
+                // Just use the item value as the label
+                var label = item.Value ?? "Unknown";
+                labels.Add(label);
+            }
+
+            DebugLogger.Log("MotelyResultCapture", $"ExtractScoreLabels: Found {labels.Count} labels: {string.Join(", ", labels)}");
+            return labels.ToArray();
         }
-        
-        /// <summary>
-        /// Serialize score breakdown as JSON
-        /// </summary>
-        private string SerializeScoreBreakdown(int[]? scores)
-        {
-            if (scores == null || scores.Length == 0)
-                return "[]";
-                
-            return JsonSerializer.Serialize(scores);
-        }
-        
-        /// <summary>
-        /// Extract ante information from result if available
-        /// </summary>
-        private int ExtractAnteFromResult(OuijaResult result)
-        {
-            // TODO: When OuijaResult includes ante info, extract it here
-            // For now, default to 1
-            return 1;
-        }
-        
+
         public void Dispose()
         {
             StopCaptureAsync().GetAwaiter().GetResult();

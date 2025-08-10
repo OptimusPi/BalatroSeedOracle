@@ -1,487 +1,878 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Oracle.Controls"
+             xmlns:components="using:Oracle.Components"
              x:Class="Oracle.Views.Modals.SearchModal">
     
     <UserControl.Styles>
-        <!-- Terminal console style -->
+        <!-- Modal content styles -->
+        <Style Selector="Border.modal-content-panel">
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="Border.modal-content-box">
+            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <!-- Balatro-style tab buttons -->
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="20"/>
+            
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <!-- Drop shadow behind button -->
+                    <Grid>
+                        <Border Name="DropShadow" Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.tab-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        <Style Selector="Button.tab-button:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="RenderTransform" Value="translateY(3px)"/>
+        </Style>
+        <Style Selector="Button.tab-button:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <!-- Drop shadow behind button -->
+                        <Border Name="DropShadow" Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <!-- Button background -->
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.tab-button.active:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        <Style Selector="Button.tab-button.active:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="RenderTransform" Value="translateY(3px)"/>
+        </Style>
+        <Style Selector="Button.tab-button.active:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="Button.tab-button:disabled">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <!-- Drop shadow behind disabled button -->
+                    <Grid>
+                        <Border Name="DropShadow" Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Content box style -->
+        <Style Selector="Border.content-box">
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
+        </Style>
+        
+        <!-- Input field style matching Balatro -->
+        <Style Selector="TextBox.balatro-input">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        
+        <!-- Small button style (like Browse) -->
+        <Style Selector="Button.small-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.small-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+        
+        <!-- Big COOK button style -->
+        <Style Selector="Button.cook-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="36"/>
+            
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="MinWidth" Value="280"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.cook-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+        <Style Selector="Button.cook-button.stop">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        <Style Selector="Button.cook-button.stop:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        
+        <!-- Terminal style for console -->
         <Style Selector="TextBox.terminal">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource TerminalGreen}"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="10"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#b9c2d2"/>
-            <Setter Property="SelectionBrush" Value="#0093ff"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
-        <!-- Results table styles -->
-        <Style Selector="DataGrid">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="BorderBrush" Value="#b9c2d2"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="GridLinesVisibility" Value="All"/>
-            <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="RowBackground" Value="#3a5055"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#b9c2d2"/>
-            <Setter Property="VerticalGridLinesBrush" Value="#b9c2d2"/>
+        <!-- Filter description box -->
+        <Style Selector="Border.filter-description">
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
+            <Setter Property="MinHeight" Value="120"/>
         </Style>
         
-        <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="Foreground" Value="#ff9800"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#b9c2d2"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <!-- Widget preview box -->
+        <Style Selector="Border.widget-preview">
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
+            <Setter Property="MinHeight" Value="200"/>
+        </Style>
+        
+        <!-- Silver display badge for labels -->
+        <Style Selector="Border.silver-badge">
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Dark grey container for dynamic values - alternates color when nested -->
+        <Style Selector="Border.dark-value-container">
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Silver badge text -->
+        <Style Selector="TextBlock.silver-badge-text">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            
+            <Setter Property="Foreground" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Header button style for sortable columns -->
+        <Style Selector="Button.header-button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
-        
-        <Style Selector="DataGridRow">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="Height" Value="35"/>
+        <Style Selector="Button.header-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
         </Style>
         
-        <Style Selector="DataGridRow:nth-child(2n)">
-            <Setter Property="Background" Value="#374244"/>
-        </Style>
-        
-        <Style Selector="DataGridRow:selected">
-            <Setter Property="Background" Value="#0093ff"/>
-        </Style>
-        
-        <Style Selector="DataGridRow:pointerover">
-            <Setter Property="Background" Value="#4f6367"/>
+        <!-- Reusable nav arrow style (shadowed red block) -->
+        <Style Selector="Button.nav-arrow">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="32"/>
+            
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Background="{StaticResource DropShadow}" CornerRadius="4" Margin="0,2,0,0"/>
+                        <Border Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="0,0,0,2">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
         </Style>
-        
-        <Style Selector="DataGridCell">
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-        
-        <!-- Specific cell styles for seed column -->
-        <Style Selector="DataGridCell:nth-child(2) TextBlock">
-            <Setter Property="Foreground" Value="#429f79"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
-        </Style>
-        
-        <!-- Specific cell styles for score column -->
-        <Style Selector="DataGridCell:nth-child(3) TextBlock">
-            <Setter Property="Foreground" Value="#ff9800"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-        </Style>
-        
-        <!-- Button styles -->
-        <Style Selector="Button.action-button">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="20,0"/>
-            <Setter Property="MinWidth" Value="100"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        
-        <Style Selector="Button.copy-button">
-            <Setter Property="Background" Value="#4A90E2"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="6,2"/>
-            <Setter Property="MinWidth" Value="50"/>
-        </Style>
-        
-        <Style Selector="Button.copy-button:pointerover">
-            <Setter Property="Background" Value="#5BA0F2"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        
-        <!-- Section headers -->
-        <Style Selector="TextBlock.section-header">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#FEB95F"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
-        </Style>
-        
-        <!-- Parameter labels -->
-        <Style Selector="TextBlock.param-label">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#888888"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Width" Value="80"/>
-        </Style>
-        
-        <!-- Status display -->
-        <Style Selector="Border.status-display">
-            <Setter Property="Background" Value="#3a5055"/>
-            <Setter Property="BorderBrush" Value="#b9c2d2"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="8,4"/>
+        <Style Selector="Button.nav-arrow:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
     </UserControl.Styles>
     
-    <!-- Main content grid -->
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="0">
-        <!-- Live Status Bar -->
-        <Border Grid.Row="0" 
-                Background="#3a5055" 
-                BorderBrush="#b9c2d2"
-                BorderThickness="0,0,0,1"
-                Padding="12,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Config display -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
-                    <TextBlock Text="CONFIG:" 
-                               FontSize="11" 
-                               FontWeight="Bold" 
-                               Foreground="#b9c2d2"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Name="ConfigPathTextBox" 
-                               Text="No filter loaded"
-                               FontSize="12"
-                               Foreground="#FEB95F"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-                    <Button Content="Load Filter"
-                            Classes="btn-blue"
-                            Height="24"
-                            Padding="8,0"
-                            FontSize="11"
-                            Click="OnLoadConfigClick"/>
-                </StackPanel>
-                
-                <!-- Live stats -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16">
-                    <Border Classes="status-display">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="SEEDS:" FontSize="10" Foreground="#b9c2d2"/>
-                            <TextBlock Name="SeedsSearchedText" Text="0" FontSize="12" Foreground="#429f79" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Classes="status-display">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="FOUND:" FontSize="10" Foreground="#b9c2d2"/>
-                            <TextBlock Name="FoundCountText" Text="0" FontSize="12" Foreground="#429f79" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Classes="status-display">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="SPEED:" FontSize="10" Foreground="#b9c2d2"/>
-                            <TextBlock Name="SpeedText" Text="0/s" FontSize="12" Foreground="#ff9800" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Border>
-                    <Button Name="MinimizeButton"
-                            Content="▼"
-                            Classes="btn-blue"
-                            Width="28"
-                            Height="28"
-                            FontSize="12"
-                            Padding="0"
-                            ToolTip.Tip="Back to widget"
-                            Click="OnMinimizeClick"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
+            <RowDefinition Height="Auto"/> <!-- Tabs -->
+            <RowDefinition Height="*"/>    <!-- Content -->
+        </Grid.RowDefinitions>
         
-        <!-- Control Panel with tabs -->
-        <Border Grid.Row="1" 
-                Background="#3a5055" 
-                Padding="0">
-            <TabControl>
-                <TabItem Header="SEARCH PARAMETERS">
-                    <Border Padding="16">
-                        <Grid ColumnDefinitions="*,20,*,20,*" RowDefinitions="Auto,16,Auto">
-                            <!-- Performance Settings -->
-                            <StackPanel Grid.Column="0" Spacing="12">
-                                <TextBlock Classes="section-header" Text="Performance"/>
-                                <StackPanel Spacing="8">
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Classes="param-label" Text="Threads:"/>
-                                        <NumericUpDown Grid.Column="1" 
-                                                       Name="ThreadsUpDown" 
-                                                       Value="4" 
-                                                       Minimum="1" 
-                                                       Maximum="32" 
-                                                       Background="#2e3f42"
-                                                       BorderBrush="#3a3a3a"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Classes="param-label" Text="Batch:"/>
-                                        <NumericUpDown Grid.Column="1" 
-                                                       Name="BatchSizeUpDown" 
-                                                       Value="4" 
-                                                       Minimum="2" 
-                                                       Maximum="4" 
-                                                       Background="#2e3f42"
-                                                       BorderBrush="#3a3a3a"/>
-                                    </Grid>
-                                </StackPanel>
-                            </StackPanel>
+        <!-- Triangle pointer above tabs -->
+        <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="148"/> <!-- Select Filter -->
+                <ColumnDefinition Width="148"/> <!-- Settings -->
+                <ColumnDefinition Width="148"/> <!-- Search -->
+                <ColumnDefinition Width="148"/> <!-- Results -->
+            </Grid.ColumnDefinitions>
+            
+            <!-- Triangle container with shadow and main triangle -->
+            <Grid Grid.Column="0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Bottom">
+                
+                <!-- Drop shadow triangle -->
+                <Polygon Points="10,20 20,5 0,5" 
+                         Fill="{StaticResource SemiTransparentShadow}"
+                         Margin="2,2,0,0"/>
+                
+                <!-- Main triangle that bounces -->
+                <Polygon Name="TabTriangle"
+                         Points="10,20 20,5 0,5" 
+                         Fill="{StaticResource Red}">
+                    <Polygon.Styles>
+                        <Style Selector="Polygon">
+                            <Style.Animations>
+                                <Animation Duration="0:0:1.2" 
+                                           IterationCount="Infinite"
+                                           PlaybackDirection="Alternate"
+                                           Easing="SineEaseInOut">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Margin" Value="0,0,0,0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Margin" Value="0,-8,0,8"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Polygon.Styles>
+                </Polygon>
+            </Grid>
+        </Grid>
+        
+        <!-- Tab buttons -->
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center"
+                    Margin="0,4,0,4">
+            <Button Name="FilterTab" 
+                    Content="Select Filter" 
+                    Classes="tab-button active ActiveTab"
+                    Click="OnTabClick"/>
+            <Button Name="SettingsTab" 
+                    Content="Deck/Stake" 
+                    Classes="tab-button InactiveTab"
+                    IsEnabled="False"
+                    Click="OnTabClick"/>
+            <Button Name="SearchTab" 
+                    Content="Search" 
+                    Classes="tab-button InactiveTab"
+                    IsEnabled="False"
+                    Click="OnTabClick"/>
+            <Button Name="ResultsTab" 
+                    Content="Results" 
+                    Classes="tab-button InactiveTab"
+                    IsEnabled="False"
+                    Click="OnTabClick"/>
+        </StackPanel>
+        
+        <!-- Content area -->
+        <Grid Grid.Row="2">
+            
+            <!-- Filter Selection Panel -->
+            <Grid Name="FilterPanel" IsVisible="True">
+                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
+                    <components:FilterSelector Name="FilterSelector" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Stretch"
+                                             AutoLoadEnabled="False"
+                                             FilterLoaded="OnFilterLoaded"
+                                             NewFilterRequested="OnNewFilterRequested"/>
+                </Grid>
+            </Grid>
+            
+            <!-- Settings Panel (now just Deck/Stake) -->
+            <Grid Name="SettingsPanel" IsVisible="False">
+                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
+                    <!-- Deck and Stake Selection -->
+                    <components:DeckAndStakeSelector Name="DeckAndStakeSelector" 
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch"/>
+                </Grid>
+            </Grid>
+            
+            <!-- Search Panel -->
+            <Grid Name="SearchPanel" IsVisible="False">
+                <!-- 3 Column Layout -->
+                <Grid Margin="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
+                        <ColumnDefinition Width="*"/>   <!-- Middle for console -->
+                        <ColumnDefinition Width="200"/> <!-- Right column for stats -->
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Left Column - Search Parameters -->
+                    <Border Grid.Column="0" 
+                            Classes="modal-content-box"
+                            Margin="0,0,6,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             
-                            <!-- Search Range -->
-                            <StackPanel Grid.Column="2" Spacing="12">
-                                <TextBlock Classes="section-header" Text="Range"/>
-                                <StackPanel Spacing="8">
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Classes="param-label" Text="Start:"/>
-                                        <NumericUpDown Grid.Column="1" 
-                                                       Name="StartBatchUpDown" 
-                                                       Value="0" 
-                                                       Minimum="0" 
-                                                       Maximum="999999" 
-                                                       Background="#2e3f42"
-                                                       BorderBrush="#3a3a3a"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Classes="param-label" Text="End:"/>
-                                        <NumericUpDown Grid.Column="1" 
-                                                       Name="EndBatchUpDown" 
-                                                       Value="999999" 
-                                                       Minimum="1" 
-                                                       Maximum="999999" 
-                                                       Background="#2e3f42"
-                                                       BorderBrush="#3a3a3a"/>
-                                    </Grid>
-                                </StackPanel>
-                            </StackPanel>
-                            
-                            <!-- Options -->
-                            <StackPanel Grid.Column="4" Spacing="12">
-                                <TextBlock Classes="section-header" Text="Options"/>
-                                <StackPanel Spacing="8">
-                                    <Grid ColumnDefinitions="Auto,*">
-                                        <TextBlock Classes="param-label" Text="Min Score:"/>
-                                        <NumericUpDown Grid.Column="1" 
-                                                       Name="CutoffUpDown" 
-                                                       Value="0" 
-                                                       Minimum="0" 
-                                                       Maximum="10000" 
-                                                       Background="#2e3f42"
-                                                       BorderBrush="#3a3a3a"/>
-                                    </Grid>
-                                    <CheckBox Name="DebugCheckBox" 
-                                              Content="Debug Output" 
-                                              Margin="0,4"/>
-                                </StackPanel>
-                            </StackPanel>
-                            
-                            <!-- Action buttons -->
-                            <StackPanel Grid.Row="2" Grid.ColumnSpan="5" 
-                                        Orientation="Horizontal" 
-                                        HorizontalAlignment="Center" 
-                                        Spacing="16"
-                                        Margin="0,16,0,0">
-                                <Button Name="StartButton"
-                                        Content="Let Jimbo COOK!"
-                                        Classes="btn-green action-button"
-                                        IsEnabled="False"
-                                        Click="OnStartClick"/>
-                                <Button Name="StopButton"
-                                        Content="⏹ STOP"
-                                        Classes="btn-red action-button"
-                                        IsEnabled="False"
-                                        Click="OnStopClick"/>
-                                <Button Name="ExportButton"
-                                        Content="📤 EXPORT"
-                                        Classes="btn-blue action-button"
-                                        IsEnabled="False"
-                                        Click="OnExportClick"/>
-                                <Button Name="ClearButton"
-                                        Content="🗑️ CLEAR"
-                                        Classes="btn-orange action-button"
-                                        Click="OnClearClick"/>
+                            <StackPanel Grid.Row="0" Spacing="10">
+                                <!-- Threads -->
+                                <controls:SpinnerControl Name="ThreadsSpinner" 
+                                                        Label="CPU Threads"
+                                                        Value="8" 
+                                                        Minimum="1" 
+                                                        Maximum="32"
+                                                        HorizontalAlignment="Stretch"
+                                                        ShadowDirection="south-east"/>
+                                
+                                <!-- Batch Size -->
+                                <controls:SpinnerControl Name="BatchSizeSpinner" 
+                                                        Label="Batch Size (35^n)"
+                                                        Value="1" 
+                                                        Minimum="1" 
+                                                        Maximum="4"
+                                                        HorizontalAlignment="Stretch"
+                                                        ShadowDirection="south-east"/>
+                                
+                                <!-- Min Score -->
+                                <controls:SpinnerControl Name="MinScoreSpinner" 
+                                                        Label="Min Score"
+                                                        SpinnerType="min-score"
+                                                        Value="0" 
+                                                        Minimum="0" 
+                                                        Maximum="5"
+                                                        AllowAuto="True"
+                                                        HorizontalAlignment="Stretch"
+                                                        ShadowDirection="south-east"/>
+                                
+                                <!-- Debug checkbox -->
+                                <CheckBox Name="DebugCheckBox" 
+                                          Content="Debug Mode"
+                                          Foreground="White"
+                                          HorizontalAlignment="Center"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          FontSize="12"
+                                          Margin="0,10"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                </TabItem>
-                
-                <TabItem Header="SPECIAL SEARCHES">
-                    <Border Padding="16">
-                        <Grid RowDefinitions="Auto,16,Auto">
-                            <StackPanel Grid.Row="0" Spacing="12">
-                                <TextBlock Classes="section-header" Text="Specific Seed Search"/>
-                                <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <TextBlock Classes="param-label" Text="Seed:" VerticalAlignment="Center"/>
-                                    <TextBox Grid.Column="1" 
-                                             Name="SpecificSeedTextBox" 
-                                             Watermark="Enter 8-character seed"
-                                             MaxLength="8"
-                                             Height="32"
-                                             Background="#2e3f42"
-                                             BorderBrush="#3a3a3a"
-                                             Margin="0,0,8,0"/>
-                                    <Button Grid.Column="2"
-                                            Content="Search"
-                                            Classes="btn-blue"
-                                            Height="32"
-                                            Padding="16,0"/>
-                                </Grid>
-                            </StackPanel>
+                    
+                    <!-- Middle Column - Console -->
+                    <Border Grid.Column="1" 
+                            Classes="modal-content-box"
+                            Margin="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             
-                            <StackPanel Grid.Row="2" Spacing="12">
-                                <TextBlock Classes="section-header" Text="Keyword Generator"/>
-                                <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <TextBlock Classes="param-label" Text="Keyword:" VerticalAlignment="Center"/>
-                                    <TextBox Grid.Column="1" 
-                                             Name="KeywordTextBox" 
-                                             Watermark="Generate seeds from keyword"
-                                             Height="32"
-                                             Background="#2e3f42"
-                                             BorderBrush="#3a3a3a"
-                                             Margin="0,0,8,0"/>
-                                    <Button Grid.Column="2"
-                                            Content="Generate"
-                                            Classes="btn-purple"
-                                            Height="32"
-                                            Padding="16,0"/>
-                                </Grid>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </TabItem>
-                
-                <TabItem Header="CONSOLE">
-                    <Border Background="#0a0a0a" MinHeight="200">
-                        <Grid RowDefinitions="*,Auto">
                             <ScrollViewer Grid.Row="0" 
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Auto">
                                 <TextBox Name="ConsoleOutput" 
-                                         Classes="terminal" 
-                                         IsReadOnly="True"
-                                         AcceptsReturn="True"
-                                         TextWrapping="NoWrap"
-                                         Text="&gt; Motely Search Console&#x0a;&gt; Ready for commands...&#x0a;"/>
+                                             Classes="terminal" 
+                                             IsReadOnly="True"
+                                             AcceptsReturn="True"
+                                             TextWrapping="NoWrap"
+                                             Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             </ScrollViewer>
-                            <Button Grid.Row="1"
-                                    Content="Clear Console"
-                                    HorizontalAlignment="Right"
-                                    Margin="8"
-                                    Classes="btn-grey"
-                                    Height="28"
-                                    Padding="12,0"
-                                    FontSize="11"/>
+                            
+                            <!-- JSON Validation Status -->
+                            <Border Grid.Row="1"
+                                    Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="0,1,0,0"
+                                    Padding="8,4"
+                                    Margin="0,4,0,0">
+                                <TextBlock Name="JsonValidationStatus"
+                                           Text="JSON: Valid ✓"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Green}"
+                                           HorizontalAlignment="Left"/>
+                            </Border>
+                            
+                            <StackPanel Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Spacing="8"
+                                        Margin="0,8,0,0">
+                                <Button Name="CookButton"
+                                        Content="Let Jimbo COOK!"
+                                        Classes="cook-button"
+                                        IsEnabled="False"
+                                        Click="OnCookClick"/>
+                                <Button Content="Clear Console"
+                                        Classes="small-button"
+                                        Click="OnClearConsoleClick"/>
+                            </StackPanel>
                         </Grid>
                     </Border>
-                </TabItem>
-            </TabControl>
-        </Border>
-        
-        <!-- Results Area -->
-        <Border Grid.Row="2" 
-                Background="#0a0a0a"
-                Margin="0,1,0,0">
-            <Grid>
-                <!-- Empty state -->
-                <Border Name="EmptyState"
-                        Background="#2e3f42"
+                    
+                    <!-- Right Column - Stats -->
+                    <Border Grid.Column="2" 
+                            Classes="modal-content-box"
+                            Margin="6,0,0,0">
+                        <StackPanel Spacing="8">
+                            <!-- Progress -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Progress" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="ProgressPercentText"
+                                               Text="0%"
+                                               FontSize="14"
+                                               
+                                               Foreground="{StaticResource Yellow}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Speed -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Speed" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="SpeedText"
+                                               Text="0 seeds/s"
+                                               FontSize="14"
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Batches -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Batches" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="BatchesText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Seeds Searched -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Seeds" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TotalSeedsText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Time -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Time" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TimeElapsedText"
+                                               Text="00:00:00"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Results Found -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Found" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="ResultsFoundText"
+                                               Text="0"
+                                               FontSize="16"
+                                               
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+            
+            <!-- Results Panel -->
+            <Grid Name="ResultsPanel" IsVisible="False" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Filter controls -->
+                    <RowDefinition Height="*" MinHeight="450"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Filter controls -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource DarkerGrey}"
                         CornerRadius="8"
-                        Margin="20"
-                        Padding="40"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        IsVisible="True">
-                    <StackPanel Spacing="16" HorizontalAlignment="Center">
-                        <TextBlock Text="🎰" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                        <TextBlock Text="No results yet" 
-                                   FontSize="18" 
-                                   FontWeight="Bold"
-                                   Foreground="#b9c2d2"
-                                   HorizontalAlignment="Center"/>
-                        <TextBlock Text="Click 'Load Filter' above to get started"
+                        Padding="12"
+                        Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="Filter:" 
+                                   FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   Foreground="#444444"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
+                                   Foreground="{StaticResource White}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                                   
+                        <TextBox Grid.Column="1" 
+                                 Name="ResultsFilterTextBox"
+                                 Classes="balatro-input"
+                                 Height="32"
+                                 Watermark="Filter by seed name..."
+                                 FontSize="14"/>
+                                 
+                        <Button Grid.Column="2"
+                                Name="ClearFilterButton"
+                                Content="Clear"
+                                Classes="small-button"
+                                Height="32"
+                                Margin="10,0,0,0"
+                                Click="OnClearFilterClick"/>
+                    </Grid>
                 </Border>
                 
-                <!-- Results table -->
-                <DataGrid Name="ResultsGrid"
-                          ItemsSource="{Binding}"
-                          AutoGenerateColumns="False"
-                          CanUserResizeColumns="True"
-                          CanUserSortColumns="True"
-                          CanUserReorderColumns="True"
-                          IsReadOnly="True"
-                          SelectionMode="Extended"
-                          GridLinesVisibility="All"
-                          IsVisible="False"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Auto">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" 
-                                            Binding="{Binding Index}" 
-                                            Width="50"
-                                            CanUserSort="False"/>
-                        <DataGridTextColumn Header="SEED" 
-                                            Binding="{Binding Seed}" 
-                                            Width="120"
-                                            FontFamily="Cascadia Code, Consolas, monospace"/>
-                        <DataGridTemplateColumn Header="SCORE" Width="100" SortMemberPath="Score">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding ScoreFormatted}" 
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               FontWeight="Bold"
-                                               Foreground="#FEB95F"
-                                               ToolTip.Tip="{Binding ScoreTooltip}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="DETAILS" 
-                                            Binding="{Binding Details}" 
-                                            Width="*"/>
-                        <DataGridTemplateColumn Header="ACTIONS" Width="140" CanUserSort="False">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
-                                        <Button Content="📋 Copy"
-                                                Classes="copy-button"
-                                                Command="{Binding CopyCommand}"
-                                                CommandParameter="{Binding Seed}"
-                                                ToolTip.Tip="Copy seed"/>
-                                        <Button Content="👁 View"
-                                                Classes="copy-button"
-                                                Command="{Binding ViewCommand}"
-                                                CommandParameter="{Binding}"
-                                                ToolTip.Tip="View details"/>
+                <!-- Results Table Container -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Table Header -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource DarkerGrey}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2,2,2,1">
+                            <Grid Name="ResultsHeaderGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>  <!-- Seed -->
+                                    <ColumnDefinition Width="80"/>   <!-- Total -->
+                                    <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
+                                    <ColumnDefinition Width="80"/>   <!-- Time -->
+                                    <ColumnDefinition Width="80"/>   <!-- Action -->
+                                </Grid.ColumnDefinitions>
+                                
+                                <Button Grid.Column="0" 
+                                        Name="SortSeedButton"
+                                        Classes="header-button"
+                                        Click="OnSortBySeed">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Seed" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="SeedSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="False"/>
                                     </StackPanel>
+                                </Button>
+                                           
+                                <Button Grid.Column="1" 
+                                        Name="SortScoreButton"
+                                        Classes="header-button"
+                                        Click="OnSortByScore">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Total" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="ScoreSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="True"/>
+                                    </StackPanel>
+                                </Button>
+                                           
+                                <!-- Dynamic tally score headers will be added here -->
+                                <StackPanel Grid.Column="2" 
+                                            Name="TallyHeadersPanel"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Center"/>
+                                           
+                                <Button Grid.Column="3" 
+                                        Name="SortTimeButton"
+                                        Classes="header-button"
+                                        Click="OnSortByTime">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Time" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="TimeSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="False"/>
+                                    </StackPanel>
+                                </Button>
+                                           
+                                <TextBlock Grid.Column="4" Text="Action" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="8,4"/>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Table Body -->
+                        <ItemsControl Grid.Row="1" 
+                                      Name="ResultsItemsControl"
+                                      ItemsSource="{Binding}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource DockGrey}"
+                                            BorderBrush="{StaticResource ModalBorder}"
+                                            BorderThickness="2,0,2,1">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
+                                            </Style>
+                                        </Border.Styles>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>  <!-- Seed -->
+                                                <ColumnDefinition Width="80"/>   <!-- Total -->
+                                                <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
+                                                <ColumnDefinition Width="80"/>   <!-- Time -->
+                                                <ColumnDefinition Width="80"/>   <!-- Action -->
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding Seed}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                                       
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding Score, StringFormat='{}{0:F1}'}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                                       
+                                            <!-- Dynamic tally scores will be added here -->
+                                            <ItemsControl Grid.Column="2" 
+                                                          ItemsSource="{Binding TallyScores}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="{StaticResource White}"
+                                                                   Width="60"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="8,4"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                                       
+                                            <TextBlock Grid.Column="3" 
+                                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="8,4"/>
+                                                       
+                                            <Button Grid.Column="4"
+                                                    Content="COPY"
+                                                    Classes="btn-blue"
+                                                    FontSize="10"
+                                                    Padding="8,2"
+                                                    Height="24"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Click="OnCopySeedClick"
+                                                    Tag="{Binding Seed}"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </ScrollViewer>
+                
+                <!-- Footer -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource DarkerGrey}"
+                        Padding="8"
+                        BorderThickness="0,2,0,0"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        Margin="0,0,0,120">
+                    <Grid>
+                        <TextBlock Name="ResultsSummary"
+                                   Text="No results yet"
+                                   FontSize="12"
+                                   Foreground="{StaticResource Yellow}"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"/>
+                        
+                        <Button Name="ExportResultsButton"
+                                Content="Export Results for Excel/CSV"
+                                Classes="btn-green"
+                                IsEnabled="False"
+                                HorizontalAlignment="Right"
+                                Click="OnExportResultsClick"/>
+                    </Grid>
+                </Border>
             </Grid>
-        </Border>
-        
-        <!-- Bottom status bar -->
-        <Border Grid.Row="3" 
-                Background="#3a5055" 
-                BorderBrush="#b9c2d2"
-                BorderThickness="0,1,0,0"
-                Padding="12,6">
-            <Grid>
-                <TextBlock Name="StatusText"
-                           Text="Ready"
-                           FontSize="12"
-                           Foreground="#b9c2d2"
-                           HorizontalAlignment="Left"/>
-                <TextBlock Name="SummaryText"
-                           Text="0 results"
-                           FontSize="12"
-                           Foreground="#888888"
-                           HorizontalAlignment="Right"/>
-            </Grid>
-        </Border>
+        </Grid>
     </Grid>
 </UserControl>

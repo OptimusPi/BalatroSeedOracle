@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Oracle.Controls"
+             x:Class="Oracle.Components.FilterSelector">
+    
+    <StackPanel Spacing="20">
+        <!-- Title -->
+        <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="24"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,10"/>
+                   
+        <!-- Filter browser using PanelSpinner -->
+        <controls:PanelSpinner Name="FilterSpinner" />
+        
+        <!-- Select Button (moved higher up, no spacer) -->
+        <Button Name="SelectButton" 
+                Content="Select Filter" 
+                Classes="btn-blue" 
+                MinWidth="200"
+                HorizontalAlignment="Center"
+                Click="OnSelectClick"/>
+        
+        <!-- Create new filter section -->
+        <Button Name="CreateFilterButton" 
+                Content="Create New Filter" 
+                Classes="btn-green" 
+                MinWidth="200"
+                HorizontalAlignment="Center"
+                Click="OnCreateFilterClick"/>
+    </StackPanel>
+</UserControl>

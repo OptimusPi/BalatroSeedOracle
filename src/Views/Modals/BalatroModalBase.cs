@@ -1,6 +1,6 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using System;
 using Oracle.Helpers;
 
 namespace Oracle.Views.Modals
@@ -8,7 +8,7 @@ namespace Oracle.Views.Modals
     public class BalatroModalBase : UserControl
     {
         public event EventHandler? BackClicked;
-        
+
         protected virtual void OnBackClicked()
         {
             BackClicked?.Invoke(this, EventArgs.Empty);

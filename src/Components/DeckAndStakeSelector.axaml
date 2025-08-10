@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Oracle.Components"
+             xmlns:controls="using:Oracle.Controls"
+             x:Class="Oracle.Components.DeckAndStakeSelector">
+    
+    <StackPanel Spacing="20">
+        <!-- Deck Selection using PanelSpinner -->
+        <components:DeckSpinner Name="DeckSpinnerControl" />
+        
+        <!-- Stake Selection using regular spinner -->
+        <controls:SpinnerControl Name="StakeSpinner" 
+                                Label=""
+                                SpinnerType="stake"
+                                Minimum="0"
+                                Maximum="7"
+                                Value="0"
+                                Width="170"
+                                HorizontalAlignment="Center" />
+        
+        <!-- Select Button -->
+        <Button Name="SelectButton" 
+                Content="Select this Deck" 
+                Classes="btn-blue" 
+                MinWidth="200"
+                HorizontalAlignment="Center"
+                Click="OnSelectClick"/>
+    </StackPanel>
+    
+</UserControl>

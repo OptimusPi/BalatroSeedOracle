@@ -1,0 +1,91 @@
+{
+    "name": "Lucky Cat",
+    "description": "Meow!",
+    "author": "Ryo",
+    "must": [
+        {
+            "Type": "Tarot",
+            "Value": "TheMagician",
+            "SearchAntes": [1, 2],
+            "sources": {
+                "packSlots": [0, 1, 2, 3],
+                "shopSlots": [0, 1, 2, 3]
+            }
+        },
+        {
+            "type": "joker",
+            "value": "luckycat",
+            "antes": [3],
+            "sources": {
+                "shopSlots": [0, 1],
+                "packSlots": [0, 1],
+                "requireMega": true
+            }
+        },
+        {
+            "type": "joker",
+            "value": "brainstorm",
+            "antes": [2,3],
+            "sources": {
+                "shopSlots": [0, 1, 2, 3, 4, 5, 6, 7],
+                "packSlots": [0, 1, 2, 3]
+            }
+        }
+    ],
+    "should": [
+        {
+            "type": "SoulJoker",
+            "value": "Perkeo",
+            "Edition": "negative",
+            "antes": [1,2,3,4,5,6,7,8],
+            "sources": {
+                "packSlots": [0,1,2,3],
+                "requireMega": true
+            },
+            "score": 100
+        },
+        {
+            "type": "SoulJoker",
+            "value": "Perkeo",
+            "antes": [1,2,3,4,5,6,7,8],
+            "sources": {
+                "packSlots": [0,1,2,3,4,5],
+                "tags": true
+            },
+            "score": 10
+        },
+        {
+            "type": "joker",
+            "value": "oopsall6s",
+            "antes": [1,2,3,4],
+            "sources": {
+                "packSlots": [0,1,2,3],
+                "shopSlots": [0,1,2,3,4,5]
+            },
+            "score": 5
+        },
+        {
+            "type": "playingcard",
+            "enhancement": "lucky",
+            "antes": [1,2,3,4,5,6,7,8],
+            "sources": {
+                "packSlots": [0,1,2,3],
+                "shopSlots": [0, 1,2,3,4,5,6,7]
+            },
+            "score": 1
+        },
+        {
+            "type": "Tarot",
+            "value": "TheMagician",
+            "antes": [1,2,3,4],
+            "sources": {
+                "packSlots": [0,1,2,3,4,5],
+                "shopSlots": [0, 1,2,3,4,5,6,7]
+            },
+            "score": 1
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "White"
+}

@@ -11,7 +11,10 @@ namespace Oracle.Services
         {
             try
             {
-                if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                if (
+                    Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                )
                 {
                     var clipboard = desktop.MainWindow?.Clipboard;
                     if (clipboard != null)
@@ -23,7 +26,10 @@ namespace Oracle.Services
             }
             catch (System.Exception ex)
             {
-                DebugLogger.LogError("ClipboardService", $"Failed to copy to clipboard: {ex.Message}");
+                DebugLogger.LogError(
+                    "ClipboardService",
+                    $"Failed to copy to clipboard: {ex.Message}"
+                );
             }
         }
     }

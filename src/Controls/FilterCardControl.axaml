@@ -21,7 +21,7 @@
         <Style Selector="TextBlock.section-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
         </Style>
     </UserControl.Styles>
@@ -29,7 +29,7 @@
     <Grid>
         <!-- Mini preview section at bottom of card -->
         <Border Name="PreviewSection"
-                Background="#0a0a0a"
+                Background="{StaticResource TerminalBackground}"
                 CornerRadius="6"
                 Padding="8,4"
                 Margin="-12,0,-12,-12"
@@ -85,7 +85,7 @@
                     <TextBlock Classes="section-label"
                               Text="NOT:"
                               VerticalAlignment="Center"
-                              Foreground="#ff4444"/>
+                              Foreground="{StaticResource RedHighlight}"/>
                     <ItemsControl Name="MustNotsItems">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -101,7 +101,7 @@
                           Text="No filter items"
                           FontFamily="{StaticResource BalatroFont}"
                           FontSize="11"
-                          Foreground="#b9c2d2"
+                          Foreground="{StaticResource ModalBorder}"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
                           IsVisible="True"/>

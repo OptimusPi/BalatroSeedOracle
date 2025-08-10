@@ -8,9 +8,9 @@ namespace Oracle.Helpers;
 public static class DebugLogger
 {
     // Set to false for production builds
-    private static bool EnableDebugLogging = false;  // Disabled by default
-    private static bool EnableVerboseLogging = false;  // For extra verbose output
-    
+    private static bool EnableDebugLogging = false; // Disabled by default
+    private static bool EnableVerboseLogging = false; // For extra verbose output
+
     /// <summary>
     /// Sets whether debug logging is enabled
     /// </summary>
@@ -18,7 +18,7 @@ public static class DebugLogger
     {
         EnableDebugLogging = enabled;
     }
-    
+
     /// <summary>
     /// Logs a debug message with timestamp if debug logging is enabled
     /// </summary>
@@ -30,7 +30,7 @@ public static class DebugLogger
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
         }
     }
-    
+
     /// <summary>
     /// Logs a debug message with category and timestamp if debug logging is enabled
     /// </summary>
@@ -43,7 +43,7 @@ public static class DebugLogger
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] {message}");
         }
     }
-    
+
     /// <summary>
     /// Logs an error message (always shown regardless of debug setting)
     /// </summary>
@@ -52,7 +52,7 @@ public static class DebugLogger
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ERROR: {message}");
     }
-    
+
     /// <summary>
     /// Logs an error message with category (always shown regardless of debug setting)
     /// </summary>
@@ -62,7 +62,7 @@ public static class DebugLogger
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] ERROR: {message}");
     }
-    
+
     /// <summary>
     /// Logs important information (only shown if verbose logging is enabled)
     /// </summary>
@@ -75,7 +75,7 @@ public static class DebugLogger
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] INFO: {message}");
         }
     }
-    
+
     /// <summary>
     /// Logs formatted message with parameters
     /// </summary>
@@ -83,7 +83,9 @@ public static class DebugLogger
     {
         if (EnableDebugLogging)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] {string.Format(format, args)}");
+            Console.WriteLine(
+                $"[{DateTime.Now:HH:mm:ss}] [{category}] {string.Format(format, args)}"
+            );
         }
     }
 }

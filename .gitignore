@@ -57,3 +57,11 @@ nunit-*.xml
 /SearchResults
 /ouija_configs
 /WordLists
+userprofile.json
+.claude/settings.local.json
+userprofile.json
+.claude/settings.local.json
+.claude/settings.local.json
+/.claude
+WordLists/sick.txt
+WordLists/nsfw.txt

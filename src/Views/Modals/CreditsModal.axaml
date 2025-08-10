@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.CreditsModal">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Credits Section -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource ContainerDarkPrecise}" 
+                BorderThickness="0"
+                Margin="20" 
+                CornerRadius="12"
+                Padding="40">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+                
+                <!-- Title -->
+                <TextBlock Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
+                           FontSize="18"
+                           Foreground="{StaticResource Gold}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
+                
+                <!-- pifreak Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="pifreak" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                
+                <!-- WheatCoin Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="WheatCoin" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                 <!-- miaklwalker Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="miaklwalker" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                 <!-- tacodiva Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="tacodiva" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

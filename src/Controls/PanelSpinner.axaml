@@ -1,0 +1,172 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Controls.PanelSpinner">
+    
+    <UserControl.Styles>
+        <!-- Arrow button style - Red navigation buttons -->
+        <Style Selector="Button.panel-arrow">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="280"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="24"/>
+            
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <!-- Drop shadow -->
+                        <Border Name="DropShadow"
+                                Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <!-- Button face -->
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.panel-arrow:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        
+        <!-- Pressed state - hide shadow and move button down -->
+        <Style Selector="Button.panel-arrow:pressed">
+            <Setter Property="RenderTransform" Value="translateY(3px)"/>
+        </Style>
+        <Style Selector="Button.panel-arrow:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        
+        <!-- Inner panel style -->
+        <Style Selector="Border.panel-content">
+            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="450"/>
+            <Setter Property="Height" Value="280"/>
+        </Style>
+        
+        <!-- Title text style -->
+        <Style Selector="TextBlock.panel-title">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+        
+        <!-- Description text style -->
+        <Style Selector="TextBlock.panel-description">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="16,0"/>
+        </Style>
+        
+        <!-- Position dots container -->
+        <Style Selector="StackPanel.dots-panel">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="Spacing" Value="4"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+        
+        <!-- Position dots style -->
+        <Style Selector="TextBlock.position-dot">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Text" Value="•"/>
+        </Style>
+        
+        <!-- Active dot -->
+        <Style Selector="TextBlock.position-dot.active">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+        
+        <!-- Inactive dot -->
+        <Style Selector="TextBlock.position-dot:not(.active)">
+            <Setter Property="Foreground" Value="{StaticResource MediumDarkGrey}"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Left arrow -->
+        <Button Grid.Column="0"
+                Name="PrevButton"
+                Classes="panel-arrow"
+                Content="&lt;"
+                Click="OnPrevClick"/>
+        
+        <!-- Main panel content -->
+        <Border Grid.Column="2" Classes="panel-content">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>     <!-- Title -->
+                    <RowDefinition Height="*"/>        <!-- Image -->
+                    <RowDefinition Height="Auto"/>     <!-- Description -->
+                    <RowDefinition Height="Auto"/>     <!-- Dots -->
+                </Grid.RowDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Row="0"
+                           Name="TitleText"
+                           Classes="panel-title"/>
+                
+                <!-- Sprite Image Container -->
+                <Viewbox Grid.Row="1"
+                         Stretch="Uniform"
+                         MaxHeight="140"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Margin="0,4">
+                    <Image Name="SpriteImage"
+                           Width="400"
+                           Height="200"/>
+                </Viewbox>
+                
+                <!-- Description -->
+                <Border Grid.Row="2" MinHeight="40" Margin="0,-4,0,0">
+                    <TextBlock Name="DescriptionText"
+                               Classes="panel-description"
+                               VerticalAlignment="Center"/>
+                </Border>
+                
+                <!-- Position dots -->
+                <StackPanel Grid.Row="3"
+                            Name="DotsPanel"
+                            Classes="dots-panel"/>
+            </Grid>
+        </Border>
+        
+        <!-- Right arrow -->
+        <Button Grid.Column="4"
+                Name="NextButton"
+                Classes="panel-arrow"
+                Content="&gt;"
+                Click="OnNextClick"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Oracle.Views.Modals.WordListsModal">
+    
+    <StackPanel Spacing="20" Margin="20">
+        <!-- Simple file list at the top -->
+        <Border Background="{StaticResource ContainerDarkPrecise}" 
+                CornerRadius="12" 
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                           Text="Word List:" 
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"/>
+                
+                <ComboBox Grid.Column="1" 
+                          Name="FileSelector"
+                          HorizontalAlignment="Stretch"
+                          SelectedIndex="0">
+                    <ComboBoxItem>keywords.txt</ComboBoxItem>
+                    <ComboBoxItem>banned_words.txt</ComboBoxItem>
+                    <ComboBoxItem>custom_list.txt</ComboBoxItem>
+                </ComboBox>
+                
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            Spacing="8"
+                            Margin="12,0,0,0">
+                    <Button Name="NewButton"
+                            Content="New List"
+                            Classes="small-button"
+                            Click="OnNewClick"/>
+                    <Button Name="SaveButton"
+                            Content="Save"
+                            Classes="small-button"
+                            Background="{StaticResource Green}"
+                            Click="OnSaveClick"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Text Editor -->
+        <Border Background="{StaticResource VeryDarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="2"
+                CornerRadius="8"
+                Height="400">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Editor header -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource DarkBackground}"
+                        CornerRadius="6,6,0,0"
+                        Padding="12,8">
+                    <TextBlock Text="One word or phrase per line"
+                               FontSize="14"
+                               Foreground="{StaticResource MediumGrey}"/>
+                </Border>
+                
+                <!-- Editor content -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <TextBox Name="TextEditor"
+                             AcceptsReturn="True"
+                             AcceptsTab="False"
+                             TextWrapping="NoWrap"
+                             FontFamily="Cascadia Code, Consolas, monospace"
+                             FontSize="14"
+                             Background="Transparent"
+                             Foreground="{StaticResource White}"
+                             BorderThickness="0"
+                             Padding="12"
+                             Text=""/>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Status text -->
+        <TextBlock Name="StatusText"
+                   Text="Edit word lists used by filters"
+                   Foreground="{StaticResource MediumGrey}"
+                   FontSize="14"
+                   HorizontalAlignment="Center"/>
+    </StackPanel>
+</UserControl>

@@ -37,7 +37,15 @@
       "Bash(echo:*)",
       "WebFetch(domain:github.com)",
       "Bash(./test-profile.exe)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(printf \"0x%X\\n\" 16408)",
+      "Bash(pkill:*)",
+      "Bash(sudo rm:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(touch:*)",
+      "Bash(true)",
+      "Bash(pwsh ./find-unused.ps1)",
+      "Bash(csharpier:*)"
     ],
     "deny": []
   }

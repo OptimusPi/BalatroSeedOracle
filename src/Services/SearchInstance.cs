@@ -1,0 +1,746 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Motely;
+using Motely.Filters;
+using Oracle.Helpers;
+using Oracle.Models;
+using Oracle.Views.Modals;
+using DebugLogger = Oracle.Helpers.DebugLogger;
+using OuijaConfig = Motely.Filters.OuijaConfig;
+using SearchResult = Oracle.Models.SearchResult;
+
+namespace Oracle.Services
+{
+    /// <summary>
+    /// Represents a single search instance that can run independently
+    /// </summary>
+    public class SearchInstance : IDisposable
+    {
+        private readonly string _searchId;
+        private readonly SearchHistoryService _historyService;
+        private CancellationTokenSource? _cancellationTokenSource;
+        private volatile bool _isRunning;
+        private volatile bool _isPaused;
+        private OuijaConfig? _currentConfig;
+        private IMotelySearch? _currentSearch;
+        private MotelyResultCapture? _resultCapture;
+        private DateTime _searchStartTime;
+        private readonly ObservableCollection<Oracle.Models.SearchResult> _results;
+        
+        // Auto-cutoff tracking
+        private bool _isAutoCutoffEnabled;
+        private int _currentCutoff = 0;
+
+        // Properties
+        public string SearchId
+        {
+            get => _searchId;
+        }
+        public bool IsRunning => _isRunning;
+        public bool IsPaused => _isPaused;
+        public ObservableCollection<Oracle.Models.SearchResult> Results => _results;
+        public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
+        public string ConfigPath { get; private set; } = string.Empty;
+        public string FilterName { get; private set; } = "Unknown";
+        public int ResultCount => _results.Count;
+
+        // Events for UI integration
+        public event EventHandler? SearchStarted;
+        public event EventHandler? SearchCompleted;
+        public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
+        public event EventHandler<SearchResultEventArgs>? ResultFound;
+        public event EventHandler<int>? CutoffChanged;
+
+        public SearchInstance(string searchId, SearchHistoryService historyService)
+        {
+            _searchId = searchId;
+            _historyService = historyService;
+            _results = new ObservableCollection<Oracle.Models.SearchResult>();
+        }
+
+        /// <summary>
+        /// Start searching with a direct config object
+        /// </summary>
+        public async Task StartSearchWithConfigAsync(
+            OuijaConfig ouijaConfig,
+            SearchConfiguration config,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (_isRunning)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
+                return;
+            }
+
+            try
+            {
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "StartSearchWithConfigAsync called - NO TEMP FILES!"
+                );
+
+                _currentConfig = ouijaConfig;
+                ConfigPath = "Direct Config";
+                FilterName = $"Search {_searchId.Substring(0, 8)}";
+                _searchStartTime = DateTime.UtcNow;
+                _isRunning = true;
+                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
+
+                // Clear previous results
+                _results.Clear();
+
+                // Notify UI that search started
+                SearchStarted?.Invoke(this, EventArgs.Empty);
+
+                // Create progress wrapper
+                var progressWrapper = new Progress<SearchProgress>(p =>
+                {
+                    progress?.Report(p);
+                    HandleSearchProgress(p);
+                });
+
+                // Set up search configuration from the modal
+                var searchCriteria = new SearchCriteria
+                {
+                    ThreadCount = config.ThreadCount,
+                    MinScore = config.MinScore,
+                    BatchSize = config.BatchSize,
+                    Deck = config.Deck ?? "Red",
+                    Stake = config.Stake ?? "White",
+                };
+
+                // No need to start a search in database - just store results as they come
+
+                // Set up result capture
+                _resultCapture = new MotelyResultCapture(_historyService);
+                _resultCapture.SetFilterConfig(ouijaConfig);
+                _resultCapture.ResultCaptured += async (result) =>
+                {
+                    // If auto-cutoff is enabled, check if this result might increase the cutoff
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    {
+                        var oldCutoff = _currentCutoff;
+                        _currentCutoff = result.TotalScore;
+                        
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
+                        
+                        // Notify UI of cutoff change
+                        CutoffChanged?.Invoke(this, _currentCutoff);
+                    }
+                    
+                    // Filter based on current cutoff - don't add to results or database if below cutoff
+                    if (result.TotalScore < _currentCutoff)
+                    {
+                        return;
+                    }
+                    
+                    _results.Add(result);
+
+                    // Save to database
+                    await _historyService.AddSearchResultAsync(result);
+
+                    // Notify UI
+                    ResultFound?.Invoke(
+                        this,
+                        new SearchResultEventArgs
+                        {
+                            Result = new Oracle.Views.Modals.SearchResult
+                            {
+                                Seed = result.Seed,
+                                Score = result.TotalScore,
+                                Details = "", // Removed ScoreBreakdown
+                                TallyScores = result.Scores,
+                                ItemLabels = result.Labels
+                            },
+                        }
+                    );
+                };
+
+                // Start capturing
+                await _resultCapture.StartCaptureAsync();
+
+                // Run the search using the MotelySearchService pattern
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
+
+                await Task.Run(
+                    () =>
+                        RunSearchInProcess(
+                            ouijaConfig,
+                            searchCriteria,
+                            progressWrapper,
+                            _cancellationTokenSource.Token
+                        ),
+                    _cancellationTokenSource.Token
+                );
+
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+                await CompleteSearch(true);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Start searching with a config file path
+        /// </summary>
+        public async Task StartSearchAsync(
+            SearchCriteria criteria,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (_isRunning)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
+                return;
+            }
+
+            try
+            {
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    $"Starting search with config: {criteria.ConfigPath}"
+                );
+
+                ConfigPath = criteria.ConfigPath ?? string.Empty;
+                FilterName = System.IO.Path.GetFileNameWithoutExtension(
+                    criteria.ConfigPath ?? string.Empty
+                );
+                _searchStartTime = DateTime.UtcNow;
+                _isRunning = true;
+                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
+
+                // Clear previous results
+                _results.Clear();
+
+                // Load and validate the Ouija config
+                if (string.IsNullOrEmpty(criteria.ConfigPath))
+                {
+                    throw new ArgumentException("Config path is required");
+                }
+                _currentConfig = await Task.Run(() => OuijaConfig.LoadFromJson(criteria.ConfigPath)
+                );
+
+                if (_currentConfig == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to load config from {criteria.ConfigPath}"
+                    );
+                }
+
+                // Notify UI that search started
+                SearchStarted?.Invoke(this, EventArgs.Empty);
+
+                // Create progress wrapper
+                var progressWrapper = new Progress<SearchProgress>(p =>
+                {
+                    progress?.Report(p);
+                    HandleSearchProgress(p);
+                });
+
+                // No need to start a search in database - just store results as they come
+
+                // Set up result capture
+                _resultCapture = new MotelyResultCapture(_historyService);
+                if (_currentConfig != null)
+                {
+                    _resultCapture.SetFilterConfig(_currentConfig);
+                }
+                _resultCapture.ResultCaptured += async (result) =>
+                {
+                    // If auto-cutoff is enabled, check if this result might increase the cutoff
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    {
+                        var oldCutoff = _currentCutoff;
+                        _currentCutoff = result.TotalScore;
+                        
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
+                        
+                        // Notify UI of cutoff change
+                        CutoffChanged?.Invoke(this, _currentCutoff);
+                    }
+                    
+                    // Filter based on current cutoff - don't add to results or database if below cutoff
+                    if (result.TotalScore < _currentCutoff)
+                    {
+                        return;
+                    }
+                    
+                    _results.Add(result);
+
+                    // Save to database
+                    await _historyService.AddSearchResultAsync(result);
+
+                    // Notify UI
+                    ResultFound?.Invoke(
+                        this,
+                        new SearchResultEventArgs
+                        {
+                            Result = new Oracle.Views.Modals.SearchResult
+                            {
+                                Seed = result.Seed,
+                                Score = result.TotalScore,
+                                Details = "", // Removed ScoreBreakdown
+                                TallyScores = result.Scores,
+                                ItemLabels = result.Labels
+                            },
+                        }
+                    );
+                };
+
+                // Start capturing
+                await _resultCapture.StartCaptureAsync();
+
+                // Run the search using the MotelySearchService pattern
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
+
+                if (_currentConfig != null)
+                {
+                    await Task.Run(
+                        () =>
+                            RunSearchInProcess(
+                                _currentConfig,
+                                criteria,
+                                progressWrapper,
+                                _cancellationTokenSource.Token
+                            ),
+                        _cancellationTokenSource.Token
+                    );
+                }
+
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
+                await CompleteSearch(false);
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+                await CompleteSearch(true);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public void PauseSearch()
+        {
+            if (_isRunning && !_isPaused)
+            {
+                _isPaused = true;
+                if (_currentSearch != null && _currentSearch.Status == MotelySearchStatus.Running)
+                {
+                    _currentSearch.Pause();
+                }
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search paused");
+            }
+        }
+
+        public void ResumeSearch()
+        {
+            if (_isRunning && _isPaused)
+            {
+                _isPaused = false;
+                // Motely doesn't have a Resume method - search has to be restarted
+                // For now, just update the paused flag
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "Resume not supported - search needs to be restarted"
+                );
+            }
+        }
+
+        public void StopSearch()
+        {
+            if (_isRunning)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
+
+                // Set the cancellation flag that Motely checks
+                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
+
+                // Also cancel the token
+                _cancellationTokenSource?.Cancel();
+
+                // Force _isRunning to false immediately
+                _isRunning = false;
+
+                // Stop result capture first
+                if (_resultCapture != null)
+                {
+                    try
+                    {
+                        var stopTask = _resultCapture.StopCaptureAsync();
+                        if (!stopTask.Wait(TimeSpan.FromSeconds(1)))
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Result capture stop timed out");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error stopping result capture: {ex.Message}");
+                    }
+                }
+
+                // IMPORTANT: Stop the actual search service!
+                if (_currentSearch != null)
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Pausing and disposing search");
+
+                    try
+                    {
+                        // Pause first if it's running
+                        if (_currentSearch.Status == MotelySearchStatus.Running)
+                        {
+                            _currentSearch.Pause();
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", "Search paused");
+                        }
+
+                        // Then dispose with a timeout
+                        var disposeTask = Task.Run(() => _currentSearch.Dispose());
+                        if (!disposeTask.Wait(TimeSpan.FromSeconds(2)))
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search disposal timed out");
+                        }
+                        else
+                        {
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", "Search disposed successfully");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing search: {ex.Message}");
+                    }
+                    finally
+                    {
+                        _currentSearch = null;
+                    }
+                }
+            }
+        }
+
+        private void HandleSearchProgress(SearchProgress progress)
+        {
+            // Update UI with progress
+            var eventArgs = new SearchProgressEventArgs
+            {
+                Message = progress.Message ?? string.Empty,
+                PercentComplete = (int)progress.PercentComplete,
+                SeedsSearched = (int)progress.SeedsSearched,
+                ResultsFound = progress.ResultsFound,
+                IsComplete = progress.IsComplete,
+                HasError = progress.HasError,
+            };
+
+            ProgressUpdated?.Invoke(this, eventArgs);
+
+            // Don't output progress messages to console - the UI handles this through ProgressUpdated event
+            // This prevents duplicate messages in the console
+        }
+
+        private Task CompleteSearch(bool wasCancelled)
+        {
+            // No need to complete search in database
+            return Task.CompletedTask;
+        }
+
+        private async Task RunSearchInProcess(
+            OuijaConfig config,
+            SearchCriteria criteria,
+            IProgress<SearchProgress>? progress,
+            CancellationToken cancellationToken
+        )
+        {
+            // Capture original console output
+            var originalOut = Console.Out;
+            FilteredConsoleWriter? filteredWriter = null;
+            
+            try
+            {
+                // Redirect console output to filter out duplicate seed reports
+                filteredWriter = new FilteredConsoleWriter(originalOut);
+                Console.SetOut(filteredWriter);
+                
+                // Reset cancellation flag
+                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+
+                // Create filter descriptor
+                var filterDesc = new OuijaJsonFilterDesc(config);
+                
+                // Enable auto-cutoff if MinScore is 0
+                _isAutoCutoffEnabled = criteria.MinScore == 0;
+                _currentCutoff = _isAutoCutoffEnabled ? 1 : criteria.MinScore; // Start at 1 for auto
+                filterDesc.Cutoff = _currentCutoff;
+                
+                if (_isAutoCutoffEnabled)
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Auto-cutoff enabled, starting at 1");
+                }
+                else
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", $"Auto-cutoff disabled, using fixed cutoff: {criteria.MinScore}");
+                }
+
+                // Create search settings - following Motely Program.cs pattern
+                var batchSize = criteria.BatchSize;
+                var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
+                    filterDesc
+                )
+                    .WithThreadCount(criteria.ThreadCount)
+                    .WithBatchCharacterCount(batchSize)
+                    .WithStartBatchIndex(criteria.StartBatch)
+                    .WithSequentialSearch();
+
+                // Calculate total batches if end batch is specified
+                long? totalBatches = null;
+                if (criteria.EndBatch > 0)
+                {
+                    totalBatches = criteria.EndBatch - criteria.StartBatch;
+                }
+
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}"
+                );
+
+                // Start the search
+                _currentSearch = searchSettings.Start();
+
+                var startTime = DateTime.UtcNow;
+                int lastCompletedCount = 0;
+                var lastProgressTime = DateTime.UtcNow;
+
+                // Monitor the search
+                while (
+                    _currentSearch.Status == MotelySearchStatus.Running
+                    && !cancellationToken.IsCancellationRequested
+                    && _isRunning
+                )
+                {
+                    if (
+                        !_isRunning
+                        || cancellationToken.IsCancellationRequested
+                        || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled
+                    )
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            "Breaking out of search loop - cancellation requested"
+                        );
+                        break;
+                    }
+
+                    // Get current batch count
+                    var currentBatchCount = _currentSearch.CompletedBatchCount;
+
+                    // Estimate seeds searched
+                    long seedsPerBatch = (long)Math.Pow(35, batchSize);
+                    long currentSeeds = (long)currentBatchCount * seedsPerBatch;
+
+                    var elapsed = DateTime.UtcNow - startTime;
+                    var seedsPerSecond =
+                        elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
+
+                    // Report progress when batch count changes OR every 500ms for less frequent updates
+                    var shouldReportProgress =
+                        currentBatchCount > lastCompletedCount
+                        || (DateTime.UtcNow - lastProgressTime).TotalMilliseconds >= 500;
+
+                    if (shouldReportProgress)
+                    {
+                        lastCompletedCount = currentBatchCount;
+                        lastProgressTime = DateTime.UtcNow;
+
+                        // Calculate percentage if we have total batches
+                        double percentComplete = 0;
+                        if (totalBatches.HasValue && totalBatches.Value > 0)
+                        {
+                            var batchesCompleted = currentBatchCount - criteria.StartBatch;
+                            percentComplete = Math.Min(
+                                100,
+                                (double)batchesCompleted / totalBatches.Value * 100
+                            );
+                        }
+
+                        progress?.Report(
+                            new SearchProgress
+                            {
+                                SeedsSearched = currentSeeds,
+                                SeedsPerSecond = seedsPerSecond,
+                                PercentComplete = percentComplete,
+                                Message =
+                                    percentComplete > 0
+                                        ? $"Searched ~{currentSeeds:N0} seeds ({percentComplete:F1}%) at {seedsPerSecond:F0}/s"
+                                        : $"Searched ~{currentSeeds:N0} seeds at {seedsPerSecond:F0}/s",
+                                ResultsFound = Results.Count,
+                            }
+                        );
+
+                        // Raise progress updated event
+                        ProgressUpdated?.Invoke(
+                            this,
+                            new SearchProgressEventArgs
+                            {
+                                SeedsSearched = (int)currentSeeds,
+                                ResultsFound = Results.Count,
+                                SeedsPerSecond = seedsPerSecond,
+                                PercentComplete = (int)percentComplete,
+                            }
+                        );
+                    }
+
+                    // Use shorter delay and catch cancellation
+                    try
+                    {
+                        await Task.Delay(100, cancellationToken); // Check more frequently for cancellation
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            "Task.Delay cancelled - stopping search immediately"
+                        );
+                        break;
+                    }
+                }
+
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search loop ended. Status={_currentSearch.Status}"
+                );
+
+                // Give capture service a moment to catch any final results
+                if (_resultCapture != null && !cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(100, CancellationToken.None);
+                }
+
+                // Report completion
+                var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0;
+                long finalSeeds = (long)finalBatchCount * (long)Math.Pow(35, batchSize);
+
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message =
+                            cancellationToken.IsCancellationRequested || !_isRunning
+                                ? "Search cancelled"
+                                : $"Search complete. Found {Results.Count} seeds",
+                        IsComplete = true,
+                        SeedsSearched = finalSeeds,
+                        ResultsFound = Results.Count,
+                        PercentComplete = 100,
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"RunSearchInProcess exception: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search error: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                // Restore original console output
+                if (originalOut != null)
+                {
+                    Console.SetOut(originalOut);
+                }
+                filteredWriter?.Dispose();
+            }
+        }
+
+        // HandleAutoCutoff method removed - now handled inline when results are captured
+
+        public void Dispose()
+        {
+            // First stop the search if it's running
+            if (_isRunning)
+            {
+                StopSearch();
+            }
+
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+
+            // Make sure to stop and dispose the search service
+            if (_currentSearch != null)
+            {
+                // Pause first if it's running
+                if (_currentSearch.Status == MotelySearchStatus.Running)
+                {
+                    _currentSearch.Pause();
+                }
+                _currentSearch.Dispose();
+                _currentSearch = null;
+            }
+
+            if (_resultCapture != null)
+            {
+                Task.Run(async () => await _resultCapture.StopCaptureAsync()).Wait(1000);
+                _resultCapture.Dispose();
+            }
+            _resultCapture = null;
+
+            GC.SuppressFinalize(this);
+        }
+    }
+}

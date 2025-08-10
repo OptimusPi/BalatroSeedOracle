@@ -12,7 +12,7 @@
     <!-- ALL Buttons get Balatro styling by default (except window chrome buttons) -->
     <Style Selector="Button:not(.SystemCaptionButton)">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Background" Value="{StaticResource DockGrey}" /> <!-- Default gray like in Balatro -->
@@ -24,6 +24,8 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="IsTabStop" Value="True" />
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="Background" Duration="0:0:0.1" />
@@ -64,7 +66,7 @@
         </Setter>
     </Style>
     
-    <!-- Button hover - no opacity change, color is handled by specific styles -->
+    <!-- Button hover - enhanced shadow effects for red buttons -->
     <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
     </Style>
@@ -72,15 +74,17 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     
-    <!-- Button pressed - move down to meet shadow -->
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#ButtonFace">
-        <Setter Property="Margin" Value="0,4,0,0" />
+    <!-- Prevent text selection in all buttons -->
+    <Style Selector="Button TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
-        <Setter Property="IsVisible" Value="False" />
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
-        <Setter Property="IsVisible" Value="False" />
+    
+    <!-- Enhanced red button hover shadow using exact color -->
+    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
+        <Setter Property="Background" Value="#70150f" />
     </Style>
     
     <!-- Button disabled state -->
@@ -94,15 +98,21 @@
     <!-- ALL TextBlocks get Balatro font -->
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <!-- Prevent text selection / dragging highlight inside buttons -->
+    <Style Selector="Button TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
     
     <!-- ALL Labels get Balatro font -->
     <Style Selector="Label">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="14" />
     </Style>
     
@@ -120,24 +130,12 @@
         <Setter Property="CaretBrush" Value="{StaticResource TextLight}" />
     </Style>
     <Style Selector="TextBox:focus">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     <Style Selector="TextBox:pointerover">
-        <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#b9c2d2" />
-    </Style>
-    
-    <!-- ALL ComboBoxes get dark theme -->
-    <Style Selector="ComboBox">
-        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Background" Value="#2a2a2a" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="#555555" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="8,6" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}" />
     </Style>
     
     <!-- ALL CheckBoxes get dark theme -->
@@ -147,26 +145,13 @@
         <Setter Property="FontSize" Value="14" />
     </Style>
     
-    <!-- ALL NumericUpDowns get dark theme -->
-    <Style Selector="NumericUpDown">
-        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="Background" Value="#2a2a2a" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="#555555" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Padding" Value="8,6" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="MinHeight" Value="32" />
-        <Setter Property="Height" Value="32" />
-    </Style>
     <Style Selector="NumericUpDown:focus">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     <Style Selector="NumericUpDown:pointerover">
-        <Setter Property="Background" Value="#2e2e2e" />
-        <Setter Property="BorderBrush" Value="#b9c2d2" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}" />
     </Style>
     
     <!-- ALL ListBoxes get dark theme -->
@@ -196,8 +181,8 @@
     <!-- DataGrid headers -->
     <Style Selector="DataGridColumnHeader">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="BorderBrush" Value="#555555" />
         <Setter Property="Padding" Value="8,6" />
@@ -212,31 +197,30 @@
     
     <!-- ==== BALATRO-SPECIFIC COMPONENT STYLES ==== -->
     
-    <!-- Main modal/dialog style -->
+    <!-- Main modal/dialog style - Medium grey background like Balatro -->
     <Style Selector="Border.balatro-modal">
-        <Setter Property="Background" Value="{StaticResource Black}" />
+        <Setter Property="Background" Value="{StaticResource DockGrey}" />
         <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="BorderBrush" Value="#555a5c" />
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
         <Setter Property="BorderThickness" Value="3" />
         <Setter Property="Padding" Value="20" />
-        <Setter Property="BoxShadow" Value="0 2 8 #99000000" />
+        <Setter Property="BoxShadow" Value="0 4 0 #777e89" />
     </Style>
     
-    <!-- Card-like container (like the Common Sets area) -->
+    <!-- Card-like container (like the Common Sets area) - Dark inner panel -->
     <Style Selector="Border.balatro-card">
-        <Setter Property="Background" Value="#2e3f42" />
+        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
         <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="BorderBrush" Value="#444444" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16" />
-        <Setter Property="Margin" Value="4" />
+        <Setter Property="Margin" Value="8" />
     </Style>
     
     <!-- Section headers (like "Common Sets") -->
     <Style Selector="TextBlock.balatro-section-header">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontSize" Value="20" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Margin" Value="0,0,0,12" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -246,7 +230,7 @@
     <Style Selector="TextBlock.balatro-modal-title">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,0,20" />
@@ -301,12 +285,12 @@
     <!-- Compact navigation buttons for filter modal sidebar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="22" />
-        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="2,2" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
@@ -322,9 +306,9 @@
     <!-- Search box style -->
     <Style Selector="TextBox.search-box">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="MinHeight" Value="32" />
         <Setter Property="Watermark" Value="Search items..." />
-        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
     
     <!-- Drop zone style (for drag & drop areas) -->
@@ -335,6 +319,15 @@
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="MinHeight" Value="120" />
         <Setter Property="Padding" Value="16" />
+    </Style>
+    
+    <!-- Info display using exact precise colors -->
+    <Style Selector="TextBlock.info-display">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}" />
+        
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     
     <!-- When dragging over drop zone -->
@@ -372,10 +365,10 @@
     
     <Style Selector="TabItem">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="Background" Value="{StaticResource LightBlack}" />
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="Padding" Value="16,8" />
         <Setter Property="Margin" Value="2,0" />
         <Setter Property="CornerRadius" Value="8,8,0,0" />
@@ -404,6 +397,46 @@
     </Style>
     <Style Selector="ScrollBar /template/ Thumb:pointerover">
         <Setter Property="Background" Value="#b9c2d2" />
+    </Style>
+    
+    <!-- Modal content box style - Main modal container (medium grey) -->
+    <Style Selector="Border.modal-content-box">
+        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        <Setter Property="Padding" Value="30"/>
+    </Style>
+    
+    <!-- Remove default focus rectangle / inner highlight on buttons -->
+    <Style Selector="Button:focus-visible">
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+    </Style>
+
+    <!-- Button pressed state - move down and hide shadows like back-button -->
+    <Style Selector="Button:not(.SystemCaptionButton):pressed">
+        <Setter Property="RenderTransform" Value="translateY(3px)"/>
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
+    <!-- Disable keyboard navigation for main menu colored buttons -->
+    <Style Selector="Button.btn-blue, Button.btn-orange, Button.btn-green, Button.btn-red, Button.btn-purple">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+    </Style>
+    
+    <!-- (Remove this style or set Focusable/IsTabStop back to True if you later re-enable keyboard nav) -->
+    
+    <!-- Keep visual unchanged on focus (no background/border swap) -->
+    <Style Selector="Button:focus, Button:focus-visible">
+        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
+        <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
     </Style>
     
 </Styles>
