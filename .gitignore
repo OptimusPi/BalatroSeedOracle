@@ -56,7 +56,6 @@ nunit-*.xml
 /src/SearchResults
 /SearchResults
 /ouija_configs
-/WordLists
 userprofile.json
 .claude/settings.local.json
 userprofile.json
