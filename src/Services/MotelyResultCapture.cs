@@ -77,28 +77,26 @@ namespace Oracle.Services
                                 {
                                     Seed = result.Seed,
                                     TotalScore = result.TotalScore,
-                                    ScoreBreakdown = SerializeScoreBreakdown(result.ScoreWants),
-                                    ScoreLabels = ExtractScoreLabels(),
-                                    TallyScores = result.ScoreWants,
-                                    ItemLabels = ExtractScoreLabels(),
+                                    Scores = result.ScoreWants,
+                                    Labels = ExtractScoreLabels(),
                                 };
                                 
                                 DebugLogger.Log(
                                     "MotelyResultCapture",
-                                    $"Result for {result.Seed}: TallyScores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.ItemLabels?.Length ?? 0}"
+                                    $"Result for {result.Seed}: Scores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
                                 );
-                                if (searchResult.ItemLabels != null && searchResult.ItemLabels.Length > 0)
+                                if (searchResult.Labels != null && searchResult.Labels.Length > 0)
                                 {
                                     DebugLogger.Log(
                                         "MotelyResultCapture",
-                                        $"Labels: {string.Join(", ", searchResult.ItemLabels)}"
+                                        $"Labels: {string.Join(", ", searchResult.Labels)}"
                                     );
                                 }
-                                if (searchResult.TallyScores != null && searchResult.TallyScores.Length > 0)
+                                if (searchResult.Scores != null && searchResult.Scores.Length > 0)
                                 {
                                     DebugLogger.Log(
                                         "MotelyResultCapture",
-                                        $"Scores: {string.Join(", ", searchResult.TallyScores)}"
+                                        $"Scores: {string.Join(", ", searchResult.Scores)}"
                                     );
                                 }
 
@@ -167,16 +165,6 @@ namespace Oracle.Services
             _captureTask = null;
         }
 
-        /// <summary>
-        /// Serialize score breakdown as JSON
-        /// </summary>
-        private string SerializeScoreBreakdown(int[]? scores)
-        {
-            if (scores == null || scores.Length == 0)
-                return "[]";
-
-            return JsonSerializer.Serialize(scores);
-        }
 
         /// <summary>
         /// Extract score labels from the filter configuration

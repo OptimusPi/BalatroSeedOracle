@@ -241,7 +241,7 @@ public async Task<List<SearchResult>> QueryResultsAsync(
 ## Migration Notes
 
 - Keep CSV export as backup option
-- SearchResults folder structure: `SearchResults/{filter_name}.ouija.duckdb`
+- SearchResults folder structure: `SearchResults/{filter_name}.duckdb`
 - Each filter gets its own database file
 - Can query across databases using DuckDB's multi-database support
 

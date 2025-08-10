@@ -107,18 +107,22 @@ namespace Oracle.Controls
         {
             return new Border
             {
-                MinWidth = 282,
-                MaxWidth = 322,
+                MinWidth = 340,
+                MaxWidth = 400,
                 Background =
                     Application.Current?.FindResource("ItemConfigMediumBg") as IBrush
                     ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
                 BorderBrush =
                     Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
                     ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(15),
+                BorderThickness = new Thickness(2),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(20),
                 Child = content,
+                // Ensure the popup is hit-testable
+                IsHitTestVisible = true,
+                // Add a subtle shadow using box shadows (Avalonia doesn't have DropShadowEffect)
+                BoxShadow = Avalonia.Media.BoxShadows.Parse("0 4 16 2 #60000000")
             };
         }
 
@@ -189,7 +193,8 @@ namespace Oracle.Controls
         {
             var button = new Button
             {
-                Height = 32,
+                Height = 40,
+                MinWidth = 90,
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
                 Margin =
                     column == 0 ? new Thickness(0, 0, 4, 0)
@@ -212,8 +217,8 @@ namespace Oracle.Controls
                             FontFamily =
                                 Application.Current?.FindResource("BalatroFont") as FontFamily
                                 ?? FontFamily.Default,
-                            FontSize = 12,
-
+                            FontSize = 14,
+                            FontWeight = FontWeight.SemiBold,
                             Foreground = new SolidColorBrush(Color.Parse(borderColor)),
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,

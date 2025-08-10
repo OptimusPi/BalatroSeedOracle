@@ -81,6 +81,8 @@ namespace Oracle.Views.Modals
         private TextBlock? _statusText;
         private string? _currentFilePath;
         private bool _isDragging = false;
+        private bool _isDraggingSet = false;
+        private FavoritesService.JokerSet? _draggingSet = null;
 
         public FiltersModalContent()
         {
@@ -173,15 +175,15 @@ namespace Oracle.Views.Modals
             }
 
             // Setup Save Filter functionality
-            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            var saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             var saveFilterButton = this.FindControl<Button>("SaveFilterButton");
 
-            if (filterNameInput != null && saveFilterButton != null)
+            if (saveFilterNameInput != null && saveFilterButton != null)
             {
                 // Enable/disable save button based on filter name
-                filterNameInput.TextChanged += (s, e) =>
+                saveFilterNameInput.TextChanged += (s, e) =>
                 {
-                    saveFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(filterNameInput.Text);
+                    saveFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(saveFilterNameInput.Text);
                 };
             }
         }
@@ -247,6 +249,7 @@ namespace Oracle.Views.Modals
         {
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
+            var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
             // Enable tabs only when a filter is loaded
             if (visualTab != null)
@@ -257,6 +260,11 @@ namespace Oracle.Views.Modals
             if (jsonTab != null)
             {
                 jsonTab.IsEnabled = configLoaded;
+            }
+            
+            if (saveFilterTab != null)
+            {
+                saveFilterTab.IsEnabled = configLoaded;
             }
         }
 
@@ -298,9 +306,20 @@ namespace Oracle.Views.Modals
                     // Convert sources to boolean flags
                     if (itemConfig.Sources != null)
                     {
-                        filterItem.IncludeBoosterPacks = itemConfig.Sources.Contains("booster");
-                        filterItem.IncludeShopStream = itemConfig.Sources.Contains("shop");
-                        filterItem.IncludeSkipTags = itemConfig.Sources.Contains("tag");
+                        if (itemConfig.Sources is List<string> sourcesList)
+                        {
+                            // Old format
+                            filterItem.IncludeBoosterPacks = sourcesList.Contains("booster");
+                            filterItem.IncludeShopStream = sourcesList.Contains("shop");
+                            filterItem.IncludeSkipTags = sourcesList.Contains("tag");
+                        }
+                        else if (itemConfig.Sources is Dictionary<string, List<int>> sourcesDict)
+                        {
+                            // New format - check if slots exist
+                            filterItem.IncludeBoosterPacks = sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"].Count > 0;
+                            filterItem.IncludeShopStream = sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"].Count > 0;
+                            filterItem.IncludeSkipTags = sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"].Count > 0;
+                        }
                     }
                 }
 
@@ -376,9 +395,52 @@ namespace Oracle.Views.Modals
             Oracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
         }
 
+        private void UpdateSaveFilterPanel()
+        {
+            // Update the author display from user profile
+            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
+            if (authorDisplay != null)
+            {
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                authorDisplay.Text = userProfileService?.GetAuthorName() ?? "Jimbo";
+            }
+            
+            // Clear the description if it's a new filter
+            var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
+            if (descriptionInput != null && string.IsNullOrWhiteSpace(descriptionInput.Text))
+            {
+                descriptionInput.Text = "Created with visual filter builder";
+            }
+        }
+        
+        private void OnSearchForSeedsClick(object? sender, RoutedEventArgs e)
+        {
+            var searchButton = sender as Button;
+            if (searchButton?.Tag is string filterPath)
+            {
+                // Get the main window to find BalatroMainMenu
+                var mainWindow = TopLevel.GetTopLevel(this) as Window;
+                if (mainWindow?.Content is Grid grid)
+                {
+                    var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
+                    if (mainMenu != null)
+                    {
+                        // Close this modal first
+                        mainMenu.HideModalContent();
+                        
+                        // Open the search modal with the saved filter after a small delay to ensure the previous modal is closed
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            mainMenu.ShowSearchModal(filterPath);
+                        }, DispatcherPriority.Background);
+                    }
+                }
+            }
+        }
+        
         private async void OnSaveFilterClick(object? sender, RoutedEventArgs e)
         {
-            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            var filterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             if (filterNameInput == null || string.IsNullOrWhiteSpace(filterNameInput.Text))
             {
                 UpdateStatus("Please enter a filter name", true);
@@ -389,42 +451,27 @@ namespace Oracle.Views.Modals
             {
                 var filterName = filterNameInput.Text.Trim();
 
-                // Create the JSON structure directly (don't use OuijaConfig)
-                var filterJson = new
+                // Build the OuijaConfig from current selections
+                var config = BuildOuijaConfigFromSelections();
+                
+                // Get author from user profile
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                var authorName = userProfileService?.GetAuthorName() ?? "Jimbo";
+                
+                // Get description from the input field
+                var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
+                var description = descriptionInput?.Text ?? "Created with visual filter builder";
+                
+                // Create wrapper with metadata
+                var filterWithMetadata = new
                 {
                     name = filterName,
-                    description = "Created with visual filter builder",
-                    author = "User",
-                    items = new List<object>()
+                    description = description,
+                    author = authorName,
+                    must = config.Must,
+                    should = config.Should,
+                    mustNot = config.MustNot
                 };
-
-                // Convert needs/wants/mustnot to items format
-                foreach (var item in _selectedNeeds)
-                {
-                    var parts = item.Split(':');
-                    if (parts.Length >= 2)
-                    {
-                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "must" });
-                    }
-                }
-
-                foreach (var item in _selectedWants)
-                {
-                    var parts = item.Split(':');
-                    if (parts.Length >= 2)
-                    {
-                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "should" });
-                    }
-                }
-
-                foreach (var item in _selectedMustNot)
-                {
-                    var parts = item.Split(':');
-                    if (parts.Length >= 2)
-                    {
-                        filterJson.items.Add(new { value = parts[1], type = parts[0], category = "mustnot" });
-                    }
-                }
 
                 // Save to file
                 var directory = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
@@ -443,15 +490,25 @@ namespace Oracle.Views.Modals
                     return;
                 }
 
-                // Write the JSON file
-                var json = JsonSerializer.Serialize(filterJson, new JsonSerializerOptions { WriteIndented = true });
+                // Write the JSON file using the proper serializer
+                var json = SerializeOuijaConfig(config);
+                
+                // Replace the empty name and description with actual values
+                json = json.Replace("\"name\": \"\"", $"\"name\": \"{filterName}\"");
+                json = json.Replace("\"description\": \"\"", $"\"description\": \"{description}\"");
+                
                 await File.WriteAllTextAsync(filePath, json);
 
                 UpdateStatus($"Filter '{filterName}' saved successfully!", false);
                 Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
-
-                // Clear the filter name input
-                filterNameInput.Text = "";
+                
+                // Enable the Search for Seeds button and store the filter path
+                var searchButton = this.FindControl<Button>("SearchForSeedsButton");
+                if (searchButton != null)
+                {
+                    searchButton.IsEnabled = true;
+                    searchButton.Tag = filePath; // Store the filter path for later use
+                }
 
                 // Refresh the filter selector to show the new filter
                 var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
@@ -1705,13 +1762,6 @@ namespace Oracle.Views.Modals
                         textEditor.Text = content;
                         textEditor.IsVisible = true;
                     }
-
-                    // Update config name
-                    var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
-                    if (configNameBox != null && !string.IsNullOrEmpty(config.Name))
-                    {
-                        configNameBox.Text = config.Name;
-                    }
                 }
 
                 _currentFilePath = configPath;
@@ -2578,6 +2628,7 @@ namespace Oracle.Views.Modals
                 Margin = new Thickness(0, 0, 0, 20),
             };
 
+            // Get all sets including custom ones
             foreach (var set in FavoritesService.Instance.GetCommonSets())
             {
                 var setDisplay = new JokerSetDisplay
@@ -2594,12 +2645,24 @@ namespace Oracle.Views.Modals
                     {
                         e.Handled = true;
 
-                        // Create drag data with set indicator and items
+                        // Track that we're dragging a set
+                        _isDraggingSet = true;
+                        _draggingSet = set;
+                        
+                        // Merge the drop zones for set dropping
+                        MergeDropZonesForSet();
+
+                        // Create drag data with JokerSet object
                         var dataObject = new DataObject();
-                        dataObject.Set("balatro-item", $"Set|{set.Name}");
-                        dataObject.Set("set-items", string.Join(",", set.Items));
+                        dataObject.Set("JokerSet", set);
+                        dataObject.Set("balatro-item", $"Set|{set.Name}"); // Keep for compatibility
 
                         await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy);
+                        
+                        // Restore normal drop zones after drag
+                        _isDraggingSet = false;
+                        _draggingSet = null;
+                        RestoreNormalDropZones();
                     }
                 };
 
@@ -2658,15 +2721,37 @@ namespace Oracle.Views.Modals
                 }
             );
 
-            // Add favorites header
+            // Add favorites header with Save button
+            var headerPanel = new DockPanel
+            {
+                Margin = new Thickness(10, 10, 10, 10),
+                LastChildFill = false,
+            };
+            
             var favoritesHeader = new TextBlock
             {
                 Text = "Selected Items",
                 FontSize = 20,
                 FontWeight = FontWeight.Bold,
-                Margin = new Thickness(10, 10, 10, 10),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
-            itemsPanel.Children.Add(favoritesHeader);
+            DockPanel.SetDock(favoritesHeader, Dock.Left);
+            headerPanel.Children.Add(favoritesHeader);
+            
+            // Add Save as Favorite button
+            var saveAsFavoriteButton = new Button
+            {
+                Content = "Save as Favorite",
+                Margin = new Thickness(10, 0, 0, 0),
+                Height = 32,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            };
+            saveAsFavoriteButton.Classes.Add("btn-blue");
+            DockPanel.SetDock(saveAsFavoriteButton, Dock.Right);
+            saveAsFavoriteButton.Click += OnSaveAsFavoriteClick;
+            headerPanel.Children.Add(saveAsFavoriteButton);
+            
+            itemsPanel.Children.Add(headerPanel);
 
             // Group selected items by their actual category
             var selectedItems = _selectedNeeds.Union(_selectedWants).ToList();
@@ -2873,11 +2958,9 @@ namespace Oracle.Views.Modals
                 ItemName = itemName,
                 Category = actualCategory, // Use actual category for proper functionality
                 ImageSource = imageSource,
-                // Set explicit size to prevent growing during drag/drop
-                Width = 80,
-                Height = 110,
-                MaxWidth = 80,
-                MaxHeight = 110,
+                // Use full sprite size
+                Width = 71,
+                Height = 95,
             };
 
             // Check if selected (use actual category for key)
@@ -3054,15 +3137,7 @@ namespace Oracle.Views.Modals
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
 
-                // Additional validation for Ouija config structure
-                if (jsonDocument.RootElement.TryGetProperty("filter_config", out var filterConfig))
-                {
-                    UpdateStatus("✓ Valid filter config");
-                }
-                else
-                {
-                    UpdateStatus("✓ Valid JSON (no filter_config found)");
-                }
+                UpdateStatus("✓ Valid filter config");
             }
             catch (JsonException ex)
             {
@@ -3092,14 +3167,18 @@ namespace Oracle.Views.Modals
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
 
-                // Additional validation for Ouija config structure
-                if (jsonDocument.RootElement.TryGetProperty("filter_config", out var filterConfig))
+                // Check for proper OuijaConfig structure
+                bool hasValidStructure = jsonDocument.RootElement.TryGetProperty("must", out _) ||
+                                        jsonDocument.RootElement.TryGetProperty("should", out _) ||
+                                        jsonDocument.RootElement.TryGetProperty("mustNot", out _);
+                
+                if (hasValidStructure)
                 {
-                    UpdateStatus("✓ Valid filter config");
+                    UpdateStatus("✓ Valid filter");
                 }
                 else
                 {
-                    UpdateStatus("✓ Valid JSON (no filter_config found)");
+                    UpdateStatus("✓ Valid JSON");
                 }
             }
             catch (JsonException ex)
@@ -3424,16 +3503,19 @@ namespace Oracle.Views.Modals
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
             var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
+            var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
             // Get all panels
             var visualPanel = this.FindControl<Grid>("VisualPanel");
             var jsonPanel = this.FindControl<Grid>("JsonPanel");
             var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+            var saveFilterPanel = this.FindControl<Grid>("SaveFilterPanel");
 
             // Remove active class from all tabs
             visualTab?.Classes.Remove("active");
             jsonTab?.Classes.Remove("active");
             loadSaveTab?.Classes.Remove("active");
+            saveFilterTab?.Classes.Remove("active");
 
             // Hide all panels
             if (visualPanel != null)
@@ -3449,6 +3531,11 @@ namespace Oracle.Views.Modals
             if (loadSavePanel != null)
             {
                 loadSavePanel.IsVisible = false;
+            }
+            
+            if (saveFilterPanel != null)
+            {
+                saveFilterPanel.IsVisible = false;
             }
 
             // Get triangle for animation
@@ -3490,6 +3577,17 @@ namespace Oracle.Views.Modals
                     AnimateTriangleToTab(2);
                     EnterEditJsonMode();
                     UpdateJsonEditor();
+                    break;
+                    
+                case "SaveFilterTab":
+                    button.Classes.Add("active");
+                    if (saveFilterPanel != null)
+                    {
+                        saveFilterPanel.IsVisible = true;
+                    }
+
+                    AnimateTriangleToTab(3);
+                    UpdateSaveFilterPanel();
                     break;
             }
         }
@@ -3741,7 +3839,6 @@ namespace Oracle.Views.Modals
             var viewbox = new Viewbox
             {
                 Stretch = Stretch.Uniform,
-                StretchDirection = StretchDirection.DownOnly, // Only scale down, not up
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                 Child = canvas,
@@ -4172,8 +4269,8 @@ namespace Oracle.Views.Modals
                     {
                         Source = jokerImageSource,
                         Stretch = Stretch.Uniform,
-                        Width = 48, // Scaled for smaller cards
-                        Height = 48, // Scaled for smaller cards
+                        Width = 71,
+                        Height = 95,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = null, // Explicitly reset any transforms
@@ -4192,8 +4289,8 @@ namespace Oracle.Views.Modals
                         {
                             Source = faceSource,
                             Stretch = Stretch.Uniform,
-                            Width = 48,
-                            Height = 48,
+                            Width = 71,
+                            Height = 95,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             RenderTransform = new RotateTransform(),
@@ -4264,9 +4361,9 @@ namespace Oracle.Views.Modals
                         "CreateDroppedItem",
                         $"✅ Found image for '{itemName}'"
                     );
-                    // Use correct size based on category (scaled for smaller cards)
-                    double imgWidth = 48;
-                    double imgHeight = 48;
+                    // Use correct size based on category
+                    double imgWidth = 71;
+                    double imgHeight = 95;
 
                     if (category == "Tags")
                     {
@@ -4321,9 +4418,11 @@ namespace Oracle.Views.Modals
             }
 
             // Click to show config popup
-            border.PointerPressed += (s, e) =>
+            border.PointerPressed += async (s, e) =>
             {
                 e.Handled = true;
+                // Add a small delay to ensure proper click registration
+                await Task.Delay(50);
                 ShowItemConfigPopup(border, itemName, category);
             };
 
@@ -4366,6 +4465,8 @@ namespace Oracle.Views.Modals
                 {
                     Placement = PlacementMode.Pointer,
                     IsLightDismissEnabled = true,
+                    HorizontalOffset = 0,
+                    VerticalOffset = 10,
                 };
             }
 
@@ -4385,7 +4486,7 @@ namespace Oracle.Views.Modals
             // Create appropriate popup based on category
             _configPopupContent = category switch
             {
-                "Jokers" or "SoulJokers" => new JokerConfigPopup(),
+                "Jokers" or "SoulJokers" => CreateJokerConfigPopup(itemName),
                 "Tarots" => new TarotConfigPopup(),
                 "Planets" => new TarotConfigPopup(), // Planet cards use same config as Tarot (no editions)
                 "Spectrals" => new SpectralConfigPopup(),
@@ -4581,7 +4682,9 @@ namespace Oracle.Views.Modals
                         name = configName,
                         author = authorName,
                         created = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        filter_config = config,
+                        must = config.Must,
+                        should = config.Should,
+                        mustNot = config.MustNot,
                     };
 
                     var wrappedJson = System.Text.Json.JsonSerializer.Serialize(
@@ -4914,7 +5017,7 @@ namespace Oracle.Views.Modals
                     new TextBlock
                     {
                         Text = itemName,
-                        FontSize = UIConstants.SmallFontSize,
+                        FontSize = 12,
 
                         Foreground = Brushes.White,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -5091,6 +5194,15 @@ namespace Oracle.Views.Modals
             using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
 
             writer.WriteStartObject();
+            
+            // Add metadata fields
+            writer.WriteString("name", "");
+            writer.WriteString("description", "");
+            
+            // Get author from user profile
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            var authorName = userProfileService?.GetAuthorName() ?? "Jimbo";
+            writer.WriteString("author", authorName);
 
             // Write must array
             writer.WriteStartArray("must");
@@ -5207,6 +5319,27 @@ namespace Oracle.Views.Modals
                 Deck = "Red", // Default deck
                 Stake = "White", // Default stake
             };
+            
+            // Get name from the ConfigNameBox
+            var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+            if (configNameBox != null && !string.IsNullOrWhiteSpace(configNameBox.Text))
+            {
+                config.Name = configNameBox.Text;
+            }
+            else
+            {
+                config.Name = "Untitled Filter";
+            }
+            
+            // Get description if available
+            var configDescriptionBox = this.FindControl<TextBox>("ConfigDescriptionBox");
+            if (configDescriptionBox != null && !string.IsNullOrWhiteSpace(configDescriptionBox.Text))
+            {
+                config.Description = configDescriptionBox.Text;
+            }
+            
+            // Set author - you can customize this
+            config.Author = Environment.UserName ?? "Unknown";
 
             // Convert all items using the helper method that handles unique keys
             FixUniqueKeyParsing(_selectedNeeds, config.Must, 0);
@@ -5258,47 +5391,85 @@ namespace Oracle.Views.Modals
         {
             var filterItem = new Motely.Filters.OuijaConfig.FilterItem
             {
+                // If Antes is null, it means either all antes or no antes were selected
+                // The JokerConfigPopup returns null for both cases
+                // We'll use an empty array for now and let Motely handle the default
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
             };
 
-            // Set sources as SourcesConfig object
-            if (config.Sources != null && config.Sources.Count > 0)
+            // Always create Sources config
+            filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
+            
+            if (config.Sources != null)
             {
-                filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
-
-                // Default shop and pack slots if sources include them
-                if (config.Sources.Contains("shop"))
+                if (config.Sources is List<string> sourcesList && sourcesList.Count > 0)
                 {
-                    filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
+                    // Old format - convert to new format
+                    if (sourcesList.Contains("shop"))
+                    {
+                        filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
+                    }
+                    if (sourcesList.Contains("booster") || sourcesList.Contains("packs"))
+                    {
+                        filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                    }
+                    if (sourcesList.Contains("tag") || sourcesList.Contains("tags"))
+                    {
+                        filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                    }
                 }
-                if (config.Sources.Contains("booster") || config.Sources.Contains("packs"))
+                else if (config.Sources is Dictionary<string, List<int>> sourcesDict)
                 {
-                    filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3, 4, 5 };
-                }
-                if (config.Sources.Contains("tag") || config.Sources.Contains("tags"))
-                {
-                    filterItem.Sources.Tags = true;
+                    // New format - use slots directly
+                    if (sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"].Count > 0)
+                    {
+                        filterItem.Sources.ShopSlots = sourcesDict["shopSlots"].ToArray();
+                    }
+                    else
+                    {
+                        filterItem.Sources.ShopSlots = new int[] { };
+                    }
+                    
+                    if (sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"].Count > 0)
+                    {
+                        filterItem.Sources.PackSlots = sourcesDict["packSlots"].ToArray();
+                    }
+                    else
+                    {
+                        filterItem.Sources.PackSlots = new int[] { };
+                    }
                 }
             }
+            else
+            {
+                // Default sources if none specified
+                filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
+            }
 
-            // Handle category mappings (SoulJokers -> Joker mapping for Motely)
+            // Handle category mappings 
             var normalizedCategory = category.ToLower();
-            if (normalizedCategory == "souljokers")
-            {
-                normalizedCategory = "jokers";
-            }
-
+            
             // Set type and value directly
             switch (normalizedCategory)
             {
-                case "jokers":
-                    filterItem.Type = "joker";
+                case "souljokers":
+                    filterItem.Type = "souljoker";
                     filterItem.Value = itemName;
-                    if (config.Edition != null)
+                    // Soul jokers can have editions
+                    if (config.Edition != null && config.Edition != "none")
                     {
                         filterItem.Edition = config.Edition.ToString();
                     }
-
+                    break;
+                    
+                case "jokers":
+                    filterItem.Type = "joker";
+                    filterItem.Value = itemName;
+                    if (config.Edition != null && config.Edition != "none")
+                    {
+                        filterItem.Edition = config.Edition.ToString();
+                    }
                     break;
 
                 case "tarots":
@@ -5399,6 +5570,19 @@ namespace Oracle.Views.Modals
             // Check if the joker exists in the MotelyJokerLegendary enum
             return Enum.TryParse<MotelyJokerLegendary>(jokerName, out _);
         }
+        
+        private JokerConfigPopup CreateJokerConfigPopup(string itemName)
+        {
+            var popup = new JokerConfigPopup();
+            
+            // Check if it's a legendary joker and configure accordingly
+            if (IsLegendaryJoker(itemName))
+            {
+                popup.SetIsLegendaryJoker(true);
+            }
+            
+            return popup;
+        }
 
         /// <summary>
         /// Maps UI category names (plural) to JSON Type values (singular)
@@ -5408,7 +5592,7 @@ namespace Oracle.Views.Modals
             return category switch
             {
                 "Jokers" => "Joker",
-                "SoulJokers" => "Joker", // Soul jokers are still type "Joker" in the filter
+                "SoulJokers" => "SoulJoker",
                 "Tarots" => "Tarot",
                 "Spectrals" => "Spectral",
                 "Vouchers" => "Voucher",
@@ -5426,6 +5610,7 @@ namespace Oracle.Views.Modals
         {
             return type switch
             {
+                "SoulJoker" => "SoulJokers",
                 "Joker" => "Jokers",
                 "Tarot" => "Tarots",
                 "Spectral" => "Spectrals",
@@ -5433,7 +5618,7 @@ namespace Oracle.Views.Modals
                 "Tag" => "Tags",
                 "Boss" => "Bosses",
                 "PlayingCard" => "PlayingCards",
-                _ => type + "s", // Default: add 's' for unknown types
+                _ => throw new ArgumentException($"Unknown type: {type}"),
             };
         }
 
@@ -5592,6 +5777,19 @@ namespace Oracle.Views.Modals
             ClearNeeds();
             ClearWants();
             ClearMustNot();
+            
+            // Load metadata
+            var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
+            if (configNameBox != null && !string.IsNullOrEmpty(config.Name))
+            {
+                configNameBox.Text = config.Name;
+            }
+            
+            var configDescriptionBox = this.FindControl<TextBox>("ConfigDescriptionBox");
+            if (configDescriptionBox != null && !string.IsNullOrEmpty(config.Description))
+            {
+                configDescriptionBox.Text = config.Description;
+            }
 
             // Load MUST items (needs)
             if (config.Must != null)
@@ -5849,6 +6047,165 @@ namespace Oracle.Views.Modals
             e.Handled = true;
         }
 
+        private void OnSaveAsFavoriteClick(object? sender, RoutedEventArgs e)
+        {
+            // Get all selected items
+            var selectedItems = _selectedNeeds.Union(_selectedWants).Union(_selectedMustNot).ToList();
+            
+            if (!selectedItems.Any())
+            {
+                UpdateStatus("No items selected to save as favorite!", true);
+                return;
+            }
+            
+            // Create a simple dialog to get the name and description
+            var dialogPanel = new StackPanel
+            {
+                Spacing = 10,
+                Width = 400,
+                Margin = new Thickness(20),
+            };
+            
+            dialogPanel.Children.Add(new TextBlock
+            {
+                Text = "Save Current Selection as Favorite Set",
+                FontSize = 18,
+                FontWeight = FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10),
+            });
+            
+            var nameBox = new TextBox
+            {
+                Watermark = "Set Name (e.g. 'My Combo')",
+                FontSize = 14,
+                Height = 36,
+            };
+            dialogPanel.Children.Add(nameBox);
+            
+            var descBox = new TextBox
+            {
+                Watermark = "Description (optional)",
+                FontSize = 14,
+                Height = 60,
+                TextWrapping = TextWrapping.Wrap,
+                AcceptsReturn = true,
+            };
+            dialogPanel.Children.Add(descBox);
+            
+            var tagsBox = new TextBox
+            {
+                Watermark = "Tags (comma separated, e.g. '#Synergy, #XMult')",
+                FontSize = 14,
+                Height = 36,
+            };
+            dialogPanel.Children.Add(tagsBox);
+            
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Spacing = 10,
+                Margin = new Thickness(0, 20, 0, 0),
+            };
+            
+            var saveButton = new Button
+            {
+                Content = "Save",
+                Width = 100,
+                Height = 40,
+            };
+            saveButton.Classes.Add("btn-green");
+            
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 100,
+                Height = 40,
+            };
+            cancelButton.Classes.Add("btn-red");
+            
+            buttonPanel.Children.Add(saveButton);
+            buttonPanel.Children.Add(cancelButton);
+            dialogPanel.Children.Add(buttonPanel);
+            
+            // Create modal
+            var mainWindow = TopLevel.GetTopLevel(this) as Window;
+            if (mainWindow?.Content is Grid grid)
+            {
+                var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
+                if (mainMenu != null)
+                {
+                    // Create a UserControl wrapper for the dialog panel
+                    var dialogWrapper = new UserControl { Content = dialogPanel };
+                    var modal = mainMenu.ShowModal("Save as Favorite", dialogWrapper);
+                    
+                    saveButton.Click += (s, ev) =>
+                    {
+                        var name = nameBox.Text?.Trim();
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            nameBox.Classes.Add("error");
+                            return;
+                        }
+                        
+                        // Extract just the item names without categories
+                        var itemNames = selectedItems.Select(item =>
+                        {
+                            var parts = item.Split(':');
+                            if (parts.Length > 1)
+                            {
+                                var itemName = parts[1];
+                                // Remove any unique suffix
+                                var hashIndex = itemName.IndexOf('#');
+                                return hashIndex > 0 ? itemName.Substring(0, hashIndex) : itemName;
+                            }
+                            return item;
+                        }).ToList();
+                        
+                        // Parse tags
+                        var tags = tagsBox.Text?.Split(',')
+                            .Select(t => t.Trim())
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .ToList() ?? new List<string>();
+                        
+                        // Create the new set with zone information
+                        var newSet = new FavoritesService.JokerSet
+                        {
+                            Name = name,
+                            Description = descBox.Text?.Trim() ?? "",
+                            Items = itemNames, // Keep for backward compatibility
+                            Tags = tags,
+                            // Store items by their original zones
+                            MustItems = _selectedNeeds.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            ShouldItems = _selectedWants.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            MustNotItems = _selectedMustNot.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                        };
+                        
+                        // Save it
+                        FavoritesService.Instance.AddCustomSet(newSet);
+                        
+                        UpdateStatus($"Saved '{name}' as favorite!", false);
+                        
+                        // Close the save dialog
+                        mainMenu.HideModalContent();
+                        
+                        // Refresh the favorites if we're on that tab
+                        if (_currentCategory == "Favorites")
+                        {
+                            RefreshItemPalette();
+                        }
+                    };
+                    
+                    cancelButton.Click += (s, ev) =>
+                    {
+                        // Close the dialog
+                        mainMenu.HideModalContent();
+                    };
+                }
+            }
+        }
+
         private string GetSuggestedFileName()
         {
             var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
@@ -5871,6 +6228,206 @@ namespace Oracle.Views.Modals
             return $"config-{DateTime.Now:yyyyMMdd-HHmmss}.json";
         }
 
+        private void MergeDropZonesForSet()
+        {
+            var dropZonesContainer = this.FindControl<Grid>("DropZonesContainer");
+            if (dropZonesContainer == null) return;
+            
+            // Store the original drop zones for restoration
+            _originalDropZones = dropZonesContainer.Children.ToList();
+            
+            // Clear the container
+            dropZonesContainer.Children.Clear();
+            dropZonesContainer.ColumnDefinitions.Clear();
+            
+            // Create single column
+            dropZonesContainer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            
+            // Create merged drop zone
+            var mergedBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.Parse("#1a1a1a")),
+                BorderBrush = new SolidColorBrush(Color.Parse("#FFD700")),
+                BorderThickness = new Thickness(3),
+                CornerRadius = new CornerRadius(8),
+                MinHeight = 180,
+                Margin = new Thickness(5),
+            };
+            
+            // Add the hint text
+            var hintText = new TextBlock
+            {
+                Text = "Drop to apply set",
+                FontSize = 24,
+                FontWeight = FontWeight.Bold,
+                Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            };
+            
+            mergedBorder.Child = hintText;
+            
+            // Set up drag events
+            DragDrop.SetAllowDrop(mergedBorder, true);
+            mergedBorder.AddHandler(DragDrop.DropEvent, OnMergedZoneDrop);
+            mergedBorder.AddHandler(DragDrop.DragOverEvent, OnMergedZoneDragOver);
+            mergedBorder.AddHandler(DragDrop.DragEnterEvent, OnMergedZoneDragEnter);
+            mergedBorder.AddHandler(DragDrop.DragLeaveEvent, OnMergedZoneDragLeave);
+            
+            Grid.SetColumn(mergedBorder, 0);
+            dropZonesContainer.Children.Add(mergedBorder);
+        }
+        
+        private void RestoreNormalDropZones()
+        {
+            var dropZonesContainer = this.FindControl<Grid>("DropZonesContainer");
+            if (dropZonesContainer == null || _originalDropZones == null) return;
+            
+            // Clear the merged zone
+            dropZonesContainer.Children.Clear();
+            dropZonesContainer.ColumnDefinitions.Clear();
+            
+            // Restore original column definitions
+            dropZonesContainer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            dropZonesContainer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            dropZonesContainer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            
+            // Restore original drop zones
+            foreach (var child in _originalDropZones)
+            {
+                dropZonesContainer.Children.Add(child);
+            }
+            
+            _originalDropZones = null;
+        }
+        
+        private List<Control>? _originalDropZones;
+        
+        private void OnMergedZoneDragEnter(object? sender, DragEventArgs e)
+        {
+            if (e.Data.Contains("JokerSet"))
+            {
+                var mergedBorder = sender as Border;
+                mergedBorder?.Classes.Add("drag-over");
+                e.DragEffects = DragDropEffects.Copy;
+            }
+            e.Handled = true;
+        }
+        
+        private void OnMergedZoneDragLeave(object? sender, DragEventArgs e)
+        {
+            var mergedBorder = sender as Border;
+            mergedBorder?.Classes.Remove("drag-over");
+            e.Handled = true;
+        }
+        
+        private void OnMergedZoneDragOver(object? sender, DragEventArgs e)
+        {
+            if (e.Data.Contains("JokerSet"))
+            {
+                e.DragEffects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.DragEffects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+        
+        private void OnMergedZoneDrop(object? sender, DragEventArgs e)
+        {
+            var mergedBorder = sender as Border;
+            mergedBorder?.Classes.Remove("drag-over");
+            
+            if (e.Data.Contains("JokerSet"))
+            {
+                var jokerSet = e.Data.Get("JokerSet") as FavoritesService.JokerSet;
+                if (jokerSet != null)
+                {
+                    // Apply the set - distribute items to their original zones
+                    if (jokerSet.HasZoneInfo)
+                    {
+                        // Use the new zone-specific lists
+                        foreach (var item in jokerSet.MustItems)
+                        {
+                            AddItemToZone(item, "needs");
+                        }
+                        foreach (var item in jokerSet.ShouldItems)
+                        {
+                            AddItemToZone(item, "wants");
+                        }
+                        foreach (var item in jokerSet.MustNotItems)
+                        {
+                            AddItemToZone(item, "mustnot");
+                        }
+                    }
+                    else
+                    {
+                        // Fallback for old sets without zone info - add all to Should
+                        foreach (var item in jokerSet.Items)
+                        {
+                            AddItemToZone(item, "wants");
+                        }
+                    }
+                    
+                    UpdateDropZoneVisibility();
+                    UpdatePersistentFavorites();
+                    RefreshItemPalette();
+                    
+                    UpdateStatus($"Applied set: {jokerSet.Name}", false);
+                }
+            }
+            
+            e.Handled = true;
+        }
+        
+        private void AddItemToZone(string itemName, string zone)
+        {
+            // Find the category for this item
+            string? itemCategory = null;
+            if (BalatroData.Jokers.ContainsKey(itemName))
+            {
+                itemCategory = "Jokers";
+            }
+            else if (BalatroData.TarotCards.ContainsKey(itemName))
+            {
+                itemCategory = "Tarots";
+            }
+            else if (BalatroData.SpectralCards.ContainsKey(itemName))
+            {
+                itemCategory = "Spectrals";
+            }
+            else if (BalatroData.Vouchers.ContainsKey(itemName))
+            {
+                itemCategory = "Vouchers";
+            }
+            else if (BalatroData.Tags.ContainsKey(itemName))
+            {
+                itemCategory = "Tags";
+            }
+            
+            if (itemCategory != null)
+            {
+                var itemKey = $"{itemCategory}:{itemName}";
+                
+                switch (zone)
+                {
+                    case "needs":
+                        if (!_selectedNeeds.Contains(itemKey))
+                            _selectedNeeds.Add(itemKey);
+                        break;
+                    case "wants":
+                        if (!_selectedWants.Contains(itemKey))
+                            _selectedWants.Add(itemKey);
+                        break;
+                    case "mustnot":
+                        if (!_selectedMustNot.Contains(itemKey))
+                            _selectedMustNot.Add(itemKey);
+                        break;
+                }
+            }
+        }
+        
         private void UpdateAutoGeneratedFilterName()
         {
             var configNameBox = this.FindControl<TextBox>("ConfigNameBox");

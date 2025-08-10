@@ -1,4 +1,7 @@
 {
+  "author": "pifreak",
+  "name": "Facechad",
+  "Description": "Photograph + HangingChad",
   "must": [
     {
         "Type": "Joker",

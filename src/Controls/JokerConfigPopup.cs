@@ -29,7 +29,11 @@ namespace Oracle.Controls
             true,
         };
         private string _selectedEdition = "none";
-        private HashSet<string> _selectedSources = new() { "tag", "booster", "shop" };
+        private Dictionary<string, List<int>> _selectedSources = new()
+        {
+            { "packSlots", new List<int> { 0, 1, 2, 3 } },
+            { "shopSlots", new List<int> { 0, 1, 2, 3 } }
+        };
 
         // UI Controls
         private CheckBox[] _anteCheckBoxes = new CheckBox[8];
@@ -41,10 +45,27 @@ namespace Oracle.Controls
         private CheckBox? _sourceTag;
         private CheckBox? _sourceBooster;
         private CheckBox? _sourceShop;
+        private bool _isLegendaryJoker = false;
 
         public JokerConfigPopup()
         {
             InitializeComponent();
+        }
+        
+        public void SetIsLegendaryJoker(bool isLegendary)
+        {
+            _isLegendaryJoker = isLegendary;
+            
+            // If it's a legendary joker, disable shop source and update UI
+            if (_isLegendaryJoker && _sourceShop != null)
+            {
+                _sourceShop.IsEnabled = false;
+                ToolTip.SetTip(_sourceShop, "Soul jokers can only be obtained from The Soul spectral card (tags/packs)");
+                
+                // Uncheck shop if it was checked
+                _sourceShop.IsChecked = false;
+                _selectedSources["shopSlots"] = new List<int>();
+            }
         }
 
         private void InitializeComponent()
@@ -96,7 +117,8 @@ namespace Oracle.Controls
                 FontFamily =
                     Application.Current?.FindResource("BalatroFont") as FontFamily
                     ?? FontFamily.Default,
-                FontSize = 12,
+                FontSize = 14,
+                FontWeight = FontWeight.Medium,
                 Foreground =
                     Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
                 Margin = new Thickness(0, 0, 0, 6),
@@ -114,7 +136,7 @@ namespace Oracle.Controls
             for (int i = 0; i < 8; i++)
             {
                 var anteNum = i + 1;
-                var checkbox = new CheckBox { IsChecked = true, Margin = new Thickness(2) };
+                var checkbox = new CheckBox { IsChecked = true, Margin = new Thickness(3) };
 
                 var anteBorder = new Border
                 {
@@ -124,10 +146,11 @@ namespace Oracle.Controls
                     BorderBrush =
                         Application.Current?.FindResource("DarkerGrey") as IBrush
                         ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
-                    BorderThickness = new Thickness(1),
-                    CornerRadius = new CornerRadius(4),
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(6),
                     Padding = new Thickness(4, 2),
-                    MinWidth = 24,
+                    MinWidth = 32,
+                    MinHeight = 32,
                     Cursor = new Cursor(StandardCursorType.Hand),
                     Child = new TextBlock
                     {
@@ -135,7 +158,8 @@ namespace Oracle.Controls
                         FontFamily =
                             Application.Current?.FindResource("BalatroFont") as FontFamily
                             ?? FontFamily.Default,
-                        FontSize = 12,
+                        FontSize = 14,
+                        FontWeight = FontWeight.Medium,
 
                         Foreground =
                             Application.Current?.FindResource("MediumGrey") as IBrush
@@ -437,11 +461,27 @@ namespace Oracle.Controls
             {
                 if (checkbox.IsChecked == true)
                 {
-                    _selectedSources.Add(sourceKey);
+                    // Add default slots when enabling a source
+                    if (sourceKey == "tag" || sourceKey == "booster")
+                    {
+                        _selectedSources["packSlots"] = new List<int> { 0, 1, 2, 3 };
+                    }
+                    else if (sourceKey == "shop")
+                    {
+                        _selectedSources["shopSlots"] = new List<int> { 0, 1, 2, 3 };
+                    }
                 }
                 else
                 {
-                    _selectedSources.Remove(sourceKey);
+                    // Clear slots when disabling a source
+                    if (sourceKey == "tag" || sourceKey == "booster")
+                    {
+                        _selectedSources["packSlots"] = new List<int>();
+                    }
+                    else if (sourceKey == "shop")
+                    {
+                        _selectedSources["shopSlots"] = new List<int>();
+                    }
                 }
                 UpdateSourceVisual(border, checkbox.IsChecked == true);
             };
@@ -495,6 +535,12 @@ namespace Oracle.Controls
                 {
                     _selectedAntes[i] = false;
                     _anteCheckBoxes[i].IsChecked = false;
+                    
+                    // Update visual for the ante button
+                    if (_anteCheckBoxes[i].Content is Border border)
+                    {
+                        UpdateAnteVisual(border, false);
+                    }
                 }
 
                 // Set selected antes
@@ -504,6 +550,12 @@ namespace Oracle.Controls
                     {
                         _selectedAntes[ante - 1] = true;
                         _anteCheckBoxes[ante - 1].IsChecked = true;
+                        
+                        // Update visual for the ante button
+                        if (_anteCheckBoxes[ante - 1].Content is Border border)
+                        {
+                            UpdateAnteVisual(border, true);
+                        }
                     }
                 }
             }
@@ -535,24 +587,41 @@ namespace Oracle.Controls
             // Load sources
             if (config.Sources != null)
             {
-                _selectedSources.Clear();
-                foreach (var source in config.Sources)
+                // Handle both old format (array of strings) and new format (object with slots)
+                if (config.Sources is List<object> sourcesList)
                 {
-                    _selectedSources.Add(source);
+                    // Old format - convert to new format
+                    _selectedSources["packSlots"] = sourcesList.Contains("tag") || sourcesList.Contains("booster") 
+                        ? new List<int> { 0, 1, 2, 3 } 
+                        : new List<int>();
+                    _selectedSources["shopSlots"] = sourcesList.Contains("shop") 
+                        ? new List<int> { 0, 1, 2, 3 } 
+                        : new List<int>();
+                        
+                    _sourceTag?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("tag"));
+                    _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("booster"));
+                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("shop"));
                 }
-
-                _sourceTag?.SetCurrentValue(
-                    CheckBox.IsCheckedProperty,
-                    _selectedSources.Contains("tag")
-                );
-                _sourceBooster?.SetCurrentValue(
-                    CheckBox.IsCheckedProperty,
-                    _selectedSources.Contains("booster")
-                );
-                _sourceShop?.SetCurrentValue(
-                    CheckBox.IsCheckedProperty,
-                    _selectedSources.Contains("shop")
-                );
+                else if (config.Sources is Dictionary<string, object> sourcesDict)
+                {
+                    // New format - load slots
+                    if (sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"] is List<int> packSlots)
+                    {
+                        _selectedSources["packSlots"] = new List<int>(packSlots);
+                    }
+                    if (sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"] is List<int> shopSlots)
+                    {
+                        _selectedSources["shopSlots"] = new List<int>(shopSlots);
+                    }
+                    
+                    // Set checkboxes based on whether slots exist
+                    bool hasPackSlots = _selectedSources["packSlots"].Count > 0;
+                    bool hasShopSlots = _selectedSources["shopSlots"].Count > 0;
+                    
+                    _sourceTag?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
+                    _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
+                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, hasShopSlots);
+                }
             }
         }
 
@@ -563,7 +632,7 @@ namespace Oracle.Controls
                 ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
                 Edition = _selectedEdition,
-                Sources = _selectedSources.ToList(),
+                Sources = _selectedSources,
             };
 
             return config;

@@ -154,6 +154,9 @@ namespace Oracle.Helpers
         {
             var searchModal = new SearchModal();
         
+            // Remove the desktop widget that opened this modal
+            menu.RemoveSearchDesktopIcon(searchId);
+        
             // Set the search ID so the modal can reconnect
             searchModal.SetSearchInstance(searchId);
         

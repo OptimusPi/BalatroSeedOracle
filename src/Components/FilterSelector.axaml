@@ -4,6 +4,14 @@
              x:Class="Oracle.Components.FilterSelector">
     
     <StackPanel Spacing="20">
+        <!-- Title -->
+        <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="24"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,10"/>
+                   
         <!-- Filter browser using PanelSpinner -->
         <controls:PanelSpinner Name="FilterSpinner" />
         
@@ -14,12 +22,6 @@
                 MinWidth="200"
                 HorizontalAlignment="Center"
                 Click="OnSelectClick"/>
-        
-        <!-- Separator -->
-        <Border Height="2" 
-                Background="{StaticResource DockGrey}" 
-                Margin="60,0"
-                CornerRadius="1"/>
         
         <!-- Create new filter section -->
         <Button Name="CreateFilterButton" 

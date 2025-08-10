@@ -51,7 +51,32 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
                 </Border>
-                
+
+                 <!-- miaklwalker Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="miaklwalker" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                 <!-- tacodiva Badge -->
+                <Border Background="{StaticResource ModalBorder}"
+                        CornerRadius="6"
+                        Padding="20,10"
+                        HorizontalAlignment="Center">
+                    <TextBlock Text="tacodiva" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource DarkerGrey}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
             </StackPanel>
         </Border>
     </Grid>

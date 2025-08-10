@@ -250,6 +250,19 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         
+        <!-- Header button style for sortable columns -->
+        <Style Selector="Button.header-button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.header-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
+        </Style>
+        
         <!-- Reusable nav arrow style (shadowed red block) -->
         <Style Selector="Button.nav-arrow">
             <Setter Property="Width" Value="40"/>
@@ -403,17 +416,17 @@
                             <StackPanel Grid.Row="0" Spacing="10">
                                 <!-- Threads -->
                                 <controls:SpinnerControl Name="ThreadsSpinner" 
-                                                        Label="Threads"
-                                                        Value="4" 
+                                                        Label="CPU Threads"
+                                                        Value="8" 
                                                         Minimum="1" 
-                                                        Maximum="16"
+                                                        Maximum="32"
                                                         HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
                                 <!-- Batch Size -->
                                 <controls:SpinnerControl Name="BatchSizeSpinner" 
-                                                        Label="Batch"
-                                                        Value="3" 
+                                                        Label="Batch Size (35^n)"
+                                                        Value="1" 
                                                         Minimum="1" 
                                                         Maximum="4"
                                                         HorizontalAlignment="Stretch"
@@ -422,9 +435,11 @@
                                 <!-- Min Score -->
                                 <controls:SpinnerControl Name="MinScoreSpinner" 
                                                         Label="Min Score"
+                                                        SpinnerType="min-score"
                                                         Value="0" 
                                                         Minimum="0" 
                                                         Maximum="5"
+                                                        AllowAuto="True"
                                                         HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
@@ -598,12 +613,52 @@
             <!-- Results Panel -->
             <Grid Name="ResultsPanel" IsVisible="False" Margin="20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Filter controls -->
                     <RowDefinition Height="*" MinHeight="450"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
+                <!-- Filter controls -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource DarkerGrey}"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="Filter:" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource White}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                                   
+                        <TextBox Grid.Column="1" 
+                                 Name="ResultsFilterTextBox"
+                                 Classes="balatro-input"
+                                 Height="32"
+                                 Watermark="Filter by seed name..."
+                                 FontSize="14"/>
+                                 
+                        <Button Grid.Column="2"
+                                Name="ClearFilterButton"
+                                Content="Clear"
+                                Classes="small-button"
+                                Height="32"
+                                Margin="10,0,0,0"
+                                Click="OnClearFilterClick"/>
+                    </Grid>
+                </Border>
+                
                 <!-- Results Table Container -->
-                <ScrollViewer Grid.Row="0" 
+                <ScrollViewer Grid.Row="1" 
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto"
                               Margin="0,0,0,10">
@@ -627,23 +682,45 @@
                                     <ColumnDefinition Width="80"/>   <!-- Action -->
                                 </Grid.ColumnDefinitions>
                                 
-                                <TextBlock Grid.Column="0" Text="Seed" 
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontWeight="Bold"
-                                           FontSize="12"
-                                           Foreground="{StaticResource Gold}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Margin="8,4"/>
+                                <Button Grid.Column="0" 
+                                        Name="SortSeedButton"
+                                        Classes="header-button"
+                                        Click="OnSortBySeed">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Seed" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="SeedSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="False"/>
+                                    </StackPanel>
+                                </Button>
                                            
-                                <TextBlock Grid.Column="1" Text="Total" 
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontWeight="Bold"
-                                           FontSize="12"
-                                           Foreground="{StaticResource Gold}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Margin="8,4"/>
+                                <Button Grid.Column="1" 
+                                        Name="SortScoreButton"
+                                        Classes="header-button"
+                                        Click="OnSortByScore">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Total" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="ScoreSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="True"/>
+                                    </StackPanel>
+                                </Button>
                                            
                                 <!-- Dynamic tally score headers will be added here -->
                                 <StackPanel Grid.Column="2" 
@@ -651,14 +728,25 @@
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"/>
                                            
-                                <TextBlock Grid.Column="3" Text="Time" 
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontWeight="Bold"
-                                           FontSize="12"
-                                           Foreground="{StaticResource Gold}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Margin="8,4"/>
+                                <Button Grid.Column="3" 
+                                        Name="SortTimeButton"
+                                        Classes="header-button"
+                                        Click="OnSortByTime">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Time" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="TimeSortIndicator"
+                                                   Text=" ▼" 
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource Gold}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="False"/>
+                                    </StackPanel>
+                                </Button>
                                            
                                 <TextBlock Grid.Column="4" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
@@ -762,7 +850,7 @@
                 </ScrollViewer>
                 
                 <!-- Footer -->
-                <Border Grid.Row="1"
+                <Border Grid.Row="2"
                         Background="{StaticResource DarkerGrey}"
                         Padding="8"
                         BorderThickness="0,2,0,0"

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Oracle.Helpers;
@@ -132,13 +133,25 @@ namespace Oracle.Services
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText =
                     @"
-                    INSERT OR REPLACE INTO results (seed, score, details)
-                    VALUES (?, ?, ?)
+                    INSERT OR REPLACE INTO results (seed, score, details, tally_scores, item_labels, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ";
 
                 cmd.Parameters.Add(new DuckDBParameter(result.Seed));
                 cmd.Parameters.Add(new DuckDBParameter(result.TotalScore));
-                cmd.Parameters.Add(new DuckDBParameter(result.ScoreBreakdown ?? ""));
+                cmd.Parameters.Add(new DuckDBParameter("")); // ScoreBreakdown removed
+                
+                // Convert arrays to JSON strings for storage
+                var tallyScoresJson = result.Scores != null 
+                    ? JsonSerializer.Serialize(result.Scores)
+                    : null;
+                var itemLabelsJson = result.Labels != null
+                    ? JsonSerializer.Serialize(result.Labels) 
+                    : null;
+                    
+                cmd.Parameters.Add(new DuckDBParameter(tallyScoresJson ?? (object)DBNull.Value));
+                cmd.Parameters.Add(new DuckDBParameter(itemLabelsJson ?? (object)DBNull.Value));
+                cmd.Parameters.Add(new DuckDBParameter(result.Timestamp));
 
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -179,7 +192,7 @@ namespace Oracle.Services
                         {
                             Seed = reader.GetString(0),
                             TotalScore = reader.GetInt32(1),
-                            ScoreBreakdown = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            // ScoreBreakdown removed, but still reading from column 2 for compatibility
                         }
                     );
                 }
@@ -222,6 +235,74 @@ namespace Oracle.Services
             {
                 DebugLogger.LogError("SearchHistoryService", $"Failed to export CSV: {ex.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Export all results from DuckDB to a file (CSV or JSON) with all columns
+        /// </summary>
+        public async Task<int> ExportResultsAsync(string filePath)
+        {
+            var connection = GetConnection();
+            var extension = Path.GetExtension(filePath)?.ToLowerInvariant();
+
+            try
+            {
+                using var cmd = connection.CreateCommand();
+                
+                if (extension == ".json")
+                {
+                    // Export as JSON with all columns
+                    cmd.CommandText = @"
+                        COPY (
+                            SELECT 
+                                seed,
+                                score,
+                                details,
+                                tally_scores,
+                                item_labels,
+                                timestamp
+                            FROM results
+                            ORDER BY score DESC
+                        ) TO ? (FORMAT JSON, ARRAY true)
+                    ";
+                    var param = new DuckDBParameter();
+                    param.Value = filePath;
+                    cmd.Parameters.Add(param);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                else
+                {
+                    // Export as CSV - for now, just export the basic columns plus JSON as strings
+                    // DuckDB doesn't support complex JSON flattening in COPY TO
+                    cmd.CommandText = $@"
+                        COPY (
+                            SELECT 
+                                seed,
+                                score,
+                                timestamp,
+                                details,
+                                COALESCE(tally_scores::VARCHAR, '') as tally_scores,
+                                COALESCE(item_labels::VARCHAR, '') as item_labels
+                            FROM results
+                            ORDER BY score DESC
+                        ) TO '{filePath.Replace("'", "''")}' (FORMAT CSV, HEADER TRUE)
+                    ";
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                // Get count of exported rows
+                using var countCmd = connection.CreateCommand();
+                countCmd.CommandText = "SELECT COUNT(*) FROM results";
+                var count = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
+                
+                DebugLogger.Log("SearchHistoryService", $"Exported {count} results to: {filePath}");
+                return count;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Error exporting results: {ex.Message}");
+                throw;
             }
         }
     }

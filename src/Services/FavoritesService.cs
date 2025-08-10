@@ -28,6 +28,14 @@ namespace Oracle.Services
             public string Description { get; set; } = "";
             public List<string> Items { get; set; } = new List<string>(); // Can be jokers, tarots, etc
             public List<string> Tags { get; set; } = new List<string>();
+            
+            // New structure to remember which zone each item belongs to
+            public List<string> MustItems { get; set; } = new List<string>();
+            public List<string> ShouldItems { get; set; } = new List<string>();
+            public List<string> MustNotItems { get; set; } = new List<string>();
+            
+            // For backward compatibility
+            public bool HasZoneInfo => MustItems.Any() || ShouldItems.Any() || MustNotItems.Any();
         }
 
         private FavoritesService()

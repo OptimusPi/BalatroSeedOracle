@@ -28,7 +28,11 @@ namespace Oracle.Controls
             true,
             true,
         };
-        private HashSet<string> _selectedSources = new() { "shop", "pack" };
+        private Dictionary<string, List<int>> _selectedSources = new()
+        {
+            { "packSlots", new List<int> { 0, 1, 2, 3 } },
+            { "shopSlots", new List<int> { 0, 1, 2, 3 } }
+        };
 
         // UI Controls
         private CheckBox[] _anteCheckBoxes = new CheckBox[8];
@@ -268,11 +272,27 @@ namespace Oracle.Controls
             {
                 if (checkbox.IsChecked == true)
                 {
-                    _selectedSources.Add(sourceKey);
+                    // Add default slots when enabling a source
+                    if (sourceKey == "pack")
+                    {
+                        _selectedSources["packSlots"] = new List<int> { 0, 1, 2, 3 };
+                    }
+                    else if (sourceKey == "shop")
+                    {
+                        _selectedSources["shopSlots"] = new List<int> { 0, 1, 2, 3 };
+                    }
                 }
                 else
                 {
-                    _selectedSources.Remove(sourceKey);
+                    // Clear slots when disabling a source
+                    if (sourceKey == "pack")
+                    {
+                        _selectedSources["packSlots"] = new List<int>();
+                    }
+                    else if (sourceKey == "shop")
+                    {
+                        _selectedSources["shopSlots"] = new List<int>();
+                    }
                 }
                 UpdateSourceVisual(border, checkbox.IsChecked == true);
             };
@@ -342,20 +362,39 @@ namespace Oracle.Controls
             // Load sources
             if (config.Sources != null)
             {
-                _selectedSources.Clear();
-                foreach (var source in config.Sources)
+                // Handle both old format (array of strings) and new format (object with slots)
+                if (config.Sources is List<object> sourcesList)
                 {
-                    _selectedSources.Add(source);
+                    // Old format - convert to new format
+                    _selectedSources["packSlots"] = sourcesList.Contains("pack") 
+                        ? new List<int> { 0, 1, 2, 3 } 
+                        : new List<int>();
+                    _selectedSources["shopSlots"] = sourcesList.Contains("shop") 
+                        ? new List<int> { 0, 1, 2, 3 } 
+                        : new List<int>();
+                        
+                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("shop"));
+                    _sourcePack?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("pack"));
                 }
-
-                _sourceShop?.SetCurrentValue(
-                    CheckBox.IsCheckedProperty,
-                    _selectedSources.Contains("shop")
-                );
-                _sourcePack?.SetCurrentValue(
-                    CheckBox.IsCheckedProperty,
-                    _selectedSources.Contains("pack")
-                );
+                else if (config.Sources is Dictionary<string, object> sourcesDict)
+                {
+                    // New format - load slots
+                    if (sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"] is List<int> packSlots)
+                    {
+                        _selectedSources["packSlots"] = new List<int>(packSlots);
+                    }
+                    if (sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"] is List<int> shopSlots)
+                    {
+                        _selectedSources["shopSlots"] = new List<int>(shopSlots);
+                    }
+                    
+                    // Set checkboxes based on whether slots exist
+                    bool hasPackSlots = _selectedSources["packSlots"].Count > 0;
+                    bool hasShopSlots = _selectedSources["shopSlots"].Count > 0;
+                    
+                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, hasShopSlots);
+                    _sourcePack?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
+                }
             }
         }
 
@@ -366,7 +405,7 @@ namespace Oracle.Controls
                 ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
                 Edition = "none", // Tarot cards don't have editions
-                Sources = _selectedSources.ToList(),
+                Sources = _selectedSources,
             };
 
             return config;

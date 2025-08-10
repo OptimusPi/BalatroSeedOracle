@@ -34,11 +34,6 @@ namespace Oracle.Services
         // Auto-cutoff tracking
         private bool _isAutoCutoffEnabled;
         private int _currentCutoff = 0;
-        private DateTime _lastCutoffAdjustment = DateTime.UtcNow;
-        private int _resultsInLastMinute = 0;
-        private DateTime _minuteStartTime = DateTime.UtcNow;
-        private const int MAX_RESULTS_PER_MINUTE = 60; // Adjust the cutoff if we get more than 60 results per minute
-        private const double AUTO_CUTOFF_CHECK_INTERVAL = 0.1667; // 10 seconds instead of 1 minute for faster response
 
         // Properties
         public string SearchId
@@ -129,14 +124,26 @@ namespace Oracle.Services
                 _resultCapture.SetFilterConfig(ouijaConfig);
                 _resultCapture.ResultCaptured += async (result) =>
                 {
-                    // Filter based on current cutoff if auto-cutoff is enabled
-                    if (_isAutoCutoffEnabled && result.TotalScore < _currentCutoff)
+                    // If auto-cutoff is enabled, check if this result might increase the cutoff
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    {
+                        var oldCutoff = _currentCutoff;
+                        _currentCutoff = result.TotalScore;
+                        
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
+                        
+                        // Notify UI of cutoff change
+                        CutoffChanged?.Invoke(this, _currentCutoff);
+                    }
+                    
+                    // Filter based on current cutoff - don't add to results or database if below cutoff
+                    if (result.TotalScore < _currentCutoff)
+                    {
                         return;
+                    }
                     
                     _results.Add(result);
-                    
-                    // Handle auto-cutoff adjustment
-                    HandleAutoCutoff();
 
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
@@ -150,9 +157,9 @@ namespace Oracle.Services
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = result.ScoreBreakdown,
-                                TallyScores = result.TallyScores,
-                                ItemLabels = result.ItemLabels
+                                Details = "", // Removed ScoreBreakdown
+                                TallyScores = result.Scores,
+                                ItemLabels = result.Labels
                             },
                         }
                     );
@@ -274,14 +281,26 @@ namespace Oracle.Services
                 }
                 _resultCapture.ResultCaptured += async (result) =>
                 {
-                    // Filter based on current cutoff if auto-cutoff is enabled
-                    if (_isAutoCutoffEnabled && result.TotalScore < _currentCutoff)
+                    // If auto-cutoff is enabled, check if this result might increase the cutoff
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    {
+                        var oldCutoff = _currentCutoff;
+                        _currentCutoff = result.TotalScore;
+                        
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
+                        
+                        // Notify UI of cutoff change
+                        CutoffChanged?.Invoke(this, _currentCutoff);
+                    }
+                    
+                    // Filter based on current cutoff - don't add to results or database if below cutoff
+                    if (result.TotalScore < _currentCutoff)
+                    {
                         return;
+                    }
                     
                     _results.Add(result);
-                    
-                    // Handle auto-cutoff adjustment
-                    HandleAutoCutoff();
 
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
@@ -295,9 +314,9 @@ namespace Oracle.Services
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = result.ScoreBreakdown,
-                                TallyScores = result.TallyScores,
-                                ItemLabels = result.ItemLabels
+                                Details = "", // Removed ScoreBreakdown
+                                TallyScores = result.Scores,
+                                ItemLabels = result.Labels
                             },
                         }
                     );
@@ -505,9 +524,6 @@ namespace Oracle.Services
                 if (_isAutoCutoffEnabled)
                 {
                     DebugLogger.Log($"SearchInstance[{_searchId}]", "Auto-cutoff enabled, starting at 1");
-                    _resultsInLastMinute = 0;
-                    _minuteStartTime = DateTime.UtcNow;
-                    _lastCutoffAdjustment = DateTime.UtcNow;
                 }
                 else
                 {
@@ -574,10 +590,10 @@ namespace Oracle.Services
                     var seedsPerSecond =
                         elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
 
-                    // Report progress when batch count changes OR every second
+                    // Report progress when batch count changes OR every 500ms for less frequent updates
                     var shouldReportProgress =
                         currentBatchCount > lastCompletedCount
-                        || (DateTime.UtcNow - lastProgressTime).TotalSeconds >= 1.0;
+                        || (DateTime.UtcNow - lastProgressTime).TotalMilliseconds >= 500;
 
                     if (shouldReportProgress)
                     {
@@ -692,56 +708,7 @@ namespace Oracle.Services
             }
         }
 
-        private void HandleAutoCutoff()
-        {
-            if (!_isAutoCutoffEnabled)
-                return;
-                
-            var now = DateTime.UtcNow;
-            var elapsedMinutes = (now - _minuteStartTime).TotalMinutes;
-            
-            // Increment counter
-            _resultsInLastMinute++;
-            
-            // Check if we've reached the check interval (10 seconds)
-            if (elapsedMinutes >= AUTO_CUTOFF_CHECK_INTERVAL)
-            {
-                // Calculate results per minute rate
-                var resultsPerMinute = (int)(_resultsInLastMinute / elapsedMinutes);
-                
-                DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                    $"Auto-cutoff check: {_resultsInLastMinute} results in {elapsedMinutes:F1} min = {resultsPerMinute}/min, current cutoff: {_currentCutoff}");
-                
-                // Check if we're getting too many results
-                if (resultsPerMinute > MAX_RESULTS_PER_MINUTE && _currentCutoff < 5)
-                {
-                    _currentCutoff++;
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                        $"Auto-cutoff: Too many results ({resultsPerMinute}/min), increasing cutoff to {_currentCutoff}");
-                    
-                    // Notify UI of cutoff change
-                    CutoffChanged?.Invoke(this, _currentCutoff);
-                    
-                    _lastCutoffAdjustment = now;
-                }
-                else if (resultsPerMinute < 10 && _currentCutoff > 1 && 
-                         (now - _lastCutoffAdjustment).TotalMinutes > 0.5) // Wait 30 seconds before lowering
-                {
-                    _currentCutoff--;
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                        $"Auto-cutoff: Too few results ({resultsPerMinute}/min), decreasing cutoff to {_currentCutoff}");
-                    
-                    // Notify UI of cutoff change
-                    CutoffChanged?.Invoke(this, _currentCutoff);
-                    
-                    _lastCutoffAdjustment = now;
-                }
-                
-                // Reset the minute counter
-                _resultsInLastMinute = 0;
-                _minuteStartTime = now;
-            }
-        }
+        // HandleAutoCutoff method removed - now handled inline when results are captured
 
         public void Dispose()
         {

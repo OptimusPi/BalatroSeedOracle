@@ -17,7 +17,6 @@ namespace Oracle.Services
         private string _seed = "";
         private int _score;
         private string _details = "";
-        private string _scoreBreakdown = "";
 
         public int Index
         {
@@ -61,16 +60,7 @@ namespace Oracle.Services
             }
         }
 
-        public string ScoreBreakdown
-        {
-            get => _scoreBreakdown;
-            set
-            {
-                _scoreBreakdown = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(ScoreTooltip));
-            }
-        }
+        // ScoreBreakdown removed - no longer needed
 
         /// <summary>
         /// Formatted score display (with thousands separator)
@@ -78,30 +68,9 @@ namespace Oracle.Services
         public string ScoreFormatted => Score.ToString("N0");
 
         /// <summary>
-        /// Tooltip showing score breakdown
+        /// Tooltip showing score
         /// </summary>
-        public string ScoreTooltip
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ScoreBreakdown) || ScoreBreakdown == "[]")
-                    return $"Total Score: {ScoreFormatted}";
-
-                try
-                {
-                    var scores = JsonSerializer.Deserialize<int[]>(ScoreBreakdown);
-                    if (scores == null || scores.Length == 0)
-                        return $"Total Score: {ScoreFormatted}";
-
-                    var breakdown = string.Join(" + ", scores);
-                    return $"Score Breakdown: {breakdown} = {ScoreFormatted}";
-                }
-                catch
-                {
-                    return $"Total Score: {ScoreFormatted}";
-                }
-            }
-        }
+        public string ScoreTooltip => $"Total Score: {ScoreFormatted}";
 
         /// <summary>
         /// Command to copy seed to clipboard

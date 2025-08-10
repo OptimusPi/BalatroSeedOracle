@@ -183,9 +183,27 @@ namespace Oracle.Controls
                 // Set sources
                 if (existingConfig.Sources != null)
                 {
-                    SetCheckBox("SourceTags", existingConfig.Sources.Contains("tag"));
-                    SetCheckBox("SourcePacks", existingConfig.Sources.Contains("booster"));
-                    SetCheckBox("SourceShop", existingConfig.Sources.Contains("shop"));
+                    // Handle both old format (List<string>) and new format (Dictionary with slots)
+                    if (existingConfig.Sources is List<string> sourcesList)
+                    {
+                        SetCheckBox("SourceTags", sourcesList.Contains("tag"));
+                        SetCheckBox("SourcePacks", sourcesList.Contains("booster"));
+                        SetCheckBox("SourceShop", sourcesList.Contains("shop"));
+                    }
+                    else if (existingConfig.Sources is Dictionary<string, object> sourcesDict)
+                    {
+                        // New format - check if pack/shop slots exist
+                        bool hasPackSlots = sourcesDict.ContainsKey("packSlots") && 
+                                          sourcesDict["packSlots"] is List<int> packSlots && 
+                                          packSlots.Count > 0;
+                        bool hasShopSlots = sourcesDict.ContainsKey("shopSlots") && 
+                                          sourcesDict["shopSlots"] is List<int> shopSlots && 
+                                          shopSlots.Count > 0;
+                        
+                        SetCheckBox("SourceTags", hasPackSlots);
+                        SetCheckBox("SourcePacks", hasPackSlots);
+                        SetCheckBox("SourceShop", hasShopSlots);
+                    }
                 }
 
                 // Set label
@@ -286,21 +304,38 @@ namespace Oracle.Controls
             return "none";
         }
 
-        private List<string> GetSelectedSources()
+        private Dictionary<string, List<int>> GetSelectedSources()
         {
-            var sources = new List<string>();
+            var sources = new Dictionary<string, List<int>>();
 
-            if (this.FindControl<CheckBox>("SourceTags")?.IsChecked == true)
-                sources.Add("tag");
-            if (this.FindControl<CheckBox>("SourcePacks")?.IsChecked == true)
-                sources.Add("booster");
-            if (this.FindControl<CheckBox>("SourceShop")?.IsChecked == true)
-                sources.Add("shop");
+            bool hasPacks = this.FindControl<CheckBox>("SourceTags")?.IsChecked == true ||
+                           this.FindControl<CheckBox>("SourcePacks")?.IsChecked == true;
+            bool hasShop = this.FindControl<CheckBox>("SourceShop")?.IsChecked == true;
 
-            // Default to main sources if none selected
-            if (sources.Count == 0)
+            // Add default slots (4 each) when source is selected
+            if (hasPacks)
             {
-                sources.AddRange(new[] { "tag", "booster", "shop" });
+                sources["packSlots"] = new List<int> { 0, 1, 2, 3 };
+            }
+            else
+            {
+                sources["packSlots"] = new List<int>();
+            }
+
+            if (hasShop)
+            {
+                sources["shopSlots"] = new List<int> { 0, 1, 2, 3 };
+            }
+            else
+            {
+                sources["shopSlots"] = new List<int>();
+            }
+
+            // Default to all sources if none selected
+            if (!hasPacks && !hasShop)
+            {
+                sources["packSlots"] = new List<int> { 0, 1, 2, 3 };
+                sources["shopSlots"] = new List<int> { 0, 1, 2, 3 };
             }
 
             return sources;
@@ -442,7 +477,7 @@ namespace Oracle.Controls
         public string ItemKey { get; set; } = "";
         public List<int>? Antes { get; set; }
         public string Edition { get; set; } = "none";
-        public List<string> Sources { get; set; } = new();
+        public object? Sources { get; set; }
         public string? Label { get; set; }
     }
 }

@@ -22,12 +22,12 @@ namespace Oracle.Controls
         public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<
             SpinnerControl,
             int
-        >(nameof(Minimum), 1);
+        >(nameof(Minimum), 0);
 
         public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<
             SpinnerControl,
             int
-        >(nameof(Maximum), 100);
+        >(nameof(Maximum), 999);
 
         public static readonly StyledProperty<int> IncrementProperty = AvaloniaProperty.Register<
             SpinnerControl,
@@ -41,6 +41,18 @@ namespace Oracle.Controls
             AvaloniaProperty.Register<SpinnerControl, string>(
                 nameof(ShadowDirection),
                 "south-west"
+            );
+            
+        public static readonly StyledProperty<string[]?> DisplayValuesProperty =
+            AvaloniaProperty.Register<SpinnerControl, string[]?>(
+                nameof(DisplayValues),
+                null
+            );
+            
+        public static readonly StyledProperty<bool> AllowAutoProperty =
+            AvaloniaProperty.Register<SpinnerControl, bool>(
+                nameof(AllowAuto),
+                false
             );
 
         public string Label
@@ -84,36 +96,26 @@ namespace Oracle.Controls
             get => GetValue(ShadowDirectionProperty);
             set => SetValue(ShadowDirectionProperty, value);
         }
+        
+        public string[]? DisplayValues
+        {
+            get => GetValue(DisplayValuesProperty);
+            set => SetValue(DisplayValuesProperty, value);
+        }
+        
+        public bool AllowAuto
+        {
+            get => GetValue(AllowAutoProperty);
+            set => SetValue(AllowAutoProperty, value);
+        }
 
         public event EventHandler<int>? ValueChanged;
 
-        private readonly Dictionary<string, string[]> _displayValues = new()
-        {
-            ["batch-size"] = new[] { "minimal", "low", "default", "high" },
-            ["min-score"] = new[] { "Auto", "1", "2", "3", "4", "5" },
-            ["stake"] = new[]
-            {
-                "White",
-                "Red",
-                "Green",
-                "Black",
-                "Blue",
-                "Purple",
-                "Orange",
-                "Gold",
-            },
-        };
 
         public SpinnerControl()
         {
             InitializeComponent();
             DataContext = this;
-
-            // Set up threads maximum based on processor count
-            if (Label == "THREADS")
-            {
-                Maximum = Environment.ProcessorCount;
-            }
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -152,44 +154,19 @@ namespace Oracle.Controls
 
         private string GetDisplayValue()
         {
-            var lowerLabel = Label.ToLowerInvariant();
-            var spinnerType = SpinnerType.ToLowerInvariant();
-
-            // Check SpinnerType first
-            if (spinnerType == "stake" && _displayValues.TryGetValue("stake", out var stakeValues))
+            // Check if we should show "Auto" for special values
+            if (AllowAuto && Value <= 0)
             {
-                var index = Math.Max(0, Math.Min(Value, stakeValues.Length - 1));
-                return stakeValues[index] + " Stake";
+                return "Auto";
             }
-
-            // Handle special display values based on label
-            if (
-                lowerLabel.Contains("batch")
-                && _displayValues.TryGetValue("batch-size", out var batchValues)
-            )
+            
+            // Use provided DisplayValues if available
+            if (DisplayValues != null && DisplayValues.Length > 0)
             {
-                var index = Math.Max(0, Math.Min(Value - 1, batchValues.Length - 1));
-                return batchValues[index];
+                var index = Math.Max(0, Math.Min(Value, DisplayValues.Length - 1));
+                return DisplayValues[index];
             }
-
-            if (
-                lowerLabel.Contains("score")
-                && _displayValues.TryGetValue("min-score", out var scoreValues)
-            )
-            {
-                var index = Math.Max(0, Math.Min(Value, scoreValues.Length - 1));
-                return scoreValues[index];
-            }
-
-            if (
-                lowerLabel.Contains("stake")
-                && _displayValues.TryGetValue("stake", out var labelStakeValues)
-            )
-            {
-                var index = Math.Max(0, Math.Min(Value, labelStakeValues.Length - 1));
-                return labelStakeValues[index];
-            }
-
+            
             // Default to showing the numeric value
             return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
@@ -202,6 +179,8 @@ namespace Oracle.Controls
                 change.Property == ValueProperty
                 || change.Property == LabelProperty
                 || change.Property == SpinnerTypeProperty
+                || change.Property == DisplayValuesProperty
+                || change.Property == AllowAutoProperty
             )
             {
                 // Update display text

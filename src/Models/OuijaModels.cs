@@ -25,9 +25,6 @@ public class OuijaConfig
     [JsonPropertyName("author")]
     public string author { get; set; } = "BalatroSeedOracle User";
 
-    [JsonPropertyName("filter_config")]
-    public FilterConfig filter_config { get; set; } = new();
-
     [JsonPropertyName("labels")]
     public List<string>? labels { get; set; }
 

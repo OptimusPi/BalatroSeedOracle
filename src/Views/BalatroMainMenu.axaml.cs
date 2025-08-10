@@ -468,6 +468,62 @@ namespace Oracle.Views
         }
 
         /// <summary>
+        /// Removes a search desktop icon from the desktop
+        /// </summary>
+        public void RemoveSearchDesktopIcon(string searchId)
+        {
+            Oracle.Helpers.DebugLogger.Log(
+                "BalatroMainMenu",
+                $"RemoveSearchDesktopIcon called for searchId: {searchId}"
+            );
+
+            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
+            if (desktopCanvas == null)
+            {
+                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                return;
+            }
+
+            // Find and remove the icon with matching searchId
+            SearchDesktopIcon? iconToRemove = null;
+            foreach (var child in desktopCanvas.Children)
+            {
+                if (child is SearchDesktopIcon icon)
+                {
+                    // Check if this icon matches the searchId
+                    // We'll need to add a property to SearchDesktopIcon to get its searchId
+                    var searchIdProperty = icon.GetType().GetField("_searchId", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (searchIdProperty != null)
+                    {
+                        var iconSearchId = searchIdProperty.GetValue(icon) as string;
+                        if (iconSearchId == searchId)
+                        {
+                            iconToRemove = icon;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (iconToRemove != null)
+            {
+                desktopCanvas.Children.Remove(iconToRemove);
+                Oracle.Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"Removed SearchDesktopIcon for searchId: {searchId}"
+                );
+            }
+            else
+            {
+                Oracle.Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"No SearchDesktopIcon found for searchId: {searchId}"
+                );
+            }
+        }
+
+        /// <summary>
         /// Stops all running searches - called during application shutdown
         /// </summary>
         public Task StopAllSearchesAsync()

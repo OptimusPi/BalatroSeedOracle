@@ -8,6 +8,7 @@ using System.Reactive;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -72,6 +73,7 @@ namespace Oracle.Views.Modals
         private TextBlock? _totalSeedsText;
         private TextBlock? _timeElapsedText;
         private TextBlock? _resultsFoundText;
+        private TextBlock? _speedText;
         private TextBlock? _speedValueText;
         private TextBlock? _currentSpeedText;
         private TextBlock? _averageSpeedText;
@@ -103,6 +105,15 @@ namespace Oracle.Views.Modals
         private TextBlock? _resultsSummary;
         private Button? _exportResultsButton;
         private TextBlock? _jsonValidationStatus;
+        private TextBox? _resultsFilterTextBox;
+        private Button? _clearFilterButton;
+        
+        // Sorting
+        private string _currentSortColumn = "score";
+        private bool _sortAscending = false;
+        private TextBlock? _seedSortIndicator;
+        private TextBlock? _scoreSortIndicator;
+        private TextBlock? _timeSortIndicator;
 
         public SearchModal()
         {
@@ -182,6 +193,22 @@ namespace Oracle.Views.Modals
             _threadsSpinner = this.FindControl<SpinnerControl>("ThreadsSpinner");
             _batchSizeSpinner = this.FindControl<SpinnerControl>("BatchSizeSpinner");
             _minScoreSpinner = this.FindControl<SpinnerControl>("MinScoreSpinner");
+            
+            // Configure spinner display values
+            if (_threadsSpinner != null)
+            {
+                _threadsSpinner.Maximum = Environment.ProcessorCount;
+            }
+            
+            if (_batchSizeSpinner != null)
+            {
+                _batchSizeSpinner.DisplayValues = new[] { "minimal", "low", "default", "high" };
+            }
+            
+            if (_minScoreSpinner != null)
+            {
+                _minScoreSpinner.DisplayValues = new[] { "Auto", "1", "2", "3", "4", "5" };
+            }
 
             // Find deck/stake selector component
             _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
@@ -208,6 +235,19 @@ namespace Oracle.Views.Modals
             _tallyHeadersPanel = this.FindControl<StackPanel>("TallyHeadersPanel");
             _resultsSummary = this.FindControl<TextBlock>("ResultsSummary");
             _exportResultsButton = this.FindControl<Button>("ExportResultsButton");
+            _resultsFilterTextBox = this.FindControl<TextBox>("ResultsFilterTextBox");
+            _clearFilterButton = this.FindControl<Button>("ClearFilterButton");
+            
+            // Find sort indicators
+            _seedSortIndicator = this.FindControl<TextBlock>("SeedSortIndicator");
+            _scoreSortIndicator = this.FindControl<TextBlock>("ScoreSortIndicator");
+            _timeSortIndicator = this.FindControl<TextBlock>("TimeSortIndicator");
+            
+            // Wire up filter text changed event
+            if (_resultsFilterTextBox != null)
+            {
+                _resultsFilterTextBox.TextChanged += OnFilterTextChanged;
+            }
 
             // Set up results items control
             if (_resultsItemsControl != null)
@@ -226,6 +266,7 @@ namespace Oracle.Views.Modals
             _totalSeedsText = this.FindControl<TextBlock>("TotalSeedsText");
             _timeElapsedText = this.FindControl<TextBlock>("TimeElapsedText");
             _resultsFoundText = this.FindControl<TextBlock>("ResultsFoundText");
+            _speedText = this.FindControl<TextBlock>("SpeedText");
             _speedValueText = this.FindControl<TextBlock>("SpeedValueText");
             _currentSpeedText = this.FindControl<TextBlock>("CurrentSpeedText");
             _averageSpeedText = this.FindControl<TextBlock>("AverageSpeedText");
@@ -284,9 +325,26 @@ namespace Oracle.Views.Modals
             }
         }
 
+        private bool _isLoadingFilter = false;
+        
         private async void OnFilterLoaded(object? sender, string filterPath)
         {
-            await LoadFilterAsync(filterPath);
+            // Prevent double loading
+            if (_isLoadingFilter || _currentFilterPath == filterPath)
+            {
+                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Skipping duplicate filter load: {filterPath}");
+                return;
+            }
+            
+            _isLoadingFilter = true;
+            try
+            {
+                await LoadFilterAsync(filterPath);
+            }
+            finally
+            {
+                _isLoadingFilter = false;
+            }
         }
 
         private void OnDeckSelected(object? sender, EventArgs e)
@@ -319,19 +377,23 @@ namespace Oracle.Views.Modals
 
         private void UpdateTabStates(bool filterLoaded)
         {
+            // Check if we have an active search instance (might be from a shortcut)
+            bool hasActiveSearch = _searchInstance != null && (_searchInstance.IsRunning || _searchInstance.Results.Count > 0);
+            bool shouldEnableTabs = filterLoaded || hasActiveSearch;
+            
             if (_settingsTab != null)
             {
-                _settingsTab.IsEnabled = filterLoaded;
+                _settingsTab.IsEnabled = shouldEnableTabs;
             }
 
             if (_searchTab != null)
             {
-                _searchTab.IsEnabled = filterLoaded;
+                _searchTab.IsEnabled = shouldEnableTabs;
             }
-            // Enable Results tab if filter is loaded (we'll show test data if no real results)
+            // Enable Results tab if filter is loaded or we have results
             if (_resultsTab != null)
             {
-                _resultsTab.IsEnabled = filterLoaded;
+                _resultsTab.IsEnabled = shouldEnableTabs || _searchResults.Count > 0;
             }
 
         }
@@ -438,11 +500,8 @@ namespace Oracle.Views.Modals
                     Oracle.Helpers.DebugLogger.LogError("SearchModal", "ResultsItemsControl is null!");
                 }
 
-                // Update summary when opening
-                if (_resultsSummary != null)
-                {
-                    _resultsSummary.Text = _searchResults.Count == 0 ? "No results yet" : $"Found {_searchResults.Count} results";
-                }
+                // Apply filter and update summary when opening
+                ApplyFilter();
             }
         }
 
@@ -611,6 +670,7 @@ namespace Oracle.Views.Modals
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
 
+                    AddToConsole("──────────────────────────────────");
                     AddToConsole("Let Jimbo cook! Starting search...");
 
                     // Start search with the config object directly
@@ -669,6 +729,7 @@ namespace Oracle.Views.Modals
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
 
+                    AddToConsole("──────────────────────────────────");
                     AddToConsole("Let Jimbo cook! Starting search...");
 
                     // Start search
@@ -901,7 +962,7 @@ namespace Oracle.Views.Modals
         {
             // Throttle progress updates to reduce UI load
             var now = DateTime.Now;
-            if ((now - _lastProgressUpdate).TotalMilliseconds < 500)
+            if ((now - _lastProgressUpdate).TotalMilliseconds < 50)  // Update every 50ms for very responsive speed display
                 return;
                 
             _lastProgressUpdate = now;
@@ -912,13 +973,7 @@ namespace Oracle.Views.Modals
                 if (!_isSearching)
                     return;
                     
-                // Don't show progress with zero seeds or zero speed - this happens on cancellation
-                if (e.SeedsSearched > 0 && e.SeedsPerSecond > 0)
-                {
-                    AddToConsole(
-                        $"Searched: {e.SeedsSearched:N0} | Found: {_newResultsCount} new | Speed: {e.SeedsPerSecond:N0}/s"
-                    );
-                }
+                // Progress updates are now handled by the UI elements, no console spam needed
 
                 // Update progress stats
                 if (_progressPercentText != null && e.TotalBatches > 0)
@@ -991,7 +1046,7 @@ namespace Oracle.Views.Modals
                 {
                     _minScoreSpinner.Value = newCutoff;
                     Oracle.Helpers.DebugLogger.Log("SearchModal", $"Auto-cutoff updated spinner to: {newCutoff}");
-                    AddToConsole($"Auto-cutoff adjusted to: {newCutoff}");
+                    AddToConsole($"⚡ Auto-cutoff adjusted to: {newCutoff} (filtering out scores below {newCutoff})");
                 }
                 else
                 {
@@ -1046,25 +1101,24 @@ namespace Oracle.Views.Modals
                     _searchResults.Add(result);
                 }
                 
-                // Log only the first few results to console to avoid spam
-                if (_searchResults.Count <= 10)
+                // Show all seeds with scores
+                foreach (var result in resultsToAdd)
                 {
-                    foreach (var result in resultsToAdd)
-                    {
-                        AddToConsole($"🎉 Found seed: {result.Seed} (Score: {result.Score})");
-                    }
-                }
-                else if ((DateTime.Now - _lastResultBatchUpdate).TotalSeconds >= 1)
-                {
-                    // Only log summary every second when there are many results
-                    AddToConsole($"🎉 Found {resultsToAdd.Count} more seeds (Total: {_searchResults.Count})");
-                    _lastResultBatchUpdate = DateTime.Now;
+                    AddToConsole($"🎉 {result.Seed} - Score: {result.Score:0}");
                 }
 
                 // Update results summary
                 if (_resultsSummary != null)
                 {
-                    _resultsSummary.Text = $"Found {_searchResults.Count} results ({totalNewResults} new)";
+                    var existingCount = _searchResults.Count - totalNewResults;
+                    if (existingCount > 0)
+                    {
+                        _resultsSummary.Text = $"Total: {_searchResults.Count} results ({existingCount} from DB + {totalNewResults} new)";
+                    }
+                    else
+                    {
+                        _resultsSummary.Text = $"Found {_searchResults.Count} results";
+                    }
                 }
                 
                 // Update tally headers if this is the first batch
@@ -1108,18 +1162,11 @@ namespace Oracle.Views.Modals
 
         private async void OnExportResultsClick(object? sender, RoutedEventArgs e)
         {
-            if (_searchResults.Count == 0)
-            {
-                return;
-            }
-
-
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel == null)
             {
                 return;
             }
-
 
             var options = new Avalonia.Platform.Storage.FilePickerSaveOptions
             {
@@ -1130,6 +1177,10 @@ namespace Oracle.Views.Modals
                     new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
                     {
                         Patterns = new[] { "*.csv" },
+                    },
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files")
+                    {
+                        Patterns = new[] { "*.json" },
                     },
                     new Avalonia.Platform.Storage.FilePickerFileType("All Files")
                     {
@@ -1144,18 +1195,24 @@ namespace Oracle.Views.Modals
             {
                 try
                 {
-                    var csv = new System.Text.StringBuilder();
-                    csv.AppendLine("Seed,Score,Timestamp,Details");
-
-                    foreach (var r in _searchResults)
+                    var historyService = App.GetService<SearchHistoryService>();
+                    if (historyService == null)
                     {
-                        csv.AppendLine(
-                            $"{r.Seed},{r.Score:F1},{r.Timestamp:yyyy-MM-dd HH:mm:ss},\"{r.Details}\""
-                        );
+                        AddToConsole("Error: Search history service not available");
+                        return;
                     }
 
-                    await System.IO.File.WriteAllTextAsync(result.Path.LocalPath, csv.ToString());
-                    AddToConsole($"Exported {_searchResults.Count} results to {result.Name}");
+                    // Export directly from DuckDB with all columns
+                    var exportedCount = await historyService.ExportResultsAsync(result.Path.LocalPath);
+                    
+                    if (exportedCount > 0)
+                    {
+                        AddToConsole($"Exported {exportedCount} results to {result.Name}");
+                    }
+                    else
+                    {
+                        AddToConsole("No results to export");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1178,8 +1235,19 @@ namespace Oracle.Views.Modals
                 UnsubscribeFromSearchEvents();
                 
                 _searchInstance = _searchManager.GetSearch(searchId);
+                
+                // Switch to Results tab when opened from desktop widget
+                Dispatcher.UIThread.Post(() => {
+                    if (_resultsTab != null)
+                    {
+                        OnTabClick(_resultsTab, new RoutedEventArgs());
+                    }
+                }, DispatcherPriority.Loaded);
                 if (_searchInstance != null)
                 {
+                    // Update tab states since we now have an active search
+                    UpdateTabStates(true);
+                    
                     // Subscribe to events
                     _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
                     _searchInstance.ResultFound += OnResultFound;
@@ -1196,9 +1264,9 @@ namespace Oracle.Views.Modals
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = result.ScoreBreakdown,
-                                TallyScores = result.TallyScores,
-                                ItemLabels = result.ItemLabels
+                                Details = "", // ScoreBreakdown removed
+                                TallyScores = result.Scores,
+                                ItemLabels = result.Labels
                             }
                         );
                     }
@@ -1296,9 +1364,10 @@ namespace Oracle.Views.Modals
                 }
             }
 
+            // Don't disable search tab - user should always be able to see search status
             if (_searchTab != null)
             {
-                _searchTab.IsEnabled = !_isSearching;
+                _searchTab.IsEnabled = true;
             }
 
             if (_resultsTab != null)
@@ -1338,7 +1407,7 @@ namespace Oracle.Views.Modals
                 var existingResults = await Task.Run(() => historyService.GetSearchResultsAsync());
                 if (existingResults.Count > 0)
                 {
-                    AddToConsole($"Loaded {existingResults.Count} existing results from database");
+                    // Don't log existing results - user only cares about new finds
 
                     // Clear current results and add the loaded ones on UI thread
                     await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1351,10 +1420,10 @@ namespace Oracle.Views.Modals
                                 {
                                     Seed = result.Seed,
                                     Score = result.TotalScore,
-                                    Details = result.ScoreBreakdown,
+                                    Details = "", // ScoreBreakdown removed
                                     Timestamp = DateTime.Now,
-                                    TallyScores = result.TallyScores,
-                                    ItemLabels = result.ItemLabels
+                                    TallyScores = result.Scores,
+                                    ItemLabels = result.Labels
                                 }
                             );
                         }
@@ -1456,6 +1525,11 @@ namespace Oracle.Views.Modals
         private void UpdateSpeedometer(double currentSpeed, int batchesSearched)
         {
             // Update speed values
+            if (_speedText != null)
+            {
+                _speedText.Text = $"{currentSpeed:N0} seeds/s";
+            }
+            
             if (_speedValueText != null)
             {
                 _speedValueText.Text = $"{currentSpeed:N0}";
@@ -1608,6 +1682,151 @@ namespace Oracle.Views.Modals
     
     public partial class SearchModal
     {
+        private void OnSortBySeed(object? sender, RoutedEventArgs e)
+        {
+            SortResults("seed");
+        }
+        
+        private void OnSortByScore(object? sender, RoutedEventArgs e)
+        {
+            SortResults("score");
+        }
+        
+        private void OnSortByTime(object? sender, RoutedEventArgs e)
+        {
+            SortResults("time");
+        }
+        
+        private void SortResults(string column)
+        {
+            // If clicking the same column, toggle sort order
+            if (_currentSortColumn == column)
+            {
+                _sortAscending = !_sortAscending;
+            }
+            else
+            {
+                _currentSortColumn = column;
+                _sortAscending = column == "seed"; // Seed ascending by default, others descending
+            }
+            
+            // Update sort indicators
+            UpdateSortIndicators();
+            
+            // Sort the results
+            var sorted = column switch
+            {
+                "seed" => _sortAscending 
+                    ? _searchResults.OrderBy(r => r.Seed).ToList()
+                    : _searchResults.OrderByDescending(r => r.Seed).ToList(),
+                "score" => _sortAscending
+                    ? _searchResults.OrderBy(r => r.Score).ToList()
+                    : _searchResults.OrderByDescending(r => r.Score).ToList(),
+                "time" => _sortAscending
+                    ? _searchResults.OrderBy(r => r.Timestamp).ToList()
+                    : _searchResults.OrderByDescending(r => r.Timestamp).ToList(),
+                _ => _searchResults.ToList()
+            };
+            
+            // Clear and repopulate
+            _searchResults.Clear();
+            foreach (var result in sorted)
+            {
+                _searchResults.Add(result);
+            }
+            
+            // Reapply filter after sorting
+            ApplyFilter();
+        }
+        
+        private void UpdateSortIndicators()
+        {
+            // Hide all indicators
+            if (_seedSortIndicator != null) _seedSortIndicator.IsVisible = false;
+            if (_scoreSortIndicator != null) _scoreSortIndicator.IsVisible = false;
+            if (_timeSortIndicator != null) _timeSortIndicator.IsVisible = false;
+            
+            // Show and update the current one
+            var indicator = _currentSortColumn switch
+            {
+                "seed" => _seedSortIndicator,
+                "score" => _scoreSortIndicator,
+                "time" => _timeSortIndicator,
+                _ => null
+            };
+            
+            if (indicator != null)
+            {
+                indicator.IsVisible = true;
+                indicator.Text = _sortAscending ? " ▲" : " ▼";
+            }
+        }
+        
+        private void OnFilterTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            ApplyFilter();
+        }
+        
+        private void OnClearFilterClick(object? sender, RoutedEventArgs e)
+        {
+            if (_resultsFilterTextBox != null)
+            {
+                _resultsFilterTextBox.Text = string.Empty;
+            }
+        }
+        
+        private void ApplyFilter()
+        {
+            if (_resultsItemsControl == null || _searchResults == null)
+                return;
+                
+            var filterText = _resultsFilterTextBox?.Text?.Trim()?.ToLowerInvariant() ?? string.Empty;
+            
+            if (string.IsNullOrEmpty(filterText))
+            {
+                // Show all results if no filter
+                _resultsItemsControl.ItemsSource = _searchResults;
+                UpdateResultsSummary();
+                return;
+            }
+            
+            // Filter results by seed name
+            var filteredResults = _searchResults
+                .Where(r => r.Seed.ToLowerInvariant().Contains(filterText))
+                .ToList();
+                
+            _resultsItemsControl.ItemsSource = filteredResults;
+            
+            // Update summary to show filtered count
+            if (_resultsSummary != null)
+            {
+                _resultsSummary.Text = $"Showing {filteredResults.Count} of {_searchResults.Count} results";
+            }
+        }
+        
+        private void UpdateResultsSummary()
+        {
+            if (_resultsSummary != null)
+            {
+                if (_searchResults.Count == 0)
+                {
+                    _resultsSummary.Text = "No results yet";
+                }
+                else
+                {
+                    var existingCount = _searchResults.Count - _newResultsCount;
+                    if (existingCount > 0)
+                    {
+                        _resultsSummary.Text = $"Total: {_searchResults.Count} results ({existingCount} from DB + {_newResultsCount} new)";
+                    }
+                    else
+                    {
+                        _resultsSummary.Text = $"Found {_searchResults.Count} results";
+                    }
+                }
+            }
+        }
+        
         public void Dispose()
         {
             // Clean up timer

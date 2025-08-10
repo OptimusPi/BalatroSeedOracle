@@ -20,21 +20,21 @@ namespace Oracle.Components
         // Deck data - same as DeckStakeSelector
         private readonly List<(string name, string description, string spriteName)> _decks = new()
         {
-            ("Red", "+1 Discardevery round", "red"),
-            ("Blue", "+1 Handevery round", "blue"),
-            ("Yellow", "+$10 atstart of run", "yellow"),
-            ("Green", "At end of each Round:+$1 interest per $5(max $5 interest)", "green"),
-            ("Black", "+1 Joker slot-1 Hand every round", "black"),
-            ("Magic", "Start run with theCrystal Ball voucherand 2 copies of The Fool", "magic"),
-            ("Nebula", "Start run with theTelescope voucher-1 consumable slot", "nebula"),
-            ("Ghost", "Spectral cards mayappear in the shopstart with a Hex", "ghost"),
-            ("Abandoned", "Start with noFace Cardsin your deck", "abandoned"),
-            ("Checkered", "Start with 26 Spadesand 26 Heartsin deck", "checkered"),
-            ("Zodiac", "Start run withTarot Merchant,Planet Merchant,and Overstock", "zodiac"),
-            ("Painted", "+2 Hand Size-1 Joker Slot", "painted"),
-            ("Anaglyph", "After defeating eachBoss Blind, gain aDouble Tag", "anaglyph"),
-            ("Plasma", "Balance Chips andMult when calculatingscore for played hand", "plasma"),
-            ("Erratic", "All Ranks and Suitsin deck are randomized", "erratic"),
+            ("Red", "+1 Discard every round", "red"),
+            ("Blue", "+1 Hand every round", "blue"),
+            ("Yellow", "+$10 at start of run", "yellow"),
+            ("Green", "At end of each Round: +$1 interest per $5 (max $5 interest)", "green"),
+            ("Black", "+1 Joker slot -1 Hand every round", "black"),
+            ("Magic", "Start run with the Crystal Ball voucher and 2 copies of The Fool", "magic"),
+            ("Nebula", "Start run with the Telescope voucher -1 consumable slot", "nebula"),
+            ("Ghost", "Spectral cards may appear in the shop start with a Hex", "ghost"),
+            ("Abandoned", "Start with no Face Cards in your deck", "abandoned"),
+            ("Checkered", "Start with 26 Spades and 26 Hearts in deck", "checkered"),
+            ("Zodiac", "Start run with Tarot Merchant, Planet Merchant, and Overstock", "zodiac"),
+            ("Painted", "+2 Hand Size -1 Joker Slot", "painted"),
+            ("Anaglyph", "After defeating each Boss Blind, gain a Double Tag", "anaglyph"),
+            ("Plasma", "Balance Chips and Mult when calculating score for played hand", "plasma"),
+            ("Erratic", "All Ranks and Suits in deck are randomized", "erratic"),
         };
 
         public event EventHandler<int>? DeckChanged;

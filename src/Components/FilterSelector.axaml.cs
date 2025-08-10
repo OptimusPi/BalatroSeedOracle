@@ -38,6 +38,15 @@ namespace Oracle.Components
 
         public bool ShowCreateButton { get; set; } = true;
         public bool ShouldSwitchToVisualTab { get; set; } = false;
+        
+        public static readonly StyledProperty<string> TitleProperty = 
+            AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
+            
+        public string Title
+        {
+            get => GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
+        }
 
         // Controls
         private PanelSpinner? _filterSpinner;
@@ -190,7 +199,7 @@ namespace Oracle.Components
                     Title = filterName,
                     Description = description,
                     Value = filterPath,
-                    GetImage = () => GetFilterPreviewImage(clonedRoot),
+                    GetImage = () => CreateFannedPreviewImage(clonedRoot),
                 };
             }
             catch (Exception ex)
@@ -203,50 +212,231 @@ namespace Oracle.Components
             }
         }
 
-        private IImage? GetFilterPreviewImage(JsonElement filterRoot)
+        private IImage? CreateFannedPreviewImage(JsonElement filterRoot)
         {
             try
             {
-                // Collect items from different categories
+                DebugLogger.Log("FilterSelector", "Creating fanned preview image");
+                
+                // Collect items from all categories
                 var previewItems = new List<(string value, string? type)>();
 
-                // Check for items in the filter
-                if (filterRoot.TryGetProperty("items", out var items))
+                // Check must items first
+                if (filterRoot.TryGetProperty("must", out var mustItems))
                 {
-                    foreach (var item in items.EnumerateArray())
+                    foreach (var item in mustItems.EnumerateArray())
                     {
-                        if (
-                            item.TryGetProperty("value", out var value)
-                            && item.TryGetProperty("type", out var type)
-                        )
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
                         {
-                            var val = value.GetString() ?? "";
-                            var typeStr = type.GetString();
-                            previewItems.Add((val, typeStr));
-                            if (previewItems.Count >= 3)
-                            {
-                                break; // Limit preview to 3 items
-                            }
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count >= 4) break;
                         }
                     }
                 }
 
-                // If no items found, return null
+                // Add should items if we have space
+                if (previewItems.Count < 4 && filterRoot.TryGetProperty("should", out var shouldItems))
+                {
+                    foreach (var item in shouldItems.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count >= 4) break;
+                        }
+                    }
+                }
+
+                if (previewItems.Count == 0)
+                {
+                    DebugLogger.Log("FilterSelector", "No preview items found, returning null");
+                    return null;
+                }
+                
+                DebugLogger.Log("FilterSelector", $"Found {previewItems.Count} preview items");
+
+                // Create a render target bitmap for the composite image
+                var pixelSize = new PixelSize(400, 200);
+                var dpi = new Vector(96, 96);
+                var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
+
+                // Create a canvas to arrange the cards
+                var canvas = new Canvas
+                {
+                    Width = pixelSize.Width,
+                    Height = pixelSize.Height,
+                    Background = Brushes.Transparent,
+                    ClipToBounds = true,
+                };
+
+                // Add cards in a fanned arrangement
+                int cardIndex = 0;
+                int totalCards = Math.Min(previewItems.Count, 4);
+                double startX = 50;
+                double cardSpacing = 60;
+                
+                foreach (var (value, type) in previewItems.Take(totalCards))
+                {
+                    var image = GetItemImage(value, type);
+                    if (image != null)
+                    {
+                        DebugLogger.Log("FilterSelector", $"Got image for {value} (type: {type})");
+                        var imgControl = new Image
+                        {
+                            Source = image,
+                            Width = 110,
+                            Height = 150,
+                            Stretch = Stretch.Uniform,
+                        };
+
+                        // Calculate position and rotation
+                        double rotation = (cardIndex - totalCards / 2.0 + 0.5) * 8;
+                        double xPos = startX + (cardIndex * cardSpacing);
+                        double yPos = 20 + Math.Abs(cardIndex - totalCards / 2.0 + 0.5) * 8;
+
+                        var transformGroup = new TransformGroup();
+                        transformGroup.Children.Add(new RotateTransform(rotation, 55, 75));
+                        transformGroup.Children.Add(new TranslateTransform(xPos, yPos));
+                        
+                        imgControl.RenderTransform = transformGroup;
+                        imgControl.ZIndex = cardIndex;
+
+                        canvas.Children.Add(imgControl);
+                        cardIndex++;
+                    }
+                }
+
+                // Measure and arrange the canvas
+                canvas.Measure(new Size(pixelSize.Width, pixelSize.Height));
+                canvas.Arrange(new Rect(0, 0, pixelSize.Width, pixelSize.Height));
+                
+                // Force layout update
+                canvas.UpdateLayout();
+
+                // Render to bitmap
+                renderBitmap.Render(canvas);
+                
+                DebugLogger.Log("FilterSelector", $"Successfully created fanned preview with {cardIndex} cards");
+
+                return renderBitmap;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"Error creating fanned preview: {ex.Message}");
+                // Fallback to single image
+                return GetFilterPreviewImage(filterRoot);
+            }
+        }
+
+        private Control? GetFilterPreviewControl(JsonElement filterRoot)
+        {
+            try
+            {
+                // Collect items from all categories
+                var previewItems = new List<(string value, string? type)>();
+
+                // Check must items first
+                if (filterRoot.TryGetProperty("must", out var mustItems))
+                {
+                    foreach (var item in mustItems.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count >= 5) break;
+                        }
+                    }
+                }
+
+                // Add should items if we have space
+                if (previewItems.Count < 5 && filterRoot.TryGetProperty("should", out var shouldItems))
+                {
+                    foreach (var item in shouldItems.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count >= 5) break;
+                        }
+                    }
+                }
+
                 if (previewItems.Count == 0)
                 {
                     return null;
                 }
 
-                // Get the first item's image as the preview
-                var (firstValue, firstType) = previewItems[0];
-                return GetItemImage(firstValue, firstType);
+                // Create a canvas to hold the fanned cards
+                var canvas = new Canvas
+                {
+                    Width = 200,
+                    Height = 100,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                };
+
+                // Create fanned display
+                int cardIndex = 0;
+                foreach (var (value, type) in previewItems.Take(5))
+                {
+                    var image = GetItemImage(value, type);
+                    if (image != null)
+                    {
+                        var imgControl = new Image
+                        {
+                            Source = image,
+                            Width = 60,
+                            Height = 80,
+                        };
+
+                        // Fan out the cards
+                        var rotation = (cardIndex - 2) * 5; // -10, -5, 0, 5, 10 degrees
+                        var xOffset = cardIndex * 25 + 20;
+                        var yOffset = Math.Abs(cardIndex - 2) * 3; // Slight Y offset for depth
+
+                        imgControl.RenderTransform = new Avalonia.Media.RotateTransform(rotation);
+                        Canvas.SetLeft(imgControl, xOffset);
+                        Canvas.SetTop(imgControl, yOffset);
+                        imgControl.ZIndex = cardIndex;
+
+                        canvas.Children.Add(imgControl);
+                        cardIndex++;
+                    }
+                }
+
+                return canvas;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterSelector",
-                    $"Error creating preview image: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterSelector", $"Error creating preview: {ex.Message}");
+                return null;
+            }
+        }
+
+        private IImage? GetFilterPreviewImage(JsonElement filterRoot)
+        {
+            // Fallback for single image if needed
+            try
+            {
+                if (filterRoot.TryGetProperty("must", out var items))
+                {
+                    foreach (var item in items.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            return GetItemImage(value.GetString() ?? "", type.GetString());
+                        }
+                    }
+                }
+                return null;
+            }
+            catch
+            {
                 return null;
             }
         }
@@ -256,6 +446,7 @@ namespace Oracle.Components
             // Get image based on type
             return type?.ToLower() switch
             {
+                "souljoker" => _spriteService.GetJokerImage(value), // TODO idk if this is the right way to get soul joker image
                 "joker" => _spriteService.GetJokerImage(value),
                 "voucher" => _spriteService.GetVoucherImage(value),
                 "tag" => _spriteService.GetTagImage(value),

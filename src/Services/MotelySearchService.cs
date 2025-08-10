@@ -184,7 +184,7 @@ public class MotelySearchService : IDisposable
                         {
                             Seed = result.Seed,
                             Score = result.TotalScore,
-                            Details = result.ScoreBreakdown,
+                            Details = "", // ScoreBreakdown removed
                         },
                     }
                 );
@@ -364,7 +364,7 @@ public class MotelySearchService : IDisposable
                         {
                             Seed = result.Seed,
                             Score = result.TotalScore,
-                            Details = result.ScoreBreakdown,
+                            Details = "", // ScoreBreakdown removed
                         },
                     }
                 );

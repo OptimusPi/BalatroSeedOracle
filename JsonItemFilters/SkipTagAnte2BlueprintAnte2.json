@@ -1,6 +1,6 @@
 {
     "name": "SkipTagAnte2BlueprintAnte2",
-    "description": "runs of desired cards scored",
+    "description": "BNegative Skip Tag Ante 2 lands on a Blueprint",
     "author": "pifreak",
     "must": [
         {
@@ -17,9 +17,12 @@
             "antes": [2]
         },
         {
-            "type": "smallblindtag",
-            "value": "negativetag",
-            "antes": [8]
+            "type": "joker",
+            "value": "blueprint",
+            "antes": [2],
+            "sources": {
+                "packSlots": [2,3]
+            }
         }
     ],
     "should": [
@@ -49,54 +52,6 @@
                 "shopSlots": [2,3]
             },
             "score": 10
-        },
-
-
-
-        {
-            "type": "joker",
-            "value": "HangingChad",
-            "antes": [8],
-            "sources": {
-                "shopSlots": [2,3,4,5]
-            },
-            "score": 1
-        },
-        {
-            "type": "joker",
-            "value": "Photograph",
-            "antes": [8],
-            "sources": {
-                "shopSlots": [2,3,4,5]
-            },
-            "score": 1
-        },
-        {
-            "type": "joker",
-            "value": "Blueprint",
-            "antes": [8],
-            "sources": {
-                "shopSlots": [2,3,4,5]
-            },
-            "score": 10
-        },
-        {
-            "type": "smallblindtag",
-            "value": "doubletag",
-            "antes": [3,4,5,6,7],
-            "sources": {
-                "shopSlots": [2,3,4,5]
-            },
-            "score": 1
-        },
-         {
-            "type": "bigblindtag",
-            "value": "doubletag",
-            "antes": [3,4,5,6,7],
-            "sources": {
-                "shopSlots": [2,3,4,5]
-            },
-            "score": 1
         }
     ],
     "mustNot": [],

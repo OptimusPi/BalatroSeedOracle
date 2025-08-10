@@ -6,7 +6,7 @@
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
             <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="200"/>
+            <Setter Property="Height" Value="280"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -54,8 +54,8 @@
             <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="400"/>
-            <Setter Property="Height" Value="200"/>
+            <Setter Property="Width" Value="450"/>
+            <Setter Property="Height" Value="280"/>
         </Style>
         
         <!-- Title text style -->
@@ -139,13 +139,13 @@
                 <!-- Sprite Image Container -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
-                         MaxHeight="80"
+                         MaxHeight="140"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
                          Margin="0,4">
                     <Image Name="SpriteImage"
-                           Width="71"
-                           Height="95"/>
+                           Width="400"
+                           Height="200"/>
                 </Viewbox>
                 
                 <!-- Description -->

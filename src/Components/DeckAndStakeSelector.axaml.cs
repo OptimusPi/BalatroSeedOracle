@@ -26,6 +26,22 @@ public partial class DeckAndStakeSelector : UserControl
         _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
         _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
         _selectButton = this.FindControl<Button>("SelectButton");
+        
+        // Configure stake spinner display values
+        if (_stakeSpinner != null)
+        {
+            _stakeSpinner.DisplayValues = new[] 
+            { 
+                "White Stake",
+                "Red Stake",
+                "Green Stake", 
+                "Black Stake",
+                "Blue Stake",
+                "Purple Stake",
+                "Orange Stake",
+                "Gold Stake"
+            };
+        }
 
         if (_deckSpinner != null)
         {
