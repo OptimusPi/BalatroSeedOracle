@@ -235,8 +235,7 @@
             </Setter>
         </Style>
         <Style Selector="Border.drop-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
-            <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
+            <Setter Property="BoxShadow" Value="0 0 10 #ffffff20" />
         </Style>
         <Style Selector="Border.needs-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Red}" />

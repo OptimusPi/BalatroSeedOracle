@@ -2875,18 +2875,18 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (category == "Jokers")
                 {
-                    // Group jokers by rarity
+                    // Group jokers by rarity - wildcards should already be at the end from GetItemsForCategory
                     groups["Legendary"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j) || j == "AnyLegendary")
                         .ToList();
                     groups["Rare"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j) || j == "AnyRare")
                         .ToList();
                     groups["Uncommon"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j) || j == "AnyUncommon")
                         .ToList();
                     groups["Common"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j) || j == "AnyCommon")
                         .ToList();
                 }
                 else
@@ -3094,6 +3094,24 @@ namespace BalatroSeedOracle.Views.Modals
                         );
                         properNames.Add(lcItem);
                     }
+                }
+                
+                // Add wildcards at the end of each rarity group
+                if (subCategory == "Legendary")
+                {
+                    properNames.Add("AnyLegendary");
+                }
+                else if (subCategory == "Rare")
+                {
+                    properNames.Add("AnyRare");
+                }
+                else if (subCategory == "Uncommon")
+                {
+                    properNames.Add("AnyUncommon");
+                }
+                else if (subCategory == "Common")
+                {
+                    properNames.Add("AnyCommon");
                 }
 
                 return properNames;
@@ -4290,8 +4308,8 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             Source = faceSource,
                             Stretch = Stretch.Uniform,
-                            Width = 71,
-                            Height = 95,
+                            Width = 53,
+                            Height = 71,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             RenderTransform = new RotateTransform(),
@@ -4968,8 +4986,8 @@ namespace BalatroSeedOracle.Views.Modals
                         var faceImage = new Image
                         {
                             Source = faceSource,
-                            Width = 71, // Match the joker face size
-                            Height = 95, // Match the joker face size
+                            Width = 53, // Match the container size
+                            Height = 71, // Match the container size
                             Stretch = Stretch.Uniform,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
