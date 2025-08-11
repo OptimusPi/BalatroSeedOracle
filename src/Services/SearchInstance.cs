@@ -132,7 +132,8 @@ namespace BalatroSeedOracle.Services
                     if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
                     {
                         var oldCutoff = _currentCutoff;
-                        _currentCutoff = result.TotalScore;
+                        // Increment cutoff by 1 to avoid skipping score levels
+                        _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
                         
                         DebugLogger.Log($"SearchInstance[{_searchId}]", 
                             $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
@@ -289,7 +290,8 @@ namespace BalatroSeedOracle.Services
                     if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
                     {
                         var oldCutoff = _currentCutoff;
-                        _currentCutoff = result.TotalScore;
+                        // Increment cutoff by 1 to avoid skipping score levels
+                        _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
                         
                         DebugLogger.Log($"SearchInstance[{_searchId}]", 
                             $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
