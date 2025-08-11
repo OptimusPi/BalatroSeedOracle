@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Motely;
@@ -22,6 +23,7 @@ namespace BalatroSeedOracle.Services
     {
         private readonly string _searchId;
         private readonly SearchHistoryService _historyService;
+        private readonly UserProfileService? _userProfileService;
         private CancellationTokenSource? _cancellationTokenSource;
         private volatile bool _isRunning;
         private volatile bool _isPaused;
@@ -34,6 +36,11 @@ namespace BalatroSeedOracle.Services
         // Auto-cutoff tracking
         private bool _isAutoCutoffEnabled;
         private int _currentCutoff = 0;
+        
+        // Search state tracking for resume
+        private SearchConfiguration? _currentSearchConfig;
+        private ulong _lastSavedBatch = 0;
+        private DateTime _lastStateSave = DateTime.UtcNow;
 
         // Properties
         public string SearchId
@@ -60,6 +67,7 @@ namespace BalatroSeedOracle.Services
         {
             _searchId = searchId;
             _historyService = historyService;
+            _userProfileService = ServiceHelper.GetService<UserProfileService>();
             _results = new ObservableCollection<BalatroSeedOracle.Models.SearchResult>();
         }
 
@@ -87,6 +95,7 @@ namespace BalatroSeedOracle.Services
                 );
 
                 _currentConfig = ouijaConfig;
+                _currentSearchConfig = config;
                 ConfigPath = "Direct Config";
                 FilterName = $"Search {_searchId.Substring(0, 8)}";
                 _searchStartTime = DateTime.UtcNow;
@@ -556,6 +565,13 @@ namespace BalatroSeedOracle.Services
                     _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-8.")
                 };
                 
+                // Apply end batch limit first
+                ulong effectiveEndBatch = criteria.EndBatch;
+                if (criteria.EndBatch == 0 || criteria.EndBatch == ulong.MaxValue)
+                {
+                    effectiveEndBatch = totalBatches;
+                }
+                
                 // Create progress callback for Motely
                 var motelyProgress = new Progress<Motely.MotelyProgress>(mp =>
                 {
@@ -580,8 +596,19 @@ namespace BalatroSeedOracle.Services
                             ResultsFound = Results.Count,
                             SeedsPerMillisecond = mp.SeedsPerMillisecond,
                             PercentComplete = (int)mp.PercentComplete,
+                            BatchesSearched = mp.CompletedBatchCount,
+                            TotalBatches = mp.TotalBatchCount,
                         }
                     );
+                    
+                    // Save search state every 10 seconds or every 100 batches
+                    if (mp.CompletedBatchCount > _lastSavedBatch + 100 || 
+                        DateTime.UtcNow > _lastStateSave.AddSeconds(10))
+                    {
+                        SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
+                        _lastSavedBatch = mp.CompletedBatchCount;
+                        _lastStateSave = DateTime.UtcNow;
+                    }
                 });
                 
                 var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
@@ -592,12 +619,7 @@ namespace BalatroSeedOracle.Services
                     .WithSequentialSearch()
                     .WithProgressCallback(motelyProgress);
 
-                // Apply end batch limit
-                ulong effectiveEndBatch = (ulong)criteria.EndBatch;
-                if (criteria.EndBatch <= 0)
-                {
-                    effectiveEndBatch = totalBatches;
-                }
+                // Use the already declared effectiveEndBatch
                 searchSettings.WithEndBatchIndex(effectiveEndBatch);
 
                 DebugLogger.LogImportant(
@@ -660,6 +682,12 @@ namespace BalatroSeedOracle.Services
                 var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0UL;
                 ulong finalSeeds = finalBatchCount * (ulong)Math.Pow(35, batchSize);
 
+                // Clear search state if completed successfully
+                if (!cancellationToken.IsCancellationRequested && _isRunning && finalBatchCount >= effectiveEndBatch)
+                {
+                    _userProfileService?.ClearSearchState();
+                }
+
                 progress?.Report(
                     new SearchProgress
                     {
@@ -701,6 +729,38 @@ namespace BalatroSeedOracle.Services
         }
 
         // HandleAutoCutoff method removed - now handled inline when results are captured
+
+        private void SaveSearchState(ulong completedBatch, ulong totalBatches, ulong endBatch)
+        {
+            try
+            {
+                if (_currentConfig == null || _currentSearchConfig == null) return;
+                
+                var state = new SearchResumeState
+                {
+                    IsDirectConfig = !string.IsNullOrEmpty(ConfigPath) && ConfigPath == "Direct Config",
+                    ConfigPath = ConfigPath == "Direct Config" ? null : ConfigPath,
+                    ConfigJson = ConfigPath == "Direct Config" ? 
+                        JsonSerializer.Serialize(_currentConfig, new JsonSerializerOptions { WriteIndented = true }) : 
+                        null,
+                    LastCompletedBatch = completedBatch,
+                    EndBatch = endBatch,
+                    BatchSize = _currentSearchConfig.BatchSize,
+                    ThreadCount = _currentSearchConfig.ThreadCount,
+                    MinScore = _currentSearchConfig.MinScore,
+                    Deck = _currentSearchConfig.Deck,
+                    Stake = _currentSearchConfig.Stake,
+                    LastActiveTime = DateTime.UtcNow,
+                    TotalBatches = totalBatches
+                };
+                
+                _userProfileService?.SaveSearchState(state);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to save search state: {ex.Message}");
+            }
+        }
 
         public void Dispose()
         {

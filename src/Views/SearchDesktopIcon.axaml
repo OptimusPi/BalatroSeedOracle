@@ -6,7 +6,7 @@
         <Style Selector="Border.desktop-icon-container">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Width" Value="100"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Padding" Value="8,8,15,8"/>
         </Style>
         
         <Style Selector="Button.desktop-icon">
@@ -61,8 +61,8 @@
                 <Canvas ZIndex="100">
                     <Border Name="NotificationBadge"
                             Classes="notification-badge"
-                            Canvas.Right="5"
-                            Canvas.Top="5"
+                            Canvas.Right="-8"
+                            Canvas.Top="-8"
                             IsVisible="False">
                         <TextBlock Name="BadgeText"
                                    Text="0" />

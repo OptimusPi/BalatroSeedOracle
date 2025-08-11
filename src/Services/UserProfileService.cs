@@ -123,6 +123,37 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
+        /// Save the current search state for resuming later
+        /// </summary>
+        public void SaveSearchState(SearchResumeState state)
+        {
+            _currentProfile.LastSearchState = state;
+            SaveProfile();
+            DebugLogger.Log(
+                "UserProfileService",
+                $"Saved search state: Batch {state.LastCompletedBatch}/{state.TotalBatches}"
+            );
+        }
+
+        /// <summary>
+        /// Get the last saved search state if available
+        /// </summary>
+        public SearchResumeState? GetSearchState()
+        {
+            return _currentProfile.LastSearchState;
+        }
+
+        /// <summary>
+        /// Clear the saved search state
+        /// </summary>
+        public void ClearSearchState()
+        {
+            _currentProfile.LastSearchState = null;
+            SaveProfile();
+            DebugLogger.Log("UserProfileService", "Cleared search state");
+        }
+
+        /// <summary>
         /// Load profile from disk
         /// </summary>
         private UserProfile LoadProfile()

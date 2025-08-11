@@ -41,7 +41,7 @@
     
     <Grid>
         <!-- Minimized State - Calendar Icon -->
-        <Grid Name="MinimizedView" IsVisible="True">
+        <Grid Name="MinimizedView" IsVisible="True" Margin="10,10,0,0">
             <Border Classes="widget-container" 
                     Width="120" Height="80"
                     Cursor="Hand"
@@ -73,8 +73,8 @@
             <Canvas ZIndex="100">
                 <Border Name="NewDayBadge"
                         Classes="notification-badge small"
-                        Canvas.Right="5"
-                        Canvas.Top="5"
+                        Canvas.Right="-5"
+                        Canvas.Top="-5"
                         IsVisible="False">
                     <TextBlock Text="!" />
                 </Border>

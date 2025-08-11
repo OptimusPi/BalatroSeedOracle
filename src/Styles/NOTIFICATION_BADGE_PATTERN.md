@@ -13,7 +13,7 @@ Instead of using negative margins, use a Canvas overlay with absolute positionin
 
 ### Basic Structure
 ```xml
-<Grid>
+<Grid Margin="10,10,0,0"> <!-- Add margin to hold badge space -->
     <!-- Main content (button, icon, etc.) -->
     <Button>
         <Border>
@@ -24,14 +24,20 @@ Instead of using negative margins, use a Canvas overlay with absolute positionin
     <!-- Notification badge overlay -->
     <Canvas ZIndex="100">
         <Border Classes="notification-badge" 
-                Canvas.Right="5" 
-                Canvas.Top="5"
+                Canvas.Right="-8" 
+                Canvas.Top="-8"
                 IsVisible="{Binding HasNotification}">
             <TextBlock Text="{Binding NotificationCount}" />
         </Border>
     </Canvas>
 </Grid>
 ```
+
+### Key Concept: Invisible Padding
+Instead of positioning badges inside the parent bounds, we:
+1. **Add margin/padding** to the parent container to reserve space for the badge
+2. **Use negative Canvas positioning** to place the badge in that reserved space
+3. **Badge hangs off the main content** but stays within the container bounds
 
 ### Global Styles
 The following styles are available globally in `BalatroGlobalStyles.axaml`:
@@ -58,38 +64,54 @@ The following styles are available globally in `BalatroGlobalStyles.axaml`:
 
 ### Usage Examples
 
-#### Standard Badge
+#### Standard Badge (Hanging)
 ```xml
-<Canvas ZIndex="100">
-    <Border Classes="notification-badge"
-            Canvas.Right="5"
-            Canvas.Top="5">
-        <TextBlock Text="3" />
-    </Border>
-</Canvas>
+<Grid Margin="12,12,0,0">
+    <!-- Content -->
+    <Canvas ZIndex="100">
+        <Border Classes="notification-badge"
+                Canvas.Right="-8"
+                Canvas.Top="-8">
+            <TextBlock Text="3" />
+        </Border>
+    </Canvas>
+</Grid>
 ```
 
-#### Small Badge
+#### Small Badge (Hanging)
 ```xml
-<Canvas ZIndex="100">
-    <Border Classes="notification-badge small"
-            Canvas.Right="5"
-            Canvas.Top="5">
-        <TextBlock Text="!" />
-    </Border>
-</Canvas>
+<Grid Margin="10,10,0,0">
+    <!-- Content -->
+    <Canvas ZIndex="100">
+        <Border Classes="notification-badge small"
+                Canvas.Right="-5"
+                Canvas.Top="-5">
+            <TextBlock Text="!" />
+        </Border>
+    </Canvas>
+</Grid>
 ```
 
 ## Positioning Guidelines
 
-- Use `Canvas.Right` and `Canvas.Top` for top-right positioning
-- Use `Canvas.Left` and `Canvas.Top` for top-left positioning  
-- Use `Canvas.Right` and `Canvas.Bottom` for bottom-right positioning
-- Use `Canvas.Left` and `Canvas.Bottom` for bottom-left positioning
+### Badge Positioning
+- Use **negative Canvas values** to hang badges off the corner: `Canvas.Right="-8"` / `Canvas.Top="-8"`
+- Use **positive Canvas values** for inset badges: `Canvas.Right="5"` / `Canvas.Top="5"`
+
+### Container Padding
+- **Add margin/padding** to parent containers to reserve space for hanging badges
+- **Top-right badge**: Add `Margin="10,10,0,0"` or `Padding="8,8,15,8"`
+- **Adjust values** based on badge size (standard=24px, small=16px)
+
+### Positioning Options
+- `Canvas.Right` and `Canvas.Top` for top-right positioning
+- `Canvas.Left` and `Canvas.Top` for top-left positioning  
+- `Canvas.Right` and `Canvas.Bottom` for bottom-right positioning
+- `Canvas.Left` and `Canvas.Bottom` for bottom-left positioning
 
 Typical values:
-- `Canvas.Right="5"` / `Canvas.Top="5"` for standard badges
-- `Canvas.Right="8"` / `Canvas.Top="8"` for small badges on large elements
+- **Hanging badges**: `Canvas.Right="-8"` / `Canvas.Top="-8"` 
+- **Inset badges**: `Canvas.Right="5"` / `Canvas.Top="5"`
 
 ## Key Benefits
 
@@ -119,16 +141,16 @@ Typical values:
 </Border>
 ```
 
-### After (Fixed)
+### After (Fixed with Hanging Badge)
 ```xml
-<Grid>
+<Grid Margin="10,10,0,0">
     <Border>
         <!-- Content -->
     </Border>
     <Canvas ZIndex="100">
         <Border Classes="notification-badge small"
-                Canvas.Right="5"
-                Canvas.Top="5">
+                Canvas.Right="-5"
+                Canvas.Top="-5">
             <TextBlock Text="!" />
         </Border>
     </Canvas>
