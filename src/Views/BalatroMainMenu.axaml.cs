@@ -158,16 +158,6 @@ namespace BalatroSeedOracle.Views
             this.ShowFiltersModal();
         }
 
-        private void OnResultsClick(object? sender, RoutedEventArgs e)
-        {
-            // Show the results modal
-            var resultsModal = new ResultsModal();
-            var modal = new StandardModal("SAVED FILTERS");
-            modal.SetContent(resultsModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal, "SAVED FILTERS");
-        }
-
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
         {
             // Show the analyze modal
