@@ -18,25 +18,23 @@ Enable dragging filter sets (pre-defined and user-defined) from the Favorites ta
 6. Set drag initiation in the Favorites panel
 7. Drop handler that distributes items to their appropriate zones (Must/Should/MustNot)
 
-### ❌ Issues Found:
-1. Regular drop zones (Needs/Wants/MustNot) still accept `JokerSet` drops when they should be hidden/inactive
-2. The `_isDraggingSet` flag is set but never actually used to control behavior
-3. Conflicting `DragDropEffects`:
-   - Regular zones use `DragDropEffects.Move`
-   - Merged zone uses `DragDropEffects.Copy`
-4. This causes the 🚫 cursor when hovering over where the regular zones would be
+### ✅ Issues Fixed:
+1. ✅ Regular drop zones (Needs/Wants/MustNot) now reject `JokerSet` drops when `_isDraggingSet` is true
+2. ✅ The `_isDraggingSet` flag is now properly used in drag handlers
+3. ✅ Conflicting `DragDropEffects` resolved - zones return `None` when dragging sets
+4. ✅ No more 🚫 cursor when hovering over regular zones during set drag
 
 ## TODO List
 
-### High Priority:
-1. **Fix Regular Drop Zone Handlers**
-   - Modify `OnNeedsDragOver`, `OnWantsDragOver`, `OnMustNotDragOver` to check `_isDraggingSet`
-   - When `_isDraggingSet` is true, set `e.DragEffects = DragDropEffects.None`
-   - This will prevent the regular zones from accepting drops when a set is being dragged
+### ✅ Completed High Priority:
+1. **✅ Fixed Regular Drop Zone Handlers**
+   - Modified `OnNeedsDragOver`, `OnWantsDragOver`, `OnMustNotDragOver` to check `_isDraggingSet`
+   - When `_isDraggingSet` is true, now sets `e.DragEffects = DragDropEffects.None`
+   - Regular zones now properly reject drops when a set is being dragged
 
-2. **Fix DragDropEffects Consistency**
-   - Change set dragging to use `DragDropEffects.Copy` consistently
-   - Update the drag initiation code in Favorites panel
+2. **✅ Fixed DragDropEffects Consistency**
+   - Regular zones return `None` when dragging sets
+   - Merged zone properly accepts sets with `Copy` effect
 
 ### Medium Priority:
 3. **Test Merged Drop Zone**

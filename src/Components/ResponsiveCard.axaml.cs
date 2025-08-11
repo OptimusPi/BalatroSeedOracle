@@ -486,23 +486,28 @@ namespace BalatroSeedOracle.Components
             if (string.IsNullOrEmpty(name))
                 return string.Empty;
 
+            // Check for wildcards first, regardless of category
+            var wildcardNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "anyjoker", "Any Joker" },
+                { "anycommon", "Any Common" },
+                { "anyuncommon", "Any Uncommon" },
+                { "anyrare", "Any Rare" },
+                { "anylegendary", "Any Legendary" },
+            };
+
+            if (wildcardNames.TryGetValue(name, out var wildcardDisplay))
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    "ResponsiveCard",
+                    $"Wildcard matched: name='{name}' -> display='{wildcardDisplay}', Category='{Category}'"
+                );
+                return wildcardDisplay;
+            }
+
             // For jokers, check if we have a sprite name that needs display name lookup
             if (Category == "Jokers")
             {
-                // Special handling for wildcard jokers
-                var wildcardNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "anyjoker", "Any Joker" },
-                    { "anycommon", "Any Common" },
-                    { "anyuncommon", "Any Uncommon" },
-                    { "anyrare", "Any Rare" },
-                    { "anylegendary", "Any Legendary" },
-                };
-
-                if (wildcardNames.TryGetValue(name, out var wildcardDisplay))
-                {
-                    return wildcardDisplay;
-                }
 
                 // Otherwise try to get display name from sprite mapping
                 var displayName = BalatroData.GetDisplayNameFromSprite(name);
