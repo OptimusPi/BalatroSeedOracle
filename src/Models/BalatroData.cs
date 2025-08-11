@@ -538,30 +538,35 @@ namespace BalatroSeedOracle.Models
                 LegendaryJokers.Add(jokerName.ToLower());
             }
 
-            // Initialize JokersByRarity
-            JokersByRarity["Common"] = new List<string> { "anycommon", "anyjoker" };
+            // Initialize JokersByRarity - wildcards at the END
+            JokersByRarity["Common"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
             {
                 JokersByRarity["Common"].Add(joker.ToString().ToLower());
             }
+            JokersByRarity["Common"].Add("anycommon");
+            JokersByRarity["Common"].Add("anyjoker");
 
-            JokersByRarity["Uncommon"] = new List<string> { "anyuncommon" };
+            JokersByRarity["Uncommon"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
             {
                 JokersByRarity["Uncommon"].Add(joker.ToString().ToLower());
             }
+            JokersByRarity["Uncommon"].Add("anyuncommon");
 
-            JokersByRarity["Rare"] = new List<string> { "anyrare" };
+            JokersByRarity["Rare"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerRare>())
             {
                 JokersByRarity["Rare"].Add(joker.ToString().ToLower());
             }
+            JokersByRarity["Rare"].Add("anyrare");
 
-            JokersByRarity["Legendary"] = new List<string> { "anylegendary" };
+            JokersByRarity["Legendary"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {
                 JokersByRarity["Legendary"].Add(joker.ToString().ToLower());
             }
+            JokersByRarity["Legendary"].Add("anylegendary");
         }
     }
 }
