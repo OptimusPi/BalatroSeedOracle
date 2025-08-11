@@ -6,7 +6,7 @@
         {
             "type": "joker",
             "value": "JokerStencil",
-            "antes": [1],
+            "Antes": [1],
             "stickers": [
                 "Eternal"
             ],
@@ -18,7 +18,7 @@
          {
             "type": "joker",
             "value": "Showman",
-            "antes": [1,2],
+            "Antes": [1,2],
             "stickers": [
                 "Eternal"
             ],
@@ -32,7 +32,7 @@
         {
             "type": "joker",
             "value": "JokerStencil",
-            "antes": [1,2,3,4,5,6,7,8],
+            "Antes": [1,2,3,4,5,6,7,8],
             "stickers": [
                 "Eternal"
             ],
@@ -45,7 +45,7 @@
         {
             "type": "joker",
             "value": "JokerStencil",
-            "antes": [1,2,3,4,5,6,7,8],
+            "Antes": [1,2,3,4,5,6,7,8],
             "stickers": [
                 "Eternal"
             ],
@@ -59,7 +59,7 @@
         {
             "type": "spectral",
             "value": "Ankh",
-            "antes": [1,2,3,4,5,6,7,8],
+            "Antes": [1,2,3,4,5,6,7,8],
             "sources": {
                 "packSlots": [0,1,2,3,4,5],
                 "requireMega": true
@@ -69,7 +69,7 @@
         {
             "type": "spectral",
             "value": "Ankh",
-            "antes": [1,2,3,4,5,6,7,8],
+            "Antes": [1,2,3,4,5,6,7,8],
             "sources": {
                 "shopSlots": [0,1,2,3,4,5],
                 "requireMega": true
@@ -79,7 +79,7 @@
         {
             "type": "spectral",
             "value": "Ankh",
-            "antes": [1,2,3,4,5,6,7,8],
+            "Antes": [1,2,3,4,5,6,7,8],
             "sources": {
                 "shopSlots": [0,1,2,3,4,5]
             },

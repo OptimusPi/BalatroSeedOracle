@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Oracle.Controls.ModeToggleSwitch">
+             x:Class="BalatroSeedOracle.Controls.ModeToggleSwitch">
     
     <UserControl.Styles>
         <!-- Toggle switch container -->

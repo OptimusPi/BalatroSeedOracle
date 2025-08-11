@@ -7,7 +7,7 @@
         "edition": "none"
       },
       "score": 0,
-      "antes": [
+      "Antes": [
         1
       ],
       "sources": [
@@ -22,7 +22,7 @@
         "name": "Temperance"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -45,7 +45,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -68,7 +68,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -91,7 +91,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -114,7 +114,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -137,7 +137,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -160,7 +160,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -183,7 +183,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -206,7 +206,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -229,7 +229,7 @@
         "edition": "none"
       },
       "score": 1,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -252,7 +252,7 @@
         "name": "ClearanceSale"
       },
       "score": 0,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,
@@ -273,7 +273,7 @@
         "name": "Liquidation"
       },
       "score": 0,
-      "antes": [
+      "Antes": [
         1,
         2,
         3,

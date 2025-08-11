@@ -63,32 +63,34 @@ jobs:
 
     # Build and publish the app
     - name: Publish App
+      shell: pwsh
       run: |
-        dotnet publish src/Oracle.csproj \
-          --configuration Release \
-          --runtime ${{ matrix.runtime }} \
-          --self-contained true \
-          -p:PublishSingleFile=true \
-          -p:PublishReadyToRun=true \
-          -p:EnableCompressionInSingleFile=true \
-          -p:IncludeNativeLibrariesForSelfExtract=true \
+        dotnet publish src/Oracle.csproj `
+          --configuration Release `
+          --runtime ${{ matrix.runtime }} `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:PublishReadyToRun=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
           --output ./publish
 
     # Package with Velopack
     - name: Package with Velopack (Windows)
       if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
-        vpk pack \
-          --packId BalatroSeedOracle \
-          --packVersion ${{ env.VERSION }} \
-          --packDir ./publish \
-          --mainExe Oracle.exe \
-          --packTitle "Balatro Seed Oracle" \
-          --packAuthors "OptimusPi" \
-          --outputDir ./releases \
+        vpk pack `
+          --packId BalatroSeedOracle `
+          --packVersion $env:VERSION `
+          --packDir ./publish `
+          --mainExe Oracle.exe `
+          --packTitle "Balatro Seed Oracle" `
+          --packAuthors "OptimusPi" `
+          --outputDir ./releases `
           --runtime ${{ matrix.runtime }}
     
-    - name: Package with Velopack (Unix)
+  - name: Package with Velopack (Unix)
       if: matrix.os != 'windows-latest'
       run: |
         vpk pack \

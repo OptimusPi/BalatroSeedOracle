@@ -2,11 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Oracle.Controls"
-             xmlns:components="using:Oracle.Components"
-             xmlns:modals="using:Oracle.Views.Modals"
-             xmlns:views="using:Oracle.Views"
-             x:Class="Oracle.Views.BalatroMainMenu"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:modals="using:BalatroSeedOracle.Views.Modals"
+             xmlns:views="using:BalatroSeedOracle.Views"
+             x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              Background="Transparent"
              x:CompileBindings="False">
 

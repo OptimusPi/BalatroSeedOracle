@@ -8,9 +8,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Oracle.Services;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public partial class ItemConfigPopup : UserControl
     {
@@ -409,7 +409,7 @@ namespace Oracle.Controls
 
         private void OnAnteClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "ItemConfigPopup",
                 $"OnAnteClick called. Sender type: {sender?.GetType().Name}"
             );
@@ -427,7 +427,7 @@ namespace Oracle.Controls
                         // Update internal state based on the checkbox's current checked state
                         _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
 
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             "ItemConfigPopup",
                             $"Ante {anteNum} set to: {checkBox.IsChecked}"
                         );
@@ -438,7 +438,7 @@ namespace Oracle.Controls
 
         private void OnEditionClick(object? sender, RoutedEventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "ItemConfigPopup",
                 $"OnEditionClick called. Sender type: {sender?.GetType().Name}"
             );
@@ -447,7 +447,7 @@ namespace Oracle.Controls
             // Just log the change for debugging
             if (sender is RadioButton rb)
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "ItemConfigPopup",
                     $"Edition RadioButton {rb.Name} checked: {rb.IsChecked}"
                 );
@@ -459,7 +459,7 @@ namespace Oracle.Controls
             // Simple handler - checkbox state is already updated by Avalonia
             if (sender is CheckBox checkBox)
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "ItemConfigPopup",
                     $"Source {checkBox.Name} set to: {checkBox.IsChecked}"
                 );

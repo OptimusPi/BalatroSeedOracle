@@ -9,7 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class WordListsModal : UserControl
     {

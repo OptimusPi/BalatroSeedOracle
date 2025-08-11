@@ -6,17 +6,17 @@
         {
             "type": "Voucher",
             "value": "Telescope",
-            "antes": [1]
+            "Antes": [1]
         },
         {
             "type": "Voucher",
             "value": "Observatory",
-            "antes": [2]
+            "Antes": [2]
         },
         {
             "type": "boss",
             "value": "CrimsonHeart",
-            "antes": [8]
+            "Antes": [8]
         }
     ],
     "should": [
@@ -24,7 +24,7 @@
             "type": "souljoker",
             "value": "perkeo",
             "edition": "negative",
-            "antes": [1],
+            "Antes": [1],
             "sources": {
                 "shopSlots": [0, 1],
                 "packSlots": [0, 1],
@@ -34,7 +34,7 @@
         {
             "type": "TarotCard",
             "value": "Judgement",
-            "antes": [1],
+            "Antes": [1],
             "sources": {
                 "shopSlots": [0, 1],
                 "packSlots": [0, 1],
@@ -44,7 +44,7 @@
         {
             "type": "playingcard",
             "seal": "gold",
-            "antes": [2],
+            "Antes": [2],
             "sources": {
                 "packSlots": [0, 1, 2, 3, 4, 5]
             }
@@ -52,7 +52,7 @@
         {
             "type": "planetcard",
             "seal": "pluto",
-            "antes": [2],
+            "Antes": [2],
             "sources": {
                 "shopSlots": [0, 1, 2, 3, 4, 5],
                 "packSlots": [0, 1, 2, 3, 4, 5]

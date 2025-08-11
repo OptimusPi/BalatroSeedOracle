@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Oracle.Controls.TagEditor">
+             x:Class="BalatroSeedOracle.Controls.TagEditor">
     
     <UserControl.Styles>
         <Style Selector="Border.tag-chip">

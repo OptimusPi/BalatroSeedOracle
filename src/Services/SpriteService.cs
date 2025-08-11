@@ -9,10 +9,10 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Oracle.Constants;
-using Oracle.Helpers;
+using BalatroSeedOracle.Constants;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     public class SpriteService
     {
@@ -57,30 +57,30 @@ namespace Oracle.Services
             try
             {
                 // Load joker positions from json
-                jokerPositions = LoadSpritePositions("avares://Oracle/Assets/Jokers/jokers.json");
+                jokerPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Jokers/jokers.json");
 
                 // Load tag positions from json
-                tagPositions = LoadSpritePositions("avares://Oracle/Assets/Tags/tags.json");
+                tagPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tags/tags.json");
 
                 // Load tarot positions from json
-                tarotPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/tarots.json");
+                tarotPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/tarots.json");
 
                 // Load spectral positions from json
                 // Load spectral positions from json (they're in the tarots sprite sheet)
-                spectralPositions = LoadSpritePositions("avares://Oracle/Assets/Tarots/spectrals.json");
+                spectralPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/spectrals.json");
 
                 // Load voucher positions from json
-                voucherPositions = LoadSpritePositions("avares://Oracle/Assets/Vouchers/vouchers.json");
+                voucherPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json");
 
                 // Load UI asset positions from json
-                uiAssetPositions = LoadSpritePositions("avares://Oracle/Assets/Other/ui_assets.json");
+                uiAssetPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/ui_assets.json");
 
                 // Load booster pack positions from json
-                boosterPositions = LoadSpritePositions("avares://Oracle/Assets/Other/Boosters.json");
+                boosterPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/Boosters.json");
 
                 // Load deck, enhancement, and seal positions from enhancers metadata
                 var enhancersMetadata = LoadEnhancersMetadata(
-                    "avares://Oracle/Assets/Decks/enhancers_metadata.json"
+                    "avares://BalatroSeedOracle/Assets/Decks/enhancers_metadata.json"
                 );
                 if (enhancersMetadata != null)
                 {
@@ -92,12 +92,12 @@ namespace Oracle.Services
 
                 // Load playing card positions
                 playingCardPositions = LoadPlayingCardMetadata(
-                    "avares://Oracle/Assets/Decks/playing_cards_metadata.json"
+                    "avares://BalatroSeedOracle/Assets/Decks/playing_cards_metadata.json"
                 );
 
                 // Load boss blind positions
                 var bossMetadata = LoadBossMetadata(
-                    "avares://Oracle/Assets/Bosses/blinds_metadata.json"
+                    "avares://BalatroSeedOracle/Assets/Bosses/blinds_metadata.json"
                 );
                 if (bossMetadata != null)
                 {
@@ -122,7 +122,7 @@ namespace Oracle.Services
 
                 // Load sticker positions
                 var stickerMetadata = LoadStickersMetadata(
-                    "avares://Oracle/Assets/Jokers/stickers_metadata.json"
+                    "avares://BalatroSeedOracle/Assets/Jokers/stickers_metadata.json"
                 );
                 if (stickerMetadata != null)
                 {
@@ -143,18 +143,18 @@ namespace Oracle.Services
                 }
 
                 // Load spritesheets
-                jokerSheet = LoadBitmap("avares://Oracle/Assets/Jokers/Jokers.png");
-                tagSheet = LoadBitmap("avares://Oracle/Assets/Tags/tags.png");
-                tarotSheet = LoadBitmap("avares://Oracle/Assets/Tarots/Tarots.png");
-                voucherSheet = LoadBitmap("avares://Oracle/Assets/Vouchers/Vouchers.png");
+                jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
+                tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
+                tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
+                voucherSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png");
                 spectralSheet = tarotSheet;
-                uiAssetsSheet = LoadBitmap("avares://Oracle/Assets/Other/ui_assets.png");
-                enhancersSheet = LoadBitmap("avares://Oracle/Assets/Decks/Enhancers.png");
-                playingCardsSheet = LoadBitmap("avares://Oracle/Assets/Decks/8BitDeck.png");
-                bossSheet = LoadBitmap("avares://Oracle/Assets/Bosses/BlindChips.png");
-                stickersSheet = LoadBitmap("avares://Oracle/Assets/Jokers/stickers.png");
-                boosterSheet = LoadBitmap("avares://Oracle/Assets/Other/boosters.png");
-                stakeChipsSheet = LoadBitmap("avares://Oracle/Assets/Decks/balatro-stake-chips.png");
+                uiAssetsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/ui_assets.png");
+                enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
+                playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
+                bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
+                stickersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/stickers.png");
+                boosterSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/boosters.png");
+                stakeChipsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
             }
             catch (Exception ex)
             {
@@ -302,7 +302,7 @@ namespace Oracle.Services
                 .Replace(" ", string.Empty, StringComparison.Ordinal)
                 .Replace("_", string.Empty, StringComparison.Ordinal)
                 .ToLowerInvariant();
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'"
             );
@@ -315,7 +315,7 @@ namespace Oracle.Services
             )
             {
                 var prefix = name.Substring(0, Math.Min(3, name.Length));
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "GetJokerSoulImage",
                     $"🎴 Failed to find position for: {name}. Available positions: {string.Join(", ", jokerPositions?.Keys.Where(k => k.Contains(prefix, StringComparison.OrdinalIgnoreCase)).Take(5) ?? new List<string>())}"
                 );
@@ -333,15 +333,15 @@ namespace Oracle.Services
             int y = soulPos.Pos.Y * spriteHeight;
 
             // Validate coordinates
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 Sheet dimensions: {jokerSheet.PixelSize.Width}x{jokerSheet.PixelSize.Height}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 Trying to crop at ({x}, {y}) with size {spriteWidth}x{spriteHeight}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 Bottom-right corner would be at ({x + spriteWidth}, {y + spriteHeight})"
             );
@@ -353,14 +353,14 @@ namespace Oracle.Services
                 && y + spriteHeight <= jokerSheet.PixelSize.Height
             )
             {
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "GetJokerSoulImage",
                     $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}"
                 );
                 return new CroppedBitmap(jokerSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
             }
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}"
             );
@@ -497,7 +497,7 @@ namespace Oracle.Services
                 // Lazy load the editions sheet
                 if (editionsSheet == null)
                 {
-                    var editionsUri = "avares://Oracle/Assets/Jokers/Editions.png";
+                    var editionsUri = "avares://BalatroSeedOracle/Assets/Jokers/Editions.png";
                     editionsSheet = LoadBitmap(editionsUri);
                     if (editionsSheet != null)
                     {

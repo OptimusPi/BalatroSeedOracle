@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Oracle.Helpers;
+namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Helper class to eliminate duplicate service provider retrieval code

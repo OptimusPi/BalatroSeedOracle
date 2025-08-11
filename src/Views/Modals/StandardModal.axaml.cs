@@ -4,9 +4,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class StandardModal : UserControl
     {

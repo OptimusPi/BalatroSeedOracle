@@ -51,64 +51,65 @@ jobs:
 
     # Publish as self-contained single-file executable with trimming and compression
     - name: Publish
+      shell: pwsh
       run: |
-        dotnet publish src/Oracle.csproj \
-          --configuration Release \
-          --runtime ${{ matrix.runtime }} \
-          --self-contained true \
-          -p:PublishSingleFile=true \
-          -p:PublishTrimmed=true \
-          -p:TrimMode=partial \
-          -p:PublishReadyToRun=true \
-          -p:EnableCompressionInSingleFile=true \
-          -p:IncludeNativeLibrariesForSelfExtract=true \
-          -p:DebugType=none \
-          -p:DebugSymbols=false \
+        dotnet publish src/Oracle.csproj `
+          --configuration Release `
+          --runtime ${{ matrix.runtime }} `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:PublishTrimmed=true `
+          -p:TrimMode=partial `
+          -p:PublishReadyToRun=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:DebugType=none `
+          -p:DebugSymbols=false `
           --output ./publish/${{ matrix.runtime }}
 
     # Create version info file
     - name: Create version info
-      shell: bash
+      shell: pwsh
       run: |
-        echo "BalatroSeedOracle" > ./publish/${{ matrix.runtime }}/VERSION.txt
-        echo "Runtime: ${{ matrix.runtime }}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
-        echo "Build Date: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> ./publish/${{ matrix.runtime }}/VERSION.txt
-        echo "Git Commit: ${GITHUB_SHA::8}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          echo "Version: ${GITHUB_REF#refs/tags/}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
-        else
-          echo "Version: ${GITHUB_REF#refs/heads/}-${GITHUB_SHA::8}" >> ./publish/${{ matrix.runtime }}/VERSION.txt
-        fi
+        $version = if ("${{ github.ref }}" -like 'refs/tags/*') { "${{ github.ref }}".Replace('refs/tags/','') } else { "${{ github.ref }}".Replace('refs/heads/','') + "-" + $env:GITHUB_SHA.Substring(0,8) }
+        $outDir = "./publish/${{ matrix.runtime }}"
+        New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+        Set-Content -Path "$outDir/VERSION.txt" -Value "BalatroSeedOracle"
+        Add-Content -Path "$outDir/VERSION.txt" -Value "Runtime: ${{ matrix.runtime }}"
+        Add-Content -Path "$outDir/VERSION.txt" -Value ("Build Date: " + (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss \U\T\C'))
+        Add-Content -Path "$outDir/VERSION.txt" -Value ("Git Commit: " + $env:GITHUB_SHA.Substring(0,8))
+        Add-Content -Path "$outDir/VERSION.txt" -Value ("Version: " + $version)
 
     # Create README for the release
     - name: Create README
-      shell: bash
+      shell: pwsh
       run: |
-        cat > ./publish/${{ matrix.runtime }}/README.txt << 'EOF'
-        BalatroSeedOracle - Balatro Seed Searching Tool
-        ================================================
+        $outDir = "./publish/${{ matrix.runtime }}"
+        @'
+BalatroSeedOracle - Balatro Seed Searching Tool
+================================================
 
-        This is a self-contained executable. No .NET runtime installation required!
+This is a self-contained executable. No .NET runtime installation required!
 
-        HOW TO RUN:
-        -----------
-        Windows: Double-click Oracle.exe
-        Linux:   chmod +x Oracle && ./Oracle
-        macOS:   chmod +x Oracle && ./Oracle
+HOW TO RUN:
+-----------
+Windows: Double-click Oracle.exe
+Linux:   chmod +x Oracle && ./Oracle
+macOS:   chmod +x Oracle && ./Oracle
 
-        For macOS users: If you get a security warning, right-click the app and select "Open"
-        or run: xattr -d com.apple.quarantine Oracle
+For macOS users: If you get a security warning, right-click the app and select "Open"
+or run: xattr -d com.apple.quarantine Oracle
 
-        TROUBLESHOOTING:
-        ----------------
-        - Linux: Requires libx11, libice6, libsm6, and libfontconfig1
-          Ubuntu/Debian: sudo apt-get install libx11-6 libice6 libsm6 libfontconfig1
-          Fedora: sudo dnf install libX11 libICE libSM fontconfig
+TROUBLESHOOTING:
+----------------
+- Linux: Requires libx11, libice6, libsm6, and libfontconfig1
+  Ubuntu/Debian: sudo apt-get install libx11-6 libice6 libsm6 libfontconfig1
+  Fedora: sudo dnf install libX11 libICE libSM fontconfig
 
-        - Windows: If Windows Defender blocks the app, click "More info" then "Run anyway"
+- Windows: If Windows Defender blocks the app, click "More info" then "Run anyway"
 
-        For more information, visit: https://github.com/OptimusPi/BalatroSeedOracle
-        EOF
+For more information, visit: https://github.com/OptimusPi/BalatroSeedOracle
+'@ | Set-Content -Path "$outDir/README.txt"
 
     # Package for Windows (ZIP)
     - name: Package Windows

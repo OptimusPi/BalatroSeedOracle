@@ -7,9 +7,9 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class ToolsModal : UserControl
     {

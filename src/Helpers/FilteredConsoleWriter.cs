@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Oracle.Helpers
+namespace BalatroSeedOracle.Helpers
 {
     /// <summary>
     /// A TextWriter that filters out duplicate seed report lines from Motely's console output
@@ -12,21 +12,23 @@ namespace Oracle.Helpers
     {
         private readonly TextWriter _originalWriter;
         private readonly Action<string>? _onOutput;
+    private readonly bool _filterSeedLines;
         
         // Regex to match Motely's CSV output format: SEED,SCORE,TALLY1,TALLY2,...
         private static readonly Regex SeedLineRegex = new Regex(@"^[A-Z0-9]+,\d+(?:,\d+)*$", RegexOptions.Compiled);
         
-        public FilteredConsoleWriter(TextWriter originalWriter, Action<string>? onOutput = null)
+        public FilteredConsoleWriter(TextWriter originalWriter, Action<string>? onOutput = null, bool filterSeedLines = true)
         {
             _originalWriter = originalWriter;
             _onOutput = onOutput;
+            _filterSeedLines = filterSeedLines;
         }
         
         public override Encoding Encoding => _originalWriter.Encoding;
         
         public override void WriteLine(string? value)
         {
-            if (value != null)
+            if (_filterSeedLines && value != null)
             {
                 // Filter out seed result lines (CSV format)
                 if (SeedLineRegex.IsMatch(value.Trim()))

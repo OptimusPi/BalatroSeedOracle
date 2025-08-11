@@ -1,11 +1,11 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Oracle.App"
-             xmlns:local="using:Oracle"
+             x:Class="BalatroSeedOracle.App"
+             xmlns:local="using:BalatroSeedOracle"
              RequestedThemeVariant="Dark">
     
     <Application.Resources>
-        <FontFamily x:Key="BalatroFont">avares://Oracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
+        <FontFamily x:Key="BalatroFont">avares://BalatroSeedOracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
         <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
 
         <!-- Game colors -->
@@ -156,18 +156,18 @@
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         
         <!-- 🎯 GLOBAL BALATRO STYLES - Applied to ALL controls automatically -->
-        <StyleInclude Source="avares://Oracle/Styles/BalatroGlobalStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
         
         <!-- Component-specific styles -->
-        <StyleInclude Source="avares://Oracle/Styles/BalatroModal.axaml" />
-        <StyleInclude Source="avares://Oracle/Styles/ButtonStyles.axaml" />
-        <StyleInclude Source="avares://Oracle/Styles/TextBoxStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroModal.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/ButtonStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
         
         <!-- Popup and Flyout styles -->
-        <StyleInclude Source="avares://Oracle/Styles/PopupStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />
         
         <!-- Exact color picker precision styles -->
-        <StyleInclude Source="avares://Oracle/Styles/BalatroPreciseColors.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroPreciseColors.axaml" />
 
     </Application.Styles>
 </Application>

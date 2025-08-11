@@ -5,9 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Oracle.Services;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     /// <summary>
     /// Base class for all item configuration popups

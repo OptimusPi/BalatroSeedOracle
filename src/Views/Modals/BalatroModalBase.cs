@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public class BalatroModalBase : UserControl
     {

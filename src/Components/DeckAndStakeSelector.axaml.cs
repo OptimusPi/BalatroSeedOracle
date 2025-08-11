@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Oracle.Controls;
+using BalatroSeedOracle.Controls;
 
-namespace Oracle.Components;
+namespace BalatroSeedOracle.Components;
 
 public partial class DeckAndStakeSelector : UserControl
 {

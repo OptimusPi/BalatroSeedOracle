@@ -4,10 +4,10 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
-using Oracle.Helpers;
-using Oracle.Models;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     public class SearchHistoryService : IDisposable
     {
@@ -86,8 +86,7 @@ namespace Oracle.Services
                         score DOUBLE,
                         details VARCHAR,
                         tally_scores JSON,
-                        item_labels JSON,
-                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        item_labels JSON
                     )
                 ";
                 createTable.ExecuteNonQuery();
@@ -133,8 +132,8 @@ namespace Oracle.Services
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText =
                     @"
-                    INSERT OR REPLACE INTO results (seed, score, details, tally_scores, item_labels, timestamp)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO results (seed, score, details, tally_scores, item_labels)
+                    VALUES (?, ?, ?, ?, ?)
                 ";
 
                 cmd.Parameters.Add(new DuckDBParameter(result.Seed));
@@ -151,7 +150,6 @@ namespace Oracle.Services
                     
                 cmd.Parameters.Add(new DuckDBParameter(tallyScoresJson ?? (object)DBNull.Value));
                 cmd.Parameters.Add(new DuckDBParameter(itemLabelsJson ?? (object)DBNull.Value));
-                cmd.Parameters.Add(new DuckDBParameter(result.Timestamp));
 
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -252,7 +250,7 @@ namespace Oracle.Services
                 
                 if (extension == ".json")
                 {
-                    // Export as JSON with all columns
+                    // Export as JSON with all columns (excluding timestamp)
                     cmd.CommandText = @"
                         COPY (
                             SELECT 
@@ -260,8 +258,7 @@ namespace Oracle.Services
                                 score,
                                 details,
                                 tally_scores,
-                                item_labels,
-                                timestamp
+                                item_labels
                             FROM results
                             ORDER BY score DESC
                         ) TO ? (FORMAT JSON, ARRAY true)
@@ -280,7 +277,6 @@ namespace Oracle.Services
                             SELECT 
                                 seed,
                                 score,
-                                timestamp,
                                 details,
                                 COALESCE(tally_scores::VARCHAR, '') as tally_scores,
                                 COALESCE(item_labels::VARCHAR, '') as item_labels
@@ -309,11 +305,11 @@ namespace Oracle.Services
 
     public class SearchHistorySummary
     {
-        public long SearchId { get; set; }
+        public ulong SearchId { get; set; }
         public string ConfigPath { get; set; } = "";
         public DateTime SearchDate { get; set; }
         public int ResultsFound { get; set; }
-        public long TotalSeedsSearched { get; set; }
+        public ulong TotalSeedsSearched { get; set; }
         public double DurationSeconds { get; set; }
         public string Deck { get; set; } = "";
         public string Stake { get; set; } = "";

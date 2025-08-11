@@ -1,6 +1,6 @@
 using System;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// C# port of Daylatro's daily seed generation algorithm

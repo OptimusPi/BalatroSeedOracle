@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using Oracle.Helpers;
-using Oracle.Models;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Service for managing user profile and preferences

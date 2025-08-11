@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="using:Oracle.Views"
-        x:Class="Oracle.Views.MainWindow"
-        Title="🃏Balatro Seed Oracle🥠"
+        xmlns:local="using:BalatroSeedOracle.Views"
+        x:Class="BalatroSeedOracle.Views.MainWindow"
+        Title="🃏Balatro Seed BalatroSeedOracle🥠"
         Width="1280"
         Height="720">
     

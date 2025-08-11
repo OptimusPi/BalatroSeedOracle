@@ -1,6 +1,0 @@
-MSBUILD : error MSB1001: Unknown switch.
-    Full command line: 'C:\Program Files\dotnet\sdk\9.0.304\MSBuild.dll -maxcpucount -verbosity:m -tlp:default=auto -nologo -restore -consoleloggerparameters:Summary -property:Configuration=debug --project .\src\Oracle.csproj -distributedlogger:Microsoft.DotNet.Tools.MSBuild.MSBuildLogger,C:\Program Files\dotnet\sdk\9.0.304\dotnet.dll*Microsoft.DotNet.Tools.MSBuild.MSBuildForwardingLogger,C:\Program Files\dotnet\sdk\9.0.304\dotnet.dll'
-  Switches appended by response files:
-Switch: --project
-
-For switch syntax, type "MSBuild -help"

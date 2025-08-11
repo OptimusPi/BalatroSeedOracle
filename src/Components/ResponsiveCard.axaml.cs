@@ -8,11 +8,11 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using Oracle.Helpers;
-using Oracle.Models;
-using Oracle.Services;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public partial class ResponsiveCard : UserControl, IDisposable
     {
@@ -356,7 +356,7 @@ namespace Oracle.Components
 
         private void CheckAndLoadLegendarySoul()
         {
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CheckAndLoadLegendarySoul",
                 $"🎴 Checking legendary soul for: '{ItemName}' (Category: '{Category}')"
             );
@@ -364,18 +364,18 @@ namespace Oracle.Components
             // Check if this is a legendary joker
             if (Category == "Jokers")
             {
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CheckAndLoadLegendarySoul",
                     $"🎴 LegendaryJokers contains: {string.Join(", ", BalatroData.LegendaryJokers)}"
                 );
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CheckAndLoadLegendarySoul",
                     $"🎴 ItemName.ToLowerInvariant(): '{ItemName.ToLowerInvariant()}'"
                 );
 
                 if (BalatroData.LegendaryJokers.Contains(ItemName.ToLowerInvariant()))
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CheckAndLoadLegendarySoul",
                         $"🎴 '{ItemName}' IS a legendary joker!"
                     );
@@ -398,7 +398,7 @@ namespace Oracle.Components
                         var soulImage = SpriteService.Instance.GetJokerSoulImage(ItemName);
                         if (soulImage != null)
                         {
-                            Oracle.Helpers.DebugLogger.LogImportant(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                                 "CheckAndLoadLegendarySoul",
                                 $"🎴 Soul image loaded successfully for '{ItemName}'"
                             );
@@ -408,7 +408,7 @@ namespace Oracle.Components
                         }
                         else
                         {
-                            Oracle.Helpers.DebugLogger.LogImportant(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                                 "CheckAndLoadLegendarySoul",
                                 $"🎴 Failed to load soul image for '{ItemName}'"
                             );
@@ -417,7 +417,7 @@ namespace Oracle.Components
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CheckAndLoadLegendarySoul",
                         $"🎴 '{ItemName}' is NOT a legendary joker"
                     );
@@ -506,7 +506,7 @@ namespace Oracle.Components
 
                 // Otherwise try to get display name from sprite mapping
                 var displayName = BalatroData.GetDisplayNameFromSprite(name);
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "ResponsiveCard",
                     $"FormatItemName: name='{name}', displayName='{displayName}', Category='{Category}'"
                 );

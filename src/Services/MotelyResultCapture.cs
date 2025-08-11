@@ -4,10 +4,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Motely.Filters;
-using Oracle.Helpers;
-using Oracle.Models;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Service that captures results directly from Motely's result queue
@@ -20,6 +20,7 @@ namespace Oracle.Services
         private Task? _captureTask;
         private int _resultCount = 0;
         private Motely.Filters.OuijaConfig? _filterConfig;
+    private bool _headerLabelsSent = false; // only send labels once for header
 
         public event Action<SearchResult>? ResultCaptured;
         public event Action<int>? ResultCountChanged;
@@ -60,86 +61,93 @@ namespace Oracle.Services
 
             DebugLogger.Log("MotelyResultCapture", "Starting result capture");
 
-            _captureTask = Task.Run(
-                async () =>
-                {
-                    try
-                    {
-                        while (!_cts.Token.IsCancellationRequested)
-                        {
-                            if (
-                                OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(
-                                    out var result
-                                )
-                            )
-                            {
-                                var searchResult = new SearchResult
-                                {
-                                    Seed = result.Seed,
-                                    TotalScore = result.TotalScore,
-                                    Scores = result.ScoreWants,
-                                    Labels = ExtractScoreLabels(),
-                                };
-                                
-                                DebugLogger.Log(
-                                    "MotelyResultCapture",
-                                    $"Result for {result.Seed}: Scores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
-                                );
-                                if (searchResult.Labels != null && searchResult.Labels.Length > 0)
-                                {
-                                    DebugLogger.Log(
-                                        "MotelyResultCapture",
-                                        $"Labels: {string.Join(", ", searchResult.Labels)}"
-                                    );
-                                }
-                                if (searchResult.Scores != null && searchResult.Scores.Length > 0)
-                                {
-                                    DebugLogger.Log(
-                                        "MotelyResultCapture",
-                                        $"Scores: {string.Join(", ", searchResult.Scores)}"
-                                    );
-                                }
+            // Reset header state for a fresh capture session
+            _headerLabelsSent = false;
 
-                                // Store in DuckDB
-                                await _searchHistory.AddSearchResultAsync(searchResult);
-
-                                // Update count and raise events
-                                Interlocked.Increment(ref _resultCount);
-                                ResultCaptured?.Invoke(searchResult);
-                                ResultCountChanged?.Invoke(_resultCount);
-
-                                DebugLogger.Log(
-                                    "MotelyResultCapture",
-                                    $"Captured result: {result.Seed} (Score: {result.TotalScore})"
-                                );
-                            }
-                            else
-                            {
-                                // No results available, wait a bit
-                                await Task.Delay(500, _cts.Token);
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
-                        throw;
-                    }
-                },
-                _cts.Token
-            );
+                // Start the dedicated capture loop task on the thread pool to avoid UI context capture
+                _captureTask = Task.Run(() => CaptureLoopAsync(_cts.Token));
 
             await Task.CompletedTask;
+        }
+
+        private async Task CaptureLoopAsync(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    if (OuijaJsonFilterDesc.OuijaJsonFilter.ResultsQueue.TryDequeue(out var result))
+                    {
+                        // Only attach labels on the first result so UI can build headers.
+                        // Subsequent rows don't need redundant labels.
+                        var labels = !_headerLabelsSent ? ExtractScoreLabels() : null;
+                        if (labels != null)
+                        {
+                            _headerLabelsSent = true;
+                        }
+
+                        var searchResult = new SearchResult
+                        {
+                            Seed = result.Seed,
+                            TotalScore = result.TotalScore,
+                            Scores = result.ScoreWants,
+                            Labels = labels,
+                        };
+
+                        DebugLogger.Log(
+                            "MotelyResultCapture",
+                            $"Result for {result.Seed}: Scores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
+                        );
+                        if (searchResult.Labels != null && searchResult.Labels.Length > 0)
+                        {
+                            DebugLogger.Log(
+                                "MotelyResultCapture",
+                                $"Labels: {string.Join(", ", searchResult.Labels)}"
+                            );
+                        }
+                        if (searchResult.Scores != null && searchResult.Scores.Length > 0)
+                        {
+                            DebugLogger.Log(
+                                "MotelyResultCapture",
+                                $"Scores: {string.Join(", ", searchResult.Scores)}"
+                            );
+                        }
+
+                        // Store in DuckDB
+                        await _searchHistory.AddSearchResultAsync(searchResult).ConfigureAwait(false);
+
+                        // Update count and raise events
+                        Interlocked.Increment(ref _resultCount);
+                        ResultCaptured?.Invoke(searchResult);
+                        ResultCountChanged?.Invoke(_resultCount);
+
+                        DebugLogger.Log(
+                            "MotelyResultCapture",
+                            $"Captured result: {result.Seed} (Score: {result.TotalScore})"
+                        );
+                    }
+                    else
+                    {
+                        // No results available, wait briefly to reduce shutdown latency
+                        await Task.Delay(100, token).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log("MotelyResultCapture", "Capture cancelled");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("MotelyResultCapture", $"Capture error: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
         /// Stop capturing results
         /// </summary>
-        public async Task StopCaptureAsync()
+    public async Task StopCaptureAsync()
         {
             if (_cts == null || _captureTask == null)
                 return;
@@ -153,11 +161,21 @@ namespace Oracle.Services
 
             try
             {
-                await _captureTask;
+                // Wait up to 2 seconds for the capture task to complete
+                var completed = await Task.WhenAny(_captureTask, Task.Delay(2000));
+                if (completed != _captureTask)
+                {
+                    DebugLogger.LogError("MotelyResultCapture", "Capture task did not complete within timeout");
+                }
+                else
+                {
+                    // Observe any cancellation exception
+                    await _captureTask;
+                }
             }
             catch (OperationCanceledException)
             {
-                // Expected
+                // Expected on cancellation
             }
 
             _cts.Dispose();

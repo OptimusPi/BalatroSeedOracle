@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Oracle.Views.Modals.WordListsModal">
+             x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
     <StackPanel Spacing="20" Margin="20">
         <!-- Simple file list at the top -->

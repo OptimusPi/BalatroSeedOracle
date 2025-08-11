@@ -7,7 +7,7 @@ using Avalonia.Skia;
 using Avalonia.Threading;
 using SkiaSharp;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public class BalatroStyleBackground : Control
     {

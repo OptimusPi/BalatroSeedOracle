@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public partial class ModeToggleSwitch : UserControl
     {

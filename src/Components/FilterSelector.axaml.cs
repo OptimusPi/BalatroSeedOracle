@@ -11,12 +11,12 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Services;
-using Oracle.Views.Modals;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public partial class FilterSelector : UserControl
     {

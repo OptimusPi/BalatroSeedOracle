@@ -11,13 +11,13 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Models;
-using Oracle.Services;
-using Oracle.Views.Modals;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
 
-namespace Oracle.Views
+namespace BalatroSeedOracle.Views
 {
     public partial class BalatroMainMenu : UserControl
     {
@@ -133,7 +133,7 @@ namespace Oracle.Views
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"Failed to open search modal: {ex}"
                 );
@@ -206,7 +206,7 @@ namespace Oracle.Views
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"⚠️  Error during disposal: {ex.Message}"
                 );
@@ -223,7 +223,7 @@ namespace Oracle.Views
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"Error opening Balatro website: {ex.Message}"
                 );
@@ -339,7 +339,7 @@ namespace Oracle.Views
                 {
                     _userProfileService.SetAuthorName(newName);
                     authorDisplay.Text = newName;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "BalatroMainMenu",
                         $"Author name updated to: {newName}"
                     );
@@ -359,7 +359,7 @@ namespace Oracle.Views
                 _userProfileService = ServiceHelper.GetService<UserProfileService>();
                 if (_userProfileService == null)
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "BalatroMainMenu",
                         "UserProfileService is null after initialization attempt"
                     );
@@ -373,7 +373,7 @@ namespace Oracle.Views
             if (authorDisplay != null && authorEdit != null)
             {
                 var authorName = _userProfileService.GetAuthorName();
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "BalatroMainMenu",
                     $"Setting author display to: '{authorName}'"
                 );
@@ -382,7 +382,7 @@ namespace Oracle.Views
             }
             else
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "BalatroMainMenu",
                     "Could not find AuthorDisplay or AuthorEdit controls"
                 );
@@ -394,7 +394,7 @@ namespace Oracle.Views
         /// </summary>
         public async void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "BalatroMainMenu",
                 $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
             );
@@ -403,7 +403,7 @@ namespace Oracle.Views
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
@@ -432,7 +432,7 @@ namespace Oracle.Views
             desktopCanvas.Children.Add(searchIcon);
             _widgetCounter++;
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "BalatroMainMenu",
                 $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})"
             );
@@ -440,11 +440,11 @@ namespace Oracle.Views
             // If config path provided, start the search
             if (!string.IsNullOrEmpty(configPath))
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Starting search...");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Starting search...");
                 var searchService = App.GetService<MotelySearchService>();
                 if (searchService != null)
                 {
-                    var criteria = new Oracle.Models.SearchCriteria
+                    var criteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
                         ConfigPath = configPath,
                         ThreadCount = 4,
@@ -472,7 +472,7 @@ namespace Oracle.Views
         /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "BalatroMainMenu",
                 $"RemoveSearchDesktopIcon called for searchId: {searchId}"
             );
@@ -480,7 +480,7 @@ namespace Oracle.Views
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                Oracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
@@ -509,14 +509,14 @@ namespace Oracle.Views
             if (iconToRemove != null)
             {
                 desktopCanvas.Children.Remove(iconToRemove);
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "BalatroMainMenu",
                     $"Removed SearchDesktopIcon for searchId: {searchId}"
                 );
             }
             else
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "BalatroMainMenu",
                     $"No SearchDesktopIcon found for searchId: {searchId}"
                 );

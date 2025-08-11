@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Oracle.Models;
+namespace BalatroSeedOracle.Models;
 
 /// <summary>
 /// MongoDB-style compound query configuration for Balatro seed searching

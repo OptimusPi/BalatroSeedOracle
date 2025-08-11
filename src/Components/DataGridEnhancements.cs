@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public class ScoreToColorConverter : IValueConverter
     {

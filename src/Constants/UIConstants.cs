@@ -1,4 +1,4 @@
-namespace Oracle.Constants;
+namespace BalatroSeedOracle.Constants;
 
 /// <summary>
 /// UI constants to eliminate magic numbers and hardcoded values throughout the application
@@ -74,6 +74,4 @@ public static class UIConstants
 
     public const string CelestialColor1 = "#5b9baa";
     public const string CelestialColor2 = "#dff5fc";
-
-
 }

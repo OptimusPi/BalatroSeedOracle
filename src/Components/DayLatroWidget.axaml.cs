@@ -4,10 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public partial class DayLatroWidget : UserControl
     {

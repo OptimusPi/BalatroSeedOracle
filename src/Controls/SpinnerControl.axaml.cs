@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public partial class SpinnerControl : UserControl
     {

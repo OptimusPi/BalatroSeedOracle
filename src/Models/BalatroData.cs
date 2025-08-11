@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Motely;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Models
+namespace BalatroSeedOracle.Models
 {
     /// <summary>
     /// Complete Balatro game data for .json configuration
@@ -530,7 +530,7 @@ namespace Oracle.Models
 
         static void InitializeCompatibilityCollections()
         {
-            Oracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
             // Initialize LegendaryJokers
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {

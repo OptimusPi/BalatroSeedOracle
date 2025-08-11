@@ -1,6 +1,6 @@
 using System;
 
-namespace Oracle.Helpers;
+namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
 /// Debug logging helper to replace Console.WriteLine calls

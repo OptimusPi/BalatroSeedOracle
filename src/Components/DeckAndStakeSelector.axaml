@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:components="using:Oracle.Components"
-             xmlns:controls="using:Oracle.Controls"
-             x:Class="Oracle.Components.DeckAndStakeSelector">
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
     
     <StackPanel Spacing="20">
         <!-- Deck Selection using PanelSpinner -->

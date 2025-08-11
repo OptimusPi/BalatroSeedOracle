@@ -35,6 +35,16 @@ try {
     exit 1
 }
 
+# Clear NuGet caches to avoid path length issues
+Write-Host "`nClearing NuGet caches..." -ForegroundColor Yellow
+dotnet nuget locals all --clear
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✓ NuGet caches cleared" -ForegroundColor Green
+} else {
+    Write-Host "✗ Failed to clear NuGet caches" -ForegroundColor Red
+    exit 1
+}
+
 # Clean
 Write-Host "`nCleaning solution..." -ForegroundColor Yellow
 dotnet clean

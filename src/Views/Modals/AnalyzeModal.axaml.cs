@@ -14,12 +14,12 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Motely;
-using Oracle.Components;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using SeedAnalyzerCapture = Motely.SeedAnalyzerCapture;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class AnalyzeModal : UserControl
     {

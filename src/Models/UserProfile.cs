@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Oracle.Models
+namespace BalatroSeedOracle.Models
 {
     /// <summary>
     /// User profile configuration for saving author information and widget preferences

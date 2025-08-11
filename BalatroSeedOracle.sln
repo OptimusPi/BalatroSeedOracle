@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oracle", "src\Oracle.csproj", "{4853F66C-1E81-49BE-B091-D50953F5B8B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BalatroSeedOracle", "src\BalatroSeedOracle.csproj", "{4853F66C-1E81-49BE-B091-D50953F5B8B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely", "external\Motely\Motely.csproj", "{3794FE42-C987-ABAE-CABC-1D37535DF0BF}"
 EndProject

@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     public class FavoritesService
     {

@@ -1,6 +1,6 @@
-using Oracle.Services;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Models;
+namespace BalatroSeedOracle.Models;
 
 /// <summary>
 /// Progress information for ongoing searches
@@ -8,8 +8,8 @@ namespace Oracle.Models;
 public class SearchProgress
 {
     public double PercentComplete { get; set; }
-    public long SeedsSearched { get; set; }
-    public double SeedsPerSecond { get; set; }
+    public ulong SeedsSearched { get; set; }
+    public double SeedsPerMillisecond { get; set; }
     public string Message { get; set; } = string.Empty;
     public bool IsComplete { get; set; }
     public bool HasError { get; set; }

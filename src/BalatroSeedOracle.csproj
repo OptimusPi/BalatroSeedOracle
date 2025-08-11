@@ -7,13 +7,13 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <!-- Velopack Configuration -->
-    <AssemblyName>Oracle</AssemblyName>
-    <Product>Balatro Seed Oracle</Product>
+    <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <Product>Balatro Seed BalatroSeedOracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright © 2025</Copyright>
-    <Version>1.0.0</Version>
-    <FileVersion>1.0.0</FileVersion>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Version>1.1.1</Version>
+    <FileVersion>1.1.1</FileVersion>
+    <AssemblyVersion>1.1.1</AssemblyVersion>
     <!-- Enable more warnings for code quality -->
     <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

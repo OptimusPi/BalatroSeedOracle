@@ -23,17 +23,17 @@ using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using Motely;
 using Motely.Filters;
-using Oracle.Components;
-using Oracle.Constants;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Models;
-using Oracle.Services;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Constants;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using TextMateSharp.Grammars;
-using DebugLogger = Oracle.Helpers.DebugLogger;
+using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using IoPath = System.IO.Path;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     // Tag class for drop zone items
     internal class DropZoneItemTag
@@ -81,14 +81,15 @@ namespace Oracle.Views.Modals
         private TextBlock? _statusText;
         private string? _currentFilePath;
         private bool _isDragging = false;
-        private bool _isDraggingSet = false;
+        private bool _isDraggingSet;
+
         private FavoritesService.JokerSet? _draggingSet = null;
 
         public FiltersModalContent()
         {
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
 
             // Initialize item categories from BalatroData
             _itemCategories = new Dictionary<string, List<string>>
@@ -111,7 +112,7 @@ namespace Oracle.Views.Modals
 
         private void InitializeComponent()
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 "FiltersModalContent InitializeComponent called"
             );
@@ -120,7 +121,7 @@ namespace Oracle.Views.Modals
 
         private void SetupControls()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "SetupControls called");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SetupControls called");
 
             // Get metadata controls
             _configNameBox = this.FindControl<TextBox>("ConfigNameBox");
@@ -168,7 +169,7 @@ namespace Oracle.Views.Modals
             {
                 // Keep auto-loading enabled so the first filter loads and enables tabs
                 // The FilterLoaded event handler will enable tabs without switching
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "FilterSelector component found and setup"
                 );
@@ -191,7 +192,7 @@ namespace Oracle.Views.Modals
         // FilterSelector event handlers
         private async void OnFilterLoaded(object? sender, string filterPath)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
 
             try
             {
@@ -207,7 +208,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error loading filter: {ex.Message}"
                 );
@@ -217,7 +218,7 @@ namespace Oracle.Views.Modals
 
         private void OnNewFilterRequested(object? sender, EventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
             OnCreateNewClick(null, new RoutedEventArgs());
         }
 
@@ -234,7 +235,7 @@ namespace Oracle.Views.Modals
                 RestoreDragDropModeLayout();
 
                 // Reload all categories to refresh the sprite display
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "Reloading all categories after JSON mode exit"
                 );
@@ -268,7 +269,7 @@ namespace Oracle.Views.Modals
             }
         }
 
-        private Oracle.Models.FilterItem? ParseItemKey(string key)
+        private BalatroSeedOracle.Models.FilterItem? ParseItemKey(string key)
         {
             var parts = key.Split(':');
             if (parts.Length >= 2)
@@ -279,7 +280,7 @@ namespace Oracle.Views.Modals
                 // Get item configuration if exists
                 var itemConfig = _itemConfigs.ContainsKey(key) ? _itemConfigs[key] : null;
 
-                var filterItem = new Oracle.Models.FilterItem
+                var filterItem = new BalatroSeedOracle.Models.FilterItem
                 {
                     Type = category switch
                     {
@@ -334,7 +335,7 @@ namespace Oracle.Views.Modals
             return null;
         }
 
-        private string GenerateItemLabel(Oracle.Models.FilterItem item)
+        private string GenerateItemLabel(BalatroSeedOracle.Models.FilterItem item)
         {
             // Generate a label based on edition and item name
             var label = new System.Text.StringBuilder();
@@ -392,7 +393,7 @@ namespace Oracle.Views.Modals
                 OnTabClick(visualTab, new RoutedEventArgs());
             }
 
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
         }
 
         private void UpdateSaveFilterPanel()
@@ -500,7 +501,7 @@ namespace Oracle.Views.Modals
                 await File.WriteAllTextAsync(filePath, json);
 
                 UpdateStatus($"Filter '{filterName}' saved successfully!", false);
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
                 
                 // Enable the Search for Seeds button and store the filter path
                 var searchButton = this.FindControl<Button>("SearchForSeedsButton");
@@ -517,7 +518,7 @@ namespace Oracle.Views.Modals
             catch (Exception ex)
             {
                 UpdateStatus($"Error saving filter: {ex.Message}", true);
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving filter: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving filter: {ex.Message}");
             }
         }
 
@@ -531,7 +532,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "FavoritesTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FavoritesTab clicked");
                     ShowFavorites();
                 }
             );
@@ -546,7 +547,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "SoulJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SoulJokersTab clicked");
                     NavigateToSection("SoulJokersTab");
                 }
             );
@@ -554,7 +555,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "RareJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "RareJokersTab clicked");
                     NavigateToSection("RareJokersTab");
                 }
             );
@@ -562,7 +563,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "UncommonJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "UncommonJokersTab clicked");
                     NavigateToSection("UncommonJokersTab");
                 }
             );
@@ -570,7 +571,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "CommonJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "CommonJokersTab clicked");
                     NavigateToSection("CommonJokersTab");
                 }
             );
@@ -587,7 +588,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "VouchersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "VouchersTab clicked");
                     NavigateToSection("VouchersTab");
                 }
             );
@@ -595,7 +596,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "TarotsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "TarotsTab clicked");
                     NavigateToSection("TarotsTab");
                 }
             );
@@ -603,7 +604,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "SpectralsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SpectralsTab clicked");
                     NavigateToSection("SpectralsTab");
                 }
             );
@@ -611,7 +612,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "TagsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "TagsTab clicked");
                     NavigateToSection("TagsTab");
                 }
             );
@@ -619,7 +620,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "BossesTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "BossesTab clicked");
                     NavigateToSection("BossesTab");
                 }
             );
@@ -627,7 +628,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "ClearTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "ClearTab clicked");
                     ClearNeeds();
                     ClearWants();
                     ClearMustNot();
@@ -654,7 +655,7 @@ namespace Oracle.Views.Modals
 
         private void SetupDropZones()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Setting up drop zones...");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Setting up drop zones...");
 
             // Set up drag-over for main containers to keep drag alive
             var mainGrid = this.FindControl<Grid>("VisualPanel");
@@ -766,7 +767,7 @@ namespace Oracle.Views.Modals
             // Remove old button code - using toggle switch now
             // Rest of the toggle switch handling is in OnModeToggleChanged
 
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Drop zones setup complete!");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Drop zones setup complete!");
         }
 
         // 🎯 Enhanced Drag & Drop Event Handlers
@@ -893,7 +894,7 @@ namespace Oracle.Views.Modals
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to NEEDS"
                     );
@@ -947,7 +948,7 @@ namespace Oracle.Views.Modals
                                         _selectedNeeds.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to NEEDS"
                                 );
@@ -963,7 +964,7 @@ namespace Oracle.Views.Modals
                             // Add to needs (allow item in multiple lists)
                             _selectedNeeds.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS"
                             );
@@ -1030,7 +1031,7 @@ namespace Oracle.Views.Modals
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to WANTS"
                     );
@@ -1084,7 +1085,7 @@ namespace Oracle.Views.Modals
                                         _selectedWants.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to WANTS"
                                 );
@@ -1100,7 +1101,7 @@ namespace Oracle.Views.Modals
                             // Add to wants (allow item in multiple lists)
                             _selectedWants.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS"
                             );
@@ -1125,7 +1126,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "RestoreDragDropModeLayout: Starting restoration"
                 );
@@ -1139,7 +1140,7 @@ namespace Oracle.Views.Modals
                     if (leftSidebar != null)
                     {
                         leftSidebar.IsVisible = true;
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             "RestoreDragDropModeLayout: Restored left sidebar"
                         );
                     }
@@ -1157,7 +1158,7 @@ namespace Oracle.Views.Modals
                 if (searchBox?.Parent?.Parent is Border searchBar)
                 {
                     searchBar.IsVisible = true;
-                    Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored search bar");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored search bar");
 
                     // Clear the search box when returning from JSON mode
                     if (searchBox != null && _searchBox != null)
@@ -1172,7 +1173,7 @@ namespace Oracle.Views.Modals
                 if (itemPaletteBorder != null)
                 {
                     itemPaletteBorder.Padding = new Thickness(8);
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "RestoreDragDropModeLayout: Restored ItemPaletteBorder padding"
                     );
                 }
@@ -1183,16 +1184,16 @@ namespace Oracle.Views.Modals
                 {
                     itemPaletteContent.Content = _originalItemPaletteContent;
                     _originalItemPaletteContent = null;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "RestoreDragDropModeLayout: Restored original item palette content"
                     );
                 }
 
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in RestoreDragDropModeLayout: {ex}"
                 );
@@ -1203,7 +1204,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
 
                 // The JSON editor is created in the JsonModeContainer/JsonModeContent when the button is clicked
                 // This method now just handles the JSON content creation if needed
@@ -1217,11 +1218,11 @@ namespace Oracle.Views.Modals
                     DispatcherPriority.Background
                 );
 
-                Oracle.Helpers.DebugLogger.Log("JSON editor mode entered");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("JSON editor mode entered");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in EnterEditJsonMode: {ex}"
                 );
@@ -1232,7 +1233,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateJsonEditor called");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateJsonEditor called");
 
                 var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
                 if (jsonEditor != null)
@@ -1251,19 +1252,19 @@ namespace Oracle.Views.Modals
                     var json = JsonSerializer.Serialize(config, options);
                     jsonEditor.Text = json;
 
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"Updated JSON editor with {json.Length} characters"
                     );
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
                 }
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in UpdateJsonEditor: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in UpdateJsonEditor: {ex}");
             }
         }
 
@@ -1271,7 +1272,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "CreateEditJsonInterface started");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "CreateEditJsonInterface started");
 
                 // Get the current JSON content - either from selections or default
                 string jsonContent;
@@ -1280,13 +1281,13 @@ namespace Oracle.Views.Modals
                     // Build JSON from current selections
                     var config = BuildOuijaConfigFromSelections();
                     jsonContent = SerializeOuijaConfig(config);
-                    Oracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
                 }
                 else
                 {
                     // Use default example JSON only if no selections exist
                     jsonContent = GetDefaultOuijaConfigJson();
-                    Oracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
                 }
 
                 // Create a Grid that fills the entire space
@@ -1313,7 +1314,7 @@ namespace Oracle.Views.Modals
                 if (useFallback)
                 {
                     // Use a simple TextBox as fallback
-                    Oracle.Helpers.DebugLogger.Log("Using fallback TextBox for JSON editing");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using fallback TextBox for JSON editing");
                     var fallbackTextBox = new TextBox
                     {
                         Name = "JsonTextEditor_Fallback",
@@ -1376,7 +1377,7 @@ namespace Oracle.Views.Modals
                 else
                 {
                     // Create an AvaloniaEdit TextEditor for JSON editing
-                    Oracle.Helpers.DebugLogger.Log("Creating AvaloniaEdit JSON editor");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Creating AvaloniaEdit JSON editor");
                     var editorBorder = new Border
                     {
                         Background =
@@ -1481,13 +1482,13 @@ namespace Oracle.Views.Modals
                                 }
                             }
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"AvaloniaEdit attached - Document length: {textEditor.Document.TextLength}"
                             );
                         }
                         catch (Exception ex)
                         {
-                            Oracle.Helpers.DebugLogger.LogError(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                 $"Error in AttachedToVisualTree: {ex.Message}"
                             );
                         }
@@ -1506,7 +1507,7 @@ namespace Oracle.Views.Modals
                     textEditor.Loaded += (s, e) =>
                     {
                         textEditor.Focus();
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"JSON Editor loaded. Height={textEditor.Bounds.Height}, Lines={textEditor.Document.LineCount}"
                         );
                     };
@@ -1542,7 +1543,7 @@ namespace Oracle.Views.Modals
                 mainGrid.Children.Add(editorControl);
 
                 // Status bar at bottom
-                Oracle.Helpers.DebugLogger.Log("Creating status bar");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("Creating status bar");
                 var statusBar = new Border
                 {
                     Background =
@@ -1597,12 +1598,12 @@ namespace Oracle.Views.Modals
                     DispatcherPriority.Background
                 );
 
-                Oracle.Helpers.DebugLogger.Log("CreateEditJsonInterface completed successfully");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("CreateEditJsonInterface completed successfully");
                 return mainGrid;
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in CreateEditJsonInterface: {ex}"
                 );
@@ -1756,7 +1757,7 @@ namespace Oracle.Views.Modals
                     var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
                     if (textEditor != null)
                     {
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"Setting TextEditor text, length: {content.Length}"
                         );
                         textEditor.Text = content;
@@ -2293,12 +2294,12 @@ namespace Oracle.Views.Modals
                 Dispatcher.UIThread.Post(
                     () =>
                     {
-                        Oracle.Helpers.DebugLogger.Log($"ScrollViewer Bounds: {scrollViewer.Bounds}");
-                        Oracle.Helpers.DebugLogger.Log($"Container Bounds: {container.Bounds}");
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"ScrollViewer Bounds: {scrollViewer.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"Container Bounds: {container.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"ItemsPanel Children: {itemsPanel.Children.Count}"
                         );
-                        Oracle.Helpers.DebugLogger.Log($"ItemsPanel Bounds: {itemsPanel.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"ItemsPanel Bounds: {itemsPanel.Bounds}");
                     },
                     DispatcherPriority.Background
                 );
@@ -2454,7 +2455,7 @@ namespace Oracle.Views.Modals
 
         private void ClearNeeds()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
             _selectedNeeds.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2462,7 +2463,7 @@ namespace Oracle.Views.Modals
 
         private void ClearWants()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
             _selectedWants.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2470,7 +2471,7 @@ namespace Oracle.Views.Modals
 
         private void ClearMustNot()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all must-not items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all must-not items");
             _selectedMustNot.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2534,7 +2535,7 @@ namespace Oracle.Views.Modals
 
         private void NavigateToSection(string tabId)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"NavigateToSection: {tabId}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"NavigateToSection: {tabId}");
 
             // Clear search when navigating to a section
             if (_searchBox != null)
@@ -2546,7 +2547,7 @@ namespace Oracle.Views.Modals
             // If we're in favorites view, reload the main view first
             if (_currentActiveTab == "FavoritesTab" || _mainScrollViewer == null)
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "Reloading all categories before navigation"
                 );
@@ -2569,7 +2570,7 @@ namespace Oracle.Views.Modals
 
         private void ScrollToSectionWithHighlight(string tabId)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"ScrollToSectionWithHighlight: {tabId}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"ScrollToSectionWithHighlight: {tabId}");
 
             // Scroll to the section and update tab highlight
             _ = ScrollToSection(tabId);
@@ -2904,7 +2905,7 @@ namespace Oracle.Views.Modals
             // Debug for "Joker"
             if (itemName == "Joker")
             {
-                Oracle.Helpers.DebugLogger.Log($"Creating card for 'Joker' in category: {category}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log($"Creating card for 'Joker' in category: {category}");
             }
 
             // For favorites, determine the actual category of the item
@@ -3079,7 +3080,7 @@ namespace Oracle.Views.Modals
                         properNames.Add(match);
                         if (subCategory == "Legendary" || lcItem.StartsWith("any"))
                         {
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"🎴 Joker found: {match} (from lowercase: {lcItem})"
                             );
                         }
@@ -3087,7 +3088,7 @@ namespace Oracle.Views.Modals
                     else
                     {
                         // Fallback to the lowercase name if no match found
-                        Oracle.Helpers.DebugLogger.LogError(
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError(
                             "FiltersModal",
                             $"No match found for joker: {lcItem}"
                         );
@@ -3296,7 +3297,7 @@ namespace Oracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                Oracle.Helpers.DebugLogger.LogError(
+                                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                     "FiltersModal",
                                     $"Error customizing syntax colors: {ex.Message}"
                                 );
@@ -3305,14 +3306,14 @@ namespace Oracle.Views.Modals
                         DispatcherPriority.Background
                     );
 
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         "JSON syntax highlighting configured with TextMate"
                     );
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "FiltersModal",
                         "JSON language not found in TextMate registry"
                     );
@@ -3320,7 +3321,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error setting up JSON syntax highlighting: {ex.Message}"
                 );
@@ -3713,7 +3714,7 @@ namespace Oracle.Views.Modals
                 }
             }
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 $"📈 Updated drop zones: {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
             );
         }
@@ -3726,7 +3727,7 @@ namespace Oracle.Views.Modals
                 var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
                 if (textEditor == null || string.IsNullOrWhiteSpace(textEditor.Text))
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "FiltersModal",
                         "UpdateDropZonesFromJson: JsonEditor not found or empty"
                     );
@@ -3782,11 +3783,11 @@ namespace Oracle.Views.Modals
                 // Update the drop zones to show the items
                 UpdateDropZoneVisibility();
 
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Updated drop zones from JSON");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Updated drop zones from JSON");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error updating drop zones from JSON: {ex.Message}"
                 );
@@ -4237,7 +4238,7 @@ namespace Oracle.Views.Modals
                 }
             };
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CreateDroppedItem",
                 $"🎴 DROPPED ITEM: '{itemName}' (category: '{category}')"
             );
@@ -4251,7 +4252,7 @@ namespace Oracle.Views.Modals
                 lj.Equals(itemName, StringComparison.OrdinalIgnoreCase)
             );
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CreateDroppedItem",
                 $"🎴 Legendary check: IsLegendary={isLegendaryJoker}, HasAnimatedFace={hasAnimatedFace} for item '{itemName}'"
             );
@@ -4259,7 +4260,7 @@ namespace Oracle.Views.Modals
             if (isLegendaryJoker)
             {
                 // Create stacked layout for legendary joker
-                var grid = new Grid { Width = 71, Height = 95 };
+                var grid = new Grid { Width = 53, Height = 71 };
 
                 // Joker face image on top
                 var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
@@ -4269,8 +4270,8 @@ namespace Oracle.Views.Modals
                     {
                         Source = jokerImageSource,
                         Stretch = Stretch.Uniform,
-                        Width = 71,
-                        Height = 95,
+                        Width = 53,
+                        Height = 71,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = null, // Explicitly reset any transforms
@@ -4331,7 +4332,7 @@ namespace Oracle.Views.Modals
             else
             {
                 // Regular item display
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CreateDroppedItem",
                     $"🎴 Getting image for regular item: '{itemName}' (category: '{category}')"
                 );
@@ -4350,30 +4351,30 @@ namespace Oracle.Views.Modals
                     _ => SpriteService.Instance.GetItemImage(itemName, category),
                 };
 
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CreateDroppedItem",
                     $"🎴 Image lookup for '{itemName}' in category '{category}': {(imageSource != null ? "FOUND" : "NOT FOUND")}"
                 );
 
                 if (imageSource != null)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
                         $"✅ Found image for '{itemName}'"
                     );
-                    // Use correct size based on category
-                    double imgWidth = 71;
-                    double imgHeight = 95;
+                    // Use correct size based on category (75% of original)
+                    double imgWidth = 53;
+                    double imgHeight = 71;
 
                     if (category == "Tags")
                     {
-                        imgWidth = 20;
-                        imgHeight = 20;
+                        imgWidth = 15;
+                        imgHeight = 15;
                     }
                     else if (category == "Bosses")
                     {
-                        imgWidth = 26;
-                        imgHeight = 26;
+                        imgWidth = 20;
+                        imgHeight = 20;
                     }
 
                     var image = new Image
@@ -4391,14 +4392,14 @@ namespace Oracle.Views.Modals
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
                         $"❌ No image found for '{itemName}', using text fallback"
                     );
                     // Get display name for items like "anyuncommon" -> "Any Uncommon"
                     var displayText =
                         category == "Jokers"
-                            ? Oracle.Models.BalatroData.GetDisplayNameFromSprite(itemName)
+                            ? BalatroSeedOracle.Models.BalatroData.GetDisplayNameFromSprite(itemName)
                             : itemName;
                     var textBlock = new TextBlock
                     {
@@ -4560,7 +4561,7 @@ namespace Oracle.Views.Modals
         {
             _itemConfigs[e.Config.ItemKey] = e.Config;
             _configPopup!.IsOpen = false;
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 $"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}"
             );
@@ -4583,21 +4584,21 @@ namespace Oracle.Views.Modals
                         if (_selectedNeeds.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
                         }
                         break;
                     case "wants":
                         if (_selectedWants.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
                         }
                         break;
                     case "mustnot":
                         if (_selectedMustNot.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
                         }
                         break;
                 }
@@ -4613,7 +4614,7 @@ namespace Oracle.Views.Modals
                 RefreshItemPalette();
 
                 _configPopup!.IsOpen = false;
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     $"Item deleted: {key} from zone: {zoneName ?? "unknown"}"
                 );
             }
@@ -4703,7 +4704,7 @@ namespace Oracle.Views.Modals
 
                     await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, wrappedJson);
                     _currentConfigPath = file.Path.LocalPath;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"Saved config to: {_currentConfigPath}"
                     );
@@ -4743,8 +4744,8 @@ namespace Oracle.Views.Modals
                 var json = SerializeOuijaConfig(config);
 
                 // Show a simple preview dialog (you could enhance this)
-                Oracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
-                Oracle.Helpers.DebugLogger.Log(json);
+                BalatroSeedOracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
+                BalatroSeedOracle.Helpers.DebugLogger.Log(json);
 
                 // For now, just enter JSON edit mode with the generated config
                 EnterEditJsonMode();
@@ -4757,7 +4758,7 @@ namespace Oracle.Views.Modals
                         var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
                         if (textEditor != null)
                         {
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"Setting TextEditor text in PreviewConfig, length: {json.Length}"
                             );
                             textEditor.Text = json;
@@ -4765,7 +4766,7 @@ namespace Oracle.Views.Modals
                         }
                         else
                         {
-                            Oracle.Helpers.DebugLogger.LogError(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                 "JsonTextEditor not found in PreviewConfig"
                             );
                         }
@@ -4783,7 +4784,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error generating config preview: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error generating config preview: {ex.Message}");
             }
         }
 
@@ -4837,21 +4838,21 @@ namespace Oracle.Views.Modals
                         _selectedWants.Add(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = true;
-                        Oracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
                     }
                     else if (card.IsSelectedWant)
                     {
                         _selectedWants.Remove(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = false;
-                        Oracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
                     }
                     else
                     {
                         _selectedNeeds.Add(key);
                         card.IsSelectedNeed = true;
                         card.IsSelectedWant = false;
-                        Oracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
                     }
 
                     UpdateDropZoneVisibility();
@@ -4863,7 +4864,7 @@ namespace Oracle.Views.Modals
             {
                 // Add visual feedback
                 card.Classes.Add("is-dragging");
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     $"👋 Drag started via CardDragStarted: {itemName} from {category}"
                 );
 
@@ -4949,8 +4950,8 @@ namespace Oracle.Views.Modals
                     var jokerFace = new Image
                     {
                         Source = imageSource,
-                        Width = 71,
-                        Height = 95,
+                        Width = 53,
+                        Height = 71,
                         Stretch = Stretch.UniformToFill,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -5055,7 +5056,7 @@ namespace Oracle.Views.Modals
             // Start wiggling the ghost card too!
             StartGhostWiggle();
 
-            Oracle.Helpers.DebugLogger.Log("👻 Created drag overlay");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("👻 Created drag overlay");
         }
 
         private void RemoveDragOverlay()
@@ -5067,7 +5068,7 @@ namespace Oracle.Views.Modals
                 parent?.Children.Remove(_dragOverlay);
                 _dragOverlay = null;
                 _ghostCard = null;
-                Oracle.Helpers.DebugLogger.Log("👻 Removed drag overlay");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("👻 Removed drag overlay");
             }
         }
 
@@ -5173,7 +5174,7 @@ namespace Oracle.Views.Modals
                 if (file != null)
                 {
                     await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, json);
-                    Oracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
 
                     // Enable tabs after successful save
                     UpdateTabStates(true);
@@ -5183,7 +5184,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error saving config: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error saving config: {ex.Message}");
             }
         }
 
@@ -5464,7 +5465,15 @@ namespace Oracle.Views.Modals
                     break;
                     
                 case "jokers":
-                    filterItem.Type = "joker";
+                    // Check if it's a legendary joker
+                    if (IsLegendaryJoker(itemName))
+                    {
+                        filterItem.Type = "souljoker";
+                    }
+                    else
+                    {
+                        filterItem.Type = "joker";
+                    }
                     filterItem.Value = itemName;
                     if (config.Edition != null && config.Edition != "none")
                     {
@@ -5749,7 +5758,7 @@ namespace Oracle.Views.Modals
                             filterPathInput.Text = file.Path.LocalPath;
                         }
 
-                        Oracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
 
                         // Enable tabs and switch to Visual tab
                         UpdateTabStates(true);
@@ -5767,7 +5776,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error loading config: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error loading config: {ex.Message}");
             }
         }
 
@@ -5837,7 +5846,7 @@ namespace Oracle.Views.Modals
             UpdateDropZoneVisibility();
             RefreshItemPalette();
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 $"LoadConfigIntoUI: Loaded {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
             );
             RefreshItemPalette();
@@ -5956,7 +5965,7 @@ namespace Oracle.Views.Modals
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to MUST NOT"
                     );
@@ -6010,7 +6019,7 @@ namespace Oracle.Views.Modals
                                         _selectedMustNot.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to MUST NOT"
                                 );
@@ -6026,7 +6035,7 @@ namespace Oracle.Views.Modals
                             // Add to must not (allow item in multiple lists)
                             _selectedMustNot.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to MUST NOT"
                             );
@@ -6495,7 +6504,7 @@ namespace Oracle.Views.Modals
 
         private void ShowItemSelectionPopup(string dropZoneType, Border dropZoneBorder)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 $"ShowItemSelectionPopup called for {dropZoneType}"
             );
@@ -6652,21 +6661,21 @@ namespace Oracle.Views.Modals
                     {
                         case "needs":
                             _selectedNeeds.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "wants":
                             _selectedWants.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS via popup"
                             );
                             break;
                         case "mustnot":
                             _selectedMustNot.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to MUST NOT via popup"
                             );

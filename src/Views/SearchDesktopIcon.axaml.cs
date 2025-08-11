@@ -9,11 +9,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using Oracle.Helpers;
-using Oracle.Services;
-using Oracle.Views.Modals;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
 
-namespace Oracle.Views
+namespace BalatroSeedOracle.Views
 {
     public partial class SearchDesktopIcon : UserControl
     {

@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="using:Oracle.Controls"
-             xmlns:components="using:Oracle.Components"
-             x:Class="Oracle.Views.Modals.SearchModal">
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Views.Modals.SearchModal">
     
     <UserControl.Styles>
         <!-- Modal content styles -->
@@ -678,7 +678,6 @@
                                     <ColumnDefinition Width="120"/>  <!-- Seed -->
                                     <ColumnDefinition Width="80"/>   <!-- Total -->
                                     <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                    <ColumnDefinition Width="80"/>   <!-- Time -->
                                     <ColumnDefinition Width="80"/>   <!-- Action -->
                                 </Grid.ColumnDefinitions>
                                 
@@ -728,27 +727,7 @@
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"/>
                                            
-                                <Button Grid.Column="3" 
-                                        Name="SortTimeButton"
-                                        Classes="header-button"
-                                        Click="OnSortByTime">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Time" 
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontWeight="Bold"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource Gold}"
-                                                   VerticalAlignment="Center"/>
-                                        <TextBlock Name="TimeSortIndicator"
-                                                   Text=" ▼" 
-                                                   FontSize="10"
-                                                   Foreground="{StaticResource Gold}"
-                                                   VerticalAlignment="Center"
-                                                   IsVisible="False"/>
-                                    </StackPanel>
-                                </Button>
-                                           
-                                <TextBlock Grid.Column="4" Text="Action" 
+                                <TextBlock Grid.Column="3" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontWeight="Bold"
                                            FontSize="12"
@@ -763,6 +742,12 @@
                         <ItemsControl Grid.Row="1" 
                                       Name="ResultsItemsControl"
                                       ItemsSource="{Binding}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <!-- Virtualizing stack for better performance -->
+                                    <VirtualizingStackPanel Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="{StaticResource DockGrey}"
@@ -778,7 +763,6 @@
                                                 <ColumnDefinition Width="120"/>  <!-- Seed -->
                                                 <ColumnDefinition Width="80"/>   <!-- Total -->
                                                 <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                                <ColumnDefinition Width="80"/>   <!-- Time -->
                                                 <ColumnDefinition Width="80"/>   <!-- Action -->
                                             </Grid.ColumnDefinitions>
                                             
@@ -822,16 +806,7 @@
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
                                                        
-                                            <TextBlock Grid.Column="3" 
-                                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource White}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       Margin="8,4"/>
-                                                       
-                                            <Button Grid.Column="4"
+                                            <Button Grid.Column="3"
                                                     Content="COPY"
                                                     Classes="btn-blue"
                                                     FontSize="10"
