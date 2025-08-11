@@ -22,6 +22,7 @@ using Avalonia.VisualTree;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using ReactiveUI;
 
@@ -120,6 +121,9 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 InitializeComponent();
                 this.Unloaded += OnUnloaded;
+                
+                // Check for resumable search after UI is loaded
+                Dispatcher.UIThread.InvokeAsync(CheckForResumableSearch, DispatcherPriority.Background);
             }
             catch (Exception ex)
             {
@@ -138,6 +142,216 @@ namespace BalatroSeedOracle.Views.Modals
                     "Creating desktop icon for ongoing search..."
                 );
                 CreateDesktopIconRequested?.Invoke(this, _currentFilterPath);
+            }
+        }
+
+        private async void CheckForResumableSearch()
+        {
+            try
+            {
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+
+                if (userProfileService.GetSearchState() is { } resumeState)
+                {
+                    // Check if the search is recent (within last 24 hours)
+                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
+                    if (timeSinceSearch.TotalHours > 24)
+                    {
+                        // Too old, clear it
+                        userProfileService.ClearSearchState();
+                        return;
+                    }
+
+                    // Calculate progress
+                    double progress = (double)resumeState.LastCompletedBatch / resumeState.TotalBatches * 100;
+                    
+                    // Show resume dialog
+                    var message = $"A previous search was interrupted at {progress:F1}% complete.\n" +
+                                  $"Batch {resumeState.LastCompletedBatch:N0} of {resumeState.TotalBatches:N0}\n\n" +
+                                  $"Would you like to resume this search?";
+                    
+                    // Create a simple dialog
+                    var dialog = new Window
+                    {
+                        Title = "Resume Search?",
+                        Width = 400,
+                        Height = 200,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        CanResize = false
+                    };
+                    
+                    var panel = new StackPanel
+                    {
+                        Margin = new Thickness(20),
+                        Spacing = 10
+                    };
+                    
+                    panel.Children.Add(new TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 14
+                    });
+                    
+                    var buttonPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Spacing = 10,
+                        Margin = new Thickness(0, 20, 0, 0)
+                    };
+                    
+                    var resumeButton = new Button
+                    {
+                        Content = "Resume",
+                        Width = 100,
+                        Classes = { "btn-green" }
+                    };
+                    
+                    var newSearchButton = new Button
+                    {
+                        Content = "New Search",
+                        Width = 100,
+                        Classes = { "btn-orange" }
+                    };
+                    
+                    bool shouldResume = false;
+                    
+                    resumeButton.Click += (s, e) =>
+                    {
+                        shouldResume = true;
+                        dialog.Close();
+                    };
+                    
+                    newSearchButton.Click += (s, e) =>
+                    {
+                        shouldResume = false;
+                        dialog.Close();
+                    };
+                    
+                    buttonPanel.Children.Add(resumeButton);
+                    buttonPanel.Children.Add(newSearchButton);
+                    panel.Children.Add(buttonPanel);
+                    
+                    dialog.Content = panel;
+                    
+                    var window = TopLevel.GetTopLevel(this) as Window;
+                    if (window != null)
+                    {
+                        await dialog.ShowDialog(window);
+                        
+                        if (shouldResume)
+                        {
+                            await ResumeSearch(resumeState);
+                        }
+                        else
+                        {
+                            // Clear the saved state
+                            userProfileService.ClearSearchState();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error checking for resumable search: {ex.Message}");
+            }
+        }
+
+        private async Task ResumeSearch(SearchResumeState resumeState)
+        {
+            try
+            {
+                AddToConsole("──────────────────────────────────");
+                AddToConsole($"Resuming search from batch {resumeState.LastCompletedBatch:N0}...");
+                
+                // Create a new search instance
+                CreateNewSearchInstance();
+                
+                if (_searchInstance == null) return;
+                
+                // Load the config
+                Motely.Filters.OuijaConfig? config = null;
+                
+                if (resumeState.IsDirectConfig && !string.IsNullOrEmpty(resumeState.ConfigJson))
+                {
+                    // Deserialize the saved config
+                    config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(resumeState.ConfigJson);
+                    _currentFilterPath = "Direct Config";
+                }
+                else if (!string.IsNullOrEmpty(resumeState.ConfigPath))
+                {
+                    // Load from file
+                    _currentFilterPath = resumeState.ConfigPath;
+                    await LoadFilterAsync(resumeState.ConfigPath);
+                }
+                
+                if (config != null || !string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    // Set UI values from saved state
+                    if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
+                    if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1; // UI shows 0-indexed
+                    if (_minScoreSpinner != null) _minScoreSpinner.Value = resumeState.MinScore;
+                    if (_deckAndStakeSelector != null)
+                    {
+                        _deckAndStakeSelector.SetDeck(resumeState.Deck ?? "Red");
+                        _deckAndStakeSelector.SetStake(resumeState.Stake ?? "White");
+                    }
+                    
+                    // Switch to Search tab
+                    if (_searchTab != null)
+                    {
+                        OnTabClick(_searchTab, new RoutedEventArgs());
+                    }
+                    
+                    // Start the search from the saved position
+                    var searchConfig = new SearchConfiguration
+                    {
+                        ThreadCount = resumeState.ThreadCount,
+                        MinScore = resumeState.MinScore,
+                        BatchSize = resumeState.BatchSize,
+                        StartBatch = resumeState.LastCompletedBatch + 1, // Resume from next batch
+                        EndBatch = resumeState.EndBatch,
+                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        Deck = resumeState.Deck,
+                        Stake = resumeState.Stake
+                    };
+                    
+                    _isSearching = true;
+                    UpdateSearchUI();
+                    _searchStartTime = DateTime.UtcNow;
+                    
+                    if (config != null)
+                    {
+                        // Direct config
+                        await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
+                    }
+                    else
+                    {
+                        // File-based config
+                        var searchCriteria = new SearchCriteria
+                        {
+                            ConfigPath = _currentFilterPath,
+                            ThreadCount = searchConfig.ThreadCount,
+                            MinScore = searchConfig.MinScore,
+                            BatchSize = searchConfig.BatchSize,
+                            StartBatch = searchConfig.StartBatch,
+                            EndBatch = searchConfig.EndBatch,
+                            EnableDebugOutput = searchConfig.DebugMode,
+                            Deck = searchConfig.Deck,
+                            Stake = searchConfig.Stake
+                        };
+                        
+                        await _searchInstance.StartSearchAsync(searchCriteria);
+                    }
+                    
+                    AddToConsole($"Search resumed successfully from batch {resumeState.LastCompletedBatch + 1}");
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error resuming search: {ex.Message}");
+                AddToConsole($"Failed to resume search: {ex.Message}");
             }
         }
 
@@ -1539,19 +1753,19 @@ namespace BalatroSeedOracle.Views.Modals
             
             if (seedsPerSecond >= 1_000_000_000)
             {
-                return $"{seedsPerSecond / 1_000_000_000:F1}B/s";
+                return $"{seedsPerSecond / 1_000_000_000:F1}B seeds/s";
             }
             else if (seedsPerSecond >= 1_000_000)
             {
-                return $"{seedsPerSecond / 1_000_000:F1}M/s";
+                return $"{seedsPerSecond / 1_000_000:F1}M seeds/s";
             }
             else if (seedsPerSecond >= 1_000)
             {
-                return $"{seedsPerSecond / 1_000:F0}K/s";
+                return $"{seedsPerSecond / 1_000:F0}K seeds/s";
             }
             else
             {
-                return $"{seedsPerSecond:F0}/s";
+                return $"{seedsPerSecond:F0} seeds/s";
             }
         }
 
@@ -1707,7 +1921,7 @@ namespace BalatroSeedOracle.Views.Modals
         public bool IsComplete { get; set; }
         public bool HasError { get; set; }
         public ulong BatchesSearched { get; set; }
-        public int TotalBatches { get; set; }
+        public ulong TotalBatches { get; set; }
     }
 
     public class SearchResultEventArgs : EventArgs
