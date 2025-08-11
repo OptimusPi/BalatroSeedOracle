@@ -792,6 +792,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnNeedsDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -830,6 +838,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnWantsDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -2877,16 +2893,16 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     // Group jokers by rarity - wildcards should already be at the end from GetItemsForCategory
                     groups["Legendary"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j) || j == "AnyLegendary")
+                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Rare"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j) || j == "AnyRare")
+                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Uncommon"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j) || j == "AnyUncommon")
+                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Common"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j) || j == "AnyCommon")
+                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j.ToLowerInvariant()))
                         .ToList();
                 }
                 else
@@ -3096,24 +3112,9 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                 }
                 
-                // Add wildcards at the end of each rarity group
-                if (subCategory == "Legendary")
-                {
-                    properNames.Add("AnyLegendary");
-                }
-                else if (subCategory == "Rare")
-                {
-                    properNames.Add("AnyRare");
-                }
-                else if (subCategory == "Uncommon")
-                {
-                    properNames.Add("AnyUncommon");
-                }
-                else if (subCategory == "Common")
-                {
-                    properNames.Add("AnyCommon");
-                }
-
+                // Wildcards are already included in JokersByRarity from BalatroData
+                // No need to add them again here
+                
                 return properNames;
             }
 
@@ -3973,7 +3974,7 @@ namespace BalatroSeedOracle.Views.Modals
             HashSet<string> items
         )
         {
-            const double fanAngle = 4; // degrees per card
+            const double fanAngle = 7; // degrees per card
             const double overlapX = 15; // horizontal overlap
             const double centerY = 20; // Start from top
 
@@ -4012,29 +4013,45 @@ namespace BalatroSeedOracle.Views.Modals
 
                     border.PointerEntered += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (s is Border b && b.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.2;
-                            scale.ScaleY = 1.2;
-                            b.ZIndex = 1000; // Bring to front
+                            // Just a subtle scale increase, no z-index change
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.15;  // Much smaller scale
+                                scale.ScaleY = 1.15;
+                            }
+                            
+                            // Add a subtle translate up
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform == null)
+                            {
+                                translateTransform = new TranslateTransform();
+                                tg.Children.Add(translateTransform);
+                            }
+                            translateTransform.Y = -10; // Just 10 pixels up
+                            // NO Z-INDEX CHANGE!
                         }
                     };
 
                     border.PointerExited += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (s is Border b && b.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.0;
-                            scale.ScaleY = 1.0;
-                            b.ZIndex = cardIndex; // Reset to original z-index
+                            // Reset scale
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.0;
+                                scale.ScaleY = 1.0;
+                            }
+                            
+                            // Reset translate
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform != null)
+                            {
+                                translateTransform.Y = 0;
+                            }
+                            // NO Z-INDEX CHANGE!
                         }
                     };
                 }
@@ -4060,7 +4077,7 @@ namespace BalatroSeedOracle.Views.Modals
             string itemType
         )
         {
-            const double fanAngle = 4; // degrees per card
+            const double fanAngle = 7; // degrees per card
             const double overlapX = 15; // horizontal overlap
             const double centerY = 20; // Start from top
 
@@ -4109,29 +4126,45 @@ namespace BalatroSeedOracle.Views.Modals
                     // Update hover behavior for fanned cards
                     border.PointerEntered += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (s is Border b && b.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.2;
-                            scale.ScaleY = 1.2;
-                            b.ZIndex = 1000; // Bring to front when hovered
+                            // Just a subtle scale increase, no z-index change
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.15;  // Much smaller scale
+                                scale.ScaleY = 1.15;
+                            }
+                            
+                            // Add a subtle translate up
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform == null)
+                            {
+                                translateTransform = new TranslateTransform();
+                                tg.Children.Add(translateTransform);
+                            }
+                            translateTransform.Y = -10; // Just 10 pixels up
+                            // NO Z-INDEX CHANGE!
                         }
                     };
 
                     border.PointerExited += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (s is Border b && b.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.0;
-                            scale.ScaleY = 1.0;
-                            b.ZIndex = cardIndex; // Reset to original z-index
+                            // Reset scale
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.0;
+                                scale.ScaleY = 1.0;
+                            }
+                            
+                            // Reset translate
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform != null)
+                            {
+                                translateTransform.Y = 0;
+                            }
+                            // NO Z-INDEX CHANGE!
                         }
                     };
                 }
@@ -4925,42 +4958,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (isLegendaryJoker)
             {
-                // For legendary jokers, create a proper gold card base with joker face
-                // Gold background for legendary
-                var goldBg = new Border
-                {
-                    Background = new LinearGradientBrush
-                    {
-                        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                        EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                        GradientStops =
-                        {
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient1")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFD700"),
-                                0
-                            ),
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient2")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFA500"),
-                                0.5
-                            ),
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient1")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFD700"),
-                                1
-                            ),
-                        },
-                    },
-                    CornerRadius = new CornerRadius(4),
-                };
-                ghostContent.Children.Add(goldBg);
+                // For legendary jokers, just show the face without gold background
 
                 // Add joker face on top
                 if (imageSource != null)
@@ -5053,8 +5051,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Width = 80,
                 Height = 100,
                 Background = new SolidColorBrush(Color.FromArgb(200, 32, 32, 32)),
-                BorderBrush = new SolidColorBrush(Color.Parse(UIConstants.BorderGold)),
-                BorderThickness = new Thickness(4),
+                BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(6),
                 BoxShadow = BoxShadows.Parse("0 5 20 #000000AA"),
                 RenderTransform = new RotateTransform(-5),
@@ -5920,6 +5917,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnMustNotDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -6275,8 +6280,7 @@ namespace BalatroSeedOracle.Views.Modals
             var mergedBorder = new Border
             {
                 Background = new SolidColorBrush(Color.Parse("#1a1a1a")),
-                BorderBrush = new SolidColorBrush(Color.Parse("#FFD700")),
-                BorderThickness = new Thickness(3),
+                BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(8),
                 MinHeight = 180,
                 Margin = new Thickness(5),
@@ -6399,6 +6403,7 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     
                     UpdateDropZoneVisibility();
+                    UpdateSelectionDisplay();  // Update the visual drop zones
                     UpdatePersistentFavorites();
                     RefreshItemPalette();
                     

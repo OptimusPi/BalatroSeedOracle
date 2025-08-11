@@ -22,15 +22,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
         
-        <Style Selector="Border.notification-badge">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="MinWidth" Value="20"/>
-            <Setter Property="Height" Value="20"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Margin" Value="-5,-5,0,0"/>
-        </Style>
+        <!-- Notification badge styles are now in global styles -->
         
         <Style Selector="ProgressBar.search-progress">
             <Setter Property="Height" Value="6"/>
@@ -44,39 +36,39 @@
     <Border Classes="desktop-icon-container">
         <StackPanel Spacing="4">
             <!-- Icon Button -->
-            <Button Classes="desktop-icon" Click="OnIconClick" ContextRequested="OnContextRequested">
-                <Grid Width="80" Height="80">
-                    <!-- Icon background -->
-                    <Border Name="IconBorder"
-                            Classes="icon-border"
-                            Background="{StaticResource DockGrey}"
-                            CornerRadius="12"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2">
-                        <Grid>
-                            <!-- Search icon (magnifying glass) -->
-                            <TextBlock Text="🔍" 
-                                       FontSize="40"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- Notification badge -->
+            <Grid>
+                <Button Classes="desktop-icon" Click="OnIconClick" ContextRequested="OnContextRequested">
+                    <Grid Width="80" Height="80">
+                        <!-- Icon background -->
+                        <Border Name="IconBorder"
+                                Classes="icon-border"
+                                Background="{StaticResource DockGrey}"
+                                CornerRadius="12"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2">
+                            <Grid>
+                                <!-- Search icon (magnifying glass) -->
+                                <TextBlock Text="🔍" 
+                                           FontSize="40"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Button>
+                
+                <!-- Notification badge overlay using Canvas -->
+                <Canvas ZIndex="100">
                     <Border Name="NotificationBadge"
                             Classes="notification-badge"
+                            Canvas.Right="5"
+                            Canvas.Top="5"
                             IsVisible="False">
                         <TextBlock Name="BadgeText"
-                                   Text="0"
-                                   Foreground="White"
-                                   FontSize="11"
-                                   
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Margin="4,0"/>
+                                   Text="0" />
                     </Border>
-                </Grid>
-            </Button>
+                </Canvas>
+            </Grid>
             
             <!-- Filter Name -->
             <TextBlock Name="FilterNameText"

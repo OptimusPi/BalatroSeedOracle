@@ -66,23 +66,19 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,0,0,5"/>
-                    <Border Name="NewDayBadge"
-                            Background="{StaticResource ToggleRed}"
-                            CornerRadius="8"
-                            Width="16" Height="16"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Margin="0,-5,-5,0"
-                            IsVisible="False">
-                        <TextBlock Text="!" 
-                                   FontSize="11" 
-                                   
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
                 </Grid>
             </Border>
+            
+            <!-- Notification badge overlay using Canvas -->
+            <Canvas ZIndex="100">
+                <Border Name="NewDayBadge"
+                        Classes="notification-badge small"
+                        Canvas.Right="5"
+                        Canvas.Top="5"
+                        IsVisible="False">
+                    <TextBlock Text="!" />
+                </Border>
+            </Canvas>
         </Grid>
         
         <!-- Expanded State -->
