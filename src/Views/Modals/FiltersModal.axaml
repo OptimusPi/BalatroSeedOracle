@@ -578,9 +578,6 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="20" />
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="16" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
