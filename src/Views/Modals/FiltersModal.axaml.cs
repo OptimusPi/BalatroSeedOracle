@@ -5339,8 +5339,9 @@ namespace BalatroSeedOracle.Views.Modals
                 config.Description = configDescriptionBox.Text;
             }
             
-            // Set author - you can customize this
-            config.Author = Environment.UserName ?? "Unknown";
+            // Get author from user profile
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            config.Author = userProfileService?.GetAuthorName() ?? "Jimbo";
 
             // Convert all items using the helper method that handles unique keys
             FixUniqueKeyParsing(_selectedNeeds, config.Must, 0);
