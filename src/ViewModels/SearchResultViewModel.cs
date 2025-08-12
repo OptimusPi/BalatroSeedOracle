@@ -122,7 +122,6 @@ namespace BalatroSeedOracle.Services
             if (result == null)
                 return;
 
-            // TODO: Open seed analysis dialog
             DebugLogger.Log("SearchResultViewModel", $"View details for seed: {result.Seed}");
         }
 
