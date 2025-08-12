@@ -80,26 +80,27 @@ namespace BalatroSeedOracle.Views.Modals
             // DeckStakeSelector will handle its own initialization
         }
 
-        private void OnFilterTabClick(object? sender, RoutedEventArgs e)
+        private void OnSettingsTabClick(object? sender, RoutedEventArgs e)
         {
             SetActiveTab(0);
         }
 
-        private void OnSettingsTabClick(object? sender, RoutedEventArgs e)
-        {
-            SetActiveTab(1);
-        }
-
         private void OnAnalyzerTabClick(object? sender, RoutedEventArgs e)
         {
-            SetActiveTab(2);
+            SetActiveTab(1);
         }
 
         private void SetActiveTab(int tabIndex)
         {
             // Update button states
-            _settingsTab?.Classes.Set("active", tabIndex == 1);
-            _analyzerTab?.Classes.Set("active", tabIndex == 2);
+            _settingsTab?.Classes.Set("active", tabIndex == 0);
+            _analyzerTab?.Classes.Set("active", tabIndex == 1);
+
+            // Show/hide panels based on selected tab
+            if (_settingsPanel != null)
+                _settingsPanel.IsVisible = (tabIndex == 0);
+            if (_analyzerPanel != null)
+                _analyzerPanel.IsVisible = (tabIndex == 1);
 
             // Move triangle container to correct column
             if (_triangleContainer != null)

@@ -581,7 +581,7 @@
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
-                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="12" MinHeight="150" ClipToBounds="False">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="MUST have..."
@@ -616,7 +616,7 @@
                                 </Border>
                                 
                                 <!-- SHOULD (WANTS) Panel -->
-                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150" ClipToBounds="False">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Should have..."
@@ -651,7 +651,7 @@
                                 </Border>
                                 
                                 <!-- MUST NOT Panel -->
-                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
+                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150" ClipToBounds="False">
                                     <Grid>
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Must NOT Have..."
@@ -698,7 +698,7 @@
                                          VerticalAlignment="Center"
                                          AutoLoadEnabled="False"
                                          Title="Edit Filter"
-                                         FilterLoaded="OnFilterLoaded"
+                                         FilterLoaded="OnFilterSelected"
                                          NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
 

@@ -190,7 +190,7 @@ namespace BalatroSeedOracle.Views.Modals
         }
 
         // FilterSelector event handlers
-        private async void OnFilterLoaded(object? sender, string filterPath)
+        private async void OnFilterSelected(object? sender, string filterPath)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
 
@@ -547,6 +547,8 @@ namespace BalatroSeedOracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
+                    // Ensure button has focus (fixes first-click issue)
+                    if (s is Button btn) btn.Focus();
                     BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SoulJokersTab clicked");
                     NavigateToSection("SoulJokersTab");
                 }
@@ -717,6 +719,11 @@ namespace BalatroSeedOracle.Views.Modals
             var needsBorder = this.FindControl<Border>("NeedsBorder");
             var wantsBorder = this.FindControl<Border>("WantsBorder");
             var mustNotBorder = this.FindControl<Border>("MustNotBorder");
+
+            // Disable clipping on borders to allow cards to pop out when hovered
+            if (needsBorder != null) needsBorder.ClipToBounds = false;
+            if (wantsBorder != null) wantsBorder.ClipToBounds = false;
+            if (mustNotBorder != null) mustNotBorder.ClipToBounds = false;
 
             // Get the actual panels inside the borders
             var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
@@ -3518,6 +3525,9 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 return;
             }
+            
+            // Ensure button has focus (fixes first-click issue)
+            button.Focus();
 
             // Get all tab buttons
             var visualTab = this.FindControl<Button>("VisualTab");
@@ -3649,6 +3659,9 @@ namespace BalatroSeedOracle.Views.Modals
             var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
             var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
 
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (needsScrollViewer != null) needsScrollViewer.ClipToBounds = false;
+
             if (needsPlaceholder != null && needsScrollViewer != null && needsPanel != null)
             {
                 if (_selectedNeeds.Any())
@@ -3679,6 +3692,9 @@ namespace BalatroSeedOracle.Views.Modals
             var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
             var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
 
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (wantsScrollViewer != null) wantsScrollViewer.ClipToBounds = false;
+
             if (wantsPlaceholder != null && wantsScrollViewer != null && wantsPanel != null)
             {
                 if (_selectedWants.Any())
@@ -3708,6 +3724,9 @@ namespace BalatroSeedOracle.Views.Modals
             var mustNotScrollViewer = this.FindControl<ScrollViewer>("MustNotScrollViewer");
             var mustNotPanel = this.FindControl<WrapPanel>("MustNotPanel");
             var clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
+
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (mustNotScrollViewer != null) mustNotScrollViewer.ClipToBounds = false;
 
             if (mustNotPlaceholder != null && mustNotScrollViewer != null && mustNotPanel != null)
             {
@@ -3974,13 +3993,28 @@ namespace BalatroSeedOracle.Views.Modals
             HashSet<string> items
         )
         {
-            const double fanAngle = 7; // degrees per card
-            const double overlapX = 15; // horizontal overlap
-            const double centerY = 20; // Start from top
+            const double fanAngle = 8; // degrees per card (increased from 7)
+            const double overlapX = 17; // horizontal overlap (increased from 15)
+            const double centerY = 24; // Start 4px south as requested (was 20)
 
+            // First pass: create all cards and wrappers
+            var allWrappers = new List<Grid>();
+            var allBorders = new List<Border>();
+            
             for (int i = 0; i < jokers.Count; i++)
             {
                 var itemKey = items.First(item => item.Contains($":{jokers[i].name}"));
+                
+                // Create a wrapper container that stays static (for hit detection)
+                var wrapper = new Grid
+                {
+                    Width = 53,
+                    Height = 71,
+                    Background = Brushes.Transparent, // Transparent but hit-testable
+                    ClipToBounds = false // Allow visual to pop out
+                };
+                
+                // Create the actual visual card
                 var control = CreateDroppedItemControl(
                     jokers[i].name,
                     jokers[i].category,
@@ -3988,14 +4022,14 @@ namespace BalatroSeedOracle.Views.Modals
                     zoneName
                 );
 
-                // Position with overlap
-                double x = startX + (i * overlapX);
+                // Position the wrapper (not the control)
+                double x = startX + 6 + (i * overlapX); // Added 6px east offset
                 double y = centerY;
 
                 // Apply rotation for fan effect
                 double angle = (i - jokers.Count / 2.0) * fanAngle;
 
-                // We need to combine the rotation with the scale transform
+                // Apply transforms to the INNER control, not the wrapper
                 var transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new ScaleTransform(1, 1));
                 transformGroup.Children.Add(new RotateTransform(angle));
@@ -4003,40 +4037,43 @@ namespace BalatroSeedOracle.Views.Modals
                 control.RenderTransform = transformGroup;
                 control.RenderTransformOrigin = new RelativePoint(0.5, 0.9, RelativeUnit.Relative);
 
-                // Update hover handlers to work with transform group
+                // Add control to wrapper
+                wrapper.Children.Add(control);
+
+                // Update hover handlers on the WRAPPER (static hit area)
                 if (control is Border border)
                 {
                     int cardIndex = i; // Capture the index for the closure
-
-                    // Remove the default handlers by using a flag
                     border.Tag = new { Key = itemKey, Zone = zoneName };
 
-                    border.PointerEntered += (s, e) =>
+                    wrapper.PointerEntered += (s, e) =>
                     {
-                        if (s is Border b && b.RenderTransform is TransformGroup tg)
+                        if (border.RenderTransform is TransformGroup tg)
                         {
-                            // Just a subtle scale increase, no z-index change
+                            // Scale up
                             if (tg.Children[0] is ScaleTransform scale)
                             {
-                                scale.ScaleX = 1.15;  // Much smaller scale
-                                scale.ScaleY = 1.15;
+                                scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
+                                scale.ScaleY = 1.05;
                             }
                             
-                            // Add a subtle translate up
+                            // Add translate up
                             var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
                             if (translateTransform == null)
                             {
                                 translateTransform = new TranslateTransform();
                                 tg.Children.Add(translateTransform);
                             }
-                            translateTransform.Y = -10; // Just 10 pixels up
-                            // NO Z-INDEX CHANGE!
+                            translateTransform.Y = -3; // Reduced from -15 to -3 for subtle effect
+                            
+                            // NOW we can safely change z-index!
+                            border.ZIndex = 2000; // Bring to front (increased for better layering)
                         }
                     };
 
-                    border.PointerExited += (s, e) =>
+                    wrapper.PointerExited += (s, e) =>
                     {
-                        if (s is Border b && b.RenderTransform is TransformGroup tg)
+                        if (border.RenderTransform is TransformGroup tg)
                         {
                             // Reset scale
                             if (tg.Children[0] is ScaleTransform scale)
@@ -4051,21 +4088,98 @@ namespace BalatroSeedOracle.Views.Modals
                             {
                                 translateTransform.Y = 0;
                             }
-                            // NO Z-INDEX CHANGE!
+                            
+                            // Reset z-index
+                            border.ZIndex = 0;
                         }
                     };
                 }
 
-                Canvas.SetLeft(control, x);
-                Canvas.SetTop(control, y);
+                Canvas.SetLeft(wrapper, x);
+                Canvas.SetTop(wrapper, y);
 
-                // Higher z-index for later cards
-                control.ZIndex = i;
+                // Higher z-index for later cards (base 100 to ensure they're above other elements)
+                wrapper.ZIndex = 100 + i;
 
-                canvas.Children.Add(control);
+                canvas.Children.Add(wrapper);
             }
 
-            startX += (jokers.Count * overlapX) + 40;
+            // Second pass: add hover handlers with access to all cards
+            for (int i = 0; i < allWrappers.Count; i++)
+            {
+                int currentIndex = i; // Capture for closure
+                var wrapper = allWrappers[i];
+                
+                wrapper.PointerEntered += (s, e) =>
+                {
+                    // "Part the sea" effect - spread cards around the hovered one
+                    for (int j = 0; j < allBorders.Count; j++)
+                    {
+                        if (allBorders[j].RenderTransform is TransformGroup tg)
+                        {
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform == null)
+                            {
+                                translateTransform = new TranslateTransform();
+                                tg.Children.Add(translateTransform);
+                            }
+
+                            if (j < currentIndex)
+                            {
+                                // Cards before: push left with diminishing effect
+                                translateTransform.X = -8 * (currentIndex - j);
+                            }
+                            else if (j > currentIndex)
+                            {
+                                // Cards after: push right with diminishing effect
+                                translateTransform.X = 8 * (j - currentIndex);
+                            }
+                            else
+                            {
+                                // Hovered card: slightly bigger, move up a bit
+                                translateTransform.X = 0;
+                                translateTransform.Y = -2;  // Reduced from -10 to -2 for subtle effect
+                                if (tg.Children[0] is ScaleTransform scale)
+                                {
+                                    scale.ScaleX = 1.03;  // Reduced from 1.1 to 1.03 for subtle effect
+                                    scale.ScaleY = 1.03;
+                                }
+                                allBorders[j].ZIndex = 200; // Higher z-index boost for better layering
+                            }
+                        }
+                    }
+                };
+
+                wrapper.PointerExited += (s, e) =>
+                {
+                    // Reset all cards
+                    for (int j = 0; j < allBorders.Count; j++)
+                    {
+                        if (allBorders[j].RenderTransform is TransformGroup tg)
+                        {
+                            // Reset translate
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform != null)
+                            {
+                                translateTransform.X = 0;
+                                translateTransform.Y = 0;
+                            }
+                            
+                            // Reset scale
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.0;
+                                scale.ScaleY = 1.0;
+                            }
+                            
+                            // Reset z-index
+                            allBorders[j].ZIndex = 0;
+                        }
+                    }
+                };
+            }
+
+            startX += (jokers.Count * overlapX) + 46; // Increased from 40 to account for 6px east offset
         }
 
         private void RenderFannedItems(
@@ -4077,13 +4191,28 @@ namespace BalatroSeedOracle.Views.Modals
             string itemType
         )
         {
-            const double fanAngle = 7; // degrees per card
-            const double overlapX = 15; // horizontal overlap
-            const double centerY = 20; // Start from top
+            const double fanAngle = 8; // degrees per card (increased from 7)
+            const double overlapX = 17; // horizontal overlap (increased from 15)
+            const double centerY = 24; // Start 4px south as requested (was 20)
 
+            // First pass: create all cards and wrappers
+            var allWrappers = new List<Grid>();
+            var allBorders = new List<Border>();
+            
             for (int i = 0; i < items.Count; i++)
             {
                 var itemKey = allItems.First(item => item.Contains($":{items[i].name}"));
+                
+                // Create a wrapper container that stays static (for hit detection)
+                var wrapper = new Grid
+                {
+                    Width = 53,
+                    Height = 71,
+                    Background = Brushes.Transparent, // Transparent but hit-testable
+                    ClipToBounds = false // Allow visual to pop out
+                };
+                
+                // Create the actual visual card
                 var control = CreateDroppedItemControl(
                     items[i].name,
                     items[i].category,
@@ -4091,14 +4220,14 @@ namespace BalatroSeedOracle.Views.Modals
                     zoneName
                 );
 
-                // Position with overlap
-                double x = startX + (i * overlapX);
+                // Position the wrapper (not the control)
+                double x = startX + 6 + (i * overlapX); // Added 6px east offset
                 double y = centerY;
 
                 // Apply rotation for fan effect
                 double angle = (i - items.Count / 2.0) * fanAngle;
 
-                // We need to combine the rotation with the scale transform
+                // Apply transforms to the INNER control, not the wrapper
                 var transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new ScaleTransform(1, 1));
                 transformGroup.Children.Add(new RotateTransform(angle));
@@ -4123,62 +4252,139 @@ namespace BalatroSeedOracle.Views.Modals
                         };
                     }
 
-                    // Update hover behavior for fanned cards
-                    border.PointerEntered += (s, e) =>
+                    // Add control to wrapper
+                    wrapper.Children.Add(control);
+                    
+                    // Store wrapper and border for later
+                    allWrappers.Add(wrapper);
+                    if (control is Border b)
                     {
-                        if (s is Border b && b.RenderTransform is TransformGroup tg)
-                        {
-                            // Just a subtle scale increase, no z-index change
-                            if (tg.Children[0] is ScaleTransform scale)
-                            {
-                                scale.ScaleX = 1.15;  // Much smaller scale
-                                scale.ScaleY = 1.15;
-                            }
-                            
-                            // Add a subtle translate up
-                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
-                            if (translateTransform == null)
-                            {
-                                translateTransform = new TranslateTransform();
-                                tg.Children.Add(translateTransform);
-                            }
-                            translateTransform.Y = -10; // Just 10 pixels up
-                            // NO Z-INDEX CHANGE!
-                        }
-                    };
-
-                    border.PointerExited += (s, e) =>
-                    {
-                        if (s is Border b && b.RenderTransform is TransformGroup tg)
-                        {
-                            // Reset scale
-                            if (tg.Children[0] is ScaleTransform scale)
-                            {
-                                scale.ScaleX = 1.0;
-                                scale.ScaleY = 1.0;
-                            }
-                            
-                            // Reset translate
-                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
-                            if (translateTransform != null)
-                            {
-                                translateTransform.Y = 0;
-                            }
-                            // NO Z-INDEX CHANGE!
-                        }
-                    };
+                        allBorders.Add(b);
+                    }
+                }
+                else
+                {
+                    // If not a border, still add to wrapper
+                    wrapper.Children.Add(control);
                 }
 
-                Canvas.SetLeft(control, x);
-                Canvas.SetTop(control, y);
+                Canvas.SetLeft(wrapper, x);
+                Canvas.SetTop(wrapper, y);
 
-                // Higher z-index for later cards
-                control.ZIndex = i;
+                // Higher z-index for later cards (base 100 to ensure they're above other elements)
+                wrapper.ZIndex = 100 + i;
 
-                canvas.Children.Add(control);
+                canvas.Children.Add(wrapper);
             }
 
             startX += (items.Count * overlapX) + 40;
+        }
+
+        private void RenderHorizontalTags(
+            Canvas canvas,
+            List<(string name, string category)> tags, 
+            HashSet<string> items,
+            string zoneName
+        )
+        {
+            double tagX = 10; // Start from left
+            double tagY = 75; // Position at bottom of drop zone
+            
+            foreach (var tag in tags)
+            {
+                var itemKey = items.First(item => item.Contains($":{tag.name}"));
+                var control = CreateDroppedItemControl(tag.name, tag.category, itemKey, zoneName);
+                
+                if (control is Border tagBorder)
+                {
+                    // Make tags 2x bigger (was smaller, now 60x80)
+                    tagBorder.Width = 60;
+                    tagBorder.Height = 80;
+                    
+                    // Add hover effect
+                    tagBorder.PointerEntered += (s, e) =>
+                    {
+                        if (tagBorder.RenderTransform == null)
+                        {
+                            tagBorder.RenderTransform = new ScaleTransform(1, 1);
+                            tagBorder.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                        }
+                        if (tagBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.1;
+                            scale.ScaleY = 1.1;
+                        }
+                    };
+                    
+                    tagBorder.PointerExited += (s, e) =>
+                    {
+                        if (tagBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.0;
+                            scale.ScaleY = 1.0;
+                        }
+                    };
+                }
+                
+                Canvas.SetLeft(control, tagX);
+                Canvas.SetTop(control, tagY);
+                canvas.Children.Add(control);
+                tagX += 65; // Spacing between tags
+            }
+        }
+
+        private void RenderHorizontalBosses(
+            Canvas canvas,
+            List<(string name, string category)> bosses,
+            double startX,
+            HashSet<string> items,
+            string zoneName
+        )
+        {
+            double bossX = startX;
+            double bossY = 80; // Position at bottom, slightly lower than tags
+            
+            foreach (var boss in bosses)
+            {
+                var itemKey = items.First(item => item.Contains($":{boss.name}"));
+                var control = CreateDroppedItemControl(boss.name, boss.category, itemKey, zoneName);
+                
+                if (control is Border bossBorder)
+                {
+                    // Make bosses visible size
+                    bossBorder.Width = 60;
+                    bossBorder.Height = 60;
+                    
+                    // Add hover effect
+                    bossBorder.PointerEntered += (s, e) =>
+                    {
+                        if (bossBorder.RenderTransform == null)
+                        {
+                            bossBorder.RenderTransform = new ScaleTransform(1, 1);
+                            bossBorder.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                        }
+                        if (bossBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.1;
+                            scale.ScaleY = 1.1;
+                        }
+                    };
+                    
+                    bossBorder.PointerExited += (s, e) =>
+                    {
+                        if (bossBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.0;
+                            scale.ScaleY = 1.0;
+                        }
+                    };
+                }
+                
+                Canvas.SetLeft(control, bossX);
+                Canvas.SetTop(control, bossY);
+                canvas.Children.Add(control);
+                bossX += 65; // Spacing between bosses
+            }
         }
 
         private void RenderVerticalStack(
@@ -4220,6 +4426,12 @@ namespace BalatroSeedOracle.Views.Modals
             string zoneName
         )
         {
+            // Check if item has an edition configured
+            string? edition = null;
+            if (_itemConfigs.TryGetValue(itemKey, out var config) && !string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+            {
+                edition = config.Edition;
+            }
             // Create a simple border without ViewBox to prevent scaling
             var border = new Border
             {
@@ -4257,9 +4469,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                     if (b.RenderTransform is ScaleTransform scale)
                     {
-                        scale.ScaleX = 1.2;
-                        scale.ScaleY = 1.2;
-                        b.ZIndex = 1000; // Bring to front
+                        scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
+                        scale.ScaleY = 1.05;
+                        b.ZIndex = 2000; // Bring to front (increased for better layering)
                     }
                 }
             };
@@ -4733,7 +4945,7 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         name = configName,
                         author = authorName,
-                        created = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        created = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                         must = config.Must,
                         should = config.Should,
                         mustNot = config.MustNot,
@@ -6258,7 +6470,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             // Fallback to timestamp-based name
-            return $"config-{DateTime.Now:yyyyMMdd-HHmmss}.json";
+            return $"config-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json";
         }
 
         private void MergeDropZonesForSet()

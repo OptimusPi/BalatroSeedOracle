@@ -1,83 +1,80 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.CreditsModal">
-    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Credits Section -->
         <Border Grid.Row="0" 
                 Background="{StaticResource ContainerDarkPrecise}" 
                 BorderThickness="0"
                 Margin="20" 
                 CornerRadius="12"
-                Padding="40">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 
                 <!-- Title -->
-                <TextBlock Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
+                <TextBlock Grid.Row="0"
+                           Text="Special Thanks to the following humans! ♥️ pifreak loves you!" 
                            FontSize="18"
                            Foreground="{StaticResource Gold}"
                            FontFamily="{StaticResource BalatroFont}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,20"/>
-                
-                <!-- pifreak Badge -->
-                <Border Background="{StaticResource ModalBorder}"
-                        CornerRadius="6"
-                        Padding="20,10"
-                        HorizontalAlignment="Center">
-                    <TextBlock Text="pifreak" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               
-                               Foreground="{StaticResource DarkerGrey}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-                
-                <!-- WheatCoin Badge -->
-                <Border Background="{StaticResource ModalBorder}"
-                        CornerRadius="6"
-                        Padding="20,10"
-                        HorizontalAlignment="Center">
-                    <TextBlock Text="WheatCoin" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               
-                               Foreground="{StaticResource DarkerGrey}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
 
-                 <!-- miaklwalker Badge -->
-                <Border Background="{StaticResource ModalBorder}"
-                        CornerRadius="6"
-                        Padding="20,10"
-                        HorizontalAlignment="Center">
-                    <TextBlock Text="miaklwalker" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               Foreground="{StaticResource DarkerGrey}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-
-                 <!-- tacodiva Badge -->
-                <Border Background="{StaticResource ModalBorder}"
-                        CornerRadius="6"
-                        Padding="20,10"
-                        HorizontalAlignment="Center">
-                    <TextBlock Text="tacodiva" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               Foreground="{StaticResource DarkerGrey}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-            </StackPanel>
+                <!-- Credits List with ScrollViewer -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding Credits}"
+                                  HorizontalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="20"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource ModalGrey}"
+                                        CornerRadius="8"
+                                        Padding="15"
+                                        MaxWidth="500">
+                                    <StackPanel Orientation="Vertical" Spacing="5">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="20"
+                                                   Foreground="{StaticResource White}"
+                                                   FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding Role}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="16"
+                                                   Foreground="{StaticResource Gold}"/>
+                                        <TextBlock Text="{Binding Note}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource TextLight}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,5,0,0"/>
+                                        <TextBlock Text="{Binding Link}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Blue}"
+                                                   TextWrapping="Wrap"
+                                                   IsVisible="{Binding HasLink}"
+                                                   Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

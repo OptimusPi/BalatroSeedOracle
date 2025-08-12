@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -8,6 +9,7 @@ namespace BalatroSeedOracle.Views.Modals
         public CreditsModal()
         {
             InitializeComponent();
+            DataContext = new CreditsModalViewModel();
         }
 
         private void InitializeComponent()
