@@ -39,6 +39,14 @@ namespace BalatroSeedOracle.Services
         // Auto-cutoff tracking
         private bool _isAutoCutoffEnabled;
         private int _currentCutoff = 0;
+        private OuijaJsonFilterDesc? _currentFilterDesc;
+        
+        // Auto-stop when too many results
+        private int _totalSeedsProcessed = 0;
+        private bool _isTestBatchComplete = false;
+        private int _testBatchHits = 0;
+        private const int TEST_BATCH_SIZE = 1225; // One batch at size 2 (35^3)
+        private const double MAX_RESULT_RATE = 0.01; // Stop if more than 1% of seeds match
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -54,6 +62,7 @@ namespace BalatroSeedOracle.Services
         public bool IsPaused => _isPaused;
         public ObservableCollection<BalatroSeedOracle.Models.SearchResult> Results => _results;
         public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
+        public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
         public int ResultCount => _results.Count;
@@ -158,6 +167,14 @@ namespace BalatroSeedOracle.Services
                         // Increment cutoff by 1 to avoid skipping score levels
                         _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
                         
+                        // Update the filter descriptor's cutoff so Motely stops outputting lower scores
+                        if (_currentFilterDesc.HasValue)
+                        {
+                            var desc = _currentFilterDesc.Value;
+                            desc.Cutoff = _currentCutoff;
+                            _currentFilterDesc = desc;
+                        }
+                        
                         DebugLogger.Log($"SearchInstance[{_searchId}]", 
                             $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
                         
@@ -172,6 +189,12 @@ namespace BalatroSeedOracle.Services
                     }
                     
                     _results.Add(result);
+                    
+                    // Count hits during test batch
+                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE)
+                    {
+                        _testBatchHits++;
+                    }
 
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
@@ -324,6 +347,14 @@ namespace BalatroSeedOracle.Services
                         // Increment cutoff by 1 to avoid skipping score levels
                         _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
                         
+                        // Update the filter descriptor's cutoff so Motely stops outputting lower scores
+                        if (_currentFilterDesc.HasValue)
+                        {
+                            var desc = _currentFilterDesc.Value;
+                            desc.Cutoff = _currentCutoff;
+                            _currentFilterDesc = desc;
+                        }
+                        
                         DebugLogger.Log($"SearchInstance[{_searchId}]", 
                             $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
                         
@@ -338,6 +369,12 @@ namespace BalatroSeedOracle.Services
                     }
                     
                     _results.Add(result);
+                    
+                    // Count hits during test batch
+                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE)
+                    {
+                        _testBatchHits++;
+                    }
 
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
@@ -510,6 +547,42 @@ namespace BalatroSeedOracle.Services
 
         private void HandleSearchProgress(SearchProgress progress)
         {
+            // Track total seeds processed
+            if (progress.SeedsSearched > 0)
+            {
+                _totalSeedsProcessed = (int)progress.SeedsSearched;
+                
+                // After test batch completes, check if we should continue
+                if (!_isTestBatchComplete && _totalSeedsProcessed >= TEST_BATCH_SIZE)
+                {
+                    _isTestBatchComplete = true;
+                    double testHitRate = (double)_testBatchHits / TEST_BATCH_SIZE;
+                    
+                    ConsoleOutput?.Invoke(this, $"\n📊 Test batch complete: {_testBatchHits} hits in {TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
+                    
+                    if (testHitRate > MAX_RESULT_RATE)
+                    {
+                        // Stop the search - too many results!
+                        ConsoleOutput?.Invoke(this, "\n⚠️ ══════════════════════════════════════════════════════════════");
+                        ConsoleOutput?.Invoke(this, "⚠️ WARNING: AUTOMATICALLY STOPPED BECAUSE OVERFLOW OF RESULTS!");
+                        ConsoleOutput?.Invoke(this, $"⚠️ Test batch found {testHitRate:P2} match rate (>{MAX_RESULT_RATE:P0} threshold)");
+                        ConsoleOutput?.Invoke(this, "⚠️ Try setting a more restrictive filter before you turn your CPU into a Black Hole!");
+                        ConsoleOutput?.Invoke(this, "⚠️ ══════════════════════════════════════════════════════════════\n");
+                        
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                            $"Auto-stopping search after test batch: {_testBatchHits} hits in {TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
+                        
+                        // Cancel the search
+                        StopSearch();
+                        return;
+                    }
+                    else
+                    {
+                        ConsoleOutput?.Invoke(this, $"✅ Hit rate acceptable, continuing search...");
+                    }
+                }
+            }
+            
             // Update UI with progress
             var eventArgs = new SearchProgressEventArgs
             {
@@ -522,8 +595,6 @@ namespace BalatroSeedOracle.Services
             };
 
             ProgressUpdated?.Invoke(this, eventArgs);
-
-            
         }
 
         private Task CompleteSearch(bool wasCancelled)
@@ -568,6 +639,7 @@ namespace BalatroSeedOracle.Services
 
                 // Create filter descriptor
                 var filterDesc = new OuijaJsonFilterDesc(config);
+                _currentFilterDesc = filterDesc; // Store reference for dynamic cutoff updates
                 
                 // Enable auto-cutoff if MinScore is 0
                 _isAutoCutoffEnabled = criteria.MinScore == 0;

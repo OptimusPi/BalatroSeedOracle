@@ -738,7 +738,7 @@ namespace BalatroSeedOracle.Views.Modals
                 needsBorder.AddHandler(DragDrop.DragOverEvent, OnNeedsDragOver);
                 needsBorder.AddHandler(DragDrop.DragEnterEvent, OnNeedsDragEnter);
                 needsBorder.AddHandler(DragDrop.DragLeaveEvent, OnNeedsDragLeave);
-                needsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("needs", needsBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             if (wantsBorder != null)
@@ -748,7 +748,7 @@ namespace BalatroSeedOracle.Views.Modals
                 wantsBorder.AddHandler(DragDrop.DragOverEvent, OnWantsDragOver);
                 wantsBorder.AddHandler(DragDrop.DragEnterEvent, OnWantsDragEnter);
                 wantsBorder.AddHandler(DragDrop.DragLeaveEvent, OnWantsDragLeave);
-                wantsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("wants", wantsBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             if (mustNotBorder != null)
@@ -758,8 +758,7 @@ namespace BalatroSeedOracle.Views.Modals
                 mustNotBorder.AddHandler(DragDrop.DragOverEvent, OnMustNotDragOver);
                 mustNotBorder.AddHandler(DragDrop.DragEnterEvent, OnMustNotDragEnter);
                 mustNotBorder.AddHandler(DragDrop.DragLeaveEvent, OnMustNotDragLeave);
-                mustNotBorder.PointerPressed += (s, e) =>
-                    ShowItemSelectionPopup("mustnot", mustNotBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             // Clear buttons removed from headers - using clearTab button in navigation instead
@@ -914,6 +913,7 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
@@ -1051,6 +1051,8 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    UpdatePersistentFavorites();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
@@ -4590,6 +4592,12 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                 }
 
+                // Add edition overlay for legendary jokers
+                if (!string.IsNullOrEmpty(edition) && edition != "none")
+                {
+                    AddEditionOverlay(grid, edition);
+                }
+
                 border.Child = grid;
             }
             else
@@ -4640,18 +4648,44 @@ namespace BalatroSeedOracle.Views.Modals
                         imgHeight = 20;
                     }
 
-                    var image = new Image
+                    // For jokers with editions, wrap in a grid to layer the edition
+                    if (category == "Jokers" && !string.IsNullOrEmpty(edition) && edition != "none")
                     {
-                        Source = imageSource,
-                        Stretch = Stretch.Uniform,
-                        Width = imgWidth,
-                        Height = imgHeight,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        RenderTransform = null,
-                        RenderTransformOrigin = RelativePoint.Center,
-                    };
-                    border.Child = image;
+                        var grid = new Grid { Width = imgWidth, Height = imgHeight };
+                        
+                        var image = new Image
+                        {
+                            Source = imageSource,
+                            Stretch = Stretch.Uniform,
+                            Width = imgWidth,
+                            Height = imgHeight,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            RenderTransform = null,
+                            RenderTransformOrigin = RelativePoint.Center,
+                        };
+                        grid.Children.Add(image);
+                        
+                        // Add edition overlay
+                        AddEditionOverlay(grid, edition);
+                        
+                        border.Child = grid;
+                    }
+                    else
+                    {
+                        var image = new Image
+                        {
+                            Source = imageSource,
+                            Stretch = Stretch.Uniform,
+                            Width = imgWidth,
+                            Height = imgHeight,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            RenderTransform = null,
+                            RenderTransformOrigin = RelativePoint.Center,
+                        };
+                        border.Child = image;
+                    }
                 }
                 else
                 {
@@ -4692,6 +4726,53 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Return the border directly without ViewBox wrapping
             return border;
+        }
+
+        private void AddEditionOverlay(Grid grid, string edition)
+        {
+            if (string.IsNullOrEmpty(edition) || edition == "none")
+                return;
+                
+            // For negative edition, apply an invert filter
+            if (edition.ToLower() == "negative")
+            {
+                // Avalonia doesn't have a direct invert filter, so we'll add a visual indicator
+                
+                var negativeIndicator = new TextBlock
+                {
+                    Text = "NEG",
+                    FontSize = 8,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    Background = Brushes.Black,
+                    Padding = new Thickness(2, 1),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+                    Margin = new Thickness(0, 2, 2, 0),
+                    ZIndex = 100
+                };
+                grid.Children.Add(negativeIndicator);
+            }
+            else
+            {
+                // For other editions, overlay the edition sprite
+                var editionImage = SpriteService.Instance.GetEditionImage(edition);
+                if (editionImage != null)
+                {
+                    var editionOverlay = new Image
+                    {
+                        Source = editionImage,
+                        Stretch = Stretch.Uniform,
+                        Width = 53,
+                        Height = 71,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        Opacity = 0.8,  // Semi-transparent overlay
+                        ZIndex = 50
+                    };
+                    grid.Children.Add(editionOverlay);
+                }
+            }
         }
 
         private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
@@ -4829,8 +4910,9 @@ namespace BalatroSeedOracle.Views.Modals
                 $"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}"
             );
 
-            // Refresh the item palette to show edition overlays
+            // Refresh both the item palette and drop zones to show edition overlays
             RefreshItemPalette();
+            UpdateDropZoneVisibility();
         }
 
         private void OnItemDeleteRequested(object? sender, EventArgs e, string? zoneName)
@@ -6095,8 +6177,6 @@ namespace BalatroSeedOracle.Views.Modals
             };
         }
 
-        // Removed old PopulateDropZones method - now using UpdateDropZoneVisibility with fancy layout
-
         private void UpdatePersistentFavorites()
         {
             // Update favorites in the service
@@ -6198,6 +6278,8 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    UpdatePersistentFavorites();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;

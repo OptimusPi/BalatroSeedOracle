@@ -38,6 +38,7 @@ namespace BalatroSeedOracle.Components
 
         public bool ShowCreateButton { get; set; } = true;
         public bool ShouldSwitchToVisualTab { get; set; } = false;
+        public bool IsInSearchModal { get; set; } = false;
         
         public static readonly StyledProperty<string> TitleProperty = 
             AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
@@ -52,6 +53,7 @@ namespace BalatroSeedOracle.Components
         private PanelSpinner? _filterSpinner;
         private Button? _selectButton;
         private Button? _createFilterButton;
+        private TextBlock? _orText;
 
         public FilterSelector()
         {
@@ -67,6 +69,7 @@ namespace BalatroSeedOracle.Components
             _filterSpinner = this.FindControl<PanelSpinner>("FilterSpinner");
             _selectButton = this.FindControl<Button>("SelectButton");
             _createFilterButton = this.FindControl<Button>("CreateFilterButton");
+            _orText = this.FindControl<TextBlock>("OrText");
 
             // Setup panel spinner
             if (_filterSpinner != null)
@@ -81,20 +84,23 @@ namespace BalatroSeedOracle.Components
             LoadAvailableFilters();
 
             // Hide create section if not needed
-            if (!ShowCreateButton && _createFilterButton != null)
+            if (!ShowCreateButton)
             {
-                _createFilterButton.IsVisible = false;
-
-                // Also hide the separator
-                var parent = _createFilterButton.Parent as StackPanel;
-                if (parent != null && parent.Children.Count > 2)
-                {
-                    // Hide the separator (should be the 3rd child)
-                    if (parent.Children[2] is Border separator)
-                    {
-                        separator.IsVisible = false;
-                    }
-                }
+                if (_createFilterButton != null)
+                    _createFilterButton.IsVisible = false;
+                
+                if (_orText != null)
+                    _orText.IsVisible = false;
+                    
+                // Use simpler text for select button in search modal
+                if (_selectButton != null)
+                    _selectButton.Content = "Select Filter";
+            }
+            else
+            {
+                // When create button is shown, use more descriptive text
+                if (_selectButton != null)
+                    _selectButton.Content = "Edit Selected Filter";
             }
         }
 

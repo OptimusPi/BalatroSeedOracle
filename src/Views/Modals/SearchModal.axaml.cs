@@ -54,6 +54,13 @@ namespace BalatroSeedOracle.Views.Modals
 
         // Controls
         private TextBox? _consoleOutput;
+        
+        // Console throttling
+        private readonly List<string> _consoleBuffer = new List<string>();
+        private DispatcherTimer? _consoleUpdateTimer;
+        private readonly object _consoleBufferLock = new object();
+        private int _consoleLineCount = 0;
+        private const int MAX_CONSOLE_LINES = 500;
 
         // Action buttons
         private Button? _cookButton;
@@ -260,7 +267,7 @@ namespace BalatroSeedOracle.Views.Modals
                     
                     _isSearching = true;
                     UpdateSearchUI();
-                    _searchStartTime = DateTime.UtcNow;
+                    _searchStartTime = _searchInstance.SearchStartTime; // Use actual search start time
                     
                     // Enable the stop button
                     if (_cookButton != null)
@@ -1043,6 +1050,13 @@ namespace BalatroSeedOracle.Views.Modals
             if (_consoleOutput != null)
             {
                 _consoleOutput.Text = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+                _consoleLineCount = 2;
+            }
+            
+            // Clear buffer too
+            lock (_consoleBufferLock)
+            {
+                _consoleBuffer.Clear();
             }
         }
         
@@ -1296,15 +1310,87 @@ namespace BalatroSeedOracle.Views.Modals
         
         private void OnConsoleOutput(object? sender, string line)
         {
+            // Buffer console lines instead of updating immediately
+            lock (_consoleBufferLock)
+            {
+                _consoleBuffer.Add(line);
+                
+                // Limit buffer size to prevent memory issues
+                if (_consoleBuffer.Count > 100)
+                {
+                    // Start timer if not already running
+                    if (_consoleUpdateTimer == null || !_consoleUpdateTimer.IsEnabled)
+                    {
+                        StartConsoleUpdateTimer();
+                    }
+                }
+            }
+        }
+        
+        private void StartConsoleUpdateTimer()
+        {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                if (_consoleOutput != null)
+                if (_consoleUpdateTimer == null)
                 {
-                    _consoleOutput.Text += line + "\n";
-                    // Auto-scroll to bottom
-                    _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
+                    _consoleUpdateTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(250) // Update 4 times per second max
+                    };
+                    _consoleUpdateTimer.Tick += OnConsoleUpdateTimerTick;
+                }
+                
+                if (!_consoleUpdateTimer.IsEnabled)
+                {
+                    _consoleUpdateTimer.Start();
                 }
             });
+        }
+        
+        private void OnConsoleUpdateTimerTick(object? sender, EventArgs e)
+        {
+            List<string> linesToAdd;
+            lock (_consoleBufferLock)
+            {
+                if (_consoleBuffer.Count == 0)
+                {
+                    _consoleUpdateTimer?.Stop();
+                    return;
+                }
+                
+                // Take all buffered lines
+                linesToAdd = new List<string>(_consoleBuffer);
+                _consoleBuffer.Clear();
+            }
+            
+            if (_consoleOutput != null && linesToAdd.Count > 0)
+            {
+                // Check if we need to trim old lines
+                _consoleLineCount += linesToAdd.Count;
+                
+                if (_consoleLineCount > MAX_CONSOLE_LINES)
+                {
+                    // Keep only the last MAX_CONSOLE_LINES lines
+                    var allLines = (_consoleOutput.Text ?? string.Empty).Split('\n').ToList();
+                    allLines.AddRange(linesToAdd);
+                    
+                    if (allLines.Count > MAX_CONSOLE_LINES)
+                    {
+                        allLines = allLines.Skip(allLines.Count - MAX_CONSOLE_LINES).ToList();
+                    }
+                    
+                    _consoleOutput.Text = string.Join("\n", allLines);
+                    _consoleLineCount = allLines.Count;
+                }
+                else
+                {
+                    // Just append the new lines
+                    _consoleOutput.Text += string.Join("\n", linesToAdd) + "\n";
+                }
+                
+                // Auto-scroll to bottom
+                _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
+            }
         }
         
         private void RestoreConsoleHistory()
@@ -1455,6 +1541,9 @@ namespace BalatroSeedOracle.Views.Modals
                     // Subscribe to console output
                     _searchInstance.ConsoleOutput += OnConsoleOutput;
                     
+                    // Start console update timer
+                    StartConsoleUpdateTimer();
+                    
                     // Restore console history
                     RestoreConsoleHistory();
 
@@ -1477,6 +1566,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Update UI state
                     _isSearching = _searchInstance.IsRunning;
                     _currentFilterPath = _searchInstance.ConfigPath;
+                    _searchStartTime = _searchInstance.SearchStartTime; // Use actual search start time
                     UpdateSearchUI();
                     
                     // If search is running, enable the stop button
