@@ -416,6 +416,8 @@ namespace BalatroSeedOracle.Controls
 
             if (sender is CheckBox checkBox && checkBox.Name != null)
             {
+                // Ensure checkbox has focus (fixes first-click issue)
+                checkBox.Focus();
                 // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
                 if (
                     checkBox.Name.StartsWith("Ante")
