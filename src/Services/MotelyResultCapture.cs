@@ -20,7 +20,7 @@ namespace BalatroSeedOracle.Services
         private Task? _captureTask;
         private int _resultCount = 0;
         private Motely.Filters.OuijaConfig? _filterConfig;
-    private bool _headerLabelsSent = false; // only send labels once for header
+        private bool _headerLabelsSent = false; // only send labels once for header
 
         public event Action<SearchResult>? ResultCaptured;
         public event Action<int>? ResultCountChanged;
@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.Services
                             Seed = result.Seed,
                             TotalScore = result.TotalScore,
                             Scores = result.ScoreWants,
-                            Labels = labels,
+                            Labels = labels  // Only set on first result when labels != null
                         };
 
                         DebugLogger.Log(

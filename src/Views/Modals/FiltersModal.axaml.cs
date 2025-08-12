@@ -50,10 +50,21 @@ namespace BalatroSeedOracle.Views.Modals
         private readonly List<string> _selectedMust = new();
         private readonly List<string> _selectedShould = new();  
         private readonly List<string> _selectedMustNot = new();
-        private readonly Dictionary<string, ItemConfig> _itemConfigs = new(); // uniqueKey -> config
-        private int _instanceCounter = 0;
+        private readonly Dictionary<string, ItemConfig> _itemConfigs = new(); // stores config per item instance
         private string _currentCategory = "Jokers";
         private int _itemKeyCounter = 0;
+        private int _instanceCounter = 0; // For making each dropped item unique
+        
+        private string MakeUniqueKey(string itemKey)
+        {
+            return $"{itemKey}#{++_instanceCounter}";
+        }
+        
+        private string GetBaseItemKey(string uniqueKey)
+        {
+            var idx = uniqueKey.LastIndexOf('#');
+            return idx > 0 ? uniqueKey.Substring(0, idx) : uniqueKey;
+        }
 
         /// <summary>
         /// Creates a unique key for an item to allow duplicates with different configurations
@@ -192,24 +203,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
-        // Helper method to create unique instance key
-        private string CreateUniqueKey(string itemKey)
-        {
-            return $"{itemKey}#{++_instanceCounter}";
-        }
-        
-        // Helper to get base item key from unique key
-        private string GetBaseKey(string uniqueKey)
-        {
-            var idx = uniqueKey.LastIndexOf('#');
-            return idx > 0 ? uniqueKey.Substring(0, idx) : uniqueKey;
-        }
-        
-        // Check if list contains any instance of this item type
-        private bool ContainsItemType(List<string> list, string itemKey)
-        {
-            return list.Any(uk => GetBaseKey(uk) == itemKey);
-        }
 
         // FilterSelector event handlers
         private async void OnFilterSelected(object? sender, string filterPath)
@@ -928,8 +921,8 @@ namespace BalatroSeedOracle.Views.Modals
 
                         if (itemCategory != null)
                         {
-                            var itemKey = $"{itemCategory}:{item}";
-                            _selectedMust.Add(new ItemInstance(itemKey));
+                            var uniqueKey = CreateUniqueKey(itemCategory, item);
+                            _selectedMust.Add(uniqueKey);
                         }
                     }
 
@@ -987,9 +980,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                                     if (itemCategory != null)
                                     {
-                                        var itemKey = $"{itemCategory}:{item}";
+                                        var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to needs (allow item in multiple lists)
-                                        _selectedMust.Add(new ItemInstance(itemKey));
+                                        _selectedMust.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1006,7 +999,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to needs (allow item in multiple lists)
-                            _selectedMust.Add(new ItemInstance(key));
+                            _selectedMust.Add(key);
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -1065,9 +1058,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                         if (itemCategory != null)
                         {
-                            var itemKey = $"{itemCategory}:{item}";
+                            var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to wants (allow item in multiple lists)
-                            _selectedShould.Add(new ItemInstance(itemKey));
+                            _selectedShould.Add(uniqueKey);
                         }
                     }
 
@@ -1126,9 +1119,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                                     if (itemCategory != null)
                                     {
-                                        var itemKey = $"{itemCategory}:{item}";
+                                        var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to wants (allow item in multiple lists)
-                                        _selectedShould.Add(new ItemInstance(itemKey));
+                                        _selectedShould.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1145,7 +1138,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to wants (allow item in multiple lists)
-                            _selectedShould.Add(new ItemInstance(key));
+                            _selectedShould.Add(key);
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -2755,7 +2748,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var itemKey = $"{category}:{item}";
                             if (!_selectedShould.Contains(itemKey))
                             {
-                                _selectedShould.Add(new ItemInstance(itemKey));
+                                _selectedShould.Add(itemKey);
                             }
                         }
                     }
@@ -3427,7 +3420,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void UpdateSelectedItemsPanel(string panelName, HashSet<string> items)
+        private void UpdateSelectedItemsPanel(string panelName, List<string> items)
         {
             var panel = this.FindControl<WrapPanel>(panelName);
             if (panel == null)
@@ -3867,7 +3860,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void AddItemFromJson(JsonElement item, HashSet<string> targetSet)
+        private void AddItemFromJson(JsonElement item, List<string> targetSet)
         {
             if (
                 item.TryGetProperty("type", out var typeElement)
@@ -3898,7 +3891,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void PopulateDropZonePanel(WrapPanel panel, HashSet<string> items, string zoneName)
+        private void PopulateDropZonePanel(WrapPanel panel, List<string> items, string zoneName)
         {
             panel.Children.Clear();
 
@@ -4025,7 +4018,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string name, string category)> jokers,
             ref double startX,
             string zoneName,
-            HashSet<string> items
+            List<string> items
         )
         {
             const double fanAngle = 8; // degrees per card (increased from 7)
@@ -4222,7 +4215,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string name, string category)> items,
             ref double startX,
             string zoneName,
-            HashSet<string> allItems,
+            List<string> allItems,
             string itemType
         )
         {
@@ -4318,7 +4311,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void RenderHorizontalTags(
             Canvas canvas,
             List<(string name, string category)> tags, 
-            HashSet<string> items,
+            List<string> items,
             string zoneName
         )
         {
@@ -4372,7 +4365,7 @@ namespace BalatroSeedOracle.Views.Modals
             Canvas canvas,
             List<(string name, string category)> bosses,
             double startX,
-            HashSet<string> items,
+            List<string> items,
             string zoneName
         )
         {
@@ -4427,7 +4420,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string name, string category)> stackItems,
             double x,
             string stackType,
-            HashSet<string> allItems,
+            List<string> allItems,
             string zoneName
         )
         {
@@ -5273,7 +5266,7 @@ namespace BalatroSeedOracle.Views.Modals
                     if (card.IsSelectedNeed)
                     {
                         _selectedMust.Remove(key);
-                        _selectedShould.Add(new ItemInstance(key));
+                        _selectedShould.Add(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = true;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
@@ -5761,7 +5754,7 @@ namespace BalatroSeedOracle.Views.Modals
         }
 
         private void FixUniqueKeyParsing(
-            HashSet<string> items,
+            List<string> items,
             List<Motely.Filters.OuijaConfig.FilterItem> targetList,
             int defaultScore = 0
         )
@@ -6246,8 +6239,12 @@ namespace BalatroSeedOracle.Views.Modals
                     var category = GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
-                    // Add to selected needs
-                    _selectedMust.Add($"{category}:{itemName}");
+                    // Add to selected needs with unique key
+                    if (itemName != null)
+                    {
+                        var uniqueKey = CreateUniqueKey(category, itemName);
+                        _selectedMust.Add(uniqueKey);
+                    }
                 }
             }
 
@@ -6259,8 +6256,12 @@ namespace BalatroSeedOracle.Views.Modals
                     var category = GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
-                    // Add to selected wants
-                    _selectedShould.Add($"{category}:{itemName}");
+                    // Add to selected wants with unique key
+                    if (itemName != null)
+                    {
+                        var uniqueKey = CreateUniqueKey(category, itemName);
+                        _selectedShould.Add(uniqueKey);
+                    }
                 }
             }
 
@@ -6272,8 +6273,12 @@ namespace BalatroSeedOracle.Views.Modals
                     var category = GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
-                    // Add to selected must not
-                    _selectedMustNot.Add($"{category}:{itemName}");
+                    // Add to selected must not with unique key
+                    if (itemName != null)
+                    {
+                        var uniqueKey = CreateUniqueKey(category, itemName);
+                        _selectedMustNot.Add(uniqueKey);
+                    }
                 }
             }
 
@@ -6399,9 +6404,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                         if (itemCategory != null)
                         {
-                            var itemKey = $"{itemCategory}:{item}";
+                            var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to must not (allow item in multiple lists)
-                            _selectedMustNot.Add(itemKey);
+                            _selectedMustNot.Add(uniqueKey);
                         }
                     }
 
@@ -6460,9 +6465,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                                     if (itemCategory != null)
                                     {
-                                        var itemKey = $"{itemCategory}:{item}";
+                                        var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to must not (allow item in multiple lists)
-                                        _selectedMustNot.Add(itemKey);
+                                        _selectedMustNot.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -6873,7 +6878,7 @@ namespace BalatroSeedOracle.Views.Modals
                         break;
                     case "wants":
                         if (!_selectedShould.Contains(itemKey))
-                            _selectedShould.Add(new ItemInstance(itemKey));
+                            _selectedShould.Add(itemKey);
                         break;
                     case "mustnot":
                         if (!_selectedMustNot.Contains(itemKey))
@@ -7106,14 +7111,14 @@ namespace BalatroSeedOracle.Views.Modals
                     switch (dropZoneType)
                     {
                         case "needs":
-                            _selectedMust.Add(new ItemInstance(key));
+                            _selectedMust.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "wants":
-                            _selectedShould.Add(new ItemInstance(key));
+                            _selectedShould.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS via popup"

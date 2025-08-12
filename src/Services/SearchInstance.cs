@@ -44,9 +44,11 @@ namespace BalatroSeedOracle.Services
         // Auto-stop when too many results
         private int _totalSeedsProcessed = 0;
         private bool _isTestBatchComplete = false;
+        private int _currentTestBatch = 0;
         private int _testBatchHits = 0;
-        private const int TEST_BATCH_SIZE = 1225; // One batch at size 2 (35^3)
-        private const double MAX_RESULT_RATE = 0.01; // Stop if more than 1% of seeds match
+        private const int TEST_BATCH_SIZE = 35; // Test 35 seeds at a time
+        private const int TOTAL_TEST_BATCHES = 10; // Run 10 test batches
+        private const double MAX_RESULT_RATE = 0.20; // Stop if more than 20% of seeds match in a batch
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -161,7 +163,7 @@ namespace BalatroSeedOracle.Services
                 _resultCapture.ResultCaptured += async (result) =>
                 {
                     // If auto-cutoff is enabled, check if this result might increase the cutoff
-                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 10)
                     {
                         var oldCutoff = _currentCutoff;
                         // Increment cutoff by 1 to avoid skipping score levels
@@ -190,8 +192,8 @@ namespace BalatroSeedOracle.Services
                     
                     _results.Add(result);
                     
-                    // Count hits during test batch
-                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE)
+                    // Count hits during test batches
+                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE * TOTAL_TEST_BATCHES)
                     {
                         _testBatchHits++;
                     }
@@ -339,7 +341,7 @@ namespace BalatroSeedOracle.Services
                 _resultCapture.ResultCaptured += async (result) =>
                 {
                     // If auto-cutoff is enabled, check if this result might increase the cutoff
-                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 5)
+                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 10)
                     {
                         var oldCutoff = _currentCutoff;
                         // Increment cutoff by 1 to avoid skipping score levels
@@ -368,8 +370,8 @@ namespace BalatroSeedOracle.Services
                     
                     _results.Add(result);
                     
-                    // Count hits during test batch
-                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE)
+                    // Count hits during test batches
+                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE * TOTAL_TEST_BATCHES)
                     {
                         _testBatchHits++;
                     }
@@ -548,33 +550,65 @@ namespace BalatroSeedOracle.Services
             {
                 _totalSeedsProcessed = (int)progress.SeedsSearched;
                 
-                // After test batch completes, check if we should continue
-                if (!_isTestBatchComplete && _totalSeedsProcessed >= TEST_BATCH_SIZE)
+                // Check test batches progressively
+                if (!_isTestBatchComplete && _totalSeedsProcessed > 0)
                 {
-                    _isTestBatchComplete = true;
-                    double testHitRate = (double)_testBatchHits / TEST_BATCH_SIZE;
+                    int expectedBatch = (_totalSeedsProcessed - 1) / TEST_BATCH_SIZE;
                     
-                    ConsoleOutput?.Invoke(this, $"\n📊 Test batch complete: {_testBatchHits} hits in {TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
-                    
-                    if (testHitRate > MAX_RESULT_RATE)
+                    // Check if we've completed a new test batch
+                    if (expectedBatch > _currentTestBatch && expectedBatch < TOTAL_TEST_BATCHES)
                     {
-                        // Stop the search - too many results!
-                        ConsoleOutput?.Invoke(this, "\n⚠️ ══════════════════════════════════════════════════════════════");
-                        ConsoleOutput?.Invoke(this, "⚠️ WARNING: AUTOMATICALLY STOPPED BECAUSE OVERFLOW OF RESULTS!");
-                        ConsoleOutput?.Invoke(this, $"⚠️ Test batch found {testHitRate:P2} match rate (>{MAX_RESULT_RATE:P0} threshold)");
-                        ConsoleOutput?.Invoke(this, "⚠️ Try setting a more restrictive filter before you turn your CPU into a Black Hole!");
-                        ConsoleOutput?.Invoke(this, "⚠️ ══════════════════════════════════════════════════════════════\n");
+                        _currentTestBatch = expectedBatch;
+                        double testHitRate = (double)_testBatchHits / (_currentTestBatch * TEST_BATCH_SIZE);
                         
-                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                            $"Auto-stopping search after test batch: {_testBatchHits} hits in {TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
+                        ConsoleOutput?.Invoke(this, $"\n📊 Test batch {_currentTestBatch}/{TOTAL_TEST_BATCHES} complete: {_testBatchHits} total hits in {_currentTestBatch * TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
                         
-                        // Cancel the search
-                        StopSearch();
-                        return;
+                        // Check if hit rate is too high
+                        if (_testBatchHits > 0 && testHitRate > MAX_RESULT_RATE)
+                        {
+                            // Too many results - increase cutoff
+                            if (_isAutoCutoffEnabled && _currentCutoff < 10)
+                            {
+                                int oldCutoff = _currentCutoff;
+                                _currentCutoff = Math.Min(_currentCutoff + 1, 10);
+                                
+                                ConsoleOutput?.Invoke(this, $"⚡ Auto-adjusting cutoff from {oldCutoff} to {_currentCutoff} due to high hit rate");
+                                
+                                // Reset hit counter for next batch
+                                _testBatchHits = 0;
+                                
+                                // Notify UI of cutoff change
+                                CutoffChanged?.Invoke(this, _currentCutoff);
+                            }
+                            else if (!_isAutoCutoffEnabled || _currentCutoff >= 10)
+                            {
+                                // Can't increase cutoff further, stop the search
+                                ConsoleOutput?.Invoke(this, "\n⚠️ ══════════════════════════════════════════════════════════════");
+                                ConsoleOutput?.Invoke(this, "⚠️ WARNING: AUTOMATICALLY STOPPED BECAUSE OVERFLOW OF RESULTS!");
+                                ConsoleOutput?.Invoke(this, $"⚠️ Test batch found {testHitRate:P2} match rate (>{MAX_RESULT_RATE:P0} threshold)");
+                                ConsoleOutput?.Invoke(this, "⚠️ Cutoff already at maximum (10) or auto-cutoff disabled");
+                                ConsoleOutput?.Invoke(this, "⚠️ Try setting a more restrictive filter!");
+                                ConsoleOutput?.Invoke(this, "⚠️ ══════════════════════════════════════════════════════════════\n");
+                                
+                                DebugLogger.Log($"SearchInstance[{_searchId}]", 
+                                    $"Auto-stopping search after test batch {_currentTestBatch}: {testHitRate:P2} hit rate");
+                                
+                                // Cancel the search
+                                StopSearch();
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            ConsoleOutput?.Invoke(this, $"✅ Hit rate acceptable ({testHitRate:P2}), continuing...");
+                        }
                     }
-                    else
+                    
+                    // After all test batches complete, mark testing as done
+                    if (_currentTestBatch >= TOTAL_TEST_BATCHES - 1)
                     {
-                        ConsoleOutput?.Invoke(this, $"✅ Hit rate acceptable, continuing search...");
+                        _isTestBatchComplete = true;
+                        ConsoleOutput?.Invoke(this, $"\n✅ All {TOTAL_TEST_BATCHES} test batches complete. Full search proceeding with cutoff={_currentCutoff}");
                     }
                 }
             }
