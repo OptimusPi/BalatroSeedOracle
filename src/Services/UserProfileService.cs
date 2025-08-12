@@ -134,6 +134,26 @@ namespace BalatroSeedOracle.Services
                 $"Saved search state: Batch {state.LastCompletedBatch}/{state.TotalBatches}"
             );
         }
+        
+        /// <summary>
+        /// Update search state batch number without writing to disk
+        /// </summary>
+        public void UpdateSearchBatch(ulong completedBatch)
+        {
+            if (_currentProfile.LastSearchState != null)
+            {
+                _currentProfile.LastSearchState.LastCompletedBatch = completedBatch;
+                _currentProfile.LastSearchState.LastActiveTime = DateTime.UtcNow;
+            }
+        }
+        
+        /// <summary>
+        /// Force save the current profile to disk
+        /// </summary>
+        public void FlushProfile()
+        {
+            SaveProfile();
+        }
 
         /// <summary>
         /// Get the last saved search state if available
