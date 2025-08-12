@@ -438,7 +438,7 @@ namespace BalatroSeedOracle.Components
         {
             StopSoulAnimation();
 
-            var startTime = DateTime.Now;
+            var startTime = DateTime.UtcNow;
             _soulAnimationTimer = new System.Threading.Timer(
                 _ =>
                 {
@@ -446,7 +446,7 @@ namespace BalatroSeedOracle.Components
                     {
                         if (_soulImage.IsVisible)
                         {
-                            var elapsed = (DateTime.Now - startTime).TotalSeconds;
+                            var elapsed = (DateTime.UtcNow - startTime).TotalSeconds;
 
                             // Floating scale animation
                             var scale = 1.0 + 0.07 + 0.02 * Math.Sin(1.8 * elapsed);
