@@ -617,12 +617,35 @@ namespace BalatroSeedOracle.Views.Modals
                     NavigateToSection("TarotsTab");
                 }
             );
+            
+            // Planets tab
+            var planetsTab = this.FindControl<Button>("PlanetsTab");
+            planetsTab?.AddHandler(
+                Button.ClickEvent,
+                (s, e) =>
+                {
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "PlanetsTab clicked");
+                    NavigateToSection("PlanetsTab");
+                }
+            );
+            
             spectralsTab?.AddHandler(
                 Button.ClickEvent,
                 (s, e) =>
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SpectralsTab clicked");
                     NavigateToSection("SpectralsTab");
+                }
+            );
+            
+            // Playing Cards tab
+            var playingCardsTab = this.FindControl<Button>("PlayingCardsTab");
+            playingCardsTab?.AddHandler(
+                Button.ClickEvent,
+                (s, e) =>
+                {
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "PlayingCardsTab clicked");
+                    NavigateToSection("PlayingCardsTab");
                 }
             );
             tagsTab?.AddHandler(
@@ -1003,7 +1026,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to NEEDS"
+                                $"✅ Added {itemName} to NEEDS with key: {key}"
                             );
                         }
 
@@ -4977,6 +5000,10 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (_configPopupContent != null)
             {
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    "FiltersModal",
+                    $"[POPUP] Opening config for key: {key}, itemName: {itemName}, existingConfig: {existingConfig?.ItemKey}"
+                );
                 _configPopupContent.SetItem(key, itemName, existingConfig);
             }
 

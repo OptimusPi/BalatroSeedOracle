@@ -519,7 +519,9 @@
                                     <Button Name="CommonJokersTab" Content="Common" Classes="nav-button nav-joker" />
                                     <Button Name="VouchersTab" Content="Voucher" Classes="nav-button nav-voucher" />
                                     <Button Name="TarotsTab" Content="Tarot" Classes="nav-button nav-tarot" />
+                                    <Button Name="PlanetsTab" Content="Planet" Classes="nav-button nav-planet" />
                                     <Button Name="SpectralsTab" Content="Spectral" Classes="nav-button nav-spectral" />
+                                    <Button Name="PlayingCardsTab" Content="Playing Cards" Classes="nav-button nav-playing" />
                                     <Button Name="TagsTab" Content="Tag" Classes="nav-button nav-tag" />
                                     <Button Name="BossesTab" Content="Boss" Classes="nav-button nav-boss" />
                                     <Button Name="ClearTab" Content="Clear ALL" Classes="nav-button" />
