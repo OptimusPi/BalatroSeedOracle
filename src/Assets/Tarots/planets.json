@@ -1,0 +1,15 @@
+[
+  {"name": "mercury", "pos": {"x": 0, "y": 3}},
+  {"name": "venus", "pos": {"x": 1, "y": 3}},
+  {"name": "earth", "pos": {"x": 2, "y": 3}},
+  {"name": "mars", "pos": {"x": 3, "y": 3}},
+  {"name": "jupiter", "pos": {"x": 4, "y": 3}},
+  {"name": "saturn", "pos": {"x": 5, "y": 3}},
+  {"name": "uranus", "pos": {"x": 6, "y": 3}},
+  {"name": "neptune", "pos": {"x": 7, "y": 3}},
+  {"name": "pluto", "pos": {"x": 8, "y": 3}},
+  {"name": "planetx", "pos": {"x": 0, "y": 6}},
+  {"name": "ceres", "pos": {"x": 1, "y": 6}},
+  {"name": "eris", "pos": {"x": 2, "y": 6}},
+  {"name": "anyplanet", "pos": {"x": 3, "y": 2}}
+]
