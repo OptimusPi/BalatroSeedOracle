@@ -30,12 +30,6 @@
     "link": "https://github.com/SpectralPack"
   },
   {
-    "name": "BlakexArt",
-    "role": "Mascot Artist",
-    "note": "Thanks for always being available for my random art requests.",
-    "link": "https://instagram.com/blakex_art"
-  },
-  {
     "name": "Cobmaster",
     "role": "Fellow Seed Lover",
     "note": "Thanks for testing, also for waiting on chat's seed requests.",
@@ -52,5 +46,5 @@
     "role": "Fellow Seed Lover",
     "note": "Really fun & inspiring to watch your seed finding work. GZ on the quintuple soul!",
     "link": "https://github.com/alex-cova/perkeoapp"
-  },
+  }
 ]
