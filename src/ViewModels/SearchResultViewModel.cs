@@ -60,8 +60,6 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        // ScoreBreakdown removed - no longer needed
-
         /// <summary>
         /// Formatted score display (with thousands separator)
         /// </summary>
