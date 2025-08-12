@@ -171,7 +171,7 @@ temp"
 
         private void OnNewClick(object? sender, RoutedEventArgs e)
         {
-            var newFileName = $"custom_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var newFileName = $"custom_{DateTime.UtcNow:yyyyMMdd_HHmmss}.txt";
             var newFilePath = Path.Combine(_wordListsPath, newFileName);
 
             try
