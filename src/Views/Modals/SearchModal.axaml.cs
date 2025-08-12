@@ -1556,9 +1556,7 @@ namespace BalatroSeedOracle.Views.Modals
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = "", // ScoreBreakdown removed
-                                TallyScores = result.Scores,
-                                ItemLabels = result.Labels
+                                TallyScores = result.Scores
                             }
                         );
                     }
@@ -1725,9 +1723,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 {
                                     Seed = result.Seed,
                                     Score = result.TotalScore,
-                                    Details = "", // ScoreBreakdown removed
-                                    TallyScores = result.Scores,
-                                    ItemLabels = result.Labels
+                                    TallyScores = result.Scores
                                 }
                             );
                         }
@@ -1746,8 +1742,7 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    AddToConsole("No existing results found in database.");
-                    AddToConsole("Start a new search to find seeds!");
+                    AddToConsole("No existing results in database, searching for new seeds...");
                 }
             }
             catch (Exception ex)

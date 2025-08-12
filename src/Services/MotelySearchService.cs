@@ -183,8 +183,7 @@ public class MotelySearchService : IDisposable
                         Result = new Views.Modals.SearchResult
                         {
                             Seed = result.Seed,
-                            Score = result.TotalScore,
-                            Details = "", // ScoreBreakdown removed
+                            Score = result.TotalScore
                         },
                     }
                 );
@@ -364,7 +363,7 @@ public class MotelySearchService : IDisposable
                         {
                             Seed = result.Seed,
                             Score = result.TotalScore,
-                            Details = "", // ScoreBreakdown removed
+                            TallyScores = result.Scores
                         },
                     }
                 );

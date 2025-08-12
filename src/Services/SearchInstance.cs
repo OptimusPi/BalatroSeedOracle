@@ -208,9 +208,7 @@ namespace BalatroSeedOracle.Services
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = "", // Removed ScoreBreakdown
-                                TallyScores = result.Scores,
-                                ItemLabels = result.Labels
+                                TallyScores = result.Scores
                             },
                         }
                     );
@@ -388,9 +386,7 @@ namespace BalatroSeedOracle.Services
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = "", // Removed ScoreBreakdown
-                                TallyScores = result.Scores,
-                                ItemLabels = result.Labels
+                                TallyScores = result.Scores
                             },
                         }
                     );

@@ -1,3 +1,5 @@
+using System;
+
 namespace BalatroSeedOracle.Models;
 
 /// <summary>
@@ -7,6 +9,5 @@ public class SearchResult
 {
     public string Seed { get; set; } = "";
     public int TotalScore { get; set; }
-    public int[]? Scores { get; set; }
-    public string[]? Labels { get; set; }
+    public int[] Scores { get; set; } = Array.Empty<int>();
 }

@@ -47,10 +47,11 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class FiltersModalContent : UserControl
     {
         private readonly Dictionary<string, List<string>> _itemCategories;
-        private readonly HashSet<string> _selectedNeeds = new();
-        private readonly HashSet<string> _selectedWants = new();
-        private readonly HashSet<string> _selectedMustNot = new();
-        private readonly Dictionary<string, ItemConfig> _itemConfigs = new();
+        private readonly List<string> _selectedMust = new();
+        private readonly List<string> _selectedShould = new();  
+        private readonly List<string> _selectedMustNot = new();
+        private readonly Dictionary<string, ItemConfig> _itemConfigs = new(); // uniqueKey -> config
+        private int _instanceCounter = 0;
         private string _currentCategory = "Jokers";
         private int _itemKeyCounter = 0;
 
@@ -97,7 +98,9 @@ namespace BalatroSeedOracle.Views.Modals
                 ["Favorites"] = FavoritesService.Instance.GetFavoriteItems(),
                 ["Jokers"] = BalatroData.Jokers.Keys.ToList(),
                 ["Tarots"] = BalatroData.TarotCards.Keys.ToList(),
+                ["Planets"] = BalatroData.PlanetCards.Keys.ToList(),
                 ["Spectrals"] = BalatroData.SpectralCards.Keys.ToList(),
+                ["PlayingCards"] = GeneratePlayingCardsList(),
                 ["Vouchers"] = BalatroData.Vouchers.Keys.ToList(),
                 ["Tags"] = BalatroData.Tags.Keys.ToList(),
                 ["Bosses"] = BalatroData.BossBlinds.Keys.ToList(),
@@ -187,6 +190,25 @@ namespace BalatroSeedOracle.Views.Modals
                     saveFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(saveFilterNameInput.Text);
                 };
             }
+        }
+        
+        // Helper method to create unique instance key
+        private string CreateUniqueKey(string itemKey)
+        {
+            return $"{itemKey}#{++_instanceCounter}";
+        }
+        
+        // Helper to get base item key from unique key
+        private string GetBaseKey(string uniqueKey)
+        {
+            var idx = uniqueKey.LastIndexOf('#');
+            return idx > 0 ? uniqueKey.Substring(0, idx) : uniqueKey;
+        }
+        
+        // Check if list contains any instance of this item type
+        private bool ContainsItemType(List<string> list, string itemKey)
+        {
+            return list.Any(uk => GetBaseKey(uk) == itemKey);
         }
 
         // FilterSelector event handlers
@@ -907,8 +929,7 @@ namespace BalatroSeedOracle.Views.Modals
                         if (itemCategory != null)
                         {
                             var itemKey = $"{itemCategory}:{item}";
-                            // Add to needs (allow item in multiple lists)
-                            _selectedNeeds.Add(itemKey);
+                            _selectedMust.Add(new ItemInstance(itemKey));
                         }
                     }
 
@@ -968,7 +989,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     {
                                         var itemKey = $"{itemCategory}:{item}";
                                         // Add to needs (allow item in multiple lists)
-                                        _selectedNeeds.Add(itemKey);
+                                        _selectedMust.Add(new ItemInstance(itemKey));
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -985,7 +1006,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to needs (allow item in multiple lists)
-                            _selectedNeeds.Add(key);
+                            _selectedMust.Add(new ItemInstance(key));
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -1046,7 +1067,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             var itemKey = $"{itemCategory}:{item}";
                             // Add to wants (allow item in multiple lists)
-                            _selectedWants.Add(itemKey);
+                            _selectedShould.Add(new ItemInstance(itemKey));
                         }
                     }
 
@@ -1107,7 +1128,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     {
                                         var itemKey = $"{itemCategory}:{item}";
                                         // Add to wants (allow item in multiple lists)
-                                        _selectedWants.Add(itemKey);
+                                        _selectedShould.Add(new ItemInstance(itemKey));
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1124,7 +1145,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to wants (allow item in multiple lists)
-                            _selectedWants.Add(key);
+                            _selectedShould.Add(new ItemInstance(key));
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -1266,15 +1287,8 @@ namespace BalatroSeedOracle.Views.Modals
                     // Create OuijaConfig from current selections
                     var config = BuildOuijaConfigFromSelections();
 
-                    // Serialize to JSON
-                    var options = new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    };
-
-                    var json = JsonSerializer.Serialize(config, options);
+                    // Use the same serialization method that properly handles sources
+                    var json = SerializeOuijaConfig(config);
                     jsonEditor.Text = json;
 
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1301,7 +1315,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Get the current JSON content - either from selections or default
                 string jsonContent;
-                if (_selectedNeeds.Any() || _selectedWants.Any() || _selectedMustNot.Any())
+                if (_selectedMust.Any() || _selectedShould.Any() || _selectedMustNot.Any())
                 {
                     // Build JSON from current selections
                     var config = BuildOuijaConfigFromSelections();
@@ -2089,6 +2103,23 @@ namespace BalatroSeedOracle.Views.Modals
             e.Handled = true;
         }
 
+        private List<string> GeneratePlayingCardsList()
+        {
+            var cards = new List<string>();
+            var suits = new[] { "Hearts", "Diamonds", "Clubs", "Spades" };
+            var ranks = new[] { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
+            
+            foreach (var suit in suits)
+            {
+                foreach (var rank in ranks)
+                {
+                    cards.Add($"{rank} of {suit}");
+                }
+            }
+            
+            return cards;
+        }
+        
         private void LoadAllCategories()
         {
             // Use ItemPaletteContent as the main container for items
@@ -2137,7 +2168,9 @@ namespace BalatroSeedOracle.Views.Modals
             AddCategorySection(itemsPanel, "Jokers", "Common", "CommonJokersTab");
             AddCategorySection(itemsPanel, "Vouchers", null, "VouchersTab");
             AddCategorySection(itemsPanel, "Tarots", null, "TarotsTab");
+            AddCategorySection(itemsPanel, "Planets", null, "PlanetsTab");
             AddCategorySection(itemsPanel, "Spectrals", null, "SpectralsTab");
+            AddCategorySection(itemsPanel, "PlayingCards", null, "PlayingCardsTab");
             AddCategorySection(itemsPanel, "Tags", null, "TagsTab");
             AddCategorySection(itemsPanel, "Bosses", null, "BossesTab");
 
@@ -2481,7 +2514,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void ClearNeeds()
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
-            _selectedNeeds.Clear();
+            _selectedMust.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
         }
@@ -2489,7 +2522,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void ClearWants()
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
-            _selectedWants.Clear();
+            _selectedShould.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
         }
@@ -2545,8 +2578,8 @@ namespace BalatroSeedOracle.Views.Modals
                 var itemKey = $"{storageCategory}:{itemName}";
 
                 // Check if this item is in any of the selection lists
-                bool isInNeeds = _selectedNeeds.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
-                bool isInWants = _selectedWants.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+                bool isInNeeds = _selectedMust.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+                bool isInWants = _selectedShould.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
                 bool isInMustNot = _selectedMustNot.Any(k =>
                     k.StartsWith($"{storageCategory}:{itemName}")
                 );
@@ -2720,9 +2753,9 @@ namespace BalatroSeedOracle.Views.Modals
                         if (category != null)
                         {
                             var itemKey = $"{category}:{item}";
-                            if (!_selectedWants.Contains(itemKey))
+                            if (!_selectedShould.Contains(itemKey))
                             {
-                                _selectedWants.Add(itemKey);
+                                _selectedShould.Add(new ItemInstance(itemKey));
                             }
                         }
                     }
@@ -2780,7 +2813,7 @@ namespace BalatroSeedOracle.Views.Modals
             itemsPanel.Children.Add(headerPanel);
 
             // Group selected items by their actual category
-            var selectedItems = _selectedNeeds.Union(_selectedWants).ToList();
+            var selectedItems = _selectedMust.Union(_selectedShould).ToList();
             if (!selectedItems.Any())
             {
                 itemsPanel.Children.Add(
@@ -2853,7 +2886,7 @@ namespace BalatroSeedOracle.Views.Modals
             if (category == "Favorites")
             {
                 // For favorites, show all selected items grouped by category
-                var allSelected = _selectedNeeds.Union(_selectedWants).ToList();
+                var allSelected = _selectedMust.Union(_selectedShould).ToList();
 
                 if (allSelected.Any())
                 {
@@ -2991,8 +3024,8 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Check if selected (use actual category for key)
             var key = $"{actualCategory}:{itemName}";
-            card.IsSelectedNeed = _selectedNeeds.Contains(key);
-            card.IsSelectedWant = _selectedWants.Contains(key);
+            card.IsSelectedNeed = _selectedMust.Contains(key);
+            card.IsSelectedWant = _selectedShould.Contains(key);
 
             // Apply edition if configured for this item
             if (_itemConfigs.TryGetValue(key, out var config) && !string.IsNullOrEmpty(config.Edition))
@@ -3082,8 +3115,8 @@ namespace BalatroSeedOracle.Views.Modals
         private void UpdateCardSelection(ResponsiveCard card)
         {
             var key = $"{card.Category}:{card.ItemName}";
-            card.IsSelectedNeed = _selectedNeeds.Contains(key);
-            card.IsSelectedWant = _selectedWants.Contains(key);
+            card.IsSelectedNeed = _selectedMust.Contains(key);
+            card.IsSelectedWant = _selectedShould.Contains(key);
         }
 
         private List<string> GetItemsForCategory(string category, string? subCategory)
@@ -3138,13 +3171,13 @@ namespace BalatroSeedOracle.Views.Modals
             var countText = this.FindControl<TextBlock>("SelectionCountText");
             if (countText != null)
             {
-                var total = _selectedNeeds.Count + _selectedWants.Count + _selectedMustNot.Count;
+                var total = _selectedMust.Count + _selectedShould.Count + _selectedMustNot.Count;
                 countText.Text = $"{total} selected";
             }
 
             // Update needs/wants/mustnot panels
-            UpdateSelectedItemsPanel("NeedsPanel", _selectedNeeds);
-            UpdateSelectedItemsPanel("WantsPanel", _selectedWants);
+            UpdateSelectedItemsPanel("NeedsPanel", _selectedMust);
+            UpdateSelectedItemsPanel("WantsPanel", _selectedShould);
             UpdateSelectedItemsPanel("MustNotPanel", _selectedMustNot);
         }
 
@@ -3645,8 +3678,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnClearClick(object? sender, RoutedEventArgs e)
         {
-            _selectedNeeds.Clear();
-            _selectedWants.Clear();
+            _selectedMust.Clear();
+            _selectedShould.Clear();
             LoadCategory(_currentCategory);
             UpdateSelectionDisplay();
         }
@@ -3666,11 +3699,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (needsPlaceholder != null && needsScrollViewer != null && needsPanel != null)
             {
-                if (_selectedNeeds.Any())
+                if (_selectedMust.Any())
                 {
                     needsPlaceholder.IsVisible = false;
                     needsScrollViewer.IsVisible = true;
-                    PopulateDropZonePanel(needsPanel, _selectedNeeds, "needs");
+                    PopulateDropZonePanel(needsPanel, _selectedMust, "needs");
                     if (clearNeedsButton != null)
                     {
                         clearNeedsButton.IsVisible = true;
@@ -3699,11 +3732,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (wantsPlaceholder != null && wantsScrollViewer != null && wantsPanel != null)
             {
-                if (_selectedWants.Any())
+                if (_selectedShould.Any())
                 {
                     wantsPlaceholder.IsVisible = false;
                     wantsScrollViewer.IsVisible = true;
-                    PopulateDropZonePanel(wantsPanel, _selectedWants, "wants");
+                    PopulateDropZonePanel(wantsPanel, _selectedShould, "wants");
                     if (clearWantsButton != null)
                     {
                         clearWantsButton.IsVisible = true;
@@ -3755,7 +3788,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             BalatroSeedOracle.Helpers.DebugLogger.Log(
-                $"📈 Updated drop zones: {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
+                $"📈 Updated drop zones: {_selectedMust.Count} needs, {_selectedShould.Count} wants, {_selectedMustNot.Count} must not"
             );
         }
 
@@ -3780,8 +3813,8 @@ namespace BalatroSeedOracle.Views.Modals
                 var root = jsonDoc.RootElement;
 
                 // Clear current selections
-                _selectedNeeds.Clear();
-                _selectedWants.Clear();
+                _selectedMust.Clear();
+                _selectedShould.Clear();
                 _selectedMustNot.Clear();
 
                 // Parse must items
@@ -3792,7 +3825,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     foreach (var item in mustArray.EnumerateArray())
                     {
-                        AddItemFromJson(item, _selectedNeeds);
+                        AddItemFromJson(item, _selectedMust);
                     }
                 }
 
@@ -3804,7 +3837,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     foreach (var item in shouldArray.EnumerateArray())
                     {
-                        AddItemFromJson(item, _selectedWants);
+                        AddItemFromJson(item, _selectedShould);
                     }
                 }
 
@@ -4872,18 +4905,78 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     ItemKey = key,
                     Edition = "none",
-                    Sources = new List<string> { "shop", "packs", "tags" },
                 };
+
+                // Determine smart defaults for sources based on item type
+                var sources = new List<string>();
+                var itemType = key.Split(':')[0];
+                var itemId = key.Split(':')[1];
+                
+                // Check if item can appear in packs
+                bool canAppearInPacks = false;
+                if (itemType == "Jokers")
+                {
+                    // Regular jokers appear in packs, legendary ones come from soul cards
+                    canAppearInPacks = !itemId.StartsWith("Canio") && !itemId.StartsWith("Triboulet") && 
+                                       !itemId.StartsWith("Yorick") && !itemId.StartsWith("Chicot") && 
+                                       !itemId.StartsWith("Perkeo");
+                }
+                else if (itemType == "Tarots" || itemType == "Planets" || itemType == "Spectrals")
+                {
+                    canAppearInPacks = true;
+                }
+                else if (itemType == "PlayingCards")
+                {
+                    canAppearInPacks = true; // Standard pack
+                }
+                
+                // Set sources intelligently
+                if (canAppearInPacks)
+                {
+                    sources.Add("packs");
+                    // Note: PackSlots would be set here but ItemConfig doesn't have this property yet
+                }
+                
+                // Check if can appear in shop
+                bool canAppearInShop = itemType == "Jokers" || itemType == "Vouchers" || itemType == "PlayingCards";
+                if (canAppearInShop)
+                {
+                    sources.Add("shop");
+                    // Note: ShopSlots would be set based on deck but ItemConfig doesn't have this property yet
+                }
+                
+                // Tags for special items
+                if (itemType == "Jokers" || itemType == "Vouchers")
+                {
+                    sources.Add("tags");
+                }
+                
+                // Soul jokers from soul cards (legendary jokers)
+                bool isSoulJoker = itemType == "Jokers" && (itemId.StartsWith("Canio") || itemId.StartsWith("Triboulet") || 
+                                                             itemId.StartsWith("Yorick") || itemId.StartsWith("Chicot") || 
+                                                             itemId.StartsWith("Perkeo"));
+                if (isSoulJoker)
+                {
+                    sources.Clear();
+                    sources.Add("soul");
+                }
+                
+                defaultConfig.Sources = sources.Any() ? sources : new List<string> { "shop", "packs", "tags" };
 
                 if (zoneName == "needs")
                 {
-                    // Must zone defaults to ante 1 only
-                    defaultConfig.Antes = new List<int> { 1 };
+                    // MUST zone defaults to antes 1-4
+                    defaultConfig.Antes = new List<int> { 1, 2, 3, 4 };
                 }
                 else if (zoneName == "wants")
                 {
-                    // Should zone defaults to antes 1-2
-                    defaultConfig.Antes = new List<int> { 1, 2 };
+                    // SHOULD zone defaults to antes 1-8
+                    defaultConfig.Antes = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 };
+                }
+                else
+                {
+                    // MUST NOT - just ante 1
+                    defaultConfig.Antes = new List<int> { 1 };
                 }
 
                 existingConfig = defaultConfig;
@@ -4926,14 +5019,14 @@ namespace BalatroSeedOracle.Views.Modals
                 switch (zoneName)
                 {
                     case "needs":
-                        if (_selectedNeeds.Remove(key))
+                        if (_selectedMust.Remove(key))
                         {
                             removed = true;
                             BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
                         }
                         break;
                     case "wants":
-                        if (_selectedWants.Remove(key))
+                        if (_selectedShould.Remove(key))
                         {
                             removed = true;
                             BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
@@ -5179,22 +5272,22 @@ namespace BalatroSeedOracle.Views.Modals
                     // Toggle between Need/Want/None states
                     if (card.IsSelectedNeed)
                     {
-                        _selectedNeeds.Remove(key);
-                        _selectedWants.Add(key);
+                        _selectedMust.Remove(key);
+                        _selectedShould.Add(new ItemInstance(key));
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = true;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
                     }
                     else if (card.IsSelectedWant)
                     {
-                        _selectedWants.Remove(key);
+                        _selectedShould.Remove(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = false;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
                     }
                     else
                     {
-                        _selectedNeeds.Add(key);
+                        _selectedMust.Add(key);
                         card.IsSelectedNeed = true;
                         card.IsSelectedWant = false;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
@@ -5580,8 +5673,15 @@ namespace BalatroSeedOracle.Views.Modals
                 writer.WriteEndArray();
             }
 
-            // Write sources object
-            if (item.Sources != null)
+            // Only write sources for items that can actually have sources
+            // Tags, vouchers, and bosses NEVER have sources
+            bool canHaveSources = item.Type != null && 
+                                  !item.Type.Equals("tag", StringComparison.OrdinalIgnoreCase) &&
+                                  !item.Type.Equals("voucher", StringComparison.OrdinalIgnoreCase) &&
+                                  !item.Type.Equals("boss", StringComparison.OrdinalIgnoreCase);
+
+            // Write sources object only for applicable items
+            if (canHaveSources && item.Sources != null)
             {
                 writer.WriteStartObject("sources");
                 if (item.Sources.ShopSlots != null && item.Sources.ShopSlots.Length > 0)
@@ -5653,8 +5753,8 @@ namespace BalatroSeedOracle.Views.Modals
             config.Author = userProfileService?.GetAuthorName() ?? "Jimbo";
 
             // Convert all items using the helper method that handles unique keys
-            FixUniqueKeyParsing(_selectedNeeds, config.Must, 0);
-            FixUniqueKeyParsing(_selectedWants, config.Should, 1);
+            FixUniqueKeyParsing(_selectedMust, config.Must, 0);
+            FixUniqueKeyParsing(_selectedShould, config.Should, 1);
             FixUniqueKeyParsing(_selectedMustNot, config.MustNot, 0);
 
             return config;
@@ -5708,58 +5808,70 @@ namespace BalatroSeedOracle.Views.Modals
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
             };
 
-            // Always create Sources config
-            filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
-            
-            if (config.Sources != null)
-            {
-                if (config.Sources is List<string> sourcesList && sourcesList.Count > 0)
-                {
-                    // Old format - convert to new format
-                    if (sourcesList.Contains("shop"))
-                    {
-                        filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
-                    }
-                    if (sourcesList.Contains("booster") || sourcesList.Contains("packs"))
-                    {
-                        filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
-                    }
-                    if (sourcesList.Contains("tag") || sourcesList.Contains("tags"))
-                    {
-                        filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
-                    }
-                }
-                else if (config.Sources is Dictionary<string, List<int>> sourcesDict)
-                {
-                    // New format - use slots directly
-                    if (sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"].Count > 0)
-                    {
-                        filterItem.Sources.ShopSlots = sourcesDict["shopSlots"].ToArray();
-                    }
-                    else
-                    {
-                        filterItem.Sources.ShopSlots = new int[] { };
-                    }
-                    
-                    if (sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"].Count > 0)
-                    {
-                        filterItem.Sources.PackSlots = sourcesDict["packSlots"].ToArray();
-                    }
-                    else
-                    {
-                        filterItem.Sources.PackSlots = new int[] { };
-                    }
-                }
-            }
-            else
-            {
-                // Default sources if none specified
-                filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
-                filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
-            }
-
             // Handle category mappings 
             var normalizedCategory = category.ToLower();
+            
+            // Only add Sources for items that can actually have sources (NOT tags, vouchers, or bosses)
+            bool canHaveSources = normalizedCategory == "jokers" || 
+                                  normalizedCategory == "souljokers" || 
+                                  normalizedCategory == "tarots" || 
+                                  normalizedCategory == "spectrals" ||
+                                  normalizedCategory == "planets" ||
+                                  normalizedCategory == "playingcards";
+            
+            if (canHaveSources)
+            {
+                // Create Sources config only for items that can have sources
+                filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
+                
+                if (config.Sources != null)
+                {
+                    if (config.Sources is List<string> sourcesList && sourcesList.Count > 0)
+                    {
+                        // Old format - convert to new format
+                        if (sourcesList.Contains("shop"))
+                        {
+                            filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
+                        }
+                        if (sourcesList.Contains("booster") || sourcesList.Contains("packs"))
+                        {
+                            filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                        }
+                        if (sourcesList.Contains("tag") || sourcesList.Contains("tags"))
+                        {
+                            filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                        }
+                    }
+                    else if (config.Sources is Dictionary<string, List<int>> sourcesDict)
+                    {
+                        // New format - use slots directly
+                        if (sourcesDict.ContainsKey("shopSlots") && sourcesDict["shopSlots"].Count > 0)
+                        {
+                            filterItem.Sources.ShopSlots = sourcesDict["shopSlots"].ToArray();
+                        }
+                        else
+                        {
+                            filterItem.Sources.ShopSlots = new int[] { };
+                        }
+                        
+                        if (sourcesDict.ContainsKey("packSlots") && sourcesDict["packSlots"].Count > 0)
+                        {
+                            filterItem.Sources.PackSlots = sourcesDict["packSlots"].ToArray();
+                        }
+                        else
+                        {
+                            filterItem.Sources.PackSlots = new int[] { };
+                        }
+                    }
+                }
+                else
+                {
+                    // Default sources if none specified for items that can have sources
+                    filterItem.Sources.PackSlots = new[] { 0, 1, 2, 3 };
+                    filterItem.Sources.ShopSlots = new[] { 0, 1, 2, 3 };
+                }
+            }
+            // For tags, vouchers, and bosses - NO SOURCES AT ALL
             
             // Set type and value directly
             switch (normalizedCategory)
@@ -5811,6 +5923,21 @@ namespace BalatroSeedOracle.Views.Modals
                     filterItem.Value = itemName;
                     break;
 
+                case "bosses":
+                    filterItem.Type = "boss";
+                    filterItem.Value = itemName;
+                    break;
+
+                case "planets":
+                    filterItem.Type = "planet";
+                    filterItem.Value = itemName;
+                    break;
+
+                case "playingcards":
+                    filterItem.Type = "playingcard";
+                    filterItem.Value = itemName;
+                    break;
+
                 default:
                     return null;
             }
@@ -5848,10 +5975,11 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     new Motely.Filters.OuijaConfig.FilterItem
                     {
-                        Type = "Tag",
+                        Type = "tag",
                         Value = "NegativeTag",
                         Score = 50,
                         Antes = new[] { 1, 2, 3 },
+                        // NO SOURCES for tags!
                     },
                     new Motely.Filters.OuijaConfig.FilterItem
                     {
@@ -5871,7 +5999,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     new Motely.Filters.OuijaConfig.FilterItem
                     {
-                        Type = "Voucher",
+                        Type = "voucher",
                         Value = "CreditCard",
                         Antes = new[] { 1 },
                     },
@@ -6119,7 +6247,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var itemName = item.Value;
 
                     // Add to selected needs
-                    _selectedNeeds.Add($"{category}:{itemName}");
+                    _selectedMust.Add($"{category}:{itemName}");
                 }
             }
 
@@ -6132,7 +6260,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var itemName = item.Value;
 
                     // Add to selected wants
-                    _selectedWants.Add($"{category}:{itemName}");
+                    _selectedShould.Add($"{category}:{itemName}");
                 }
             }
 
@@ -6157,7 +6285,7 @@ namespace BalatroSeedOracle.Views.Modals
             RefreshItemPalette();
 
             BalatroSeedOracle.Helpers.DebugLogger.Log(
-                $"LoadConfigIntoUI: Loaded {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
+                $"LoadConfigIntoUI: Loaded {_selectedMust.Count} needs, {_selectedShould.Count} wants, {_selectedMustNot.Count} must not"
             );
             RefreshItemPalette();
         }
@@ -6180,7 +6308,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void UpdatePersistentFavorites()
         {
             // Update favorites in the service
-            var allSelected = _selectedNeeds.Union(_selectedWants).ToList();
+            var allSelected = _selectedMust.Union(_selectedShould).ToList();
             FavoritesService.Instance.SetFavoriteItems(allSelected);
 
             // Update the favorites category
@@ -6377,7 +6505,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnSaveAsFavoriteClick(object? sender, RoutedEventArgs e)
         {
             // Get all selected items
-            var selectedItems = _selectedNeeds.Union(_selectedWants).Union(_selectedMustNot).ToList();
+            var selectedItems = _selectedMust.Union(_selectedShould).Union(_selectedMustNot).ToList();
             
             if (!selectedItems.Any())
             {
@@ -6504,8 +6632,8 @@ namespace BalatroSeedOracle.Views.Modals
                             Items = itemNames, // Keep for backward compatibility
                             Tags = tags,
                             // Store items by their original zones
-                            MustItems = _selectedNeeds.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
-                            ShouldItems = _selectedWants.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            MustItems = _selectedMust.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            ShouldItems = _selectedShould.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
                             MustNotItems = _selectedMustNot.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
                         };
                         
@@ -6740,12 +6868,12 @@ namespace BalatroSeedOracle.Views.Modals
                 switch (zone)
                 {
                     case "needs":
-                        if (!_selectedNeeds.Contains(itemKey))
-                            _selectedNeeds.Add(itemKey);
+                        if (!_selectedMust.Contains(itemKey))
+                            _selectedMust.Add(itemKey);
                         break;
                     case "wants":
-                        if (!_selectedWants.Contains(itemKey))
-                            _selectedWants.Add(itemKey);
+                        if (!_selectedShould.Contains(itemKey))
+                            _selectedShould.Add(new ItemInstance(itemKey));
                         break;
                     case "mustnot":
                         if (!_selectedMustNot.Contains(itemKey))
@@ -6771,8 +6899,8 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Get all selected items
             var allItems = new List<string>();
-            allItems.AddRange(_selectedNeeds);
-            allItems.AddRange(_selectedWants);
+            allItems.AddRange(_selectedMust);
+            allItems.AddRange(_selectedShould);
             allItems.AddRange(_selectedMustNot);
 
             if (allItems.Count == 0)
@@ -6978,14 +7106,14 @@ namespace BalatroSeedOracle.Views.Modals
                     switch (dropZoneType)
                     {
                         case "needs":
-                            _selectedNeeds.Add(key);
+                            _selectedMust.Add(new ItemInstance(key));
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "wants":
-                            _selectedWants.Add(key);
+                            _selectedShould.Add(new ItemInstance(key));
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS via popup"
@@ -7015,13 +7143,28 @@ namespace BalatroSeedOracle.Views.Modals
             return card;
         }
 
+        private IImage? GetPlayingCardImageFromName(string cardName)
+        {
+            // Parse "Ace of Hearts" format
+            var parts = cardName.Split(" of ");
+            if (parts.Length == 2)
+            {
+                var rank = parts[0];
+                var suit = parts[1];
+                return SpriteService.Instance.GetPlayingCardImage(suit, rank);
+            }
+            return null;
+        }
+        
         private IImage? GetItemImageForCategory(string itemName, string category)
         {
             return category switch
             {
                 "Jokers" or "SoulJokers" => SpriteService.Instance.GetJokerImage(itemName),
                 "Tarots" => SpriteService.Instance.GetTarotImage(itemName),
+                "Planets" => SpriteService.Instance.GetPlanetCardImage(itemName),
                 "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
+                "PlayingCards" => GetPlayingCardImageFromName(itemName),
                 "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
                 "Tags" => SpriteService.Instance.GetTagImage(itemName),
                 "Bosses" => SpriteService.Instance.GetBossImage(itemName),
