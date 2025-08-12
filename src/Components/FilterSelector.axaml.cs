@@ -446,7 +446,7 @@ namespace BalatroSeedOracle.Components
             // Get image based on type
             return type?.ToLower() switch
             {
-                "souljoker" => _spriteService.GetJokerImage(value), // TODO idk if this is the right way to get soul joker image
+                "souljoker" => _spriteService.GetJokerImage(value),
                 "joker" => _spriteService.GetJokerImage(value),
                 "voucher" => _spriteService.GetVoucherImage(value),
                 "tag" => _spriteService.GetTagImage(value),
