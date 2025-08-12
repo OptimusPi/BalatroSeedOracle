@@ -27,7 +27,7 @@ public static class DebugLogger
     {
         if (EnableDebugLogging)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
+            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] {message}");
         }
     }
 
@@ -40,7 +40,7 @@ public static class DebugLogger
     {
         if (EnableDebugLogging)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] {message}");
+            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] {message}");
         }
     }
 
@@ -50,7 +50,7 @@ public static class DebugLogger
     /// <param name="message">The error message to log</param>
     public static void LogError(string message)
     {
-        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ERROR: {message}");
+        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] ERROR: {message}");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public static class DebugLogger
     /// <param name="message">The error message to log</param>
     public static void LogError(string category, string message)
     {
-        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] ERROR: {message}");
+        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] ERROR: {message}");
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public static class DebugLogger
     {
         if (EnableVerboseLogging || EnableDebugLogging)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [{category}] INFO: {message}");
+            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] INFO: {message}");
         }
     }
 
@@ -84,7 +84,7 @@ public static class DebugLogger
         if (EnableDebugLogging)
         {
             Console.WriteLine(
-                $"[{DateTime.Now:HH:mm:ss}] [{category}] {string.Format(format, args)}"
+                $"[{DateTime.UtcNow:HH:mm:ss}] [{category}] {string.Format(format, args)}"
             );
         }
     }
