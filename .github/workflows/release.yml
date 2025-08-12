@@ -1,0 +1,217 @@
+name: Unified Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark release as prerelease'
+        required: false
+        default: 'false'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PROJECT_FILE: 'src/BalatroSeedOracle.csproj'
+  APP_NAME: 'BalatroSeedOracle'
+
+jobs:
+  portable:
+    name: Portable binaries
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            ext: zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            ext: tar.gz
+          - os: macos-latest
+            rid: osx-x64
+            ext: tar.gz
+          - os: macos-latest
+            rid: osx-arm64
+            ext: tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore ${{ env.PROJECT_FILE }}
+
+      - name: Publish (self-contained single-file)
+        run: >-
+          dotnet publish ${{ env.PROJECT_FILE }}
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:PublishTrimmed=true
+          -p:TrimMode=partial
+          -p:EnableCompressionInSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none
+          -p:DebugSymbols=false
+          -o publish/${{ matrix.rid }}
+
+      - name: Add metadata files
+        shell: bash
+        run: |
+          OUT=publish/${{ matrix.rid }}
+          VERSION_REF="${GITHUB_REF#refs/tags/}"
+          echo "${{ env.APP_NAME }}" > $OUT/VERSION.txt
+          echo "Runtime: ${{ matrix.rid }}" >> $OUT/VERSION.txt
+          echo "Build Date: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $OUT/VERSION.txt
+          echo "Git Commit: ${GITHUB_SHA::8}" >> $OUT/VERSION.txt
+          echo "Version: $VERSION_REF" >> $OUT/VERSION.txt
+          cat > $OUT/README.txt <<EOF
+${{ env.APP_NAME }} - Portable Build
+Just extract and run.
+Windows: double-click ${{ env.APP_NAME }}.exe
+Linux/macOS: chmod +x ${{ env.APP_NAME }} && ./${{ env.APP_NAME }}
+EOF
+
+      - name: Package (zip)
+        if: matrix.ext == 'zip'
+        shell: pwsh
+        run: |
+          $ver = "${env:GITHUB_REF}".Replace('refs/tags/','')
+          Compress-Archive -Path publish/${{ matrix.rid }}/* -DestinationPath ${{ env.APP_NAME }}-$ver-${{ matrix.rid }}.zip
+
+      - name: Package (tar.gz)
+        if: matrix.ext == 'tar.gz'
+        shell: bash
+        run: |
+          ver="${GITHUB_REF#refs/tags/}"
+          tar -czf ${{ env.APP_NAME }}-$ver-${{ matrix.rid }}.tar.gz -C publish/${{ matrix.rid }} .
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-${{ matrix.rid }}
+          path: |
+            *.zip
+            *.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: (Optional) Generate SBOM (Syft CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: publish/${{ matrix.rid }}
+          artifact-name: sbom-${{ matrix.rid }}
+          format: cyclonedx-json
+
+  velopack:
+    name: Velopack packages
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            mainExe: BalatroSeedOracle.exe
+          - os: ubuntu-latest
+            rid: linux-x64
+            mainExe: BalatroSeedOracle
+          - os: macos-latest
+            rid: osx-x64
+            mainExe: BalatroSeedOracle
+          - os: macos-latest
+            rid: osx-arm64
+            mainExe: BalatroSeedOracle
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+      - name: Install Velopack
+        run: dotnet tool install -g vpk
+      - name: Publish (Velopack input)
+        run: >-
+          dotnet publish ${{ env.PROJECT_FILE }} -c Release -r ${{ matrix.rid }}
+          --self-contained true -p:PublishSingleFile=true -o publish
+
+      - name: Pack Velopack
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
+            VERSION="1.0.0"
+          fi
+          vpk pack --packId ${{ env.APP_NAME }} --packVersion "$VERSION" \
+          --packDir publish --mainExe ${{ matrix.mainExe }} --packTitle "${{ env.APP_NAME }}" \
+          --packAuthors "OptimusPi" --outputDir releases --runtime ${{ matrix.rid }}
+      - name: Upload Velopack artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: velopack-${{ matrix.rid }}
+          path: releases/**
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: [portable, velopack]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: List artifacts
+        run: ls -R artifacts
+      - name: Collect files
+        run: |
+          mkdir upload
+          find artifacts -type f -exec cp {} upload/ \;
+          ls -la upload
+      - name: Generate SHA256 checksums
+        shell: bash
+        run: |
+          cd upload
+          shopt -s nullglob
+          for f in *; do
+            if [ -f "$f" ]; then
+              sha256sum "$f" >> SHA256SUMS.txt
+            fi
+          done
+          cat SHA256SUMS.txt
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: upload/*
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
