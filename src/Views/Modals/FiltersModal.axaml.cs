@@ -23,17 +23,17 @@ using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using Motely;
 using Motely.Filters;
-using Oracle.Components;
-using Oracle.Constants;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Models;
-using Oracle.Services;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Constants;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using TextMateSharp.Grammars;
-using DebugLogger = Oracle.Helpers.DebugLogger;
+using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using IoPath = System.IO.Path;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     // Tag class for drop zone items
     internal class DropZoneItemTag
@@ -81,14 +81,15 @@ namespace Oracle.Views.Modals
         private TextBlock? _statusText;
         private string? _currentFilePath;
         private bool _isDragging = false;
-        private bool _isDraggingSet = false;
+        private bool _isDraggingSet;
+
         private FavoritesService.JokerSet? _draggingSet = null;
 
         public FiltersModalContent()
         {
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
 
             // Initialize item categories from BalatroData
             _itemCategories = new Dictionary<string, List<string>>
@@ -111,7 +112,7 @@ namespace Oracle.Views.Modals
 
         private void InitializeComponent()
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 "FiltersModalContent InitializeComponent called"
             );
@@ -120,7 +121,7 @@ namespace Oracle.Views.Modals
 
         private void SetupControls()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "SetupControls called");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SetupControls called");
 
             // Get metadata controls
             _configNameBox = this.FindControl<TextBox>("ConfigNameBox");
@@ -168,7 +169,7 @@ namespace Oracle.Views.Modals
             {
                 // Keep auto-loading enabled so the first filter loads and enables tabs
                 // The FilterLoaded event handler will enable tabs without switching
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "FilterSelector component found and setup"
                 );
@@ -189,9 +190,9 @@ namespace Oracle.Views.Modals
         }
 
         // FilterSelector event handlers
-        private async void OnFilterLoaded(object? sender, string filterPath)
+        private async void OnFilterSelected(object? sender, string filterPath)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
 
             try
             {
@@ -207,7 +208,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error loading filter: {ex.Message}"
                 );
@@ -217,7 +218,7 @@ namespace Oracle.Views.Modals
 
         private void OnNewFilterRequested(object? sender, EventArgs e)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
             OnCreateNewClick(null, new RoutedEventArgs());
         }
 
@@ -234,7 +235,7 @@ namespace Oracle.Views.Modals
                 RestoreDragDropModeLayout();
 
                 // Reload all categories to refresh the sprite display
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "Reloading all categories after JSON mode exit"
                 );
@@ -268,7 +269,7 @@ namespace Oracle.Views.Modals
             }
         }
 
-        private Oracle.Models.FilterItem? ParseItemKey(string key)
+        private BalatroSeedOracle.Models.FilterItem? ParseItemKey(string key)
         {
             var parts = key.Split(':');
             if (parts.Length >= 2)
@@ -279,7 +280,7 @@ namespace Oracle.Views.Modals
                 // Get item configuration if exists
                 var itemConfig = _itemConfigs.ContainsKey(key) ? _itemConfigs[key] : null;
 
-                var filterItem = new Oracle.Models.FilterItem
+                var filterItem = new BalatroSeedOracle.Models.FilterItem
                 {
                     Type = category switch
                     {
@@ -334,7 +335,7 @@ namespace Oracle.Views.Modals
             return null;
         }
 
-        private string GenerateItemLabel(Oracle.Models.FilterItem item)
+        private string GenerateItemLabel(BalatroSeedOracle.Models.FilterItem item)
         {
             // Generate a label based on edition and item name
             var label = new System.Text.StringBuilder();
@@ -392,7 +393,7 @@ namespace Oracle.Views.Modals
                 OnTabClick(visualTab, new RoutedEventArgs());
             }
 
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
         }
 
         private void UpdateSaveFilterPanel()
@@ -500,7 +501,7 @@ namespace Oracle.Views.Modals
                 await File.WriteAllTextAsync(filePath, json);
 
                 UpdateStatus($"Filter '{filterName}' saved successfully!", false);
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Saved filter to: {filePath}");
                 
                 // Enable the Search for Seeds button and store the filter path
                 var searchButton = this.FindControl<Button>("SearchForSeedsButton");
@@ -517,7 +518,7 @@ namespace Oracle.Views.Modals
             catch (Exception ex)
             {
                 UpdateStatus($"Error saving filter: {ex.Message}", true);
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving filter: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error saving filter: {ex.Message}");
             }
         }
 
@@ -531,7 +532,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "FavoritesTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FavoritesTab clicked");
                     ShowFavorites();
                 }
             );
@@ -546,7 +547,9 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "SoulJokersTab clicked");
+                    // Ensure button has focus (fixes first-click issue)
+                    if (s is Button btn) btn.Focus();
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SoulJokersTab clicked");
                     NavigateToSection("SoulJokersTab");
                 }
             );
@@ -554,7 +557,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "RareJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "RareJokersTab clicked");
                     NavigateToSection("RareJokersTab");
                 }
             );
@@ -562,7 +565,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "UncommonJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "UncommonJokersTab clicked");
                     NavigateToSection("UncommonJokersTab");
                 }
             );
@@ -570,7 +573,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "CommonJokersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "CommonJokersTab clicked");
                     NavigateToSection("CommonJokersTab");
                 }
             );
@@ -587,7 +590,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "VouchersTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "VouchersTab clicked");
                     NavigateToSection("VouchersTab");
                 }
             );
@@ -595,7 +598,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "TarotsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "TarotsTab clicked");
                     NavigateToSection("TarotsTab");
                 }
             );
@@ -603,7 +606,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "SpectralsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "SpectralsTab clicked");
                     NavigateToSection("SpectralsTab");
                 }
             );
@@ -611,7 +614,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "TagsTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "TagsTab clicked");
                     NavigateToSection("TagsTab");
                 }
             );
@@ -619,7 +622,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "BossesTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "BossesTab clicked");
                     NavigateToSection("BossesTab");
                 }
             );
@@ -627,7 +630,7 @@ namespace Oracle.Views.Modals
                 Button.ClickEvent,
                 (s, e) =>
                 {
-                    Oracle.Helpers.DebugLogger.Log("FiltersModal", "ClearTab clicked");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "ClearTab clicked");
                     ClearNeeds();
                     ClearWants();
                     ClearMustNot();
@@ -654,7 +657,7 @@ namespace Oracle.Views.Modals
 
         private void SetupDropZones()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Setting up drop zones...");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Setting up drop zones...");
 
             // Set up drag-over for main containers to keep drag alive
             var mainGrid = this.FindControl<Grid>("VisualPanel");
@@ -717,6 +720,11 @@ namespace Oracle.Views.Modals
             var wantsBorder = this.FindControl<Border>("WantsBorder");
             var mustNotBorder = this.FindControl<Border>("MustNotBorder");
 
+            // Disable clipping on borders to allow cards to pop out when hovered
+            if (needsBorder != null) needsBorder.ClipToBounds = false;
+            if (wantsBorder != null) wantsBorder.ClipToBounds = false;
+            if (mustNotBorder != null) mustNotBorder.ClipToBounds = false;
+
             // Get the actual panels inside the borders
             var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
             var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
@@ -730,7 +738,7 @@ namespace Oracle.Views.Modals
                 needsBorder.AddHandler(DragDrop.DragOverEvent, OnNeedsDragOver);
                 needsBorder.AddHandler(DragDrop.DragEnterEvent, OnNeedsDragEnter);
                 needsBorder.AddHandler(DragDrop.DragLeaveEvent, OnNeedsDragLeave);
-                needsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("needs", needsBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             if (wantsBorder != null)
@@ -740,7 +748,7 @@ namespace Oracle.Views.Modals
                 wantsBorder.AddHandler(DragDrop.DragOverEvent, OnWantsDragOver);
                 wantsBorder.AddHandler(DragDrop.DragEnterEvent, OnWantsDragEnter);
                 wantsBorder.AddHandler(DragDrop.DragLeaveEvent, OnWantsDragLeave);
-                wantsBorder.PointerPressed += (s, e) => ShowItemSelectionPopup("wants", wantsBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             if (mustNotBorder != null)
@@ -750,8 +758,7 @@ namespace Oracle.Views.Modals
                 mustNotBorder.AddHandler(DragDrop.DragOverEvent, OnMustNotDragOver);
                 mustNotBorder.AddHandler(DragDrop.DragEnterEvent, OnMustNotDragEnter);
                 mustNotBorder.AddHandler(DragDrop.DragLeaveEvent, OnMustNotDragLeave);
-                mustNotBorder.PointerPressed += (s, e) =>
-                    ShowItemSelectionPopup("mustnot", mustNotBorder);
+                // Removed PointerPressed - no popup on empty space click
             }
 
             // Clear buttons removed from headers - using clearTab button in navigation instead
@@ -766,7 +773,7 @@ namespace Oracle.Views.Modals
             // Remove old button code - using toggle switch now
             // Rest of the toggle switch handling is in OnModeToggleChanged
 
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Drop zones setup complete!");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Drop zones setup complete!");
         }
 
         // 🎯 Enhanced Drag & Drop Event Handlers
@@ -791,6 +798,14 @@ namespace Oracle.Views.Modals
 
         private void OnNeedsDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -829,6 +844,14 @@ namespace Oracle.Views.Modals
 
         private void OnWantsDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -890,10 +913,11 @@ namespace Oracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to NEEDS"
                     );
@@ -947,7 +971,7 @@ namespace Oracle.Views.Modals
                                         _selectedNeeds.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to NEEDS"
                                 );
@@ -963,7 +987,7 @@ namespace Oracle.Views.Modals
                             // Add to needs (allow item in multiple lists)
                             _selectedNeeds.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS"
                             );
@@ -1027,10 +1051,12 @@ namespace Oracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    UpdatePersistentFavorites();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to WANTS"
                     );
@@ -1084,7 +1110,7 @@ namespace Oracle.Views.Modals
                                         _selectedWants.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to WANTS"
                                 );
@@ -1100,7 +1126,7 @@ namespace Oracle.Views.Modals
                             // Add to wants (allow item in multiple lists)
                             _selectedWants.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS"
                             );
@@ -1125,7 +1151,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "RestoreDragDropModeLayout: Starting restoration"
                 );
@@ -1139,7 +1165,7 @@ namespace Oracle.Views.Modals
                     if (leftSidebar != null)
                     {
                         leftSidebar.IsVisible = true;
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             "RestoreDragDropModeLayout: Restored left sidebar"
                         );
                     }
@@ -1157,7 +1183,7 @@ namespace Oracle.Views.Modals
                 if (searchBox?.Parent?.Parent is Border searchBar)
                 {
                     searchBar.IsVisible = true;
-                    Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored search bar");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restored search bar");
 
                     // Clear the search box when returning from JSON mode
                     if (searchBox != null && _searchBox != null)
@@ -1172,7 +1198,7 @@ namespace Oracle.Views.Modals
                 if (itemPaletteBorder != null)
                 {
                     itemPaletteBorder.Padding = new Thickness(8);
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "RestoreDragDropModeLayout: Restored ItemPaletteBorder padding"
                     );
                 }
@@ -1183,16 +1209,16 @@ namespace Oracle.Views.Modals
                 {
                     itemPaletteContent.Content = _originalItemPaletteContent;
                     _originalItemPaletteContent = null;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "RestoreDragDropModeLayout: Restored original item palette content"
                     );
                 }
 
-                Oracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("RestoreDragDropModeLayout: Restoration complete");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in RestoreDragDropModeLayout: {ex}"
                 );
@@ -1203,7 +1229,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "EnterEditJsonMode called");
 
                 // The JSON editor is created in the JsonModeContainer/JsonModeContent when the button is clicked
                 // This method now just handles the JSON content creation if needed
@@ -1217,11 +1243,11 @@ namespace Oracle.Views.Modals
                     DispatcherPriority.Background
                 );
 
-                Oracle.Helpers.DebugLogger.Log("JSON editor mode entered");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("JSON editor mode entered");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in EnterEditJsonMode: {ex}"
                 );
@@ -1232,7 +1258,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateJsonEditor called");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateJsonEditor called");
 
                 var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
                 if (jsonEditor != null)
@@ -1251,19 +1277,19 @@ namespace Oracle.Views.Modals
                     var json = JsonSerializer.Serialize(config, options);
                     jsonEditor.Text = json;
 
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"Updated JSON editor with {json.Length} characters"
                     );
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
                 }
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in UpdateJsonEditor: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"ERROR in UpdateJsonEditor: {ex}");
             }
         }
 
@@ -1271,7 +1297,7 @@ namespace Oracle.Views.Modals
         {
             try
             {
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "CreateEditJsonInterface started");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "CreateEditJsonInterface started");
 
                 // Get the current JSON content - either from selections or default
                 string jsonContent;
@@ -1280,13 +1306,13 @@ namespace Oracle.Views.Modals
                     // Build JSON from current selections
                     var config = BuildOuijaConfigFromSelections();
                     jsonContent = SerializeOuijaConfig(config);
-                    Oracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
                 }
                 else
                 {
                     // Use default example JSON only if no selections exist
                     jsonContent = GetDefaultOuijaConfigJson();
-                    Oracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
                 }
 
                 // Create a Grid that fills the entire space
@@ -1313,7 +1339,7 @@ namespace Oracle.Views.Modals
                 if (useFallback)
                 {
                     // Use a simple TextBox as fallback
-                    Oracle.Helpers.DebugLogger.Log("Using fallback TextBox for JSON editing");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Using fallback TextBox for JSON editing");
                     var fallbackTextBox = new TextBox
                     {
                         Name = "JsonTextEditor_Fallback",
@@ -1376,7 +1402,7 @@ namespace Oracle.Views.Modals
                 else
                 {
                     // Create an AvaloniaEdit TextEditor for JSON editing
-                    Oracle.Helpers.DebugLogger.Log("Creating AvaloniaEdit JSON editor");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("Creating AvaloniaEdit JSON editor");
                     var editorBorder = new Border
                     {
                         Background =
@@ -1481,13 +1507,13 @@ namespace Oracle.Views.Modals
                                 }
                             }
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"AvaloniaEdit attached - Document length: {textEditor.Document.TextLength}"
                             );
                         }
                         catch (Exception ex)
                         {
-                            Oracle.Helpers.DebugLogger.LogError(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                 $"Error in AttachedToVisualTree: {ex.Message}"
                             );
                         }
@@ -1506,7 +1532,7 @@ namespace Oracle.Views.Modals
                     textEditor.Loaded += (s, e) =>
                     {
                         textEditor.Focus();
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"JSON Editor loaded. Height={textEditor.Bounds.Height}, Lines={textEditor.Document.LineCount}"
                         );
                     };
@@ -1542,7 +1568,7 @@ namespace Oracle.Views.Modals
                 mainGrid.Children.Add(editorControl);
 
                 // Status bar at bottom
-                Oracle.Helpers.DebugLogger.Log("Creating status bar");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("Creating status bar");
                 var statusBar = new Border
                 {
                     Background =
@@ -1597,12 +1623,12 @@ namespace Oracle.Views.Modals
                     DispatcherPriority.Background
                 );
 
-                Oracle.Helpers.DebugLogger.Log("CreateEditJsonInterface completed successfully");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("CreateEditJsonInterface completed successfully");
                 return mainGrid;
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"ERROR in CreateEditJsonInterface: {ex}"
                 );
@@ -1756,7 +1782,7 @@ namespace Oracle.Views.Modals
                     var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
                     if (textEditor != null)
                     {
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"Setting TextEditor text, length: {content.Length}"
                         );
                         textEditor.Text = content;
@@ -2293,12 +2319,12 @@ namespace Oracle.Views.Modals
                 Dispatcher.UIThread.Post(
                     () =>
                     {
-                        Oracle.Helpers.DebugLogger.Log($"ScrollViewer Bounds: {scrollViewer.Bounds}");
-                        Oracle.Helpers.DebugLogger.Log($"Container Bounds: {container.Bounds}");
-                        Oracle.Helpers.DebugLogger.Log(
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"ScrollViewer Bounds: {scrollViewer.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"Container Bounds: {container.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
                             $"ItemsPanel Children: {itemsPanel.Children.Count}"
                         );
-                        Oracle.Helpers.DebugLogger.Log($"ItemsPanel Bounds: {itemsPanel.Bounds}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"ItemsPanel Bounds: {itemsPanel.Bounds}");
                     },
                     DispatcherPriority.Background
                 );
@@ -2454,7 +2480,7 @@ namespace Oracle.Views.Modals
 
         private void ClearNeeds()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
             _selectedNeeds.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2462,7 +2488,7 @@ namespace Oracle.Views.Modals
 
         private void ClearWants()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
             _selectedWants.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2470,7 +2496,7 @@ namespace Oracle.Views.Modals
 
         private void ClearMustNot()
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all must-not items");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all must-not items");
             _selectedMustNot.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
@@ -2534,7 +2560,7 @@ namespace Oracle.Views.Modals
 
         private void NavigateToSection(string tabId)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"NavigateToSection: {tabId}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"NavigateToSection: {tabId}");
 
             // Clear search when navigating to a section
             if (_searchBox != null)
@@ -2546,7 +2572,7 @@ namespace Oracle.Views.Modals
             // If we're in favorites view, reload the main view first
             if (_currentActiveTab == "FavoritesTab" || _mainScrollViewer == null)
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "Reloading all categories before navigation"
                 );
@@ -2569,7 +2595,7 @@ namespace Oracle.Views.Modals
 
         private void ScrollToSectionWithHighlight(string tabId)
         {
-            Oracle.Helpers.DebugLogger.Log("FiltersModal", $"ScrollToSectionWithHighlight: {tabId}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"ScrollToSectionWithHighlight: {tabId}");
 
             // Scroll to the section and update tab highlight
             _ = ScrollToSection(tabId);
@@ -2874,18 +2900,18 @@ namespace Oracle.Views.Modals
 
                 if (category == "Jokers")
                 {
-                    // Group jokers by rarity
+                    // Group jokers by rarity - wildcards should already be at the end from GetItemsForCategory
                     groups["Legendary"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Legendary"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Rare"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Rare"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Uncommon"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Uncommon"].Contains(j.ToLowerInvariant()))
                         .ToList();
                     groups["Common"] = filteredItems
-                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j))
+                        .Where(j => BalatroData.JokersByRarity["Common"].Contains(j.ToLowerInvariant()))
                         .ToList();
                 }
                 else
@@ -2904,7 +2930,7 @@ namespace Oracle.Views.Modals
             // Debug for "Joker"
             if (itemName == "Joker")
             {
-                Oracle.Helpers.DebugLogger.Log($"Creating card for 'Joker' in category: {category}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log($"Creating card for 'Joker' in category: {category}");
             }
 
             // For favorites, determine the actual category of the item
@@ -3079,7 +3105,7 @@ namespace Oracle.Views.Modals
                         properNames.Add(match);
                         if (subCategory == "Legendary" || lcItem.StartsWith("any"))
                         {
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"🎴 Joker found: {match} (from lowercase: {lcItem})"
                             );
                         }
@@ -3087,14 +3113,17 @@ namespace Oracle.Views.Modals
                     else
                     {
                         // Fallback to the lowercase name if no match found
-                        Oracle.Helpers.DebugLogger.LogError(
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError(
                             "FiltersModal",
                             $"No match found for joker: {lcItem}"
                         );
                         properNames.Add(lcItem);
                     }
                 }
-
+                
+                // Wildcards are already included in JokersByRarity from BalatroData
+                // No need to add them again here
+                
                 return properNames;
             }
 
@@ -3296,7 +3325,7 @@ namespace Oracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                Oracle.Helpers.DebugLogger.LogError(
+                                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                     "FiltersModal",
                                     $"Error customizing syntax colors: {ex.Message}"
                                 );
@@ -3305,14 +3334,14 @@ namespace Oracle.Views.Modals
                         DispatcherPriority.Background
                     );
 
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         "JSON syntax highlighting configured with TextMate"
                     );
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "FiltersModal",
                         "JSON language not found in TextMate registry"
                     );
@@ -3320,7 +3349,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error setting up JSON syntax highlighting: {ex.Message}"
                 );
@@ -3498,6 +3527,9 @@ namespace Oracle.Views.Modals
             {
                 return;
             }
+            
+            // Ensure button has focus (fixes first-click issue)
+            button.Focus();
 
             // Get all tab buttons
             var visualTab = this.FindControl<Button>("VisualTab");
@@ -3629,6 +3661,9 @@ namespace Oracle.Views.Modals
             var needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
             var clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
 
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (needsScrollViewer != null) needsScrollViewer.ClipToBounds = false;
+
             if (needsPlaceholder != null && needsScrollViewer != null && needsPanel != null)
             {
                 if (_selectedNeeds.Any())
@@ -3658,6 +3693,9 @@ namespace Oracle.Views.Modals
             var wantsScrollViewer = this.FindControl<ScrollViewer>("WantsScrollViewer");
             var wantsPanel = this.FindControl<WrapPanel>("WantsPanel");
             var clearWantsButton = this.FindControl<Button>("ClearWantsButton");
+
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (wantsScrollViewer != null) wantsScrollViewer.ClipToBounds = false;
 
             if (wantsPlaceholder != null && wantsScrollViewer != null && wantsPanel != null)
             {
@@ -3689,6 +3727,9 @@ namespace Oracle.Views.Modals
             var mustNotPanel = this.FindControl<WrapPanel>("MustNotPanel");
             var clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
 
+            // Disable clipping on ScrollViewers to allow cards to pop out
+            if (mustNotScrollViewer != null) mustNotScrollViewer.ClipToBounds = false;
+
             if (mustNotPlaceholder != null && mustNotScrollViewer != null && mustNotPanel != null)
             {
                 if (_selectedMustNot.Any())
@@ -3713,7 +3754,7 @@ namespace Oracle.Views.Modals
                 }
             }
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 $"📈 Updated drop zones: {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
             );
         }
@@ -3726,7 +3767,7 @@ namespace Oracle.Views.Modals
                 var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
                 if (textEditor == null || string.IsNullOrWhiteSpace(textEditor.Text))
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "FiltersModal",
                         "UpdateDropZonesFromJson: JsonEditor not found or empty"
                     );
@@ -3782,11 +3823,11 @@ namespace Oracle.Views.Modals
                 // Update the drop zones to show the items
                 UpdateDropZoneVisibility();
 
-                Oracle.Helpers.DebugLogger.Log("FiltersModal", "Updated drop zones from JSON");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Updated drop zones from JSON");
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
                     $"Error updating drop zones from JSON: {ex.Message}"
                 );
@@ -3954,13 +3995,28 @@ namespace Oracle.Views.Modals
             HashSet<string> items
         )
         {
-            const double fanAngle = 4; // degrees per card
-            const double overlapX = 15; // horizontal overlap
-            const double centerY = 20; // Start from top
+            const double fanAngle = 8; // degrees per card (increased from 7)
+            const double overlapX = 17; // horizontal overlap (increased from 15)
+            const double centerY = 24; // Start 4px south as requested (was 20)
 
+            // First pass: create all cards and wrappers
+            var allWrappers = new List<Grid>();
+            var allBorders = new List<Border>();
+            
             for (int i = 0; i < jokers.Count; i++)
             {
                 var itemKey = items.First(item => item.Contains($":{jokers[i].name}"));
+                
+                // Create a wrapper container that stays static (for hit detection)
+                var wrapper = new Grid
+                {
+                    Width = 53,
+                    Height = 71,
+                    Background = Brushes.Transparent, // Transparent but hit-testable
+                    ClipToBounds = false // Allow visual to pop out
+                };
+                
+                // Create the actual visual card
                 var control = CreateDroppedItemControl(
                     jokers[i].name,
                     jokers[i].category,
@@ -3968,14 +4024,14 @@ namespace Oracle.Views.Modals
                     zoneName
                 );
 
-                // Position with overlap
-                double x = startX + (i * overlapX);
+                // Position the wrapper (not the control)
+                double x = startX + 6 + (i * overlapX); // Added 6px east offset
                 double y = centerY;
 
                 // Apply rotation for fan effect
                 double angle = (i - jokers.Count / 2.0) * fanAngle;
 
-                // We need to combine the rotation with the scale transform
+                // Apply transforms to the INNER control, not the wrapper
                 var transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new ScaleTransform(1, 1));
                 transformGroup.Children.Add(new RotateTransform(angle));
@@ -3983,53 +4039,149 @@ namespace Oracle.Views.Modals
                 control.RenderTransform = transformGroup;
                 control.RenderTransformOrigin = new RelativePoint(0.5, 0.9, RelativeUnit.Relative);
 
-                // Update hover handlers to work with transform group
+                // Add control to wrapper
+                wrapper.Children.Add(control);
+
+                // Update hover handlers on the WRAPPER (static hit area)
                 if (control is Border border)
                 {
                     int cardIndex = i; // Capture the index for the closure
-
-                    // Remove the default handlers by using a flag
                     border.Tag = new { Key = itemKey, Zone = zoneName };
 
-                    border.PointerEntered += (s, e) =>
+                    wrapper.PointerEntered += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (border.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.2;
-                            scale.ScaleY = 1.2;
-                            b.ZIndex = 1000; // Bring to front
+                            // Scale up
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
+                                scale.ScaleY = 1.05;
+                            }
+                            
+                            // Add translate up
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform == null)
+                            {
+                                translateTransform = new TranslateTransform();
+                                tg.Children.Add(translateTransform);
+                            }
+                            translateTransform.Y = -3; // Reduced from -15 to -3 for subtle effect
+                            
+                            // NOW we can safely change z-index!
+                            border.ZIndex = 2000; // Bring to front (increased for better layering)
                         }
                     };
 
-                    border.PointerExited += (s, e) =>
+                    wrapper.PointerExited += (s, e) =>
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
+                        if (border.RenderTransform is TransformGroup tg)
                         {
-                            scale.ScaleX = 1.0;
-                            scale.ScaleY = 1.0;
-                            b.ZIndex = cardIndex; // Reset to original z-index
+                            // Reset scale
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.0;
+                                scale.ScaleY = 1.0;
+                            }
+                            
+                            // Reset translate
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform != null)
+                            {
+                                translateTransform.Y = 0;
+                            }
+                            
+                            // Reset z-index
+                            border.ZIndex = 0;
                         }
                     };
                 }
 
-                Canvas.SetLeft(control, x);
-                Canvas.SetTop(control, y);
+                Canvas.SetLeft(wrapper, x);
+                Canvas.SetTop(wrapper, y);
 
-                // Higher z-index for later cards
-                control.ZIndex = i;
+                // Higher z-index for later cards (base 100 to ensure they're above other elements)
+                wrapper.ZIndex = 100 + i;
 
-                canvas.Children.Add(control);
+                canvas.Children.Add(wrapper);
             }
 
-            startX += (jokers.Count * overlapX) + 40;
+            // Second pass: add hover handlers with access to all cards
+            for (int i = 0; i < allWrappers.Count; i++)
+            {
+                int currentIndex = i; // Capture for closure
+                var wrapper = allWrappers[i];
+                
+                wrapper.PointerEntered += (s, e) =>
+                {
+                    // "Part the sea" effect - spread cards around the hovered one
+                    for (int j = 0; j < allBorders.Count; j++)
+                    {
+                        if (allBorders[j].RenderTransform is TransformGroup tg)
+                        {
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform == null)
+                            {
+                                translateTransform = new TranslateTransform();
+                                tg.Children.Add(translateTransform);
+                            }
+
+                            if (j < currentIndex)
+                            {
+                                // Cards before: push left with diminishing effect
+                                translateTransform.X = -8 * (currentIndex - j);
+                            }
+                            else if (j > currentIndex)
+                            {
+                                // Cards after: push right with diminishing effect
+                                translateTransform.X = 8 * (j - currentIndex);
+                            }
+                            else
+                            {
+                                // Hovered card: slightly bigger, move up a bit
+                                translateTransform.X = 0;
+                                translateTransform.Y = -2;  // Reduced from -10 to -2 for subtle effect
+                                if (tg.Children[0] is ScaleTransform scale)
+                                {
+                                    scale.ScaleX = 1.03;  // Reduced from 1.1 to 1.03 for subtle effect
+                                    scale.ScaleY = 1.03;
+                                }
+                                allBorders[j].ZIndex = 200; // Higher z-index boost for better layering
+                            }
+                        }
+                    }
+                };
+
+                wrapper.PointerExited += (s, e) =>
+                {
+                    // Reset all cards
+                    for (int j = 0; j < allBorders.Count; j++)
+                    {
+                        if (allBorders[j].RenderTransform is TransformGroup tg)
+                        {
+                            // Reset translate
+                            var translateTransform = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                            if (translateTransform != null)
+                            {
+                                translateTransform.X = 0;
+                                translateTransform.Y = 0;
+                            }
+                            
+                            // Reset scale
+                            if (tg.Children[0] is ScaleTransform scale)
+                            {
+                                scale.ScaleX = 1.0;
+                                scale.ScaleY = 1.0;
+                            }
+                            
+                            // Reset z-index
+                            allBorders[j].ZIndex = 0;
+                        }
+                    }
+                };
+            }
+
+            startX += (jokers.Count * overlapX) + 46; // Increased from 40 to account for 6px east offset
         }
 
         private void RenderFannedItems(
@@ -4041,13 +4193,28 @@ namespace Oracle.Views.Modals
             string itemType
         )
         {
-            const double fanAngle = 4; // degrees per card
-            const double overlapX = 15; // horizontal overlap
-            const double centerY = 20; // Start from top
+            const double fanAngle = 8; // degrees per card (increased from 7)
+            const double overlapX = 17; // horizontal overlap (increased from 15)
+            const double centerY = 24; // Start 4px south as requested (was 20)
 
+            // First pass: create all cards and wrappers
+            var allWrappers = new List<Grid>();
+            var allBorders = new List<Border>();
+            
             for (int i = 0; i < items.Count; i++)
             {
                 var itemKey = allItems.First(item => item.Contains($":{items[i].name}"));
+                
+                // Create a wrapper container that stays static (for hit detection)
+                var wrapper = new Grid
+                {
+                    Width = 53,
+                    Height = 71,
+                    Background = Brushes.Transparent, // Transparent but hit-testable
+                    ClipToBounds = false // Allow visual to pop out
+                };
+                
+                // Create the actual visual card
                 var control = CreateDroppedItemControl(
                     items[i].name,
                     items[i].category,
@@ -4055,14 +4222,14 @@ namespace Oracle.Views.Modals
                     zoneName
                 );
 
-                // Position with overlap
-                double x = startX + (i * overlapX);
+                // Position the wrapper (not the control)
+                double x = startX + 6 + (i * overlapX); // Added 6px east offset
                 double y = centerY;
 
                 // Apply rotation for fan effect
                 double angle = (i - items.Count / 2.0) * fanAngle;
 
-                // We need to combine the rotation with the scale transform
+                // Apply transforms to the INNER control, not the wrapper
                 var transformGroup = new TransformGroup();
                 transformGroup.Children.Add(new ScaleTransform(1, 1));
                 transformGroup.Children.Add(new RotateTransform(angle));
@@ -4087,46 +4254,139 @@ namespace Oracle.Views.Modals
                         };
                     }
 
-                    // Update hover behavior for fanned cards
-                    border.PointerEntered += (s, e) =>
+                    // Add control to wrapper
+                    wrapper.Children.Add(control);
+                    
+                    // Store wrapper and border for later
+                    allWrappers.Add(wrapper);
+                    if (control is Border b)
                     {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
-                        {
-                            scale.ScaleX = 1.2;
-                            scale.ScaleY = 1.2;
-                            b.ZIndex = 1000; // Bring to front when hovered
-                        }
-                    };
-
-                    border.PointerExited += (s, e) =>
-                    {
-                        if (
-                            s is Border b
-                            && b.RenderTransform is TransformGroup tg
-                            && tg.Children[0] is ScaleTransform scale
-                        )
-                        {
-                            scale.ScaleX = 1.0;
-                            scale.ScaleY = 1.0;
-                            b.ZIndex = cardIndex; // Reset to original z-index
-                        }
-                    };
+                        allBorders.Add(b);
+                    }
+                }
+                else
+                {
+                    // If not a border, still add to wrapper
+                    wrapper.Children.Add(control);
                 }
 
-                Canvas.SetLeft(control, x);
-                Canvas.SetTop(control, y);
+                Canvas.SetLeft(wrapper, x);
+                Canvas.SetTop(wrapper, y);
 
-                // Higher z-index for later cards
-                control.ZIndex = i;
+                // Higher z-index for later cards (base 100 to ensure they're above other elements)
+                wrapper.ZIndex = 100 + i;
 
-                canvas.Children.Add(control);
+                canvas.Children.Add(wrapper);
             }
 
             startX += (items.Count * overlapX) + 40;
+        }
+
+        private void RenderHorizontalTags(
+            Canvas canvas,
+            List<(string name, string category)> tags, 
+            HashSet<string> items,
+            string zoneName
+        )
+        {
+            double tagX = 10; // Start from left
+            double tagY = 75; // Position at bottom of drop zone
+            
+            foreach (var tag in tags)
+            {
+                var itemKey = items.First(item => item.Contains($":{tag.name}"));
+                var control = CreateDroppedItemControl(tag.name, tag.category, itemKey, zoneName);
+                
+                if (control is Border tagBorder)
+                {
+                    // Make tags 2x bigger (was smaller, now 60x80)
+                    tagBorder.Width = 60;
+                    tagBorder.Height = 80;
+                    
+                    // Add hover effect
+                    tagBorder.PointerEntered += (s, e) =>
+                    {
+                        if (tagBorder.RenderTransform == null)
+                        {
+                            tagBorder.RenderTransform = new ScaleTransform(1, 1);
+                            tagBorder.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                        }
+                        if (tagBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.1;
+                            scale.ScaleY = 1.1;
+                        }
+                    };
+                    
+                    tagBorder.PointerExited += (s, e) =>
+                    {
+                        if (tagBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.0;
+                            scale.ScaleY = 1.0;
+                        }
+                    };
+                }
+                
+                Canvas.SetLeft(control, tagX);
+                Canvas.SetTop(control, tagY);
+                canvas.Children.Add(control);
+                tagX += 65; // Spacing between tags
+            }
+        }
+
+        private void RenderHorizontalBosses(
+            Canvas canvas,
+            List<(string name, string category)> bosses,
+            double startX,
+            HashSet<string> items,
+            string zoneName
+        )
+        {
+            double bossX = startX;
+            double bossY = 80; // Position at bottom, slightly lower than tags
+            
+            foreach (var boss in bosses)
+            {
+                var itemKey = items.First(item => item.Contains($":{boss.name}"));
+                var control = CreateDroppedItemControl(boss.name, boss.category, itemKey, zoneName);
+                
+                if (control is Border bossBorder)
+                {
+                    // Make bosses visible size
+                    bossBorder.Width = 60;
+                    bossBorder.Height = 60;
+                    
+                    // Add hover effect
+                    bossBorder.PointerEntered += (s, e) =>
+                    {
+                        if (bossBorder.RenderTransform == null)
+                        {
+                            bossBorder.RenderTransform = new ScaleTransform(1, 1);
+                            bossBorder.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                        }
+                        if (bossBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.1;
+                            scale.ScaleY = 1.1;
+                        }
+                    };
+                    
+                    bossBorder.PointerExited += (s, e) =>
+                    {
+                        if (bossBorder.RenderTransform is ScaleTransform scale)
+                        {
+                            scale.ScaleX = 1.0;
+                            scale.ScaleY = 1.0;
+                        }
+                    };
+                }
+                
+                Canvas.SetLeft(control, bossX);
+                Canvas.SetTop(control, bossY);
+                canvas.Children.Add(control);
+                bossX += 65; // Spacing between bosses
+            }
         }
 
         private void RenderVerticalStack(
@@ -4168,6 +4428,12 @@ namespace Oracle.Views.Modals
             string zoneName
         )
         {
+            // Check if item has an edition configured
+            string? edition = null;
+            if (_itemConfigs.TryGetValue(itemKey, out var config) && !string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+            {
+                edition = config.Edition;
+            }
             // Create a simple border without ViewBox to prevent scaling
             var border = new Border
             {
@@ -4205,9 +4471,9 @@ namespace Oracle.Views.Modals
 
                     if (b.RenderTransform is ScaleTransform scale)
                     {
-                        scale.ScaleX = 1.2;
-                        scale.ScaleY = 1.2;
-                        b.ZIndex = 1000; // Bring to front
+                        scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
+                        scale.ScaleY = 1.05;
+                        b.ZIndex = 2000; // Bring to front (increased for better layering)
                     }
                 }
             };
@@ -4237,7 +4503,7 @@ namespace Oracle.Views.Modals
                 }
             };
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CreateDroppedItem",
                 $"🎴 DROPPED ITEM: '{itemName}' (category: '{category}')"
             );
@@ -4251,7 +4517,7 @@ namespace Oracle.Views.Modals
                 lj.Equals(itemName, StringComparison.OrdinalIgnoreCase)
             );
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CreateDroppedItem",
                 $"🎴 Legendary check: IsLegendary={isLegendaryJoker}, HasAnimatedFace={hasAnimatedFace} for item '{itemName}'"
             );
@@ -4259,7 +4525,7 @@ namespace Oracle.Views.Modals
             if (isLegendaryJoker)
             {
                 // Create stacked layout for legendary joker
-                var grid = new Grid { Width = 71, Height = 95 };
+                var grid = new Grid { Width = 53, Height = 71 };
 
                 // Joker face image on top
                 var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
@@ -4269,8 +4535,8 @@ namespace Oracle.Views.Modals
                     {
                         Source = jokerImageSource,
                         Stretch = Stretch.Uniform,
-                        Width = 71,
-                        Height = 95,
+                        Width = 53,
+                        Height = 71,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         RenderTransform = null, // Explicitly reset any transforms
@@ -4289,8 +4555,8 @@ namespace Oracle.Views.Modals
                         {
                             Source = faceSource,
                             Stretch = Stretch.Uniform,
-                            Width = 71,
-                            Height = 95,
+                            Width = 53,
+                            Height = 71,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             RenderTransform = new RotateTransform(),
@@ -4326,12 +4592,18 @@ namespace Oracle.Views.Modals
                     }
                 }
 
+                // Add edition overlay for legendary jokers
+                if (!string.IsNullOrEmpty(edition) && edition != "none")
+                {
+                    AddEditionOverlay(grid, edition);
+                }
+
                 border.Child = grid;
             }
             else
             {
                 // Regular item display
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CreateDroppedItem",
                     $"🎴 Getting image for regular item: '{itemName}' (category: '{category}')"
                 );
@@ -4350,55 +4622,81 @@ namespace Oracle.Views.Modals
                     _ => SpriteService.Instance.GetItemImage(itemName, category),
                 };
 
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "CreateDroppedItem",
                     $"🎴 Image lookup for '{itemName}' in category '{category}': {(imageSource != null ? "FOUND" : "NOT FOUND")}"
                 );
 
                 if (imageSource != null)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
                         $"✅ Found image for '{itemName}'"
                     );
-                    // Use correct size based on category
-                    double imgWidth = 71;
-                    double imgHeight = 95;
+                    // Use correct size based on category (75% of original)
+                    double imgWidth = 53;
+                    double imgHeight = 71;
 
                     if (category == "Tags")
+                    {
+                        imgWidth = 15;
+                        imgHeight = 15;
+                    }
+                    else if (category == "Bosses")
                     {
                         imgWidth = 20;
                         imgHeight = 20;
                     }
-                    else if (category == "Bosses")
-                    {
-                        imgWidth = 26;
-                        imgHeight = 26;
-                    }
 
-                    var image = new Image
+                    // For jokers with editions, wrap in a grid to layer the edition
+                    if (category == "Jokers" && !string.IsNullOrEmpty(edition) && edition != "none")
                     {
-                        Source = imageSource,
-                        Stretch = Stretch.Uniform,
-                        Width = imgWidth,
-                        Height = imgHeight,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        RenderTransform = null,
-                        RenderTransformOrigin = RelativePoint.Center,
-                    };
-                    border.Child = image;
+                        var grid = new Grid { Width = imgWidth, Height = imgHeight };
+                        
+                        var image = new Image
+                        {
+                            Source = imageSource,
+                            Stretch = Stretch.Uniform,
+                            Width = imgWidth,
+                            Height = imgHeight,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            RenderTransform = null,
+                            RenderTransformOrigin = RelativePoint.Center,
+                        };
+                        grid.Children.Add(image);
+                        
+                        // Add edition overlay
+                        AddEditionOverlay(grid, edition);
+                        
+                        border.Child = grid;
+                    }
+                    else
+                    {
+                        var image = new Image
+                        {
+                            Source = imageSource,
+                            Stretch = Stretch.Uniform,
+                            Width = imgWidth,
+                            Height = imgHeight,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            RenderTransform = null,
+                            RenderTransformOrigin = RelativePoint.Center,
+                        };
+                        border.Child = image;
+                    }
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
                         $"❌ No image found for '{itemName}', using text fallback"
                     );
                     // Get display name for items like "anyuncommon" -> "Any Uncommon"
                     var displayText =
                         category == "Jokers"
-                            ? Oracle.Models.BalatroData.GetDisplayNameFromSprite(itemName)
+                            ? BalatroSeedOracle.Models.BalatroData.GetDisplayNameFromSprite(itemName)
                             : itemName;
                     var textBlock = new TextBlock
                     {
@@ -4428,6 +4726,53 @@ namespace Oracle.Views.Modals
 
             // Return the border directly without ViewBox wrapping
             return border;
+        }
+
+        private void AddEditionOverlay(Grid grid, string edition)
+        {
+            if (string.IsNullOrEmpty(edition) || edition == "none")
+                return;
+                
+            // For negative edition, apply an invert filter
+            if (edition.ToLower() == "negative")
+            {
+                // Avalonia doesn't have a direct invert filter, so we'll add a visual indicator
+                
+                var negativeIndicator = new TextBlock
+                {
+                    Text = "NEG",
+                    FontSize = 8,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    Background = Brushes.Black,
+                    Padding = new Thickness(2, 1),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+                    Margin = new Thickness(0, 2, 2, 0),
+                    ZIndex = 100
+                };
+                grid.Children.Add(negativeIndicator);
+            }
+            else
+            {
+                // For other editions, overlay the edition sprite
+                var editionImage = SpriteService.Instance.GetEditionImage(edition);
+                if (editionImage != null)
+                {
+                    var editionOverlay = new Image
+                    {
+                        Source = editionImage,
+                        Stretch = Stretch.Uniform,
+                        Width = 53,
+                        Height = 71,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        Opacity = 0.8,  // Semi-transparent overlay
+                        ZIndex = 50
+                    };
+                    grid.Children.Add(editionOverlay);
+                }
+            }
         }
 
         private void ShowItemConfigPopup(Border itemBorder, string itemName, string category)
@@ -4560,13 +4905,14 @@ namespace Oracle.Views.Modals
         {
             _itemConfigs[e.Config.ItemKey] = e.Config;
             _configPopup!.IsOpen = false;
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 $"[CONFIG] Item: {e.Config.ItemKey}, Edition: {e.Config.Edition}, Sources: {string.Join(",", e.Config.Sources)}"
             );
 
-            // Refresh the item palette to show edition overlays
+            // Refresh both the item palette and drop zones to show edition overlays
             RefreshItemPalette();
+            UpdateDropZoneVisibility();
         }
 
         private void OnItemDeleteRequested(object? sender, EventArgs e, string? zoneName)
@@ -4583,21 +4929,21 @@ namespace Oracle.Views.Modals
                         if (_selectedNeeds.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
                         }
                         break;
                     case "wants":
                         if (_selectedWants.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
                         }
                         break;
                     case "mustnot":
                         if (_selectedMustNot.Remove(key))
                         {
                             removed = true;
-                            Oracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
+                            BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
                         }
                         break;
                 }
@@ -4613,7 +4959,7 @@ namespace Oracle.Views.Modals
                 RefreshItemPalette();
 
                 _configPopup!.IsOpen = false;
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     $"Item deleted: {key} from zone: {zoneName ?? "unknown"}"
                 );
             }
@@ -4681,7 +5027,7 @@ namespace Oracle.Views.Modals
                     {
                         name = configName,
                         author = authorName,
-                        created = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        created = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                         must = config.Must,
                         should = config.Should,
                         mustNot = config.MustNot,
@@ -4703,7 +5049,7 @@ namespace Oracle.Views.Modals
 
                     await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, wrappedJson);
                     _currentConfigPath = file.Path.LocalPath;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"Saved config to: {_currentConfigPath}"
                     );
@@ -4743,8 +5089,8 @@ namespace Oracle.Views.Modals
                 var json = SerializeOuijaConfig(config);
 
                 // Show a simple preview dialog (you could enhance this)
-                Oracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
-                Oracle.Helpers.DebugLogger.Log(json);
+                BalatroSeedOracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
+                BalatroSeedOracle.Helpers.DebugLogger.Log(json);
 
                 // For now, just enter JSON edit mode with the generated config
                 EnterEditJsonMode();
@@ -4757,7 +5103,7 @@ namespace Oracle.Views.Modals
                         var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
                         if (textEditor != null)
                         {
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 $"Setting TextEditor text in PreviewConfig, length: {json.Length}"
                             );
                             textEditor.Text = json;
@@ -4765,7 +5111,7 @@ namespace Oracle.Views.Modals
                         }
                         else
                         {
-                            Oracle.Helpers.DebugLogger.LogError(
+                            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                                 "JsonTextEditor not found in PreviewConfig"
                             );
                         }
@@ -4783,7 +5129,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error generating config preview: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error generating config preview: {ex.Message}");
             }
         }
 
@@ -4837,21 +5183,21 @@ namespace Oracle.Views.Modals
                         _selectedWants.Add(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = true;
-                        Oracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
                     }
                     else if (card.IsSelectedWant)
                     {
                         _selectedWants.Remove(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = false;
-                        Oracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
                     }
                     else
                     {
                         _selectedNeeds.Add(key);
                         card.IsSelectedNeed = true;
                         card.IsSelectedWant = false;
-                        Oracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
                     }
 
                     UpdateDropZoneVisibility();
@@ -4863,7 +5209,7 @@ namespace Oracle.Views.Modals
             {
                 // Add visual feedback
                 card.Classes.Add("is-dragging");
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     $"👋 Drag started via CardDragStarted: {itemName} from {category}"
                 );
 
@@ -4906,42 +5252,7 @@ namespace Oracle.Views.Modals
 
             if (isLegendaryJoker)
             {
-                // For legendary jokers, create a proper gold card base with joker face
-                // Gold background for legendary
-                var goldBg = new Border
-                {
-                    Background = new LinearGradientBrush
-                    {
-                        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                        EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                        GradientStops =
-                        {
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient1")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFD700"),
-                                0
-                            ),
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient2")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFA500"),
-                                0.5
-                            ),
-                            new GradientStop(
-                                (
-                                    Application.Current?.FindResource("GoldGradient1")
-                                    as SolidColorBrush
-                                )?.Color ?? Color.Parse("#FFD700"),
-                                1
-                            ),
-                        },
-                    },
-                    CornerRadius = new CornerRadius(4),
-                };
-                ghostContent.Children.Add(goldBg);
+                // For legendary jokers, just show the face without gold background
 
                 // Add joker face on top
                 if (imageSource != null)
@@ -4949,8 +5260,8 @@ namespace Oracle.Views.Modals
                     var jokerFace = new Image
                     {
                         Source = imageSource,
-                        Width = 71,
-                        Height = 95,
+                        Width = 53,
+                        Height = 71,
                         Stretch = Stretch.UniformToFill,
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -4967,8 +5278,8 @@ namespace Oracle.Views.Modals
                         var faceImage = new Image
                         {
                             Source = faceSource,
-                            Width = 71, // Match the joker face size
-                            Height = 95, // Match the joker face size
+                            Width = 53, // Match the container size
+                            Height = 71, // Match the container size
                             Stretch = Stretch.Uniform,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -5034,8 +5345,7 @@ namespace Oracle.Views.Modals
                 Width = 80,
                 Height = 100,
                 Background = new SolidColorBrush(Color.FromArgb(200, 32, 32, 32)),
-                BorderBrush = new SolidColorBrush(Color.Parse(UIConstants.BorderGold)),
-                BorderThickness = new Thickness(4),
+                BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(6),
                 BoxShadow = BoxShadows.Parse("0 5 20 #000000AA"),
                 RenderTransform = new RotateTransform(-5),
@@ -5055,7 +5365,7 @@ namespace Oracle.Views.Modals
             // Start wiggling the ghost card too!
             StartGhostWiggle();
 
-            Oracle.Helpers.DebugLogger.Log("👻 Created drag overlay");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("👻 Created drag overlay");
         }
 
         private void RemoveDragOverlay()
@@ -5067,7 +5377,7 @@ namespace Oracle.Views.Modals
                 parent?.Children.Remove(_dragOverlay);
                 _dragOverlay = null;
                 _ghostCard = null;
-                Oracle.Helpers.DebugLogger.Log("👻 Removed drag overlay");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("👻 Removed drag overlay");
             }
         }
 
@@ -5173,7 +5483,7 @@ namespace Oracle.Views.Modals
                 if (file != null)
                 {
                     await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, json);
-                    Oracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
 
                     // Enable tabs after successful save
                     UpdateTabStates(true);
@@ -5183,7 +5493,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error saving config: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error saving config: {ex.Message}");
             }
         }
 
@@ -5338,8 +5648,9 @@ namespace Oracle.Views.Modals
                 config.Description = configDescriptionBox.Text;
             }
             
-            // Set author - you can customize this
-            config.Author = Environment.UserName ?? "Unknown";
+            // Get author from user profile
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            config.Author = userProfileService?.GetAuthorName() ?? "Jimbo";
 
             // Convert all items using the helper method that handles unique keys
             FixUniqueKeyParsing(_selectedNeeds, config.Must, 0);
@@ -5464,7 +5775,15 @@ namespace Oracle.Views.Modals
                     break;
                     
                 case "jokers":
-                    filterItem.Type = "joker";
+                    // Check if it's a legendary joker
+                    if (IsLegendaryJoker(itemName))
+                    {
+                        filterItem.Type = "souljoker";
+                    }
+                    else
+                    {
+                        filterItem.Type = "joker";
+                    }
                     filterItem.Value = itemName;
                     if (config.Edition != null && config.Edition != "none")
                     {
@@ -5749,7 +6068,7 @@ namespace Oracle.Views.Modals
                             filterPathInput.Text = file.Path.LocalPath;
                         }
 
-                        Oracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
 
                         // Enable tabs and switch to Visual tab
                         UpdateTabStates(true);
@@ -5767,7 +6086,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError($"Error loading config: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError($"Error loading config: {ex.Message}");
             }
         }
 
@@ -5837,7 +6156,7 @@ namespace Oracle.Views.Modals
             UpdateDropZoneVisibility();
             RefreshItemPalette();
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 $"LoadConfigIntoUI: Loaded {_selectedNeeds.Count} needs, {_selectedWants.Count} wants, {_selectedMustNot.Count} must not"
             );
             RefreshItemPalette();
@@ -5857,8 +6176,6 @@ namespace Oracle.Views.Modals
                 _ => "Unknown",
             };
         }
-
-        // Removed old PopulateDropZones method - now using UpdateDropZoneVisibility with fancy layout
 
         private void UpdatePersistentFavorites()
         {
@@ -5892,6 +6209,14 @@ namespace Oracle.Views.Modals
 
         private void OnMustNotDragOver(object? sender, DragEventArgs e)
         {
+            // Check if we're dragging a set - if so, reject this zone
+            if (_isDraggingSet)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -5953,10 +6278,12 @@ namespace Oracle.Views.Modals
                     }
 
                     UpdateDropZoneVisibility();
+                    UpdatePersistentFavorites();
+                    RefreshItemPalette();
                     RemoveDragOverlay();
                     _isDragging = false;
                     e.Handled = true;
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
                         $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to MUST NOT"
                     );
@@ -6010,7 +6337,7 @@ namespace Oracle.Views.Modals
                                         _selectedMustNot.Add(itemKey);
                                     }
                                 }
-                                Oracle.Helpers.DebugLogger.Log(
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
                                     $"✅ Added set '{itemName}' ({setItems.Length} items) to MUST NOT"
                                 );
@@ -6026,7 +6353,7 @@ namespace Oracle.Views.Modals
                             // Add to must not (allow item in multiple lists)
                             _selectedMustNot.Add(key);
 
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to MUST NOT"
                             );
@@ -6225,7 +6552,7 @@ namespace Oracle.Views.Modals
             }
 
             // Fallback to timestamp-based name
-            return $"config-{DateTime.Now:yyyyMMdd-HHmmss}.json";
+            return $"config-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json";
         }
 
         private void MergeDropZonesForSet()
@@ -6247,8 +6574,7 @@ namespace Oracle.Views.Modals
             var mergedBorder = new Border
             {
                 Background = new SolidColorBrush(Color.Parse("#1a1a1a")),
-                BorderBrush = new SolidColorBrush(Color.Parse("#FFD700")),
-                BorderThickness = new Thickness(3),
+                BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(8),
                 MinHeight = 180,
                 Margin = new Thickness(5),
@@ -6371,6 +6697,7 @@ namespace Oracle.Views.Modals
                     }
                     
                     UpdateDropZoneVisibility();
+                    UpdateSelectionDisplay();  // Update the visual drop zones
                     UpdatePersistentFavorites();
                     RefreshItemPalette();
                     
@@ -6495,7 +6822,7 @@ namespace Oracle.Views.Modals
 
         private void ShowItemSelectionPopup(string dropZoneType, Border dropZoneBorder)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
                 $"ShowItemSelectionPopup called for {dropZoneType}"
             );
@@ -6652,21 +6979,21 @@ namespace Oracle.Views.Modals
                     {
                         case "needs":
                             _selectedNeeds.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "wants":
                             _selectedWants.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS via popup"
                             );
                             break;
                         case "mustnot":
                             _selectedMustNot.Add(key);
-                            Oracle.Helpers.DebugLogger.Log(
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to MUST NOT via popup"
                             );

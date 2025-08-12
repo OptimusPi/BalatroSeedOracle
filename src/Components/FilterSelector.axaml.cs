@@ -11,12 +11,12 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Services;
-using Oracle.Views.Modals;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public partial class FilterSelector : UserControl
     {
@@ -38,6 +38,7 @@ namespace Oracle.Components
 
         public bool ShowCreateButton { get; set; } = true;
         public bool ShouldSwitchToVisualTab { get; set; } = false;
+        public bool IsInSearchModal { get; set; } = false;
         
         public static readonly StyledProperty<string> TitleProperty = 
             AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
@@ -52,6 +53,7 @@ namespace Oracle.Components
         private PanelSpinner? _filterSpinner;
         private Button? _selectButton;
         private Button? _createFilterButton;
+        private TextBlock? _orText;
 
         public FilterSelector()
         {
@@ -67,6 +69,7 @@ namespace Oracle.Components
             _filterSpinner = this.FindControl<PanelSpinner>("FilterSpinner");
             _selectButton = this.FindControl<Button>("SelectButton");
             _createFilterButton = this.FindControl<Button>("CreateFilterButton");
+            _orText = this.FindControl<TextBlock>("OrText");
 
             // Setup panel spinner
             if (_filterSpinner != null)
@@ -81,20 +84,23 @@ namespace Oracle.Components
             LoadAvailableFilters();
 
             // Hide create section if not needed
-            if (!ShowCreateButton && _createFilterButton != null)
+            if (!ShowCreateButton)
             {
-                _createFilterButton.IsVisible = false;
-
-                // Also hide the separator
-                var parent = _createFilterButton.Parent as StackPanel;
-                if (parent != null && parent.Children.Count > 2)
-                {
-                    // Hide the separator (should be the 3rd child)
-                    if (parent.Children[2] is Border separator)
-                    {
-                        separator.IsVisible = false;
-                    }
-                }
+                if (_createFilterButton != null)
+                    _createFilterButton.IsVisible = false;
+                
+                if (_orText != null)
+                    _orText.IsVisible = false;
+                    
+                // Use simpler text for select button in search modal
+                if (_selectButton != null)
+                    _selectButton.Content = "Select Filter";
+            }
+            else
+            {
+                // When create button is shown, use more descriptive text
+                if (_selectButton != null)
+                    _selectButton.Content = "Edit Selected Filter";
             }
         }
 
@@ -446,7 +452,7 @@ namespace Oracle.Components
             // Get image based on type
             return type?.ToLower() switch
             {
-                "souljoker" => _spriteService.GetJokerImage(value), // TODO idk if this is the right way to get soul joker image
+                "souljoker" => _spriteService.GetJokerImage(value),
                 "joker" => _spriteService.GetJokerImage(value),
                 "voucher" => _spriteService.GetVoucherImage(value),
                 "tag" => _spriteService.GetTagImage(value),

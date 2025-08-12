@@ -8,9 +8,9 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Oracle.Services;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     /// <summary>
     /// Configuration popup specifically for Spectral card items

@@ -2,10 +2,10 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class AuthorModalContent : UserControl
     {

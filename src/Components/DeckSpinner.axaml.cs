@@ -6,11 +6,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Components
+namespace BalatroSeedOracle.Components
 {
     public partial class DeckSpinner : UserControl
     {

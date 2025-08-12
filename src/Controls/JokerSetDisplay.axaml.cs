@@ -10,10 +10,10 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public partial class JokerSetDisplay : UserControl
     {

@@ -6,7 +6,7 @@
     </Styles.Resources>
     
     <!-- Balatro Modal Card Style - Medium grey background like in Balatro -->
-    <Style Selector="Border.oracle-modal-card">
+    <Style Selector="Border.BalatroSeedOracle-modal-card">
         <Setter Property="Background" Value="{StaticResource DockGrey}"/>
         <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
@@ -16,7 +16,7 @@
     </Style>
     
     <!-- Precise modal with exact south-only shadow - Medium grey background -->
-    <Style Selector="Border.oracle-modal-card-precise">
+    <Style Selector="Border.BalatroSeedOracle-modal-card-precise">
         <Setter Property="Background" Value="{StaticResource DockGrey}"/>
         <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
@@ -43,7 +43,7 @@
     </Style>
     
     <!-- Modal TextBlock Style -->
-    <Style Selector="TextBlock.oracle-modal-text">
+    <Style Selector="TextBlock.BalatroSeedOracle-modal-text">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="20"/>
         
@@ -53,7 +53,7 @@
     </Style>
     
     <!-- Modal Button Style -->
-    <Style Selector="Button.oracle-modal-btn">
+    <Style Selector="Button.BalatroSeedOracle-modal-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="30"/>
         

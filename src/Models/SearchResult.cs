@@ -1,6 +1,4 @@
-using System;
-
-namespace Oracle.Models;
+namespace BalatroSeedOracle.Models;
 
 /// <summary>
 /// Represents a single search result from Motely
@@ -11,5 +9,4 @@ public class SearchResult
     public int TotalScore { get; set; }
     public int[]? Scores { get; set; }
     public string[]? Labels { get; set; }
-    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 }

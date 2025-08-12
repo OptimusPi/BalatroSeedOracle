@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Provides JSON schema and validation data for Ouija configs

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Manages multiple concurrent search instances

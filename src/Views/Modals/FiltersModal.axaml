@@ -1,9 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
-             xmlns:controls="using:Oracle.Controls"
-             xmlns:components="using:Oracle.Components"
-             x:Class="Oracle.Views.Modals.FiltersModalContent">
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModalContent">
              
     <UserControl.Styles>
         <!-- Modal-specific styles ONLY. Global button/input/tab/nav styles removed to prevent drift. -->
@@ -235,8 +235,7 @@
             </Setter>
         </Style>
         <Style Selector="Border.drop-zone.drag-over">
-            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
-            <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
+            <Setter Property="BoxShadow" Value="0 0 10 #ffffff20" />
         </Style>
         <Style Selector="Border.needs-zone.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource Red}" />
@@ -579,14 +578,11 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="20" />
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="16" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 
                                 <!-- MUST (NEEDS) Panel -->
-                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
-                                    <Grid>
+                                <Border Grid.Row="0" Name="NeedsBorder" Classes="drop-zone needs-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="12" MinHeight="150" ClipToBounds="False">
+                                    <Grid ClipToBounds="False">
                                         <!-- Sideways Label -->
                                         <TextBlock Text="MUST have..."
                                                    FontFamily="{StaticResource BalatroFont}"
@@ -607,10 +603,10 @@
                                         </TextBlock>
                                         
                                         <!-- Drop Area -->
-                                        <Grid Margin="30,0,0,0">
+                                        <Grid Margin="30,0,0,0" ClipToBounds="False">
                                             <TextBlock Name="NeedsPlaceholder" Classes="drop-placeholder" Text="Drop items that MUST appear" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
-                                                <WrapPanel Name="NeedsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
+                                            <ScrollViewer Name="NeedsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120" ClipToBounds="False">
+                                                <WrapPanel Name="NeedsPanel" Orientation="Horizontal" Classes="drop-zone-panel" ClipToBounds="False" />
                                             </ScrollViewer>
                                             <Button Name="ClearNeedsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -620,8 +616,8 @@
                                 </Border>
                                 
                                 <!-- SHOULD (WANTS) Panel -->
-                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
-                                    <Grid>
+                                <Border Grid.Row="2" Name="WantsBorder" Classes="drop-zone wants-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150" ClipToBounds="False">
+                                    <Grid ClipToBounds="False">
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Should have..."
                                                    FontFamily="{StaticResource BalatroFont}"
@@ -642,10 +638,10 @@
                                         </TextBlock>
                                         
                                         <!-- Drop Area -->
-                                        <Grid Margin="30,0,0,0">
+                                        <Grid Margin="30,0,0,0" ClipToBounds="False">
                                             <TextBlock Name="WantsPlaceholder" Classes="drop-placeholder" Text="Drop items you'd LIKE to see" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
-                                                <WrapPanel Name="WantsPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
+                                            <ScrollViewer Name="WantsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120" ClipToBounds="False">
+                                                <WrapPanel Name="WantsPanel" Orientation="Horizontal" Classes="drop-zone-panel" ClipToBounds="False" />
                                             </ScrollViewer>
                                             <Button Name="ClearWantsButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -655,8 +651,8 @@
                                 </Border>
                                 
                                 <!-- MUST NOT Panel -->
-                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150">
-                                    <Grid>
+                                <Border Grid.Row="4" Name="MustNotBorder" Classes="drop-zone mustnot-zone" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="8" MinHeight="150" ClipToBounds="False">
+                                    <Grid ClipToBounds="False">
                                         <!-- Sideways Label -->
                                         <TextBlock Text="Must NOT Have..."
                                                    FontFamily="{StaticResource BalatroFont}"
@@ -679,8 +675,8 @@
                                         <!-- Drop Area -->
                                         <Grid Margin="40,0,0,0">
                                             <TextBlock Name="MustNotPlaceholder" Classes="drop-placeholder" Text="Drop forbidden items here" TextAlignment="Center" IsVisible="True" FontSize="14" />
-                                            <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120">
-                                                <WrapPanel Name="MustNotPanel" Orientation="Horizontal" Classes="drop-zone-panel" />
+                                            <ScrollViewer Name="MustNotScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto" IsVisible="False" Height="120" ClipToBounds="False">
+                                                <WrapPanel Name="MustNotPanel" Orientation="Horizontal" Classes="drop-zone-panel" ClipToBounds="False" />
                                             </ScrollViewer>
                                             <Button Name="ClearMustNotButton" Classes="clear-zone-button" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4" Width="16" Height="16" Padding="0" Background="Transparent" BorderThickness="0" IsVisible="False">
                                                 <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Fill="{StaticResource Border}" Width="16" Height="16" Stretch="Uniform" Opacity="0.7" />
@@ -701,8 +697,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center"
                                          AutoLoadEnabled="False"
-                                         Title="Edit Filter"
-                                         FilterLoaded="OnFilterLoaded"
+                                         FilterLoaded="OnFilterSelected"
                                          NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
 

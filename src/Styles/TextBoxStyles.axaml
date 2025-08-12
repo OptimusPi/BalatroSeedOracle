@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <!-- ULTIMATE Dark TextBox Style for Oracle - All States Covered -->
+    <!-- ULTIMATE Dark TextBox Style for BalatroSeedOracle - All States Covered -->
     <Style Selector="TextBox">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Background" Value="{StaticResource PureBlack}" />

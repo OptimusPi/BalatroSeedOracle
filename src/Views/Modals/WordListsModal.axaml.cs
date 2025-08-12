@@ -9,7 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class WordListsModal : UserControl
     {
@@ -171,7 +171,7 @@ temp"
 
         private void OnNewClick(object? sender, RoutedEventArgs e)
         {
-            var newFileName = $"custom_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var newFileName = $"custom_{DateTime.UtcNow:yyyyMMdd_HHmmss}.txt";
             var newFilePath = Path.Combine(_wordListsPath, newFileName);
 
             try

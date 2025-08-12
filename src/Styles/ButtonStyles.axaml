@@ -1,8 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <!-- Base Oracle Button Style -->
-    <Style Selector="Button.oracle-btn">
+    <!-- Base BalatroSeedOracle Button Style -->
+    <Style Selector="Button.BalatroSeedOracle-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         
         <Setter Property="FontSize" Value="24" /> <!-- Default size, can be overridden -->
@@ -39,13 +39,13 @@
         </Setter>
     </Style>
     
-    <!-- Hide shadow when oracle button is pressed -->
-    <Style Selector="Button.oracle-btn:pressed /template/ Border#DropShadow">
+    <!-- Hide shadow when BalatroSeedOracle button is pressed -->
+    <Style Selector="Button.BalatroSeedOracle-btn:pressed /template/ Border#DropShadow">
         <Setter Property="IsVisible" Value="False" />
     </Style>
     
     <!-- Override any default Avalonia button hover styles -->
-    <Style Selector="Button.oracle-btn:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn:pointerover">
         <!-- Explicitly do nothing - let color variants handle it -->
     </Style>
     
@@ -60,11 +60,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-blue:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-blue:pointerover">
         <Setter Property="Background" Value="#0095f0" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-blue:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-blue:pressed">
         <Setter Property="Background" Value="#0095f0" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
@@ -79,11 +79,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-yellow-orange:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-yellow-orange:pointerover">
         <Setter Property="Background" Value="#f59d00" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-yellow-orange:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-yellow-orange:pressed">
         <Setter Property="Background" Value="#f59d00" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
@@ -98,11 +98,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-purple:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-purple:pointerover">
         <Setter Property="Background" Value="#82619f" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-purple:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-purple:pressed">
         <Setter Property="Background" Value="#82619f" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
@@ -117,11 +117,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-red:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-red:pointerover">
         <Setter Property="Background" Value="#f55a50" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-red:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-red:pressed">
         <Setter Property="Background" Value="#f55a50" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
@@ -136,11 +136,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-green:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-green:pointerover">
         <Setter Property="Background" Value="#47bc8d" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-green:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-green:pressed">
         <Setter Property="Background" Value="#47bc8d" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
@@ -155,11 +155,11 @@
         </Setter>
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-gold:pointerover">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-gold:pointerover">
         <Setter Property="Background" Value="#e5bb54" /> <!-- Very slightly darker -->
     </Style>
     
-    <Style Selector="Button.oracle-btn.button-color-gold:pressed">
+    <Style Selector="Button.BalatroSeedOracle-btn.button-color-gold:pressed">
         <Setter Property="Background" Value="#e5bb54" /> <!-- Keep hover shade -->
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>

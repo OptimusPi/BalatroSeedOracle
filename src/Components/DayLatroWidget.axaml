@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Oracle.Components.DayLatroWidget"
+             x:Class="BalatroSeedOracle.Components.DayLatroWidget"
              x:CompileBindings="False">
     
     <UserControl.Styles>
@@ -41,7 +41,7 @@
     
     <Grid>
         <!-- Minimized State - Calendar Icon -->
-        <Grid Name="MinimizedView" IsVisible="True">
+        <Grid Name="MinimizedView" IsVisible="True" Margin="10,10,0,0">
             <Border Classes="widget-container" 
                     Width="120" Height="80"
                     Cursor="Hand"
@@ -66,23 +66,19 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,0,0,5"/>
-                    <Border Name="NewDayBadge"
-                            Background="{StaticResource ToggleRed}"
-                            CornerRadius="8"
-                            Width="16" Height="16"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Margin="0,-5,-5,0"
-                            IsVisible="False">
-                        <TextBlock Text="!" 
-                                   FontSize="11" 
-                                   
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
                 </Grid>
             </Border>
+            
+            <!-- Notification badge overlay using Canvas -->
+            <Canvas ZIndex="100">
+                <Border Name="NewDayBadge"
+                        Classes="notification-badge small"
+                        Canvas.Right="-5"
+                        Canvas.Top="-5"
+                        IsVisible="False">
+                    <TextBlock Text="!" />
+                </Border>
+            </Canvas>
         </Grid>
         
         <!-- Expanded State -->

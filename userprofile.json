@@ -3,5 +3,6 @@
   "BackgroundTheme": null,
   "AnimationEnabled": true,
   "VolumeLevel": 2,
-  "MusicEnabled": true
+  "MusicEnabled": true,
+  "LastSearchState": null
 }

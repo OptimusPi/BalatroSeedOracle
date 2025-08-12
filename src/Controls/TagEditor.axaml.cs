@@ -9,9 +9,9 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Controls
+namespace BalatroSeedOracle.Controls
 {
     public partial class TagEditor : UserControl
     {

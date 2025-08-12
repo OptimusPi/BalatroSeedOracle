@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Oracle.Controls;
+using BalatroSeedOracle.Controls;
 
-namespace Oracle.Components;
+namespace BalatroSeedOracle.Components;
 
 public partial class DeckAndStakeSelector : UserControl
 {
@@ -109,5 +109,46 @@ public partial class DeckAndStakeSelector : UserControl
             7 => "Gold",
             _ => "White",
         };
+    }
+
+    public void SetDeck(string deckName)
+    {
+        int index = deckName?.ToLower() switch
+        {
+            "red" => 0,
+            "blue" => 1,
+            "yellow" => 2,
+            "green" => 3,
+            "black" => 4,
+            "magic" => 5,
+            "nebula" => 6,
+            "ghost" => 7,
+            "abandoned" => 8,
+            "checkered" => 9,
+            "zodiac" => 10,
+            "painted" => 11,
+            "anaglyph" => 12,
+            "plasma" => 13,
+            "erratic" => 14,
+            _ => 0, // Default to Red
+        };
+        DeckIndex = index;
+    }
+
+    public void SetStake(string stakeName)
+    {
+        int index = stakeName?.ToLower() switch
+        {
+            "white" => 0,
+            "red" => 1,
+            "green" => 2,
+            "black" => 3,
+            "blue" => 4,
+            "purple" => 5,
+            "orange" => 6,
+            "gold" => 7,
+            _ => 0, // Default to White
+        };
+        StakeIndex = index;
     }
 }

@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using Oracle.Helpers;
-using Oracle.Models;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Service for managing user profile and preferences
@@ -120,6 +120,57 @@ namespace Oracle.Services
             _currentProfile.VolumeLevel = volumeLevel;
             _currentProfile.MusicEnabled = musicEnabled;
             SaveProfile();
+        }
+
+        /// <summary>
+        /// Save the current search state for resuming later
+        /// </summary>
+        public void SaveSearchState(SearchResumeState state)
+        {
+            _currentProfile.LastSearchState = state;
+            SaveProfile();
+            DebugLogger.Log(
+                "UserProfileService",
+                $"Saved search state: Batch {state.LastCompletedBatch}/{state.TotalBatches}"
+            );
+        }
+        
+        /// <summary>
+        /// Update search state batch number without writing to disk
+        /// </summary>
+        public void UpdateSearchBatch(ulong completedBatch)
+        {
+            if (_currentProfile.LastSearchState != null)
+            {
+                _currentProfile.LastSearchState.LastCompletedBatch = completedBatch;
+                _currentProfile.LastSearchState.LastActiveTime = DateTime.UtcNow;
+            }
+        }
+        
+        /// <summary>
+        /// Force save the current profile to disk
+        /// </summary>
+        public void FlushProfile()
+        {
+            SaveProfile();
+        }
+
+        /// <summary>
+        /// Get the last saved search state if available
+        /// </summary>
+        public SearchResumeState? GetSearchState()
+        {
+            return _currentProfile.LastSearchState;
+        }
+
+        /// <summary>
+        /// Clear the saved search state
+        /// </summary>
+        public void ClearSearchState()
+        {
+            _currentProfile.LastSearchState = null;
+            SaveProfile();
+            DebugLogger.Log("UserProfileService", "Cleared search state");
         }
 
         /// <summary>

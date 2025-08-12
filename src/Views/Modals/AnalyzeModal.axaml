@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="using:Oracle.Controls"
-             xmlns:components="using:Oracle.Components"
-             x:Class="Oracle.Views.Modals.AnalyzeModal">
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal">
     
     <UserControl.Styles>
         <!-- Balatro-style tab buttons -->

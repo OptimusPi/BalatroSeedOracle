@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Input.Platform;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     public static class ClipboardService
     {

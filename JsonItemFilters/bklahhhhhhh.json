@@ -1,67 +1,11 @@
 {
-  "name": "okok",
-  "description": "Created with visual filter builder",
+  "name": "bklahhhhhhh",
+  "description": "Created with visuaafgasdfgsdfgfilter builder",
   "author": "pifreak",
   "must": [
     {
-      "type": "joker",
-      "value": "Perkeo",
-      "antes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ],
-      "sources": {
-        "shopSlots": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "packSlots": [
-          0,
-          1,
-          2,
-          3
-        ]
-      }
-    },
-    {
-      "type": "joker",
-      "value": "DNA",
-      "antes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ],
-      "sources": {
-        "shopSlots": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "packSlots": [
-          0,
-          1,
-          2,
-          3
-        ]
-      }
-    },
-    {
-      "type": "joker",
-      "value": "Yorick",
+      "type": "voucher",
+      "value": "Overstock",
       "antes": [
         1,
         2,
@@ -88,7 +32,95 @@
       }
     }
   ],
-  "should": [],
+  "should": [
+    {
+      "type": "joker",
+      "value": "TheFamily",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "Blueprint",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "Brainstorm",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    }
+  ],
   "mustNot": [],
   "deck": "Red",
   "stake": "White"

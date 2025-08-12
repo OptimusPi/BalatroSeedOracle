@@ -1,12 +1,12 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Oracle.Views.Modals;
-using Oracle.Components;
-using Oracle.Services;
+using BalatroSeedOracle.Views.Modals;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Services;
 using System.Reflection;
 
-namespace Oracle.Helpers
+namespace BalatroSeedOracle.Helpers
 {
     /// <summary>
     /// Helper methods for modal creation and management
@@ -55,7 +55,7 @@ namespace Oracle.Helpers
                 // Handle desktop icon creation when modal closes with active search
                 searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
                 {
-                    Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
                     // Get the search ID from the modal
                     var searchId = searchContent.GetCurrentSearchId();
                     if (!string.IsNullOrEmpty(searchId))
@@ -73,7 +73,7 @@ namespace Oracle.Helpers
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
                 throw;
             }
         }
@@ -91,7 +91,7 @@ namespace Oracle.Helpers
             // Handle desktop icon creation when modal closes with active search
             searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
             {
-                Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
                 // Get the search ID from the modal
                 var searchId = searchContent.GetCurrentSearchId();
                 if (!string.IsNullOrEmpty(searchId))
@@ -131,7 +131,7 @@ namespace Oracle.Helpers
             // Handle desktop icon creation when modal closes with active search
             searchModal.CreateDesktopIconRequested += (sender, configPath) => 
             {
-                Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
                 // Get the search ID from the modal
                 var searchId = searchModal.GetCurrentSearchId();
                 if (!string.IsNullOrEmpty(searchId))
@@ -163,7 +163,7 @@ namespace Oracle.Helpers
             // Handle desktop icon creation when modal closes with active search
             searchModal.CreateDesktopIconRequested += (sender, cfgPath) => 
             {
-                Oracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for search: {searchId}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for search: {searchId}");
                 menu.ShowSearchDesktopIcon(searchId, cfgPath);
             };
         

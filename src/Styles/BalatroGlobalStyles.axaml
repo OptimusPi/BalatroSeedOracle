@@ -439,4 +439,39 @@
         <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
     </Style>
     
+    <!-- ==== NOTIFICATION BADGE STYLES ==== -->
+    
+    <!-- Standard notification badge - always use with Canvas positioning -->
+    <Style Selector="Border.notification-badge">
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="MinWidth" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="BoxShadow" Value="0 2 8 0 #4C000000"/>
+        <Setter Property="BorderBrush" Value="{StaticResource White}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    
+    <!-- Small notification badge variant -->
+    <Style Selector="Border.notification-badge.small">
+        <Setter Property="MinWidth" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    
+    <!-- Notification badge text styling -->
+    <Style Selector="Border.notification-badge TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+    
+    <!-- Small badge text -->
+    <Style Selector="Border.notification-badge.small TextBlock">
+        <Setter Property="FontSize" Value="10"/>
+    </Style>
+    
 </Styles>

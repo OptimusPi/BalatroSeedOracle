@@ -19,13 +19,14 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using Oracle.Components;
-using Oracle.Controls;
-using Oracle.Helpers;
-using Oracle.Services;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using ReactiveUI;
 
-namespace Oracle.Views.Modals
+namespace BalatroSeedOracle.Views.Modals
 {
     public partial class SearchModal : UserControl, IDisposable
     {
@@ -53,6 +54,13 @@ namespace Oracle.Views.Modals
 
         // Controls
         private TextBox? _consoleOutput;
+        
+        // Console throttling
+        private readonly List<string> _consoleBuffer = new List<string>();
+        private DispatcherTimer? _consoleUpdateTimer;
+        private readonly object _consoleBufferLock = new object();
+        private int _consoleLineCount = 0;
+        private const int MAX_CONSOLE_LINES = 500;
 
         // Action buttons
         private Button? _cookButton;
@@ -85,7 +93,7 @@ namespace Oracle.Views.Modals
         private double _peakSpeed = 0;
         private double _totalSeeds = 0;
         private DateTime _searchStartTime;
-        private DateTime _lastSpeedUpdate = DateTime.Now;
+        private DateTime _lastSpeedUpdate = DateTime.UtcNow;
         private int _newResultsCount = 0; // Track only new results found in current search
 
         // Current filter info
@@ -96,8 +104,11 @@ namespace Oracle.Views.Modals
         private readonly List<SearchResult> _pendingResults = new();
         private System.Threading.Timer? _resultBatchTimer;
         private readonly object _resultBatchLock = new object();
-        private DateTime _lastResultBatchUpdate = DateTime.Now;
-        private DateTime _lastProgressUpdate = DateTime.Now;
+        private DateTime _lastResultBatchUpdate = DateTime.UtcNow;
+        private DateTime _lastProgressUpdate = DateTime.UtcNow;
+        
+        // Resume search support
+        private ulong? _resumeFromBatch = null;
 
         // Results panel controls
         private ItemsControl? _resultsItemsControl;
@@ -113,7 +124,6 @@ namespace Oracle.Views.Modals
         private bool _sortAscending = false;
         private TextBlock? _seedSortIndicator;
         private TextBlock? _scoreSortIndicator;
-        private TextBlock? _timeSortIndicator;
 
         public SearchModal()
         {
@@ -121,10 +131,13 @@ namespace Oracle.Views.Modals
             {
                 InitializeComponent();
                 this.Unloaded += OnUnloaded;
+                
+                // Check for resumable search after UI is loaded
+                Dispatcher.UIThread.InvokeAsync(CheckForResumableSearch, DispatcherPriority.Background);
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Constructor error: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Constructor error: {ex}");
                 throw;
             }
         }
@@ -134,11 +147,165 @@ namespace Oracle.Views.Modals
             // If search is running when modal closes, create desktop icon
             if (_isSearching && !string.IsNullOrEmpty(_currentFilterPath))
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "SearchModal",
                     "Creating desktop icon for ongoing search..."
                 );
                 CreateDesktopIconRequested?.Invoke(this, _currentFilterPath);
+            }
+        }
+
+        private async void CheckForResumableSearch()
+        {
+            try
+            {
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+
+                if (userProfileService?.GetSearchState() is { } resumeState)
+                {
+                    // Check if the search is recent (within last 24 hours)
+                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
+                    if (timeSinceSearch.TotalHours > 24)
+                    {
+                        // Too old, clear it
+                        userProfileService.ClearSearchState();
+                        return;
+                    }
+
+                    // Simply restore the search state - user can hit Cook to continue
+                    if (!string.IsNullOrEmpty(resumeState.ConfigPath))
+                    {
+                        await LoadFilterAsync(resumeState.ConfigPath);
+                    }
+                    
+                    // Set the UI values
+                    if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
+                    if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1;
+                    if (_minScoreSpinner != null) _minScoreSpinner.Value = resumeState.MinScore;
+                    if (_deckAndStakeSelector != null)
+                    {
+                        _deckAndStakeSelector.SetDeck(resumeState.Deck ?? "Red");
+                        _deckAndStakeSelector.SetStake(resumeState.Stake ?? "White");
+                    }
+                    
+                    // Add console message about resumable state
+                    AddToConsole($"──────────────────────────────────");
+                    AddToConsole($"Previous search detected!");
+                    AddToConsole($"Ready to resume from batch {resumeState.LastCompletedBatch + 1:N0}");
+                    AddToConsole($"Press 'Cook' to continue searching");
+                    
+                    // Store the resume batch for when Cook is clicked
+                    _resumeFromBatch = resumeState.LastCompletedBatch + 1;
+                    
+                    // DON'T clear the saved state - it will be cleared when search completes successfully
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error checking for resumable search: {ex.Message}");
+            }
+        }
+
+        private async Task ResumeSearch(SearchResumeState resumeState)
+        {
+            try
+            {
+                AddToConsole("──────────────────────────────────");
+                AddToConsole($"Resuming search from batch {resumeState.LastCompletedBatch:N0}...");
+                
+                // Create a new search instance
+                CreateNewSearchInstance();
+                
+                if (_searchInstance == null) return;
+                
+                // Load the config
+                Motely.Filters.OuijaConfig? config = null;
+                
+                if (resumeState.IsDirectConfig && !string.IsNullOrEmpty(resumeState.ConfigJson))
+                {
+                    // Deserialize the saved config
+                    config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(resumeState.ConfigJson);
+                    _currentFilterPath = "Direct Config";
+                }
+                else if (!string.IsNullOrEmpty(resumeState.ConfigPath))
+                {
+                    // Load from file
+                    _currentFilterPath = resumeState.ConfigPath;
+                    await LoadFilterAsync(resumeState.ConfigPath);
+                }
+                
+                if (config != null || !string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    // Set UI values from saved state
+                    if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
+                    if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1; // UI shows 0-indexed
+                    if (_minScoreSpinner != null) _minScoreSpinner.Value = resumeState.MinScore;
+                    if (_deckAndStakeSelector != null)
+                    {
+                        _deckAndStakeSelector.SetDeck(resumeState.Deck ?? "Red");
+                        _deckAndStakeSelector.SetStake(resumeState.Stake ?? "White");
+                    }
+                    
+                    // Switch to Search tab
+                    if (_searchTab != null)
+                    {
+                        OnTabClick(_searchTab, new RoutedEventArgs());
+                    }
+                    
+                    // Start the search from the saved position
+                    var searchConfig = new SearchConfiguration
+                    {
+                        ThreadCount = resumeState.ThreadCount,
+                        MinScore = resumeState.MinScore,
+                        BatchSize = resumeState.BatchSize,
+                        StartBatch = resumeState.LastCompletedBatch + 1, // Resume from next batch
+                        EndBatch = resumeState.EndBatch,
+                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        Deck = resumeState.Deck,
+                        Stake = resumeState.Stake
+                    };
+                    
+                    _isSearching = true;
+                    UpdateSearchUI();
+                    _searchStartTime = _searchInstance.SearchStartTime; // Use actual search start time
+                    
+                    // Enable the stop button
+                    if (_cookButton != null)
+                    {
+                        _cookButton.IsEnabled = true;
+                    }
+                    
+                    if (config != null)
+                    {
+                        // Direct config
+                        await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
+                    }
+                    else
+                    {
+                        // File-based config
+                        var searchCriteria = new SearchCriteria
+                        {
+                            ConfigPath = _currentFilterPath,
+                            ThreadCount = searchConfig.ThreadCount,
+                            MinScore = searchConfig.MinScore,
+                            BatchSize = searchConfig.BatchSize,
+                            StartBatch = searchConfig.StartBatch,
+                            EndBatch = searchConfig.EndBatch,
+                            EnableDebugOutput = searchConfig.DebugMode,
+                            Deck = searchConfig.Deck,
+                            Stake = searchConfig.Stake
+                        };
+                        
+                        await _searchInstance.StartSearchAsync(searchCriteria);
+                    }
+                    
+                    AddToConsole($"Search resumed successfully from batch {resumeState.LastCompletedBatch + 1}");
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error resuming search: {ex.Message}");
+                AddToConsole($"Failed to resume search: {ex.Message}");
             }
         }
 
@@ -150,7 +317,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load XAML: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load XAML: {ex}");
                 throw;
             }
 
@@ -170,7 +337,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "SearchModal",
                     $"Failed to find panels/tabs: {ex}"
                 );
@@ -227,7 +394,7 @@ namespace Oracle.Views.Modals
                 _filterSelector.ShowCreateButton = false;
 
                 // Connect the FilterLoaded event
-                _filterSelector.FilterLoaded += OnFilterLoaded;
+                _filterSelector.FilterLoaded += OnFilterSelected;
             }
 
             // Find results panel controls
@@ -241,7 +408,6 @@ namespace Oracle.Views.Modals
             // Find sort indicators
             _seedSortIndicator = this.FindControl<TextBlock>("SeedSortIndicator");
             _scoreSortIndicator = this.FindControl<TextBlock>("ScoreSortIndicator");
-            _timeSortIndicator = this.FindControl<TextBlock>("TimeSortIndicator");
             
             // Wire up filter text changed event
             if (_resultsFilterTextBox != null)
@@ -253,11 +419,11 @@ namespace Oracle.Views.Modals
             if (_resultsItemsControl != null)
             {
                 _resultsItemsControl.ItemsSource = _searchResults;
-                Oracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl initialized with {_searchResults.Count} items");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl initialized with {_searchResults.Count} items");
             }
             else
             {
-                Oracle.Helpers.DebugLogger.LogError("SearchModal", "Failed to find ResultsItemsControl!");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", "Failed to find ResultsItemsControl!");
             }
 
             // Find new Search tab UI elements
@@ -327,12 +493,12 @@ namespace Oracle.Views.Modals
 
         private bool _isLoadingFilter = false;
         
-        private async void OnFilterLoaded(object? sender, string filterPath)
+        private async void OnFilterSelected(object? sender, string filterPath)
         {
             // Prevent double loading
             if (_isLoadingFilter || _currentFilterPath == filterPath)
             {
-                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Skipping duplicate filter load: {filterPath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Skipping duplicate filter load: {filterPath}");
                 return;
             }
             
@@ -369,7 +535,7 @@ namespace Oracle.Views.Modals
                     modalHost.Children.Clear();
 
                     // Open the filters modal
-                    var filtersModal = new Oracle.Views.Modals.FiltersModalContent();
+                    var filtersModal = new BalatroSeedOracle.Views.Modals.FiltersModalContent();
                     modalHost.Children.Add(filtersModal);
                 }
             }
@@ -479,13 +645,13 @@ namespace Oracle.Views.Modals
                 if (_resultsPanel != null)
                 {
                     _resultsPanel.IsVisible = true;
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Results panel visible: {_resultsPanel.IsVisible}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Results panel visible: {_resultsPanel.IsVisible}");
                 }
 
                 // Ensure ItemsControl is bound 
                 if (_resultsItemsControl != null)
                 {
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl HasItems: {_searchResults.Count}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"ItemsControl HasItems: {_searchResults.Count}");
                     
                     if (_resultsItemsControl.ItemsSource != _searchResults)
                     {
@@ -497,7 +663,7 @@ namespace Oracle.Views.Modals
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "ResultsItemsControl is null!");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", "ResultsItemsControl is null!");
                 }
 
                 // Apply filter and update summary when opening
@@ -515,16 +681,26 @@ namespace Oracle.Views.Modals
                 CreateNewSearchInstance();
             }
 
+            Motely.Filters.OuijaConfig? config = null;
             try
             {
-                // Load the config using Motely's loader
-                var config = await Task.Run(() => Motely.Filters.OuijaConfig.LoadFromJson(filePath)
-                );
+                // Load the config file asynchronously - proper async I/O
+                if (File.Exists(filePath))
+                {
+                    var json = await File.ReadAllTextAsync(filePath);
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true
+                    };
+                    config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                }
 
                 if (config != null)
                 {
                     // Just log that we loaded successfully
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
                         $"Filter loaded successfully: {config.Name}"
                     );
@@ -553,62 +729,21 @@ namespace Oracle.Views.Modals
                     {
                         OnTabClick(_settingsTab, new RoutedEventArgs());
                     }
-
-                    // Add to console
-                    AddToConsole($"Filter loaded: {System.IO.Path.GetFileName(filePath)}");
-
-                    // If this is a temp file (from FiltersModal), automatically start the search
-                    if (filePath.Contains("temp_filter_") && filePath.Contains(".ouija.json"))
-                    {
-                        Oracle.Helpers.DebugLogger.Log(
-                            "SearchModal",
-                            $"Detected temp filter, auto-switching to search tab: {filePath}"
-                        );
-                        // Switch to Search tab
-                        if (_searchTab != null)
-                        {
-                            OnTabClick(_searchTab, new RoutedEventArgs());
-                        }
-
-                        // Wait a moment for UI to update, then start the search
-                        await Task.Delay(100);
-                        OnCookClick(null, new RoutedEventArgs());
-                    }
-                    else
-                    {
-                        Oracle.Helpers.DebugLogger.Log(
-                            "SearchModal",
-                            $"Normal filter loaded, staying on current tab: {filePath}"
-                        );
-                    }
-                }
-                else
-                {
-                    // Show error in console
-                    AddToConsole("Error: Failed to load filter configuration");
-                    UpdateJsonValidationStatus(false, "Invalid: Failed to load");
                 }
             }
             catch (Exception ex)
             {
-                AddToConsole($"Failed to load filter: {ex.Message}");
-                UpdateJsonValidationStatus(false, $"Invalid: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading filter: {ex.Message}");
             }
         }
-
         /// <summary>
-        /// Load a config object directly and start search (no temp files!)
+        /// Load a config object directly and start search
         /// </summary>
         public async Task LoadConfigDirectlyAsync(
             Motely.Filters.OuijaConfig config,
             bool autoStartSearch = true
         )
         {
-            Oracle.Helpers.DebugLogger.Log(
-                "SearchModal",
-                "LoadConfigDirectlyAsync - NO TEMP FILES!"
-            );
-
             // Create a new search instance if we don't have one
             if (string.IsNullOrEmpty(_currentSearchId))
             {
@@ -658,20 +793,28 @@ namespace Oracle.Views.Modals
                     await Task.Delay(100);
 
                     // Start the search directly with the config object
+                    int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size
                     var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
                         MinScore = _minScoreSpinner?.Value ?? 0,
-                        BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1,
-                        StartBatch = 0,
-                        EndBatch = -1,
+                        BatchSize = batchSize,
+                        StartBatch = _resumeFromBatch ?? 0,
+                        EndBatch = GetMaxBatchesForBatchSize(batchSize),
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
 
                     AddToConsole("──────────────────────────────────");
-                    AddToConsole("Let Jimbo cook! Starting search...");
+                    if (_resumeFromBatch.HasValue)
+                    {
+                        AddToConsole($"Resuming search from batch {_resumeFromBatch.Value:N0}...");
+                    }
+                    else
+                    {
+                        AddToConsole("Let Jimbo cook! Starting search...");
+                    }
 
                     // Start search with the config object directly
                     await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
@@ -700,7 +843,7 @@ namespace Oracle.Views.Modals
                     AddToConsole(
                         "Error: Failed to create search instance. Search manager might not be initialized."
                     );
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "SearchModal",
                         "SearchInstance is null after CreateNewSearchInstance"
                     );
@@ -717,23 +860,31 @@ namespace Oracle.Views.Modals
                     Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
 
                     // Get parameters from Balatro spinners
+                    int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size (minimal=1, low=2, default=3, high=4)
                     var config = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
                         MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-5 = actual values
-                        BatchSize = (_batchSizeSpinner?.Value ?? 3) + 1, // Convert 1-4 to 2-5 for actual batch size
-                        StartBatch = 0,
-                        EndBatch = 999999,
+                        BatchSize = batchSize,
+                        StartBatch = _resumeFromBatch ?? 0,
+                        EndBatch = GetMaxBatchesForBatchSize(batchSize),
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
 
                     AddToConsole("──────────────────────────────────");
-                    AddToConsole("Let Jimbo cook! Starting search...");
+                    if (_resumeFromBatch.HasValue)
+                    {
+                        AddToConsole($"Resuming search from batch {_resumeFromBatch.Value:N0}...");
+                    }
+                    else
+                    {
+                        AddToConsole("Let Jimbo cook! Starting search...");
+                    }
 
                     // Start search
-                    var searchCriteria = new Oracle.Models.SearchCriteria
+                    var searchCriteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
                         ConfigPath = _currentFilterPath,
                         ThreadCount = config.ThreadCount,
@@ -753,7 +904,7 @@ namespace Oracle.Views.Modals
                         _cookButton.IsEnabled = false;
                     }
                     
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
                         $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}"
                     );
@@ -785,7 +936,7 @@ namespace Oracle.Views.Modals
                     }
                     catch (Exception stopEx)
                     {
-                        Oracle.Helpers.DebugLogger.LogError(
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError(
                             "SearchModal",
                             $"Error stopping search: {stopEx}"
                         );
@@ -809,7 +960,7 @@ namespace Oracle.Views.Modals
             catch (Exception ex)
             {
                 AddToConsole($"Error starting search: {ex.Message}");
-                Oracle.Helpers.DebugLogger.LogError("SearchModal", $"OnCookClick error: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"OnCookClick error: {ex}");
                 _isSearching = false;
                 UpdateSearchUI();
             }
@@ -820,10 +971,10 @@ namespace Oracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 _isSearching = true;
-                _searchStartTime = DateTime.Now;
+                _searchStartTime = DateTime.UtcNow;
                 _peakSpeed = 0;
                 _totalSeeds = 0;
-                _lastSpeedUpdate = DateTime.Now;
+                _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
 
                 // Update cook button
@@ -841,7 +992,8 @@ namespace Oracle.Views.Modals
                 }
 
                 // Load existing results from .duckdb file if available
-
+                AddToConsole("──────────────────────────────────");
+                AddToConsole("Checking for existing results...");
                 await LoadExistingResultsAsync();
 
                 // Enable save widget button
@@ -858,7 +1010,7 @@ namespace Oracle.Views.Modals
             {
                 try
                 {
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
                         "Search completed - resetting UI"
                     );
@@ -875,7 +1027,7 @@ namespace Oracle.Views.Modals
                 }
                 catch (Exception ex)
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "SearchModal",
                         $"Error in OnSearchCompleted: {ex}"
                     );
@@ -898,12 +1050,19 @@ namespace Oracle.Views.Modals
             if (_consoleOutput != null)
             {
                 _consoleOutput.Text = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+                _consoleLineCount = 2;
+            }
+            
+            // Clear buffer too
+            lock (_consoleBufferLock)
+            {
+                _consoleBuffer.Clear();
             }
         }
         
         private void UpdateTallyHeaders()
         {
-            Oracle.Helpers.DebugLogger.Log("SearchModal", $"UpdateTallyHeaders called - Results count: {_searchResults.Count}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"UpdateTallyHeaders called - Results count: {_searchResults.Count}");
             
             if (_tallyHeadersPanel == null || _searchResults.Count == 0)
                 return;
@@ -911,7 +1070,7 @@ namespace Oracle.Views.Modals
             // Check if we already have headers
             if (_tallyHeadersPanel.Children.Count > 0)
             {
-                Oracle.Helpers.DebugLogger.Log("SearchModal", "Tally headers already exist, skipping");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Tally headers already exist, skipping");
                 return;
             }
                 
@@ -919,11 +1078,11 @@ namespace Oracle.Views.Modals
             var firstResult = _searchResults.FirstOrDefault();
             if (firstResult?.ItemLabels == null || firstResult.ItemLabels.Length == 0)
             {
-                Oracle.Helpers.DebugLogger.Log("SearchModal", "No item labels in first result");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No item labels in first result");
                 return;
             }
                 
-            Oracle.Helpers.DebugLogger.Log("SearchModal", $"Adding {firstResult.ItemLabels.Length} tally headers");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Adding {firstResult.ItemLabels.Length} tally headers");
                 
             // Add headers for each tally score
             foreach (var label in firstResult.ItemLabels)
@@ -942,7 +1101,7 @@ namespace Oracle.Views.Modals
                 };
                 
                 _tallyHeadersPanel.Children.Add(header);
-                Oracle.Helpers.DebugLogger.Log("SearchModal", $"Added header: {label}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Added header: {label}");
             }
         }
         
@@ -955,13 +1114,14 @@ namespace Oracle.Views.Modals
                 _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
                 _searchInstance.CutoffChanged -= OnCutoffChanged;
+                _searchInstance.ConsoleOutput -= OnConsoleOutput;
             }
         }
 
         private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
         {
             // Throttle progress updates to reduce UI load
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if ((now - _lastProgressUpdate).TotalMilliseconds < 50)  // Update every 50ms for very responsive speed display
                 return;
                 
@@ -976,10 +1136,11 @@ namespace Oracle.Views.Modals
                 // Progress updates are now handled by the UI elements, no console spam needed
 
                 // Update progress stats
-                if (_progressPercentText != null && e.TotalBatches > 0)
+                if (_progressPercentText != null)
                 {
-                    double percent = (e.BatchesSearched / (double)e.TotalBatches) * 100;
-                    _progressPercentText.Text = $"{percent:F1}%";
+                    // The percentage should already be correctly calculated in SearchInstance
+                    // based on the actual search range (accounting for resume)
+                    _progressPercentText.Text = $"{e.PercentComplete}%";
                 }
 
                 if (_batchesText != null)
@@ -1003,12 +1164,12 @@ namespace Oracle.Views.Modals
 
                 if (_timeElapsedText != null)
                 {
-                    var elapsed = DateTime.Now - _searchStartTime;
+                    var elapsed = DateTime.UtcNow - _searchStartTime;
                     _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
                 }
 
                 // Update speedometer
-                UpdateSpeedometer(e.SeedsPerSecond, e.BatchesSearched);
+                UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
             });
         }
 
@@ -1045,12 +1206,12 @@ namespace Oracle.Views.Modals
                 if (_minScoreSpinner != null)
                 {
                     _minScoreSpinner.Value = newCutoff;
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", $"Auto-cutoff updated spinner to: {newCutoff}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Auto-cutoff updated spinner to: {newCutoff}");
                     AddToConsole($"⚡ Auto-cutoff adjusted to: {newCutoff} (filtering out scores below {newCutoff})");
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError("SearchModal", "MinScoreSpinner is null in OnCutoffChanged");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", "MinScoreSpinner is null in OnCutoffChanged");
                 }
             });
         }
@@ -1081,16 +1242,16 @@ namespace Oracle.Views.Modals
                 if (resultsToAdd.Count > 0 && _searchResults.Count == 0)
                 {
                     var firstResult = resultsToAdd[0];
-                    Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
                         $"First result: TallyScores={firstResult.TallyScores?.Length ?? 0}, ItemLabels={firstResult.ItemLabels?.Length ?? 0}");
                     if (firstResult.TallyScores != null && firstResult.TallyScores.Length > 0)
                     {
-                        Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
                             $"Tally scores: {string.Join(", ", firstResult.TallyScores)}");
                     }
                     if (firstResult.ItemLabels != null && firstResult.ItemLabels.Length > 0)
                     {
-                        Oracle.Helpers.DebugLogger.Log("SearchModal", 
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
                             $"Item labels: {string.Join(", ", firstResult.ItemLabels)}");
                     }
                 }
@@ -1139,12 +1300,125 @@ namespace Oracle.Views.Modals
         {
             if (_consoleOutput != null)
             {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss");
+                var timestamp = DateTime.UtcNow.ToString("HH:mm:ss");
                 _consoleOutput.Text += $"[{timestamp}] {message}\n";
 
                 // Auto-scroll to bottom
                 _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
             }
+        }
+        
+        private void OnConsoleOutput(object? sender, string line)
+        {
+            // Buffer console lines instead of updating immediately
+            lock (_consoleBufferLock)
+            {
+                _consoleBuffer.Add(line);
+                
+                // Limit buffer size to prevent memory issues
+                if (_consoleBuffer.Count > 100)
+                {
+                    // Start timer if not already running
+                    if (_consoleUpdateTimer == null || !_consoleUpdateTimer.IsEnabled)
+                    {
+                        StartConsoleUpdateTimer();
+                    }
+                }
+            }
+        }
+        
+        private void StartConsoleUpdateTimer()
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (_consoleUpdateTimer == null)
+                {
+                    _consoleUpdateTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(250) // Update 4 times per second max
+                    };
+                    _consoleUpdateTimer.Tick += OnConsoleUpdateTimerTick;
+                }
+                
+                if (!_consoleUpdateTimer.IsEnabled)
+                {
+                    _consoleUpdateTimer.Start();
+                }
+            });
+        }
+        
+        private void OnConsoleUpdateTimerTick(object? sender, EventArgs e)
+        {
+            List<string> linesToAdd;
+            lock (_consoleBufferLock)
+            {
+                if (_consoleBuffer.Count == 0)
+                {
+                    _consoleUpdateTimer?.Stop();
+                    return;
+                }
+                
+                // Take all buffered lines
+                linesToAdd = new List<string>(_consoleBuffer);
+                _consoleBuffer.Clear();
+            }
+            
+            if (_consoleOutput != null && linesToAdd.Count > 0)
+            {
+                // Check if we need to trim old lines
+                _consoleLineCount += linesToAdd.Count;
+                
+                if (_consoleLineCount > MAX_CONSOLE_LINES)
+                {
+                    // Keep only the last MAX_CONSOLE_LINES lines
+                    var allLines = (_consoleOutput.Text ?? string.Empty).Split('\n').ToList();
+                    allLines.AddRange(linesToAdd);
+                    
+                    if (allLines.Count > MAX_CONSOLE_LINES)
+                    {
+                        allLines = allLines.Skip(allLines.Count - MAX_CONSOLE_LINES).ToList();
+                    }
+                    
+                    _consoleOutput.Text = string.Join("\n", allLines);
+                    _consoleLineCount = allLines.Count;
+                }
+                else
+                {
+                    // Just append the new lines
+                    _consoleOutput.Text += string.Join("\n", linesToAdd) + "\n";
+                }
+                
+                // Auto-scroll to bottom
+                _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
+            }
+        }
+        
+        private void RestoreConsoleHistory()
+        {
+            if (_searchInstance == null || _consoleOutput == null)
+                return;
+                
+            // Clear and restore console from history
+            _consoleOutput.Text = "> Motely Search Console\n> Restoring previous output...\n";
+            
+            var history = _searchInstance.GetConsoleHistory();
+            if (history != null && history.Count > 0)
+            {
+                _consoleOutput.Text += "──────────────────────────────────\n";
+                foreach (var line in history)
+                {
+                    _consoleOutput.Text += line + "\n";
+                }
+                _consoleOutput.Text += "──────────────────────────────────\n";
+                _consoleOutput.Text += "Console restored from previous session\n";
+            }
+            else
+            {
+                _consoleOutput.Text += "> No previous output to restore\n";
+            }
+            
+            // Auto-scroll to bottom
+            _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
         }
 
         private void UpdateJsonValidationStatus(bool isValid, string message)
@@ -1236,10 +1510,19 @@ namespace Oracle.Views.Modals
                 
                 _searchInstance = _searchManager.GetSearch(searchId);
                 
-                // Switch to Results tab when opened from desktop widget
+                // Switch to appropriate tab when opened from desktop widget
                 Dispatcher.UIThread.Post(() => {
-                    if (_resultsTab != null)
+                    if (_searchInstance != null && _searchInstance.IsRunning)
                     {
+                        // If search is running, show Search tab
+                        if (_searchTab != null)
+                        {
+                            OnTabClick(_searchTab, new RoutedEventArgs());
+                        }
+                    }
+                    else if (_resultsTab != null)
+                    {
+                        // Otherwise show results tab
                         OnTabClick(_resultsTab, new RoutedEventArgs());
                     }
                 }, DispatcherPriority.Loaded);
@@ -1254,6 +1537,15 @@ namespace Oracle.Views.Modals
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     _searchInstance.CutoffChanged += OnCutoffChanged;
+                    
+                    // Subscribe to console output
+                    _searchInstance.ConsoleOutput += OnConsoleOutput;
+                    
+                    // Start console update timer
+                    StartConsoleUpdateTimer();
+                    
+                    // Restore console history
+                    RestoreConsoleHistory();
 
                     // Load existing results
                     _searchResults.Clear();
@@ -1274,7 +1566,17 @@ namespace Oracle.Views.Modals
                     // Update UI state
                     _isSearching = _searchInstance.IsRunning;
                     _currentFilterPath = _searchInstance.ConfigPath;
+                    _searchStartTime = _searchInstance.SearchStartTime; // Use actual search start time
                     UpdateSearchUI();
+                    
+                    // If search is running, enable the stop button
+                    if (_isSearching)
+                    {
+                        if (_cookButton != null)
+                        {
+                            _cookButton.IsEnabled = true;
+                        }
+                    }
                 }
             }
         }
@@ -1300,7 +1602,7 @@ namespace Oracle.Views.Modals
                     _searchManager = App.GetService<SearchManager>();
                     if (_searchManager == null)
                     {
-                        Oracle.Helpers.DebugLogger.LogError(
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError(
                             "SearchModal",
                             "SearchManager is null - service not registered?"
                         );
@@ -1323,15 +1625,16 @@ namespace Oracle.Views.Modals
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     _searchInstance.CutoffChanged += OnCutoffChanged;
+                    _searchInstance.ConsoleOutput += OnConsoleOutput;
 
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
                         $"Created new search instance: {_currentSearchId}"
                     );
                 }
                 else
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "SearchModal",
                         "Failed to get search instance after creation"
                     );
@@ -1340,7 +1643,7 @@ namespace Oracle.Views.Modals
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "SearchModal",
                     $"CreateNewSearchInstance error: {ex}"
                 );
@@ -1393,13 +1696,14 @@ namespace Oracle.Views.Modals
             {
                 if (string.IsNullOrEmpty(_currentFilterPath))
                 {
+                    AddToConsole("No filter loaded, skipping results check.");
                     return;
                 }
-
 
                 var historyService = App.GetService<SearchHistoryService>();
                 if (historyService == null)
                 {
+                    AddToConsole("History service not available.");
                     return;
                 }
 
@@ -1407,7 +1711,8 @@ namespace Oracle.Views.Modals
                 var existingResults = await Task.Run(() => historyService.GetSearchResultsAsync());
                 if (existingResults.Count > 0)
                 {
-                    // Don't log existing results - user only cares about new finds
+                    AddToConsole($"Found {existingResults.Count} existing results in database!");
+                    AddToConsole("Loading results to Results tab...");
 
                     // Clear current results and add the loaded ones on UI thread
                     await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1421,7 +1726,6 @@ namespace Oracle.Views.Modals
                                     Seed = result.Seed,
                                     Score = result.TotalScore,
                                     Details = "", // ScoreBreakdown removed
-                                    Timestamp = DateTime.Now,
                                     TallyScores = result.Scores,
                                     ItemLabels = result.Labels
                                 }
@@ -1433,17 +1737,22 @@ namespace Oracle.Views.Modals
                     if (_resultsSummary != null)
                     {
                         _resultsSummary.Text =
-                            $"Found {_searchResults.Count} results (from database)";
+                            $"Found {_searchResults.Count} results (loaded from database)";
                     }
                     if (_exportResultsButton != null)
                     {
                         _exportResultsButton.IsEnabled = true;
                     }
                 }
+                else
+                {
+                    AddToConsole("No existing results found in database.");
+                    AddToConsole("Start a new search to find seeds!");
+                }
             }
             catch (Exception ex)
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "SearchModal",
                     $"Error loading existing results: {ex.Message}"
                 );
@@ -1461,8 +1770,7 @@ namespace Oracle.Views.Modals
                 {
                     Seed = "TESTCODE1",
                     Score = 95.5,
-                    Details = "Perkeo (Ante 1), Negative Tag (Ante 2)",
-                    Timestamp = DateTime.Now.AddMinutes(-5),
+                    Details = "Perkeo (Ante 1), Negative Tag (Ante 2)"
                 }
             );
 
@@ -1471,8 +1779,7 @@ namespace Oracle.Views.Modals
                 {
                     Seed = "TESTCODE2",
                     Score = 88.0,
-                    Details = "Blueprint (Ante 2), Brainstorm (Ante 3)",
-                    Timestamp = DateTime.Now.AddMinutes(-3),
+                    Details = "Blueprint (Ante 2), Brainstorm (Ante 3)"
                 }
             );
 
@@ -1481,8 +1788,7 @@ namespace Oracle.Views.Modals
                 {
                     Seed = "TESTCODE3",
                     Score = 75.5,
-                    Details = "Triboulet (Ante 3), Fool Tag (Ante 1)",
-                    Timestamp = DateTime.Now.AddMinutes(-2),
+                    Details = "Triboulet (Ante 3), Fool Tag (Ante 1)"
                 }
             );
 
@@ -1491,8 +1797,7 @@ namespace Oracle.Views.Modals
                 {
                     Seed = "TESTCODE4",
                     Score = 92.0,
-                    Details = "Chicot (Ante 2), Negative Tag (Ante 3)",
-                    Timestamp = DateTime.Now.AddMinutes(-1),
+                    Details = "Chicot (Ante 2), Negative Tag (Ante 3)"
                 }
             );
 
@@ -1501,8 +1806,7 @@ namespace Oracle.Views.Modals
                 {
                     Seed = "TESTCODE5",
                     Score = 83.0,
-                    Details = "Yorick (Ante 1), Charm Tag (Ante 2)",
-                    Timestamp = DateTime.Now,
+                    Details = "Yorick (Ante 1), Charm Tag (Ante 2)"
                 }
             );
 
@@ -1516,48 +1820,92 @@ namespace Oracle.Views.Modals
                 _exportResultsButton.IsEnabled = true;
             }
 
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "SearchModal",
                 $"Added {_searchResults.Count} test results to DataGrid"
             );
         }
 
-        private void UpdateSpeedometer(double currentSpeed, int batchesSearched)
+        private static ulong GetMaxBatchesForBatchSize(int batchSize)
+        {
+            // Total seeds = 35^8 = 2,251,875,390,625
+            // Total batches = 35^(8-batchSize)
+            return batchSize switch
+            {
+                1 => 64_339_296_875UL,      // 35^7 = 64,339,296,875
+                2 => 1_838_265_625UL,       // 35^6 = 1,838,265,625
+                3 => 52_521_875UL,          // 35^5 = 52,521,875
+                4 => 1_500_625UL,           // 35^4 = 1,500,625
+                5 => 42_875UL,              // 35^3 = 42,875
+                6 => 1_225UL,               // 35^2 = 1,225
+                7 => 35UL,                  // 35^1 = 35
+                8 => 1UL,                   // 35^0 = 1
+                _ => throw new ArgumentException($"Invalid batch size: {batchSize}. Valid range is 1-8.")
+            };
+        }
+
+        private string FormatSeedsPerSecond(double seedsPerMillisecond)
+        {
+            // Convert from seeds per millisecond to seeds per second
+            double seedsPerSecond = seedsPerMillisecond * 1000;
+            
+            if (seedsPerSecond >= 1_000_000_000)
+            {
+                return $"{seedsPerSecond / 1_000_000_000:F1}B seeds/s";
+            }
+            else if (seedsPerSecond >= 1_000_000)
+            {
+                return $"{seedsPerSecond / 1_000_000:F1}M seeds/s";
+            }
+            else if (seedsPerSecond >= 1_000)
+            {
+                return $"{seedsPerSecond / 1_000:F0}K seeds/s";
+            }
+            else
+            {
+                return $"{seedsPerSecond:F0} seeds/s";
+            }
+        }
+
+        private void UpdateSpeedometer(double seedsPerMillisecond, ulong batchesSearched)
         {
             // Update speed values
             if (_speedText != null)
             {
-                _speedText.Text = $"{currentSpeed:N0} seeds/s";
+                _speedText.Text = FormatSeedsPerSecond(seedsPerMillisecond);
             }
+            
+            // Convert to seeds per second for display
+            double seedsPerSecond = seedsPerMillisecond * 1000;
             
             if (_speedValueText != null)
             {
-                _speedValueText.Text = $"{currentSpeed:N0}";
+                _speedValueText.Text = $"{seedsPerSecond:N0}";
             }
 
             if (_currentSpeedText != null)
             {
-                _currentSpeedText.Text = $"{currentSpeed:N0} seeds/s";
+                _currentSpeedText.Text = FormatSeedsPerSecond(seedsPerMillisecond);
             }
 
             // Track peak speed
-            if (currentSpeed > _peakSpeed)
+            if (seedsPerSecond > _peakSpeed)
             {
-                _peakSpeed = currentSpeed;
+                _peakSpeed = seedsPerSecond;
                 if (_peakSpeedText != null)
                 {
-                    _peakSpeedText.Text = $"{_peakSpeed:N0} seeds/s";
+                    _peakSpeedText.Text = FormatSeedsPerSecond(_peakSpeed / 1000);
                 }
             }
 
             // Calculate average speed
-            var elapsed = DateTime.Now - _searchStartTime;
+            var elapsed = DateTime.UtcNow - _searchStartTime;
             if (elapsed.TotalSeconds > 0 && _totalSeeds > 0)
             {
                 double avgSpeed = _totalSeeds / elapsed.TotalSeconds;
                 if (_averageSpeedText != null)
                 {
-                    _averageSpeedText.Text = $"{avgSpeed:N0} seeds/s";
+                    _averageSpeedText.Text = FormatSeedsPerSecond(avgSpeed / 1000);
                 }
             }
 
@@ -1565,7 +1913,7 @@ namespace Oracle.Views.Modals
             if (_speedArc != null && _peakSpeed > 0)
             {
                 // Map current speed to arc angle (0-180 degrees)
-                double speedRatio = Math.Min(currentSpeed / _peakSpeed, 1.0);
+                double speedRatio = Math.Min(seedsPerSecond / _peakSpeed, 1.0);
                 double angle = speedRatio * 180; // 180 degree arc
 
                 // Calculate arc path
@@ -1621,8 +1969,8 @@ namespace Oracle.Views.Modals
         public int ThreadCount { get; set; } = 4;
         public int MinScore { get; set; } = 0;
         public int BatchSize { get; set; } = 4;
-        public int StartBatch { get; set; } = 0;
-        public int EndBatch { get; set; } = 999999;
+        public ulong StartBatch { get; set; } = 0;
+        public ulong EndBatch { get; set; } = 1_500_625UL;  // Default for batch size 4
         public bool DebugMode { get; set; } = false;
         public string? Deck { get; set; }
         public string? Stake { get; set; }
@@ -1635,7 +1983,6 @@ namespace Oracle.Views.Modals
         public string Details { get; set; } = "";
         public string? Antes { get; set; }
         public string? ItemsJson { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.Now;
         public int[]? TallyScores { get; set; }
         public string[]? ItemLabels { get; set; }
 
@@ -1666,13 +2013,13 @@ namespace Oracle.Views.Modals
         public string Message { get; set; } = "";
         public int PercentComplete { get; set; }
         public string CurrentSeed { get; set; } = "";
-        public long SeedsSearched { get; set; }
+        public ulong SeedsSearched { get; set; }
         public int ResultsFound { get; set; }
-        public double SeedsPerSecond { get; set; }
+        public double SeedsPerMillisecond { get; set; }
         public bool IsComplete { get; set; }
         public bool HasError { get; set; }
-        public int BatchesSearched { get; set; }
-        public int TotalBatches { get; set; }
+        public ulong BatchesSearched { get; set; }
+        public ulong TotalBatches { get; set; }
     }
 
     public class SearchResultEventArgs : EventArgs
@@ -1692,10 +2039,6 @@ namespace Oracle.Views.Modals
             SortResults("score");
         }
         
-        private void OnSortByTime(object? sender, RoutedEventArgs e)
-        {
-            SortResults("time");
-        }
         
         private void SortResults(string column)
         {
@@ -1722,9 +2065,6 @@ namespace Oracle.Views.Modals
                 "score" => _sortAscending
                     ? _searchResults.OrderBy(r => r.Score).ToList()
                     : _searchResults.OrderByDescending(r => r.Score).ToList(),
-                "time" => _sortAscending
-                    ? _searchResults.OrderBy(r => r.Timestamp).ToList()
-                    : _searchResults.OrderByDescending(r => r.Timestamp).ToList(),
                 _ => _searchResults.ToList()
             };
             
@@ -1744,14 +2084,12 @@ namespace Oracle.Views.Modals
             // Hide all indicators
             if (_seedSortIndicator != null) _seedSortIndicator.IsVisible = false;
             if (_scoreSortIndicator != null) _scoreSortIndicator.IsVisible = false;
-            if (_timeSortIndicator != null) _timeSortIndicator.IsVisible = false;
             
             // Show and update the current one
             var indicator = _currentSortColumn switch
             {
                 "seed" => _seedSortIndicator,
                 "score" => _scoreSortIndicator,
-                "time" => _timeSortIndicator,
                 _ => null
             };
             

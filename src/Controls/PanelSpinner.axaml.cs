@@ -8,10 +8,10 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Oracle.Models;
-using Oracle.Services;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 
-namespace Oracle.Controls;
+namespace BalatroSeedOracle.Controls;
 
 public partial class PanelSpinner : UserControl
 {

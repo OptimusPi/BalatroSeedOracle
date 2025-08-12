@@ -2,11 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Oracle.Controls"
-             xmlns:components="using:Oracle.Components"
-             xmlns:modals="using:Oracle.Views.Modals"
-             xmlns:views="using:Oracle.Views"
-             x:Class="Oracle.Views.BalatroMainMenu"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:modals="using:BalatroSeedOracle.Views.Modals"
+             xmlns:views="using:BalatroSeedOracle.Views"
+             x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              Background="Transparent"
              x:CompileBindings="False">
 
@@ -71,14 +71,15 @@
         <controls:BalatroStyleBackground x:Name="BackgroundControl" />
         
         <!-- Desktop widgets layer -->
-        <Grid x:Name="DesktopCanvas" ZIndex="10">
+        <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False">
             <!-- Search Widgets will be added dynamically here -->
             
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="20,20,0,0"/>
+                                     Margin="20,24,20,0"
+                                     ClipToBounds="False"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->

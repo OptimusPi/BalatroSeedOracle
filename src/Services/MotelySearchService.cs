@@ -11,10 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Motely;
 using Motely.Filters;
-using Oracle.Helpers;
-using Oracle.Models;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
-namespace Oracle.Services;
+namespace BalatroSeedOracle.Services;
 
 /// <summary>
 /// Service that interfaces with Motely for searching
@@ -31,7 +31,7 @@ public class MotelySearchService : IDisposable
     private DateTime _searchStartTime;
 
     public bool IsRunning => _isRunning;
-    public List<Oracle.Models.SearchResult> Results { get; } = new();
+    public List<BalatroSeedOracle.Models.SearchResult> Results { get; } = new();
     public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
 
     // Events for UI integration
@@ -78,7 +78,7 @@ public class MotelySearchService : IDisposable
             else
             {
                 var configAsJson = JsonSerializer.Serialize(_currentConfig);
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "MotelySearchService",
                     $"Loaded config: \r\n{configAsJson}\r\n"
                 );
@@ -135,15 +135,15 @@ public class MotelySearchService : IDisposable
     public async Task StartSearchWithConfigAsync(
         Motely.Filters.OuijaConfig ouijaConfig,
         Views.Modals.SearchConfiguration config,
-        IProgress<Oracle.Models.SearchProgress>? progress = null,
+        IProgress<BalatroSeedOracle.Models.SearchProgress>? progress = null,
         CancellationToken cancellationToken = default
     )
     {
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             $"StartSearchWithConfigAsync called - NO TEMP FILES!"
         );
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             $"Config: Threads={config.ThreadCount}, MinScore={config.MinScore}"
         );
@@ -196,7 +196,7 @@ public class MotelySearchService : IDisposable
 
                 // Report new result through progress
                 progress?.Report(
-                    new Oracle.Models.SearchProgress
+                    new BalatroSeedOracle.Models.SearchProgress
                     {
                         NewResult = result,
                         ResultsFound = Results.Count,
@@ -209,7 +209,7 @@ public class MotelySearchService : IDisposable
 
             // Report initial progress
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = "Initializing Motely search engine...",
                     PercentComplete = 0,
@@ -218,7 +218,7 @@ public class MotelySearchService : IDisposable
             );
 
             // Convert config to SearchCriteria for the existing search logic
-            var criteria = new Oracle.Models.SearchCriteria
+            var criteria = new BalatroSeedOracle.Models.SearchCriteria
             {
                 ConfigPath = "", // Not used in RunSearchInProcess
                 ThreadCount = config.ThreadCount,
@@ -232,7 +232,7 @@ public class MotelySearchService : IDisposable
             };
 
             // Run the search in a background task
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 "Starting Task.Run for search"
             );
@@ -240,13 +240,13 @@ public class MotelySearchService : IDisposable
                 () => RunSearch(criteria, progress, _cancellationTokenSource.Token),
                 _cancellationTokenSource.Token
             );
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Run completed");
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Run completed");
         }
         catch (OperationCanceledException)
         {
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search was cancelled");
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search was cancelled");
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = "Search cancelled",
                     IsComplete = true,
@@ -258,7 +258,7 @@ public class MotelySearchService : IDisposable
         catch (Exception ex)
         {
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = $"Error: {ex.Message}",
                     HasError = true,
@@ -268,7 +268,7 @@ public class MotelySearchService : IDisposable
         }
         finally
         {
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 "StartSearchWithConfigAsync finally block - cleaning up"
             );
@@ -295,16 +295,16 @@ public class MotelySearchService : IDisposable
     /// Start a search with the specified criteria
     /// </summary>
     public async Task StartSearchAsync(
-        Oracle.Models.SearchCriteria criteria,
-        IProgress<Oracle.Models.SearchProgress>? progress = null,
+        BalatroSeedOracle.Models.SearchCriteria criteria,
+        IProgress<BalatroSeedOracle.Models.SearchProgress>? progress = null,
         CancellationToken cancellationToken = default
     )
     {
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             $"StartSearchAsync called on thread: {Thread.CurrentThread.ManagedThreadId}"
         );
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             $"Criteria: Threads={criteria.ThreadCount}, MinScore={criteria.MinScore}"
         );
@@ -330,7 +330,7 @@ public class MotelySearchService : IDisposable
             if (!configSuccess)
             {
                 progress?.Report(
-                    new Oracle.Models.SearchProgress
+                    new BalatroSeedOracle.Models.SearchProgress
                     {
                         Message = configMessage,
                         HasError = true,
@@ -376,7 +376,7 @@ public class MotelySearchService : IDisposable
 
                 // Report new result through progress
                 progress?.Report(
-                    new Oracle.Models.SearchProgress
+                    new BalatroSeedOracle.Models.SearchProgress
                     {
                         NewResult = result,
                         ResultsFound = Results.Count,
@@ -389,7 +389,7 @@ public class MotelySearchService : IDisposable
 
             // Report initial progress
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = "Initializing Motely search engine...",
                     PercentComplete = 0,
@@ -399,7 +399,7 @@ public class MotelySearchService : IDisposable
 
             // Run the search in a background task
             // Task.Run is the modern best practice for background work in AvaloniaUI
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 "Starting Task.Run for search"
             );
@@ -407,13 +407,13 @@ public class MotelySearchService : IDisposable
                 () => RunSearch(criteria, progress, _cancellationTokenSource.Token),
                 _cancellationTokenSource.Token
             );
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Run completed");
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Task.Run completed");
         }
         catch (OperationCanceledException)
         {
-            Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search was cancelled");
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search was cancelled");
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = "Search cancelled",
                     IsComplete = true,
@@ -425,7 +425,7 @@ public class MotelySearchService : IDisposable
         catch (Exception ex)
         {
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = $"Error: {ex.Message}",
                     HasError = true,
@@ -435,7 +435,7 @@ public class MotelySearchService : IDisposable
         }
         finally
         {
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 "StartSearchAsync finally block - cleaning up"
             );
@@ -460,12 +460,12 @@ public class MotelySearchService : IDisposable
     }
 
     private async Task RunSearch(
-        Oracle.Models.SearchCriteria criteria,
-        IProgress<Oracle.Models.SearchProgress>? progress,
+        BalatroSeedOracle.Models.SearchCriteria criteria,
+        IProgress<BalatroSeedOracle.Models.SearchProgress>? progress,
         CancellationToken cancellationToken
     )
     {
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             $"RunSearch started on thread: {Thread.CurrentThread.ManagedThreadId}"
         );
@@ -476,17 +476,17 @@ public class MotelySearchService : IDisposable
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"RunSearch exception: {ex.GetType().Name}: {ex.Message}"
             );
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"Stack trace: {ex.StackTrace}"
             );
 
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = $"Search error: {ex.Message}",
                     HasError = true,
@@ -497,20 +497,20 @@ public class MotelySearchService : IDisposable
     }
 
     private async Task RunSearchInProcess(
-        Oracle.Models.SearchCriteria criteria,
-        IProgress<Oracle.Models.SearchProgress>? progress,
+        BalatroSeedOracle.Models.SearchCriteria criteria,
+        IProgress<BalatroSeedOracle.Models.SearchProgress>? progress,
         CancellationToken cancellationToken
     )
     {
         // Capture original console output
         var originalOut = Console.Out;
-        Oracle.Helpers.FilteredConsoleWriter? filteredWriter = null;
+        BalatroSeedOracle.Helpers.FilteredConsoleWriter? filteredWriter = null;
         
         // Original in-process search code
         try
         {
             // Redirect console output to filter out duplicate seed reports
-            filteredWriter = new Oracle.Helpers.FilteredConsoleWriter(originalOut);
+            filteredWriter = new BalatroSeedOracle.Helpers.FilteredConsoleWriter(originalOut);
             Console.SetOut(filteredWriter);
             
             // Reset cancellation flag
@@ -521,31 +521,31 @@ public class MotelySearchService : IDisposable
             filterDesc.Cutoff = criteria.MinScore;
 
             // Log the configuration details
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"=== SEARCH CONFIGURATION ==="
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Min Score: {criteria.MinScore}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Max Seeds: {criteria.MaxSeeds}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Thread Count: {criteria.ThreadCount}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Must: {_currentConfig?.Must?.Count ?? 0}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Should: {_currentConfig?.Should?.Count ?? 0}"
             );
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"MustNot: {_currentConfig?.MustNot?.Count ?? 0}"
             );
@@ -554,7 +554,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var must in _currentConfig.Must)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "MotelySearchService",
                         $"  Must: Type={must.Type}, Value={must.Value ?? "any"}, Antes=[{string.Join(",", must.EffectiveAntes)}]"
                     );
@@ -565,7 +565,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var should in _currentConfig.Should)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "MotelySearchService",
                         $"  Should: Type={should.Type}, Value={should.Value ?? "any"}, Score={should.Score}, Antes=[{string.Join(",", should.EffectiveAntes)}]"
                     );
@@ -576,7 +576,7 @@ public class MotelySearchService : IDisposable
             {
                 foreach (var mustNot in _currentConfig.MustNot)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "MotelySearchService",
                         $"  MustNot: Type={mustNot.Type}, Value={mustNot.Value ?? "any"}, Antes=[{string.Join(",", mustNot.EffectiveAntes)}]"
                     );
@@ -585,148 +585,114 @@ public class MotelySearchService : IDisposable
 
             // Create search settings - following Motely Program.cs pattern
             var batchSize = criteria.BatchSize;
+            
+            // Calculate total batches based on batch character count
+            ulong totalBatches = batchSize switch 
+            {
+                1 => 66_288_486UL,              // Total seeds / 35^1
+                2 => 1_893_957UL,               // Total seeds / 35^2  
+                3 => 54_113UL,                  // Total seeds / 35^3
+                4 => 1_546UL,                   // Total seeds / 35^4
+                5 => 45UL,                      // Total seeds / 35^5 (rounded up from 44.17)
+                6 => 2UL,                       // Total seeds / 35^6 (rounded up from 1.26)
+                7 => 1UL,                       // Total seeds / 35^7 
+                8 => 1UL,                       // Total seeds / 35^8
+                _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-8.")
+            };
+            
+            // Create progress callback
+            var progressCallback = new Progress<Motely.MotelyProgress>(motelyProgress =>
+            {
+                // This runs on the captured synchronization context
+                progress?.Report(
+                    new BalatroSeedOracle.Models.SearchProgress
+                    {
+                        SeedsSearched = motelyProgress.SeedsSearched,
+                        SeedsPerMillisecond = motelyProgress.SeedsPerMillisecond,
+                        PercentComplete = motelyProgress.PercentComplete,
+                        Message = $"⏱️ {motelyProgress.FormattedMessage}",
+                        ResultsFound = Results.Count,
+                    }
+                );
+                
+                // Also raise our event
+                ProgressUpdated?.Invoke(
+                    this,
+                    new Views.Modals.SearchProgressEventArgs
+                    {
+                        SeedsSearched = motelyProgress.SeedsSearched,
+                        ResultsFound = Results.Count,
+                        SeedsPerMillisecond = motelyProgress.SeedsPerMillisecond,
+                        PercentComplete = (int)motelyProgress.PercentComplete,
+                    }
+                );
+            });
+            
             var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
                 filterDesc
             )
                 .WithThreadCount(criteria.ThreadCount)
                 .WithBatchCharacterCount(batchSize)
                 .WithStartBatchIndex(criteria.StartBatch)
-                .WithSequentialSearch();
+                .WithSequentialSearch()
+                .WithProgressCallback(progressCallback);
 
-            // Calculate total batches if end batch is specified
-            long? totalBatches = null;
-            if (criteria.EndBatch > 0)
+            // Set end batch based on criteria or use calculated max
+            ulong effectiveEndBatch = (ulong)criteria.EndBatch;
+            if (criteria.EndBatch <= 0)
             {
-                totalBatches = criteria.EndBatch - criteria.StartBatch;
+                // Use calculated total batches as the end batch
+                effectiveEndBatch = totalBatches;
             }
+            searchSettings.WithEndBatchIndex(effectiveEndBatch);
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
-                $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}"
+                $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}, end batch {effectiveEndBatch} (total batches: {totalBatches})"
             );
 
             // Start the search
             _currentSearch = searchSettings.Start();
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Search started with batch size {batchSize}"
             );
 
-            var startTime = DateTime.UtcNow;
-            int loopCount = 0;
-            int lastCompletedCount = 0;
-
-            // Monitor the search - similar to how Program.cs does it
+            // Wait for search to complete without polling!
+            // We'll get progress updates via callbacks
             while (
                 _currentSearch.Status == MotelySearchStatus.Running
                 && !cancellationToken.IsCancellationRequested
                 && _isRunning
             )
             {
-                // Double-check cancellation at the start of each iteration
-                if (
-                    !_isRunning
-                    || cancellationToken.IsCancellationRequested
-                    || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled
-                )
+                // Check for cancellation
+                if (!_isRunning || cancellationToken.IsCancellationRequested || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "MotelySearchService",
-                        "Breaking out of search loop - cancellation requested"
+                        "Cancellation requested - stopping search"
                     );
                     break;
                 }
 
-                // Get current batch count (this is what's available on the interface)
-                var currentBatchCount = _currentSearch.CompletedBatchCount;
-
-                // Estimate seeds searched - batchSize determines seeds per batch
-                // Balatro uses 35 characters (no 0): 123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
-                // With batchSize=4, each batch has 35^4 = 1,500,625 seeds
-                long seedsPerBatch = (long)Math.Pow(35, batchSize); // 35 characters, batchSize positions
-                long currentSeeds = (long)currentBatchCount * seedsPerBatch;
-
-                var elapsed = DateTime.UtcNow - startTime;
-                var seedsPerSecond =
-                    elapsed.TotalSeconds > 0 ? currentSeeds / elapsed.TotalSeconds : 0;
-
-                // Results are now being captured by MotelyResultCapture service
-                // Just check the current count for progress reporting
-                var currentResultCount = _resultCapture?.CapturedCount ?? Results.Count;
-
-                // Report progress when batch count changes
-                if (currentBatchCount > lastCompletedCount)
-                {
-                    lastCompletedCount = currentBatchCount;
-                    Oracle.Helpers.DebugLogger.Log(
-                        "MotelySearchService",
-                        $"Progress: Batch {currentBatchCount}, ~{currentSeeds:N0} seeds, {Results.Count} results found"
-                    );
-
-                    // Calculate percentage if we have total batches
-                    double percentComplete = 0;
-                    if (totalBatches.HasValue && totalBatches.Value > 0)
-                    {
-                        var batchesCompleted = currentBatchCount - criteria.StartBatch;
-                        percentComplete = Math.Min(
-                            100,
-                            (double)batchesCompleted / totalBatches.Value * 100
-                        );
-                    }
-
-                    progress?.Report(
-                        new Oracle.Models.SearchProgress
-                        {
-                            SeedsSearched = currentSeeds,
-                            SeedsPerSecond = seedsPerSecond,
-                            PercentComplete = percentComplete,
-                            Message =
-                                percentComplete > 0
-                                    ? $"Searched ~{currentSeeds:N0} seeds ({percentComplete:F1}%) at {seedsPerSecond:F0}/s"
-                                    : $"Searched ~{currentSeeds:N0} seeds at {seedsPerSecond:F0}/s",
-                            ResultsFound = Results.Count,
-                        }
-                    );
-
-                    // Raise progress updated event
-                    ProgressUpdated?.Invoke(
-                        this,
-                        new Views.Modals.SearchProgressEventArgs
-                        {
-                            SeedsSearched = (int)currentSeeds,
-                            ResultsFound = Results.Count,
-                            SeedsPerSecond = seedsPerSecond,
-                            PercentComplete = (int)percentComplete,
-                        }
-                    );
-                }
-
-                loopCount++;
-                if (loopCount % 10 == 0)
-                {
-                    Oracle.Helpers.DebugLogger.Log(
-                        "MotelySearchService",
-                        $"Loop {loopCount}: Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}"
-                    );
-                }
-
-                // Use shorter delay and catch cancellation
+                // Just wait a bit - all progress updates come through callbacks now!
                 try
                 {
-                    await Task.Delay(50, cancellationToken); // Reduced from 100ms to 50ms for faster response
+                    await Task.Delay(100, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    Oracle.Helpers.DebugLogger.LogImportant(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "MotelySearchService",
-                        "Task.Delay cancelled - exiting loop"
+                        "Search cancelled"
                     );
                     break;
                 }
             }
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Search loop ended. Status={_currentSearch.Status}, Cancelled={cancellationToken.IsCancellationRequested}"
             );
@@ -737,15 +703,15 @@ public class MotelySearchService : IDisposable
                 await Task.Delay(100, CancellationToken.None);
             }
 
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Final result count: {Results.Count}"
             );
 
             // Report completion
-            var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0;
-            long finalSeeds = (long)finalBatchCount * (long)Math.Pow(35, batchSize);
-            Oracle.Helpers.DebugLogger.LogImportant(
+            var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0UL;
+            ulong finalSeeds = finalBatchCount * (ulong)Math.Pow(35, batchSize);
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 $"Final stats: CompletedBatchCount={finalBatchCount}, EstimatedSeeds={finalSeeds}"
             );
@@ -756,7 +722,7 @@ public class MotelySearchService : IDisposable
             if (_isRunning || !OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
             {
                 progress?.Report(
-                    new Oracle.Models.SearchProgress
+                    new BalatroSeedOracle.Models.SearchProgress
                     {
                         Message =
                             cancellationToken.IsCancellationRequested || !_isRunning
@@ -772,17 +738,17 @@ public class MotelySearchService : IDisposable
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"RunSearch exception: {ex.GetType().Name}: {ex.Message}"
             );
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"Stack trace: {ex.StackTrace}"
             );
 
             progress?.Report(
-                new Oracle.Models.SearchProgress
+                new BalatroSeedOracle.Models.SearchProgress
                 {
                     Message = $"Search error: {ex.Message}",
                     HasError = true,
@@ -806,7 +772,7 @@ public class MotelySearchService : IDisposable
     /// </summary>
     public void StopSearch()
     {
-        Oracle.Helpers.DebugLogger.LogImportant(
+        BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
             "MotelySearchService",
             "StopSearch called - FORCE STOPPING NOW"
         );
@@ -819,14 +785,14 @@ public class MotelySearchService : IDisposable
         try
         {
             _cancellationTokenSource?.Cancel();
-            Oracle.Helpers.DebugLogger.LogImportant(
+            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "MotelySearchService",
                 "Cancellation token cancelled"
             );
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"Error cancelling token source: {ex.Message}"
             );
@@ -837,7 +803,7 @@ public class MotelySearchService : IDisposable
         {
             if (_currentSearch != null)
             {
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "MotelySearchService",
                     $"Current search status: {_currentSearch.Status}"
                 );
@@ -846,7 +812,7 @@ public class MotelySearchService : IDisposable
                 if (_currentSearch.Status == MotelySearchStatus.Running)
                 {
                     _currentSearch.Pause();
-                    Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search paused");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search paused");
                 }
 
                 // Dispose in a separate task with timeout to avoid blocking
@@ -858,7 +824,7 @@ public class MotelySearchService : IDisposable
                     }
                     catch (Exception ex)
                     {
-                        Oracle.Helpers.DebugLogger.LogError(
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError(
                             "MotelySearchService",
                             $"Error disposing search: {ex.Message}"
                         );
@@ -868,7 +834,7 @@ public class MotelySearchService : IDisposable
                 // Wait max 1 second for disposal
                 if (!disposeTask.Wait(1000))
                 {
-                    Oracle.Helpers.DebugLogger.LogError(
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
                         "MotelySearchService",
                         "Search disposal timed out"
                     );
@@ -879,7 +845,7 @@ public class MotelySearchService : IDisposable
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.LogError(
+            BalatroSeedOracle.Helpers.DebugLogger.LogError(
                 "MotelySearchService",
                 $"Error stopping search: {ex.Message}"
             );
@@ -895,14 +861,14 @@ public class MotelySearchService : IDisposable
             }
             if (drainedCount > 0)
             {
-                Oracle.Helpers.DebugLogger.LogImportant(
+                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                     "MotelySearchService",
                     $"Drained {drainedCount} results from queue"
                 );
             }
         }
 
-        Oracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search STOPPED");
+        BalatroSeedOracle.Helpers.DebugLogger.LogImportant("MotelySearchService", "Search STOPPED");
     }
 
     private string BuildDetailsString(
@@ -941,7 +907,7 @@ public class MotelySearchService : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Oracle.Helpers.DebugLogger.Log(
+        BalatroSeedOracle.Helpers.DebugLogger.Log(
             "MotelySearchService",
             "Disposing MotelySearchService - stopping any running searches"
         );
@@ -957,13 +923,13 @@ public class MotelySearchService : IDisposable
                 && !_cancellationTokenSource.Token.IsCancellationRequested
             )
             {
-                Oracle.Helpers.DebugLogger.Log("MotelySearchService", "Requesting cancellation");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("MotelySearchService", "Requesting cancellation");
                 _cancellationTokenSource.Cancel();
             }
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "MotelySearchService",
                 $"Error during cancellation: {ex.Message}"
             );
@@ -972,7 +938,7 @@ public class MotelySearchService : IDisposable
         // Dispose the Motely search with timeout
         if (_currentSearch != null)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "MotelySearchService",
                 "Disposing Motely search instance"
             );
@@ -984,7 +950,7 @@ public class MotelySearchService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Oracle.Helpers.DebugLogger.Log(
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "MotelySearchService",
                         $"Error disposing search: {ex.Message}"
                     );
@@ -994,14 +960,14 @@ public class MotelySearchService : IDisposable
             // Wait max 3 seconds for disposal
             if (!disposeTask.Wait(3000))
             {
-                Oracle.Helpers.DebugLogger.LogError(
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "MotelySearchService",
                     "Motely search disposal timed out after 3 seconds - abandoning"
                 );
             }
             else
             {
-                Oracle.Helpers.DebugLogger.Log(
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "MotelySearchService",
                     "Motely search disposed successfully"
                 );
@@ -1015,7 +981,7 @@ public class MotelySearchService : IDisposable
         }
         catch (Exception ex)
         {
-            Oracle.Helpers.DebugLogger.Log(
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "MotelySearchService",
                 $"Error disposing cancellation token: {ex.Message}"
             );
@@ -1034,7 +1000,7 @@ public class MotelySearchService : IDisposable
             disposable.Dispose();
         }
 
-        Oracle.Helpers.DebugLogger.Log("MotelySearchService", "MotelySearchService disposed");
+        BalatroSeedOracle.Helpers.DebugLogger.Log("MotelySearchService", "MotelySearchService disposed");
 
         GC.SuppressFinalize(this);
     }

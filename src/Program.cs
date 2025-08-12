@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.ReactiveUI;
 using Velopack;
 
-namespace Oracle;
+namespace BalatroSeedOracle;
 
 public class Program
 {

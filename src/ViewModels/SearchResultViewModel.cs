@@ -4,9 +4,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using Oracle.Helpers;
+using BalatroSeedOracle.Helpers;
 
-namespace Oracle.Services
+namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// View model for displaying search results in the DataGrid
@@ -122,7 +122,6 @@ namespace Oracle.Services
             if (result == null)
                 return;
 
-            // TODO: Open seed analysis dialog
             DebugLogger.Log("SearchResultViewModel", $"View details for seed: {result.Seed}");
         }
 
