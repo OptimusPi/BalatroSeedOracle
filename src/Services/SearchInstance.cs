@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -32,6 +33,8 @@ namespace BalatroSeedOracle.Services
         private MotelyResultCapture? _resultCapture;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
+        private readonly List<string> _consoleHistory = new();
+        private readonly object _consoleHistoryLock = new();
         
         // Auto-cutoff tracking
         private bool _isAutoCutoffEnabled;
@@ -54,6 +57,17 @@ namespace BalatroSeedOracle.Services
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
         public int ResultCount => _results.Count;
+        
+        /// <summary>
+        /// Gets the console output history for this search
+        /// </summary>
+        public List<string> GetConsoleHistory()
+        {
+            lock (_consoleHistoryLock)
+            {
+                return new List<string>(_consoleHistory);
+            }
+        }
 
         // Events for UI integration
         public event EventHandler? SearchStarted;
@@ -265,8 +279,16 @@ namespace BalatroSeedOracle.Services
                 {
                     throw new ArgumentException("Config path is required");
                 }
-                _currentConfig = await Task.Run(() => OuijaConfig.LoadFromJson(criteria.ConfigPath)
-                );
+                
+                // Proper async I/O instead of Task.Run
+                var json = await File.ReadAllTextAsync(criteria.ConfigPath);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                _currentConfig = JsonSerializer.Deserialize<OuijaConfig>(json, options);
 
                 if (_currentConfig == null)
                 {
@@ -420,6 +442,9 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
 
+                // Flush any pending search state to disk before stopping
+                _userProfileService?.FlushProfile();
+
                 // Set the cancellation flag that Motely checks
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
 
@@ -524,6 +549,16 @@ namespace BalatroSeedOracle.Services
                 bool filterSeedLines = !criteria.EnableDebugOutput; // debug shows raw seed CSV too
                 filteredWriter = new FilteredConsoleWriter(originalOut, line =>
                 {
+                    // Store in history
+                    lock (_consoleHistoryLock)
+                    {
+                        _consoleHistory.Add(line);
+                        // Keep only last 1000 lines to prevent memory issues
+                        if (_consoleHistory.Count > 1000)
+                        {
+                            _consoleHistory.RemoveAt(0);
+                        }
+                    }
                     try { ConsoleOutput?.Invoke(this, line); } catch { /* ignore */ }
                 }, filterSeedLines);
                 Console.SetOut(filteredWriter);
@@ -552,16 +587,18 @@ namespace BalatroSeedOracle.Services
                 var batchSize = criteria.BatchSize;
                 
                 // Calculate total batches based on batch character count
+                // Total seeds = 35^8 = 2,251,875,390,625
+                // Total batches = 35^(8-batchSize)
                 ulong totalBatches = batchSize switch 
                 {
-                    1 => 66_288_486UL,              // Total seeds / 35^1
-                    2 => 1_893_957UL,               // Total seeds / 35^2  
-                    3 => 54_113UL,                  // Total seeds / 35^3
-                    4 => 1_546UL,                   // Total seeds / 35^4
-                    5 => 45UL,                      // Total seeds / 35^5 (rounded up from 44.17)
-                    6 => 2UL,                       // Total seeds / 35^6 (rounded up from 1.26)
-                    7 => 1UL,                       // Total seeds / 35^7 
-                    8 => 1UL,                       // Total seeds / 35^8
+                    1 => 64_339_296_875UL,          // 35^7 = 64,339,296,875
+                    2 => 1_838_265_625UL,           // 35^6 = 1,838,265,625
+                    3 => 52_521_875UL,              // 35^5 = 52,521,875
+                    4 => 1_500_625UL,               // 35^4 = 1,500,625
+                    5 => 42_875UL,                  // 35^3 = 42,875
+                    6 => 1_225UL,                   // 35^2 = 1,225
+                    7 => 35UL,                      // 35^1 = 35
+                    8 => 1UL,                       // 35^0 = 1
                     _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-8.")
                 };
                 
@@ -575,13 +612,22 @@ namespace BalatroSeedOracle.Services
                 // Create progress callback for Motely
                 var motelyProgress = new Progress<Motely.MotelyProgress>(mp =>
                 {
+                    // Calculate actual percentage based on effective range
+                    double actualPercent = 0;
+                    if (effectiveEndBatch > criteria.StartBatch)
+                    {
+                        actualPercent = ((mp.CompletedBatchCount - criteria.StartBatch) / 
+                                        (double)(effectiveEndBatch - criteria.StartBatch)) * 100;
+                        actualPercent = Math.Min(Math.Max(actualPercent, 0), 100);
+                    }
+                    
                     // This runs on the captured synchronization context
                     progress?.Report(
                         new SearchProgress
                         {
                             SeedsSearched = mp.SeedsSearched,
                             SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = mp.PercentComplete,
+                            PercentComplete = actualPercent,
                             Message = $"⏱️ {mp.FormattedMessage}",
                             ResultsFound = Results.Count,
                         }
@@ -595,19 +641,35 @@ namespace BalatroSeedOracle.Services
                             SeedsSearched = mp.SeedsSearched,
                             ResultsFound = Results.Count,
                             SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = (int)mp.PercentComplete,
+                            PercentComplete = (int)actualPercent,
                             BatchesSearched = mp.CompletedBatchCount,
-                            TotalBatches = mp.TotalBatchCount,
+                            TotalBatches = effectiveEndBatch,  // Use the actual end batch, not Motely's total
                         }
                     );
                     
-                    // Save search state every 10 seconds or every 100 batches
-                    if (mp.CompletedBatchCount > _lastSavedBatch + 100 || 
-                        DateTime.UtcNow > _lastStateSave.AddSeconds(10))
+                    // Update batch in memory on every progress update
+                    if (mp.CompletedBatchCount != _lastSavedBatch)
                     {
-                        SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
                         _lastSavedBatch = mp.CompletedBatchCount;
-                        _lastStateSave = DateTime.UtcNow;
+                        
+                        // First time? Save the full state
+                        if (_userProfileService?.GetSearchState() == null)
+                        {
+                            SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
+                            _lastStateSave = DateTime.UtcNow;
+                        }
+                        else
+                        {
+                            // Just update the batch number in memory
+                            _userProfileService?.UpdateSearchBatch(mp.CompletedBatchCount);
+                            
+                            // Write to disk every 10 seconds
+                            if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
+                            {
+                                _userProfileService?.FlushProfile();
+                                _lastStateSave = DateTime.UtcNow;
+                            }
+                        }
                     }
                 });
                 
