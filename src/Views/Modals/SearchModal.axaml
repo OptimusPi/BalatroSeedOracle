@@ -378,7 +378,7 @@
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Stretch"
                                              AutoLoadEnabled="False"
-                                             FilterLoaded="OnFilterLoaded"
+                                             FilterLoaded="OnFilterSelected"
                                              NewFilterRequested="OnNewFilterRequested"/>
                 </Grid>
             </Grid>

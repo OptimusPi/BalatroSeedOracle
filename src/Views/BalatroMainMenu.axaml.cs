@@ -377,6 +377,64 @@ namespace BalatroSeedOracle.Views
                     "Could not find AuthorDisplay or AuthorEdit controls"
                 );
             }
+            
+            // Check for resumable search and restore desktop icon if needed
+            CheckAndRestoreSearchIcon();
+        }
+
+        /// <summary>
+        /// Check for resumable search state and restore desktop icon if needed
+        /// </summary>
+        private void CheckAndRestoreSearchIcon()
+        {
+            try
+            {
+                if (_userProfileService?.GetSearchState() is { } resumeState)
+                {
+                    // Check if the search is recent (within last 24 hours)
+                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
+                    if (timeSinceSearch.TotalHours > 24)
+                    {
+                        // Too old, clear it
+                        _userProfileService.ClearSearchState();
+                        return;
+                    }
+
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
+                    );
+
+                    // Create a search ID and restore the search instance
+                    var searchManager = App.GetService<SearchManager>();
+                    if (searchManager != null)
+                    {
+                        var searchId = searchManager.CreateSearch();
+                        var searchInstance = searchManager.GetSearch(searchId);
+                        
+                        if (searchInstance != null)
+                        {
+                            // The search will be resumed when the user clicks the icon to open the modal
+                            // ConfigPath is already set when the search is created, no need to set it here
+                            
+                            // Show the desktop icon for this resumed search
+                            ShowSearchDesktopIcon(searchId, resumeState.ConfigPath);
+                            
+                            BalatroSeedOracle.Helpers.DebugLogger.Log(
+                                "BalatroMainMenu",
+                                $"Restored search desktop icon for resumable search {searchId} - batch {resumeState.LastCompletedBatch}/{resumeState.TotalBatches}"
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Error checking for resumable search: {ex.Message}"
+                );
+            }
         }
 
         /// <summary>

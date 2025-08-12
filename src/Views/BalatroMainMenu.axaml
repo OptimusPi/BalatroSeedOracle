@@ -71,14 +71,15 @@
         <controls:BalatroStyleBackground x:Name="BackgroundControl" />
         
         <!-- Desktop widgets layer -->
-        <Grid x:Name="DesktopCanvas" ZIndex="10">
+        <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False">
             <!-- Search Widgets will be added dynamically here -->
             
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="20,20,0,0"/>
+                                     Margin="20,24,20,0"
+                                     ClipToBounds="False"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
