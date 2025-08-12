@@ -94,13 +94,13 @@ namespace BalatroSeedOracle.Components
                     
                 // Use simpler text for select button in search modal
                 if (_selectButton != null)
-                    _selectButton.Content = "Select Filter";
+                    _selectButton.Content = "Search Seeds using this Filter";
             }
             else
             {
                 // When create button is shown, use more descriptive text
                 if (_selectButton != null)
-                    _selectButton.Content = "Edit Selected Filter";
+                    _selectButton.Content = "Clone this to my own new filter";
             }
         }
 
@@ -452,7 +452,7 @@ namespace BalatroSeedOracle.Components
             // Get image based on type
             return type?.ToLower() switch
             {
-                "souljoker" => _spriteService.GetJokerImage(value),
+                "souljoker" => _spriteService.GetJokerSoulImage(value),
                 "joker" => _spriteService.GetJokerImage(value),
                 "voucher" => _spriteService.GetVoucherImage(value),
                 "tag" => _spriteService.GetTagImage(value),

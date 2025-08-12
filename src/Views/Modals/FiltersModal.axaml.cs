@@ -40,6 +40,7 @@ namespace BalatroSeedOracle.Views.Modals
     {
         public string Key { get; set; } = "";
         public string Zone { get; set; } = "";
+        public ItemConfig Config { get; set; } = new(); // Direct reference to config!
         public bool Fanned { get; set; }
         public int CardIndex { get; set; }
     }
@@ -2250,7 +2251,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = headerText,
                 FontSize = 20,
-                FontWeight = FontWeight.Bold,
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Thickness(5, 20, 5, 10),
@@ -2691,7 +2691,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "Common Sets",
                 FontSize = 20,
-                FontWeight = FontWeight.Bold,
                 Margin = new Thickness(10, 10, 10, 10),
             };
             itemsPanel.Children.Add(setsHeader);
@@ -2807,7 +2806,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "Selected Items",
                 FontSize = 20,
-                FontWeight = FontWeight.Bold,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
             DockPanel.SetDock(favoritesHeader, Dock.Left);
@@ -3937,13 +3935,13 @@ namespace BalatroSeedOracle.Views.Modals
             // Add viewbox to panel
             panel.Children.Add(viewbox);
 
-            // Categorize items
-            var jokers = new List<(string name, string category)>();
-            var bosses = new List<(string name, string category)>();
-            var tags = new List<(string name, string category)>();
-            var vouchers = new List<(string name, string category)>();
-            var spectrals = new List<(string name, string category)>();
-            var tarots = new List<(string name, string category)>();
+            // Categorize items WITH their unique keys preserved
+            var jokers = new List<(string key, string name, string category)>();
+            var bosses = new List<(string key, string name, string category)>();
+            var tags = new List<(string key, string name, string category)>();
+            var vouchers = new List<(string key, string name, string category)>();
+            var spectrals = new List<(string key, string name, string category)>();
+            var tarots = new List<(string key, string name, string category)>();
 
             foreach (var item in items)
             {
@@ -3961,25 +3959,25 @@ namespace BalatroSeedOracle.Views.Modals
                         case "Jokers":
                             if (itemName == "The_Soul" || itemName == "Cavendish") // Bosses
                             {
-                                bosses.Add((itemName, category));
+                                bosses.Add((item, itemName, category));
                             }
                             else
                             {
-                                jokers.Add((itemName, category));
+                                jokers.Add((item, itemName, category));
                             }
 
                             break;
                         case "Tags":
-                            tags.Add((itemName, category));
+                            tags.Add((item, itemName, category));
                             break;
                         case "Vouchers":
-                            vouchers.Add((itemName, category));
+                            vouchers.Add((item, itemName, category));
                             break;
                         case "Spectrals":
-                            spectrals.Add((itemName, category));
+                            spectrals.Add((item, itemName, category));
                             break;
                         case "Tarots":
-                            tarots.Add((itemName, category));
+                            tarots.Add((item, itemName, category));
                             break;
                     }
                 }
@@ -4038,7 +4036,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void RenderFannedJokers(
             Canvas canvas,
-            List<(string name, string category)> jokers,
+            List<(string key, string name, string category)> jokers,
             ref double startX,
             string zoneName,
             List<string> items
@@ -4054,7 +4052,8 @@ namespace BalatroSeedOracle.Views.Modals
             
             for (int i = 0; i < jokers.Count; i++)
             {
-                var itemKey = items.First(item => item.Contains($":{jokers[i].name}"));
+                // Find the actual unique key for this specific item
+                var itemKey = items[i]; // Use the actual item from the list, not a search!
                 
                 // Create a wrapper container that stays static (for hit detection)
                 var wrapper = new Grid
@@ -4064,6 +4063,16 @@ namespace BalatroSeedOracle.Views.Modals
                     Background = Brushes.Transparent, // Transparent but hit-testable
                     ClipToBounds = false // Allow visual to pop out
                 };
+                
+                // Get or create config for this item
+                if (!_itemConfigs.ContainsKey(itemKey))
+                {
+                    _itemConfigs[itemKey] = new ItemConfig 
+                    { 
+                        ItemKey = itemKey,
+                        Edition = "none"
+                    };
+                }
                 
                 // Create the actual visual card
                 var control = CreateDroppedItemControl(
@@ -4097,14 +4106,21 @@ namespace BalatroSeedOracle.Views.Modals
                     int cardIndex = i; // Capture the index for the closure
                     border.Tag = new { Key = itemKey, Zone = zoneName };
 
+                    // Track hover state to prevent re-entry
+                    bool isHovered = false;
+                    
                     wrapper.PointerEntered += (s, e) =>
                     {
+                        // Prevent re-entry if already hovered
+                        if (isHovered) return;
+                        isHovered = true;
+                        
                         if (border.RenderTransform is TransformGroup tg)
                         {
                             // Scale up
                             if (tg.Children[0] is ScaleTransform scale)
                             {
-                                scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
+                                scale.ScaleX = 1.05;
                                 scale.ScaleY = 1.05;
                             }
                             
@@ -4115,15 +4131,17 @@ namespace BalatroSeedOracle.Views.Modals
                                 translateTransform = new TranslateTransform();
                                 tg.Children.Add(translateTransform);
                             }
-                            translateTransform.Y = -3; // Reduced from -15 to -3 for subtle effect
+                            translateTransform.Y = -3;
                             
-                            // NOW we can safely change z-index!
-                            border.ZIndex = 2000; // Bring to front (increased for better layering)
+                            border.ZIndex = 2000;
                         }
                     };
 
                     wrapper.PointerExited += (s, e) =>
                     {
+                        // Reset hover state
+                        isHovered = false;
+                        
                         if (border.RenderTransform is TransformGroup tg)
                         {
                             // Reset scale
@@ -4177,25 +4195,51 @@ namespace BalatroSeedOracle.Views.Modals
 
                             if (j < currentIndex)
                             {
-                                // Cards before: push left with diminishing effect
-                                translateTransform.X = -8 * (currentIndex - j);
+                                // Cards before: push left, but only immediate neighbors
+                                int distance = currentIndex - j;
+                                if (distance == 1)
+                                {
+                                    // Immediate left neighbor: push just enough to be clickable
+                                    translateTransform.X = -12;
+                                }
+                                else if (distance == 2)
+                                {
+                                    translateTransform.X = -6;
+                                }
+                                else
+                                {
+                                    translateTransform.X = -3; // Further cards barely move
+                                }
                             }
                             else if (j > currentIndex)
                             {
-                                // Cards after: push right with diminishing effect
-                                translateTransform.X = 8 * (j - currentIndex);
+                                // Cards after: push right, but only immediate neighbors
+                                int distance = j - currentIndex;
+                                if (distance == 1)
+                                {
+                                    // Immediate right neighbor: push just enough to be clickable
+                                    translateTransform.X = 12;
+                                }
+                                else if (distance == 2)
+                                {
+                                    translateTransform.X = 6;
+                                }
+                                else
+                                {
+                                    translateTransform.X = 3; // Further cards barely move
+                                }
                             }
                             else
                             {
-                                // Hovered card: slightly bigger, move up a bit
+                                // Hovered card: come forward and up slightly
                                 translateTransform.X = 0;
-                                translateTransform.Y = -2;  // Reduced from -10 to -2 for subtle effect
+                                translateTransform.Y = -5;  // Lift up to show selection
                                 if (tg.Children[0] is ScaleTransform scale)
                                 {
-                                    scale.ScaleX = 1.03;  // Reduced from 1.1 to 1.03 for subtle effect
-                                    scale.ScaleY = 1.03;
+                                    scale.ScaleX = 1.08;  // Noticeable but not huge
+                                    scale.ScaleY = 1.08;
                                 }
-                                allBorders[j].ZIndex = 200; // Higher z-index boost for better layering
+                                allBorders[j].ZIndex = 500; // Definitely on top
                             }
                         }
                     }
@@ -4235,7 +4279,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void RenderFannedItems(
             Canvas canvas,
-            List<(string name, string category)> items,
+            List<(string key, string name, string category)> items,
             ref double startX,
             string zoneName,
             List<string> allItems,
@@ -4252,7 +4296,7 @@ namespace BalatroSeedOracle.Views.Modals
             
             for (int i = 0; i < items.Count; i++)
             {
-                var itemKey = allItems.First(item => item.Contains($":{items[i].name}"));
+                var itemKey = items[i].key; // Use the key directly!
                 
                 // Create a wrapper container that stays static (for hit detection)
                 var wrapper = new Grid
@@ -4298,6 +4342,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             Key = originalTag.Key,
                             Zone = originalTag.Zone,
+                            Config = originalTag.Config, // Preserve the config!
                             Fanned = true,
                             CardIndex = cardIndex,
                         };
@@ -4333,7 +4378,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void RenderHorizontalTags(
             Canvas canvas,
-            List<(string name, string category)> tags, 
+            List<(string key, string name, string category)> tags, 
             List<string> items,
             string zoneName
         )
@@ -4343,7 +4388,7 @@ namespace BalatroSeedOracle.Views.Modals
             
             foreach (var tag in tags)
             {
-                var itemKey = items.First(item => item.Contains($":{tag.name}"));
+                var itemKey = tag.key; // Use the key directly!
                 var control = CreateDroppedItemControl(tag.name, tag.category, itemKey, zoneName);
                 
                 if (control is Border tagBorder)
@@ -4386,7 +4431,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void RenderHorizontalBosses(
             Canvas canvas,
-            List<(string name, string category)> bosses,
+            List<(string key, string name, string category)> bosses,
             double startX,
             List<string> items,
             string zoneName
@@ -4397,7 +4442,7 @@ namespace BalatroSeedOracle.Views.Modals
             
             foreach (var boss in bosses)
             {
-                var itemKey = items.First(item => item.Contains($":{boss.name}"));
+                var itemKey = boss.key; // Use the key directly!
                 var control = CreateDroppedItemControl(boss.name, boss.category, itemKey, zoneName);
                 
                 if (control is Border bossBorder)
@@ -4440,7 +4485,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void RenderVerticalStack(
             Canvas canvas,
-            List<(string name, string category)> stackItems,
+            List<(string key, string name, string category)> stackItems,
             double x,
             string stackType,
             List<string> allItems,
@@ -4452,7 +4497,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             for (int i = 0; i < stackItems.Count; i++)
             {
-                var itemKey = allItems.First(item => item.Contains($":{stackItems[i].name}"));
+                var itemKey = stackItems[i].key; // Use the key directly!
                 var control = CreateDroppedItemControl(
                     stackItems[i].name,
                     stackItems[i].category,
@@ -4492,7 +4537,12 @@ namespace BalatroSeedOracle.Views.Modals
                 Height = 71, // Smaller card height (75% of original)
                 Margin = new Thickness(0),
                 Padding = new Thickness(0),
-                Tag = new DropZoneItemTag { Key = itemKey, Zone = zoneName }, // Store both key and zone for later reference
+                Tag = new DropZoneItemTag 
+                { 
+                    Key = itemKey, 
+                    Zone = zoneName,
+                    Config = _itemConfigs.GetValueOrDefault(itemKey, new ItemConfig { ItemKey = itemKey })
+                }, // Store config directly!
                 RenderTransform = new ScaleTransform(1, 1),
                 RenderTransformOrigin = RelativePoint.Center,
                 Transitions = new Transitions
@@ -4505,52 +4555,8 @@ namespace BalatroSeedOracle.Views.Modals
                 },
             };
 
-            // Add hover zoom effect for non-fanned cards
-            border.PointerEntered += (s, e) =>
-            {
-                if (s is Border b)
-                {
-                    // Check if this is a fanned card
-                    var tag = b.Tag as DropZoneItemTag;
-                    if (tag != null && tag.Fanned)
-                    {
-                        // Handled by RenderFannedJokers/RenderFannedItems
-                        return;
-                    }
-
-                    if (b.RenderTransform is ScaleTransform scale)
-                    {
-                        scale.ScaleX = 1.05;  // Reduced from 1.2 to 1.05 for subtle effect
-                        scale.ScaleY = 1.05;
-                        b.ZIndex = 2000; // Bring to front (increased for better layering)
-                    }
-                }
-            };
-
-            border.PointerExited += (s, e) =>
-            {
-                if (s is Border b)
-                {
-                    // Check if this is a fanned card
-                    var tag = b.Tag as DropZoneItemTag;
-                    if (tag != null && tag.Fanned)
-                    {
-                        // Handled by RenderFannedJokers/RenderFannedItems
-                        return;
-                    }
-
-                    if (b.RenderTransform is ScaleTransform scale)
-                    {
-                        scale.ScaleX = 1.0;
-                        scale.ScaleY = 1.0;
-                        var itemTag = b.Tag as DropZoneItemTag;
-                        b.ZIndex =
-                            itemTag?.Key.Contains("joker", StringComparison.OrdinalIgnoreCase) == true
-                                ? 10
-                                : 0; // Reset z-index
-                    }
-                }
-            };
+            // DON'T add hover handlers here for fanned cards - they're handled by the wrapper
+            // This prevents the infinite loop bug where wrapper and border fight each other
 
             BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "CreateDroppedItem",
@@ -4791,7 +4797,6 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     Text = "NEG",
                     FontSize = 8,
-                    FontWeight = FontWeight.Bold,
                     Foreground = Brushes.White,
                     Background = Brushes.Black,
                     Padding = new Thickness(2, 1),
@@ -6557,7 +6562,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "Save Current Selection as Favorite Set",
                 FontSize = 18,
-                FontWeight = FontWeight.Bold,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 10),
             });
@@ -6745,7 +6749,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "Drop to apply set",
                 FontSize = 24,
-                FontWeight = FontWeight.Bold,
                 Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -6859,7 +6862,10 @@ namespace BalatroSeedOracle.Views.Modals
                     UpdateDropZoneVisibility();
                     UpdateSelectionDisplay();  // Update the visual drop zones
                     UpdatePersistentFavorites();
-                    RefreshItemPalette();
+                    
+                    // Force a full refresh of the current category to show selection states
+                    var currentCat = _currentCategory;
+                    LoadCategory(currentCat); // This will reload with proper selection states
                     
                     UpdateStatus($"Applied set: {jokerSet.Name}", false);
                 }
@@ -6896,6 +6902,32 @@ namespace BalatroSeedOracle.Views.Modals
             if (itemCategory != null)
             {
                 var itemKey = $"{itemCategory}:{itemName}";
+                
+                // Create ItemConfig with zone-appropriate ante defaults if it doesn't exist
+                if (!_itemConfigs.ContainsKey(itemKey))
+                {
+                    var config = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        Edition = "none"
+                    };
+                    
+                    // Set zone-appropriate ante defaults
+                    switch (zone)
+                    {
+                        case "needs":
+                            config.Antes = new List<int> { 1, 2, 3, 4 }; // Early antes for MUST
+                            break;
+                        case "wants":
+                            config.Antes = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 }; // All antes for SHOULD
+                            break;
+                        case "mustnot":
+                            config.Antes = new List<int> { 1 }; // Just first ante for MUST NOT
+                            break;
+                    }
+                    
+                    _itemConfigs[itemKey] = config;
+                }
                 
                 switch (zone)
                 {

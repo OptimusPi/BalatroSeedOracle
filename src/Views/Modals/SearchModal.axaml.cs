@@ -261,6 +261,7 @@ namespace BalatroSeedOracle.Views.Modals
                         StartBatch = resumeState.LastCompletedBatch + 1, // Resume from next batch
                         EndBatch = resumeState.EndBatch,
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = resumeState.Deck,
                         Stake = resumeState.Stake
                     };
@@ -802,6 +803,7 @@ namespace BalatroSeedOracle.Views.Modals
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -869,6 +871,7 @@ namespace BalatroSeedOracle.Views.Modals
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -976,6 +979,9 @@ namespace BalatroSeedOracle.Views.Modals
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
+                
+                // Generate column headers from the filter config
+                GenerateTableHeadersFromConfig();
 
                 // Update cook button
                 if (_cookButton != null)
@@ -1060,48 +1066,98 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
-        private void UpdateTallyHeaders()
+        private void GenerateTableHeadersFromConfig()
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"UpdateTallyHeaders called - Results count: {_searchResults.Count}");
+            if (_tallyHeadersPanel == null)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Cannot generate headers - missing panel");
+                return;
+            }
             
-            if (_tallyHeadersPanel == null || _searchResults.Count == 0)
-                return;
-                
-            // Check if we already have headers
-            if (_tallyHeadersPanel.Children.Count > 0)
+            // Clear existing headers
+            _tallyHeadersPanel.Children.Clear();
+            
+            // Try to load the config
+            Motely.Filters.OuijaConfig? config = null;
+            if (!string.IsNullOrEmpty(_currentFilterPath))
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Tally headers already exist, skipping");
+                try
+                {
+                    var json = System.IO.File.ReadAllText(_currentFilterPath);
+                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json);
+                }
+                catch (Exception ex)
+                {
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load config for headers: {ex.Message}");
+                }
+            }
+            
+            if (config == null)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No config available for headers");
                 return;
             }
-                
-            // Get the first result to determine headers
-            var firstResult = _searchResults.FirstOrDefault();
-            if (firstResult?.ItemLabels == null || firstResult.ItemLabels.Length == 0)
+            
+            var labels = new List<string>();
+            
+            // Add Must items
+            if (config.Must != null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No item labels in first result");
-                return;
+                foreach (var item in config.Must)
+                {
+                    // Generate label from value and edition
+                    var label = item.Value ?? item.Type ?? "Unknown";
+                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    {
+                        label = $"{label} {item.Edition}";
+                    }
+                    labels.Add(label);
+                }
             }
-                
-            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Adding {firstResult.ItemLabels.Length} tally headers");
-                
-            // Add headers for each tally score
-            foreach (var label in firstResult.ItemLabels)
+            
+            // Add Should items  
+            if (config.Should != null)
+            {
+                foreach (var item in config.Should)
+                {
+                    // Generate label from value and edition
+                    var label = item.Value ?? item.Type ?? "Unknown";
+                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    {
+                        label = $"{label} {item.Edition}";
+                    }
+                    labels.Add(label);
+                }
+            }
+            
+            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Generated {labels.Count} headers from config");
+            
+            // Add headers for each item
+            foreach (var label in labels)
             {
                 var header = new TextBlock
                 {
                     Text = label,
                     FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
-                    FontWeight = FontWeight.Bold,
                     FontSize = 12,
                     Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                    Width = 60,
+                    Width = 80,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(8, 4)
+                    Margin = new Thickness(4, 4),
+                    TextTrimming = TextTrimming.CharacterEllipsis
                 };
                 
                 _tallyHeadersPanel.Children.Add(header);
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Added header: {label}");
+            }
+        }
+        
+        private void UpdateTallyHeaders()
+        {
+            // Try to generate from config first
+            if (_tallyHeadersPanel != null && _tallyHeadersPanel.Children.Count == 0)
+            {
+                GenerateTableHeadersFromConfig();
             }
         }
         
@@ -1967,6 +2023,7 @@ namespace BalatroSeedOracle.Views.Modals
         public ulong StartBatch { get; set; } = 0;
         public ulong EndBatch { get; set; } = 1_500_625UL;  // Default for batch size 4
         public bool DebugMode { get; set; } = false;
+        public string? DebugSeed { get; set; }
         public string? Deck { get; set; }
         public string? Stake { get; set; }
     }
@@ -2134,6 +2191,63 @@ namespace BalatroSeedOracle.Views.Modals
             if (_resultsSummary != null)
             {
                 _resultsSummary.Text = $"Showing {filteredResults.Count} of {_searchResults.Count} results";
+            }
+        }
+        
+        private void OnDebugSeedGotFocus(object? sender, Avalonia.Input.GotFocusEventArgs e)
+        {
+            // Select all text when the debug seed input gets focus
+            if (sender is TextBox textBox)
+            {
+                textBox.SelectAll();
+            }
+        }
+        
+        private void OnDebugSeedTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                // Only allow alphanumeric characters (A-Z, 1-9, no zeros)
+                var text = textBox.Text ?? "";
+                var filtered = new System.Text.StringBuilder();
+                
+                foreach (char c in text.ToUpper())
+                {
+                    if ((c >= 'A' && c <= 'Z') || (c >= '1' && c <= '9'))
+                    {
+                        filtered.Append(c);
+                    }
+                }
+                
+                var filteredText = filtered.ToString();
+                if (filteredText != text)
+                {
+                    var caretIndex = textBox.CaretIndex;
+                    textBox.Text = filteredText;
+                    textBox.CaretIndex = Math.Min(caretIndex, filteredText.Length);
+                }
+            }
+        }
+        
+        private void OnDebugModeChecked(object? sender, RoutedEventArgs e)
+        {
+            // Enable the debug seed input when debug mode is checked
+            var debugSeedInput = this.FindControl<TextBox>("DebugSeedInput");
+            if (debugSeedInput != null)
+            {
+                debugSeedInput.IsEnabled = true;
+                debugSeedInput.Focus();
+            }
+        }
+        
+        private void OnDebugModeUnchecked(object? sender, RoutedEventArgs e)
+        {
+            // Disable the debug seed input when debug mode is unchecked
+            var debugSeedInput = this.FindControl<TextBox>("DebugSeedInput");
+            if (debugSeedInput != null)
+            {
+                debugSeedInput.IsEnabled = false;
+                debugSeedInput.Text = "";
             }
         }
         

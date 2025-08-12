@@ -12,7 +12,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="32"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -91,133 +91,10 @@
         </Style>
         <!-- Nav button inherits pressed behavior from global styles -->
         
-        <!-- Gradient styles for specific nav buttons -->
-        <Style Selector="Button.nav-joker">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#E74C3C" Offset="0.0" />
-                    <GradientStop Color="#C0392B" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        <Style Selector="Button.nav-joker:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#FF5C4C" Offset="0.0" />
-                    <GradientStop Color="#D0493B" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-tarot">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#a58547" Offset="0.0" />
-                    <GradientStop Color="#ffe5b4" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
-        </Style>
-        <Style Selector="Button.nav-tarot:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#b59557" Offset="0.0" />
-                    <GradientStop Color="#fff5c4" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-spectral">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#c7b24a" Offset="0.0" />
-                    <GradientStop Color="#5e7297" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        <Style Selector="Button.nav-spectral:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#d7c25a" Offset="0.0" />
-                    <GradientStop Color="#6e82a7" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-voucher">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#7ecace" Offset="0.0" />
-                    <GradientStop Color="#50a8ac" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
-        </Style>
-        <Style Selector="Button.nav-voucher:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#8edade" Offset="0.0" />
-                    <GradientStop Color="#60b8bc" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-boss">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#ac3232" Offset="0.0" />
-                    <GradientStop Color="#4f6367" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        <Style Selector="Button.nav-boss:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#bc4242" Offset="0.0" />
-                    <GradientStop Color="#5f7377" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-tag">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#30394a" Offset="0.0" />
-                    <GradientStop Color="#d4e3e5" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
-        </Style>
-        <Style Selector="Button.nav-tag:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#40495a" Offset="0.0" />
-                    <GradientStop Color="#e4f3f5" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.nav-celestial">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#5b9baa" Offset="0.0" />
-                    <GradientStop Color="#dff5fc" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
-        </Style>
-        <Style Selector="Button.nav-celestial:pointerover">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#6babba" Offset="0.0" />
-                    <GradientStop Color="#efffff" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter>
-        </Style>
         <Style Selector="Button.small-nav-button">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="MinHeight" Value="24" />
-            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="MinHeight" Value="22" />
+            <Setter Property="Padding" Value="3,1" />
             <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
         <Style Selector="Border.drop-zone">
@@ -513,17 +390,17 @@
                                 <StackPanel Spacing="1">
                                     <!-- Category Tabs - GRADIENT BUTTONS like Balatro -->
                                     <Button Name="FavoritesTab" Content="⭐Faves" Classes="nav-button" />
-                                    <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button nav-joker" />
-                                    <Button Name="RareJokersTab" Content="Rare" Classes="nav-button nav-joker" />
-                                    <Button Name="UncommonJokersTab" Content="Uncommon" Classes="nav-button nav-joker" />
-                                    <Button Name="CommonJokersTab" Content="Common" Classes="nav-button nav-joker" />
-                                    <Button Name="VouchersTab" Content="Voucher" Classes="nav-button nav-voucher" />
-                                    <Button Name="TarotsTab" Content="Tarot" Classes="nav-button nav-tarot" />
-                                    <Button Name="PlanetsTab" Content="Planet" Classes="nav-button nav-planet" />
-                                    <Button Name="SpectralsTab" Content="Spectral" Classes="nav-button nav-spectral" />
-                                    <Button Name="PlayingCardsTab" Content="Playing Cards" Classes="nav-button nav-playing" />
-                                    <Button Name="TagsTab" Content="Tag" Classes="nav-button nav-tag" />
-                                    <Button Name="BossesTab" Content="Boss" Classes="nav-button nav-boss" />
+                                    <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />
+                                    <Button Name="RareJokersTab" Content="Rare" Classes="nav-button" />
+                                    <Button Name="UncommonJokersTab" Content="Uncommon" Classes="nav-button" />
+                                    <Button Name="CommonJokersTab" Content="Common" Classes="nav-button" />
+                                    <Button Name="VouchersTab" Content="Voucher" Classes="nav-button" />
+                                    <Button Name="TarotsTab" Content="Tarot" Classes="nav-button" />
+                                    <Button Name="PlanetsTab" Content="Planet" Classes="nav-button" />
+                                    <Button Name="SpectralsTab" Content="Spectral" Classes="nav-button" />
+                                    <Button Name="PlayingCardsTab" Content="Playing Cards" Classes="nav-button" />
+                                    <Button Name="TagsTab" Content="Tag" Classes="nav-button" />
+                                    <Button Name="BossesTab" Content="Boss" Classes="nav-button" />
                                     <Button Name="ClearTab" Content="Clear ALL" Classes="nav-button" />
                                 </StackPanel>
                             </ScrollViewer>

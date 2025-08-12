@@ -451,8 +451,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     Text = pack.PackType.ToString().Replace("Pack", ""),
                     FontSize = 10,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    FontWeight = FontWeight.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center
                 }
             );
 
@@ -513,8 +512,7 @@ namespace BalatroSeedOracle.Views.Modals
                 new TextBlock
                 {
                     Text = tag.ToString().Replace("Tag", ""),
-                    FontSize = 12,
-                    FontWeight = FontWeight.Bold,
+                    FontSize = 12
                 }
             );
             content.Children.Add(textPanel);

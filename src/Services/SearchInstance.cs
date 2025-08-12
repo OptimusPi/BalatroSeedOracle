@@ -153,6 +153,7 @@ namespace BalatroSeedOracle.Services
                     StartBatch = config.StartBatch,
                     EndBatch = config.EndBatch,
                     EnableDebugOutput = config.DebugMode,
+                    DebugSeed = config.DebugSeed,
                 };
 
                 // No need to start a search in database - just store results as they come
@@ -792,8 +793,20 @@ namespace BalatroSeedOracle.Services
                     $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}"
                 );
 
-                // Start the search
-                _currentSearch = searchSettings.Start();
+                // Start the search - use list search if a specific seed is provided
+                if (!string.IsNullOrEmpty(criteria.DebugSeed))
+                {
+                    var seedList = new List<string> { criteria.DebugSeed };
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"Searching for specific seed: {criteria.DebugSeed}"
+                    );
+                    _currentSearch = searchSettings.WithListSearch(seedList).Start();
+                }
+                else
+                {
+                    _currentSearch = searchSettings.Start();
+                }
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",

@@ -10,7 +10,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontSize" Value="32"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -259,7 +259,6 @@
                                           VerticalAlignment="Center"
                                           Margin="0,0,10,0"
                                           FontSize="16"
-                                          FontWeight="SemiBold"
                                           Foreground="{StaticResource White}"/>
                                 
                                 <TextBox Grid.Column="1" 
@@ -311,7 +310,6 @@
                                           Text="Enter a seed and click ANALYZE"
                                           HorizontalAlignment="Center"
                                           FontSize="18"
-                                          FontWeight="SemiBold"
                                           Foreground="{StaticResource White}"/>
                                 <TextBlock Text="View shop contents, booster packs, and skip tags for each ante"
                                           HorizontalAlignment="Center"

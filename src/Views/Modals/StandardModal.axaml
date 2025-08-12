@@ -14,14 +14,14 @@
         <!-- Modal positioning grid -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="10"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="10"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="10"/>
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style -->
@@ -32,10 +32,10 @@
                     BorderThickness="4"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    MaxWidth="1000"
-                    MaxHeight="700"
+                    MaxWidth="1200"
+                    MaxHeight="720"
                     BoxShadow="{StaticResource StandardModalShadow}"
-                    ClipToBounds="True">
+                    ClipToBounds="False">
                 
                 <Grid>
                     <Grid.RowDefinitions>

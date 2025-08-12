@@ -52,26 +52,4 @@ public static class UIConstants
     public const string LoadConfigTitle = "Select Motely Config File";
     public const string ExportResultsTitle = "Export Search Results";
     public const string SearchModalTitle = "SEED SEARCH - MAXIMIZED";
-
-    // Tab left side nav buttons for filter builder modal
-    public const string TarotColor1 = "#a58547";
-    public const string TarotColor2 = "#ffe5b4";
-
-    public const string SpectralColor1 = "#c7b24a";
-    public const string SpectralColor2 = "#5e7297";
-
-    public const string VoucherColor1 = "#7ecace";
-    public const string VoucherColor2 = "#50a8ac";
-
-    public const string JokerColor1 = "#E74C3C";
-    public const string JokerColor2 = "#C0392B";
-
-    public const string BossColor1 = "#ac3232";
-    public const string BossColor2 = "#4f6367";
-
-    public const string TagColor1 = "#30394a";
-    public const string TagColor2 = "#000000";
-
-    public const string CelestialColor1 = "#5b9baa";
-    public const string CelestialColor2 = "#dff5fc";
 }
