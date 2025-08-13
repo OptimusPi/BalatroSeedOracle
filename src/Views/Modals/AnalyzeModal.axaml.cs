@@ -48,6 +48,35 @@ namespace BalatroSeedOracle.Views.Modals
             _userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
         }
 
+        /// <summary>
+        /// Programmatically set the seed, switch to analyzer tab, and run analysis.
+        /// Safe to call after control construction; will defer execution until Loaded if needed.
+        /// </summary>
+        public void SetSeedAndAnalyze(string seed)
+        {
+            void Execute()
+            {
+                if (_seedInput != null)
+                {
+                    _seedInput.Text = seed;
+                }
+                // Switch to analyzer tab
+                SetActiveTab(1);
+                // Trigger analysis
+                OnAnalyzeClick(this, new RoutedEventArgs());
+            }
+
+            if (this.IsLoaded)
+            {
+                Execute();
+            }
+            else
+            {
+                // Defer until loaded
+                this.Loaded += (s, _) => Execute();
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

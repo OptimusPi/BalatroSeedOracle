@@ -10,7 +10,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontSize" Value="44"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -20,12 +20,13 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <ControlTemplate>
-                    <!-- Drop shadow behind button -->
                     <Grid>
-                        <Border Background="{StaticResource DropShadow}"
+                        <Border Name="DropShadow"
+                                Background="{StaticResource DropShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
-                        <Border Background="{TemplateBinding Background}"
+                        <Border Name="PART_Border"
+                                Background="{StaticResource Red}"
                                 CornerRadius="8"
                                 Margin="0,0,0,4">
                             <ContentPresenter Content="{TemplateBinding Content}"
@@ -40,60 +41,30 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="Button.tab-button:pointerover">
+        
+        <!-- Hover state -->
+        <Style Selector="Button.tab-button:pointerover /template/ Border#PART_Border">
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
-        <Style Selector="Button.tab-button:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-            <Setter Property="Margin" Value="4,2,4,4"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <!-- Reduced shadow when pressed -->
-                    <Grid>
-                        <Border Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="0,0,0,2">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Button.tab-button.active">
+        
+        <!-- Tab button inherits pressed behavior from global styles -->
+        
+        <!-- Active state - same as regular, no blue! -->
+        <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
             <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <!-- Drop shadow behind button -->
-                        <Border Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <!-- Button background -->
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
+        </Style>
+        
+        <!-- Active hover -->
+        <Style Selector="Button.tab-button.active:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        
+        <!-- Disabled state -->
+        <Style Selector="Button.tab-button:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+        </Style>
+        <Style Selector="Button.tab-button:disabled">
+            <Setter Property="Cursor" Value="Arrow"/>
         </Style>
         
         <!-- Small button style -->
@@ -127,7 +98,7 @@
         
         <!-- Content box style -->
         <Style Selector="Border.content-box">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -135,10 +106,10 @@
         
         <!-- Ante Panel Style -->
         <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Margin" Value="5,5,5,10"/>
-            <Setter Property="BoxShadow" Value="{StaticResource LightBoxShadow}"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <!-- Shop Slot Style -->
@@ -170,7 +141,7 @@
         </Style>
     </UserControl.Styles>
     
-    <Grid Background="{StaticResource DockGrey}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
             <RowDefinition Height="Auto"/> <!-- Tabs -->
@@ -232,7 +203,7 @@
         <Grid Grid.Row="2">
             <!-- Settings Panel (Deck/Stake) -->
             <StackPanel Name="SettingsPanel" IsVisible="True" Spacing="24">
-                <Border Background="{StaticResource DarkerGrey}" 
+                <Border Background="{StaticResource DarkModalGrey}" 
                         CornerRadius="12" 
                         Padding="40"
                         HorizontalAlignment="Center"
@@ -245,7 +216,7 @@
             <ScrollViewer Name="AnalyzerPanel" IsVisible="False" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Input Section -->
-                    <Border Background="{StaticResource DarkerGrey}" CornerRadius="12" Margin="10">
+                    <Border Background="{StaticResource DarkModalGrey}" CornerRadius="12" Margin="10">
                             <Grid Margin="15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -271,7 +242,7 @@
                                         Height="40"
                                         Margin="0,0,15,0"
                                         CornerRadius="6"
-                                        Background="{StaticResource DarkerGrey}"
+                                        Background="{StaticResource VeryDarkGrey}"
                                         BorderBrush="{StaticResource DarkBorder}"
                                         BorderThickness="0"/>
                                 
@@ -295,7 +266,7 @@
                     <StackPanel Name="ResultsPanel" Margin="5">
                         <!-- Placeholder -->
                         <Border Name="PlaceholderPanel" 
-                               Background="{StaticResource DarkerGrey}" 
+                               Background="{StaticResource DarkModalGrey}" 
                                CornerRadius="12" 
                                Padding="40"
                                HorizontalAlignment="Center"

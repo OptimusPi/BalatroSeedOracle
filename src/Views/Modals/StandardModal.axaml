@@ -5,11 +5,10 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <!-- Semi-transparent background overlay -->
         <Border Background="{StaticResource SemiTransparentBlack}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                IsHitTestVisible="True" />
+                IsHitTestVisible="False" />
         
         <!-- Modal positioning grid -->
         <Grid>

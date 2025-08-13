@@ -74,6 +74,9 @@ namespace BalatroSeedOracle.Views.Modals
 
         // Deck and Stake selector component
         private DeckAndStakeSelector? _deckAndStakeSelector;
+        
+        // Track if current search is in debug mode
+        private bool _isDebugMode = false;
 
         // New Search tab UI elements
         private TextBlock? _progressPercentText;
@@ -496,10 +499,22 @@ namespace BalatroSeedOracle.Views.Modals
         
         private async void OnFilterSelected(object? sender, string filterPath)
         {
-            // Prevent double loading
-            if (_isLoadingFilter || _currentFilterPath == filterPath)
+            // Prevent double loading while in progress
+            if (_isLoadingFilter)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Skipping duplicate filter load: {filterPath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Filter load already in progress");
+                return;
+            }
+            
+            // If same filter, just switch to Settings tab
+            if (_currentFilterPath == filterPath)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Filter already loaded, switching to Settings tab");
+                // Switch to Deck/Stake tab since filter is already loaded
+                if (_settingsTab != null)
+                {
+                    OnTabClick(_settingsTab, new RoutedEventArgs());
+                }
                 return;
             }
             
@@ -795,6 +810,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                     // Start the search directly with the config object
                     int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size
+                    _isDebugMode = _debugCheckBox?.IsChecked ?? false;
                     var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
@@ -802,8 +818,8 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = batchSize,
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
-                        DebugMode = _debugCheckBox?.IsChecked ?? false,
-                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
+                        DebugMode = _isDebugMode,
+                        DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -863,6 +879,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size (minimal=1, low=2, default=3, high=4)
+                    _isDebugMode = _debugCheckBox?.IsChecked ?? false;
                     var config = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
@@ -870,8 +887,8 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = batchSize,
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
-                        DebugMode = _debugCheckBox?.IsChecked ?? false,
-                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
+                        DebugMode = _isDebugMode,
+                        DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -895,15 +912,18 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = config.BatchSize,
                         Deck = config.Deck,
                         Stake = config.Stake,
+                        EnableDebugOutput = config.DebugMode,
+                        DebugSeed = config.DebugSeed,
                     };
 
                     await _searchInstance.StartSearchAsync(searchCriteria);
                 }
                 else
                 {
-                    // Stop search - immediately disable button to prevent multiple clicks
+                    // Stop search - immediately update button to show stopping state
                     if (_cookButton != null)
                     {
+                        _cookButton.Content = "Stopping Search...";
                         _cookButton.IsEnabled = false;
                     }
                     
@@ -912,6 +932,9 @@ namespace BalatroSeedOracle.Views.Modals
                         $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}"
                     );
                     AddToConsole("Stopping search...");
+                    
+                    // Force UI update to show the button change immediately
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, Avalonia.Threading.DispatcherPriority.Render);
 
                     // Clear any pending results
                     lock (_resultBatchLock)
@@ -986,7 +1009,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // Update cook button
                 if (_cookButton != null)
                 {
-                    _cookButton.Content = "Stop Jimbo!";
+                    _cookButton.Content = "STOP SEARCH";
                     // Just add the stop class, don't remove and re-add cook-button
                     _cookButton.Classes.Add("stop");
                 }
@@ -997,10 +1020,18 @@ namespace BalatroSeedOracle.Views.Modals
                     _resultsTab.IsEnabled = true;
                 }
 
-                // Load existing results from .duckdb file if available
-                AddToConsole("──────────────────────────────────");
-                AddToConsole("Checking for existing results...");
-                await LoadExistingResultsAsync();
+                // Load existing results from .duckdb file if available (skip in debug mode)
+                if (!_isDebugMode)
+                {
+                    AddToConsole("──────────────────────────────────");
+                    AddToConsole("Checking for existing results...");
+                    await LoadExistingResultsAsync();
+                }
+                else
+                {
+                    AddToConsole("──────────────────────────────────");
+                    AddToConsole("Debug mode: Skipping database check");
+                }
 
                 // Enable save widget button
                 if (_saveWidgetButton != null)
@@ -1028,7 +1059,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Only show finished message if we have results (not cancelled)
                     if (_searchResults.Count > 0)
                     {
-                        AddToConsole("Jimbo finished cooking!");
+                        AddToConsole("Search completed!");
                     }
                 }
                 catch (Exception ex)

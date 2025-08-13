@@ -481,14 +481,17 @@ namespace BalatroSeedOracle.Services
                 // Flush any pending search state to disk before stopping
                 _userProfileService?.FlushProfile();
 
+                // Force _isRunning to false IMMEDIATELY
+                _isRunning = false;
+                
                 // Set the cancellation flag that Motely checks
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
 
-                // Also cancel the token
+                // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
-
-                // Force _isRunning to false immediately
-                _isRunning = false;
+                
+                // Send completed event immediately so UI updates
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
 
                 // Stop result capture first
                 if (_resultCapture != null)
@@ -496,7 +499,8 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         var stopTask = _resultCapture.StopCaptureAsync();
-                        if (!stopTask.Wait(TimeSpan.FromSeconds(3)))
+                        // Don't wait more than 500ms for result capture to stop
+                        if (!stopTask.Wait(TimeSpan.FromMilliseconds(500)))
                         {
                             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Result capture stop timed out (continuing shutdown)");
                         }
@@ -521,11 +525,12 @@ namespace BalatroSeedOracle.Services
                             DebugLogger.Log($"SearchInstance[{_searchId}]", "Search paused");
                         }
 
-                        // Then dispose with a timeout
+                        // Then dispose with a very short timeout - we don't care if it completes
                         var disposeTask = Task.Run(() => _currentSearch.Dispose());
-                        if (!disposeTask.Wait(TimeSpan.FromSeconds(2)))
+                        if (!disposeTask.Wait(TimeSpan.FromMilliseconds(200)))
                         {
-                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search disposal timed out");
+                            // Don't wait, just log and continue
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search disposal timed out (abandoning)");
                         }
                         else
                         {
@@ -833,7 +838,8 @@ namespace BalatroSeedOracle.Services
                     // Just wait - all updates come through callbacks now!
                     try
                     {
-                        await Task.Delay(100, cancellationToken);
+                        // Check more frequently for faster stop response
+                        await Task.Delay(50, cancellationToken);
                     }
                     catch (OperationCanceledException)
                     {
