@@ -1397,21 +1397,11 @@ namespace BalatroSeedOracle.Views.Modals
         
         private void OnConsoleOutput(object? sender, string line)
         {
-            // Buffer console lines instead of updating immediately
-            lock (_consoleBufferLock)
+            // Update console immediately on UI thread
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                _consoleBuffer.Add(line);
-                
-                // Limit buffer size to prevent memory issues
-                if (_consoleBuffer.Count > 100)
-                {
-                    // Start timer if not already running
-                    if (_consoleUpdateTimer == null || !_consoleUpdateTimer.IsEnabled)
-                    {
-                        StartConsoleUpdateTimer();
-                    }
-                }
-            }
+                AddToConsole(line);
+            });
         }
         
         private void StartConsoleUpdateTimer()
@@ -1422,7 +1412,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     _consoleUpdateTimer = new DispatcherTimer
                     {
-                        Interval = TimeSpan.FromMilliseconds(250) // Update 4 times per second max
+                        Interval = TimeSpan.FromMilliseconds(50) // Update 20 times per second for faster response
                     };
                     _consoleUpdateTimer.Tick += OnConsoleUpdateTimerTick;
                 }
@@ -1627,9 +1617,6 @@ namespace BalatroSeedOracle.Views.Modals
                     
                     // Subscribe to console output
                     _searchInstance.ConsoleOutput += OnConsoleOutput;
-                    
-                    // Start console update timer
-                    StartConsoleUpdateTimer();
                     
                     // Restore console history
                     RestoreConsoleHistory();

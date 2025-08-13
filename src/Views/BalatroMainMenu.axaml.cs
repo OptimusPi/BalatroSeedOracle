@@ -489,8 +489,8 @@ namespace BalatroSeedOracle.Views
             if (!string.IsNullOrEmpty(configPath))
             {
                 BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Starting search...");
-                var searchService = App.GetService<MotelySearchService>();
-                if (searchService != null)
+                var searchManager = App.GetService<SearchManager>();
+                if (searchManager != null)
                 {
                     var criteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
@@ -499,7 +499,12 @@ namespace BalatroSeedOracle.Views
                         MinScore = 0,
                         BatchSize = 3,
                     };
-                    await searchService.StartSearchAsync(criteria);
+                    var newSearchId = searchManager.CreateSearch();
+                    var searchInstance = searchManager.GetSearch(newSearchId);
+                    if (searchInstance != null)
+                    {
+                        await searchInstance.StartSearchAsync(criteria);
+                    }
                 }
             }
         }

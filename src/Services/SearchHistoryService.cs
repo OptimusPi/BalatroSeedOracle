@@ -28,9 +28,6 @@ namespace BalatroSeedOracle.Services
             if (!string.IsNullOrEmpty(filterPath))
             {
                 var fileName = Path.GetFileNameWithoutExtension(filterPath);
-                // Remove .ouija if present
-                if (fileName.EndsWith(".ouija", StringComparison.OrdinalIgnoreCase))
-                    fileName = fileName.Substring(0, fileName.Length - 6);
                 _currentFilterName = fileName;
             }
             else
@@ -77,16 +74,14 @@ namespace BalatroSeedOracle.Services
             {
                 var connection = GetConnection();
 
-                // Create enhanced results table with JSON support
+                // Create simple results table - just seed and scores as CSV
                 using var createTable = connection.CreateCommand();
                 createTable.CommandText =
                     @"
                     CREATE TABLE IF NOT EXISTS results (
                         seed VARCHAR PRIMARY KEY,
-                        score DOUBLE,
-                        details VARCHAR,
-                        tally_scores JSON,
-                        item_labels JSON
+                        score INT,
+                        csv_line VARCHAR
                     )
                 ";
                 createTable.ExecuteNonQuery();

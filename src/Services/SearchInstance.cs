@@ -36,19 +36,9 @@ namespace BalatroSeedOracle.Services
         private readonly List<string> _consoleHistory = new();
         private readonly object _consoleHistoryLock = new();
         
-        // Auto-cutoff tracking
+        // Auto-cutoff tracking - Motely handles this internally now
         private bool _isAutoCutoffEnabled;
         private int _currentCutoff = 0;
-        private OuijaJsonFilterDesc? _currentFilterDesc;
-        
-        // Auto-stop when too many results
-        private int _totalSeedsProcessed = 0;
-        private bool _isTestBatchComplete = false;
-        private int _currentTestBatch = 0;
-        private int _testBatchHits = 0;
-        private const int TEST_BATCH_SIZE = 35; // Test 35 seeds at a time
-        private const int TOTAL_TEST_BATCHES = 10; // Run 10 test batches
-        private const double MAX_RESULT_RATE = 0.20; // Stop if more than 20% of seeds match in a batch
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -163,41 +153,8 @@ namespace BalatroSeedOracle.Services
                 _resultCapture.SetFilterConfig(ouijaConfig);
                 _resultCapture.ResultCaptured += async (result) =>
                 {
-                    // If auto-cutoff is enabled, check if this result might increase the cutoff
-                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 10)
-                    {
-                        var oldCutoff = _currentCutoff;
-                        // Increment cutoff by 1 to avoid skipping score levels
-                        _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
-                        
-                        // Update the filter descriptor's cutoff so Motely stops outputting lower scores
-                        if (_currentFilterDesc.HasValue)
-                        {
-                            var desc = _currentFilterDesc.Value;
-                            desc.Cutoff = _currentCutoff;
-                            _currentFilterDesc = desc;
-                        }
-                        
-                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
-                        
-                        // Notify UI of cutoff change
-                        CutoffChanged?.Invoke(this, _currentCutoff);
-                    }
-                    
-                    // Filter based on current cutoff - don't add to results or database if below cutoff
-                    if (result.TotalScore < _currentCutoff)
-                    {
-                        return;
-                    }
-                    
+                    // Motely handles auto-cutoff internally now, we just add results
                     _results.Add(result);
-                    
-                    // Count hits during test batches
-                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE * TOTAL_TEST_BATCHES)
-                    {
-                        _testBatchHits++;
-                    }
 
                     // Save to database
                     await _historyService.AddSearchResultAsync(result);
@@ -272,177 +229,54 @@ namespace BalatroSeedOracle.Services
             CancellationToken cancellationToken = default
         )
         {
-            if (_isRunning)
+            // Load the config from file
+            if (string.IsNullOrEmpty(criteria.ConfigPath))
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
-                return;
+                throw new ArgumentException("Config path is required");
             }
+            
+            DebugLogger.Log(
+                $"SearchInstance[{_searchId}]",
+                $"Loading config from: {criteria.ConfigPath}"
+            );
 
-            try
+            // Load and validate the Ouija config
+            var json = await File.ReadAllTextAsync(criteria.ConfigPath);
+            var options = new JsonSerializerOptions
             {
-                DebugLogger.Log(
-                    $"SearchInstance[{_searchId}]",
-                    $"Starting search with config: {criteria.ConfigPath}"
-                );
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
+            };
+            var config = JsonSerializer.Deserialize<OuijaConfig>(json, options);
 
-                ConfigPath = criteria.ConfigPath ?? string.Empty;
-                FilterName = System.IO.Path.GetFileNameWithoutExtension(
-                    criteria.ConfigPath ?? string.Empty
-                );
-                _searchStartTime = DateTime.UtcNow;
-                _isRunning = true;
-                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                    cancellationToken
-                );
-
-                // Clear previous results
-                _results.Clear();
-
-                // Load and validate the Ouija config
-                if (string.IsNullOrEmpty(criteria.ConfigPath))
-                {
-                    throw new ArgumentException("Config path is required");
-                }
-                
-                // Proper async I/O instead of Task.Run
-                var json = await File.ReadAllTextAsync(criteria.ConfigPath);
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                };
-                _currentConfig = JsonSerializer.Deserialize<OuijaConfig>(json, options);
-
-                if (_currentConfig == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Failed to load config from {criteria.ConfigPath}"
-                    );
-                }
-
-                // Notify UI that search started
-                SearchStarted?.Invoke(this, EventArgs.Empty);
-
-                // Create progress wrapper
-                var progressWrapper = new Progress<SearchProgress>(p =>
-                {
-                    progress?.Report(p);
-                    HandleSearchProgress(p);
-                });
-
-                // No need to start a search in database - just store results as they come
-
-                // Set up result capture
-                _resultCapture = new MotelyResultCapture(_historyService);
-                if (_currentConfig != null)
-                {
-                    _resultCapture.SetFilterConfig(_currentConfig);
-                }
-                _resultCapture.ResultCaptured += async (result) =>
-                {
-                    // If auto-cutoff is enabled, check if this result might increase the cutoff
-                    if (_isAutoCutoffEnabled && result.TotalScore > _currentCutoff && result.TotalScore <= 10)
-                    {
-                        var oldCutoff = _currentCutoff;
-                        // Increment cutoff by 1 to avoid skipping score levels
-                        _currentCutoff = Math.Min(_currentCutoff + 1, result.TotalScore);
-                        
-                        // Update the filter descriptor's cutoff so Motely stops outputting lower scores
-                        if (_currentFilterDesc.HasValue)
-                        {
-                            var desc = _currentFilterDesc.Value;
-                            desc.Cutoff = _currentCutoff;
-                            _currentFilterDesc = desc;
-                        }
-                        
-                        DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                            $"Auto-cutoff: Found seed with score {result.TotalScore}, increasing cutoff from {oldCutoff} to {_currentCutoff}");
-                        
-                        // Notify UI of cutoff change
-                        CutoffChanged?.Invoke(this, _currentCutoff);
-                    }
-                    
-                    // Filter based on current cutoff - don't add to results or database if below cutoff
-                    if (result.TotalScore < _currentCutoff)
-                    {
-                        return;
-                    }
-                    
-                    _results.Add(result);
-                    
-                    // Count hits during test batches
-                    if (!_isTestBatchComplete && _totalSeedsProcessed <= TEST_BATCH_SIZE * TOTAL_TEST_BATCHES)
-                    {
-                        _testBatchHits++;
-                    }
-
-                    // Save to database
-                    await _historyService.AddSearchResultAsync(result);
-
-                    // Notify UI
-                    ResultFound?.Invoke(
-                        this,
-                        new SearchResultEventArgs
-                        {
-                            Result = new BalatroSeedOracle.Views.Modals.SearchResult
-                            {
-                                Seed = result.Seed,
-                                Score = result.TotalScore,
-                                TallyScores = result.Scores
-                            },
-                        }
-                    );
-                };
-
-                // Start capturing
-                await _resultCapture.StartCaptureAsync();
-
-                // Run the search using the MotelySearchService pattern
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
-
-                if (_currentConfig != null)
-                {
-                    await Task.Run(
-                        () =>
-                            RunSearchInProcess(
-                                _currentConfig,
-                                criteria,
-                                progressWrapper,
-                                _cancellationTokenSource.Token
-                            ),
-                        _cancellationTokenSource.Token
-                    );
-                }
-
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
-                await CompleteSearch(false);
-            }
-            catch (OperationCanceledException)
+            if (config == null)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
-                await CompleteSearch(true);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"Search failed: {ex.Message}"
-                );
-                progress?.Report(
-                    new SearchProgress
-                    {
-                        Message = $"Search failed: {ex.Message}",
-                        HasError = true,
-                        IsComplete = true,
-                    }
+                throw new InvalidOperationException(
+                    $"Failed to load config from {criteria.ConfigPath}"
                 );
             }
-            finally
+
+            // Store the config path for reference
+            ConfigPath = criteria.ConfigPath;
+            FilterName = System.IO.Path.GetFileNameWithoutExtension(criteria.ConfigPath);
+
+            // Convert SearchCriteria to SearchConfiguration
+            var searchConfig = new SearchConfiguration
             {
-                _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
-            }
+                ThreadCount = criteria.ThreadCount,
+                MinScore = criteria.MinScore,
+                BatchSize = criteria.BatchSize,
+                Deck = criteria.Deck,
+                Stake = criteria.Stake,
+                StartBatch = criteria.StartBatch,
+                EndBatch = criteria.EndBatch,
+                DebugMode = criteria.EnableDebugOutput,
+                DebugSeed = criteria.DebugSeed
+            };
+
+            // Call the main search method
+            await StartSearchWithConfigAsync(config, searchConfig, progress, cancellationToken);
         }
 
         public void PauseSearch()
@@ -551,74 +385,6 @@ namespace BalatroSeedOracle.Services
 
         private void HandleSearchProgress(SearchProgress progress)
         {
-            // Track total seeds processed
-            if (progress.SeedsSearched > 0)
-            {
-                _totalSeedsProcessed = (int)progress.SeedsSearched;
-                
-                // Check test batches progressively
-                if (!_isTestBatchComplete && _totalSeedsProcessed > 0)
-                {
-                    int expectedBatch = (_totalSeedsProcessed - 1) / TEST_BATCH_SIZE;
-                    
-                    // Check if we've completed a new test batch
-                    if (expectedBatch > _currentTestBatch && expectedBatch < TOTAL_TEST_BATCHES)
-                    {
-                        _currentTestBatch = expectedBatch;
-                        double testHitRate = (double)_testBatchHits / (_currentTestBatch * TEST_BATCH_SIZE);
-                        
-                        ConsoleOutput?.Invoke(this, $"\n📊 Test batch {_currentTestBatch}/{TOTAL_TEST_BATCHES} complete: {_testBatchHits} total hits in {_currentTestBatch * TEST_BATCH_SIZE} seeds ({testHitRate:P2} hit rate)");
-                        
-                        // Check if hit rate is too high
-                        if (_testBatchHits > 0 && testHitRate > MAX_RESULT_RATE)
-                        {
-                            // Too many results - increase cutoff
-                            if (_isAutoCutoffEnabled && _currentCutoff < 10)
-                            {
-                                int oldCutoff = _currentCutoff;
-                                _currentCutoff = Math.Min(_currentCutoff + 1, 10);
-                                
-                                ConsoleOutput?.Invoke(this, $"⚡ Auto-adjusting cutoff from {oldCutoff} to {_currentCutoff} due to high hit rate");
-                                
-                                // Reset hit counter for next batch
-                                _testBatchHits = 0;
-                                
-                                // Notify UI of cutoff change
-                                CutoffChanged?.Invoke(this, _currentCutoff);
-                            }
-                            else if (!_isAutoCutoffEnabled || _currentCutoff >= 10)
-                            {
-                                // Can't increase cutoff further, stop the search
-                                ConsoleOutput?.Invoke(this, "\n⚠️ ══════════════════════════════════════════════════════════════");
-                                ConsoleOutput?.Invoke(this, "⚠️ WARNING: AUTOMATICALLY STOPPED BECAUSE OVERFLOW OF RESULTS!");
-                                ConsoleOutput?.Invoke(this, $"⚠️ Test batch found {testHitRate:P2} match rate (>{MAX_RESULT_RATE:P0} threshold)");
-                                ConsoleOutput?.Invoke(this, "⚠️ Cutoff already at maximum (10) or auto-cutoff disabled");
-                                ConsoleOutput?.Invoke(this, "⚠️ Try setting a more restrictive filter!");
-                                ConsoleOutput?.Invoke(this, "⚠️ ══════════════════════════════════════════════════════════════\n");
-                                
-                                DebugLogger.Log($"SearchInstance[{_searchId}]", 
-                                    $"Auto-stopping search after test batch {_currentTestBatch}: {testHitRate:P2} hit rate");
-                                
-                                // Cancel the search
-                                StopSearch();
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            ConsoleOutput?.Invoke(this, $"✅ Hit rate acceptable ({testHitRate:P2}), continuing...");
-                        }
-                    }
-                    
-                    // After all test batches complete, mark testing as done
-                    if (_currentTestBatch >= TOTAL_TEST_BATCHES - 1)
-                    {
-                        _isTestBatchComplete = true;
-                        ConsoleOutput?.Invoke(this, $"\n✅ All {TOTAL_TEST_BATCHES} test batches complete. Full search proceeding with cutoff={_currentCutoff}");
-                    }
-                }
-            }
-            
             // Update UI with progress
             var eventArgs = new SearchProgressEventArgs
             {
@@ -675,12 +441,12 @@ namespace BalatroSeedOracle.Services
 
                 // Create filter descriptor
                 var filterDesc = new OuijaJsonFilterDesc(config);
-                _currentFilterDesc = filterDesc; // Store reference for dynamic cutoff updates
                 
                 // Enable auto-cutoff if MinScore is 0
                 _isAutoCutoffEnabled = criteria.MinScore == 0;
                 _currentCutoff = _isAutoCutoffEnabled ? 1 : criteria.MinScore; // Start at 1 for auto
                 filterDesc.Cutoff = _currentCutoff;
+                filterDesc.AutoCutoff = _isAutoCutoffEnabled;
                 
                 if (_isAutoCutoffEnabled)
                 {
