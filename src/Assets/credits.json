@@ -8,7 +8,7 @@
   {
     "name": "tacodiva",
     "role": "Contributor",
-    "note": "Thanks for creating Motely, the best CPU SIMD Balatro Seed Searching tool!",
+    "note": "Thanks for your patience, your beautiful brain, and for creating Motely, the best CPU SIMD Balatro Seed Searching tool!",
     "link": "https://github.com/Tacodiva/Motely"
   },
   {
@@ -18,8 +18,14 @@
     "link": "https://github.com/SQLApostle"
   },
   {
+    "name": "Perkeo",
+    "role": "Supporter",
+    "note": "Thanks for the support, and for making Perkeo, the best iOS Balatro Companion App!",
+    "link": "https://github.com/alex-cova/perkeoapp"
+  },
+  {
     "name": "miaklwalker",
-    "role": "Inspiration",
+    "role": "Supporter",
     "note": "Thanks for creating Blueprint, the modern Balatro Seed Analyzer/Planner",
     "link": "https://github.com/miaklwalker/Blueprint"
   },
@@ -32,7 +38,7 @@
   {
     "name": "Cobmaster",
     "role": "Fellow Seed Lover",
-    "note": "Thanks for testing, also for waiting on chat's seed requests.",
+    "note": "Thanks for testing (breaking things..), also for waiting on chat's seed requests.",
     "link": "https://discord.com/invite/balatro"
   },
   {
@@ -45,6 +51,12 @@
     "name": "Frenchy",
     "role": "Fellow Seed Lover",
     "note": "Really fun & inspiring to watch your seed finding work. GZ on the quintuple soul!",
-    "link": "https://github.com/alex-cova/perkeoapp"
+    "link": "https://discord.com/invite/balatro"
+  },
+  {
+    "name": "Lokey",
+    "role": "Fellow Seed Lover",
+    "note": "Thanks for all the different perspectives and insight into Balatro mechanics!",
+    "link": "https://discord.com/invite/balatro"
   }
 ]

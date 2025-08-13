@@ -4,7 +4,7 @@ namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// C# port of Daylatro's daily seed generation algorithm
-    /// Generates the same Balatro seed that Daylatro shows for any given day
+    /// Generates the same Balatro seed that the live Haskell Daylatro (random >=1.2 SplitMix StdGen) shows for any given day
     /// </summary>
     public static class DaylatroSeeds
     {
@@ -21,25 +21,20 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public static string GetDailyBalatroSeed(DateTime date)
         {
-            // Convert to Modified Julian Day (same as Haskell Time.toModifiedJulianDay)
-            long modifiedJulianDay = GetModifiedJulianDay(date.Date);
+            // Convert to Modified Julian Day (Haskell Time.toModifiedJulianDay)
+            ulong modifiedJulianDay = (ulong)GetModifiedJulianDay(date.Date);
 
-            // Create StdGen using the old Haskell mkStdGen algorithm
-            var gen = MkStdGen32((int)modifiedJulianDay);
+            // Haskell: mkStdGen (fromIntegral mjd)
+            var gen = StdGen.FromSeed(modifiedJulianDay);
 
-            // Generate 8 random values in range [0, 35] using uniformListR
-            var seedChars = new char[8];
+            Span<char> chars = stackalloc char[8];
             for (int i = 0; i < 8; i++)
             {
-                var (value, nextGen) = RandomR(0, 35, gen);
-                gen = nextGen;
-
-                // Convert to Base36 character (0-9 → '0'-'9', 10-35 → 'A'-'Z')
-                // Same logic as Haskell: x + if x < 10 then 48 else 55
-                seedChars[i] = (char)(value + (value < 10 ? 48 : 55));
+                int n;
+                gen = gen.UniformInclusive(0, 35, out n);
+                chars[i] = (char)(n + (n < 10 ? 48 : 55));
             }
-
-            return new string(seedChars);
+            return new string(chars);
         }
 
         /// <summary>
@@ -80,95 +75,115 @@ namespace BalatroSeedOracle.Services
             throw new ArgumentException($"Invalid date format: {dateString}");
         }
 
-        // Haskell StdGen implementation (old version)
-        private struct StdGen
+        // SplitMix-based StdGen (random >=1.2). Matches Haskell mkStdGen & uniformListR semantics for small Int ranges.
+        private readonly struct StdGen
         {
-            public int s1;
-            public int s2;
+            public readonly ulong Seed;
+            public readonly ulong Gamma;
+            private StdGen(ulong seed, ulong gamma) { Seed = seed; Gamma = gamma; }
 
-            public StdGen(int s1, int s2)
+            public static StdGen FromSeed(ulong rawSeed)
             {
-                this.s1 = s1;
-                this.s2 = s2;
-            }
-        }
-
-        // mkStdGen32 :: Int32 -> StdGen
-        private static StdGen MkStdGen32(int s)
-        {
-            // From old Haskell System.Random:
-            // mkStdGen32 s
-            //  | s < 0     = mkStdGen32 (-s)
-            //  | otherwise = StdGen (s1+1) (s2+1)
-            //       where
-            //         (q, s1) = s `divMod` 2147483562
-            //         s2      = q `mod` 2147483398
-
-            if (s < 0)
-                s = -s;
-
-            int q = Math.DivRem(s, 2147483562, out int s1);
-            int s2 = q % 2147483398;
-            if (s2 < 0)
-                s2 += 2147483398;
-
-            return new StdGen(s1 + 1, s2 + 1);
-        }
-
-        // randomR :: (Int, Int) -> StdGen -> (Int, StdGen)
-        private static (int, StdGen) RandomR(int lo, int hi, StdGen g)
-        {
-            if (lo > hi)
-            {
-                var (swapped, g2) = RandomR(hi, lo, g);
-                return (swapped, g2);
+                unchecked
+                {
+                    var seed = Mix64(rawSeed);
+                    var gamma = MixGamma(rawSeed + GoldenGamma);
+                    return new StdGen(seed, gamma);
+                }
             }
 
-            // For small ranges, we can use a simple approach
-            var (n, nextGen) = Next(g);
-
-            // Scale to range [lo, hi] using randomIvalInteger logic
-            int k = hi - lo + 1;
-            int b = 2147483561; // maxBound - 1
-            int q = b / k;
-            int r = b % k;
-
-            int x = n;
-            StdGen currentGen = nextGen;
-
-            // Rejection sampling to ensure uniform distribution
-            while (x > b - r)
+            private StdGen Step(out ulong word)
             {
-                var (next, nextG) = Next(currentGen);
-                x = next;
-                currentGen = nextG;
+                unchecked
+                {
+                    ulong newSeed = Seed + Gamma; // wrap-around
+                    word = Mix64(newSeed);
+                    return new StdGen(newSeed, Gamma);
+                }
             }
 
-            return (lo + (x % k), currentGen);
-        }
+            public StdGen UniformInclusive(int lo, int hi, out int value)
+            {
+                if (lo > hi)
+                {
+                    var g2 = UniformInclusive(hi, lo, out int swapped);
+                    value = swapped;
+                    return g2;
+                }
+                uint range = (uint)(hi - lo); // inclusive distance
+                if (range == 0)
+                {
+                    value = lo;
+                    return this;
+                }
+                // inclusive range => size = range + 1
+                ulong size = range + 1UL;
+                // mask with all bits set up to highest bit of (size-1)
+                ulong mask = size - 1;
+                // If size not power of two, extend mask to next power-of-two -1
+                mask |= mask >> 1;
+                mask |= mask >> 2;
+                mask |= mask >> 4;
+                mask |= mask >> 8;
+                mask |= mask >> 16;
+                mask |= mask >> 32;
 
-        // next :: StdGen -> (Int, StdGen)
-        private static (int, StdGen) Next(StdGen g)
-        {
-            // L'Ecuyer's algorithm from old Haskell System.Random
-            int s1 = g.s1;
-            int s2 = g.s2;
+                StdGen g = this;
+                while (true)
+                {
+                    g = g.Step(out ulong word);
+                    ulong candidate = word & mask;
+                    if (candidate < size)
+                    {
+                        value = lo + (int)candidate;
+                        return g;
+                    }
+                }
+            }
 
-            int k = s1 / 53668;
-            s1 = 40014 * (s1 - k * 53668) - k * 12211;
-            if (s1 < 0)
-                s1 += 2147483563;
+            private const ulong GoldenGamma = 0x9E3779B97F4A7C15UL;
 
-            k = s2 / 52774;
-            s2 = 40692 * (s2 - k * 52774) - k * 3791;
-            if (s2 < 0)
-                s2 += 2147483399;
+            private static ulong Mix64(ulong z)
+            {
+                unchecked
+                {
+                    z = (z ^ (z >> 33)) * 0xff51afd7ed558ccdUL;
+                    z = (z ^ (z >> 33)) * 0xc4ceb9fe1a85ec53UL;
+                    return z ^ (z >> 33);
+                }
+            }
 
-            int z = s1 - s2;
-            if (z < 1)
-                z += 2147483562;
+            private static ulong Mix64Variant13(ulong z)
+            {
+                unchecked
+                {
+                    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9UL;
+                    z = (z ^ (z >> 27)) * 0x94d049bb133111ebUL;
+                    return z ^ (z >> 31);
+                }
+            }
 
-            return (z, new StdGen(s1, s2));
+            private static int PopCount(ulong v)
+            {
+#if NET7_0_OR_GREATER
+                return System.Numerics.BitOperations.PopCount(v);
+#else
+                // Fallback popcount
+                int c = 0;
+                while (v != 0) { v &= v - 1; c++; }
+                return c;
+#endif
+            }
+
+            private static ulong MixGamma(ulong z)
+            {
+                unchecked
+                {
+                    ulong z1 = Mix64Variant13(z) | 1UL; // force odd
+                    int n = PopCount(z1 ^ (z1 >> 1));
+                    return (n >= 24) ? z1 : (z1 ^ 0xaaaaaaaaaaaaaaaaUL);
+                }
+            }
         }
     }
 }

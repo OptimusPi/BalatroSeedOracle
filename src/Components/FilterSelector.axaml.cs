@@ -11,6 +11,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
@@ -94,13 +95,13 @@ namespace BalatroSeedOracle.Components
                     
                 // Use simpler text for select button in search modal
                 if (_selectButton != null)
-                    _selectButton.Content = "Select Filter";
+                    _selectButton.Content = "Search Seeds using this Filter";
             }
             else
             {
                 // When create button is shown, use more descriptive text
                 if (_selectButton != null)
-                    _selectButton.Content = "Edit Selected Filter";
+                    _selectButton.Content = "Create a new COPY of this filter";
             }
         }
 
@@ -450,9 +451,66 @@ namespace BalatroSeedOracle.Components
         private IImage? GetItemImage(string value, string? type)
         {
             // Get image based on type
-            return type?.ToLower() switch
+            var lowerType = type?.ToLower();
+            
+            // Special handling for souljoker - create composite with card base and face overlay
+            if (lowerType == "souljoker")
             {
-                "souljoker" => _spriteService.GetJokerImage(value),
+                var cardBase = _spriteService.GetJokerImage(value);
+                var jokerFace = _spriteService.GetJokerSoulImage(value);
+                
+                if (cardBase != null && jokerFace != null)
+                {
+                    // Create a composite image with card base and face overlay
+                    var pixelSize = new PixelSize(UIConstants.JokerSpriteWidth, UIConstants.JokerSpriteHeight);
+                    var dpi = new Vector(96, 96);
+                    var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
+                    
+                    var canvas = new Canvas
+                    {
+                        Width = pixelSize.Width,
+                        Height = pixelSize.Height,
+                        Background = Brushes.Transparent,
+                    };
+                    
+                    // Add card base
+                    var cardImage = new Image
+                    {
+                        Source = cardBase,
+                        Width = pixelSize.Width,
+                        Height = pixelSize.Height,
+                        Stretch = Stretch.Fill,
+                    };
+                    canvas.Children.Add(cardImage);
+                    
+                    // Add face overlay
+                    var faceImage = new Image
+                    {
+                        Source = jokerFace,
+                        Width = pixelSize.Width,
+                        Height = pixelSize.Height,
+                        Stretch = Stretch.Fill,
+                    };
+                    canvas.Children.Add(faceImage);
+                    
+                    // Measure and arrange the canvas
+                    canvas.Measure(new Size(pixelSize.Width, pixelSize.Height));
+                    canvas.Arrange(new Rect(0, 0, pixelSize.Width, pixelSize.Height));
+                    canvas.UpdateLayout();
+                    
+                    // Render to bitmap
+                    renderBitmap.Render(canvas);
+                    return renderBitmap;
+                }
+                else if (cardBase != null)
+                {
+                    // Fallback to just the card if we can't get the face
+                    return cardBase;
+                }
+            }
+            
+            return lowerType switch
+            {
                 "joker" => _spriteService.GetJokerImage(value),
                 "voucher" => _spriteService.GetVoucherImage(value),
                 "tag" => _spriteService.GetTagImage(value),

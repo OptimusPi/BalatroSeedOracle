@@ -23,6 +23,7 @@
                 Content="Select this Deck" 
                 Classes="btn-blue" 
                 MinWidth="200"
+                MinHeight="50"
                 HorizontalAlignment="Center"
                 Click="OnSelectClick"/>
     </StackPanel>

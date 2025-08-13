@@ -462,7 +462,6 @@
     <!-- Notification badge text styling -->
     <Style Selector="Border.notification-badge TextBlock">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>

@@ -74,6 +74,9 @@ namespace BalatroSeedOracle.Views.Modals
 
         // Deck and Stake selector component
         private DeckAndStakeSelector? _deckAndStakeSelector;
+        
+        // Track if current search is in debug mode
+        private bool _isDebugMode = false;
 
         // New Search tab UI elements
         private TextBlock? _progressPercentText;
@@ -261,6 +264,7 @@ namespace BalatroSeedOracle.Views.Modals
                         StartBatch = resumeState.LastCompletedBatch + 1, // Resume from next batch
                         EndBatch = resumeState.EndBatch,
                         DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugSeed = (_debugCheckBox?.IsChecked ?? false) ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = resumeState.Deck,
                         Stake = resumeState.Stake
                     };
@@ -495,10 +499,22 @@ namespace BalatroSeedOracle.Views.Modals
         
         private async void OnFilterSelected(object? sender, string filterPath)
         {
-            // Prevent double loading
-            if (_isLoadingFilter || _currentFilterPath == filterPath)
+            // Prevent double loading while in progress
+            if (_isLoadingFilter)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Skipping duplicate filter load: {filterPath}");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Filter load already in progress");
+                return;
+            }
+            
+            // If same filter, just switch to Settings tab
+            if (_currentFilterPath == filterPath)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Filter already loaded, switching to Settings tab");
+                // Switch to Deck/Stake tab since filter is already loaded
+                if (_settingsTab != null)
+                {
+                    OnTabClick(_settingsTab, new RoutedEventArgs());
+                }
                 return;
             }
             
@@ -794,6 +810,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                     // Start the search directly with the config object
                     int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size
+                    _isDebugMode = _debugCheckBox?.IsChecked ?? false;
                     var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
@@ -801,7 +818,8 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = batchSize,
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
-                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugMode = _isDebugMode,
+                        DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -861,6 +879,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size (minimal=1, low=2, default=3, high=4)
+                    _isDebugMode = _debugCheckBox?.IsChecked ?? false;
                     var config = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
@@ -868,7 +887,8 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = batchSize,
                         StartBatch = _resumeFromBatch ?? 0,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
-                        DebugMode = _debugCheckBox?.IsChecked ?? false,
+                        DebugMode = _isDebugMode,
+                        DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
                         Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
                         Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
                     };
@@ -892,15 +912,18 @@ namespace BalatroSeedOracle.Views.Modals
                         BatchSize = config.BatchSize,
                         Deck = config.Deck,
                         Stake = config.Stake,
+                        EnableDebugOutput = config.DebugMode,
+                        DebugSeed = config.DebugSeed,
                     };
 
                     await _searchInstance.StartSearchAsync(searchCriteria);
                 }
                 else
                 {
-                    // Stop search - immediately disable button to prevent multiple clicks
+                    // Stop search - immediately update button to show stopping state
                     if (_cookButton != null)
                     {
+                        _cookButton.Content = "Stopping Search...";
                         _cookButton.IsEnabled = false;
                     }
                     
@@ -909,6 +932,9 @@ namespace BalatroSeedOracle.Views.Modals
                         $"STOP button clicked - _searchInstance is {(_searchInstance != null ? "not null" : "null")}"
                     );
                     AddToConsole("Stopping search...");
+                    
+                    // Force UI update to show the button change immediately
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, Avalonia.Threading.DispatcherPriority.Render);
 
                     // Clear any pending results
                     lock (_resultBatchLock)
@@ -976,11 +1002,14 @@ namespace BalatroSeedOracle.Views.Modals
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
+                
+                // Generate column headers from the filter config
+                GenerateTableHeadersFromConfig();
 
                 // Update cook button
                 if (_cookButton != null)
                 {
-                    _cookButton.Content = "Stop Jimbo!";
+                    _cookButton.Content = "STOP SEARCH";
                     // Just add the stop class, don't remove and re-add cook-button
                     _cookButton.Classes.Add("stop");
                 }
@@ -991,10 +1020,18 @@ namespace BalatroSeedOracle.Views.Modals
                     _resultsTab.IsEnabled = true;
                 }
 
-                // Load existing results from .duckdb file if available
-                AddToConsole("──────────────────────────────────");
-                AddToConsole("Checking for existing results...");
-                await LoadExistingResultsAsync();
+                // Load existing results from .duckdb file if available (skip in debug mode)
+                if (!_isDebugMode)
+                {
+                    AddToConsole("──────────────────────────────────");
+                    AddToConsole("Checking for existing results...");
+                    await LoadExistingResultsAsync();
+                }
+                else
+                {
+                    AddToConsole("──────────────────────────────────");
+                    AddToConsole("Debug mode: Skipping database check");
+                }
 
                 // Enable save widget button
                 if (_saveWidgetButton != null)
@@ -1022,7 +1059,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Only show finished message if we have results (not cancelled)
                     if (_searchResults.Count > 0)
                     {
-                        AddToConsole("Jimbo finished cooking!");
+                        AddToConsole("Search completed!");
                     }
                 }
                 catch (Exception ex)
@@ -1060,48 +1097,98 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
-        private void UpdateTallyHeaders()
+        private void GenerateTableHeadersFromConfig()
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"UpdateTallyHeaders called - Results count: {_searchResults.Count}");
+            if (_tallyHeadersPanel == null)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Cannot generate headers - missing panel");
+                return;
+            }
             
-            if (_tallyHeadersPanel == null || _searchResults.Count == 0)
-                return;
-                
-            // Check if we already have headers
-            if (_tallyHeadersPanel.Children.Count > 0)
+            // Clear existing headers
+            _tallyHeadersPanel.Children.Clear();
+            
+            // Try to load the config
+            Motely.Filters.OuijaConfig? config = null;
+            if (!string.IsNullOrEmpty(_currentFilterPath))
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Tally headers already exist, skipping");
+                try
+                {
+                    var json = System.IO.File.ReadAllText(_currentFilterPath);
+                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json);
+                }
+                catch (Exception ex)
+                {
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load config for headers: {ex.Message}");
+                }
+            }
+            
+            if (config == null)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No config available for headers");
                 return;
             }
-                
-            // Get the first result to determine headers
-            var firstResult = _searchResults.FirstOrDefault();
-            if (firstResult?.ItemLabels == null || firstResult.ItemLabels.Length == 0)
+            
+            var labels = new List<string>();
+            
+            // Add Must items
+            if (config.Must != null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No item labels in first result");
-                return;
+                foreach (var item in config.Must)
+                {
+                    // Generate label from value and edition
+                    var label = item.Value ?? item.Type ?? "Unknown";
+                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    {
+                        label = $"{label} {item.Edition}";
+                    }
+                    labels.Add(label);
+                }
             }
-                
-            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Adding {firstResult.ItemLabels.Length} tally headers");
-                
-            // Add headers for each tally score
-            foreach (var label in firstResult.ItemLabels)
+            
+            // Add Should items  
+            if (config.Should != null)
+            {
+                foreach (var item in config.Should)
+                {
+                    // Generate label from value and edition
+                    var label = item.Value ?? item.Type ?? "Unknown";
+                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    {
+                        label = $"{label} {item.Edition}";
+                    }
+                    labels.Add(label);
+                }
+            }
+            
+            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Generated {labels.Count} headers from config");
+            
+            // Add headers for each item
+            foreach (var label in labels)
             {
                 var header = new TextBlock
                 {
                     Text = label,
                     FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
-                    FontWeight = FontWeight.Bold,
                     FontSize = 12,
                     Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                    Width = 60,
+                    Width = 80,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(8, 4)
+                    Margin = new Thickness(4, 4),
+                    TextTrimming = TextTrimming.CharacterEllipsis
                 };
                 
                 _tallyHeadersPanel.Children.Add(header);
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Added header: {label}");
+            }
+        }
+        
+        private void UpdateTallyHeaders()
+        {
+            // Try to generate from config first
+            if (_tallyHeadersPanel != null && _tallyHeadersPanel.Children.Count == 0)
+            {
+                GenerateTableHeadersFromConfig();
             }
         }
         
@@ -1556,9 +1643,7 @@ namespace BalatroSeedOracle.Views.Modals
                             {
                                 Seed = result.Seed,
                                 Score = result.TotalScore,
-                                Details = "", // ScoreBreakdown removed
-                                TallyScores = result.Scores,
-                                ItemLabels = result.Labels
+                                TallyScores = result.Scores
                             }
                         );
                     }
@@ -1725,9 +1810,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 {
                                     Seed = result.Seed,
                                     Score = result.TotalScore,
-                                    Details = "", // ScoreBreakdown removed
-                                    TallyScores = result.Scores,
-                                    ItemLabels = result.Labels
+                                    TallyScores = result.Scores
                                 }
                             );
                         }
@@ -1746,8 +1829,7 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    AddToConsole("No existing results found in database.");
-                    AddToConsole("Start a new search to find seeds!");
+                    AddToConsole("No existing results in database, searching for new seeds...");
                 }
             }
             catch (Exception ex)
@@ -1972,6 +2054,7 @@ namespace BalatroSeedOracle.Views.Modals
         public ulong StartBatch { get; set; } = 0;
         public ulong EndBatch { get; set; } = 1_500_625UL;  // Default for batch size 4
         public bool DebugMode { get; set; } = false;
+        public string? DebugSeed { get; set; }
         public string? Deck { get; set; }
         public string? Stake { get; set; }
     }
@@ -2139,6 +2222,63 @@ namespace BalatroSeedOracle.Views.Modals
             if (_resultsSummary != null)
             {
                 _resultsSummary.Text = $"Showing {filteredResults.Count} of {_searchResults.Count} results";
+            }
+        }
+        
+        private void OnDebugSeedGotFocus(object? sender, Avalonia.Input.GotFocusEventArgs e)
+        {
+            // Select all text when the debug seed input gets focus
+            if (sender is TextBox textBox)
+            {
+                textBox.SelectAll();
+            }
+        }
+        
+        private void OnDebugSeedTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                // Only allow alphanumeric characters (A-Z, 1-9, no zeros)
+                var text = textBox.Text ?? "";
+                var filtered = new System.Text.StringBuilder();
+                
+                foreach (char c in text.ToUpper())
+                {
+                    if ((c >= 'A' && c <= 'Z') || (c >= '1' && c <= '9'))
+                    {
+                        filtered.Append(c);
+                    }
+                }
+                
+                var filteredText = filtered.ToString();
+                if (filteredText != text)
+                {
+                    var caretIndex = textBox.CaretIndex;
+                    textBox.Text = filteredText;
+                    textBox.CaretIndex = Math.Min(caretIndex, filteredText.Length);
+                }
+            }
+        }
+        
+        private void OnDebugModeChecked(object? sender, RoutedEventArgs e)
+        {
+            // Enable the debug seed input when debug mode is checked
+            var debugSeedInput = this.FindControl<TextBox>("DebugSeedInput");
+            if (debugSeedInput != null)
+            {
+                debugSeedInput.IsEnabled = true;
+                debugSeedInput.Focus();
+            }
+        }
+        
+        private void OnDebugModeUnchecked(object? sender, RoutedEventArgs e)
+        {
+            // Disable the debug seed input when debug mode is unchecked
+            var debugSeedInput = this.FindControl<TextBox>("DebugSeedInput");
+            if (debugSeedInput != null)
+            {
+                debugSeedInput.IsEnabled = false;
+                debugSeedInput.Text = "";
             }
         }
         

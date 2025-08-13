@@ -186,14 +186,13 @@
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- OPTIONS button equivalent - EDITOR (orange) -->
-                    <Button Classes="btn-orange"
+                    <!-- OPTIONS button equivalent - EDITOR (green) -->
+                    <Button Classes="btn-green"
                             Click="OnEditorClick"
                             MinHeight="50"
                             MinWidth="100">
-                        <TextBlock Text="EDIT FILTER"
-                                   FontSize="20" 
-                                   
+                        <TextBlock Text="NEW FILTER"
+                                   FontSize="20"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -210,8 +209,8 @@
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- COLLECTION button equivalent - ANALYZE (green) -->
-                    <Button Classes="btn-green"
+                    <!-- COLLECTION button equivalent - ANALYZE (purple) -->
+                    <Button Classes="btn-purple"
                             Click="OnAnalyzeClick"
                             MinHeight="64"
                             MinWidth="160">
@@ -222,16 +221,14 @@
                                    IsHitTestVisible="False"/>
                     </Button>
 
-                    <!-- MODS button equivalent - MORE (purple) -->
-                    <Button Classes="btn-purple"
+                    <!-- MODS button equivalent - MORE (orange) -->
+                    <Button Classes="btn-orange"
                             Click="OnToolClick"
                             MinHeight="64"
                             MinWidth="64">
                         <TextBlock Text="MORE" 
                                    FontSize="20" 
-                                   
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
+                                   FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
                         </StackPanel>
                     </Border>

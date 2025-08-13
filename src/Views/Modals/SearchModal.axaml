@@ -25,7 +25,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="44"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="140"/>
@@ -443,6 +443,32 @@
                                                         HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
+                                <!-- Debug seed input -->
+                                <StackPanel Orientation="Vertical" Margin="0,10,0,5">
+                                    <TextBlock Text="Debug Seed:"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,4"/>
+                                    <TextBox Name="DebugSeedInput"
+                                             Watermark="Enter seed..."
+                                             MaxLength="8"
+                                             Width="140"
+                                             Height="32"
+                                             HorizontalAlignment="Center"
+                                             FontFamily="{StaticResource BalatroFont}"
+                                             FontSize="14"
+                                             TextAlignment="Center"
+                                             Background="{StaticResource VeryDarkGrey}"
+                                             BorderBrush="{StaticResource DarkBorder}"
+                                             BorderThickness="1"
+                                             CornerRadius="4"
+                                             IsEnabled="False"
+                                             GotFocus="OnDebugSeedGotFocus"
+                                             TextChanged="OnDebugSeedTextChanged"/>
+                                </StackPanel>
+                                
                                 <!-- Debug checkbox -->
                                 <CheckBox Name="DebugCheckBox" 
                                           Content="Debug Mode"
@@ -450,7 +476,9 @@
                                           HorizontalAlignment="Center"
                                           FontFamily="{StaticResource BalatroFont}"
                                           FontSize="12"
-                                          Margin="0,10"/>
+                                          Margin="0,5,0,10"
+                                          Checked="OnDebugModeChecked"
+                                          Unchecked="OnDebugModeUnchecked"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -688,7 +716,6 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Seed" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontWeight="Bold"
                                                    FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
@@ -708,7 +735,6 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Total" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontWeight="Bold"
                                                    FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
@@ -729,7 +755,6 @@
                                            
                                 <TextBlock Grid.Column="3" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontWeight="Bold"
                                            FontSize="12"
                                            Foreground="{StaticResource Gold}"
                                            HorizontalAlignment="Center"

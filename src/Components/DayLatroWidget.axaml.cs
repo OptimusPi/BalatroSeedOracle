@@ -6,6 +6,9 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Views.Modals;
+using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Components
 {
@@ -17,7 +20,6 @@ namespace BalatroSeedOracle.Components
         private TextBlock? _seedText;
         private TextBlock? _minimizedSeedText;
         private Image? _ToolImage;
-        private TextBlock? _themeText;
         private TextBlock? _descriptionText;
         private TextBox? _scoreInput;
         private TextBlock? _topScorePlayer;
@@ -25,6 +27,8 @@ namespace BalatroSeedOracle.Components
 
         private string _todaySeed = "";
         private DateTime _lastCheckedDate;
+    private DaylatroHighScoreService _scoreService = DaylatroHighScoreService.Instance;
+    private UserProfileService _profileService = new UserProfileService();
 
         public DayLatroWidget()
         {
@@ -36,7 +40,6 @@ namespace BalatroSeedOracle.Components
             _seedText = this.FindControl<TextBlock>("SeedText");
             _minimizedSeedText = this.FindControl<TextBlock>("MinimizedSeedText");
             _ToolImage = this.FindControl<Image>("ToolImage");
-            _themeText = this.FindControl<TextBlock>("ThemeText");
             _descriptionText = this.FindControl<TextBlock>("DescriptionText");
             _scoreInput = this.FindControl<TextBox>("ScoreInput");
             _topScorePlayer = this.FindControl<TextBlock>("TopScorePlayer");
@@ -59,7 +62,7 @@ namespace BalatroSeedOracle.Components
 
             // Update UI
             if (_dateText != null)
-                _dateText.Text = $"Daily Challenge - {today:MMM dd, yyyy}";
+                _dateText.Text = $"Daylatro - {today:MMM dd, yyyy}";
 
             if (_seedText != null)
                 _seedText.Text = _todaySeed;
@@ -67,46 +70,14 @@ namespace BalatroSeedOracle.Components
             if (_minimizedSeedText != null)
                 _minimizedSeedText.Text = _todaySeed;
 
-            // Load theme based on seed (rotate through themes)
-            LoadThemeForSeed(_todaySeed);
-
             // Check if it's a new day
             if (_lastCheckedDate.Date != today)
             {
                 _lastCheckedDate = today;
                 ShowNewDayBadge();
             }
-        }
 
-        private void LoadThemeForSeed(string seed)
-        {
-            // Rotate through different themes based on seed
-            var themes = new[]
-            {
-                ("Wee Joker Fun Run", "Everybody loves Wee Joker!", "Wee Joker"),
-                ("Spectral Sprint", "Find a Spectral card before Ante 2 boss", "Soul"),
-                ("Voucher Victory", "Get 3 vouchers by Ante 4", "Overstock"),
-                ("Tag Team", "Use 5 different tags in one run", "Ethereal Tag"),
-                ("Boss Blitz", "Defeat Ante 8 boss with style", "The Manacle"),
-            };
-
-            // Use seed to pick theme
-            var index = Math.Abs(seed.GetHashCode()) % themes.Length;
-            var (theme, description, jokerName) = themes[index];
-
-            if (_themeText != null)
-                _themeText.Text = theme;
-
-            if (_descriptionText != null)
-                _descriptionText.Text = description;
-
-            // Load joker/item image
-            if (_ToolImage != null)
-            {
-                var spriteService = SpriteService.Instance;
-                // Use GetItemImage since some items like "Overstock" are vouchers, not jokers
-                _ToolImage.Source = spriteService.GetItemImage(jokerName);
-            }
+            RefreshTopScore();
         }
 
         private void ShowNewDayBadge()
@@ -144,30 +115,65 @@ namespace BalatroSeedOracle.Components
             if (string.IsNullOrWhiteSpace(_scoreInput?.Text))
                 return;
 
-            DebugLogger.Log(
-                "DayLatroWidget",
-                $"Submitted score: {_scoreInput.Text} for seed {_todaySeed}"
-            );
+            if (!long.TryParse(_scoreInput.Text.Replace(",", "").Trim(), out var score) || score < 0)
+            {
+                DebugLogger.Log("DayLatroWidget", $"Invalid score input: {_scoreInput.Text}");
+                return;
+            }
 
-            // TODO: Save score to database/file
-            // For now, just clear the input
+            var player = _profileService.GetAuthorName();
+            var entry = _scoreService.SubmitScore(_todaySeed, DateTime.UtcNow.Date, player, score);
+
+            DebugLogger.Log("DayLatroWidget", $"Submitted score {entry.Score} by {entry.Player} for seed {_todaySeed}");
             _scoreInput.Text = "";
+            RefreshTopScore();
         }
 
         private async void OnCopyChallengeClick(object? sender, RoutedEventArgs e)
         {
-            var theme = _themeText?.Text ?? "Daily Challenge";
-            var challengeUrl = $"https://balatrogenie.app/challenge/{_todaySeed}";
+            await ClipboardService.CopyToClipboardAsync(_todaySeed);
+        }
 
-            var message =
-                $"Today's Balatro Daily Challenge! "
-                + $"The seed is {_todaySeed}. "
-                + $"The theme is {theme}. "
-                + $"Can you beat the top score? Good luck!\n\n"
-                + $"Challenge link: {challengeUrl}";
+        private void RefreshTopScore()
+        {
+            var top = _scoreService.GetTopScore(_todaySeed);
+            if (top == null)
+            {
+                if (_topScorePlayer != null) _topScorePlayer.Text = "--";
+                if (_topScoreValue != null) _topScoreValue.Text = "--";
+            }
+            else
+            {
+                if (_topScorePlayer != null) _topScorePlayer.Text = top.Player;
+                if (_topScoreValue != null) _topScoreValue.Text = string.Format("{0:N0} Chips", top.Score);
+            }
+        }
 
-            await ClipboardService.CopyToClipboardAsync(message);
-            DebugLogger.Log("DayLatroWidget", "Copied daily challenge to clipboard");
+        private void OnAnalyzeSeedClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Walk up visual tree to find main menu to show modal
+                var parent = this.Parent;
+                BalatroMainMenu? mainMenu = null;
+                while (parent != null && mainMenu == null)
+                {
+                    if (parent is BalatroMainMenu mm) mainMenu = mm;
+                    parent = (parent as Control)?.Parent;
+                }
+
+                var analyzeModal = new AnalyzeModal();
+                analyzeModal.SetSeedAndAnalyze(_todaySeed);
+
+                var stdModal = new StandardModal("ANALYZE");
+                stdModal.SetContent(analyzeModal);
+                stdModal.BackClicked += (s, _) => mainMenu?.HideModalContent();
+                mainMenu?.ShowModalContent(stdModal, "SEED ANALYZER");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("DayLatroWidget", $"Error opening analyzer: {ex.Message}");
+            }
         }
     }
 }

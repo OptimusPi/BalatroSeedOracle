@@ -17,4 +17,5 @@ public class SearchCriteria
     public string? Deck { get; set; } = "Red";
     public string? Stake { get; set; } = "White";
     public bool EnableDebugOutput { get; set; } = false;
+    public string? DebugSeed { get; set; }
 }

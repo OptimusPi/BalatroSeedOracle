@@ -183,16 +183,16 @@ public class MotelySearchService : IDisposable
                         Result = new Views.Modals.SearchResult
                         {
                             Seed = result.Seed,
-                            Score = result.TotalScore,
-                            Details = "", // ScoreBreakdown removed
+                            Score = result.TotalScore
                         },
                     }
                 );
 
-                ConsoleOutput?.Invoke(
-                    this,
-                    $"Found seed: {result.Seed} (Score: {result.TotalScore})"
-                );
+                // Don't spam console with every seed - the UI shows them already
+                // ConsoleOutput?.Invoke(
+                //     this,
+                //     $"Found seed: {result.Seed} (Score: {result.TotalScore})"
+                // );
 
                 // Report new result through progress
                 progress?.Report(
@@ -364,15 +364,16 @@ public class MotelySearchService : IDisposable
                         {
                             Seed = result.Seed,
                             Score = result.TotalScore,
-                            Details = "", // ScoreBreakdown removed
+                            TallyScores = result.Scores
                         },
                     }
                 );
 
-                ConsoleOutput?.Invoke(
-                    this,
-                    $"Found seed: {result.Seed} (Score: {result.TotalScore})"
-                );
+                // Don't spam console with every seed - the UI shows them already
+                // ConsoleOutput?.Invoke(
+                //     this,
+                //     $"Found seed: {result.Seed} (Score: {result.TotalScore})"
+                // );
 
                 // Report new result through progress
                 progress?.Report(
@@ -635,7 +636,8 @@ public class MotelySearchService : IDisposable
                 .WithBatchCharacterCount(batchSize)
                 .WithStartBatchIndex(criteria.StartBatch)
                 .WithSequentialSearch()
-                .WithProgressCallback(progressCallback);
+                .WithProgressCallback(progressCallback)
+                .WithConsoleOutput(false); // Disable console output since we use event handlers
 
             // Set end batch based on criteria or use calculated max
             ulong effectiveEndBatch = (ulong)criteria.EndBatch;

@@ -429,6 +429,7 @@ namespace BalatroSeedOracle.Controls
 
         private CheckBox CreateSourceCheckBox(string displayName, string sourceKey)
         {
+            // Default to checked for initial state (will be updated by LoadConfiguration if needed)
             var checkbox = new CheckBox { IsChecked = true };
 
             var border = new Border
@@ -456,6 +457,9 @@ namespace BalatroSeedOracle.Controls
             };
 
             checkbox.Content = border;
+            
+            // Set initial visual state (checked by default)
+            UpdateSourceVisual(border, true);
 
             checkbox.Click += (s, e) =>
             {
@@ -622,6 +626,26 @@ namespace BalatroSeedOracle.Controls
                     _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
                     _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, hasShopSlots);
                 }
+                
+                // Update visuals for source checkboxes
+                if (_sourceTag?.Content is Border tagBorder)
+                {
+                    UpdateSourceVisual(tagBorder, _sourceTag.IsChecked == true);
+                }
+                if (_sourceBooster?.Content is Border boosterBorder)
+                {
+                    UpdateSourceVisual(boosterBorder, _sourceBooster.IsChecked == true);
+                }
+                if (_sourceShop?.Content is Border shopBorder)
+                {
+                    UpdateSourceVisual(shopBorder, _sourceShop.IsChecked == true);
+                }
+            }
+            else
+            {
+                // No sources specified in config - this means it's a new item
+                // Default to having all sources enabled (as they are checked by default)
+                // The visuals should already be correct from initialization
             }
         }
 

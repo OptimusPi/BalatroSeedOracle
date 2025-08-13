@@ -49,8 +49,7 @@
                                         <TextBlock Text="{Binding Name}"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="20"
-                                                   Foreground="{StaticResource White}"
-                                                   FontWeight="Bold"/>
+                                                   Foreground="{StaticResource White}"/>
                                         <TextBlock Text="{Binding Role}"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="16"

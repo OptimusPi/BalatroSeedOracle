@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> tagPositions = null!;
         private Dictionary<string, SpritePosition> tarotPositions = null!;
         private Dictionary<string, SpritePosition> spectralPositions = null!;
+        private Dictionary<string, SpritePosition> planetPositions = null!;
         private Dictionary<string, SpritePosition> voucherPositions = null!;
         private Dictionary<string, SpritePosition> uiAssetPositions = null!;
         private Dictionary<string, SpritePosition> deckPositions = null!;
@@ -68,6 +69,9 @@ namespace BalatroSeedOracle.Services
                 // Load spectral positions from json
                 // Load spectral positions from json (they're in the tarots sprite sheet)
                 spectralPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/spectrals.json");
+
+                // Load planet positions from json (they're also in the tarots sprite sheet)
+                planetPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/planets.json");
 
                 // Load voucher positions from json
                 voucherPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json");
@@ -164,6 +168,7 @@ namespace BalatroSeedOracle.Services
                 tagPositions ??= new Dictionary<string, SpritePosition>();
                 tarotPositions ??= new Dictionary<string, SpritePosition>();
                 spectralPositions ??= new Dictionary<string, SpritePosition>();
+                planetPositions ??= new Dictionary<string, SpritePosition>();
                 voucherPositions ??= new Dictionary<string, SpritePosition>();
                 uiAssetPositions ??= new Dictionary<string, SpritePosition>();
                 deckPositions ??= new Dictionary<string, SpritePosition>();
@@ -404,6 +409,24 @@ namespace BalatroSeedOracle.Services
             );
         }
 
+        public IImage? GetPlanetCardImage(
+            string name,
+            int spriteWidth = UIConstants.TarotSpriteWidth,
+            int spriteHeight = UIConstants.TarotSpriteHeight
+        )
+        {
+            ArgumentNullException.ThrowIfNull(name);
+            // Planet cards are in the tarots sprite sheet
+            return GetSpriteImage(
+                name,
+                planetPositions,
+                tarotSheet,
+                spriteWidth,
+                spriteHeight,
+                "planet"
+            );
+        }
+
         public IImage? GetVoucherImage(
             string name,
             int spriteWidth = UIConstants.VoucherSpriteWidth,
@@ -440,6 +463,7 @@ namespace BalatroSeedOracle.Services
                     "tag" or "tags" => GetTagImage(name),
                     "tarot" or "tarots" => GetTarotImage(name),
                     "spectral" or "spectrals" => GetSpectralImage(name),
+                    "planet" or "planets" => GetPlanetCardImage(name),
                     "voucher" or "vouchers" => GetVoucherImage(name),
                     "boss" or "bosses" => GetBossImage(name),
                     "blind" or "blinds" => GetBlindImage(name),
@@ -477,6 +501,12 @@ namespace BalatroSeedOracle.Services
             if (spectralPositions.ContainsKey(normalizedName))
             {
                 return GetSpectralImage(name);
+            }
+
+            // Check planets
+            if (planetPositions.ContainsKey(normalizedName))
+            {
+                return GetPlanetCardImage(name);
             }
 
             // Check vouchers
