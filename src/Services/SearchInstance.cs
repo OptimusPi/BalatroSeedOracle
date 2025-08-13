@@ -681,7 +681,6 @@ namespace BalatroSeedOracle.Services
                 _isAutoCutoffEnabled = criteria.MinScore == 0;
                 _currentCutoff = _isAutoCutoffEnabled ? 1 : criteria.MinScore; // Start at 1 for auto
                 filterDesc.Cutoff = _currentCutoff;
-                filterDesc.AutoCutoff = _isAutoCutoffEnabled;
                 
                 if (_isAutoCutoffEnabled)
                 {

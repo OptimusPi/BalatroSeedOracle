@@ -636,8 +636,7 @@ public class MotelySearchService : IDisposable
                 .WithBatchCharacterCount(batchSize)
                 .WithStartBatchIndex(criteria.StartBatch)
                 .WithSequentialSearch()
-                .WithProgressCallback(progressCallback)
-                .WithConsoleOutput(false); // Disable console output since we use event handlers
+                .WithProgressCallback(progressCallback);
 
             // Set end batch based on criteria or use calculated max
             ulong effectiveEndBatch = (ulong)criteria.EndBatch;
