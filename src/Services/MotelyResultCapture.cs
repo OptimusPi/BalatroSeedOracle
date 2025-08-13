@@ -96,8 +96,17 @@ namespace BalatroSeedOracle.Services
 
                         DebugLogger.Log(
                             "MotelyResultCapture",
-                            $"Result for {result.Seed}: Scores={result.ScoreWants?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
+                            $"Result for {result.Seed}: ScoreWants={result.ScoreWants?.Length ?? 0}, Scores={searchResult.Scores?.Length ?? 0}, Labels={searchResult.Labels?.Length ?? 0}"
                         );
+                        
+                        // Extra debug for off-by-one investigation
+                        if (result.ScoreWants != null)
+                        {
+                            DebugLogger.Log(
+                                "MotelyResultCapture",
+                                $"ScoreWants values: [{string.Join(", ", result.ScoreWants)}]"
+                            );
+                        }
                         if (searchResult.Labels != null && searchResult.Labels.Length > 0)
                         {
                             DebugLogger.Log(

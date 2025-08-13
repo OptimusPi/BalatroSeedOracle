@@ -80,6 +80,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _totalSeedsText;
         private TextBlock? _timeElapsedText;
         private TextBlock? _resultsFoundText;
+        private TextBlock? _rarityText;
         private TextBlock? _speedText;
         private TextBlock? _speedValueText;
         private TextBlock? _currentSpeedText;
@@ -252,23 +253,14 @@ namespace BalatroSeedOracle.Views.Modals
                 
                 if (_searchInstance == null) return;
                 
-                // Load the config
-                Motely.Filters.OuijaConfig? config = null;
-                
-                if (resumeState.IsDirectConfig && !string.IsNullOrEmpty(resumeState.ConfigJson))
+                // Load the config from file
+                if (!string.IsNullOrEmpty(resumeState.ConfigPath))
                 {
-                    // Deserialize the saved config
-                    config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(resumeState.ConfigJson);
-                    _currentFilterPath = "Direct Config";
-                }
-                else if (!string.IsNullOrEmpty(resumeState.ConfigPath))
-                {
-                    // Load from file
                     _currentFilterPath = resumeState.ConfigPath;
                     await LoadFilterAsync(resumeState.ConfigPath);
                 }
                 
-                if (config != null || !string.IsNullOrEmpty(_currentFilterPath))
+                if (!string.IsNullOrEmpty(_currentFilterPath))
                 {
                     // Set UI values from saved state
                     if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
@@ -310,15 +302,8 @@ namespace BalatroSeedOracle.Views.Modals
                         _cookButton.IsEnabled = true;
                     }
                     
-                    if (config != null)
-                    {
-                        // Direct config
-                        await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
-                    }
-                    else
-                    {
-                        // File-based config
-                        var searchCriteria = new SearchCriteria
+                    // Always use file-based config now
+                    var searchCriteria = new SearchCriteria
                         {
                             ConfigPath = _currentFilterPath,
                             ThreadCount = searchConfig.ThreadCount,
@@ -332,7 +317,6 @@ namespace BalatroSeedOracle.Views.Modals
                         };
                         
                         await _searchInstance.StartSearchAsync(searchCriteria);
-                    }
                     
                     AddToConsole($"Search resumed successfully from batch {resumeState.LastCompletedBatch + 1}");
                 }
@@ -467,6 +451,7 @@ namespace BalatroSeedOracle.Views.Modals
             _totalSeedsText = this.FindControl<TextBlock>("TotalSeedsText");
             _timeElapsedText = this.FindControl<TextBlock>("TimeElapsedText");
             _resultsFoundText = this.FindControl<TextBlock>("ResultsFoundText");
+            _rarityText = this.FindControl<TextBlock>("RarityText");
             _speedText = this.FindControl<TextBlock>("SpeedText");
             _speedValueText = this.FindControl<TextBlock>("SpeedValueText");
             _currentSpeedText = this.FindControl<TextBlock>("CurrentSpeedText");
@@ -563,6 +548,35 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnDeckSelected(object? sender, EventArgs e)
         {
             // Automatically advance to the Search tab when deck is selected
+            if (_searchTab != null)
+            {
+                OnTabClick(_searchTab, new RoutedEventArgs());
+            }
+        }
+        
+        /// <summary>
+        /// Go directly to the Search tab with default Red deck and White stake
+        /// </summary>
+        public void GoToSearchTab()
+        {
+            // Set defaults: Red deck, White stake
+            if (_deckAndStakeSelector != null)
+            {
+                _deckAndStakeSelector.SetDeck("Red");
+                _deckAndStakeSelector.SetStake("White");
+            }
+            
+            // IMPORTANT: Set MinScore to 1 to DISABLE auto-cutoff
+            // Auto-cutoff is only enabled when MinScore = 0
+            if (_minScoreSpinner != null)
+            {
+                _minScoreSpinner.Value = 1;
+            }
+            
+            // Enable tabs since we have a config loaded
+            UpdateTabStates(true);
+            
+            // Switch directly to the Search tab
             if (_searchTab != null)
             {
                 OnTabClick(_searchTab, new RoutedEventArgs());
@@ -966,6 +980,13 @@ namespace BalatroSeedOracle.Views.Modals
                     AddToConsole("Error: No filter loaded. Please select a filter first.");
                     return;
                 }
+                
+                // Check if filter file exists
+                if (!System.IO.File.Exists(_currentFilterPath))
+                {
+                    AddToConsole($"Error: Filter file not found: {_currentFilterPath}");
+                    return;
+                }
 
                 // Create a new search instance if we don't have one
                 if (string.IsNullOrEmpty(_currentSearchId))
@@ -1274,22 +1295,8 @@ namespace BalatroSeedOracle.Views.Modals
             
             var labels = new List<string>();
             
-            // Add Must items
-            if (config.Must != null)
-            {
-                foreach (var item in config.Must)
-                {
-                    // Generate label from value and edition
-                    var label = item.Value ?? item.Type ?? "Unknown";
-                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
-                    {
-                        label = $"{label} {item.Edition}";
-                    }
-                    labels.Add(label);
-                }
-            }
-            
-            // Add Should items  
+            // Only add Should items - Must items don't have individual scores
+            // (they're required so they always pass, only Should items have tally scores)
             if (config.Should != null)
             {
                 foreach (var item in config.Should)
@@ -1307,22 +1314,57 @@ namespace BalatroSeedOracle.Views.Modals
             BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Generated {labels.Count} headers from config");
             
             // Add headers for each item
+            int tallyIndex = 0;
             foreach (var label in labels)
             {
-                var header = new TextBlock
+                var button = new Button
+                {
+                    Width = 60,
+                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Padding = new Thickness(0),
+                    Tag = tallyIndex // Store the index for sorting
+                };
+                button.Classes.Add("header-button");
+                
+                var stackPanel = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                
+                var headerText = new TextBlock
                 {
                     Text = label,
                     FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                     FontSize = 12,
                     Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                    Width = 60,
-                    HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(8, 4),
                     TextTrimming = TextTrimming.CharacterEllipsis
                 };
                 
-                _tallyHeadersPanel.Children.Add(header);
+                var sortIndicator = new TextBlock
+                {
+                    Text = " ▼",
+                    FontSize = 10,
+                    Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsVisible = false,
+                    Name = $"TallySort{tallyIndex}"
+                };
+                
+                stackPanel.Children.Add(headerText);
+                stackPanel.Children.Add(sortIndicator);
+                
+                button.Content = stackPanel;
+                
+                // Capture tallyIndex by value to avoid closure issue
+                int currentIndex = tallyIndex;
+                button.Click += (s, e) => OnSortByTally(currentIndex);
+                
+                _tallyHeadersPanel.Children.Add(button);
+                tallyIndex++;
             }
         }
         
@@ -1387,6 +1429,13 @@ namespace BalatroSeedOracle.Views.Modals
                 if (_resultsFoundText != null)
                 {
                     _resultsFoundText.Text = _newResultsCount.ToString();
+                }
+                
+                // Update rarity calculation
+                if (_rarityText != null && _totalSeeds > 0)
+                {
+                    double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                    _rarityText.Text = $"{rarity:F6}%";
                 }
 
                 // Update time elapsed
@@ -1475,11 +1524,7 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchResults.Add(result);
                 }
                 
-                // Show all seeds with scores
-                foreach (var result in resultsToAdd)
-                {
-                    AddToConsole($"🎉 {result.Seed} - Score: {result.Score:0}");
-                }
+                // Seeds are already shown via Motely's console output - don't duplicate them
 
                 // Update results summary
                 if (_resultsSummary != null)
@@ -1527,6 +1572,23 @@ namespace BalatroSeedOracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 AddToConsole(line);
+                
+                // Check for auto-cutoff message and update spinner
+                // Format: "⚡ Auto-cutoff: Increased to {number} (hit rate was {percentage})"
+                if (line.Contains("Auto-cutoff: Increased to"))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(line, @"Increased to (\d+)");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int newCutoff))
+                    {
+                        // Update the min score spinner to reflect the new cutoff
+                        if (_minScoreSpinner != null)
+                        {
+                            _minScoreSpinner.Value = newCutoff;
+                            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
+                                $"Updated min score spinner to {newCutoff} due to auto-cutoff");
+                        }
+                    }
+                }
             });
         }
         
@@ -2116,6 +2178,10 @@ namespace BalatroSeedOracle.Views.Modals
             SortResults("score");
         }
         
+        private void OnSortByTally(int tallyIndex)
+        {
+            SortResults($"tally{tallyIndex}");
+        }
         
         private void SortResults(string column)
         {
@@ -2134,16 +2200,35 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateSortIndicators();
             
             // Sort the results
-            var sorted = column switch
+            List<SearchResult> sorted;
+            
+            if (column.StartsWith("tally"))
             {
-                "seed" => _sortAscending 
-                    ? _searchResults.OrderBy(r => r.Seed).ToList()
-                    : _searchResults.OrderByDescending(r => r.Seed).ToList(),
-                "score" => _sortAscending
-                    ? _searchResults.OrderBy(r => r.Score).ToList()
-                    : _searchResults.OrderByDescending(r => r.Score).ToList(),
-                _ => _searchResults.ToList()
-            };
+                // Extract tally index from column name (e.g., "tally0" -> 0)
+                if (int.TryParse(column.Substring(5), out int tallyIndex))
+                {
+                    sorted = _sortAscending
+                        ? _searchResults.OrderBy(r => r.TallyScores != null && tallyIndex < r.TallyScores.Length ? r.TallyScores[tallyIndex] : 0).ToList()
+                        : _searchResults.OrderByDescending(r => r.TallyScores != null && tallyIndex < r.TallyScores.Length ? r.TallyScores[tallyIndex] : 0).ToList();
+                }
+                else
+                {
+                    sorted = _searchResults.ToList();
+                }
+            }
+            else
+            {
+                sorted = column switch
+                {
+                    "seed" => _sortAscending 
+                        ? _searchResults.OrderBy(r => r.Seed).ToList()
+                        : _searchResults.OrderByDescending(r => r.Seed).ToList(),
+                    "score" => _sortAscending
+                        ? _searchResults.OrderBy(r => r.Score).ToList()
+                        : _searchResults.OrderByDescending(r => r.Score).ToList(),
+                    _ => _searchResults.ToList()
+                };
+            }
             
             // Clear and repopulate
             _searchResults.Clear();
@@ -2162,18 +2247,55 @@ namespace BalatroSeedOracle.Views.Modals
             if (_seedSortIndicator != null) _seedSortIndicator.IsVisible = false;
             if (_scoreSortIndicator != null) _scoreSortIndicator.IsVisible = false;
             
-            // Show and update the current one
-            var indicator = _currentSortColumn switch
+            // Hide all tally indicators
+            if (_tallyHeadersPanel != null)
             {
-                "seed" => _seedSortIndicator,
-                "score" => _scoreSortIndicator,
-                _ => null
-            };
+                foreach (var child in _tallyHeadersPanel.Children)
+                {
+                    if (child is Button button && button.Content is StackPanel stack)
+                    {
+                        // Find the sort indicator (second child)
+                        if (stack.Children.Count > 1 && stack.Children[1] is TextBlock sortIndicator)
+                        {
+                            sortIndicator.IsVisible = false;
+                        }
+                    }
+                }
+            }
             
-            if (indicator != null)
+            // Show and update the current one
+            if (_currentSortColumn.StartsWith("tally"))
             {
-                indicator.IsVisible = true;
-                indicator.Text = _sortAscending ? " ▲" : " ▼";
+                // Extract tally index and show that indicator
+                if (int.TryParse(_currentSortColumn.Substring(5), out int tallyIndex))
+                {
+                    if (_tallyHeadersPanel != null && tallyIndex < _tallyHeadersPanel.Children.Count)
+                    {
+                        if (_tallyHeadersPanel.Children[tallyIndex] is Button button && button.Content is StackPanel stack)
+                        {
+                            if (stack.Children.Count > 1 && stack.Children[1] is TextBlock sortIndicator)
+                            {
+                                sortIndicator.IsVisible = true;
+                                sortIndicator.Text = _sortAscending ? " ▲" : " ▼";
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var indicator = _currentSortColumn switch
+                {
+                    "seed" => _seedSortIndicator,
+                    "score" => _scoreSortIndicator,
+                    _ => null
+                };
+                
+                if (indicator != null)
+                {
+                    indicator.IsVisible = true;
+                    indicator.Text = _sortAscending ? " ▲" : " ▼";
+                }
             }
         }
         

@@ -94,7 +94,6 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _statusText;
         private string? _currentFilePath;
         private bool _isDragging = false;
-        private bool _isDraggingSet;
 
         private FavoritesService.JokerSet? _draggingSet = null;
 
@@ -432,25 +431,35 @@ namespace BalatroSeedOracle.Views.Modals
         
         private void OnSearchForSeedsClick(object? sender, RoutedEventArgs e)
         {
-            var searchButton = sender as Button;
-            if (searchButton?.Tag is string filterPath)
+            // Get the main window to find BalatroMainMenu
+            var mainWindow = TopLevel.GetTopLevel(this) as Window;
+            if (mainWindow?.Content is Grid grid)
             {
-                // Get the main window to find BalatroMainMenu
-                var mainWindow = TopLevel.GetTopLevel(this) as Window;
-                if (mainWindow?.Content is Grid grid)
+                var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
+                if (mainMenu != null)
                 {
-                    var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
-                    if (mainMenu != null)
+                    // Build the config from current selections
+                    var config = BuildOuijaConfigFromSelections();
+                    
+                    // Close this modal first
+                    mainMenu.HideModalContent();
+                    
+                    // Open the search modal with the config and go directly to search tab
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        // Close this modal first
-                        mainMenu.HideModalContent();
+                        var searchModal = mainMenu.ShowSearchModalWithConfig(config);
                         
-                        // Open the search modal with the saved filter after a small delay to ensure the previous modal is closed
+                        // The modal needs a moment to initialize before we can switch tabs
                         Dispatcher.UIThread.Post(() =>
                         {
-                            mainMenu.ShowSearchModal(filterPath);
+                            // Find the SearchModal content within the StandardModal
+                            if (searchModal?.Content is SearchModal searchContent)
+                            {
+                                // Go directly to the Search tab with default Red deck, White stake
+                                searchContent.GoToSearchTab();
+                            }
                         }, DispatcherPriority.Background);
-                    }
+                    }, DispatcherPriority.Background);
                 }
             }
         }
@@ -837,14 +846,6 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnNeedsDragOver(object? sender, DragEventArgs e)
         {
-            // Check if we're dragging a set - if so, reject this zone
-            if (_isDraggingSet)
-            {
-                e.DragEffects = DragDropEffects.None;
-                e.Handled = true;
-                return;
-            }
-            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -883,14 +884,6 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnWantsDragOver(object? sender, DragEventArgs e)
         {
-            // Check if we're dragging a set - if so, reject this zone
-            if (_isDraggingSet)
-            {
-                e.DragEffects = DragDropEffects.None;
-                e.Handled = true;
-                return;
-            }
-            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;
@@ -1729,15 +1722,20 @@ namespace BalatroSeedOracle.Views.Modals
             var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
             if (textEditor != null)
             {
-                ValidateJsonSyntaxForAvaloniaEdit(textEditor);
-                return true; // We don't know the result from the validation
+                return ValidateJsonSyntaxForAvaloniaEdit(textEditor);
+            }
+
+            // Find the JsonEditor if named differently
+            textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
+            if (textEditor != null)
+            {
+                return ValidateJsonSyntaxForAvaloniaEdit(textEditor);
             }
 
             // Fallback to the old TextBox if AvaloniaEdit is not found
             if (_jsonTextBox != null)
             {
-                ValidateJsonSyntaxForTextBox(_jsonTextBox);
-                return true; // We don't know the result from the validation
+                return ValidateJsonSyntaxForTextBox(_jsonTextBox);
             }
 
             return false;
@@ -1877,6 +1875,11 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        private void OnSaveJsonClick(object? sender, RoutedEventArgs e)
+        {
+            SaveConfig();
+        }
+        
         private async void SaveConfig()
         {
             if (!ValidateJsonSyntax())
@@ -2720,7 +2723,6 @@ namespace BalatroSeedOracle.Views.Modals
                         e.Handled = true;
 
                         // Track that we're dragging a set
-                        _isDraggingSet = true;
                         _draggingSet = set;
                         
                         // DON'T merge drop zones - keep them separate so user can choose
@@ -2734,7 +2736,6 @@ namespace BalatroSeedOracle.Views.Modals
                         await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy);
                         
                         // Reset drag state
-                        _isDraggingSet = false;
                         _draggingSet = null;
                         // RestoreNormalDropZones();
                     }
@@ -2774,6 +2775,7 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                         }
                     }
+                    UpdateDropZoneVisibility();  // Update the visual!
                     RefreshItemPalette();
                     UpdatePersistentFavorites();
                 };
@@ -3195,11 +3197,11 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateSelectedItemsPanel("MustNotPanel", _selectedMustNot);
         }
 
-        private void ValidateJsonSyntaxForTextBox(TextBox textBox)
+        private bool ValidateJsonSyntaxForTextBox(TextBox textBox)
         {
             if (textBox == null)
             {
-                return;
+                return false;
             }
 
             try
@@ -3208,28 +3210,31 @@ namespace BalatroSeedOracle.Views.Modals
                 if (string.IsNullOrEmpty(jsonText))
                 {
                     UpdateStatus("Empty JSON document", isError: true);
-                    return;
+                    return false;
                 }
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
 
                 UpdateStatus("✓ Valid filter config");
+                return true;
             }
             catch (JsonException ex)
             {
                 UpdateStatus($"❌ JSON Error: {ex.Message}", isError: true);
+                return false;
             }
             catch (Exception ex)
             {
                 UpdateStatus($"❌ Validation error: {ex.Message}", isError: true);
+                return false;
             }
         }
 
-        private void ValidateJsonSyntaxForAvaloniaEdit(AvaloniaEdit.TextEditor textEditor)
+        private bool ValidateJsonSyntaxForAvaloniaEdit(AvaloniaEdit.TextEditor textEditor)
         {
             if (textEditor == null)
             {
-                return;
+                return false;
             }
 
             try
@@ -3238,7 +3243,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (string.IsNullOrEmpty(jsonText))
                 {
                     UpdateStatus("Empty JSON document", isError: true);
-                    return;
+                    return false;
                 }
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
@@ -3256,14 +3261,17 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     UpdateStatus("✓ Valid JSON");
                 }
+                return true;
             }
             catch (JsonException ex)
             {
                 UpdateStatus($"❌ JSON Error: {ex.Message}", isError: true);
+                return false;
             }
             catch (Exception ex)
             {
                 UpdateStatus($"❌ Validation error: {ex.Message}", isError: true);
+                return false;
             }
         }
 
@@ -5904,6 +5912,11 @@ namespace BalatroSeedOracle.Views.Modals
                 case "souljokers":
                     filterItem.Type = "souljoker";
                     filterItem.Value = itemName;
+                    // Soul jokers cannot appear in shop, only from The Soul card
+                    if (filterItem.Sources != null)
+                    {
+                        filterItem.Sources.ShopSlots = Array.Empty<int>();
+                    }
                     // Soul jokers can have editions
                     if (config.Edition != null && config.Edition != "none")
                     {
@@ -5912,16 +5925,40 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
                     
                 case "jokers":
-                    // Check if it's a legendary joker
-                    if (IsLegendaryJoker(itemName))
+                    // Check if it's a legendary joker or "any legendary"
+                    if (IsLegendaryJoker(itemName) || itemName.ToLower() == "anylegendary")
                     {
                         filterItem.Type = "souljoker";
+                        // Handle "anylegendary" as a special case
+                        if (itemName.ToLower() == "anylegendary")
+                        {
+                            filterItem.Value = "any";
+                        }
+                        else
+                        {
+                            filterItem.Value = itemName;
+                        }
+                        // Soul jokers cannot appear in shop, only from The Soul card
+                        if (filterItem.Sources != null)
+                        {
+                            filterItem.Sources.ShopSlots = Array.Empty<int>();
+                        }
+                    }
+                    else if (itemName.ToLower() == "anyrare" || 
+                             itemName.ToLower() == "anyuncommon" || 
+                             itemName.ToLower() == "anycommon")
+                    {
+                        // For other "any" rarities, just use joker type with "any" value
+                        // The search engine will handle the rarity filtering based on context
+                        filterItem.Type = "joker";
+                        filterItem.Value = "any";
+                        // Note: We could add rarity metadata here if needed in the future
                     }
                     else
                     {
                         filterItem.Type = "joker";
+                        filterItem.Value = itemName;
                     }
-                    filterItem.Value = itemName;
                     if (config.Edition != null && config.Edition != "none")
                     {
                         filterItem.Edition = config.Edition.ToString();
@@ -5929,12 +5966,12 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case "tarots":
-                    filterItem.Type = "tarot";
+                    filterItem.Type = "tarotcard";
                     filterItem.Value = itemName;
                     break;
 
                 case "spectrals":
-                    filterItem.Type = "spectral";
+                    filterItem.Type = "spectralcard";
                     filterItem.Value = itemName;
                     break;
 
@@ -5944,7 +5981,9 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case "tags":
-                    filterItem.Type = "tag";
+                    // Tags can be small blind or big blind - default to small blind
+                    // TODO: Allow user to specify which type of tag
+                    filterItem.Type = "smallblindtag";
                     filterItem.Value = itemName;
                     break;
 
@@ -5954,7 +5993,7 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case "planets":
-                    filterItem.Type = "planet";
+                    filterItem.Type = "planetcard";
                     filterItem.Value = itemName;
                     break;
 
@@ -6374,14 +6413,6 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnMustNotDragOver(object? sender, DragEventArgs e)
         {
-            // Check if we're dragging a set - if so, reject this zone
-            if (_isDraggingSet)
-            {
-                e.DragEffects = DragDropEffects.None;
-                e.Handled = true;
-                return;
-            }
-            
             if (e.Data.Contains("balatro-item") || e.Data.Contains("JokerSet"))
             {
                 e.DragEffects = DragDropEffects.Move;

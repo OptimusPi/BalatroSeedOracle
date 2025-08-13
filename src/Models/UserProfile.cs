@@ -50,19 +50,9 @@ namespace BalatroSeedOracle.Models
     public class SearchResumeState
     {
         /// <summary>
-        /// The config path or direct config JSON
+        /// Path to the filter config file (always required)
         /// </summary>
         public string? ConfigPath { get; set; }
-        
-        /// <summary>
-        /// The serialized OuijaConfig if using direct config
-        /// </summary>
-        public string? ConfigJson { get; set; }
-        
-        /// <summary>
-        /// Whether this was a direct config (not file-based)
-        /// </summary>
-        public bool IsDirectConfig { get; set; }
         
         /// <summary>
         /// The last completed batch index

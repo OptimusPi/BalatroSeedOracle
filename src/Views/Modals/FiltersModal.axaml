@@ -68,35 +68,6 @@
             <Setter Property="Cursor" Value="Arrow"/>
         </Style>
         
-        <Style Selector="Button.nav-button">
-            <Setter Property="Background" Value="{StaticResource Red}" />
-            <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="14" />
-            
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="Padding" Value="12,4" />
-            <Setter Property="Margin" Value="0,0,0,2" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
-        <Style Selector="Button.nav-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}" />
-        </Style>
-        <Style Selector="Button.nav-button.active">
-            <Setter Property="Background" Value="{StaticResource Gold}" />
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
-        </Style>
-        <!-- Nav button inherits pressed behavior from global styles -->
-        
-        <Style Selector="Button.small-nav-button">
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="MinHeight" Value="22" />
-            <Setter Property="Padding" Value="3,1" />
-            <Setter Property="Margin" Value="0,0,0,1" />
-        </Style>
         <Style Selector="Border.drop-zone">
             <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
@@ -387,7 +358,7 @@
                         <!-- Left Sidebar - Dark panel with NO border -->
                         <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="6">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel Spacing="2">
+                                <StackPanel>
                                     <!-- Category Tabs - GRADIENT BUTTONS like Balatro -->
                                     <Button Name="FavoritesTab" Content="⭐Faves" Classes="nav-button" />
                                     <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />
@@ -609,19 +580,36 @@
                                                FontFamily="Cascadia Code, Consolas, monospace"
                                                FontSize="14"/>
                         
-                        <!-- JSON Validation Status Bar -->
+                        <!-- JSON Validation Status Bar with SAVE button -->
                         <Border Grid.Row="3"
                                 Background="{StaticResource DockGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="0,1,0,0"
                                 Padding="8,4"
                                 Margin="0,4,0,0">
-                            <TextBlock Name="JsonValidationStatus"
-                                       Text="JSON: Valid ✓"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource Green}"
-                                       HorizontalAlignment="Left"/>
+                            <Grid>
+                                <TextBlock Name="JsonValidationStatus"
+                                           Text="JSON: Valid ✓"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource Green}"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"/>
+                                <Button Name="SaveJsonButton"
+                                        Content="SAVE"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Padding="12,4"
+                                        Height="28"
+                                        Background="{StaticResource GreenAccentVeryDark}"
+                                        BorderBrush="{StaticResource AccentGreen}"
+                                        BorderThickness="2"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="12"
+                                        Foreground="{StaticResource AccentGreen}"
+                                        Cursor="Hand"
+                                        Click="OnSaveJsonClick"/>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Border>

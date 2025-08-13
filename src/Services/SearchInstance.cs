@@ -107,13 +107,21 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    "StartSearchWithConfigAsync called - NO TEMP FILES!"
+                    "StartSearchWithConfigAsync called - saving to temp file"
                 );
 
+                // Save config to a temp file
+                var tempDir = Path.Combine(Path.GetTempPath(), "BalatroSeedOracle", "temp_filters");
+                Directory.CreateDirectory(tempDir);
+                var tempFile = Path.Combine(tempDir, $"temp_{_searchId}.json");
+                
+                var json = JsonSerializer.Serialize(ouijaConfig, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(tempFile, json);
+                
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
-                ConfigPath = "Direct Config";
-                FilterName = $"Search {_searchId.Substring(0, 8)}";
+                ConfigPath = tempFile;
+                FilterName = ouijaConfig.Name ?? $"Search {_searchId.Substring(0, 8)}";
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
@@ -665,6 +673,7 @@ namespace BalatroSeedOracle.Services
                     {
                         _currentSearch.Pause();
                         _currentSearch.Dispose();
+                        _currentSearch = null; // Mark as disposed
                     }
                     catch (Exception ex)
                     {
@@ -681,8 +690,20 @@ namespace BalatroSeedOracle.Services
                     await Task.Delay(100, CancellationToken.None);
                 }
 
-                // Report completion
-                var finalBatchCount = _currentSearch?.CompletedBatchCount ?? 0UL;
+                // Report completion (get count before disposing)
+                var finalBatchCount = 0UL;
+                if (_currentSearch != null)
+                {
+                    try
+                    {
+                        finalBatchCount = _currentSearch.CompletedBatchCount;
+                    }
+                    catch
+                    {
+                        // If disposed, use 0
+                        finalBatchCount = 0UL;
+                    }
+                }
                 ulong finalSeeds = finalBatchCount * (ulong)Math.Pow(35, batchSize);
 
                 // Clear search state if completed successfully
@@ -744,11 +765,7 @@ namespace BalatroSeedOracle.Services
                 
                 var state = new SearchResumeState
                 {
-                    IsDirectConfig = !string.IsNullOrEmpty(ConfigPath) && ConfigPath == "Direct Config",
-                    ConfigPath = ConfigPath == "Direct Config" ? null : ConfigPath,
-                    ConfigJson = ConfigPath == "Direct Config" ? 
-                        JsonSerializer.Serialize(_currentConfig, new JsonSerializerOptions { WriteIndented = true }) : 
-                        null,
+                    ConfigPath = ConfigPath,
                     LastCompletedBatch = completedBatch,
                     EndBatch = endBatch,
                     BatchSize = _currentSearchConfig.BatchSize,
@@ -799,12 +816,16 @@ namespace BalatroSeedOracle.Services
             
             _cancellationTokenSource?.Dispose();
             
-            // Force dispose of the search if it still exists
+            // Force dispose of the search if it still exists and not already disposed
             if (_currentSearch != null)
             {
                 try
                 {
-                    _currentSearch.Dispose();
+                    // Check if not already disposed
+                    if (_currentSearch.Status != MotelySearchStatus.Disposed)
+                    {
+                        _currentSearch.Dispose();
+                    }
                 }
                 catch { /* ignore disposal errors */ }
                 _currentSearch = null;

@@ -293,9 +293,9 @@
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
-            <RowDefinition Height="Auto"/> <!-- Tabs -->
-            <RowDefinition Height="*"/>    <!-- Content -->
+            <RowDefinition Height="30"/> <!-- Triangle pointer fixed -->
+            <RowDefinition Height="60"/> <!-- Tabs fixed -->
+            <RowDefinition Height="*"/>    <!-- Content stretches -->
         </Grid.RowDefinitions>
         
         <!-- Triangle pointer above tabs -->
@@ -396,7 +396,7 @@
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
                 <!-- 3 Column Layout -->
-                <Grid Margin="40">
+                <Grid Margin="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
                         <ColumnDefinition Width="*"/>   <!-- Middle for console -->
@@ -494,16 +494,15 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
-                            <ScrollViewer Grid.Row="0" 
-                                          VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Auto">
-                                <TextBox Name="ConsoleOutput" 
-                                             Classes="terminal" 
-                                             IsReadOnly="True"
-                                             AcceptsReturn="True"
-                                             TextWrapping="NoWrap"
-                                             Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
-                            </ScrollViewer>
+                            <TextBox Grid.Row="0"
+                                     Name="ConsoleOutput" 
+                                     Classes="terminal" 
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             
                             <!-- JSON Validation Status -->
                             <Border Grid.Row="1"
@@ -630,6 +629,22 @@
                                                FontSize="16"
                                                
                                                Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Rarity -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Rarity" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="RarityText"
+                                               Text="0.00%"
+                                               FontSize="14"
+                                               
+                                               Foreground="{StaticResource Gold}"
                                                HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>

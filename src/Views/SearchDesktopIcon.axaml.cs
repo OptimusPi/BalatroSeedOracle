@@ -177,7 +177,8 @@ namespace BalatroSeedOracle.Views
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _isSearching = false;
-                UpdateProgress(100);
+                // Don't update progress to 100% - keep current progress
+                // Search may have been stopped/cancelled early
             });
         }
 
@@ -241,7 +242,7 @@ namespace BalatroSeedOracle.Views
         {
             _searchInstance?.StopSearch();
             _isSearching = false;
-            UpdateProgress(100);
+            // Don't update progress - keep current progress when stopped
         }
 
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)

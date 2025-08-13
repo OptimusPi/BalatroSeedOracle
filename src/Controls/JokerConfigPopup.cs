@@ -173,6 +173,9 @@ namespace BalatroSeedOracle.Controls
                 // Store reference
                 _anteCheckBoxes[i] = checkbox;
 
+                // Initialize visual state to match the checkbox
+                UpdateAnteVisual(anteBorder, true);
+
                 // Add handler
                 int index = i; // Capture for closure
                 checkbox.Click += (s, e) =>
@@ -604,7 +607,11 @@ namespace BalatroSeedOracle.Controls
                         
                     _sourceTag?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("tag"));
                     _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("booster"));
-                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("shop"));
+                    // Don't set shop for legendary jokers
+                    if (!_isLegendaryJoker)
+                    {
+                        _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, sourcesList.Contains("shop"));
+                    }
                 }
                 else if (config.Sources is Dictionary<string, object> sourcesDict)
                 {
@@ -624,7 +631,11 @@ namespace BalatroSeedOracle.Controls
                     
                     _sourceTag?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
                     _sourceBooster?.SetCurrentValue(CheckBox.IsCheckedProperty, hasPackSlots);
-                    _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, hasShopSlots);
+                    // Don't set shop for legendary jokers
+                    if (!_isLegendaryJoker)
+                    {
+                        _sourceShop?.SetCurrentValue(CheckBox.IsCheckedProperty, hasShopSlots);
+                    }
                 }
                 
                 // Update visuals for source checkboxes
@@ -638,7 +649,8 @@ namespace BalatroSeedOracle.Controls
                 }
                 if (_sourceShop?.Content is Border shopBorder)
                 {
-                    UpdateSourceVisual(shopBorder, _sourceShop.IsChecked == true);
+                    // For legendary jokers, always show shop as disabled
+                    UpdateSourceVisual(shopBorder, _isLegendaryJoker ? false : (_sourceShop.IsChecked == true));
                 }
             }
             else

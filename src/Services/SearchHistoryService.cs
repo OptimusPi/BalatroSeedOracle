@@ -36,9 +36,23 @@ namespace BalatroSeedOracle.Services
             
             if (config.Should != null)
             {
+                // Track seen names to avoid duplicates
+                var seenNames = new HashSet<string>();
+                
                 foreach (var should in config.Should)
                 {
-                    var colName = FormatColumnName(should);
+                    var baseName = FormatColumnName(should);
+                    var colName = baseName;
+                    
+                    // If we've seen this name before, append a number
+                    int suffix = 2;
+                    while (seenNames.Contains(colName))
+                    {
+                        colName = $"{baseName}_{suffix}";
+                        suffix++;
+                    }
+                    
+                    seenNames.Add(colName);
                     _columnNames.Add(colName);
                 }
             }
