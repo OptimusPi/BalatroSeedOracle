@@ -58,7 +58,33 @@ public partial class App : Application
 
     private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
-        _serviceProvider?.Dispose();
+        try
+        {
+            DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
+            
+            // Get the search manager and stop all active searches
+            var searchManager = _serviceProvider?.GetService<Services.SearchManager>();
+            if (searchManager != null)
+            {
+                DebugLogger.Log("App", "Stopping active searches...");
+                searchManager.StopAllSearches();
+                
+                // Give searches a moment to actually stop
+                System.Threading.Thread.Sleep(500);
+                
+                // Dispose the search manager which will dispose all searches
+                searchManager.Dispose();
+                DebugLogger.Log("App", "All searches stopped");
+            }
+            
+            // Now dispose the service provider
+            _serviceProvider?.Dispose();
+            DebugLogger.Log("App", "Services disposed");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Error during shutdown: {ex.Message}");
+        }
     }
 
     private void ConfigureServices(IServiceCollection services)

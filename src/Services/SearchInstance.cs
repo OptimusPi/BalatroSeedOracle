@@ -35,6 +35,7 @@ namespace BalatroSeedOracle.Services
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
         private readonly List<string> _consoleHistory = new();
         private readonly object _consoleHistoryLock = new();
+        private Task? _searchTask;
         
         // Auto-cutoff tracking - Motely handles this internally now
         private bool _isAutoCutoffEnabled;
@@ -57,6 +58,7 @@ namespace BalatroSeedOracle.Services
         public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
+        public OuijaConfig? GetFilterConfig() => _currentConfig;
         public int ResultCount => _results.Count;
         
         /// <summary>
@@ -75,8 +77,7 @@ namespace BalatroSeedOracle.Services
         public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
         public event EventHandler<SearchResultEventArgs>? ResultFound;
-        public event EventHandler<int>? CutoffChanged;
-    public event EventHandler<string>? ConsoleOutput;
+        public event EventHandler<string>? ConsoleOutput;
 
         public SearchInstance(string searchId, SearchHistoryService historyService)
         {
@@ -146,7 +147,8 @@ namespace BalatroSeedOracle.Services
                     DebugSeed = config.DebugSeed,
                 };
 
-                // No need to start a search in database - just store results as they come
+                // Configure the history service with the filter columns
+                _historyService.SetFilterConfig(ouijaConfig);
 
                 // Set up result capture
                 _resultCapture = new MotelyResultCapture(_historyService);
@@ -180,7 +182,7 @@ namespace BalatroSeedOracle.Services
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
 
-                await Task.Run(
+                _searchTask = Task.Run(
                     () =>
                         RunSearchInProcess(
                             ouijaConfig,
@@ -190,6 +192,8 @@ namespace BalatroSeedOracle.Services
                         ),
                     _cancellationTokenSource.Token
                 );
+                
+                await _searchTask;
 
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
             }
@@ -323,6 +327,24 @@ namespace BalatroSeedOracle.Services
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
+                
+                // Wait for the search task to complete (with timeout)
+                if (_searchTask != null && !_searchTask.IsCompleted)
+                {
+                    try
+                    {
+                        // Wait up to 1 second for the task to complete
+                        if (!_searchTask.Wait(1000))
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search task did not complete within timeout");
+                        }
+                    }
+                    catch (AggregateException)
+                    {
+                        // Expected when task is cancelled
+                    }
+                    _searchTask = null;
+                }
                 
                 // Send completed event immediately so UI updates
                 SearchCompleted?.Invoke(this, EventArgs.Empty);
@@ -469,11 +491,11 @@ namespace BalatroSeedOracle.Services
                     2 => 1_838_265_625UL,           // 35^6 = 1,838,265,625
                     3 => 52_521_875UL,              // 35^5 = 52,521,875
                     4 => 1_500_625UL,               // 35^4 = 1,500,625
-                    5 => 42_875UL,                  // 35^3 = 42,875
-                    6 => 1_225UL,                   // 35^2 = 1,225
-                    7 => 35UL,                      // 35^1 = 35
-                    8 => 1UL,                       // 35^0 = 1
-                    _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-8.")
+                    //5 => 42_875UL,                  // 35^3 = 42,875
+                    //6 => 1_225UL,                   // 35^2 = 1,225
+                    //7 => 35UL,                      // 35^1 = 35
+                    //8 => 1UL,                       // 35^0 = 1 // these are all way too big and don't make the search faster.
+                    _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-4.")
                 };
                 
                 // Apply end batch limit first
@@ -525,6 +547,10 @@ namespace BalatroSeedOracle.Services
                     if (mp.CompletedBatchCount != _lastSavedBatch)
                     {
                         _lastSavedBatch = mp.CompletedBatchCount;
+                        
+                        // Save to database for resume - save the NEXT batch to process, not the completed one
+                        // This prevents re-processing the same batch on resume
+                        _ = _historyService.SaveLastBatchAsync(mp.CompletedBatchCount + 1);
                         
                         // First time? Save the full state
                         if (_userProfileService?.GetSearchState() == null)
@@ -716,31 +742,56 @@ namespace BalatroSeedOracle.Services
             // First stop the search if it's running
             if (_isRunning)
             {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Dispose called while running - forcing stop");
                 StopSearch();
+                
+                // Wait a bit for graceful shutdown
+                System.Threading.Thread.Sleep(200);
             }
 
+            // Force cancellation flag for Motely
+            OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
+            
             _cancellationTokenSource?.Cancel();
+            
+            // Ensure the search task is completed or abandoned
+            if (_searchTask != null && !_searchTask.IsCompleted)
+            {
+                try
+                {
+                    // Give it one more chance to complete
+                    _searchTask.Wait(100);
+                }
+                catch { /* ignore */ }
+                _searchTask = null;
+            }
+            
             _cancellationTokenSource?.Dispose();
-
-            // Make sure to stop and dispose the search service
+            
+            // Force dispose of the search if it still exists
             if (_currentSearch != null)
             {
-                // Pause first if it's running
-                if (_currentSearch.Status == MotelySearchStatus.Running)
+                try
                 {
-                    _currentSearch.Pause();
+                    _currentSearch.Dispose();
                 }
-                _currentSearch.Dispose();
+                catch { /* ignore disposal errors */ }
                 _currentSearch = null;
             }
-
+            
+            // Force dispose of result capture
             if (_resultCapture != null)
             {
-                Task.Run(async () => await _resultCapture.StopCaptureAsync()).Wait(1000);
-                _resultCapture.Dispose();
+                try
+                {
+                    _resultCapture.Dispose();
+                }
+                catch { /* ignore disposal errors */ }
+                _resultCapture = null;
             }
-            _resultCapture = null;
-
+            
+            DebugLogger.Log($"SearchInstance[{_searchId}]", "Dispose completed");
+            
             GC.SuppressFinalize(this);
         }
     }

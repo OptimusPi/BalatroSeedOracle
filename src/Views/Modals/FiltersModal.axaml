@@ -15,7 +15,7 @@
             <Setter Property="FontSize" Value="44"/>
             
             <Setter Property="Height" Value="50"/>
-            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -379,7 +379,7 @@
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="False" DragDrop.AllowDrop="True">
                     <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="104" />
                     <ColumnDefinition Width="6" />
                     <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>

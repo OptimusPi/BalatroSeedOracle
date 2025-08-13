@@ -440,6 +440,46 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows a search desktop icon on the desktop
         /// </summary>
+        /// <summary>
+        /// Shows the search modal for an existing search instance (opened from desktop icon)
+        /// </summary>
+        public void ShowSearchModalForInstance(string searchId, string? configPath = null)
+        {
+            try
+            {
+                DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
+                
+                var searchContent = new SearchModal();
+                
+                // Connect to the existing search instance
+                searchContent.ConnectToExistingSearch(searchId);
+                
+                // If we have a config path, load it
+                if (!string.IsNullOrEmpty(configPath))
+                {
+                    _ = searchContent.LoadFilterAsync(configPath);
+                }
+                
+                // Handle desktop icon creation when modal closes with active search
+                searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
+                {
+                    DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
+                    // Get the search ID from the modal
+                    var modalSearchId = searchContent.GetCurrentSearchId();
+                    if (!string.IsNullOrEmpty(modalSearchId))
+                    {
+                        ShowSearchDesktopIcon(modalSearchId, cfgPath);
+                    }
+                };
+                
+                this.ShowModal("MOTELY SEARCH", searchContent);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to show search modal for instance: {ex}");
+            }
+        }
+        
         public async void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log(

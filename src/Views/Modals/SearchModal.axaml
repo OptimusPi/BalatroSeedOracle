@@ -28,7 +28,7 @@
             <Setter Property="FontSize" Value="44"/>
             
             <Setter Property="Height" Value="50"/>
-            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -426,9 +426,9 @@
                                 <!-- Batch Size -->
                                 <controls:SpinnerControl Name="BatchSizeSpinner" 
                                                         Label="Batch Size (35^n)"
-                                                        Value="1" 
-                                                        Minimum="1" 
-                                                        Maximum="4"
+                                                        Value="2" 
+                                                        Minimum="0" 
+                                                        Maximum="3"
                                                         HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 

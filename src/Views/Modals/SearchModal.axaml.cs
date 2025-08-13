@@ -55,11 +55,7 @@ namespace BalatroSeedOracle.Views.Modals
         // Controls
         private TextBox? _consoleOutput;
         
-        // Console throttling
-        private readonly List<string> _consoleBuffer = new List<string>();
-        private DispatcherTimer? _consoleUpdateTimer;
-        private readonly object _consoleBufferLock = new object();
-        private int _consoleLineCount = 0;
+        // Console settings
         private const int MAX_CONSOLE_LINES = 500;
 
         // Action buttons
@@ -181,6 +177,14 @@ namespace BalatroSeedOracle.Views.Modals
                         await LoadFilterAsync(resumeState.ConfigPath);
                     }
                     
+                    // After loading, check if the state was cleared (different filter)
+                    var currentState = userProfileService.GetSearchState();
+                    if (currentState == null)
+                    {
+                        // State was cleared because it was for a different filter
+                        return;
+                    }
+                    
                     // Set the UI values
                     if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
                     if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1;
@@ -191,11 +195,38 @@ namespace BalatroSeedOracle.Views.Modals
                         _deckAndStakeSelector.SetStake(resumeState.Stake ?? "White");
                     }
                     
-                    // Add console message about resumable state
-                    AddToConsole($"──────────────────────────────────");
-                    AddToConsole($"Previous search detected!");
-                    AddToConsole($"Ready to resume from batch {resumeState.LastCompletedBatch + 1:N0}");
-                    AddToConsole($"Press 'Cook' to continue searching");
+                    // Check if search is already running
+                    if (_searchInstance != null && _searchInstance.IsRunning)
+                    {
+                        AddToConsole($"──────────────────────────────────");
+                        AddToConsole($"Search is currently running");
+                        AddToConsole($"Processing from batch {resumeState.LastCompletedBatch + 1:N0}");
+                        
+                        // Update button state to show it's running
+                        _isSearching = true;
+                        if (_cookButton != null)
+                        {
+                            _cookButton.IsEnabled = true;
+                            _cookButton.Content = "STOP SEARCH";
+                            _cookButton.Classes.Add("stop");
+                        }
+                    }
+                    else
+                    {
+                        // Add console message about resumable state
+                        AddToConsole($"──────────────────────────────────");
+                        AddToConsole($"Previous search detected!");
+                        AddToConsole($"Ready to resume from batch {resumeState.LastCompletedBatch + 1:N0}");
+                        AddToConsole($"Press 'Cook' to continue searching");
+                        
+                        // Ensure button is enabled for resuming
+                        if (_cookButton != null)
+                        {
+                            _cookButton.IsEnabled = true;
+                            _cookButton.Content = "Let Jimbo COOK!";
+                            _cookButton.Classes.Remove("stop");
+                        }
+                    }
                     
                     // Store the resume batch for when Cook is clicked
                     _resumeFromBatch = resumeState.LastCompletedBatch + 1;
@@ -687,6 +718,66 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        /// <summary>
+        /// Connect to an existing search instance (when opened from desktop icon)
+        /// </summary>
+        public void ConnectToExistingSearch(string searchId)
+        {
+            if (string.IsNullOrEmpty(searchId))
+            {
+                DebugLogger.LogError("SearchModal", "Cannot connect to search: searchId is empty");
+                return;
+            }
+            
+            _currentSearchId = searchId;
+            var searchManager = App.GetService<SearchManager>();
+            if (searchManager != null)
+            {
+                _searchInstance = searchManager.GetSearch(searchId);
+                if (_searchInstance != null)
+                {
+                    DebugLogger.Log("SearchModal", $"Connected to existing search: {searchId}");
+                    
+                    // Subscribe to events
+                    _searchInstance.ConsoleOutput += OnConsoleOutput;
+                    
+                    // Restore console history
+                    RestoreConsoleHistory();
+
+                    // Load existing results
+                    _searchResults.Clear();
+                    foreach (var result in _searchInstance.Results)
+                    {
+                        _searchResults.Add(
+                            new SearchResult
+                            {
+                                Seed = result.Seed,
+                                Score = result.TotalScore,
+                                TallyScores = result.Scores
+                            }
+                        );
+                    }
+                    
+                    // Update UI based on search state
+                    _isSearching = _searchInstance.IsRunning;
+                    UpdateCookButtonState();
+                }
+                else
+                {
+                    DebugLogger.LogError("SearchModal", $"Search instance not found: {searchId}");
+                }
+            }
+        }
+        
+        private void UpdateCookButtonState()
+        {
+            if (_cookButton != null)
+            {
+                _cookButton.IsEnabled = true;
+                _cookButton.Content = _isSearching ? "STOP SEARCH" : "LET JIMBO COOK";
+            }
+        }
+        
         public async Task LoadFilterAsync(string filePath)
         {
             _currentFilterPath = filePath;
@@ -728,7 +819,30 @@ namespace BalatroSeedOracle.Views.Modals
                     var historyService = App.GetService<SearchHistoryService>();
                     if (historyService != null)
                     {
+                        // MUST configure the columns BEFORE SetFilterName
+                        // because SetFilterName calls InitializeDatabase which creates the table!
+                        historyService.SetFilterConfig(config);
                         historyService.SetFilterName(filePath);
+                    }
+                    
+                    // Check if the saved search state is for a DIFFERENT filter
+                    var userProfileService = App.GetService<UserProfileService>();
+                    if (userProfileService != null)
+                    {
+                        var savedState = userProfileService.GetSearchState();
+                        if (savedState != null && !string.IsNullOrEmpty(savedState.ConfigPath))
+                        {
+                            // If the saved state is for a different filter, clear it
+                            if (!string.Equals(savedState.ConfigPath, filePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                                    "SearchModal",
+                                    $"Clearing saved state for different filter: {savedState.ConfigPath} != {filePath}"
+                                );
+                                userProfileService.ClearSearchState();
+                                _resumeFromBatch = null; // Clear any resume batch
+                            }
+                        }
                     }
 
                     // Cook button should always be enabled when a filter is loaded
@@ -768,10 +882,13 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (_searchInstance != null)
             {
-                // Set the filter name for history tracking
+                // Set the filter name and config for history tracking
                 var historyService = App.GetService<SearchHistoryService>();
                 if (historyService != null)
                 {
+                    // MUST configure the columns BEFORE SetFilterName
+                    // because SetFilterName calls InitializeDatabase which creates the table!
+                    historyService.SetFilterConfig(config);
                     historyService.SetFilterName($"Direct:{config.Name ?? "Unnamed"}");
                 }
 
@@ -825,7 +942,7 @@ namespace BalatroSeedOracle.Views.Modals
                     };
 
                     AddToConsole("──────────────────────────────────");
-                    if (_resumeFromBatch.HasValue)
+                    if (_resumeFromBatch.HasValue && _resumeFromBatch.Value > 0)
                     {
                         AddToConsole($"Resuming search from batch {_resumeFromBatch.Value:N0}...");
                     }
@@ -880,12 +997,29 @@ namespace BalatroSeedOracle.Views.Modals
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size (minimal=1, low=2, default=3, high=4)
                     _isDebugMode = _debugCheckBox?.IsChecked ?? false;
-                    var config = new SearchConfiguration
+                    
+                    // Check if we should resume from a saved batch
+                    ulong startBatch = _resumeFromBatch ?? 0;
+                    if (startBatch == 0 && !_isDebugMode) // Only check for saved batch if not explicitly resuming and not in debug mode
+                    {
+                        var historyService = App.GetService<SearchHistoryService>();
+                        if (historyService != null)
+                        {
+                            var savedBatch = await historyService.GetLastBatchAsync();
+                            if (savedBatch.HasValue && savedBatch.Value > 0)
+                            {
+                                startBatch = savedBatch.Value;
+                                AddToConsole($"Found saved progress at batch {startBatch:N0}");
+                            }
+                        }
+                    }
+                    
+                    var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
                         MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-5 = actual values
                         BatchSize = batchSize,
-                        StartBatch = _resumeFromBatch ?? 0,
+                        StartBatch = startBatch,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
                         DebugMode = _isDebugMode,
                         DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
@@ -907,13 +1041,13 @@ namespace BalatroSeedOracle.Views.Modals
                     var searchCriteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
                         ConfigPath = _currentFilterPath,
-                        ThreadCount = config.ThreadCount,
-                        MinScore = config.MinScore,
-                        BatchSize = config.BatchSize,
-                        Deck = config.Deck,
-                        Stake = config.Stake,
-                        EnableDebugOutput = config.DebugMode,
-                        DebugSeed = config.DebugSeed,
+                        ThreadCount = searchConfig.ThreadCount,
+                        MinScore = searchConfig.MinScore,
+                        BatchSize = searchConfig.BatchSize,
+                        Deck = searchConfig.Deck,
+                        Stake = searchConfig.Stake,
+                        EnableDebugOutput = searchConfig.DebugMode,
+                        DebugSeed = searchConfig.DebugSeed,
                     };
 
                     await _searchInstance.StartSearchAsync(searchCriteria);
@@ -924,7 +1058,8 @@ namespace BalatroSeedOracle.Views.Modals
                     if (_cookButton != null)
                     {
                         _cookButton.Content = "Stopping Search...";
-                        _cookButton.IsEnabled = false;
+                        // User says: The let jimbo cook button isn't ever really supposed to be greyed out
+                        _cookButton.IsEnabled = true;
                     }
                     
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1087,14 +1222,9 @@ namespace BalatroSeedOracle.Views.Modals
             if (_consoleOutput != null)
             {
                 _consoleOutput.Text = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
-                _consoleLineCount = 2;
             }
             
             // Clear buffer too
-            lock (_consoleBufferLock)
-            {
-                _consoleBuffer.Clear();
-            }
         }
         
         private void GenerateTableHeadersFromConfig()
@@ -1200,7 +1330,6 @@ namespace BalatroSeedOracle.Views.Modals
                 _searchInstance.ResultFound -= OnResultFound;
                 _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
-                _searchInstance.CutoffChanged -= OnCutoffChanged;
                 _searchInstance.ConsoleOutput -= OnConsoleOutput;
             }
         }
@@ -1286,22 +1415,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
-        private void OnCutoffChanged(object? sender, int newCutoff)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                if (_minScoreSpinner != null)
-                {
-                    _minScoreSpinner.Value = newCutoff;
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Auto-cutoff updated spinner to: {newCutoff}");
-                    AddToConsole($"⚡ Auto-cutoff adjusted to: {newCutoff} (filtering out scores below {newCutoff})");
-                }
-                else
-                {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", "MinScoreSpinner is null in OnCutoffChanged");
-                }
-            });
-        }
         
         private void ProcessBatchedResults(object? state)
         {
@@ -1402,72 +1515,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 AddToConsole(line);
             });
-        }
-        
-        private void StartConsoleUpdateTimer()
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                if (_consoleUpdateTimer == null)
-                {
-                    _consoleUpdateTimer = new DispatcherTimer
-                    {
-                        Interval = TimeSpan.FromMilliseconds(50) // Update 20 times per second for faster response
-                    };
-                    _consoleUpdateTimer.Tick += OnConsoleUpdateTimerTick;
-                }
-                
-                if (!_consoleUpdateTimer.IsEnabled)
-                {
-                    _consoleUpdateTimer.Start();
-                }
-            });
-        }
-        
-        private void OnConsoleUpdateTimerTick(object? sender, EventArgs e)
-        {
-            List<string> linesToAdd;
-            lock (_consoleBufferLock)
-            {
-                if (_consoleBuffer.Count == 0)
-                {
-                    _consoleUpdateTimer?.Stop();
-                    return;
-                }
-                
-                // Take all buffered lines
-                linesToAdd = new List<string>(_consoleBuffer);
-                _consoleBuffer.Clear();
-            }
-            
-            if (_consoleOutput != null && linesToAdd.Count > 0)
-            {
-                // Check if we need to trim old lines
-                _consoleLineCount += linesToAdd.Count;
-                
-                if (_consoleLineCount > MAX_CONSOLE_LINES)
-                {
-                    // Keep only the last MAX_CONSOLE_LINES lines
-                    var allLines = (_consoleOutput.Text ?? string.Empty).Split('\n').ToList();
-                    allLines.AddRange(linesToAdd);
-                    
-                    if (allLines.Count > MAX_CONSOLE_LINES)
-                    {
-                        allLines = allLines.Skip(allLines.Count - MAX_CONSOLE_LINES).ToList();
-                    }
-                    
-                    _consoleOutput.Text = string.Join("\n", allLines);
-                    _consoleLineCount = allLines.Count;
-                }
-                else
-                {
-                    // Just append the new lines
-                    _consoleOutput.Text += string.Join("\n", linesToAdd) + "\n";
-                }
-                
-                // Auto-scroll to bottom
-                _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
-            }
         }
         
         private void RestoreConsoleHistory()
@@ -1613,7 +1660,6 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
-                    _searchInstance.CutoffChanged += OnCutoffChanged;
                     
                     // Subscribe to console output
                     _searchInstance.ConsoleOutput += OnConsoleOutput;
@@ -1696,7 +1742,6 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
-                    _searchInstance.CutoffChanged += OnCutoffChanged;
                     _searchInstance.ConsoleOutput += OnConsoleOutput;
 
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1778,6 +1823,17 @@ namespace BalatroSeedOracle.Views.Modals
                     AddToConsole("History service not available.");
                     return;
                 }
+                
+                // Ensure the history service knows about the filter config before trying to read
+                // This is important because the database schema depends on the filter's Should[] criteria
+                if (_searchInstance != null)
+                {
+                    var config = _searchInstance.GetFilterConfig();
+                    if (config != null)
+                    {
+                        historyService.SetFilterConfig(config);
+                    }
+                }
 
                 // Load existing results from the database on background thread
                 var existingResults = await Task.Run(() => historyService.GetSearchResultsAsync());
@@ -1829,71 +1885,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void AddTestResults()
-        {
-            // Add some test results to verify DataGrid is working
-            _searchResults.Clear();
-
-            _searchResults.Add(
-                new SearchResult
-                {
-                    Seed = "TESTCODE1",
-                    Score = 95.5,
-                    Details = "Perkeo (Ante 1), Negative Tag (Ante 2)"
-                }
-            );
-
-            _searchResults.Add(
-                new SearchResult
-                {
-                    Seed = "TESTCODE2",
-                    Score = 88.0,
-                    Details = "Blueprint (Ante 2), Brainstorm (Ante 3)"
-                }
-            );
-
-            _searchResults.Add(
-                new SearchResult
-                {
-                    Seed = "TESTCODE3",
-                    Score = 75.5,
-                    Details = "Triboulet (Ante 3), Fool Tag (Ante 1)"
-                }
-            );
-
-            _searchResults.Add(
-                new SearchResult
-                {
-                    Seed = "TESTCODE4",
-                    Score = 92.0,
-                    Details = "Chicot (Ante 2), Negative Tag (Ante 3)"
-                }
-            );
-
-            _searchResults.Add(
-                new SearchResult
-                {
-                    Seed = "TESTCODE5",
-                    Score = 83.0,
-                    Details = "Yorick (Ante 1), Charm Tag (Ante 2)"
-                }
-            );
-
-            // Update summary
-            if (_resultsSummary != null)
-            {
-                _resultsSummary.Text = $"Found {_searchResults.Count} results (test data)";
-            }
-            if (_exportResultsButton != null)
-            {
-                _exportResultsButton.IsEnabled = true;
-            }
-
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
-                "SearchModal",
-                $"Added {_searchResults.Count} test results to DataGrid"
-            );
-        }
 
         private static ulong GetMaxBatchesForBatchSize(int batchSize)
         {
