@@ -1240,12 +1240,25 @@ namespace BalatroSeedOracle.Views.Modals
             
             // Try to load the config
             Motely.Filters.OuijaConfig? config = null;
-            if (!string.IsNullOrEmpty(_currentFilterPath))
+            
+            // First try to get config from the search instance (for direct configs)
+            if (_searchInstance != null)
+            {
+                config = _searchInstance.GetFilterConfig();
+                if (config != null)
+                {
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Got config from search instance for headers");
+                }
+            }
+            
+            // If no config from instance, try to load from file path
+            if (config == null && !string.IsNullOrEmpty(_currentFilterPath))
             {
                 try
                 {
                     var json = System.IO.File.ReadAllText(_currentFilterPath);
                     config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json);
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Got config from file for headers");
                 }
                 catch (Exception ex)
                 {
@@ -1302,10 +1315,10 @@ namespace BalatroSeedOracle.Views.Modals
                     FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                     FontSize = 12,
                     Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                    Width = 80,
+                    Width = 60,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(4, 4),
+                    Margin = new Thickness(8, 4),
                     TextTrimming = TextTrimming.CharacterEllipsis
                 };
                 
@@ -1869,6 +1882,9 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         _exportResultsButton.IsEnabled = true;
                     }
+                    
+                    // Generate table headers for the loaded results
+                    UpdateTallyHeaders();
                 }
                 else
                 {

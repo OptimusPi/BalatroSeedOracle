@@ -463,8 +463,8 @@
                                              Background="{StaticResource VeryDarkGrey}"
                                              BorderBrush="{StaticResource DarkBorder}"
                                              BorderThickness="1"
-                                             CornerRadius="4"
                                              IsEnabled="False"
+                                             CornerRadius="4"
                                              GotFocus="OnDebugSeedGotFocus"
                                              TextChanged="OnDebugSeedTextChanged"/>
                                 </StackPanel>

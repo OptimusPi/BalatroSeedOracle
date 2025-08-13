@@ -417,8 +417,18 @@ namespace BalatroSeedOracle.Views
                             // The search will be resumed when the user clicks the icon to open the modal
                             // ConfigPath is already set when the search is created, no need to set it here
                             
-                            // Show the desktop icon for this resumed search
-                            ShowSearchDesktopIcon(searchId, resumeState.ConfigPath);
+                            // Only show desktop icon if we have a valid config path
+                            if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
+                            {
+                                ShowSearchDesktopIcon(searchId, resumeState.ConfigPath);
+                            }
+                            else
+                            {
+                                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                                    "BalatroMainMenu",
+                                    $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}"
+                                );
+                            }
                             
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "BalatroMainMenu",
@@ -503,6 +513,15 @@ namespace BalatroSeedOracle.Views
             if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
             {
                 filterName = Path.GetFileNameWithoutExtension(configPath);
+            }
+            else
+            {
+                // Don't create desktop icons for unknown filters
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"Skipping desktop icon creation - no valid config path"
+                );
+                return;
             }
 
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);

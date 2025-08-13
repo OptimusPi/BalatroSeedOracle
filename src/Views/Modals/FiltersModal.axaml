@@ -379,7 +379,7 @@
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="False" DragDrop.AllowDrop="True">
                     <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="104" />
+                    <ColumnDefinition Width="124" />
                     <ColumnDefinition Width="6" />
                     <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
@@ -387,7 +387,7 @@
                         <!-- Left Sidebar - Dark panel with NO border -->
                         <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="6">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel Spacing="1">
+                                <StackPanel Spacing="2">
                                     <!-- Category Tabs - GRADIENT BUTTONS like Balatro -->
                                     <Button Name="FavoritesTab" Content="⭐Faves" Classes="nav-button" />
                                     <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />

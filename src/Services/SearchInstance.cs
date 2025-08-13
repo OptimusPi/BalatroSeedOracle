@@ -460,6 +460,13 @@ namespace BalatroSeedOracle.Services
                 
                 // Reset cancellation flag
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                
+                // Enable Motely's DebugLogger if in debug mode
+                Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
+                if (criteria.EnableDebugOutput)
+                {
+                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Debug mode enabled - Motely DebugLogger activated");
+                }
 
                 // Create filter descriptor
                 var filterDesc = new OuijaJsonFilterDesc(config);
@@ -646,6 +653,27 @@ namespace BalatroSeedOracle.Services
                     $"SearchInstance[{_searchId}]",
                     $"Search loop ended. Status={_currentSearch.Status}"
                 );
+                
+                // If we exited the loop due to cancellation, stop the Motely search
+                if (_currentSearch != null && _currentSearch.Status == MotelySearchStatus.Running)
+                {
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        "Stopping Motely search due to cancellation"
+                    );
+                    try
+                    {
+                        _currentSearch.Pause();
+                        _currentSearch.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            $"SearchInstance[{_searchId}]",
+                            $"Error stopping Motely search: {ex.Message}"
+                        );
+                    }
+                }
 
                 // Give capture service a moment to catch any final results
                 if (_resultCapture != null && !cancellationToken.IsCancellationRequested)
@@ -700,6 +728,9 @@ namespace BalatroSeedOracle.Services
                     Console.SetOut(originalOut);
                 }
                 filteredWriter?.Dispose();
+                
+                // Reset Motely's DebugLogger
+                Motely.DebugLogger.IsEnabled = false;
             }
         }
 

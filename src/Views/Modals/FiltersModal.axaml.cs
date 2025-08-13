@@ -2723,8 +2723,8 @@ namespace BalatroSeedOracle.Views.Modals
                         _isDraggingSet = true;
                         _draggingSet = set;
                         
-                        // Merge the drop zones for set dropping
-                        MergeDropZonesForSet();
+                        // DON'T merge drop zones - keep them separate so user can choose
+                        // MergeDropZonesForSet();
 
                         // Create drag data with JokerSet object
                         var dataObject = new DataObject();
@@ -2733,10 +2733,10 @@ namespace BalatroSeedOracle.Views.Modals
 
                         await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy);
                         
-                        // Restore normal drop zones after drag
+                        // Reset drag state
                         _isDraggingSet = false;
                         _draggingSet = null;
-                        RestoreNormalDropZones();
+                        // RestoreNormalDropZones();
                     }
                 };
 
