@@ -30,16 +30,12 @@ namespace BalatroSeedOracle.Services
         private volatile bool _isPaused;
         private OuijaConfig? _currentConfig;
         private IMotelySearch? _currentSearch;
-        private MotelyResultCapture? _resultCapture;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
         private readonly List<string> _consoleHistory = new();
         private readonly object _consoleHistoryLock = new();
         private Task? _searchTask;
-        
-        // Auto-cutoff tracking - Motely handles this internally now
-        private bool _isAutoCutoffEnabled;
-        private int _currentCutoff = 0;
+        private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -77,7 +73,6 @@ namespace BalatroSeedOracle.Services
         public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
         public event EventHandler<SearchResultEventArgs>? ResultFound;
-        public event EventHandler<string>? ConsoleOutput;
 
         public SearchInstance(string searchId, SearchHistoryService historyService)
         {
@@ -88,15 +83,17 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Start searching with a direct config object
+        /// Start searching with a file path
         /// </summary>
-        public async Task StartSearchWithConfigAsync(
-            OuijaConfig ouijaConfig,
+        private async Task StartSearchFromFileAsync(
+            string configPath,
             SearchConfiguration config,
             IProgress<SearchProgress>? progress = null,
             CancellationToken cancellationToken = default
         )
         {
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"StartSearchFromFileAsync ENTERED! configPath={configPath}");
+            
             if (_isRunning)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
@@ -107,21 +104,21 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    "StartSearchWithConfigAsync called - saving to temp file"
+                    $"Starting search from file: {configPath}"
                 );
 
-                // Save config to a temp file
-                var tempDir = Path.Combine(Path.GetTempPath(), "BalatroSeedOracle", "temp_filters");
-                Directory.CreateDirectory(tempDir);
-                var tempFile = Path.Combine(tempDir, $"temp_{_searchId}.json");
-                
-                var json = JsonSerializer.Serialize(ouijaConfig, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(tempFile, json);
+                // Load the config from file
+                var json = await File.ReadAllTextAsync(configPath);
+                var ouijaConfig = JsonSerializer.Deserialize<OuijaConfig>(json);
+                if (ouijaConfig == null)
+                {
+                    throw new InvalidOperationException($"Failed to load config from {configPath}");
+                }
                 
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
-                ConfigPath = tempFile;
-                FilterName = ouijaConfig.Name ?? $"Search {_searchId.Substring(0, 8)}";
+                ConfigPath = configPath;
+                FilterName = ouijaConfig.Name ?? Path.GetFileNameWithoutExtension(configPath);
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
@@ -134,12 +131,7 @@ namespace BalatroSeedOracle.Services
                 // Notify UI that search started
                 SearchStarted?.Invoke(this, EventArgs.Empty);
 
-                // Create progress wrapper
-                var progressWrapper = new Progress<SearchProgress>(p =>
-                {
-                    progress?.Report(p);
-                    HandleSearchProgress(p);
-                });
+                // Progress is handled directly in motelyProgress callback below
 
                 // Set up search configuration from the modal
                 var searchCriteria = new SearchCriteria
@@ -155,15 +147,30 @@ namespace BalatroSeedOracle.Services
                     DebugSeed = config.DebugSeed,
                 };
 
-                // Configure the history service with the filter columns
-                _historyService.SetFilterConfig(ouijaConfig);
-
-                // Set up result capture
-                _resultCapture = new MotelyResultCapture(_historyService);
-                _resultCapture.SetFilterConfig(ouijaConfig);
-                _resultCapture.ResultCaptured += async (result) =>
+                // The history service should already be configured by SearchModal
+                // Just verify it has the right config
+                if (_historyService.ColumnNames.Count <= 2)
                 {
-                    // Motely handles auto-cutoff internally now, we just add results
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", "History service not properly configured - only has seed/score columns!");
+                    _historyService.SetFilterConfig(ouijaConfig);
+                    _historyService.SetFilterName(ConfigPath);
+                }
+
+                // Register direct callback with OuijaJsonFilterDesc
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
+                OuijaJsonFilterDesc.OnResultFound = async (seed, totalScore, scores) =>
+                {
+                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Direct callback - Found: {seed} Score: {totalScore}");
+                    
+                    var result = new SearchResult
+                    {
+                        Seed = seed,
+                        TotalScore = totalScore,
+                        Scores = scores,
+                        Labels = ouijaConfig.Should?.Select(s => s.Value ?? "Unknown").ToArray()
+                    };
+                    
+                    // Add to results collection
                     _results.Add(result);
 
                     // Save to database
@@ -176,16 +183,13 @@ namespace BalatroSeedOracle.Services
                         {
                             Result = new BalatroSeedOracle.Views.Modals.SearchResult
                             {
-                                Seed = result.Seed,
-                                Score = result.TotalScore,
-                                TallyScores = result.Scores
+                                Seed = seed,
+                                Score = totalScore,
+                                TallyScores = scores
                             },
                         }
                     );
                 };
-
-                // Start capturing
-                await _resultCapture.StartCaptureAsync();
 
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
@@ -195,7 +199,7 @@ namespace BalatroSeedOracle.Services
                         RunSearchInProcess(
                             ouijaConfig,
                             searchCriteria,
-                            progressWrapper,
+                            progress,
                             _cancellationTokenSource.Token
                         ),
                     _cancellationTokenSource.Token
@@ -208,7 +212,6 @@ namespace BalatroSeedOracle.Services
             catch (OperationCanceledException)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
-                await CompleteSearch(true);
             }
             catch (Exception ex)
             {
@@ -241,6 +244,8 @@ namespace BalatroSeedOracle.Services
             CancellationToken cancellationToken = default
         )
         {
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"StartSearchAsync ENTERED! ConfigPath={criteria.ConfigPath}");
+            
             // Load the config from file
             if (string.IsNullOrEmpty(criteria.ConfigPath))
             {
@@ -287,8 +292,8 @@ namespace BalatroSeedOracle.Services
                 DebugSeed = criteria.DebugSeed
             };
 
-            // Call the main search method
-            await StartSearchWithConfigAsync(config, searchConfig, progress, cancellationToken);
+            // Call the main search method with the file path
+            await StartSearchFromFileAsync(criteria.ConfigPath, searchConfig, progress, cancellationToken);
         }
 
         public void PauseSearch()
@@ -320,12 +325,22 @@ namespace BalatroSeedOracle.Services
 
         public void StopSearch()
         {
+            StopSearch(false);
+        }
+        
+        public void StopSearch(bool preventStateSave)
+        {
             if (_isRunning)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
+                
+                _preventStateSave = preventStateSave;
 
-                // Flush any pending search state to disk before stopping
-                _userProfileService?.FlushProfile();
+                // Flush any pending search state to disk before stopping (unless prevented)
+                if (!preventStateSave)
+                {
+                    _userProfileService?.FlushProfile();
+                }
 
                 // Force _isRunning to false IMMEDIATELY
                 _isRunning = false;
@@ -356,24 +371,6 @@ namespace BalatroSeedOracle.Services
                 
                 // Send completed event immediately so UI updates
                 SearchCompleted?.Invoke(this, EventArgs.Empty);
-
-                // Stop result capture first
-                if (_resultCapture != null)
-                {
-                    try
-                    {
-                        var stopTask = _resultCapture.StopCaptureAsync();
-                        // Don't wait more than 500ms for result capture to stop
-                        if (!stopTask.Wait(TimeSpan.FromMilliseconds(500)))
-                        {
-                            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Result capture stop timed out (continuing shutdown)");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error stopping result capture: {ex.Message}");
-                    }
-                }
 
                 // IMPORTANT: Stop the actual search service!
                 if (_currentSearch != null)
@@ -413,27 +410,6 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private void HandleSearchProgress(SearchProgress progress)
-        {
-            // Update UI with progress
-            var eventArgs = new SearchProgressEventArgs
-            {
-                Message = progress.Message ?? string.Empty,
-                PercentComplete = (int)progress.PercentComplete,
-                SeedsSearched = progress.SeedsSearched,
-                ResultsFound = progress.ResultsFound,
-                IsComplete = progress.IsComplete,
-                HasError = progress.HasError,
-            };
-
-            ProgressUpdated?.Invoke(this, eventArgs);
-        }
-
-        private Task CompleteSearch(bool wasCancelled)
-        {
-            // No need to complete search in database
-            return Task.CompletedTask;
-        }
 
         private async Task RunSearchInProcess(
             OuijaConfig config,
@@ -442,29 +418,11 @@ namespace BalatroSeedOracle.Services
             CancellationToken cancellationToken
         )
         {
-            // Capture original console output and route filtered lines to UI
-            var originalOut = Console.Out;
-            FilteredConsoleWriter? filteredWriter = null;
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "RunSearchInProcess ENTERED!");
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OnResultFound is {(OuijaJsonFilterDesc.OnResultFound != null ? "SET" : "NULL")}");
             
             try
             {
-                // Redirect console output to filter out duplicate seed reports and raise event
-                bool filterSeedLines = !criteria.EnableDebugOutput; // debug shows raw seed CSV too
-                filteredWriter = new FilteredConsoleWriter(originalOut, line =>
-                {
-                    // Store in history
-                    lock (_consoleHistoryLock)
-                    {
-                        _consoleHistory.Add(line);
-                        // Keep only last 1000 lines to prevent memory issues
-                        if (_consoleHistory.Count > 1000)
-                        {
-                            _consoleHistory.RemoveAt(0);
-                        }
-                    }
-                    try { ConsoleOutput?.Invoke(this, line); } catch { /* ignore */ }
-                }, filterSeedLines);
-                Console.SetOut(filteredWriter);
                 
                 // Reset cancellation flag
                 OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
@@ -479,20 +437,12 @@ namespace BalatroSeedOracle.Services
                 // Create filter descriptor
                 var filterDesc = new OuijaJsonFilterDesc(config);
                 
-                // Enable auto-cutoff if MinScore is 0
-                _isAutoCutoffEnabled = criteria.MinScore == 0;
-                _currentCutoff = _isAutoCutoffEnabled ? 1 : criteria.MinScore; // Start at 1 for auto
-                filterDesc.Cutoff = _currentCutoff;
-                filterDesc.AutoCutoff = _isAutoCutoffEnabled;
+                // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
+                // MinScore=0 means auto-cutoff in Motely
+                filterDesc.Cutoff = criteria.MinScore;
+                filterDesc.AutoCutoff = criteria.MinScore == 0;
                 
-                if (_isAutoCutoffEnabled)
-                {
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Auto-cutoff enabled, starting at 1");
-                }
-                else
-                {
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", $"Auto-cutoff disabled, using fixed cutoff: {criteria.MinScore}");
-                }
+                DebugLogger.Log($"SearchInstance[{_searchId}]", $"Passing cutoff={criteria.MinScore} to Motely (0=auto)");
 
                 // Create search settings - following Motely Program.cs pattern
                 var batchSize = criteria.BatchSize;
@@ -513,24 +463,14 @@ namespace BalatroSeedOracle.Services
                     _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-4.")
                 };
                 
-                // Apply end batch limit first
-                ulong effectiveEndBatch = criteria.EndBatch;
-                if (criteria.EndBatch == 0 || criteria.EndBatch == ulong.MaxValue)
-                {
-                    effectiveEndBatch = totalBatches;
-                }
+                // If no end batch specified, search all
+                ulong effectiveEndBatch = (criteria.EndBatch == 0) ? totalBatches : criteria.EndBatch;
                 
                 // Create progress callback for Motely
                 var motelyProgress = new Progress<Motely.MotelyProgress>(mp =>
                 {
-                    // Calculate actual percentage based on effective range
-                    double actualPercent = 0;
-                    if (effectiveEndBatch > criteria.StartBatch)
-                    {
-                        actualPercent = ((mp.CompletedBatchCount - criteria.StartBatch) / 
-                                        (double)(effectiveEndBatch - criteria.StartBatch)) * 100;
-                        actualPercent = Math.Min(Math.Max(actualPercent, 0), 100);
-                    }
+                    // Simple percentage: completed / total * 100
+                    double actualPercent = (mp.CompletedBatchCount / (double)totalBatches) * 100.0;
                     
                     // This runs on the captured synchronization context
                     progress?.Report(
@@ -567,22 +507,26 @@ namespace BalatroSeedOracle.Services
                         // This prevents re-processing the same batch on resume
                         _ = _historyService.SaveLastBatchAsync(mp.CompletedBatchCount + 1);
                         
-                        // First time? Save the full state
-                        if (_userProfileService?.GetSearchState() == null)
+                        // Only save state if not prevented
+                        if (!_preventStateSave)
                         {
-                            SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
-                            _lastStateSave = DateTime.UtcNow;
-                        }
-                        else
-                        {
-                            // Just update the batch number in memory
-                            _userProfileService?.UpdateSearchBatch(mp.CompletedBatchCount);
-                            
-                            // Write to disk every 10 seconds
-                            if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
+                            // First time? Save the full state
+                            if (_userProfileService?.GetSearchState() == null)
                             {
-                                _userProfileService?.FlushProfile();
+                                SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
                                 _lastStateSave = DateTime.UtcNow;
+                            }
+                            else
+                            {
+                                // Just update the batch number in memory
+                                _userProfileService?.UpdateSearchBatch(mp.CompletedBatchCount);
+                                
+                                // Write to disk every 10 seconds
+                                if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
+                                {
+                                    _userProfileService?.FlushProfile();
+                                    _lastStateSave = DateTime.UtcNow;
+                                }
                             }
                         }
                     }
@@ -684,11 +628,6 @@ namespace BalatroSeedOracle.Services
                     }
                 }
 
-                // Give capture service a moment to catch any final results
-                if (_resultCapture != null && !cancellationToken.IsCancellationRequested)
-                {
-                    await Task.Delay(100, CancellationToken.None);
-                }
 
                 // Report completion (get count before disposing)
                 var finalBatchCount = 0UL;
@@ -743,13 +682,6 @@ namespace BalatroSeedOracle.Services
             }
             finally
             {
-                // Restore original console output
-                if (originalOut != null)
-                {
-                    Console.SetOut(originalOut);
-                }
-                filteredWriter?.Dispose();
-                
                 // Reset Motely's DebugLogger
                 Motely.DebugLogger.IsEnabled = false;
             }
@@ -759,6 +691,8 @@ namespace BalatroSeedOracle.Services
 
         private void SaveSearchState(ulong completedBatch, ulong totalBatches, ulong endBatch)
         {
+            if (_preventStateSave) return; // Don't save if we're removing the icon
+            
             try
             {
                 if (_currentConfig == null || _currentSearchConfig == null) return;
@@ -794,13 +728,8 @@ namespace BalatroSeedOracle.Services
                 StopSearch();
                 
                 // Wait a bit for graceful shutdown
-                System.Threading.Thread.Sleep(200);
+                System.Threading.Thread.Sleep(1000);
             }
-
-            // Force cancellation flag for Motely
-            OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
-            
-            _cancellationTokenSource?.Cancel();
             
             // Ensure the search task is completed or abandoned
             if (_searchTask != null && !_searchTask.IsCompleted)
@@ -829,17 +758,6 @@ namespace BalatroSeedOracle.Services
                 }
                 catch { /* ignore disposal errors */ }
                 _currentSearch = null;
-            }
-            
-            // Force dispose of result capture
-            if (_resultCapture != null)
-            {
-                try
-                {
-                    _resultCapture.Dispose();
-                }
-                catch { /* ignore disposal errors */ }
-                _resultCapture = null;
             }
             
             DebugLogger.Log($"SearchInstance[{_searchId}]", "Dispose completed");

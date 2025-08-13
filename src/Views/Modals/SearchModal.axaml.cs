@@ -31,6 +31,14 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class SearchModal : UserControl, IDisposable
     {
         public event EventHandler<string>? CreateDesktopIconRequested;
+        // Efficient streaming architecture - no memory explosion!
+        private VirtualResultsProvider? _resultsProvider;
+        private CircularConsoleBuffer _consoleBuffer = new(1000);
+        private Avalonia.Threading.DispatcherTimer? _uiRefreshTimer;
+        private int _lastKnownResultCount = 0;
+        private SearchProgressEventArgs? _latestProgress;
+        
+        // TEMPORARY - for compilation until full refactor is done
         private readonly ObservableCollection<SearchResult> _searchResults = new();
         private SearchInstance? _searchInstance;
         private SearchManager? _searchManager;
@@ -55,8 +63,7 @@ namespace BalatroSeedOracle.Views.Modals
         // Controls
         private TextBox? _consoleOutput;
         
-        // Console settings
-        private const int MAX_CONSOLE_LINES = 500;
+        // Console is now handled by CircularConsoleBuffer
 
         // Action buttons
         private Button? _cookButton;
@@ -99,11 +106,6 @@ namespace BalatroSeedOracle.Views.Modals
         // Current filter info
         private string? _currentFilterPath;
         private FilterSelector? _filterSelector;
-        
-        // Result batching for UI performance
-        private readonly List<SearchResult> _pendingResults = new();
-        private System.Threading.Timer? _resultBatchTimer;
-        private readonly object _resultBatchLock = new object();
         private DateTime _lastResultBatchUpdate = DateTime.UtcNow;
         private DateTime _lastProgressUpdate = DateTime.UtcNow;
         
@@ -753,7 +755,6 @@ namespace BalatroSeedOracle.Views.Modals
                     DebugLogger.Log("SearchModal", $"Connected to existing search: {searchId}");
                     
                     // Subscribe to events
-                    _searchInstance.ConsoleOutput += OnConsoleOutput;
                     
                     // Restore console history
                     RestoreConsoleHistory();
@@ -825,6 +826,11 @@ namespace BalatroSeedOracle.Views.Modals
                         "SearchModal",
                         $"Filter loaded successfully: {config.Name}"
                     );
+                    
+                    // Show in console what filter was loaded
+                    AddToConsole($"Loaded filter: {System.IO.Path.GetFileName(filePath)}");
+                    AddToConsole($"Name: {config.Name ?? "Unnamed"}");
+                    AddToConsole($"Description: {config.Description ?? "No description"}");
 
                     // Update JSON validation status
                     UpdateJsonValidationStatus(true, "Valid ✓");
@@ -867,12 +873,8 @@ namespace BalatroSeedOracle.Views.Modals
 
                     // Enable tabs now that filter is loaded
                     UpdateTabStates(true);
-
-                    // Switch to Deck/Stake tab when filter is selected
-                    if (_settingsTab != null)
-                    {
-                        OnTabClick(_settingsTab, new RoutedEventArgs());
-                    }
+                    
+                    // Stay on the filter tab - don't auto-switch
                 }
             }
             catch (Exception ex)
@@ -880,99 +882,17 @@ namespace BalatroSeedOracle.Views.Modals
                 BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading filter: {ex.Message}");
             }
         }
-        /// <summary>
-        /// Load a config object directly and start search
-        /// </summary>
-        public async Task LoadConfigDirectlyAsync(
-            Motely.Filters.OuijaConfig config,
-            bool autoStartSearch = true
-        )
-        {
-            // Create a new search instance if we don't have one
-            if (string.IsNullOrEmpty(_currentSearchId))
-            {
-                CreateNewSearchInstance();
-            }
-
-            if (_searchInstance != null)
-            {
-                // Set the filter name and config for history tracking
-                var historyService = App.GetService<SearchHistoryService>();
-                if (historyService != null)
-                {
-                    // MUST configure the columns BEFORE SetFilterName
-                    // because SetFilterName calls InitializeDatabase which creates the table!
-                    historyService.SetFilterConfig(config);
-                    historyService.SetFilterName($"Direct:{config.Name ?? "Unnamed"}");
-                }
-
-                // Cook button should always be enabled when a filter is loaded
-                if (_cookButton != null)
-                {
-                    _cookButton.IsEnabled = true;
-                }
-
-                // Enable tabs now that filter is loaded
-                UpdateTabStates(true);
-
-                // Switch to Deck/Stake tab
-                if (_settingsTab != null)
-                {
-                    OnTabClick(_settingsTab, new RoutedEventArgs());
-                }
-
-                // Add to console
-                AddToConsole($"Filter loaded: {config.Name ?? "Unnamed"}");
-
-                // Refresh the filter selector to show the current filter
-                _filterSelector?.RefreshFilters();
-
-                // Only auto-start search if requested (e.g., from FiltersModal)
-                if (autoStartSearch)
-                {
-                    // Switch to Search tab
-                    if (_searchTab != null)
-                    {
-                        OnTabClick(_searchTab, new RoutedEventArgs());
-                    }
-
-                    // Wait a moment for UI to update
-                    await Task.Delay(100);
-
-                    // Start the search directly with the config object
-                    int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size
-                    _isDebugMode = _debugCheckBox?.IsChecked ?? false;
-                    var searchConfig = new SearchConfiguration
-                    {
-                        ThreadCount = _threadsSpinner?.Value ?? 4,
-                        MinScore = _minScoreSpinner?.Value ?? 0,
-                        BatchSize = batchSize,
-                        StartBatch = _resumeFromBatch ?? 0,
-                        EndBatch = GetMaxBatchesForBatchSize(batchSize),
-                        DebugMode = _isDebugMode,
-                        DebugSeed = _isDebugMode ? this.FindControl<TextBox>("DebugSeedInput")?.Text : null,
-                        Deck = _deckAndStakeSelector?.SelectedDeckName ?? "Red",
-                        Stake = _deckAndStakeSelector?.SelectedStakeName ?? "White",
-                    };
-
-                    AddToConsole("──────────────────────────────────");
-                    if (_resumeFromBatch.HasValue && _resumeFromBatch.Value > 0)
-                    {
-                        AddToConsole($"Resuming search from batch {_resumeFromBatch.Value:N0}...");
-                    }
-                    else
-                    {
-                        AddToConsole("Let Jimbo cook! Starting search...");
-                    }
-
-                    // Start search with the config object directly
-                    await _searchInstance.StartSearchWithConfigAsync(config, searchConfig);
-                }
-            }
-        }
 
         private async void OnCookClick(object? sender, RoutedEventArgs e)
         {
+            // Prevent double-clicks by disabling briefly
+            if (_cookButton != null)
+            {
+                _cookButton.IsEnabled = false;
+                await Task.Delay(100); // Brief delay to prevent rapid clicks
+                _cookButton.IsEnabled = true;
+            }
+            
             try
             {
                 if (string.IsNullOrEmpty(_currentFilterPath))
@@ -1003,11 +923,23 @@ namespace BalatroSeedOracle.Views.Modals
                         "SearchModal",
                         "SearchInstance is null after CreateNewSearchInstance"
                     );
-                    return;
+                    throw new InvalidOperationException(
+                        "SearchInstance is null after CreateNewSearchInstance"
+                    );
                 }
 
                 if (!_isSearching)
                 {
+                    // IMMEDIATELY set searching flag to prevent multiple clicks
+                    _isSearching = true;
+                    
+                    // Update button immediately
+                    if (_cookButton != null)
+                    {
+                        _cookButton.Content = "STOP SEARCH";
+                        _cookButton.Classes.Add("stop");
+                    }
+                    
                     // Start search
                     _searchResults.Clear();
                     _newResultsCount = 0; // Reset new results counter
@@ -1049,6 +981,8 @@ namespace BalatroSeedOracle.Views.Modals
                     };
 
                     AddToConsole("──────────────────────────────────");
+                    AddToConsole($"Filter: {System.IO.Path.GetFileName(_currentFilterPath)}");
+                    AddToConsole($"Path: {_currentFilterPath}");
                     if (_resumeFromBatch.HasValue)
                     {
                         AddToConsole($"Resuming search from batch {_resumeFromBatch.Value:N0}...");
@@ -1092,11 +1026,8 @@ namespace BalatroSeedOracle.Views.Modals
                     // Force UI update to show the button change immediately
                     await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, Avalonia.Threading.DispatcherPriority.Render);
 
-                    // Clear any pending results
-                    lock (_resultBatchLock)
-                    {
-                        _pendingResults.Clear();
-                    }
+                    // Stop UI refresh timer
+                    _uiRefreshTimer?.Stop();
 
                     try
                     {
@@ -1158,9 +1089,29 @@ namespace BalatroSeedOracle.Views.Modals
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
+                _lastKnownResultCount = 0;
+                
+                // Set up results provider
+                var historyService = ServiceHelper.GetService<SearchHistoryService>();
+                if (historyService != null)
+                {
+                    _resultsProvider = new VirtualResultsProvider(historyService);
+                }
+                
+                // Start UI refresh timer - 10 FPS is plenty for human eyes
+                _uiRefreshTimer?.Stop();
+                _uiRefreshTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(100)
+                };
+                _uiRefreshTimer.Tick += async (s, args) => await RefreshResultsView();
+                _uiRefreshTimer.Start();
                 
                 // Generate column headers from the filter config
-                GenerateTableHeadersFromConfig();
+                if (historyService != null)
+                {
+                    GenerateTableHeadersFromDuckDB(historyService);
+                }
 
                 // Update cook button
                 if (_cookButton != null)
@@ -1199,7 +1150,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnSearchCompleted(object? sender, EventArgs e)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 try
                 {
@@ -1208,15 +1159,17 @@ namespace BalatroSeedOracle.Views.Modals
                         "Search completed - resetting UI"
                     );
                     _isSearching = false;
+                    
+                    // Stop the refresh timer
+                    _uiRefreshTimer?.Stop();
+                    
+                    // Do one final refresh to ensure everything is up to date
+                    await RefreshResultsView();
 
                     // Update UI using the central method
                     UpdateSearchUI();
 
-                    // Only show finished message if we have results (not cancelled)
-                    if (_searchResults.Count > 0)
-                    {
-                        AddToConsole("Search completed!");
-                    }
+                    AddToConsole($"Search complete! Found {_lastKnownResultCount:N0} results.");
                 }
                 catch (Exception ex)
                 {
@@ -1242,81 +1195,39 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (_consoleOutput != null)
             {
-                _consoleOutput.Text = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+                _consoleOutput.Text = "🃏\n";
             }
-            
-            // Clear buffer too
         }
         
-        private void GenerateTableHeadersFromConfig()
+        private void GenerateTableHeadersFromDuckDB(SearchHistoryService historyService)
         {
             if (_tallyHeadersPanel == null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Cannot generate headers - missing panel");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", "Cannot generate headers - missing panel");
                 return;
             }
             
             // Clear existing headers
             _tallyHeadersPanel.Children.Clear();
             
-            // Try to load the config
-            Motely.Filters.OuijaConfig? config = null;
-            
-            // First try to get config from the search instance (for direct configs)
-            if (_searchInstance != null)
+            // Get column names from DuckDB schema (skip seed and score columns)
+            var columnNames = historyService.ColumnNames;
+            if (columnNames.Count <= 2)
             {
-                config = _searchInstance.GetFilterConfig();
-                if (config != null)
-                {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Got config from search instance for headers");
-                }
-            }
-            
-            // If no config from instance, try to load from file path
-            if (config == null && !string.IsNullOrEmpty(_currentFilterPath))
-            {
-                try
-                {
-                    var json = System.IO.File.ReadAllText(_currentFilterPath);
-                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json);
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "Got config from file for headers");
-                }
-                catch (Exception ex)
-                {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to load config for headers: {ex.Message}");
-                }
-            }
-            
-            if (config == null)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No config available for headers");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", "No tally columns in DuckDB table");
                 return;
             }
             
-            var labels = new List<string>();
-            
-            // Only add Should items - Must items don't have individual scores
-            // (they're required so they always pass, only Should items have tally scores)
-            if (config.Should != null)
+            // Skip first 2 columns (seed, score) to get the tally columns
+            for (int i = 2; i < columnNames.Count; i++)
             {
-                foreach (var item in config.Should)
-                {
-                    // Generate label from value and edition
-                    var label = item.Value ?? item.Type ?? "Unknown";
-                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
-                    {
-                        label = $"{label} {item.Edition}";
-                    }
-                    labels.Add(label);
-                }
-            }
+                var columnName = columnNames[i];
+                // Use the column name from DuckDB as the label
+                var label = columnName.Replace("_", " ");
+                
+                // Add header for this column
+                int tallyIndex = i - 2; // Adjust for skipping seed/score
             
-            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Generated {labels.Count} headers from config");
-            
-            // Add headers for each item
-            int tallyIndex = 0;
-            foreach (var label in labels)
-            {
                 var button = new Button
                 {
                     Width = 60,
@@ -1364,16 +1275,19 @@ namespace BalatroSeedOracle.Views.Modals
                 button.Click += (s, e) => OnSortByTally(currentIndex);
                 
                 _tallyHeadersPanel.Children.Add(button);
-                tallyIndex++;
             }
         }
         
         private void UpdateTallyHeaders()
         {
-            // Try to generate from config first
+            // Try to generate from search history service
             if (_tallyHeadersPanel != null && _tallyHeadersPanel.Children.Count == 0)
             {
-                GenerateTableHeadersFromConfig();
+                var historyService = ServiceHelper.GetService<SearchHistoryService>();
+                if (historyService != null)
+                {
+                    GenerateTableHeadersFromDuckDB(historyService);
+                }
             }
         }
         
@@ -1385,173 +1299,99 @@ namespace BalatroSeedOracle.Views.Modals
                 _searchInstance.ResultFound -= OnResultFound;
                 _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
-                _searchInstance.ConsoleOutput -= OnConsoleOutput;
             }
         }
 
         private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
         {
-            // Throttle progress updates to reduce UI load
-            var now = DateTime.UtcNow;
-            if ((now - _lastProgressUpdate).TotalMilliseconds < 50)  // Update every 50ms for very responsive speed display
-                return;
-                
-            _lastProgressUpdate = now;
-            
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            // Just store the latest progress - the UI timer will handle display updates
+            _latestProgress = e;
+
+            if (_totalSeedsText != null)
             {
-                // Don't update if search was stopped
-                if (!_isSearching)
-                    return;
-                    
-                // Progress updates are now handled by the UI elements, no console spam needed
+                _totalSeeds = e.SeedsSearched;
+                _totalSeedsText.Text = $"{e.SeedsSearched:N0}";
+            }
 
-                // Update progress stats
-                if (_progressPercentText != null)
-                {
-                    // The percentage should already be correctly calculated in SearchInstance
-                    // based on the actual search range (accounting for resume)
-                    _progressPercentText.Text = $"{e.PercentComplete}%";
-                }
+            if (_resultsFoundText != null)
+            {
+                _resultsFoundText.Text = _newResultsCount.ToString();
+            }
+            
+            // Update rarity calculation
+            if (_rarityText != null && _totalSeeds > 0)
+            {
+                double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                _rarityText.Text = $"{rarity:F6}%";
+            }
 
-                if (_batchesText != null)
-                {
-                    _batchesText.Text = $"{e.BatchesSearched:N0}";
-                }
+            // Update time elapsed
 
+            if (_timeElapsedText != null)
+            {
+                var elapsed = DateTime.UtcNow - _searchStartTime;
+                _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
+            }
 
-                if (_totalSeedsText != null)
-                {
-                    _totalSeeds = e.SeedsSearched;
-                    _totalSeedsText.Text = $"{e.SeedsSearched:N0}";
-                }
-
-                if (_resultsFoundText != null)
-                {
-                    _resultsFoundText.Text = _newResultsCount.ToString();
-                }
-                
-                // Update rarity calculation
-                if (_rarityText != null && _totalSeeds > 0)
-                {
-                    double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                    _rarityText.Text = $"{rarity:F6}%";
-                }
-
-                // Update time elapsed
-
-                if (_timeElapsedText != null)
-                {
-                    var elapsed = DateTime.UtcNow - _searchStartTime;
-                    _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
-                }
-
-                // Update speedometer
-                UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
-            });
+            // Update speedometer
+            UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
+            
         }
 
         private void OnResultFound(object? sender, SearchResultEventArgs e)
         {
-            // Instead of immediately updating UI, batch the results
-            lock (_resultBatchLock)
+            // DuckDB handles the actual storage (via SearchInstance)
+            // We just update the counter - the timer will refresh the view
+            _newResultsCount++;
+            
+            // Add seed to console buffer for immediate feedback
+            if (e.Result != null)
             {
-                _pendingResults.Add(e.Result);
-                _newResultsCount++; // Increment new results counter
-                
-                // Start or reset the batch timer
-                if (_resultBatchTimer == null)
-                {
-                    _resultBatchTimer = new System.Threading.Timer(
-                        ProcessBatchedResults,
-                        null,
-                        100, // Initial delay of 100ms
-                        System.Threading.Timeout.Infinite // Don't repeat
-                    );
-                }
-                else
-                {
-                    // Reset the timer to delay processing if more results are coming
-                    _resultBatchTimer.Change(100, System.Threading.Timeout.Infinite);
-                }
+                _consoleBuffer.AddLine($"{e.Result.Seed},{e.Result.Score}");
             }
         }
         
-        
-        private void ProcessBatchedResults(object? state)
+        private async Task RefreshResultsView()
         {
-            List<SearchResult> resultsToAdd;
-            int totalNewResults;
+            if (_resultsProvider == null) return;
             
-            lock (_resultBatchLock)
-            {
-                if (_pendingResults.Count == 0)
-                    return;
-                    
-                resultsToAdd = new List<SearchResult>(_pendingResults);
-                _pendingResults.Clear();
-                totalNewResults = _newResultsCount;
-            }
+            // Get current count from DB
+            var newCount = await _resultsProvider.GetCountAsync();
             
-            // Post to UI thread
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            // Only refresh if count changed
+            if (newCount != _lastKnownResultCount)
             {
-                // If search was stopped, don't add any more results
-                if (!_isSearching)
-                    return;
-                    
-                // Log first result to debug tally scores
-                if (resultsToAdd.Count > 0 && _searchResults.Count == 0)
-                {
-                    var firstResult = resultsToAdd[0];
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
-                        $"First result: TallyScores={firstResult.TallyScores?.Length ?? 0}, ItemLabels={firstResult.ItemLabels?.Length ?? 0}");
-                    if (firstResult.TallyScores != null && firstResult.TallyScores.Length > 0)
-                    {
-                        BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
-                            $"Tally scores: {string.Join(", ", firstResult.TallyScores)}");
-                    }
-                    if (firstResult.ItemLabels != null && firstResult.ItemLabels.Length > 0)
-                    {
-                        BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
-                            $"Item labels: {string.Join(", ", firstResult.ItemLabels)}");
-                    }
-                }
-                    
-                // Add all pending results at once
-                foreach (var result in resultsToAdd)
-                {
-                    _searchResults.Add(result);
-                }
+                _lastKnownResultCount = newCount;
                 
-                // Seeds are already shown via Motely's console output - don't duplicate them
-
                 // Update results summary
                 if (_resultsSummary != null)
                 {
-                    var existingCount = _searchResults.Count - totalNewResults;
-                    if (existingCount > 0)
-                    {
-                        _resultsSummary.Text = $"Total: {_searchResults.Count} results ({existingCount} from DB + {totalNewResults} new)";
-                    }
-                    else
-                    {
-                        _resultsSummary.Text = $"Found {_searchResults.Count} results";
-                    }
+                    _resultsSummary.Text = $"Found {newCount:N0} results";
                 }
                 
-                // Update tally headers if this is the first batch
-                if (_searchResults.Count == resultsToAdd.Count)
+                // Update results found text
+                if (_resultsFoundText != null)
                 {
-                    UpdateTallyHeaders();
+                    _resultsFoundText.Text = newCount.ToString("N0");
                 }
-
-                // Enable results tab export button
-                if (_exportResultsButton != null)
+                
+                // New results count is shown in summary
+                
+                // TODO: Refresh the visible portion of results in DataGrid
+                // For now, just load first page for display
+                if (_resultsItemsControl != null && newCount > 0)
                 {
-                    _exportResultsButton.IsEnabled = _searchResults.Count > 0;
+                    var firstPage = await _resultsProvider.GetPageAsync(0, 100);
+                    _resultsItemsControl.ItemsSource = firstPage;
                 }
-            });
+            }
+            
+            // Update console from buffer
+            if (_consoleOutput != null)
+            {
+                _consoleOutput.Text = _consoleBuffer.GetText();
+                _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
+            }
         }
 
         private void AddToConsole(string message)
@@ -1564,32 +1404,6 @@ namespace BalatroSeedOracle.Views.Modals
                 // Auto-scroll to bottom
                 _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
             }
-        }
-        
-        private void OnConsoleOutput(object? sender, string line)
-        {
-            // Update console immediately on UI thread
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                AddToConsole(line);
-                
-                // Check for auto-cutoff message and update spinner
-                // Format: "⚡ Auto-cutoff: Increased to {number} (hit rate was {percentage})"
-                if (line.Contains("Auto-cutoff: Increased to"))
-                {
-                    var match = System.Text.RegularExpressions.Regex.Match(line, @"Increased to (\d+)");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int newCutoff))
-                    {
-                        // Update the min score spinner to reflect the new cutoff
-                        if (_minScoreSpinner != null)
-                        {
-                            _minScoreSpinner.Value = newCutoff;
-                            BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", 
-                                $"Updated min score spinner to {newCutoff} due to auto-cutoff");
-                        }
-                    }
-                }
-            });
         }
         
         private void RestoreConsoleHistory()
@@ -1737,7 +1551,6 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     
                     // Subscribe to console output
-                    _searchInstance.ConsoleOutput += OnConsoleOutput;
                     
                     // Restore console history
                     RestoreConsoleHistory();
@@ -1817,7 +1630,6 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
-                    _searchInstance.ConsoleOutput += OnConsoleOutput;
 
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
@@ -2119,11 +1931,7 @@ namespace BalatroSeedOracle.Views.Modals
     {
         public string Seed { get; set; } = "";
         public double Score { get; set; }
-        public string Details { get; set; } = "";
-        public string? Antes { get; set; }
-        public string? ItemsJson { get; set; }
         public int[]? TallyScores { get; set; }
-        public string[]? ItemLabels { get; set; }
 
         public ReactiveCommand<string, Unit> CopyCommand { get; }
 
@@ -2424,14 +2232,8 @@ namespace BalatroSeedOracle.Views.Modals
         public void Dispose()
         {
             // Clean up timer
-            _resultBatchTimer?.Dispose();
-            _resultBatchTimer = null;
-            
-            // Clear pending results
-            lock (_resultBatchLock)
-            {
-                _pendingResults.Clear();
-            }
+            _uiRefreshTimer?.Stop();
+            _uiRefreshTimer = null;
             
             // Unsubscribe from events
             UnsubscribeFromSearchEvents();

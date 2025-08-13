@@ -86,25 +86,8 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.OuijaConfig config)
         {
-            var searchContent = new SearchModal();
-        
-            // Handle desktop icon creation when modal closes with active search
-            searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
-                // Get the search ID from the modal
-                var searchId = searchContent.GetCurrentSearchId();
-                if (!string.IsNullOrEmpty(searchId))
-                {
-                    menu.ShowSearchDesktopIcon(searchId, cfgPath);
-                }
-            };
-        
-            // Load the config object directly WITHOUT auto-starting search
-            // The user should stay on the filter tab and decide when to search
-            _ = searchContent.LoadConfigDirectlyAsync(config, autoStartSearch: false);
-        
-            return menu.ShowModal("MOTELY SEARCH", searchContent);
+            // This method should not be used - filters must be saved first!
+            throw new NotSupportedException("Filters must be saved before searching. Use ShowSearchModal with a file path instead.");
         }
 
         /// <summary>

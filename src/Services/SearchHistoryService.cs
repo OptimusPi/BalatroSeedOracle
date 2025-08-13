@@ -19,6 +19,8 @@ namespace BalatroSeedOracle.Services
         private string _currentFilterName = "default";
         private List<string> _columnNames = new List<string>();
         private Motely.Filters.OuijaConfig? _currentConfig;
+        
+        public List<string> ColumnNames => _columnNames;
 
         public SearchHistoryService()
         {
@@ -79,9 +81,18 @@ namespace BalatroSeedOracle.Services
             if (should.Antes != null && should.Antes.Length > 0)
                 name += "_ante" + should.Antes[0];
                 
-            // Make it SQL-safe
-            name = name?.Replace(" ", "_").Replace("-", "_").ToLower() ?? "column";
-            return name;
+            // Make it SQL-safe - remove all non-alphanumeric chars except underscore
+            if (string.IsNullOrEmpty(name))
+                name = "column";
+            
+            // Replace all non-alphanumeric with underscore
+            var safeName = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9_]", "_").ToLower();
+            
+            // Ensure it doesn't start with a number
+            if (char.IsDigit(safeName[0]))
+                safeName = "col_" + safeName;
+                
+            return safeName;
         }
 
         public void SetFilterName(string filterPath)
@@ -117,17 +128,15 @@ namespace BalatroSeedOracle.Services
 
         private DuckDBConnection GetConnection()
         {
-            lock (_connectionLock)
+            if (string.IsNullOrEmpty(_connectionString))
             {
-                if (_connection == null || _connection.State != System.Data.ConnectionState.Open)
-                {
-                    _connection?.Dispose();
-                    _connection = new DuckDBConnection(_connectionString);
-                    _connection.Open();
-                    DebugLogger.Log("SearchHistoryService", "Created new DuckDB connection");
-                }
-                return _connection;
+                throw new InvalidOperationException("SearchHistoryService not initialized. Call SetFilterName first.");
             }
+            
+            // Create a new connection for each operation - DuckDB handles connection pooling internally
+            var connection = new DuckDBConnection(_connectionString);
+            connection.Open();
+            return connection;
         }
 
         private void InitializeDatabase()
@@ -263,24 +272,36 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public async Task AddSearchResultAsync(SearchResult result)
         {
+            var columns = string.Join(", ", _columnNames);
+            var placeholders = string.Join(", ", Enumerable.Repeat("?", _columnNames.Count));
+            var sqlCommand = $"INSERT OR REPLACE INTO results ({columns}) VALUES ({placeholders})";
+            
             try
             {
-                var connection = GetConnection();
+                using var connection = GetConnection();
 
-                // Build dynamic INSERT statement based on columns
-                var columns = string.Join(", ", _columnNames);
-                var placeholders = string.Join(", ", Enumerable.Repeat("?", _columnNames.Count));
+                // More detailed logging
+                DebugLogger.Log("SearchHistoryService", 
+                    $"Inserting into columns: {columns} ({_columnNames.Count} columns)");
+                DebugLogger.Log("SearchHistoryService", 
+                    $"Values: seed={result.Seed}, score={result.TotalScore}, scores array has {result.Scores?.Length ?? 0} items");
                 
+                // Log the actual column names
+                for (int i = 0; i < _columnNames.Count; i++)
+                {
+                    var value = i == 0 ? result.Seed : 
+                               i == 1 ? result.TotalScore.ToString() :
+                               (i - 2 < (result.Scores?.Length ?? 0)) ? result.Scores![i-2].ToString() : "0";
+                    DebugLogger.Log("SearchHistoryService", $"  Column {i}: {_columnNames[i]} = {value}");
+                }
+
                 using var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    INSERT OR REPLACE INTO results ({columns})
-                    VALUES ({placeholders})
-                ";
+                cmd.CommandText = sqlCommand;
 
                 // Add parameters in order: seed, total score, then individual scores
                 cmd.Parameters.Add(new DuckDBParameter(result.Seed));
                 cmd.Parameters.Add(new DuckDBParameter(result.TotalScore));
-                
+
                 // Add each individual score (if we have criterion columns)
                 if (result.Scores != null && _columnNames.Count > 2)
                 {
@@ -305,13 +326,91 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.LogError(
                     "SearchHistoryService",
-                    $"Failed to add search result: {ex.Message}"
+                    $"Failed to add search result: {ex.Message}\nSQL: {sqlCommand}\nColumns: {string.Join(", ", _columnNames)}"
                 );
+                throw;
             }
         }
 
         /// <summary>
-        /// Get all results from the database
+        /// Get a page of results for virtual scrolling
+        /// </summary>
+        public async Task<List<SearchResult>> GetResultsPageAsync(int offset, int pageSize)
+        {
+            var results = new List<SearchResult>();
+
+            try
+            {
+                var connection = GetConnection();
+                var columns = string.Join(", ", _columnNames);
+                
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = $@"
+                    SELECT {columns}
+                    FROM results
+                    ORDER BY score DESC
+                    LIMIT ? OFFSET ?
+                ";
+                cmd.Parameters.Add(new DuckDBParameter(pageSize));
+                cmd.Parameters.Add(new DuckDBParameter(offset));
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var seed = reader.GetString(0);
+                    var score = reader.GetInt32(1);
+                    
+                    // Read individual scores from criterion columns
+                    int[]? scores = null;
+                    if (_columnNames.Count > 2)
+                    {
+                        scores = new int[_columnNames.Count - 2];
+                        for (int i = 0; i < scores.Length; i++)
+                        {
+                            scores[i] = reader.GetInt32(i + 2);
+                        }
+                    }
+                    
+                    results.Add(
+                        new SearchResult
+                        {
+                            Seed = seed,
+                            TotalScore = score,
+                            Scores = scores
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to get results page: {ex.Message}");
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Get the total count of results
+        /// </summary>
+        public async Task<int> GetResultCountAsync()
+        {
+            try
+            {
+                var connection = GetConnection();
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(*) FROM results";
+                var count = await cmd.ExecuteScalarAsync();
+                return Convert.ToInt32(count);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchHistoryService", $"Failed to get result count: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Get all results from the database (DEPRECATED - use GetResultsPageAsync for performance)
         /// </summary>
         public async Task<List<SearchResult>> GetSearchResultsAsync()
         {
@@ -410,6 +509,12 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                // Silently skip if not initialized - this can happen during startup/shutdown
+                if (string.IsNullOrEmpty(_connectionString))
+                {
+                    return;
+                }
+                
                 var connection = GetConnection();
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
@@ -423,7 +528,11 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchHistoryService", $"Failed to save last batch: {ex.Message}");
+                // Only log if it's not an initialization error (to avoid spam)
+                if (!ex.Message.Contains("not initialized"))
+                {
+                    DebugLogger.LogError("SearchHistoryService", $"Failed to save last batch: {ex.Message}");
+                }
             }
         }
         

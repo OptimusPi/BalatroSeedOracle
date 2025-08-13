@@ -38,10 +38,27 @@ namespace BalatroSeedOracle.Controls
         private CheckBox[] _anteCheckBoxes = new CheckBox[8];
         private CheckBox? _sourceShop;
         private CheckBox? _sourcePack;
+        private bool _cannotAppearInShop = false;
 
         public SpectralConfigPopup()
         {
             InitializeComponent();
+        }
+        
+        public void SetCannotAppearInShop(bool cannotAppear)
+        {
+            _cannotAppearInShop = cannotAppear;
+            
+            // If this spectral card cannot appear in shops, disable shop source
+            if (_cannotAppearInShop && _sourceShop != null)
+            {
+                _sourceShop.IsEnabled = false;
+                ToolTip.SetTip(_sourceShop, "Soul and Black Hole can only come from spectral packs");
+                
+                // Uncheck shop if it was checked
+                _sourceShop.IsChecked = false;
+                _selectedSources["shopSlots"] = new List<int>();
+            }
         }
 
         private void InitializeComponent()
@@ -227,9 +244,20 @@ namespace BalatroSeedOracle.Controls
 
             _sourceShop = CreateSourceCheckBox("From Shop (Ghost Deck)", "shop");
             _sourcePack = CreateSourceCheckBox("From Spectral Pack", "pack");
+            
+            // Apply restrictions if this card cannot appear in shops
+            if (_cannotAppearInShop && _sourceShop != null)
+            {
+                _sourceShop.IsEnabled = false;
+                ToolTip.SetTip(_sourceShop, "Soul and Black Hole can only come from spectral packs");
+                _sourceShop.IsChecked = false;
+                _selectedSources["shopSlots"] = new List<int>();
+            }
 
-            sourcesPanel.Children.Add(_sourceShop);
-            sourcesPanel.Children.Add(_sourcePack);
+            if (_sourceShop != null)
+                sourcesPanel.Children.Add(_sourceShop);
+            if (_sourcePack != null)
+                sourcesPanel.Children.Add(_sourcePack);
 
             Grid.SetRow(sourcesPanel, 1);
             grid.Children.Add(sourcesPanel);

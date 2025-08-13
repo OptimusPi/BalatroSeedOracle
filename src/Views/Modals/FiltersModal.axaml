@@ -12,7 +12,6 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="44"/>
             
             <Setter Property="Height" Value="50"/>
             <Setter Property="MinWidth" Value="144"/>

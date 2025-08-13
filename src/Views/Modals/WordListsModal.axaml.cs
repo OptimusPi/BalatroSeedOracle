@@ -101,10 +101,7 @@ tag"
                     bannedPath,
                     @"# Words to exclude from filters
 # One word per line
-
-test
-debug
-temp"
+"
                 );
             }
         }

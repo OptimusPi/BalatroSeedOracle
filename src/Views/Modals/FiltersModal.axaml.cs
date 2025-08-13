@@ -431,6 +431,16 @@ namespace BalatroSeedOracle.Views.Modals
         
         private void OnSearchForSeedsClick(object? sender, RoutedEventArgs e)
         {
+            // Get the saved filter path from the button's Tag
+            var searchButton = sender as Button;
+            var filterPath = searchButton?.Tag as string;
+            
+            if (string.IsNullOrEmpty(filterPath))
+            {
+                UpdateStatus("Error: No filter path found. Please save the filter first.", true);
+                return;
+            }
+            
             // Get the main window to find BalatroMainMenu
             var mainWindow = TopLevel.GetTopLevel(this) as Window;
             if (mainWindow?.Content is Grid grid)
@@ -438,16 +448,13 @@ namespace BalatroSeedOracle.Views.Modals
                 var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
                 if (mainMenu != null)
                 {
-                    // Build the config from current selections
-                    var config = BuildOuijaConfigFromSelections();
-                    
                     // Close this modal first
                     mainMenu.HideModalContent();
                     
-                    // Open the search modal with the config and go directly to search tab
+                    // Open the search modal with the SAVED FILE PATH
                     Dispatcher.UIThread.Post(() =>
                     {
-                        var searchModal = mainMenu.ShowSearchModalWithConfig(config);
+                        var searchModal = mainMenu.ShowSearchModal(filterPath);
                         
                         // The modal needs a moment to initialize before we can switch tabs
                         Dispatcher.UIThread.Post(() =>
@@ -455,7 +462,7 @@ namespace BalatroSeedOracle.Views.Modals
                             // Find the SearchModal content within the StandardModal
                             if (searchModal?.Content is SearchModal searchContent)
                             {
-                                // Go directly to the Search tab with default Red deck, White stake
+                                // Go directly to the Search tab
                                 searchContent.GoToSearchTab();
                             }
                         }, DispatcherPriority.Background);
@@ -494,6 +501,7 @@ namespace BalatroSeedOracle.Views.Modals
                     name = filterName,
                     description = description,
                     author = authorName,
+                    dateCreated = DateTime.UtcNow,
                     must = config.Must,
                     should = config.Should,
                     mustNot = config.MustNot
@@ -519,9 +527,14 @@ namespace BalatroSeedOracle.Views.Modals
                 // Write the JSON file using the proper serializer
                 var json = SerializeOuijaConfig(config);
                 
-                // Replace the empty name and description with actual values
+                // Replace the empty name, description, and add dateCreated
                 json = json.Replace("\"name\": \"\"", $"\"name\": \"{filterName}\"");
                 json = json.Replace("\"description\": \"\"", $"\"description\": \"{description}\"");
+                
+                // Add dateCreated after description
+                var dateCreatedString = $"\"dateCreated\": \"{DateTime.UtcNow:yyyy-MM-dd'T'HH:mm:ss.fff'Z'}\"";
+                json = json.Replace("\"description\": \"" + description + "\"", 
+                    "\"description\": \"" + description + "\",\n  " + dateCreatedString);
                 
                 await File.WriteAllTextAsync(filePath, json);
 
@@ -539,6 +552,10 @@ namespace BalatroSeedOracle.Views.Modals
                 // Refresh the filter selector to show the new filter
                 var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
                 filterSelector?.RefreshFilters();
+                
+                // Update the JSON editor with the newly saved content
+                _currentFilePath = filePath; // Store the path so JSON tab can reload it
+                UpdateJsonEditor();
             }
             catch (Exception ex)
             {
@@ -1294,11 +1311,25 @@ namespace BalatroSeedOracle.Views.Modals
                 var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
                 if (jsonEditor != null)
                 {
-                    // Create OuijaConfig from current selections
-                    var config = BuildOuijaConfigFromSelections();
-
-                    // Use the same serialization method that properly handles sources
-                    var json = SerializeOuijaConfig(config);
+                    string json;
+                    
+                    // If we have a saved file path, load from file to get the latest content
+                    if (!string.IsNullOrEmpty(_currentFilePath) && File.Exists(_currentFilePath))
+                    {
+                        json = File.ReadAllText(_currentFilePath);
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
+                            "FiltersModal",
+                            $"Loaded JSON from file: {_currentFilePath}"
+                        );
+                    }
+                    else
+                    {
+                        // Create OuijaConfig from current selections
+                        var config = BuildOuijaConfigFromSelections();
+                        // Use the same serialization method that properly handles sources
+                        json = SerializeOuijaConfig(config);
+                    }
+                    
                     jsonEditor.Text = json;
 
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1919,7 +1950,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     // Get text from AvaloniaEdit if available, otherwise use the TextBox
                     string jsonText;
-                    var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonTextEditor");
+                    var textEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
                     if (textEditor != null)
                     {
                         jsonText = textEditor.Text;
@@ -4896,7 +4927,7 @@ namespace BalatroSeedOracle.Views.Modals
                 "Jokers" or "SoulJokers" => CreateJokerConfigPopup(itemName),
                 "Tarots" => new TarotConfigPopup(),
                 "Planets" => new TarotConfigPopup(), // Planet cards use same config as Tarot (no editions)
-                "Spectrals" => new SpectralConfigPopup(),
+                "Spectrals" => CreateSpectralConfigPopup(itemName),
                 "Vouchers" => new VoucherConfigPopup(),
                 "Tags" => new TagConfigPopup(),
                 _ => new JokerConfigPopup(), // Fallback to joker config
@@ -6090,6 +6121,21 @@ namespace BalatroSeedOracle.Views.Modals
             if (IsLegendaryJoker(itemName))
             {
                 popup.SetIsLegendaryJoker(true);
+            }
+            
+            return popup;
+        }
+        
+        private SpectralConfigPopup CreateSpectralConfigPopup(string itemName)
+        {
+            var popup = new SpectralConfigPopup();
+            
+            // Check if it's Soul or BlackHole spectral card
+            // These cards cannot appear in shops
+            if (itemName == "Soul" || itemName == "TheSoul" || 
+                itemName == "BlackHole" || itemName == "Black Hole")
+            {
+                popup.SetCannotAppearInShop(true);
             }
             
             return popup;

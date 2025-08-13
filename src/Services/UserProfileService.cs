@@ -62,16 +62,6 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Update audio settings
-        /// </summary>
-        public void UpdateAudioSettings(int volumeLevel, bool musicEnabled)
-        {
-            _currentProfile.VolumeLevel = volumeLevel;
-            _currentProfile.MusicEnabled = musicEnabled;
-            SaveProfile();
-        }
-
-        /// <summary>
         /// Save the current search state for resuming later
         /// </summary>
         public void SaveSearchState(SearchResumeState state)

@@ -29,16 +29,6 @@ namespace BalatroSeedOracle.Models
         public bool AnimationEnabled { get; set; } = true;
 
         /// <summary>
-        /// Volume level (0-3)
-        /// </summary>
-        public int VolumeLevel { get; set; } = 2;
-
-        /// <summary>
-        /// Whether music is enabled
-        /// </summary>
-        public bool MusicEnabled { get; set; } = true;
-
-        /// <summary>
         /// Last search state for resuming interrupted searches
         /// </summary>
         public SearchResumeState? LastSearchState { get; set; }

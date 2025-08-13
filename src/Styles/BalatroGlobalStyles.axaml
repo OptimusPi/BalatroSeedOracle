@@ -473,4 +473,9 @@
         <Setter Property="FontSize" Value="10"/>
     </Style>
     
+    <!-- Tab button style with larger font for red navigation bars -->
+    <Style Selector="Button.tab-button">
+        <Setter Property="FontSize" Value="56"/>
+    </Style>
+    
 </Styles>

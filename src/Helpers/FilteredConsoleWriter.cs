@@ -28,19 +28,24 @@ namespace BalatroSeedOracle.Helpers
         
         public override void WriteLine(string? value)
         {
+            // ALWAYS send to the callback first (for SearchInstance to process)
+            if (value != null)
+            {
+                _onOutput?.Invoke(value + Environment.NewLine);
+            }
+            
             if (_filterSeedLines && value != null)
             {
-                // Filter out seed result lines (CSV format)
+                // Filter out seed result lines from console display only
                 if (SeedLineRegex.IsMatch(value.Trim()))
                 {
-                    // Skip this line - it's a duplicate seed report
+                    // Skip writing to console - but callback already got it
                     return;
                 }
             }
             
-            // Pass through all other output
+            // Pass through all other output to console
             _originalWriter.WriteLine(value);
-            _onOutput?.Invoke(value + Environment.NewLine);
         }
         
         public override void Write(string? value)

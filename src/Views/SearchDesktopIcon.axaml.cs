@@ -247,10 +247,23 @@ namespace BalatroSeedOracle.Views
 
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)
         {
-            // Stop any running search
-            if (_isSearching)
+            // FIRST stop the search BEFORE clearing state!
+            // Otherwise the search will save its state again while stopping
+            if (_isSearching && _searchInstance != null)
             {
-                _searchInstance?.StopSearch();
+                // Stop the search instance WITHOUT saving state
+                _searchInstance.StopSearch(true);
+            }
+            
+            // NOW clear the saved search state AFTER stopping the search
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            if (userProfileService != null)
+            {
+                userProfileService.ClearSearchState();
+                DebugLogger.Log("SearchDesktopIcon", "Cleared saved search state from user profile");
+                
+                // Force save the profile immediately to persist the deletion
+                userProfileService.FlushProfile();
             }
 
             // Remove search from manager
