@@ -159,6 +159,7 @@ jobs:
         run: >-
           dotnet publish ${{ env.PROJECT_FILE }} -c Release -r ${{ matrix.rid }}
           --self-contained true -p:PublishSingleFile=true -o publish
+          && cp ${{ env.PROJECT_FILE%/* }}/BalatroSeedOracle.ico publish/ || echo "Icon copy skipped"
 
       - name: Pack Velopack
         shell: bash
@@ -175,7 +176,21 @@ jobs:
             exit 1
           fi
           echo "Using pack version: $VERSION"
-          vpk pack --packId BalatroSeedOracle --packVersion "$VERSION" \
+          ICON_PATH="publish/BalatroSeedOracle.ico"
+          if [ ! -f "$ICON_PATH" ]; then
+            # Try fallback relative to repo root
+            if [ -f "src/BalatroSeedOracle.ico" ]; then
+              cp src/BalatroSeedOracle.ico "$ICON_PATH"
+            fi
+          fi
+          if [ -f "$ICON_PATH" ]; then
+            ICON_ARG="--icon $ICON_PATH"
+            echo "Including icon: $ICON_PATH"
+          else
+            ICON_ARG=""
+            echo "Icon file not found; proceeding without custom icon"
+          fi
+          vpk pack --packId BalatroSeedOracle --packVersion "$VERSION" $ICON_ARG \
             --packDir publish --mainExe ${{ matrix.mainExe }} --packTitle "BalatroSeedOracle" \
             --packAuthors "OptimusPi" --outputDir releases --runtime ${{ matrix.rid }}
       - name: Upload Velopack artifact
