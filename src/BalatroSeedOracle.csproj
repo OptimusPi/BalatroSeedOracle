@@ -11,9 +11,9 @@
     <Product>Balatro Seed BalatroSeedOracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright © 2025</Copyright>
-    <Version>1.1.1</Version>
-    <FileVersion>1.1.1</FileVersion>
-    <AssemblyVersion>1.1.1</AssemblyVersion>
+  <Version>1.1.4</Version>
+  <FileVersion>1.1.4</FileVersion>
+  <AssemblyVersion>1.1.4</AssemblyVersion>
     <!-- Enable more warnings for code quality -->
     <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
