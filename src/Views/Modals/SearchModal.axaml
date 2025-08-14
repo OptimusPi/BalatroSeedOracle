@@ -774,6 +774,13 @@
                                 Height="32"
                                 Margin="10,0,0,0"
                                 Click="OnClearFilterClick"/>
+            <Button Grid.Column="3"
+                Name="RefreshResultsButton"
+                Content="Refresh"
+                Classes="small-button"
+                Height="32"
+                Margin="10,0,0,0"
+                Click="OnRefreshResultsClick"/>
                     </Grid>
                 </Border>
                 
@@ -840,10 +847,14 @@
                                 </Button>
                                            
                                 <!-- Dynamic tally score headers will be added here -->
-                                <StackPanel Grid.Column="2" 
-                                            Name="TallyHeadersPanel"
-                                            Orientation="Horizontal"
-                                            HorizontalAlignment="Center"/>
+                                <ScrollViewer Grid.Column="2"
+                                              HorizontalScrollBarVisibility="Auto"
+                                              VerticalScrollBarVisibility="Disabled"
+                                              Margin="0">
+                                    <StackPanel Name="TallyHeadersPanel"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Left"/>
+                                </ScrollViewer>
                                            
                                 <TextBlock Grid.Column="3" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
@@ -906,7 +917,7 @@
                                                           ItemsSource="{Binding TallyScores}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
@@ -915,10 +926,10 @@
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="11"
                                                                    Foreground="{StaticResource White}"
-                                                                   Width="60"
+                                                                   Width="{DynamicResource TallyColumnWidth}"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
-                                                                   Margin="8,4"/>
+                                                                   Margin="2,4"/>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -957,11 +968,6 @@
                                    VerticalAlignment="Center"/>
                         
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Name="RefreshResultsButton"
-                    Content="Refresh"
-                    Classes="btn-blue"
-                    HorizontalAlignment="Right"
-                    Click="OnRefreshResultsClick"/>
                 <Button Name="ExportResultsButton"
                     Content="Export Results for Excel/CSV"
                     Classes="btn-green"

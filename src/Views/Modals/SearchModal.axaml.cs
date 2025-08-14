@@ -88,6 +88,13 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _activeFilterNameText;
         private TextBlock? _timeElapsedText;
     private TextBlock? _etaText;
+    // Smoothing state
+    private DateTime _lastEtaUpdate = DateTime.MinValue;
+    private double _smoothedRemainingSeconds = -1; // moving average of remaining seconds
+    private readonly double _etaSmoothingFactor = 0.15; // EMA alpha
+    private long _lastSeedsAtProgress = 0;
+    private DateTime _lastSeedsProgressTime = DateTime.MinValue;
+    private double _lastSeedsPerMsObserved = 0;
         private TextBlock? _resultsFoundText;
     private TextBlock? _rarityText; // now 'Rate' percent
     private TextBlock? _rarityStringText; // categorical rarity label
@@ -397,7 +404,13 @@ namespace BalatroSeedOracle.Views.Modals
             
             if (_minScoreSpinner != null)
             {
-                _minScoreSpinner.DisplayValues = new[] { "Auto", "1", "2", "3", "4", "5" };
+                // 0 = Auto, 1..69 explicit min score (nice)
+                _minScoreSpinner.DisplayValues = new[] { "Auto" }
+                    .Concat(Enumerable.Range(1, 69).Select(i => i.ToString()))
+                    .ToArray();
+                _minScoreSpinner.Minimum = 0;
+                _minScoreSpinner.Maximum = 69; // hard cap so increment button stops at 69
+                _minScoreSpinner.Increment = 1;
             }
 
             // Find deck/stake selector component
@@ -992,7 +1005,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = _threadsSpinner?.Value ?? 4,
-                        MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-5 = actual values
+                        MinScore = _minScoreSpinner?.Value ?? 0, // 0 = Auto, 1-69 = explicit cutoff
                         BatchSize = batchSize,
                         StartBatch = startBatch,
                         EndBatch = GetMaxBatchesForBatchSize(batchSize),
@@ -1133,6 +1146,9 @@ namespace BalatroSeedOracle.Views.Modals
                 _peakSpeed = 0;
     _etaText = this.FindControl<TextBlock>("EtaText");
                 _totalSeeds = 0;
+                _lastSeedsAtProgress = 0;
+                _lastSeedsProgressTime = DateTime.UtcNow;
+                _lastSeedsPerMsObserved = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
                 _lastKnownResultCount = 0;
@@ -1145,7 +1161,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Start a lightweight UI timer JUST for elapsed time & rarity so they feel real-time.
                 // Progress events from Motely can be sparse (batch-sized), causing perceived stutter.
-                _uiRefreshTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) }; // keep elapsed/rarity ticking
+                _uiRefreshTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) }; // keep elapsed/rarity ticking, also interpolation
                 _uiRefreshTimer.Tick += (_, _) =>
                 {
                     if (!_isSearching) return;
@@ -1161,8 +1177,29 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     if (_latestProgress != null)
                     {
-                        // Still refresh ETA based on most recent completed batch progress
-                        UpdateEta(_latestProgress);
+                        // Interpolate seeds smoothly between progress events if we have recent speed
+                        if (_totalSeedsText != null && _lastSeedsPerMsObserved > 0 && _lastSeedsProgressTime != DateTime.MinValue)
+                        {
+                            var msSince = (DateTime.UtcNow - _lastSeedsProgressTime).TotalMilliseconds;
+                            if (msSince > 0 && msSince < 5000) // don't extrapolate too far
+                            {
+                                long interpolated = _lastSeedsAtProgress + (long)(_lastSeedsPerMsObserved * msSince);
+                                if (interpolated > _totalSeeds) // only show forward
+                                {
+                                    _totalSeedsText.Text = interpolated.ToString("N0");
+                                }
+                            }
+                        }
+                        // Throttle ETA refresh to ~ once per 2s (smoother) using smoothed remaining seconds
+                        if ((DateTime.UtcNow - _lastEtaUpdate).TotalMilliseconds >= 2000)
+                        {
+                            UpdateEta(_latestProgress, true);
+                        }
+                        else if (_etaText != null && _smoothedRemainingSeconds > 0)
+                        {
+                            // Decrement displayed remaining time locally for perceived smoothness
+                            _etaText.Text = FormatEta(TimeSpan.FromSeconds(Math.Max(0, _smoothedRemainingSeconds - (DateTime.UtcNow - _lastEtaUpdate).TotalSeconds)));
+                        }
                     }
                 };
                 _uiRefreshTimer.Start();
@@ -1292,23 +1329,32 @@ namespace BalatroSeedOracle.Views.Modals
                 return;
             }
             
+            // Prepare labels & compute a consistent width so body & header align
+            var tallyLabels = columnNames.Skip(2).Select(n => n.Replace("_", " ")).ToList();
+            if (tallyLabels.Count == 0) return;
+            int maxLen = tallyLabels.Max(l => l.Length);
+            // Estimate width: char count * (fontSize * avg char width factor) + padding & arrow
+            double estimated = maxLen * 12 * 0.62 + 18; // FontSize 12
+            double uniformWidth = Math.Clamp(estimated, 72, 180);
+            // Expose to XAML via resource so row cells can bind
+            this.Resources["TallyColumnWidth"] = uniformWidth;
+
             // Skip first 2 columns (seed, score) to get the tally columns
             for (int i = 2; i < columnNames.Count; i++)
             {
-                var columnName = columnNames[i];
-                // Use the column name from DuckDB as the label
-                var label = columnName.Replace("_", " ");
+                var label = tallyLabels[i - 2];
                 
                 // Add header for this column
                 int tallyIndex = i - 2; // Adjust for skipping seed/score
             
                 var button = new Button
                 {
-                    Width = 60,
+                    Width = uniformWidth,
                     Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
                     Background = Brushes.Transparent,
                     BorderThickness = new Thickness(0),
                     Padding = new Thickness(0),
+                    Margin = new Thickness(2,0,2,0),
                     Tag = tallyIndex // Store the index for sorting
                 };
                 button.Classes.Add("header-button");
@@ -1325,8 +1371,7 @@ namespace BalatroSeedOracle.Views.Modals
                     FontFamily = App.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
                     FontSize = 12,
                     Foreground = App.Current?.FindResource("Gold") as IBrush ?? Brushes.Gold,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    TextTrimming = TextTrimming.CharacterEllipsis
+                    VerticalAlignment = VerticalAlignment.Center
                 };
                 
                 var sortIndicator = new TextBlock
@@ -1371,7 +1416,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
+    private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -1400,13 +1445,16 @@ namespace BalatroSeedOracle.Views.Modals
             }
             if (_totalBatchesText != null)
             {
-                _totalBatchesText.Text = $"{e.TotalBatches:N0}";
+                _totalBatchesText.Text = FormatCompactNumber((long)e.TotalBatches);
             }
 
             if (_totalSeedsText != null)
             {
-                _totalSeeds = e.SeedsSearched;
-                _totalSeedsText.Text = e.SeedsSearched.ToString("N0");
+                _totalSeeds = (long)e.SeedsSearched;
+                _totalSeedsText.Text = ((long)e.SeedsSearched).ToString("N0");
+                _lastSeedsAtProgress = (long)e.SeedsSearched;
+                _lastSeedsProgressTime = DateTime.UtcNow;
+                _lastSeedsPerMsObserved = e.SeedsPerMillisecond;
             }
 
             if (_resultsFoundText != null)
@@ -1425,12 +1473,16 @@ namespace BalatroSeedOracle.Views.Modals
                 var elapsed = DateTime.UtcNow - _searchStartTime;
                 _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
             }
-            UpdateEta(e);
+            // Update ETA immediately only if enough time elapsed since last refresh (else let timer handle smoothing)
+            if ((DateTime.UtcNow - _lastEtaUpdate).TotalMilliseconds >= 2000)
+            {
+                UpdateEta(e, true);
+            }
 
             UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
         }
 
-        private void UpdateEta(SearchProgressEventArgs e)
+        private void UpdateEta(SearchProgressEventArgs e, bool recompute = false)
         {
             if (_etaText == null) return;
             try
@@ -1438,6 +1490,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (e.PercentComplete <= 0.000001 || e.PercentComplete >= 100.0)
                 {
                     _etaText.Text = "--:--:--";
+                    _smoothedRemainingSeconds = -1;
                     return;
                 }
                 var elapsed = DateTime.UtcNow - _searchStartTime;
@@ -1445,11 +1498,19 @@ namespace BalatroSeedOracle.Views.Modals
                 var total = TimeSpan.FromTicks((long)(elapsed.Ticks / pct));
                 var remaining = total - elapsed;
                 if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-                _etaText.Text = FormatEta(remaining);
+                if (recompute)
+                {
+                    double seconds = remaining.TotalSeconds;
+                    if (_smoothedRemainingSeconds < 0) _smoothedRemainingSeconds = seconds;
+                    else _smoothedRemainingSeconds = (_etaSmoothingFactor * seconds) + (1 - _etaSmoothingFactor) * _smoothedRemainingSeconds;
+                    _etaText.Text = FormatEta(TimeSpan.FromSeconds(_smoothedRemainingSeconds));
+                    _lastEtaUpdate = DateTime.UtcNow;
+                }
             }
             catch
             {
                 _etaText.Text = "--:--:--";
+                _smoothedRemainingSeconds = -1;
             }
         }
 
@@ -2403,6 +2464,23 @@ namespace BalatroSeedOracle.Views.Modals
             UnsubscribeFromSearchEvents();
             
             GC.SuppressFinalize(this);
+        }
+
+        private static string FormatCompactNumber(long value)
+        {
+            if (value >= 1_000_000_000)
+                return (value / 1_000_000_000D).ToString("0.##G").Replace("G", "B"); // unlikely, but just in case
+            if (value >= 1_000_000)
+            {
+                double m = value / 1_000_000D;
+                return m >= 100 ? m.ToString("0M") : m.ToString("0.#M");
+            }
+            if (value >= 1_000)
+            {
+                double k = value / 1_000D;
+                return k >= 100 ? k.ToString("0K") : k.ToString("0.#K");
+            }
+            return value.ToString("N0");
         }
     }
 }
