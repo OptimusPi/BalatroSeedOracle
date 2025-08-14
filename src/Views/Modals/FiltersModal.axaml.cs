@@ -120,8 +120,11 @@ namespace BalatroSeedOracle.Views.Modals
             SetupControls();
             LoadAllCategories();
 
-            // Start with tabs disabled until a filter is selected
+            // Start with tabs disabled until a filter is selected by clicking a button
             UpdateTabStates(false);
+            
+            // Hide all tab panels initially - only show filter selector
+            HideAllTabPanels();
         }
 
         private void InitializeComponent()
@@ -181,11 +184,14 @@ namespace BalatroSeedOracle.Views.Modals
             var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
             if (filterSelector != null)
             {
-                // Keep auto-loading enabled so the first filter loads and enables tabs
-                // The FilterLoaded event handler will enable tabs without switching
+                // DISABLE auto-loading - user must explicitly click a button to load a filter
+                filterSelector.AutoLoadEnabled = false;
+                filterSelector.FilterLoaded += OnFilterSelected;
+                filterSelector.NewFilterRequested += OnNewFilterRequested;
+                
                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
-                    "FilterSelector component found and setup"
+                    "FilterSelector component found and setup - auto-load DISABLED"
                 );
             }
 
@@ -261,26 +267,67 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        private void HideAllTabPanels()
+        {
+            // Hide all tab content panels with correct control types
+            var visualPanel = this.FindControl<Grid>("VisualPanel");
+            var jsonPanel = this.FindControl<Grid>("JsonPanel");
+            var savePanel = this.FindControl<Grid>("SaveFilterPanel");
+            
+            if (visualPanel != null)
+                visualPanel.IsVisible = false;
+            if (jsonPanel != null)
+                jsonPanel.IsVisible = false;
+            if (savePanel != null)
+                savePanel.IsVisible = false;
+                
+            // Show the load/save panel (filter selector)
+            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+            if (loadSavePanel != null)
+            {
+                loadSavePanel.IsVisible = true;
+            }
+        }
+        
         private void UpdateTabStates(bool configLoaded)
         {
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
             var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
-            // Enable tabs only when a filter is loaded
+            // Enable tabs only when a filter is loaded BY USER ACTION
             if (visualTab != null)
             {
                 visualTab.IsEnabled = configLoaded;
+                if (!configLoaded)
+                {
+                    visualTab.Classes.Remove("active");
+                }
             }
 
             if (jsonTab != null)
             {
                 jsonTab.IsEnabled = configLoaded;
+                if (!configLoaded)
+                {
+                    jsonTab.Classes.Remove("active");
+                }
             }
             
             if (saveFilterTab != null)
             {
                 saveFilterTab.IsEnabled = configLoaded;
+                if (!configLoaded)
+                {
+                    saveFilterTab.Classes.Remove("active");
+                }
+            }
+            
+            // Show/hide selector panel based on whether filter is loaded
+            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+            if (loadSavePanel != null)
+            {
+                loadSavePanel.IsVisible = !configLoaded;
             }
         }
 

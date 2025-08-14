@@ -10,6 +10,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
 
@@ -22,6 +23,7 @@ namespace BalatroSeedOracle.Views
         private TextBlock? _filterNameText;
         private TextBlock? _progressText;
         private ProgressBar? _searchProgress;
+    private TextBlock? _stateEmoji;
         private SearchInstance? _searchInstance;
         private SearchManager? _searchManager;
         private string _searchId = string.Empty;
@@ -44,6 +46,7 @@ namespace BalatroSeedOracle.Views
             _filterNameText = this.FindControl<TextBlock>("FilterNameText");
             _progressText = this.FindControl<TextBlock>("ProgressText");
             _searchProgress = this.FindControl<ProgressBar>("SearchProgress");
+            _stateEmoji = this.FindControl<TextBlock>("StateEmoji");
 
             // Get search manager service
             _searchManager = App.GetService<SearchManager>();
@@ -76,6 +79,7 @@ namespace BalatroSeedOracle.Views
                     _isSearching = _searchInstance.IsRunning;
                     _resultCount = _searchInstance.ResultCount;
                     UpdateBadge();
+                    UpdateStateEmoji();
                 }
             }
 
@@ -169,6 +173,7 @@ namespace BalatroSeedOracle.Views
                 _resultCount = 0;
                 UpdateBadge();
                 UpdateProgress(0);
+                UpdateStateEmoji();
             });
         }
 
@@ -179,15 +184,17 @@ namespace BalatroSeedOracle.Views
                 _isSearching = false;
                 // Don't update progress to 100% - keep current progress
                 // Search may have been stopped/cancelled early
+                UpdateStateEmoji();
             });
         }
 
-        private void OnResultFound(object? sender, SearchResultEventArgs e)
+    private void OnResultFound(object? sender, BalatroSeedOracle.Models.SearchResultEventArgs e)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _resultCount++;
                 UpdateBadge();
+                // Keep running icon; no change needed here.
             });
         }
 
@@ -195,7 +202,7 @@ namespace BalatroSeedOracle.Views
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                UpdateProgress(e.PercentComplete);
+                UpdateProgress((int)e.PercentComplete);
             });
         }
 
@@ -217,12 +224,13 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        private void UpdateProgress(int percent)
+        private void UpdateProgress(double percent)
         {
             if (_searchProgress != null && _progressText != null)
             {
-                _searchProgress.Value = percent;
-                _progressText.Text = $"{percent}%";
+                var clamped = (int)Math.Clamp(percent, 0, 100);
+                _searchProgress.Value = clamped;
+                _progressText.Text = $"{clamped}%";
             }
         }
 
@@ -230,12 +238,14 @@ namespace BalatroSeedOracle.Views
         {
             _searchInstance?.PauseSearch();
             _isSearching = false;
+            UpdateStateEmoji();
         }
 
         private void OnResumeSearch(object? sender, RoutedEventArgs e)
         {
             _searchInstance?.ResumeSearch();
             _isSearching = true;
+            UpdateStateEmoji();
         }
 
         private void OnStopSearch(object? sender, RoutedEventArgs e)
@@ -243,39 +253,80 @@ namespace BalatroSeedOracle.Views
             _searchInstance?.StopSearch();
             _isSearching = false;
             // Don't update progress - keep current progress when stopped
+            UpdateStateEmoji();
         }
 
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)
         {
+            DebugLogger.Log("SearchDesktopIcon", $"OnDeleteIcon called for search {_searchId}, isSearching={_isSearching}");
+            
             // FIRST stop the search BEFORE clearing state!
             // Otherwise the search will save its state again while stopping
-            if (_isSearching && _searchInstance != null)
+            if (_searchInstance != null)
             {
+                DebugLogger.Log("SearchDesktopIcon", "Stopping search instance without saving state");
                 // Stop the search instance WITHOUT saving state
                 _searchInstance.StopSearch(true);
             }
+            else
+            {
+                DebugLogger.Log("SearchDesktopIcon", "No search instance to stop (placeholder icon)");
+            }
             
-            // NOW clear the saved search state AFTER stopping the search
+            // ALWAYS clear the saved search state, even for placeholder icons!
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             if (userProfileService != null)
             {
+                DebugLogger.Log("SearchDesktopIcon", "Clearing saved search state from user profile");
                 userProfileService.ClearSearchState();
-                DebugLogger.Log("SearchDesktopIcon", "Cleared saved search state from user profile");
                 
                 // Force save the profile immediately to persist the deletion
+                DebugLogger.Log("SearchDesktopIcon", "Flushing profile to disk");
                 userProfileService.FlushProfile();
             }
 
-            // Remove search from manager
+            // Remove search from manager if it exists
             if (!string.IsNullOrEmpty(_searchId) && _searchManager != null)
             {
+                DebugLogger.Log("SearchDesktopIcon", $"Removing search {_searchId} from manager");
                 _searchManager.RemoveSearch(_searchId);
             }
 
             // Remove this icon from parent
             if (this.Parent is Panel parent)
             {
+                DebugLogger.Log("SearchDesktopIcon", "Removing icon from parent");
                 parent.Children.Remove(this);
+            }
+            
+            DebugLogger.Log("SearchDesktopIcon", "Icon deletion complete");
+        }
+
+        private void UpdateStateEmoji()
+        {
+            if (_stateEmoji == null)
+                return;
+
+            // Priority order: running, paused, completed (finished with progress 100), idle
+            if (_isSearching && (_searchInstance?.IsRunning ?? false))
+            {
+                _stateEmoji.Text = "🧪"; // running
+            }
+            else if (!_isSearching && (_searchInstance?.IsPaused ?? false))
+            {
+                _stateEmoji.Text = "⏸️"; // paused
+            }
+            else if (!_isSearching && (_searchProgress?.Value == 100))
+            {
+                _stateEmoji.Text = "✅"; // finished
+            }
+            else if (!_isSearching && _resultCount > 0)
+            {
+                _stateEmoji.Text = "🗃️"; // has results but not running
+            }
+            else
+            {
+                _stateEmoji.Text = "🔍"; // idle / default
             }
         }
     }

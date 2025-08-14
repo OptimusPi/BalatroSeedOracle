@@ -1,0 +1,70 @@
+{
+  "name": "bullsprite",
+  "description": "test",
+  "dateCreated": "2025-08-13T22:51:32.372Z",
+  "author": "pifreak",
+  "must": [
+    {
+      "type": "joker",
+      "value": "Bull",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "joker",
+      "value": "TurtleBean",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

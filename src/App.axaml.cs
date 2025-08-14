@@ -90,7 +90,7 @@ public partial class App : Application
     private void ConfigureServices(IServiceCollection services)
     {
         // Register services
-        services.AddSingleton<Services.SearchHistoryService>();
+        // SearchHistoryService removed - SearchInstance handles its own DuckDB connection
         services.AddSingleton<Services.SearchManager>();
         services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
         services.AddSingleton<Services.FavoritesService>();

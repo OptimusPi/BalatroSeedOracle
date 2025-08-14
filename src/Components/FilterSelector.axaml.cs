@@ -552,11 +552,16 @@ namespace BalatroSeedOracle.Components
             {
                 FilterSelected?.Invoke(this, item.Value);
 
-                // Auto-load if enabled
+                // NEVER auto-load just from selection changing - user must click a button
+                // Auto-load if enabled - but this should be disabled for FiltersModal
                 if (_autoLoadEnabled)
                 {
-                    DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value}");
+                    DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                     FilterLoaded?.Invoke(this, item.Value);
+                }
+                else
+                {
+                    DebugLogger.Log("FilterSelector", $"Filter selected but NOT auto-loading: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                 }
             }
         }
