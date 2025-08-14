@@ -416,8 +416,6 @@ namespace BalatroSeedOracle.Controls
 
             if (sender is CheckBox checkBox && checkBox.Name != null)
             {
-                // Ensure checkbox has focus (fixes first-click issue)
-                checkBox.Focus();
                 // Extract ante number from checkbox name (e.g., "Ante1" -> 1)
                 if (
                     checkBox.Name.StartsWith("Ante")
@@ -426,12 +424,16 @@ namespace BalatroSeedOracle.Controls
                 {
                     if (anteNum >= 1 && anteNum <= 8)
                     {
-                        // Update internal state based on the checkbox's current checked state
-                        _selectedAntes[anteNum - 1] = checkBox.IsChecked == true;
+                        // Don't toggle programmatically - the checkbox already toggled itself
+                        // Just read the new state
+                        bool newState = checkBox.IsChecked == true;
+                        
+                        // Update internal state
+                        _selectedAntes[anteNum - 1] = newState;
 
                         BalatroSeedOracle.Helpers.DebugLogger.Log(
                             "ItemConfigPopup",
-                            $"Ante {anteNum} set to: {checkBox.IsChecked}"
+                            $"Ante {anteNum} toggled to: {newState}"
                         );
                     }
                 }

@@ -3,7 +3,7 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.FilterSelector">
     
-    <StackPanel Spacing="10">
+    <StackPanel Spacing="8">
                    
         <!-- Filter browser using PanelSpinner -->
         <controls:PanelSpinner Name="FilterSpinner" />
@@ -17,12 +17,7 @@
                 Click="OnSelectClick"/>
         
         <!-- "or" text between buttons -->
-        <TextBlock Name="OrText"
-                   Text="or"
-                   FontFamily="{StaticResource BalatroFont}"
-                   FontSize="16"
-                   Foreground="{StaticResource TextLight}"
-                   HorizontalAlignment="Center"/>
+        <Border Height="4" HorizontalAlignment="Stretch"/>
         
         <!-- Create new filter section -->
         <Button Name="CreateFilterButton" 

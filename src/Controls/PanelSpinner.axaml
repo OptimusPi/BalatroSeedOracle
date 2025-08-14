@@ -6,7 +6,7 @@
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
             <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="280"/>
+            <Setter Property="Height" Value="224"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -55,7 +55,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="450"/>
-            <Setter Property="Height" Value="280"/>
+            <Setter Property="Height" Value="224"/>
         </Style>
         
         <!-- Title text style -->

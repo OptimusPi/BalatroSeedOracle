@@ -12,12 +12,10 @@ namespace BalatroSeedOracle.Services
     public class SearchManager : IDisposable
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
-        private readonly SearchHistoryService _historyService;
 
-        public SearchManager(SearchHistoryService historyService)
+        public SearchManager()
         {
             _activeSearches = new ConcurrentDictionary<string, SearchInstance>();
-            _historyService = historyService;
         }
 
         /// <summary>
@@ -27,7 +25,11 @@ namespace BalatroSeedOracle.Services
         public string CreateSearch()
         {
             var searchId = Guid.NewGuid().ToString();
-            var searchInstance = new SearchInstance(searchId, _historyService);
+            // Preallocate a database file path so SearchInstance always has a connection string
+            var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
+            System.IO.Directory.CreateDirectory(searchResultsDir);
+            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.duckdb");
+            var searchInstance = new SearchInstance(searchId, dbPath);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
             {

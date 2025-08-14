@@ -106,7 +106,15 @@ namespace BalatroSeedOracle.Views.Modals
         {
             base.OnLoaded(e);
 
-            // DeckStakeSelector will handle its own initialization
+            // Subscribe to DeckSelected event to switch to analyzer tab
+            if (_deckAndStakeSelector != null)
+            {
+                _deckAndStakeSelector.DeckSelected += (s, _) =>
+                {
+                    // Switch to analyzer tab when deck is selected
+                    SetActiveTab(1);
+                };
+            }
         }
 
         private void OnSettingsTabClick(object? sender, RoutedEventArgs e)

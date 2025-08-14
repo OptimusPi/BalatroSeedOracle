@@ -83,6 +83,21 @@ public partial class MainWindow : Window
             }
             finally
             {
+                // Trigger the App shutdown handler FIRST
+                var searchManager = BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
+                if (searchManager != null)
+                {
+                    DebugLogger.Log("MainWindow", "Stopping all searches via SearchManager...");
+                    searchManager.StopAllSearches();
+                    
+                    // Give searches a moment to actually stop
+                    await Task.Delay(500);
+                    
+                    // Dispose the search manager which will dispose all searches
+                    searchManager.Dispose();
+                    DebugLogger.Log("MainWindow", "SearchManager disposed");
+                }
+                
                 // Close the window on UI thread
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {

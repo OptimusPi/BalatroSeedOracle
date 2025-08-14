@@ -47,8 +47,9 @@
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="2">
                             <Grid>
-                                <!-- Search icon (magnifying glass) -->
-                                <TextBlock Text="🔍" 
+                                <!-- Search state icon (updated dynamically) -->
+                                <TextBlock Name="StateEmoji"
+                                           Text="🔍"
                                            FontSize="40"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>

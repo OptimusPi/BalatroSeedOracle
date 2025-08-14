@@ -191,8 +191,7 @@
                             </Grid>
                         </Border>
                         
-                        <!-- Copy Challenge Button -->
-                        <Button Content="Copy Challenge Link"
+                        <Button Content="Copy Seed"
                                 HorizontalAlignment="Center"
                                 Margin="0,15,0,0"
                                 Click="OnCopyChallengeClick"/>

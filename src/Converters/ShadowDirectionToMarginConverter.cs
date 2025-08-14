@@ -48,7 +48,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("ConvertBack is not supported");
         }
     }
 
@@ -94,7 +94,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("ConvertBack is not supported");
         }
     }
 }

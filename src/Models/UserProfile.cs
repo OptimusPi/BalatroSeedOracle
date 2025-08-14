@@ -29,16 +29,6 @@ namespace BalatroSeedOracle.Models
         public bool AnimationEnabled { get; set; } = true;
 
         /// <summary>
-        /// Volume level (0-3)
-        /// </summary>
-        public int VolumeLevel { get; set; } = 2;
-
-        /// <summary>
-        /// Whether music is enabled
-        /// </summary>
-        public bool MusicEnabled { get; set; } = true;
-
-        /// <summary>
         /// Last search state for resuming interrupted searches
         /// </summary>
         public SearchResumeState? LastSearchState { get; set; }
@@ -50,19 +40,9 @@ namespace BalatroSeedOracle.Models
     public class SearchResumeState
     {
         /// <summary>
-        /// The config path or direct config JSON
+        /// Path to the filter config file (always required)
         /// </summary>
         public string? ConfigPath { get; set; }
-        
-        /// <summary>
-        /// The serialized OuijaConfig if using direct config
-        /// </summary>
-        public string? ConfigJson { get; set; }
-        
-        /// <summary>
-        /// Whether this was a direct config (not file-based)
-        /// </summary>
-        public bool IsDirectConfig { get; set; }
         
         /// <summary>
         /// The last completed batch index

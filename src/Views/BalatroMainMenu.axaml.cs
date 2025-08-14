@@ -405,27 +405,29 @@ namespace BalatroSeedOracle.Views
                         $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
                     );
 
-                    // Create a search ID and restore the search instance
-                    var searchManager = App.GetService<SearchManager>();
-                    if (searchManager != null)
+                    // DON'T create a search instance here! Just show the icon
+                    // The search will be created when the user actually clicks the icon
+                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
                     {
-                        var searchId = searchManager.CreateSearch();
-                        var searchInstance = searchManager.GetSearch(searchId);
+                        // Create a placeholder search ID for the icon
+                        // The actual search will be created when the icon is clicked
+                        var placeholderSearchId = Guid.NewGuid().ToString();
+                        ShowSearchDesktopIcon(placeholderSearchId, resumeState.ConfigPath);
                         
-                        if (searchInstance != null)
-                        {
-                            // The search will be resumed when the user clicks the icon to open the modal
-                            // ConfigPath is already set when the search is created, no need to set it here
-                            
-                            // Show the desktop icon for this resumed search
-                            ShowSearchDesktopIcon(searchId, resumeState.ConfigPath);
-                            
-                            BalatroSeedOracle.Helpers.DebugLogger.Log(
-                                "BalatroMainMenu",
-                                $"Restored search desktop icon for resumable search {searchId} - batch {resumeState.LastCompletedBatch}/{resumeState.TotalBatches}"
-                            );
-                        }
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            $"Restored desktop icon for search (not started yet): {resumeState.ConfigPath}"
+                        );
                     }
+                    else
+                    {
+                        BalatroSeedOracle.Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}"
+                        );
+                        _userProfileService.ClearSearchState();
+                    }
+                    
                 }
             }
             catch (Exception ex)
@@ -440,7 +442,47 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows a search desktop icon on the desktop
         /// </summary>
-        public async void ShowSearchDesktopIcon(string searchId, string? configPath = null)
+        /// <summary>
+        /// Shows the search modal for an existing search instance (opened from desktop icon)
+        /// </summary>
+        public void ShowSearchModalForInstance(string searchId, string? configPath = null)
+        {
+            try
+            {
+                DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
+                
+                var searchContent = new SearchModal();
+                
+                // Connect to the existing search instance
+                searchContent.ConnectToExistingSearch(searchId);
+                
+                // If we have a config path, load it
+                if (!string.IsNullOrEmpty(configPath))
+                {
+                    _ = searchContent.LoadFilterAsync(configPath);
+                }
+                
+                // Handle desktop icon creation when modal closes with active search
+                searchContent.CreateShortcutRequested += (sender, cfgPath) => 
+                {
+                    DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
+                    // Get the search ID from the modal
+                    var modalSearchId = searchContent.GetCurrentSearchId();
+                    if (!string.IsNullOrEmpty(modalSearchId))
+                    {
+                        ShowSearchDesktopIcon(modalSearchId, cfgPath);
+                    }
+                };
+                
+                this.ShowModal("MOTELY SEARCH", searchContent);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to show search modal for instance: {ex}");
+            }
+        }
+        
+        public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "BalatroMainMenu",
@@ -464,6 +506,15 @@ namespace BalatroSeedOracle.Views
             {
                 filterName = Path.GetFileNameWithoutExtension(configPath);
             }
+            else
+            {
+                // Don't create desktop icons for unknown filters
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"Skipping desktop icon creation - no valid config path"
+                );
+                return;
+            }
 
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
 
@@ -485,23 +536,8 @@ namespace BalatroSeedOracle.Views
                 $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})"
             );
 
-            // If config path provided, start the search
-            if (!string.IsNullOrEmpty(configPath))
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "Starting search...");
-                var searchService = App.GetService<MotelySearchService>();
-                if (searchService != null)
-                {
-                    var criteria = new BalatroSeedOracle.Models.SearchCriteria
-                    {
-                        ConfigPath = configPath,
-                        ThreadCount = 4,
-                        MinScore = 0,
-                        BatchSize = 3,
-                    };
-                    await searchService.StartSearchAsync(criteria);
-                }
-            }
+            // DON'T auto-start searches! The user will start them manually
+            // The icon is just a placeholder for resuming later
         }
 
         /// <summary>

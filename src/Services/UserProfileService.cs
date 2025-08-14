@@ -17,62 +17,11 @@ namespace BalatroSeedOracle.Services
 
         public UserProfileService()
         {
-            // Store profile in the application base directory
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            var currentDir = Directory.GetCurrentDirectory();
-
-            DebugLogger.Log("UserProfileService", $"BaseDirectory: {baseDir}");
-            DebugLogger.Log("UserProfileService", $"CurrentDirectory: {currentDir}");
-
-            // Try multiple locations for the profile file
-            var possiblePaths = new[]
-            {
-                Path.Combine(currentDir, PROFILE_FILENAME),
-                Path.Combine(
-                    Directory.GetParent(currentDir)?.FullName ?? currentDir,
-                    PROFILE_FILENAME
-                ),
-                Path.Combine(baseDir, PROFILE_FILENAME),
-                Path.Combine(Directory.GetParent(baseDir)?.FullName ?? baseDir, PROFILE_FILENAME),
-                Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
-                    "..",
-                    "..",
-                    "..",
-                    PROFILE_FILENAME
-                ),
-            };
-
-            DebugLogger.Log(
-                "UserProfileService",
-                $"Checking {possiblePaths.Length} possible paths for profile:"
-            );
-            foreach (var path in possiblePaths)
-            {
-                DebugLogger.Log("UserProfileService", $"  {path} - Exists: {File.Exists(path)}");
-            }
-
-            // Find the first existing profile
-            foreach (var path in possiblePaths)
-            {
-                if (File.Exists(path))
-                {
-                    _profilePath = Path.GetFullPath(path);
-                    DebugLogger.Log("UserProfileService", $"✅ Found profile at: {_profilePath}");
-                    break;
-                }
-            }
-
-            // If no profile found, use the current directory
-            if (string.IsNullOrEmpty(_profilePath))
-            {
-                _profilePath = Path.Combine(currentDir, PROFILE_FILENAME);
-                DebugLogger.Log(
-                    "UserProfileService",
-                    $"No existing profile found, will create at: {_profilePath}"
-                );
-            }
-
+            // Just use the fucking current directory where the app is running
+            _profilePath = Path.Combine(Directory.GetCurrentDirectory(), PROFILE_FILENAME);
+            
+            DebugLogger.Log("UserProfileService", $"Profile path: {_profilePath}");
+            
             _currentProfile = LoadProfile();
         }
 
@@ -109,16 +58,6 @@ namespace BalatroSeedOracle.Services
         {
             _currentProfile.BackgroundTheme = theme;
             _currentProfile.AnimationEnabled = animationEnabled;
-            SaveProfile();
-        }
-
-        /// <summary>
-        /// Update audio settings
-        /// </summary>
-        public void UpdateAudioSettings(int volumeLevel, bool musicEnabled)
-        {
-            _currentProfile.VolumeLevel = volumeLevel;
-            _currentProfile.MusicEnabled = musicEnabled;
             SaveProfile();
         }
 

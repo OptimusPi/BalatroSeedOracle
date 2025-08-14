@@ -53,7 +53,7 @@ namespace BalatroSeedOracle.Helpers
                 var searchContent = new SearchModal();
             
                 // Handle desktop icon creation when modal closes with active search
-                searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
+                searchContent.CreateShortcutRequested += (sender, cfgPath) => 
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
                     // Get the search ID from the modal
@@ -66,7 +66,9 @@ namespace BalatroSeedOracle.Helpers
             
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    // Load the config file into the search modal
+                    // Just set the filter path immediately so it's ready when user clicks Cook
+                    searchContent.SetCurrentFilterPath(configPath);
+                    // Also load it async for the UI
                     _ = searchContent.LoadFilterAsync(configPath);
                 }
                 return menu.ShowModal("MOTELY SEARCH", searchContent);
@@ -86,25 +88,8 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.OuijaConfig config)
         {
-            var searchContent = new SearchModal();
-        
-            // Handle desktop icon creation when modal closes with active search
-            searchContent.CreateDesktopIconRequested += (sender, cfgPath) => 
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
-                // Get the search ID from the modal
-                var searchId = searchContent.GetCurrentSearchId();
-                if (!string.IsNullOrEmpty(searchId))
-                {
-                    menu.ShowSearchDesktopIcon(searchId, cfgPath);
-                }
-            };
-        
-            // Load the config object directly WITHOUT auto-starting search
-            // The user should stay on the filter tab and decide when to search
-            _ = searchContent.LoadConfigDirectlyAsync(config, autoStartSearch: false);
-        
-            return menu.ShowModal("MOTELY SEARCH", searchContent);
+            // This method should not be used - filters must be saved first!
+            throw new NotSupportedException("Filters must be saved before searching. Use ShowSearchModal with a file path instead.");
         }
 
         /// <summary>
@@ -129,7 +114,7 @@ namespace BalatroSeedOracle.Helpers
             var searchModal = new SearchModal();
         
             // Handle desktop icon creation when modal closes with active search
-            searchModal.CreateDesktopIconRequested += (sender, configPath) => 
+            searchModal.CreateShortcutRequested += (sender, configPath) => 
             {
                 BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
                 // Get the search ID from the modal
@@ -161,7 +146,7 @@ namespace BalatroSeedOracle.Helpers
             searchModal.SetSearchInstance(searchId);
         
             // Handle desktop icon creation when modal closes with active search
-            searchModal.CreateDesktopIconRequested += (sender, cfgPath) => 
+            searchModal.CreateShortcutRequested += (sender, cfgPath) => 
             {
                 BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for search: {searchId}");
                 menu.ShowSearchDesktopIcon(searchId, cfgPath);

@@ -77,18 +77,22 @@ jobs:
         run: |
           OUT=publish/${{ matrix.rid }}
           VERSION_REF="${GITHUB_REF#refs/tags/}"
+          VERSION_REF="${VERSION_REF#v}"  # Strip 'v' prefix if present
           echo "BalatroSeedOracle" > $OUT/VERSION.txt
           echo "Runtime: ${{ matrix.rid }}" >> $OUT/VERSION.txt
           echo "Build Date: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $OUT/VERSION.txt
           echo "Git Commit: ${GITHUB_SHA::8}" >> $OUT/VERSION.txt
           echo "Version: $VERSION_REF" >> $OUT/VERSION.txt
-          cp README.md $OUT/README.txt 2>/dev/null || echo "BalatroSeedOracle - Just extract and run!" > $OUT/README.txt
+          echo "BalatroSeedOracle - Portable Build" > $OUT/README.txt
+          echo "Just extract and run." >> $OUT/README.txt
+          echo "Windows: double-click BalatroSeedOracle.exe" >> $OUT/README.txt
+          echo "Linux/macOS: chmod +x BalatroSeedOracle && ./BalatroSeedOracle" >> $OUT/README.txt
 
       - name: Package (zip)
         if: matrix.ext == 'zip'
         shell: pwsh
         run: |
-          $ver = "${env:GITHUB_REF}".Replace('refs/tags/','')
+          $ver = "${env:GITHUB_REF}".Replace('refs/tags/','').TrimStart('v')
           Compress-Archive -Path publish/${{ matrix.rid }}/* -DestinationPath BalatroSeedOracle-$ver-${{ matrix.rid }}.zip
 
       - name: Package (tar.gz)
@@ -96,6 +100,7 @@ jobs:
         shell: bash
         run: |
           ver="${GITHUB_REF#refs/tags/}"
+          ver="${ver#v}"  # Strip 'v' prefix if present
           tar -czf BalatroSeedOracle-$ver-${{ matrix.rid }}.tar.gz -C publish/${{ matrix.rid }} .
 
       - name: Upload portable artifact
@@ -159,12 +164,13 @@ jobs:
         shell: bash
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${VERSION#v}"  # Strip 'v' prefix if present
           if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
             VERSION="1.0.0"
           fi
           vpk pack --packId BalatroSeedOracle --packVersion "$VERSION" \
-          --packDir publish --mainExe ${{ matrix.mainExe }} --packTitle "BalatroSeedOracle" \
-          --packAuthors "OptimusPi" --outputDir releases --runtime ${{ matrix.rid }}
+            --packDir publish --mainExe ${{ matrix.mainExe }} --packTitle "BalatroSeedOracle" \
+            --packAuthors "OptimusPi" --outputDir releases --runtime ${{ matrix.rid }}
       - name: Upload Velopack artifact
         uses: actions/upload-artifact@v4
         with:

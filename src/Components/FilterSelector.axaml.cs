@@ -109,7 +109,7 @@ namespace BalatroSeedOracle.Components
         {
             try
             {
-                var filterItems = new List<PanelItem>();
+                var filterItems = new List<(PanelItem? item, DateTime? dateCreated)>();
 
                 // Look for .json files in JsonItemFilters directory
                 var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
@@ -124,19 +124,26 @@ namespace BalatroSeedOracle.Components
 
                 foreach (var file in rootJsonFiles)
                 {
-                    var item = CreateFilterPanelItem(file);
-                    if (item != null)
+                    var result = CreateFilterPanelItemWithDate(file);
+                    if (result.item != null)
                     {
-                        filterItems.Add(item);
+                        filterItems.Add(result);
                     }
                 }
 
-                DebugLogger.Log("FilterSelector", $"Found {filterItems.Count} filters");
+                // Sort by DateCreated DESC (newest first)
+                var sortedItems = filterItems
+                    .Where(x => x.item != null)
+                    .OrderByDescending(x => x.dateCreated ?? DateTime.MinValue)
+                    .Select(x => x.item!)
+                    .ToList();
 
-                if (filterItems.Count == 0)
+                DebugLogger.Log("FilterSelector", $"Found {sortedItems.Count} filters");
+
+                if (sortedItems.Count == 0)
                 {
                     // Add a placeholder item
-                    filterItems.Add(
+                    sortedItems.Add(
                         new PanelItem
                         {
                             Title = "No filters found",
@@ -148,7 +155,7 @@ namespace BalatroSeedOracle.Components
 
                 if (_filterSpinner != null)
                 {
-                    _filterSpinner.Items = filterItems;
+                    _filterSpinner.Items = sortedItems;
                 }
             }
             catch (Exception ex)
@@ -157,7 +164,7 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        private PanelItem? CreateFilterPanelItem(string filterPath)
+        private (PanelItem? item, DateTime? dateCreated) CreateFilterPanelItemWithDate(string filterPath)
         {
             try
             {
@@ -174,7 +181,7 @@ namespace BalatroSeedOracle.Components
                         "FilterSelector",
                         $"Filter '{filterPath}' has no 'name' property - skipping"
                     );
-                    return null;
+                    return (null, null);
                 }
 
                 var filterName = nameElement.GetString()!;
@@ -198,16 +205,28 @@ namespace BalatroSeedOracle.Components
                     description = $"by {author}\n{description}";
                 }
 
+                // Get dateCreated if available
+                DateTime? dateCreated = null;
+                if (doc.RootElement.TryGetProperty("dateCreated", out var dateElement))
+                {
+                    if (DateTime.TryParse(dateElement.GetString(), out var parsedDate))
+                    {
+                        dateCreated = parsedDate;
+                    }
+                }
+
                 // Clone the root element to use after the document is disposed
                 var clonedRoot = doc.RootElement.Clone();
 
-                return new PanelItem
+                var item = new PanelItem
                 {
                     Title = filterName,
                     Description = description,
                     Value = filterPath,
                     GetImage = () => CreateFannedPreviewImage(clonedRoot),
                 };
+
+                return (item, dateCreated);
             }
             catch (Exception ex)
             {
@@ -215,8 +234,14 @@ namespace BalatroSeedOracle.Components
                     "FilterSelector",
                     $"Error parsing filter {filterPath}: {ex.Message}"
                 );
-                return null;
+                return (null, null);
             }
+        }
+
+        private PanelItem? CreateFilterPanelItem(string filterPath)
+        {
+            var result = CreateFilterPanelItemWithDate(filterPath);
+            return result.item;
         }
 
         private IImage? CreateFannedPreviewImage(JsonElement filterRoot)
@@ -527,11 +552,16 @@ namespace BalatroSeedOracle.Components
             {
                 FilterSelected?.Invoke(this, item.Value);
 
-                // Auto-load if enabled
+                // NEVER auto-load just from selection changing - user must click a button
+                // Auto-load if enabled - but this should be disabled for FiltersModal
                 if (_autoLoadEnabled)
                 {
-                    DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value}");
+                    DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                     FilterLoaded?.Invoke(this, item.Value);
+                }
+                else
+                {
+                    DebugLogger.Log("FilterSelector", $"Filter selected but NOT auto-loading: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                 }
             }
         }

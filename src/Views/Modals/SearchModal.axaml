@@ -25,10 +25,11 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="44"/>
-            
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="MinWidth" Value="140"/>
+            <!-- Use global scalable font size -->
+            <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
+            <!-- Remove fixed Height so font can dictate height; keep a sensible minimum -->
+            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -293,9 +294,9 @@
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
-            <RowDefinition Height="Auto"/> <!-- Tabs -->
-            <RowDefinition Height="*"/>    <!-- Content -->
+            <RowDefinition Height="30"/> <!-- Triangle pointer fixed -->
+            <RowDefinition Height="60"/> <!-- Tabs fixed -->
+            <RowDefinition Height="*"/>    <!-- Content stretches -->
         </Grid.RowDefinitions>
         
         <!-- Triangle pointer above tabs -->
@@ -395,8 +396,42 @@
             
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Current Filter Display -->
+                <Border Grid.Row="0" 
+                        Classes="modal-content-box"
+                        Margin="10,10,10,4"
+                        Padding="12,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0"
+                                   Text="Active Filter:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource MediumGrey}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        
+                        <TextBlock Grid.Column="1"
+                                   Name="ActiveFilterNameText"
+                                   Text="No filter loaded"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource LightCream}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                
                 <!-- 3 Column Layout -->
-                <Grid Margin="40">
+                <Grid Grid.Row="1" Margin="10,0,10,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
                         <ColumnDefinition Width="*"/>   <!-- Middle for console -->
@@ -426,9 +461,9 @@
                                 <!-- Batch Size -->
                                 <controls:SpinnerControl Name="BatchSizeSpinner" 
                                                         Label="Batch Size (35^n)"
-                                                        Value="1" 
-                                                        Minimum="1" 
-                                                        Maximum="4"
+                                                        Value="2" 
+                                                        Minimum="0" 
+                                                        Maximum="3"
                                                         HorizontalAlignment="Stretch"
                                                         ShadowDirection="south-east"/>
                                 
@@ -463,8 +498,8 @@
                                              Background="{StaticResource VeryDarkGrey}"
                                              BorderBrush="{StaticResource DarkBorder}"
                                              BorderThickness="1"
-                                             CornerRadius="4"
                                              IsEnabled="False"
+                                             CornerRadius="4"
                                              GotFocus="OnDebugSeedGotFocus"
                                              TextChanged="OnDebugSeedTextChanged"/>
                                 </StackPanel>
@@ -494,16 +529,15 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
-                            <ScrollViewer Grid.Row="0" 
-                                          VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Auto">
-                                <TextBox Name="ConsoleOutput" 
-                                             Classes="terminal" 
-                                             IsReadOnly="True"
-                                             AcceptsReturn="True"
-                                             TextWrapping="NoWrap"
-                                             Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
-                            </ScrollViewer>
+                            <TextBox Grid.Row="0"
+                                     Name="ConsoleOutput" 
+                                     Classes="terminal" 
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             
                             <!-- JSON Validation Status -->
                             <Border Grid.Row="1"
@@ -573,14 +607,29 @@
                                 </Grid>
                             </Border>
                             
-                            <!-- Batches -->
+                            <!-- Current Batch -->
                             <Border Classes="dark-value-container">
                                 <Grid>
-                                    <TextBlock Text="Batches" 
+                                    <TextBlock Text="Current Batch" 
                                                FontSize="12"
                                                Foreground="{StaticResource MediumGrey}"
                                                HorizontalAlignment="Left"/>
-                                    <TextBlock Name="BatchesText"
+                                    <TextBlock Name="CurrentBatchText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Total Batches -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Max Batch" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TotalBatchesText"
                                                Text="0"
                                                FontSize="14"
                                                Foreground="{StaticResource LightCream}"
@@ -617,6 +666,21 @@
                                                HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>
+
+                            <!-- ETA -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="ETA" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="EtaText"
+                                               Text="--:--:--"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
                             
                             <!-- Results Found -->
                             <Border Classes="dark-value-container">
@@ -629,6 +693,36 @@
                                                Text="0"
                                                FontSize="16"
                                                
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Rate (numeric percent) -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Rate" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="RarityText"
+                                               Text="0.000000%"
+                                               FontSize="14"
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Rarity (categorical string) -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Rarity" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="RarityStringText"
+                                               Text="boring"
+                                               FontSize="14"
                                                Foreground="{StaticResource Green}"
                                                HorizontalAlignment="Right"/>
                                 </Grid>
@@ -655,11 +749,11 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
                         <TextBlock Grid.Column="0" 
                                    Text="Filter:" 
                                    FontFamily="{StaticResource BalatroFont}"
@@ -667,14 +761,12 @@
                                    Foreground="{StaticResource White}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,10,0"/>
-                                   
                         <TextBox Grid.Column="1" 
                                  Name="ResultsFilterTextBox"
                                  Classes="balatro-input"
                                  Height="32"
                                  Watermark="Filter by seed name..."
                                  FontSize="14"/>
-                                 
                         <Button Grid.Column="2"
                                 Name="ClearFilterButton"
                                 Content="Clear"
@@ -682,6 +774,13 @@
                                 Height="32"
                                 Margin="10,0,0,0"
                                 Click="OnClearFilterClick"/>
+            <Button Grid.Column="3"
+                Name="RefreshResultsButton"
+                Content="Refresh"
+                Classes="small-button"
+                Height="32"
+                Margin="10,0,0,0"
+                Click="OnRefreshResultsClick"/>
                     </Grid>
                 </Border>
                 
@@ -703,10 +802,10 @@
                                 BorderThickness="2,2,2,1">
                             <Grid Name="ResultsHeaderGrid">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="120"/>  <!-- Seed -->
-                                    <ColumnDefinition Width="80"/>   <!-- Total -->
+                                    <ColumnDefinition Width="132"/>  <!-- Seed (was 120) -->
+                                    <ColumnDefinition Width="92"/>   <!-- Total (was 80) -->
                                     <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                    <ColumnDefinition Width="80"/>   <!-- Action -->
+                                    <ColumnDefinition Width="92"/>   <!-- Action (was 80) -->
                                 </Grid.ColumnDefinitions>
                                 
                                 <Button Grid.Column="0" 
@@ -716,12 +815,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Seed" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Name="SeedSortIndicator"
                                                    Text=" ▼" 
-                                                   FontSize="10"
+                                                   FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"
                                                    IsVisible="False"/>
@@ -735,12 +834,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Total" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Name="ScoreSortIndicator"
                                                    Text=" ▼" 
-                                                   FontSize="10"
+                                                   FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"
                                                    IsVisible="True"/>
@@ -748,14 +847,18 @@
                                 </Button>
                                            
                                 <!-- Dynamic tally score headers will be added here -->
-                                <StackPanel Grid.Column="2" 
-                                            Name="TallyHeadersPanel"
-                                            Orientation="Horizontal"
-                                            HorizontalAlignment="Center"/>
+                                <ScrollViewer Grid.Column="2"
+                                              HorizontalScrollBarVisibility="Auto"
+                                              VerticalScrollBarVisibility="Disabled"
+                                              Margin="0">
+                                    <StackPanel Name="TallyHeadersPanel"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Left"/>
+                                </ScrollViewer>
                                            
                                 <TextBlock Grid.Column="3" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
+                                           FontSize="14"
                                            Foreground="{StaticResource Gold}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
@@ -785,10 +888,10 @@
                                         </Border.Styles>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="120"/>  <!-- Seed -->
-                                                <ColumnDefinition Width="80"/>   <!-- Total -->
+                                                <ColumnDefinition Width="132"/>  <!-- Seed (was 120) -->
+                                                <ColumnDefinition Width="92"/>   <!-- Total (was 80) -->
                                                 <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                                <ColumnDefinition Width="80"/>   <!-- Action -->
+                                                <ColumnDefinition Width="92"/>   <!-- Action (was 80) -->
                                             </Grid.ColumnDefinitions>
                                             
                                             <TextBlock Grid.Column="0" 
@@ -814,7 +917,7 @@
                                                           ItemsSource="{Binding TallyScores}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
@@ -823,10 +926,10 @@
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="11"
                                                                    Foreground="{StaticResource White}"
-                                                                   Width="60"
+                                                                   Width="{DynamicResource TallyColumnWidth}"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
-                                                                   Margin="8,4"/>
+                                                                   Margin="2,4"/>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -864,12 +967,14 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"/>
                         
-                        <Button Name="ExportResultsButton"
-                                Content="Export Results for Excel/CSV"
-                                Classes="btn-green"
-                                IsEnabled="False"
-                                HorizontalAlignment="Right"
-                                Click="OnExportResultsClick"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Name="ExportResultsButton"
+                    Content="Export Results for Excel/CSV"
+                    Classes="btn-green"
+                    IsEnabled="False"
+                    HorizontalAlignment="Right"
+                    Click="OnExportResultsClick"/>
+            </StackPanel>
                     </Grid>
                 </Border>
             </Grid>
