@@ -163,11 +163,18 @@ jobs:
       - name: Pack Velopack
         shell: bash
         run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          VERSION="${VERSION#v}"  # Strip 'v' prefix if present
-          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
-            VERSION="1.0.0"
+          # Derive raw tag name (e.g. refs/tags/v1.2.3 -> v1.2.3, refs/tags/1.2.3 -> 1.2.3)
+          RAW_TAG="${GITHUB_REF##*/}"
+          # Strip a single leading 'v' or 'V'
+          VERSION="${RAW_TAG#[vV]}"
+          # Remove any leftover leading non-digit characters (covers cases like 'v.1.2.3' -> '1.2.3')
+          VERSION=$(echo "$VERSION" | sed -E 's/^[^0-9]*//')
+          # Basic SemVer (allow optional pre-release / build metadata)
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+([\-+][0-9A-Za-z\.-]+)?$ ]]; then
+            echo "::error::Tag '$RAW_TAG' produced invalid semantic version '$VERSION'. Expected something like v1.2.3 or 1.2.3"
+            exit 1
           fi
+          echo "Using pack version: $VERSION"
           vpk pack --packId BalatroSeedOracle --packVersion "$VERSION" \
             --packDir publish --mainExe ${{ matrix.mainExe }} --packTitle "BalatroSeedOracle" \
             --packAuthors "OptimusPi" --outputDir releases --runtime ${{ matrix.rid }}
