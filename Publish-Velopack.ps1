@@ -1,4 +1,4 @@
-<#!
+<#
  .SYNOPSIS
   Publishes the BalatroSeedOracle app and creates Velopack packages locally.
 
@@ -34,7 +34,7 @@
 
  .NOTES
   Requires: dotnet SDK, PowerShell 7+, internet (first install of vpk), write perms.
-#!>
+#>
 
 param(
     [string]$Rid = "win-x64",
@@ -51,16 +51,20 @@ $ErrorActionPreference = 'Stop'
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $RepoRoot
 
-$ProjectFile = Join-Path $RepoRoot 'src/Oracle.csproj'
+$ProjectFile = Join-Path $RepoRoot 'src/BalatroSeedOracle.csproj'
 if (-not (Test-Path $ProjectFile)) { throw "Project file not found at $ProjectFile" }
 
 function Get-VersionFromCsproj {
     param([string]$Path)
-    $match = Select-String -Path $Path -Pattern '<Version>([^<]+)</Version>' -SimpleMatch | Select-Object -First 1
-    if (-not $match) { throw "Could not locate <Version> element in $Path" }
-    $v = ($match.Matches[0].Groups[1].Value).Trim()
-    if (-not $v) { throw "Empty <Version> element in $Path" }
-    return $v
+    try {
+        [xml]$xml = Get-Content -LiteralPath $Path -ErrorAction Stop
+        $v = ($xml.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ }) | Select-Object -First 1
+        if ($v) { return $v.Trim() }
+    } catch { }
+    # Fallback regex scan
+    $text = Get-Content -LiteralPath $Path -Raw
+    if ($text -match '<Version>([^<]+)</Version>') { return $Matches[1].Trim() }
+    throw "Could not locate <Version> element in $Path"
 }
 
 if (-not $Version) { $Version = Get-VersionFromCsproj -Path $ProjectFile }
@@ -108,8 +112,8 @@ $publishArgs += '-p:PublishSingleFile=true'
 Write-Host "[STEP] dotnet $($publishArgs -join ' ')" -ForegroundColor Green
 dotnet @publishArgs
 
-# Determine main exe name (expected Oracle.exe)
-$ExpectedExe = 'Oracle.exe'
+# Determine main exe name (matches <AssemblyName>)
+$ExpectedExe = 'BalatroSeedOracle.exe'
 $ExePath = Join-Path $PublishDir $ExpectedExe
 if (-not (Test-Path $ExePath)) {
     $candidate = Get-ChildItem $PublishDir -Filter '*Oracle*.exe' | Select-Object -First 1
