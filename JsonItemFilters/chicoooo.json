@@ -1,0 +1,159 @@
+{
+  "name": "chicoooo",
+  "description": "Created with visual filter builder",
+  "dateCreated": "2025-08-14T02:08:16.158Z",
+  "author": "pifreak",
+  "must": [
+    {
+      "type": "souljoker",
+      "value": "Chicot",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "type": "souljoker",
+      "value": "Chicot",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "joker",
+      "value": "AncientJoker",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "HitTheRoad",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "Blueprint",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "smallblindtag",
+      "value": "StandardTag",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

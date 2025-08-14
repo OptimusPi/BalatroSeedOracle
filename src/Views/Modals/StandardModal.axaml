@@ -28,7 +28,7 @@
                     Background="{StaticResource DockGrey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
+                    BorderThickness="4"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Width="1100"

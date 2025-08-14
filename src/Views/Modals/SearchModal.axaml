@@ -666,6 +666,21 @@
                                                HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>
+
+                            <!-- ETA -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="ETA" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="EtaText"
+                                               Text="--:--:--"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
                             
                             <!-- Results Found -->
                             <Border Classes="dark-value-container">
@@ -683,18 +698,32 @@
                                 </Grid>
                             </Border>
                             
-                            <!-- Rarity -->
+                            <!-- Rate (numeric percent) -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Rate" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="RarityText"
+                                               Text="0.000000%"
+                                               FontSize="14"
+                                               Foreground="{StaticResource Green}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Rarity (categorical string) -->
                             <Border Classes="dark-value-container">
                                 <Grid>
                                     <TextBlock Text="Rarity" 
                                                FontSize="12"
                                                Foreground="{StaticResource MediumGrey}"
                                                HorizontalAlignment="Left"/>
-                                    <TextBlock Name="RarityText"
-                                               Text="0.00%"
+                                    <TextBlock Name="RarityStringText"
+                                               Text="boring"
                                                FontSize="14"
-                                               
-                                               Foreground="{StaticResource Gold}"
+                                               Foreground="{StaticResource Green}"
                                                HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>
@@ -745,13 +774,6 @@
                                 Height="32"
                                 Margin="10,0,0,0"
                                 Click="OnClearFilterClick"/>
-                        <Button Grid.Column="3"
-                                Name="RefreshResultsButton"
-                                Content="Refresh"
-                                Classes="small-button"
-                                Height="32"
-                                Margin="10,0,0,0"
-                                Click="OnRefreshResultsClick"/>
                     </Grid>
                 </Border>
                 
@@ -773,10 +795,10 @@
                                 BorderThickness="2,2,2,1">
                             <Grid Name="ResultsHeaderGrid">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="120"/>  <!-- Seed -->
-                                    <ColumnDefinition Width="80"/>   <!-- Total -->
+                                    <ColumnDefinition Width="132"/>  <!-- Seed (was 120) -->
+                                    <ColumnDefinition Width="92"/>   <!-- Total (was 80) -->
                                     <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                    <ColumnDefinition Width="80"/>   <!-- Action -->
+                                    <ColumnDefinition Width="92"/>   <!-- Action (was 80) -->
                                 </Grid.ColumnDefinitions>
                                 
                                 <Button Grid.Column="0" 
@@ -786,12 +808,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Seed" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Name="SeedSortIndicator"
                                                    Text=" ▼" 
-                                                   FontSize="10"
+                                                   FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"
                                                    IsVisible="False"/>
@@ -805,12 +827,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Total" 
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Name="ScoreSortIndicator"
                                                    Text=" ▼" 
-                                                   FontSize="10"
+                                                   FontSize="12"
                                                    Foreground="{StaticResource Gold}"
                                                    VerticalAlignment="Center"
                                                    IsVisible="True"/>
@@ -825,7 +847,7 @@
                                            
                                 <TextBlock Grid.Column="3" Text="Action" 
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
+                                           FontSize="14"
                                            Foreground="{StaticResource Gold}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
@@ -855,10 +877,10 @@
                                         </Border.Styles>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="120"/>  <!-- Seed -->
-                                                <ColumnDefinition Width="80"/>   <!-- Total -->
+                                                <ColumnDefinition Width="132"/>  <!-- Seed (was 120) -->
+                                                <ColumnDefinition Width="92"/>   <!-- Total (was 80) -->
                                                 <ColumnDefinition Width="*"/>    <!-- Dynamic tally columns -->
-                                                <ColumnDefinition Width="80"/>   <!-- Action -->
+                                                <ColumnDefinition Width="92"/>   <!-- Action (was 80) -->
                                             </Grid.ColumnDefinitions>
                                             
                                             <TextBlock Grid.Column="0" 
@@ -934,12 +956,19 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"/>
                         
-                        <Button Name="ExportResultsButton"
-                                Content="Export Results for Excel/CSV"
-                                Classes="btn-green"
-                                IsEnabled="False"
-                                HorizontalAlignment="Right"
-                                Click="OnExportResultsClick"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Name="RefreshResultsButton"
+                    Content="Refresh"
+                    Classes="btn-blue"
+                    HorizontalAlignment="Right"
+                    Click="OnRefreshResultsClick"/>
+                <Button Name="ExportResultsButton"
+                    Content="Export Results for Excel/CSV"
+                    Classes="btn-green"
+                    IsEnabled="False"
+                    HorizontalAlignment="Right"
+                    Click="OnExportResultsClick"/>
+            </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

@@ -87,8 +87,10 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _totalSeedsText;
         private TextBlock? _activeFilterNameText;
         private TextBlock? _timeElapsedText;
+    private TextBlock? _etaText;
         private TextBlock? _resultsFoundText;
-        private TextBlock? _rarityText;
+    private TextBlock? _rarityText; // now 'Rate' percent
+    private TextBlock? _rarityStringText; // categorical rarity label
         private TextBlock? _speedText;
         private TextBlock? _speedValueText;
         private TextBlock? _currentSpeedText;
@@ -118,6 +120,7 @@ namespace BalatroSeedOracle.Views.Modals
         private StackPanel? _tallyHeadersPanel;
         private TextBlock? _resultsSummary;
         private Button? _exportResultsButton;
+        private Button? _refreshResultsButton;
         private TextBlock? _jsonValidationStatus;
         private TextBox? _resultsFilterTextBox;
         private Button? _clearFilterButton;
@@ -172,14 +175,6 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (userProfileService?.GetSearchState() is { } resumeState)
                 {
-                    // Check if the search is recent (within last 24 hours)
-                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
-                    if (timeSinceSearch.TotalHours > 24)
-                    {
-                        // Too old, clear it
-                        userProfileService.ClearSearchState();
-                        return;
-                    }
 
                     // Simply restore the search state - user can hit Cook to continue
                     if (!string.IsNullOrEmpty(resumeState.ConfigPath))
@@ -430,6 +425,7 @@ namespace BalatroSeedOracle.Views.Modals
             _tallyHeadersPanel = this.FindControl<StackPanel>("TallyHeadersPanel");
             _resultsSummary = this.FindControl<TextBlock>("ResultsSummary");
             _exportResultsButton = this.FindControl<Button>("ExportResultsButton");
+            _refreshResultsButton = this.FindControl<Button>("RefreshResultsButton");
             _resultsFilterTextBox = this.FindControl<TextBox>("ResultsFilterTextBox");
             _clearFilterButton = this.FindControl<Button>("ClearFilterButton");
             
@@ -441,6 +437,10 @@ namespace BalatroSeedOracle.Views.Modals
             if (_resultsFilterTextBox != null)
             {
                 _resultsFilterTextBox.TextChanged += OnFilterTextChanged;
+            }
+            if (_refreshResultsButton != null)
+            {
+                _refreshResultsButton.Click += OnRefreshResultsClick;
             }
 
             // Set up results items control
@@ -461,8 +461,10 @@ namespace BalatroSeedOracle.Views.Modals
             _totalSeedsText = this.FindControl<TextBlock>("TotalSeedsText");
             _activeFilterNameText = this.FindControl<TextBlock>("ActiveFilterNameText");
             _timeElapsedText = this.FindControl<TextBlock>("TimeElapsedText");
+            _etaText = this.FindControl<TextBlock>("EtaText");
             _resultsFoundText = this.FindControl<TextBlock>("ResultsFoundText");
             _rarityText = this.FindControl<TextBlock>("RarityText");
+            _rarityStringText = this.FindControl<TextBlock>("RarityStringText");
             _speedText = this.FindControl<TextBlock>("SpeedText");
             _speedValueText = this.FindControl<TextBlock>("SpeedValueText");
             _currentSpeedText = this.FindControl<TextBlock>("CurrentSpeedText");
@@ -730,6 +732,12 @@ namespace BalatroSeedOracle.Views.Modals
                         _resultsItemsControl.ItemsSource = _searchResults;
                     }
                     
+                    // Force flush & reload when opening results tab
+                    if (_searchInstance != null)
+                    {
+                        _searchInstance.ForceFlush();
+                    }
+
                     // Set up dynamic column headers for tally scores if not already done
                     UpdateTallyHeaders();
                 }
@@ -743,6 +751,15 @@ namespace BalatroSeedOracle.Views.Modals
                 // Load top results on first open / every switch
                 _ = LoadTopResultsAsync();
             }
+        }
+
+        private void OnRefreshResultsClick(object? sender, RoutedEventArgs e)
+        {
+            if (_searchInstance != null)
+            {
+                _searchInstance.ForceFlush();
+            }
+            _ = LoadTopResultsAsync();
         }
 
         /// <summary>
@@ -1018,6 +1035,7 @@ namespace BalatroSeedOracle.Views.Modals
                         EnableDebugOutput = searchConfig.DebugMode,
                         DebugSeed = searchConfig.DebugSeed,
                     };
+                    // No need to store batch size for interpolation anymore
 
                     if (_searchInstance == null)
                     {
@@ -1113,6 +1131,7 @@ namespace BalatroSeedOracle.Views.Modals
                 else
                     _searchStartTime = DateTime.UtcNow;
                 _peakSpeed = 0;
+    _etaText = this.FindControl<TextBlock>("EtaText");
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
@@ -1126,10 +1145,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Start a lightweight UI timer JUST for elapsed time & rarity so they feel real-time.
                 // Progress events from Motely can be sparse (batch-sized), causing perceived stutter.
-                _uiRefreshTimer = new Avalonia.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromMilliseconds(500)
-                };
+                _uiRefreshTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) }; // keep elapsed/rarity ticking
                 _uiRefreshTimer.Tick += (_, _) =>
                 {
                     if (!_isSearching) return;
@@ -1138,10 +1154,15 @@ namespace BalatroSeedOracle.Views.Modals
                         var elapsed = DateTime.UtcNow - _searchStartTime;
                         _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
                     }
-                    if (_rarityText != null && _totalSeeds > 0)
+                    if (_totalSeeds > 0)
                     {
-                        double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                        _rarityText.Text = $"{rarity:F6}%";
+                        double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                        UpdateRarityUI(rarityPercent);
+                    }
+                    if (_latestProgress != null)
+                    {
+                        // Still refresh ETA based on most recent completed batch progress
+                        UpdateEta(_latestProgress);
                     }
                 };
                 _uiRefreshTimer.Start();
@@ -1393,10 +1414,10 @@ namespace BalatroSeedOracle.Views.Modals
                 _resultsFoundText.Text = _newResultsCount.ToString();
             }
 
-            if (_rarityText != null && _totalSeeds > 0)
+            if (_totalSeeds > 0)
             {
-                double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                _rarityText.Text = $"{rarity:F6}%";
+                double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                UpdateRarityUI(rarityPercent);
             }
 
             if (_timeElapsedText != null)
@@ -1404,8 +1425,56 @@ namespace BalatroSeedOracle.Views.Modals
                 var elapsed = DateTime.UtcNow - _searchStartTime;
                 _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
             }
+            UpdateEta(e);
 
             UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
+        }
+
+        private void UpdateEta(SearchProgressEventArgs e)
+        {
+            if (_etaText == null) return;
+            try
+            {
+                if (e.PercentComplete <= 0.000001 || e.PercentComplete >= 100.0)
+                {
+                    _etaText.Text = "--:--:--";
+                    return;
+                }
+                var elapsed = DateTime.UtcNow - _searchStartTime;
+                double pct = e.PercentComplete / 100.0; // 0..1
+                var total = TimeSpan.FromTicks((long)(elapsed.Ticks / pct));
+                var remaining = total - elapsed;
+                if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+                _etaText.Text = FormatEta(remaining);
+            }
+            catch
+            {
+                _etaText.Text = "--:--:--";
+            }
+        }
+
+        private static string FormatEta(TimeSpan remaining)
+        {
+            if (remaining.TotalDays >= 1)
+            {
+                int d = (int)remaining.TotalDays;
+                int h = remaining.Hours;
+                return $"{d}d {h}h";
+            }
+            if (remaining.TotalHours >= 1)
+            {
+                int h = (int)remaining.TotalHours;
+                int m = remaining.Minutes;
+                return $"{h}h {m}m";
+            }
+            if (remaining.TotalMinutes >= 1)
+            {
+                int m = (int)remaining.TotalMinutes;
+                int s = remaining.Seconds;
+                return $"{m}m {s}s";
+            }
+            int sec = Math.Max(0, (int)Math.Round(remaining.TotalSeconds));
+            return sec + "s";
         }
 
     private void OnResultFound(object? sender, SearchResultEventArgs e)
@@ -1429,10 +1498,80 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             // Update rarity immediately if we know total seeds
-            if (_rarityText != null && _totalSeeds > 0)
+            if (_totalSeeds > 0)
             {
-                double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                _rarityText.Text = $"{rarity:F6}%";
+                double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                UpdateRarityUI(rarityPercent, immediate:true);
+            }
+        }
+
+        private void UpdateRarityUI(double rarityPercent, bool immediate = false)
+        {
+            if (_rarityText == null) return;
+            _rarityText.Text = $"{rarityPercent:F6}%";
+
+            // Determine category & color thresholds (percent values)
+            string category;
+            // thresholds expressed in percent (e.g., 0.005% -> 0.005)
+            // Order: green >0.005, yellow <0.005, orange <0.004, red <0.003, purple <0.0025, blue <0.002, pink <0.001
+            // We interpret as: rarityPercent > 0.005 => green (boring)
+            // else if rarityPercent > 0.004 => yellow (common)
+            // else if rarityPercent > 0.003 => orange (uncommon)
+            // else if rarityPercent > 0.0025 => red (rare)
+            // else if rarityPercent > 0.002 => purple (legendary)
+            // else if rarityPercent > 0.001 => blue (??? not specified for category list, keep legendary?)
+            // else pink (mythical)
+
+            // Provided mapping for string: green=boring yellow=common orange=uncommon red=rare purple=legendary pink=mythical
+            // Blue threshold present but no name: we'll treat blue as 'legendary' stepping stone above purple? Instead map blue to 'legendary' too.
+
+            IBrush? brush = null;
+            var resources = Application.Current?.Resources;
+
+            if (rarityPercent > 0.005)
+            {
+                category = "boring";
+                brush = resources?["Green"] as IBrush;
+            }
+            else if (rarityPercent > 0.0025)
+            {
+                category = "common";
+                brush = resources?["Gold"] as IBrush ?? resources?["Yellow"] as IBrush;
+            }
+            else if (rarityPercent > 0.002)
+            {
+                category = "uncommon";
+                brush = resources?["Orange"] as IBrush;
+            }
+            else if (rarityPercent > 0.001)
+            {
+                category = "rare";
+                brush = resources?["Red"] as IBrush;
+            }
+            else if (rarityPercent > 0.0008)
+            {
+                category = "legendary";
+                brush = resources?["Purple"] as IBrush;
+            }
+            else if (rarityPercent > 0.0003)
+            {
+                category = "mythical";
+                brush = resources?["Blue"] as IBrush;
+            }
+            else
+            {
+                category = "god tier";
+                brush = resources?["Pink"] as IBrush ?? resources?["Magenta"] as IBrush;
+            }
+
+            if (brush != null)
+            {
+                _rarityText.Foreground = brush;
+                if (_rarityStringText != null) _rarityStringText.Foreground = brush;
+            }
+            if (_rarityStringText != null)
+            {
+                _rarityStringText.Text = category;
             }
         }
         
@@ -2072,10 +2211,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private async void OnRefreshResultsClick(object? sender, RoutedEventArgs e)
-        {
-            await LoadTopResultsAsync();
-        }
+    // (Duplicate OnRefreshResultsClick removed; single implementation earlier handles force flush + reload.)
         
         private void UpdateSortIndicators()
         {

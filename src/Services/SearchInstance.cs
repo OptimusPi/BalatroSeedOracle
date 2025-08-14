@@ -46,7 +46,8 @@ namespace BalatroSeedOracle.Services
         
     // Persistent DuckDB connection & appender for high throughput streaming inserts
     private readonly DuckDBConnection _connection; // opened in ctor, never null after
-    private DuckDB.NET.Data.DuckDBAppender? _appender; // fastest row streaming API (no external lock)
+    private DuckDB.NET.Data.DuckDBAppender? _appender; // fastest row streaming API (REQUIRES our own synchronization)
+    private readonly object _appenderSync = new(); // guards _appender create/close and row appends
     // Track last successful manual flush (for diagnostics only)
     private DateTime _lastAppenderFlush = DateTime.UtcNow;
     // Fast in-memory duplicate filter (only stores successful inserts). Assumes result count << total search space.
@@ -252,44 +253,70 @@ namespace BalatroSeedOracle.Services
         // Safe to call frequently; only does work if appender exists.
         private void CloseAppender()
         {
-            if (_appender == null) return;
-            try
+            lock (_appenderSync)
             {
-                // Close finalizes the appender (native duckdb_appender_close) without destroying table
-                var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                closeMethod?.Invoke(_appender, null);
-                _lastAppenderFlush = DateTime.UtcNow;
+                if (_appender == null) return;
+                try
+                {
+                    // Close finalizes the appender (native duckdb_appender_close) without destroying table
+                    var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    closeMethod?.Invoke(_appender, null);
+                    _lastAppenderFlush = DateTime.UtcNow;
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"CloseAppender failed: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+        }
+
+        // Force a flush so queries see latest rows without stopping search
+        public void ForceFlush()
+        {
+            lock (_appenderSync)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"CloseAppender failed: {ex.Message}");
+                if (_appender == null) return;
+                try
+                {
+                    // Close & recreate inside same lock so no concurrent row writes see a disposed appender
+                    var old = _appender;
+                    CloseAppender(); // will re-lock but is quick; could refactor to internal variant if needed
+                    _appender = _connection.CreateAppender("results");
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "ForceFlush executed (appender recycled)");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"ForceFlush failed: {ex.Message}");
+                }
             }
         }
 
         private Task AddSearchResultAsync(SearchResult result)
         {
-            if (!_dbInitialized || _appender == null) return Task.CompletedTask;
+            if (!_dbInitialized) return Task.CompletedTask;
             try
             {
-                // Fast path duplicate suppression before touching the appender (avoids exception cost)
-                if (!_seenSeeds.Add(result.Seed))
+                // Duplicate suppression outside lock (fast path) – BUT we must re-check inside lock to avoid race if ForceFlush resets seed set (currently it doesn't).
+                if (!_seenSeeds.Add(result.Seed)) return Task.CompletedTask;
+
+                lock (_appenderSync)
                 {
-                    // Duplicate encountered – silently ignore (optional: minimal debug once in a while)
-                    return Task.CompletedTask;
+                    if (_appender == null) return Task.CompletedTask; // search shutting down
+                    var row = _appender.CreateRow();
+                    row.AppendValue(result.Seed).AppendValue(result.TotalScore);
+                    int tallyCount = _columnNames.Count - 2;
+                    for (int i = 0; i < tallyCount; i++)
+                    {
+                        int val = (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
+                        row.AppendValue(val);
+                    }
+                    row.EndRow();
                 }
-                var row = _appender.CreateRow();
-                row.AppendValue(result.Seed).AppendValue(result.TotalScore);
-                int tallyCount = _columnNames.Count - 2;
-                for (int i = 0; i < tallyCount; i++)
-                {
-                    int val = (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
-                    row.AppendValue(val);
-                }
-                row.EndRow();
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("Duplicate key") || ex.Message.Contains("violates primary key"))
+                string msg = ex.ToString();
+                if (msg.Contains("Duplicate key") || msg.Contains("violates primary key"))
                 {
                     DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
                     AddToConsole($"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
