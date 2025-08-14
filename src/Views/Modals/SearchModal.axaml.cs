@@ -200,7 +200,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Set the UI values
                     if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
                     if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1;
-                    if (_minScoreSpinner != null) _minScoreSpinner.Value = resumeState.MinScore;
+                    if (_minScoreSpinner != null) _minScoreSpinner.Value = Math.Min(69, Math.Max(0, resumeState.MinScore));
                     if (_deckAndStakeSelector != null)
                     {
                         _deckAndStakeSelector.SetDeck(resumeState.Deck ?? "Red");
@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Set UI values from saved state
                     if (_threadsSpinner != null) _threadsSpinner.Value = resumeState.ThreadCount;
                     if (_batchSizeSpinner != null) _batchSizeSpinner.Value = resumeState.BatchSize - 1; // UI shows 0-indexed
-                    if (_minScoreSpinner != null) _minScoreSpinner.Value = resumeState.MinScore;
+                    if (_minScoreSpinner != null) _minScoreSpinner.Value = Math.Min(69, Math.Max(0, resumeState.MinScore));
                     if (_deckAndStakeSelector != null)
                     {
                         _deckAndStakeSelector.SetDeck(resumeState.Deck ?? "Red");
@@ -293,7 +293,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var searchConfig = new SearchConfiguration
                     {
                         ThreadCount = resumeState.ThreadCount,
-                        MinScore = resumeState.MinScore,
+                        MinScore = Math.Min(69, Math.Max(0, resumeState.MinScore)),
                         BatchSize = resumeState.BatchSize,
                         StartBatch = resumeState.LastCompletedBatch + 1, // Resume from next batch
                         EndBatch = resumeState.EndBatch,
