@@ -82,8 +82,10 @@ namespace BalatroSeedOracle.Views.Modals
 
         // New Search tab UI elements
         private TextBlock? _progressPercentText;
-        private TextBlock? _batchesText;
+        private TextBlock? _currentBatchText;
+        private TextBlock? _totalBatchesText;
         private TextBlock? _totalSeedsText;
+        private TextBlock? _activeFilterNameText;
         private TextBlock? _timeElapsedText;
         private TextBlock? _resultsFoundText;
         private TextBlock? _rarityText;
@@ -454,8 +456,10 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Find new Search tab UI elements
             _progressPercentText = this.FindControl<TextBlock>("ProgressPercentText");
-            _batchesText = this.FindControl<TextBlock>("BatchesText");
+            _currentBatchText = this.FindControl<TextBlock>("CurrentBatchText");
+            _totalBatchesText = this.FindControl<TextBlock>("TotalBatchesText");
             _totalSeedsText = this.FindControl<TextBlock>("TotalSeedsText");
+            _activeFilterNameText = this.FindControl<TextBlock>("ActiveFilterNameText");
             _timeElapsedText = this.FindControl<TextBlock>("TimeElapsedText");
             _resultsFoundText = this.FindControl<TextBlock>("ResultsFoundText");
             _rarityText = this.FindControl<TextBlock>("RarityText");
@@ -838,6 +842,12 @@ namespace BalatroSeedOracle.Views.Modals
                     AddToConsole($"Loaded filter: {System.IO.Path.GetFileName(filePath)}");
                     AddToConsole($"Name: {config.Name ?? "Unnamed"}");
                     AddToConsole($"Description: {config.Description ?? "No description"}");
+                    
+                    // Update the active filter name display
+                    if (_activeFilterNameText != null)
+                    {
+                        _activeFilterNameText.Text = config.Name ?? System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    }
 
                     // Update JSON validation status
                     UpdateJsonValidationStatus(true, "Valid ✓");
@@ -1097,7 +1107,11 @@ namespace BalatroSeedOracle.Views.Modals
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _isSearching = true;
-                _searchStartTime = DateTime.UtcNow;
+                // Prefer SearchInstance's recorded start time if available for consistency
+                if (_searchInstance != null)
+                    _searchStartTime = _searchInstance.SearchStartTime;
+                else
+                    _searchStartTime = DateTime.UtcNow;
                 _peakSpeed = 0;
                 _totalSeeds = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
@@ -1109,6 +1123,28 @@ namespace BalatroSeedOracle.Views.Modals
                 // Disable auto-refresh timer (manual model now)
                 _uiRefreshTimer?.Stop();
                 _uiRefreshTimer = null;
+
+                // Start a lightweight UI timer JUST for elapsed time & rarity so they feel real-time.
+                // Progress events from Motely can be sparse (batch-sized), causing perceived stutter.
+                _uiRefreshTimer = new Avalonia.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(500)
+                };
+                _uiRefreshTimer.Tick += (_, _) =>
+                {
+                    if (!_isSearching) return;
+                    if (_timeElapsedText != null)
+                    {
+                        var elapsed = DateTime.UtcNow - _searchStartTime;
+                        _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
+                    }
+                    if (_rarityText != null && _totalSeeds > 0)
+                    {
+                        double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                        _rarityText.Text = $"{rarity:F6}%";
+                    }
+                };
+                _uiRefreshTimer.Start();
                 
                 // Generate column headers from active search instance
                 if (_searchInstance != null)
@@ -1157,13 +1193,36 @@ namespace BalatroSeedOracle.Views.Modals
                     // Stop the refresh timer
                     _uiRefreshTimer?.Stop();
                     
+                    // Get the actual count from the database
+                    int actualResultCount = 0;
+                    if (_searchInstance != null)
+                    {
+                        try
+                        {
+                            actualResultCount = await _searchInstance.GetResultCountAsync();
+                            _lastKnownResultCount = actualResultCount;
+                        }
+                        catch (Exception countEx)
+                        {
+                            BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Failed to get result count: {countEx.Message}");
+                            // Fall back to in-memory count
+                            actualResultCount = _searchInstance.ResultCount;
+                        }
+                    }
+                    
+                    // Update the results found display with actual count
+                    if (_resultsFoundText != null)
+                    {
+                        _resultsFoundText.Text = actualResultCount.ToString("N0");
+                    }
+                    
                     // Do one final refresh to ensure everything is up to date
                     await RefreshResultsView();
 
                     // Update UI using the central method
                     UpdateSearchUI();
 
-                    AddToConsole($"Search complete! Found {_lastKnownResultCount:N0} results.");
+                    AddToConsole($"Search complete! Found {actualResultCount:N0} results.");
                 }
                 catch (Exception ex)
                 {
@@ -1189,7 +1248,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (_consoleOutput != null)
             {
-                _consoleOutput.Text = "🃏\n";
+                _consoleOutput.Text = "> Console cleared\n";
             }
         }
         
@@ -1313,10 +1372,14 @@ namespace BalatroSeedOracle.Views.Modals
                     _progressPercentText.Text = $"{e.PercentComplete:F2}%";
             }
 
-            // Update batch progress too
-            if (_batchesText != null)
+            // Update batch progress in separate boxes
+            if (_currentBatchText != null)
             {
-                _batchesText.Text = $"{e.BatchesSearched:N0} / {e.TotalBatches:N0}";
+                _currentBatchText.Text = $"{e.BatchesSearched:N0}";
+            }
+            if (_totalBatchesText != null)
+            {
+                _totalBatchesText.Text = $"{e.TotalBatches:N0}";
             }
 
             if (_totalSeedsText != null)
@@ -1354,8 +1417,22 @@ namespace BalatroSeedOracle.Views.Modals
             // Add seed to console buffer for immediate feedback
             if (e.Result != null)
             {
-        // e.Result.TotalScore is the canonical property name in Models.SearchResult
-        _consoleBuffer.AddLine($"{e.Result.Seed},{e.Result.TotalScore}");
+                // e.Result.TotalScore is the canonical property name in Models.SearchResult
+                _consoleBuffer.AddLine($"{e.Result.Seed},{e.Result.TotalScore}");
+                AddToConsole($"{e.Result.Seed},{e.Result.TotalScore}");
+            }
+
+            // Instant UI update for results count (no waiting for progress tick)
+            if (_resultsFoundText != null)
+            {
+                _resultsFoundText.Text = _newResultsCount.ToString();
+            }
+
+            // Update rarity immediately if we know total seeds
+            if (_rarityText != null && _totalSeeds > 0)
+            {
+                double rarity = (_newResultsCount / (double)_totalSeeds) * 100.0;
+                _rarityText.Text = $"{rarity:F6}%";
             }
         }
         
@@ -1967,16 +2044,9 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async Task LoadTopResultsAsync()
         {
-            if (_searchInstance == null) return;
-            if (!_searchInstance.HasDatabase)
-            {
-                AddToConsole("Results not available yet: start a search to initialize database.");
-                return;
-            }
-            string order = _currentSortColumn;
-            if (string.IsNullOrEmpty(order)) order = "score"; // default
-
-            var top = await _searchInstance.GetTopResultsAsync(order, _sortAscending, 1000);
+            // Trust that _searchInstance and its database are fully initialized before this is called.
+            string order = string.IsNullOrEmpty(_currentSortColumn) ? "score" : _currentSortColumn;
+            var top = await _searchInstance!.GetTopResultsAsync(order, _sortAscending, 1000);
 
             _searchResults.Clear();
             foreach (var r in top)

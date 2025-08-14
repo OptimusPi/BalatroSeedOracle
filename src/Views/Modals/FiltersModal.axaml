@@ -12,8 +12,9 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            
-            <Setter Property="Height" Value="50"/>
+            <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
+            <!-- Allow height to expand with font; keep min for layout -->
+            <Setter Property="MinHeight" Value="50"/>
             <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="BorderThickness" Value="0"/>

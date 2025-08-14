@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
@@ -44,9 +45,12 @@ namespace BalatroSeedOracle.Services
         private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
         
     // Persistent DuckDB connection & appender for high throughput streaming inserts
-    private DuckDBConnection _connection; // opened in ctor, never null after
-    private DuckDBAppender? _appender; // fastest row streaming API
-    private readonly object _appendLock = new();
+    private readonly DuckDBConnection _connection; // opened in ctor, never null after
+    private DuckDB.NET.Data.DuckDBAppender? _appender; // fastest row streaming API (no external lock)
+    // Track last successful manual flush (for diagnostics only)
+    private DateTime _lastAppenderFlush = DateTime.UtcNow;
+    // Fast in-memory duplicate filter (only stores successful inserts). Assumes result count << total search space.
+    private readonly HashSet<string> _seenSeeds = new HashSet<string>(StringComparer.Ordinal);
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -81,6 +85,18 @@ namespace BalatroSeedOracle.Services
             lock (_consoleHistoryLock)
             {
                 return new List<string>(_consoleHistory);
+            }
+        }
+        
+        /// <summary>
+        /// Adds a message to the console history
+        /// </summary>
+        private void AddToConsole(string message)
+        {
+            lock (_consoleHistoryLock)
+            {
+                var timestamp = DateTime.UtcNow.ToString("HH:mm:ss");
+                _consoleHistory.Add($"[{timestamp}] {message}");
             }
         }
 
@@ -202,6 +218,26 @@ namespace BalatroSeedOracle.Services
                 }
                 _appender?.Dispose();
                 _appender = _connection.CreateAppender("results");
+                // Preload existing seeds for fast duplicate suppression (resume scenarios)
+                try
+                {
+                    using var preload = _connection.CreateCommand();
+                    preload.CommandText = "SELECT seed FROM results";
+                    using var reader = preload.ExecuteReader();
+                    int preloadCount = 0;
+                    while (reader.Read())
+                    {
+                        var s = reader.GetString(0);
+                        _seenSeeds.Add(s);
+                        preloadCount++;
+                    }
+                    if (preloadCount > 0)
+                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Preloaded {preloadCount:N0} existing seeds into duplicate filter");
+                }
+                catch (Exception px)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed preloading existing seeds: {px.Message}");
+                }
                 _dbInitialized = true;
                 DebugLogger.Log($"SearchInstance[{_searchId}]", $"Database initialized with {_columnNames.Count} columns");
             }
@@ -212,11 +248,35 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        // Explicit flush of the native appender so queries see latest rows.
+        // Safe to call frequently; only does work if appender exists.
+        private void CloseAppender()
+        {
+            if (_appender == null) return;
+            try
+            {
+                // Close finalizes the appender (native duckdb_appender_close) without destroying table
+                var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                closeMethod?.Invoke(_appender, null);
+                _lastAppenderFlush = DateTime.UtcNow;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"CloseAppender failed: {ex.Message}");
+            }
+        }
+
         private Task AddSearchResultAsync(SearchResult result)
         {
             if (!_dbInitialized || _appender == null) return Task.CompletedTask;
-            lock (_appendLock)
+            try
             {
+                // Fast path duplicate suppression before touching the appender (avoids exception cost)
+                if (!_seenSeeds.Add(result.Seed))
+                {
+                    // Duplicate encountered – silently ignore (optional: minimal debug once in a while)
+                    return Task.CompletedTask;
+                }
                 var row = _appender.CreateRow();
                 row.AppendValue(result.Seed).AppendValue(result.TotalScore);
                 int tallyCount = _columnNames.Count - 2;
@@ -227,6 +287,18 @@ namespace BalatroSeedOracle.Services
                 }
                 row.EndRow();
             }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Duplicate key") || ex.Message.Contains("violates primary key"))
+                {
+                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
+                    AddToConsole($"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
+                }
+                else
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to add result: {ex.Message}");
+                }
+            }
             return Task.CompletedTask;
         }
 
@@ -234,6 +306,9 @@ namespace BalatroSeedOracle.Services
         {
             var list = new List<BalatroSeedOracle.Models.SearchResult>();
             if (!_dbInitialized) return list;
+            
+            // Rely on row.EndRow() visibility; do NOT close appender mid-search.
+            
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = $"SELECT * FROM results ORDER BY score DESC LIMIT {limit} OFFSET {offset}";
             using var reader = await cmd.ExecuteReaderAsync();
@@ -270,9 +345,9 @@ namespace BalatroSeedOracle.Services
             var results = new List<BalatroSeedOracle.Models.SearchResult>();
             if (limit <= 0) return results;
 
-            if (string.IsNullOrEmpty(_connectionString))
+            if (!_dbInitialized)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync called before DB initialized");
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync called before DB init complete");
                 return results;
             }
 
@@ -299,33 +374,31 @@ namespace BalatroSeedOracle.Services
                     if (_columnNames.Contains(orderBy)) resolvedColumn = orderBy;
                 }
             }
+            
+            // Rely on row.EndRow() visibility; appender stays open during active search.
 
-            try
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT {limit}";
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                if (!_dbInitialized) return results;
-                using var cmd = _connection.CreateCommand();
-                cmd.CommandText = $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT {limit}";
-                using var reader = await cmd.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
+                var seed = reader.GetString(0);
+                var score = reader.GetInt32(1);
+                int tallyCount = _columnNames.Count - 2;
+                int[]? scores = null;
+                if (tallyCount > 0)
                 {
-                    var seed = reader.GetString(0);
-                    var score = reader.GetInt32(1);
-                    int tallyCount = _columnNames.Count - 2;
-                    int[]? scores = null;
-                    if (tallyCount > 0)
+                    scores = new int[tallyCount];
+                    for (int i = 0; i < tallyCount; i++)
                     {
-                        scores = new int[tallyCount];
-                        for (int i = 0; i < tallyCount; i++)
-                        {
-                            scores[i] = !reader.IsDBNull(i + 2) ? reader.GetInt32(i + 2) : 0;
-                        }
+                        scores[i] = !reader.IsDBNull(i + 2) ? reader.GetInt32(i + 2) : 0;
                     }
-                    results.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
                 }
+                results.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
             }
-            catch (Exception ex)
+            if (results.Count == 0)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to get top results: {ex.Message}");
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync returned 0 rows");
             }
             return results;
         }
@@ -333,6 +406,19 @@ namespace BalatroSeedOracle.Services
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetAllResultsAsync()
         {
             return await GetResultsPageAsync(0, 420_069);
+        }
+
+        public async Task<int> GetResultCountAsync()
+        {
+            if (!_dbInitialized)
+                throw new InvalidOperationException("Database not initialized");
+            
+            // Rely on row.EndRow() visibility; no mid-search close.
+            
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM results";
+            var v = await cmd.ExecuteScalarAsync();
+            return v == null ? 0 : Convert.ToInt32(v);
         }
 
         public async Task<int> ExportResultsAsync(string filePath)
@@ -425,13 +511,8 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
-                // Load the config from file
-                var json = await File.ReadAllTextAsync(configPath);
-                var ouijaConfig = JsonSerializer.Deserialize<OuijaConfig>(json);
-                if (ouijaConfig == null)
-                {
-                    throw new InvalidOperationException($"Failed to load config from {configPath}");
-                }
+                // Load the config from file - use LoadFromJson to get PostProcess!
+                var ouijaConfig = OuijaConfig.LoadFromJson(configPath);
                 
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
@@ -558,22 +639,8 @@ namespace BalatroSeedOracle.Services
                 $"Loading config from: {criteria.ConfigPath}"
             );
 
-            // Load and validate the Ouija config
-            var json = await File.ReadAllTextAsync(criteria.ConfigPath);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            };
-            var config = JsonSerializer.Deserialize<OuijaConfig>(json, options);
-
-            if (config == null)
-            {
-                throw new InvalidOperationException(
-                    $"Failed to load config from {criteria.ConfigPath}"
-                );
-            }
+            // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
+            var config = OuijaConfig.LoadFromJson(criteria.ConfigPath);
             
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
@@ -581,6 +648,8 @@ namespace BalatroSeedOracle.Services
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Must: {(config.Must?.Count ?? 0)} items");
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Should: {(config.Should?.Count ?? 0)} items");
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.MustNot: {(config.MustNot?.Count ?? 0)} items");
+
+            string? rawJsonForDebug = null; // only load if needed
             
             if (config.Should != null && config.Should.Count > 0)
             {
@@ -589,8 +658,16 @@ namespace BalatroSeedOracle.Services
             else
             {
                 DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  PROBLEM: Should array is null or empty after deserialization!");
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  Raw JSON length: {json.Length} characters");
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  First 500 chars of JSON: {json.Substring(0, Math.Min(500, json.Length))}");
+                try
+                {
+                    rawJsonForDebug = System.IO.File.ReadAllText(criteria.ConfigPath);
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  Raw JSON length: {rawJsonForDebug.Length} characters");
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  First 500 chars of JSON: {rawJsonForDebug.Substring(0, Math.Min(500, rawJsonForDebug.Length))}");
+                }
+                catch (Exception rx)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  Failed to read raw JSON for debug: {rx.Message}");
+                }
             }
 
             // Store the config path for reference
@@ -693,6 +770,16 @@ namespace BalatroSeedOracle.Services
                 
                 _preventStateSave = preventStateSave;
 
+                // Close then dispose appender so buffered rows are committed
+                if (_appender != null)
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Closing DuckDB appender...");
+                    CloseAppender();
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Disposing DuckDB appender (finalizing buffered rows)...");
+                    _appender.Dispose();
+                    _appender = null;
+                }
+                
                 // Flush any pending search state to disk before stopping (unless prevented)
                 if (!preventStateSave)
                 {
@@ -902,9 +989,9 @@ namespace BalatroSeedOracle.Services
                     {
                         _lastSavedBatch = mp.CompletedBatchCount;
                         
-                        // Save to database for resume - save the NEXT batch to process, not the completed one
-                        // This prevents re-processing the same batch on resume
-                        _ = SaveLastBatchAsync(mp.CompletedBatchCount + 1);
+                        // Save to database for resume - save the completed batch count
+                        // The actual resume will be from absoluteBatchCount which already includes the start offset
+                        _ = SaveLastBatchAsync(absoluteBatchCount);
                         
                         // Only save state if not prevented
                         if (!_preventStateSave)
@@ -912,13 +999,13 @@ namespace BalatroSeedOracle.Services
                             // First time? Save the full state
                             if (_userProfileService?.GetSearchState() == null)
                             {
-                                SaveSearchState(mp.CompletedBatchCount, totalBatches, effectiveEndBatch);
+                                SaveSearchState(absoluteBatchCount, totalBatches, effectiveEndBatch);
                                 _lastStateSave = DateTime.UtcNow;
                             }
                             else
                             {
                                 // Just update the batch number in memory
-                                _userProfileService?.UpdateSearchBatch(mp.CompletedBatchCount);
+                                _userProfileService?.UpdateSearchBatch(absoluteBatchCount);
                                 
                                 // Write to disk every 10 seconds
                                 if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
@@ -1149,8 +1236,7 @@ namespace BalatroSeedOracle.Services
             {
                 _appender?.Dispose();
                 _appender = null;
-                _connection?.Dispose();
-                _connection = null;
+                _connection.Dispose();
             }
             catch { }
             

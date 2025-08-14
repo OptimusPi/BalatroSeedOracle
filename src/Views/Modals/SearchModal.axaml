@@ -25,8 +25,10 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            
-            <Setter Property="Height" Value="50"/>
+            <!-- Use global scalable font size -->
+            <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
+            <!-- Remove fixed Height so font can dictate height; keep a sensible minimum -->
+            <Setter Property="MinHeight" Value="50"/>
             <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -394,8 +396,42 @@
             
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Current Filter Display -->
+                <Border Grid.Row="0" 
+                        Classes="modal-content-box"
+                        Margin="10,10,10,4"
+                        Padding="12,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0"
+                                   Text="Active Filter:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource MediumGrey}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        
+                        <TextBlock Grid.Column="1"
+                                   Name="ActiveFilterNameText"
+                                   Text="No filter loaded"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource LightCream}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                
                 <!-- 3 Column Layout -->
-                <Grid Margin="10">
+                <Grid Grid.Row="1" Margin="10,0,10,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
                         <ColumnDefinition Width="*"/>   <!-- Middle for console -->
@@ -571,14 +607,29 @@
                                 </Grid>
                             </Border>
                             
-                            <!-- Batches -->
+                            <!-- Current Batch -->
                             <Border Classes="dark-value-container">
                                 <Grid>
-                                    <TextBlock Text="Batches" 
+                                    <TextBlock Text="Current Batch" 
                                                FontSize="12"
                                                Foreground="{StaticResource MediumGrey}"
                                                HorizontalAlignment="Left"/>
-                                    <TextBlock Name="BatchesText"
+                                    <TextBlock Name="CurrentBatchText"
+                                               Text="0"
+                                               FontSize="14"
+                                               Foreground="{StaticResource LightCream}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Total Batches -->
+                            <Border Classes="dark-value-container">
+                                <Grid>
+                                    <TextBlock Text="Max Batch" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Left"/>
+                                    <TextBlock Name="TotalBatchesText"
                                                Text="0"
                                                FontSize="14"
                                                Foreground="{StaticResource LightCream}"

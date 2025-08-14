@@ -1,6 +1,12 @@
 <!-- /src/Styles/BalatroGlobalStyles.axaml -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Global resources -->
+    <Styles.Resources>
+        <!-- Centralized tab button font size so it can be scaled easily -->
+        <x:Double x:Key="TabButtonFontSize">72</x:Double>
+    </Styles.Resources>
     
     <!-- =============================================
          GLOBAL BALATRO STYLES - Applied to ALL controls
@@ -473,9 +479,9 @@
         <Setter Property="FontSize" Value="10"/>
     </Style>
     
-    <!-- Tab button style with larger font for red navigation bars -->
+    <!-- Tab button style with larger font for red navigation bars (now resource-driven) -->
     <Style Selector="Button.tab-button">
-        <Setter Property="FontSize" Value="56"/>
+        <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
     </Style>
     
 </Styles>
