@@ -130,15 +130,11 @@ public partial class PanelSpinner : UserControl
             var viewbox = _spriteImage.Parent as Viewbox;
             if (viewbox?.Parent is Grid grid)
             {
-                // Clear any existing custom control (important to do this ALWAYS)
-                var customControls = grid.Children.ToList().Where(child => 
-                    child != viewbox && 
-                    child.GetType().Name != "TextBlock" && 
-                    child.GetType().Name != "Border" && 
-                    child.GetType().Name != "StackPanel" &&
-                    child.GetType().Name != "Button").ToList();
+                var customControlsInImageRow = grid.Children
+                    .Where(child => Grid.GetRow(child) == 1 && child != viewbox)
+                    .ToList();
                 
-                foreach (var child in customControls)
+                foreach (var child in customControlsInImageRow)
                 {
                     grid.Children.Remove(child);
                 }

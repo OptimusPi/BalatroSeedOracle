@@ -155,10 +155,6 @@ namespace BalatroSeedOracle.Services
                     _columnNames.Add(colName);
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("Filter config has no SHOULD clauses - cannot create tally columns");
-            }
             
             // If constructor already supplied a path, keep it; otherwise derive from filter name
             if (string.IsNullOrEmpty(_dbPath))
