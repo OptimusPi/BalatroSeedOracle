@@ -1,0 +1,39 @@
+{
+  "name": "PerkeoBlackHoleFinder",
+  "description": "Require Perkeo (Negative) and black holes to score",
+  "dateCreated": "2025-08-15T00:37:30.630Z",
+  "author": "Lolgg2347",
+  "must": [
+   {
+    "type": "souljoker",
+    "value": "Perkeo",
+    "edition": "negative",
+    "antes": [
+        1
+      ],
+      "sources": {
+        "requireMega": true,
+        "packSlots": [
+          1
+        ]
+      }
+   }
+  ],
+  "should": [
+     {
+      "type": "SpectralCard",
+      "value": "BlackHole",
+      "antes": [
+        2,3,4,5,6,7,8
+      ],
+      "sources": {
+        "packSlots": [
+          0,1,2,3,4,5
+        ]
+      }
+    }
+  ],
+  "mustNot": [],
+  "deck": "Ghost",
+  "stake": "White"
+}

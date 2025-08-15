@@ -165,8 +165,22 @@ FROM results
 ORDER BY score DESC 
 LIMIT 100;";
             
-            // Setup syntax highlighting (basic for now)
-            _sqlEditor.SyntaxHighlighting = AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("SQL");
+            // Defer syntax highlighting setup to avoid rendering issues
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    if (_sqlEditor != null)
+                    {
+                        _sqlEditor.SyntaxHighlighting = AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("SQL");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't crash on syntax highlighting issues
+                    System.Diagnostics.Debug.WriteLine($"Failed to set SQL syntax highlighting: {ex.Message}");
+                }
+            }, DispatcherPriority.Background);
         }
         
         private ContextMenu CreateRowContextMenu()
@@ -391,6 +405,13 @@ LIMIT 100;";
             if (_sqlEditor == null || _exampleQueriesCombo == null)
                 return;
             
+            // Ensure we're on UI thread when updating text
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => OnExampleQuerySelected(sender, e));
+                return;
+            }
+            
             var selected = _exampleQueriesCombo.SelectedIndex;
             var query = selected switch
             {
@@ -426,7 +447,16 @@ LIMIT 50;",
             };
             
             if (!string.IsNullOrEmpty(query))
-                _sqlEditor.Text = query;
+            {
+                try
+                {
+                    _sqlEditor.Text = query;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to set SQL editor text: {ex.Message}");
+                }
+            }
         }
         
         private async Task ExportToCsvAsync()
