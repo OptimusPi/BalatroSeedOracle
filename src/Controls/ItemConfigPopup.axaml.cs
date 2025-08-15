@@ -265,13 +265,9 @@ namespace BalatroSeedOracle.Controls
                 }
             }
 
-            // If all antes are selected, return null (means "any ante")
-            if (antes.Count == 8)
-            {
-                return null;
-            }
-
-            return antes.Count > 0 ? antes : null;
+            // Always return the actual selected antes, never null
+            // This ensures the user's selection is preserved exactly  
+            return antes.Count > 0 ? antes : new List<int>();
         }
 
         public string GetItem()
@@ -357,14 +353,14 @@ namespace BalatroSeedOracle.Controls
             // - Jokers
             // - Playing cards
             // - Vouchers (in some cases)
-            // For now, we'll enable editions for jokers only
-            // TODO: Extend to support playing cards when that feature is added
+            // Enable editions for jokers and playing cards
 
             return itemKey.Contains("joker")
                 || itemKey.Contains("Joker")
                 || itemKey.StartsWith("j_")
-                || // Common joker prefix pattern
-                IsSpecificJoker(itemKey);
+                || itemKey.Contains("playingcard")
+                || itemKey.Contains("PlayingCard")
+                || IsSpecificJoker(itemKey);
         }
 
         private bool IsSpecificJoker(string itemKey)
@@ -483,5 +479,8 @@ namespace BalatroSeedOracle.Controls
         public string Edition { get; set; } = "none";
         public object? Sources { get; set; }
         public string? Label { get; set; }
+        public string? TagType { get; set; } // "smallblindtag" or "bigblindtag" for tag items
+        public List<string>? Stickers { get; set; } // "eternal", "perishable", "rental"
+        public int? Min { get; set; } // Minimum count required (for Must items)
     }
 }

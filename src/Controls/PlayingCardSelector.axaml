@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="BalatroSeedOracle.Controls.PlayingCardSelector">
+  
+  <Border Background="{DynamicResource DarkModalGrey}"
+          CornerRadius="8"
+          Padding="15">
+    <Grid RowDefinitions="Auto,*,Auto">
+      
+      <!-- Header with quick selection buttons -->
+      <StackPanel Grid.Row="0" Margin="0,0,0,10">
+        <TextBlock Text="SELECT PLAYING CARDS"
+                   FontFamily="{DynamicResource BalatroFont}"
+                   FontSize="16"
+                   Foreground="{DynamicResource LightGrey}"
+                   Margin="0,0,0,10"/>
+        
+        <WrapPanel>
+          <Button Name="SelectAllButton" Content="Select All" Margin="0,0,5,0"/>
+          <Button Name="ClearAllButton" Content="Clear All" Margin="0,0,15,0"/>
+          
+          <!-- Suit selection buttons -->
+          <Button Name="SelectSpadesButton" Content="♠ Spades" Margin="0,0,5,0"/>
+          <Button Name="SelectHeartsButton" Content="♥ Hearts" Margin="0,0,5,0" Foreground="Red"/>
+          <Button Name="SelectDiamondsButton" Content="♦ Diamonds" Margin="0,0,5,0" Foreground="Red"/>
+          <Button Name="SelectClubsButton" Content="♣ Clubs" Margin="0,0,15,0"/>
+          
+          <!-- Rank selection buttons -->
+          <Button Name="SelectAcesButton" Content="All Aces" Margin="0,0,5,0"/>
+          <Button Name="SelectFaceButton" Content="Face Cards" Margin="0,0,5,0"/>
+          <Button Name="SelectNumberButton" Content="Number Cards" Margin="0,0,5,0"/>
+        </WrapPanel>
+      </StackPanel>
+      
+      <!-- Card Grid -->
+      <ScrollViewer Grid.Row="1" 
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <Grid Name="CardGrid" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,10">
+          <!-- Spades Row -->
+          <WrapPanel Grid.Row="0" Name="SpadesRow" Margin="0,5"/>
+          
+          <!-- Hearts Row -->
+          <WrapPanel Grid.Row="1" Name="HeartsRow" Margin="0,5"/>
+          
+          <!-- Diamonds Row -->
+          <WrapPanel Grid.Row="2" Name="DiamondsRow" Margin="0,5"/>
+          
+          <!-- Clubs Row -->
+          <WrapPanel Grid.Row="3" Name="ClubsRow" Margin="0,5"/>
+        </Grid>
+      </ScrollViewer>
+      
+      <!-- Summary -->
+      <TextBlock Grid.Row="2" 
+                 Name="SelectionSummary"
+                 Text="0 cards selected"
+                 FontFamily="{DynamicResource BalatroFont}"
+                 FontSize="12"
+                 Foreground="{DynamicResource MediumGrey}"
+                 Margin="0,10,0,0"/>
+    </Grid>
+  </Border>
+  
+</UserControl>

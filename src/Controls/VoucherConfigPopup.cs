@@ -317,13 +317,9 @@ namespace BalatroSeedOracle.Controls
                 }
             }
 
-            // If all antes are selected, return null (means "any ante")
-            if (antes.Count == 8)
-            {
-                return null;
-            }
-
-            return antes.Count > 0 ? antes : null;
+            // Always return the actual selected antes, never null
+            // This ensures the user's selection is preserved exactly
+            return antes.Count > 0 ? antes : new List<int>();
         }
     }
 }

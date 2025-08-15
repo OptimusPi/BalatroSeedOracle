@@ -45,6 +45,9 @@ namespace BalatroSeedOracle.Controls
         private CheckBox? _sourceTag;
         private CheckBox? _sourceBooster;
         private CheckBox? _sourceShop;
+        private CheckBox? _stickerEternal;
+        private CheckBox? _stickerPerishable;
+        private CheckBox? _stickerRental;
         private bool _isLegendaryJoker = false;
 
         public JokerConfigPopup()
@@ -86,6 +89,9 @@ namespace BalatroSeedOracle.Controls
 
             // Edition section
             mainPanel.Children.Add(CreateEditionSection());
+
+            // Stickers section
+            mainPanel.Children.Add(CreateStickersSection());
 
             // Sources section
             mainPanel.Children.Add(CreateSourcesSection());
@@ -261,11 +267,11 @@ namespace BalatroSeedOracle.Controls
                 Margin = new Thickness(-2),
             };
 
-            _editionNormal = CreateEditionRadioButton("Normal", "normal", true);
-            _editionFoil = CreateEditionRadioButton("Foil", "foil", false);
-            _editionHolo = CreateEditionRadioButton("Holo", "holographic", false);
-            _editionPoly = CreateEditionRadioButton("Poly", "polychrome", false);
-            _editionNegative = CreateEditionRadioButton("Negative", "negative", false);
+            _editionNormal = CreateEditionRadioButton("Normal", "none", true);
+            _editionFoil = CreateEditionRadioButton("Foil", "Foil", false);
+            _editionHolo = CreateEditionRadioButton("Holo", "Holographic", false);
+            _editionPoly = CreateEditionRadioButton("Poly", "Polychrome", false);
+            _editionNegative = CreateEditionRadioButton("Negative", "Negative", false);
 
             editionGrid.Children.Add(_editionNormal);
             editionGrid.Children.Add(_editionFoil);
@@ -278,6 +284,133 @@ namespace BalatroSeedOracle.Controls
 
             border.Child = grid;
             return border;
+        }
+
+        private Border CreateStickersSection()
+        {
+            var border = new Border
+            {
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(10, 8),
+            };
+
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
+
+            // Header
+            var header = new TextBlock
+            {
+                Text = "Require Stickers?",
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
+                FontSize = 11,
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
+            };
+            Grid.SetRow(header, 0);
+            grid.Children.Add(header);
+
+            // Sticker checkboxes
+            var stickerPanel = new WrapPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(-2),
+            };
+
+            _stickerEternal = CreateStickerCheckBox("Eternal", "eternal");
+            _stickerPerishable = CreateStickerCheckBox("Perishable", "perishable");
+            _stickerRental = CreateStickerCheckBox("Rental", "rental");
+
+            stickerPanel.Children.Add(_stickerEternal);
+            stickerPanel.Children.Add(_stickerPerishable);
+            stickerPanel.Children.Add(_stickerRental);
+
+            Grid.SetRow(stickerPanel, 1);
+            grid.Children.Add(stickerPanel);
+
+            border.Child = grid;
+            return border;
+        }
+
+        private CheckBox CreateStickerCheckBox(string displayName, string stickerKey)
+        {
+            var checkbox = new CheckBox
+            {
+                IsChecked = false,
+                Margin = new Thickness(3),
+            };
+
+            var border = new Border
+            {
+                Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a")),
+                BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(8, 4),
+                MinWidth = 80,
+                Cursor = new Cursor(StandardCursorType.Hand),
+                Child = new TextBlock
+                {
+                    Text = displayName,
+                    FontFamily =
+                        Application.Current?.FindResource("BalatroFont") as FontFamily
+                        ?? FontFamily.Default,
+                    FontSize = 12,
+                    Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                },
+            };
+
+            checkbox.Content = border;
+
+            // Add click handler to update visual state
+            checkbox.Click += (s, e) =>
+            {
+                UpdateStickerVisual(border, checkbox.IsChecked == true);
+            };
+
+            return checkbox;
+        }
+
+        private void UpdateStickerVisual(Border border, bool isSelected)
+        {
+            if (isSelected)
+            {
+                border.Background =
+                    Application.Current?.FindResource("GreenAccentVeryDark") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a5f1a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                if (border.Child is TextBlock text)
+                {
+                    text.Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green;
+                }
+            }
+            else
+            {
+                border.Background =
+                    Application.Current?.FindResource("VeryDarkBackground") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#2a2a2a"));
+                border.BorderBrush =
+                    Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a"));
+                if (border.Child is TextBlock text)
+                {
+                    text.Foreground =
+                        Application.Current?.FindResource("MediumGrey") as IBrush ?? Brushes.Gray;
+                }
+            }
         }
 
         private RadioButton CreateEditionRadioButton(
@@ -534,6 +667,29 @@ namespace BalatroSeedOracle.Controls
                 return;
             }
 
+            // Load stickers
+            if (config.Stickers != null && config.Stickers.Count > 0)
+            {
+                if (_stickerEternal != null)
+                {
+                    _stickerEternal.IsChecked = config.Stickers.Contains("eternal");
+                    if (_stickerEternal.Content is Border eternalBorder)
+                        UpdateStickerVisual(eternalBorder, _stickerEternal.IsChecked == true);
+                }
+                if (_stickerPerishable != null)
+                {
+                    _stickerPerishable.IsChecked = config.Stickers.Contains("perishable");
+                    if (_stickerPerishable.Content is Border perishableBorder)
+                        UpdateStickerVisual(perishableBorder, _stickerPerishable.IsChecked == true);
+                }
+                if (_stickerRental != null)
+                {
+                    _stickerRental.IsChecked = config.Stickers.Contains("rental");
+                    if (_stickerRental.Content is Border rentalBorder)
+                        UpdateStickerVisual(rentalBorder, _stickerRental.IsChecked == true);
+                }
+            }
+
             // Load antes
             if (config.Antes != null && config.Antes.Count > 0)
             {
@@ -570,7 +726,10 @@ namespace BalatroSeedOracle.Controls
             // Load edition
             if (!string.IsNullOrEmpty(config.Edition))
             {
-                _selectedEdition = config.Edition;
+                // Capitalize first letter to match expected format
+                var editionKey = char.ToUpper(config.Edition[0]) + config.Edition.Substring(1).ToLower();
+                _selectedEdition = editionKey;
+                
                 switch (config.Edition.ToLower())
                 {
                     case "foil":
@@ -669,9 +828,24 @@ namespace BalatroSeedOracle.Controls
                 Antes = GetSelectedAntes(),
                 Edition = _selectedEdition,
                 Sources = _selectedSources,
+                Stickers = GetSelectedStickers(),
             };
 
             return config;
+        }
+        
+        private List<string>? GetSelectedStickers()
+        {
+            var stickers = new List<string>();
+            
+            if (_stickerEternal?.IsChecked == true)
+                stickers.Add("eternal");
+            if (_stickerPerishable?.IsChecked == true)
+                stickers.Add("perishable");
+            if (_stickerRental?.IsChecked == true)
+                stickers.Add("rental");
+            
+            return stickers.Count > 0 ? stickers : null;
         }
 
         private List<int>? GetSelectedAntes()

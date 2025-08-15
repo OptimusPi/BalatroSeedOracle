@@ -52,6 +52,9 @@ namespace BalatroSeedOracle.Services
     private DateTime _lastAppenderFlush = DateTime.UtcNow;
     // Fast in-memory duplicate filter (only stores successful inserts). Assumes result count << total search space.
     private readonly HashSet<string> _seenSeeds = new HashSet<string>(StringComparer.Ordinal);
+    // Track rows added since last flush for periodic flushing
+    private int _rowsSinceFlush = 0;
+    private const int FLUSH_EVERY_N_ROWS = 100; // Flush every 100 rows for responsive UI
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -282,6 +285,7 @@ namespace BalatroSeedOracle.Services
                     var old = _appender;
                     CloseAppender(); // will re-lock but is quick; could refactor to internal variant if needed
                     _appender = _connection.CreateAppender("results");
+                    _rowsSinceFlush = 0; // Reset the counter after flush
                     DebugLogger.Log($"SearchInstance[{_searchId}]", "ForceFlush executed (appender recycled)");
                 }
                 catch (Exception ex)
@@ -311,6 +315,28 @@ namespace BalatroSeedOracle.Services
                         row.AppendValue(val);
                     }
                     row.EndRow();
+                    
+                    // Increment counter and check if we need to flush
+                    _rowsSinceFlush++;
+                    if (_rowsSinceFlush >= FLUSH_EVERY_N_ROWS)
+                    {
+                        // Time to flush for responsive UI
+                        _rowsSinceFlush = 0;
+                        // Don't call ForceFlush here as it would deadlock (we're inside _appenderSync lock)
+                        // Instead, close and recreate the appender inline
+                        try
+                        {
+                            var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                            closeMethod?.Invoke(_appender, null);
+                            _appender = _connection.CreateAppender("results");
+                            _lastAppenderFlush = DateTime.UtcNow;
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Auto-flushed after {FLUSH_EVERY_N_ROWS} rows");
+                        }
+                        catch (Exception flushEx)
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Auto-flush failed: {flushEx.Message}");
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -318,8 +344,9 @@ namespace BalatroSeedOracle.Services
                 string msg = ex.ToString();
                 if (msg.Contains("Duplicate key") || msg.Contains("violates primary key"))
                 {
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
-                    AddToConsole($"WARNING: DUPLICATE SEED FOUND! Did you forget to use startBatch? Seed: {result.Seed}");
+                    // Silently ignore - duplicates are already filtered by _seenSeeds HashSet
+                    // This can happen when auto-cutoff increases and reprocesses batches
+                    return Task.CompletedTask;
                 }
                 else
                 {
@@ -377,6 +404,9 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync called before DB init complete");
                 return results;
             }
+            
+            // Force flush the appender to ensure all buffered results are visible
+            ForceFlush();
 
             // Resolve order by column safely
             string resolvedColumn = "score"; // default
@@ -440,7 +470,8 @@ namespace BalatroSeedOracle.Services
             if (!_dbInitialized)
                 throw new InvalidOperationException("Database not initialized");
             
-            // Rely on row.EndRow() visibility; no mid-search close.
+            // Force flush to ensure all buffered results are counted
+            ForceFlush();
             
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM results";

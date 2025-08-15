@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -23,7 +26,8 @@ namespace BalatroSeedOracle.Views
         private TextBlock? _filterNameText;
         private TextBlock? _progressText;
         private ProgressBar? _searchProgress;
-    private TextBlock? _stateEmoji;
+    private Image? _stateIcon;
+    private Control? _filterPreview;
         private SearchInstance? _searchInstance;
         private SearchManager? _searchManager;
         private string _searchId = string.Empty;
@@ -46,7 +50,7 @@ namespace BalatroSeedOracle.Views
             _filterNameText = this.FindControl<TextBlock>("FilterNameText");
             _progressText = this.FindControl<TextBlock>("ProgressText");
             _searchProgress = this.FindControl<ProgressBar>("SearchProgress");
-            _stateEmoji = this.FindControl<TextBlock>("StateEmoji");
+            _stateIcon = this.FindControl<Image>("StateIcon");
 
             // Get search manager service
             _searchManager = App.GetService<SearchManager>();
@@ -79,7 +83,7 @@ namespace BalatroSeedOracle.Views
                     _isSearching = _searchInstance.IsRunning;
                     _resultCount = _searchInstance.ResultCount;
                     UpdateBadge();
-                    UpdateStateEmoji();
+                    UpdateStateIcon();
                 }
             }
 
@@ -173,7 +177,7 @@ namespace BalatroSeedOracle.Views
                 _resultCount = 0;
                 UpdateBadge();
                 UpdateProgress(0);
-                UpdateStateEmoji();
+                UpdateStateIcon();
             });
         }
 
@@ -184,7 +188,7 @@ namespace BalatroSeedOracle.Views
                 _isSearching = false;
                 // Don't update progress to 100% - keep current progress
                 // Search may have been stopped/cancelled early
-                UpdateStateEmoji();
+                UpdateStateIcon();
             });
         }
 
@@ -238,14 +242,14 @@ namespace BalatroSeedOracle.Views
         {
             _searchInstance?.PauseSearch();
             _isSearching = false;
-            UpdateStateEmoji();
+            UpdateStateIcon();
         }
 
         private void OnResumeSearch(object? sender, RoutedEventArgs e)
         {
             _searchInstance?.ResumeSearch();
             _isSearching = true;
-            UpdateStateEmoji();
+            UpdateStateIcon();
         }
 
         private void OnStopSearch(object? sender, RoutedEventArgs e)
@@ -253,7 +257,7 @@ namespace BalatroSeedOracle.Views
             _searchInstance?.StopSearch();
             _isSearching = false;
             // Don't update progress - keep current progress when stopped
-            UpdateStateEmoji();
+            UpdateStateIcon();
         }
 
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)
@@ -302,32 +306,233 @@ namespace BalatroSeedOracle.Views
             DebugLogger.Log("SearchDesktopIcon", "Icon deletion complete");
         }
 
-        private void UpdateStateEmoji()
+        private void UpdateStateIcon()
         {
-            if (_stateEmoji == null)
+            if (_stateIcon == null)
                 return;
 
+            var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+            
+            // Clear any existing filter preview when showing state icons
+            if (_filterPreview != null && _stateIcon.Parent is Grid grid)
+            {
+                if (grid.Children.Contains(_filterPreview))
+                {
+                    grid.Children.Remove(_filterPreview);
+                }
+                _filterPreview = null;
+            }
+            
             // Priority order: running, paused, completed (finished with progress 100), idle
             if (_isSearching && (_searchInstance?.IsRunning ?? false))
             {
-                _stateEmoji.Text = "🧪"; // running
+                // Running - use a spectral card (The Soul)
+                _stateIcon.IsVisible = true;
+                _stateIcon.Source = spriteService.GetSpectralImage("soul");
             }
             else if (!_isSearching && (_searchInstance?.IsPaused ?? false))
             {
-                _stateEmoji.Text = "⏸️"; // paused
+                // Paused - use a tag (double tag for pause symbol)
+                _stateIcon.IsVisible = true;
+                _stateIcon.Source = spriteService.GetTagImage("double");
             }
             else if (!_isSearching && (_searchProgress?.Value == 100))
             {
-                _stateEmoji.Text = "✅"; // finished
+                // Completed - use gold seal
+                _stateIcon.IsVisible = true;
+                _stateIcon.Source = spriteService.GetStickerImage("GoldSeal");
             }
             else if (!_isSearching && _resultCount > 0)
             {
-                _stateEmoji.Text = "🗃️"; // has results but not running
+                // Has results - use a voucher
+                _stateIcon.IsVisible = true;
+                _stateIcon.Source = spriteService.GetVoucherImage("grabber");
             }
             else
             {
-                _stateEmoji.Text = "🔍"; // idle / default
+                // Idle / default - show the filter preview if possible
+                ShowFilterPreview();
             }
+        }
+        
+        private void ShowFilterPreview()
+        {
+            if (_filterPreview == null && !string.IsNullOrEmpty(_configPath) && File.Exists(_configPath))
+            {
+                try
+                {
+                    var filterJson = File.ReadAllText(_configPath);
+                    var filterDoc = JsonDocument.Parse(filterJson);
+                    _filterPreview = CreateFilterPreview(filterDoc.RootElement);
+                    
+                    if (_filterPreview != null && _stateIcon != null && _stateIcon.Parent is Grid parentGrid)
+                    {
+                        // Hide the image and show the preview control
+                        _stateIcon.IsVisible = false;
+                        Grid.SetRow(_filterPreview, Grid.GetRow(_stateIcon));
+                        Grid.SetColumn(_filterPreview, Grid.GetColumn(_stateIcon));
+                        parentGrid.Children.Add(_filterPreview);
+                    }
+                    else if (_stateIcon != null)
+                    {
+                        // Fallback to telescope icon if preview failed
+                        _stateIcon.IsVisible = true;
+                        var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                        _stateIcon.Source = spriteService.GetVoucherImage("telescope");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SearchDesktopIcon", $"Failed to create filter preview: {ex.Message}");
+                    // Fallback to telescope icon
+                    if (_stateIcon != null)
+                    {
+                        _stateIcon.IsVisible = true;
+                        var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                        _stateIcon.Source = spriteService.GetVoucherImage("telescope");
+                    }
+                }
+            }
+            else if (_stateIcon != null)
+            {
+                // Default to telescope icon
+                _stateIcon.IsVisible = true;
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                _stateIcon.Source = spriteService.GetVoucherImage("telescope");
+            }
+        }
+        
+        private Control? CreateFilterPreview(JsonElement filterRoot)
+        {
+            try
+            {
+                var previewItems = new List<(string value, string? type)>();
+
+                // Check must items first
+                if (filterRoot.TryGetProperty("must", out var mustItems))
+                {
+                    foreach (var item in mustItems.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count() >= 3) break;  // Smaller preview for icon
+                        }
+                    }
+                }
+
+                // Add should items if we have space
+                if (previewItems.Count() < 3 && filterRoot.TryGetProperty("should", out var shouldItems))
+                {
+                    foreach (var item in shouldItems.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("value", out var value) && 
+                            item.TryGetProperty("type", out var type))
+                        {
+                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            if (previewItems.Count >= 3) break;
+                        }
+                    }
+                }
+
+                if (previewItems.Count() == 0)
+                {
+                    return null;
+                }
+
+                // Create a smaller canvas for icon display
+                var canvas = new Canvas
+                {
+                    Width = 80,
+                    Height = 50,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                };
+
+                // Create fanned display with smaller cards
+                int cardIndex = 0;
+                foreach (var (value, type) in previewItems.Take(3))
+                {
+                    var image = GetItemImage(value, type);
+                    if (image != null)
+                    {
+                        var imgControl = new Image
+                        {
+                            Source = image,
+                            Width = 30,
+                            Height = 40,
+                        };
+
+                        // Fan out the cards
+                        var rotation = (cardIndex - 1) * 8; // -8, 0, 8 degrees
+                        var xOffset = cardIndex * 18 + 5;
+                        var yOffset = Math.Abs(cardIndex - 1) * 2; // Slight Y offset
+
+                        imgControl.RenderTransform = new Avalonia.Media.RotateTransform(rotation);
+                        Canvas.SetLeft(imgControl, xOffset);
+                        Canvas.SetTop(imgControl, yOffset);
+                        imgControl.ZIndex = cardIndex;
+
+                        canvas.Children.Add(imgControl);
+                        cardIndex++;
+                    }
+                }
+
+                return canvas;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchDesktopIcon", $"Error creating preview: {ex.Message}");
+                return null;
+            }
+        }
+        
+        private IImage? GetItemImage(string value, string? type)
+        {
+            // Get image based on type
+            var lowerType = type?.ToLower();
+            var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+            
+            switch (lowerType)
+            {
+                case "joker":
+                    return spriteService.GetJokerImage(value);
+                case "spectral":
+                    return spriteService.GetSpectralImage(value);
+                case "tarot":
+                    return spriteService.GetTarotImage(value);
+                case "planet":
+                    return spriteService.GetPlanetCardImage(value);
+                case "tag":
+                    return spriteService.GetTagImage(value);
+                case "voucher":
+                    return spriteService.GetVoucherImage(value);
+                case "booster":
+                    return spriteService.GetBoosterImage(value);
+                case "deck":
+                    return spriteService.GetDeckImage(value);
+                case "consumable":
+                    // Could be tarot, planet, or spectral
+                    var tarot = spriteService.GetTarotImage(value);
+                    if (tarot != null) return tarot;
+                    var planet = spriteService.GetPlanetCardImage(value);
+                    if (planet != null) return planet;
+                    var spectral = spriteService.GetSpectralImage(value);
+                    return spectral;
+                case "playingcard":
+                    // Parse playing card format
+                    if (value.Contains("_"))
+                    {
+                        var parts = value.Split('_');
+                        if (parts.Length == 2)
+                        {
+                            return spriteService.GetPlayingCardImage(parts[0], parts[1]);
+                        }
+                    }
+                    break;
+            }
+            return null;
         }
     }
 }

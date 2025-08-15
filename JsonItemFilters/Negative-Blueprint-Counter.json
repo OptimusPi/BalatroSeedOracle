@@ -1,0 +1,12 @@
+{
+  "name": "Negative Blueprint Counter",
+  "description": "counts negative blueprints.",
+  "author": "pifreak",
+  "dateCreated": "2025-08-14 21:28:14",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

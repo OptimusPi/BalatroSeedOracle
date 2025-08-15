@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -24,7 +26,6 @@ namespace BalatroSeedOracle.Components
         // Events
         public event EventHandler<string>? FilterSelected;
         public event EventHandler<string>? FilterLoaded;
-        public event EventHandler? NewFilterRequested;
 
         // Properties
         private bool _autoLoadEnabled = true;
@@ -53,8 +54,7 @@ namespace BalatroSeedOracle.Components
         // Controls
         private PanelSpinner? _filterSpinner;
         private Button? _selectButton;
-        private Button? _createFilterButton;
-        private TextBlock? _orText;
+        private bool _hasFilters = false;
 
         public FilterSelector()
         {
@@ -69,8 +69,6 @@ namespace BalatroSeedOracle.Components
             // Get controls
             _filterSpinner = this.FindControl<PanelSpinner>("FilterSpinner");
             _selectButton = this.FindControl<Button>("SelectButton");
-            _createFilterButton = this.FindControl<Button>("CreateFilterButton");
-            _orText = this.FindControl<TextBlock>("OrText");
 
             // Setup panel spinner
             if (_filterSpinner != null)
@@ -84,24 +82,16 @@ namespace BalatroSeedOracle.Components
             base.OnLoaded(e);
             LoadAvailableFilters();
 
-            // Hide create section if not needed
-            if (!ShowCreateButton)
+            // Update button text based on context
+            if (IsInSearchModal)
             {
-                if (_createFilterButton != null)
-                    _createFilterButton.IsVisible = false;
-                
-                if (_orText != null)
-                    _orText.IsVisible = false;
-                    
-                // Use simpler text for select button in search modal
                 if (_selectButton != null)
-                    _selectButton.Content = "Search Seeds using this Filter";
+                    _selectButton.Content = "SEARCH SEEDS USING THIS FILTER";
             }
             else
             {
-                // When create button is shown, use more descriptive text
                 if (_selectButton != null)
-                    _selectButton.Content = "Create a new COPY of this filter";
+                    _selectButton.Content = "Continue➡️";
             }
         }
 
@@ -139,24 +129,25 @@ namespace BalatroSeedOracle.Components
                     .ToList();
 
                 DebugLogger.Log("FilterSelector", $"Found {sortedItems.Count} filters");
+                _hasFilters = sortedItems.Count > 0;
 
-                if (sortedItems.Count == 0)
+                // Determine what to show based on context and filter availability
+                if (ShowCreateButton && !IsInSearchModal)
                 {
-                    // Add a placeholder item
-                    sortedItems.Add(
-                        new PanelItem
-                        {
-                            Title = "No filters found",
-                            Description = "Import a filter or create a new one",
-                            Value = "",
-                        }
-                    );
+                    // In FiltersModal - always add create option at the beginning
+                    sortedItems.Insert(0, CreateNewFilterPanelItem());
+                    
+                    if (_selectButton != null)
+                        _selectButton.IsEnabled = false;
+                }
+                else if (_hasFilters)
+                {
+                    if (_selectButton != null)
+                        _selectButton.IsEnabled = true;
                 }
 
                 if (_filterSpinner != null)
-                {
                     _filterSpinner.Items = sortedItems;
-                }
             }
             catch (Exception ex)
             {
@@ -283,8 +274,9 @@ namespace BalatroSeedOracle.Components
 
                 if (previewItems.Count == 0)
                 {
-                    DebugLogger.Log("FilterSelector", "No preview items found, returning null");
-                    return null;
+                    DebugLogger.Log("FilterSelector", "No preview items found, showing MysteryJoker");
+                    // Return a MysteryJoker image for empty filters
+                    return _spriteService.GetJokerImage("j_joker");
                 }
                 
                 DebugLogger.Log("FilterSelector", $"Found {previewItems.Count} preview items");
@@ -489,43 +481,34 @@ namespace BalatroSeedOracle.Components
                     // Create a composite image with card base and face overlay
                     var pixelSize = new PixelSize(UIConstants.JokerSpriteWidth, UIConstants.JokerSpriteHeight);
                     var dpi = new Vector(96, 96);
-                    var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
                     
-                    var canvas = new Canvas
+                    try
                     {
-                        Width = pixelSize.Width,
-                        Height = pixelSize.Height,
-                        Background = Brushes.Transparent,
-                    };
-                    
-                    // Add card base
-                    var cardImage = new Image
+                        var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
+                        
+                        using (var context = renderBitmap.CreateDrawingContext())
+                        {
+                            // Draw card base first
+                            var cardRect = new Rect(0, 0, pixelSize.Width, pixelSize.Height);
+                            context.DrawImage(cardBase, cardRect);
+                            
+                            // Draw face overlay on top
+                            context.DrawImage(jokerFace, cardRect);
+                        }
+                        
+                        return renderBitmap;
+                    }
+                    catch (Exception ex)
                     {
-                        Source = cardBase,
-                        Width = pixelSize.Width,
-                        Height = pixelSize.Height,
-                        Stretch = Stretch.Fill,
-                    };
-                    canvas.Children.Add(cardImage);
-                    
-                    // Add face overlay
-                    var faceImage = new Image
-                    {
-                        Source = jokerFace,
-                        Width = pixelSize.Width,
-                        Height = pixelSize.Height,
-                        Stretch = Stretch.Fill,
-                    };
-                    canvas.Children.Add(faceImage);
-                    
-                    // Measure and arrange the canvas
-                    canvas.Measure(new Size(pixelSize.Width, pixelSize.Height));
-                    canvas.Arrange(new Rect(0, 0, pixelSize.Width, pixelSize.Height));
-                    canvas.UpdateLayout();
-                    
-                    // Render to bitmap
-                    renderBitmap.Render(canvas);
-                    return renderBitmap;
+                        DebugLogger.LogError("FilterSelector", $"Failed to create composite image: {ex.Message}");
+                        // Fallback to just the face if composite fails
+                        return jokerFace ?? cardBase;
+                    }
+                }
+                else if (jokerFace != null)
+                {
+                    // If we only have the face, use that
+                    return jokerFace;
                 }
                 else if (cardBase != null)
                 {
@@ -548,12 +531,24 @@ namespace BalatroSeedOracle.Components
 
         private void OnFilterSelectionChanged(object? sender, PanelItem? item)
         {
-            if (item?.Value != null && !string.IsNullOrEmpty(item.Value))
+            if (item?.Value != null && !string.IsNullOrEmpty(item.Value) && item.Value != "__CREATE_NEW__")
             {
+                // Regular filter selection
                 FilterSelected?.Invoke(this, item.Value);
+                
+                // Update button text based on context
+                if (_selectButton != null)
+                {
+                    if (IsInSearchModal)
+                        _selectButton.Content = "USE THIS FILTER";
+                    else
+                        _selectButton.Content = "LOAD THIS FILTER";
+                        
+                    _selectButton.IsEnabled = true;
+                    _selectButton.IsVisible = true;
+                }
 
-                // NEVER auto-load just from selection changing - user must click a button
-                // Auto-load if enabled - but this should be disabled for FiltersModal
+                // Auto-load if enabled
                 if (_autoLoadEnabled)
                 {
                     DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
@@ -564,22 +559,199 @@ namespace BalatroSeedOracle.Components
                     DebugLogger.Log("FilterSelector", $"Filter selected but NOT auto-loading: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                 }
             }
+            else if (item?.Value == "__CREATE_NEW__")
+            {
+                // Disable the blue button for create new filter
+                if (_selectButton != null)
+                {
+                    _selectButton.IsEnabled = false;
+                    _selectButton.IsVisible = true;
+                }
+            }
         }
 
         private void OnSelectClick(object? sender, RoutedEventArgs e)
         {
             var selectedItem = _filterSpinner?.SelectedItem;
-            if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value))
+            
+            if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value) && selectedItem.Value != "__CREATE_NEW__")
             {
+                // Load the selected filter
                 FilterLoaded?.Invoke(this, selectedItem.Value);
             }
         }
 
 
-        private void OnCreateFilterClick(object? sender, RoutedEventArgs e)
+        private PanelItem CreateNewFilterPanelItem()
         {
-            ShouldSwitchToVisualTab = true;
-            NewFilterRequested?.Invoke(this, EventArgs.Empty);
+            return new PanelItem
+            {
+                Title = "Create New Filter",
+                Description = "Start with a blank filter",
+                Value = "__CREATE_NEW__",
+                GetImage = () => null,
+                GetControl = () => CreateNewFilterInputPanel()
+            };
+        }
+        
+        private Control CreateNewFilterInputPanel()
+        {
+            // Simple stack panel - no extra borders
+            var panel = new StackPanel
+            {
+                Spacing = 15,
+                Width = 380,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            
+            // Name input
+            var nameInput = new TextBox
+            {
+                Name = "FilterNameInput",
+                Watermark = "Filter name...",
+                Classes = { "balatro-input" },
+                Height = 36,
+                FontSize = 14
+            };
+            panel.Children.Add(nameInput);
+            
+            // Description input (optional)
+            var descInput = new TextBox
+            {
+                Name = "FilterDescriptionInput",
+                Watermark = "Description (optional)...",
+                Classes = { "balatro-input" },
+                Height = 70,
+                FontSize = 14,
+                AcceptsReturn = true,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+            panel.Children.Add(descInput);
+            
+            // Add Create button at the bottom
+            var createButton = new Button
+            {
+                Content = "CREATE",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 5, 0, 0),
+                IsEnabled = false,
+                Classes = { "btn-green" },
+                MinWidth = 120,
+                Height = 36
+            };
+            
+            // Wire up text change events to enable/disable create button
+            Action updateButtonState = () =>
+            {
+                var hasName = !string.IsNullOrWhiteSpace(nameInput.Text);
+                createButton.IsEnabled = hasName;
+            };
+            
+            nameInput.TextChanged += (s, e) => updateButtonState();
+            
+            createButton.Click += (s, e) =>
+            {
+                var filterName = nameInput.Text?.Trim() ?? "";
+                var filterDescription = descInput.Text?.Trim() ?? "No description";
+                
+                if (!string.IsNullOrEmpty(filterName))
+                {
+                    var createdFilterPath = SaveBasicFilter(filterName, filterDescription);
+                    if (!string.IsNullOrEmpty(createdFilterPath))
+                    {
+                        // Refresh the filter list and select the new filter
+                        LoadAvailableFilters();
+                        
+                        // Find and select the new filter
+                        if (_filterSpinner != null)
+                        {
+                            for (int i = 0; i < _filterSpinner.Items.Count; i++)
+                            {
+                                if (_filterSpinner.Items[i].Value == createdFilterPath)
+                                {
+                                    _filterSpinner.SelectedIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Load it
+                        FilterLoaded?.Invoke(this, createdFilterPath);
+                        
+                        DebugLogger.Log("FilterSelector", $"Created and loaded new filter: {createdFilterPath}");
+                    }
+                }
+            };
+            
+            panel.Children.Add(createButton);
+            
+            return panel;
+        }
+        
+        private string NormalizeFileName(string name)
+        {
+            // Remove special characters and replace with hyphens
+            var normalized = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9]+", "-");
+            
+            // Remove leading/trailing hyphens
+            normalized = normalized.Trim('-');
+            
+            // If empty, use default
+            if (string.IsNullOrEmpty(normalized))
+                normalized = "NewFilter";
+                
+            return normalized;
+        }
+        
+        private string? SaveBasicFilter(string name, string description)
+        {
+            try
+            {
+                var filterDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                if (!Directory.Exists(filterDir))
+                    Directory.CreateDirectory(filterDir);
+                
+                // Create basic filter structure
+                var basicFilter = new
+                {
+                    name = name,
+                    description = description,
+                    author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Anonymous",
+                    dateCreated = DateTime.UtcNow.ToString("o"),
+                    must = new object[] { },
+                    should = new object[] { },
+                    mustNot = new object[] { },
+                    scoring = new
+                    {
+                        type = "sum"
+                    }
+                };
+                
+                // Generate filename from name using NormalizeFileName
+                var fileName = NormalizeFileName(name);
+                var filePath = Path.Combine(filterDir, $"{fileName}.json");
+                
+                // Handle duplicates
+                int counter = 1;
+                while (File.Exists(filePath))
+                {
+                    filePath = Path.Combine(filterDir, $"{fileName}{counter}.json");
+                    counter++;
+                }
+                
+                // Save the file
+                var json = JsonSerializer.Serialize(basicFilter, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(filePath, json);
+                
+                DebugLogger.Log("FilterSelector", $"Created basic filter: {filePath}");
+                return filePath; // Return the created file path
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"Failed to save basic filter: {ex.Message}");
+                return null;
+            }
         }
 
         public void RefreshFilters()

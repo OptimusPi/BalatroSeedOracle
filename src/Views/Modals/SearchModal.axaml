@@ -379,8 +379,7 @@
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Stretch"
                                              AutoLoadEnabled="False"
-                                             FilterLoaded="OnFilterSelected"
-                                             NewFilterRequested="OnNewFilterRequested"/>
+                                             FilterLoaded="OnFilterSelected"/>
                 </Grid>
             </Grid>
             
@@ -748,6 +747,7 @@
                         Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="250"/>
                             <ColumnDefinition Width="Auto"/>
@@ -781,6 +781,19 @@
                 Height="32"
                 Margin="10,0,0,0"
                 Click="OnRefreshResultsClick"/>
+            <Button Grid.Column="4"
+                Name="PopOutButton"
+                Classes="small-button"
+                IsEnabled="False"
+                Height="32"
+                Margin="10,0,0,0"
+                ToolTip.Tip="Open in Advanced View"
+                Click="OnPopOutClick">
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <TextBlock Text="↗" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="Advanced" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
                     </Grid>
                 </Border>
                 

@@ -1,0 +1,171 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="BalatroSeedOracle.Windows.DataGridResultsWindow"
+        Title="Results"
+        Width="1200"
+        Height="800"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+    
+    <TabControl>
+        <!-- Results Tab -->
+        <TabItem Header="Results">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Toolbar -->
+                    <RowDefinition Height="Auto"/> <!-- Search/Filter Bar -->
+                    <RowDefinition Height="*"/>    <!-- DataGrid -->
+                    <RowDefinition Height="Auto"/> <!-- Status Bar -->
+                </Grid.RowDefinitions>
+        
+        <!-- Toolbar -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                Padding="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Name="ExportButton" Content="Export ▼">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Name="ExportCsvMenuItem" Header="Export as CSV"/>
+                            <MenuItem Name="ExportJsonMenuItem" Header="Export as JSON"/>
+                            <MenuItem Name="ExportExcelMenuItem" Header="Export as Excel"/>
+                            <MenuItem Name="CopyToClipboardMenuItem" Header="Copy to Clipboard"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Name="CopyButton" Content="Copy Selected"/>
+                <Button Name="SelectAllButton" Content="Select All"/>
+                <Button Name="ClearSelectionButton" Content="Clear Selection"/>
+                <Separator Width="20"/>
+                <Button Name="LoadMoreButton" Content="Load More Results" IsEnabled="False"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Search/Filter Bar -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                Padding="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                           Text="🔍" 
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                
+                <TextBox Grid.Column="1"
+                         Name="QuickSearchBox"
+                         Watermark="Quick search..."
+                         VerticalAlignment="Center"/>
+                
+                <Button Grid.Column="2"
+                        Name="ClearSearchButton"
+                        Content="Clear"
+                        Margin="8,0,0,0"
+                        IsEnabled="False"/>
+            </Grid>
+        </Border>
+        
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="2"
+                  Name="ResultsGrid"
+                  AutoGenerateColumns="False"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="All"
+                  HeadersVisibility="Column"
+                  IsReadOnly="True"
+                  SelectionMode="Extended"
+                  FrozenColumnCount="2"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <DataGrid.Columns>
+                <!-- Columns will be added programmatically -->
+            </DataGrid.Columns>
+        </DataGrid>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                Padding="8,4">
+            <SelectableTextBlock Name="StatusText"
+                       Text="Loading..."
+                       FontSize="12"
+                       IsHitTestVisible="True"/>
+        </Border>
+            </Grid>
+        </TabItem>
+        
+        <!-- SQL Query Tab -->
+        <TabItem Header="SQL Query">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- SQL Toolbar -->
+                <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Name="RunQueryButton" Content="▶ Run (F5)" Classes="Success"/>
+                        <Button Name="ClearQueryButton" Content="Clear"/>
+                        <Button Name="SaveQueryButton" Content="Save Query"/>
+                        <Button Name="LoadQueryButton" Content="Load Query"/>
+                        <ComboBox Name="ExampleQueriesCombo" PlaceholderText="Example Queries..." Width="200">
+                            <ComboBoxItem>Top 100 by Score</ComboBoxItem>
+                            <ComboBoxItem>Statistical Analysis</ComboBoxItem>
+                            <ComboBoxItem>High Score Seeds</ComboBoxItem>
+                            <ComboBoxItem>Show All Columns</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SQL Editor -->
+                <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                    <ae:TextEditor Name="SqlEditor"
+                                   FontFamily="Cascadia Code,Consolas,monospace"
+                                   FontSize="13"
+                                   ShowLineNumbers="True"
+                                   WordWrap="False"
+                                   HorizontalScrollBarVisibility="Auto"
+                                   VerticalScrollBarVisibility="Auto"/>
+                </Border>
+                
+                <!-- Splitter -->
+                <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="Gray"/>
+                
+                <!-- Query Results -->
+                <Grid Grid.Row="3">
+                    <DataGrid Name="QueryResultsGrid"
+                              AutoGenerateColumns="True"
+                              CanUserReorderColumns="True"
+                              CanUserResizeColumns="True"
+                              CanUserSortColumns="True"
+                              GridLinesVisibility="All"
+                              HeadersVisibility="Column"
+                              IsReadOnly="True"
+                              SelectionMode="Extended"
+                              Margin="5"/>
+                </Grid>
+                
+                <!-- Query Status Bar -->
+                <Border Grid.Row="4" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8,4">
+                    <SelectableTextBlock Name="QueryStatusText" Text="Ready" FontSize="12" IsHitTestVisible="True"/>
+                </Border>
+            </Grid>
+        </TabItem>
+    </TabControl>
+    
+</Window>

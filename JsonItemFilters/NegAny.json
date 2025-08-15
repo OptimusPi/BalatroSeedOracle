@@ -1,29 +1,18 @@
 {
-  "name": "bklahhhhhhh",
-  "description": "Created with visuaafgasdfgsdfgfilter builder",
+  "name": "Untitled Filter",
+  "description": "",
   "author": "pifreak",
+  "dateCreated": "2025-08-14T22:08:35.3232261Z",
   "must": [
     {
-      "type": "voucher",
-      "value": "Overstock",
+      "type": "joker",
+      "value": "anyjoker",
+      "edition": "negative",
       "antes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        2
       ],
       "sources": {
         "shopSlots": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "packSlots": [
           0,
           1,
           2,
@@ -35,7 +24,8 @@
   "should": [
     {
       "type": "joker",
-      "value": "TheFamily",
+      "value": "anyjoker",
+      "edition": "negative",
       "antes": [
         1,
         2,
@@ -64,7 +54,8 @@
     },
     {
       "type": "joker",
-      "value": "Blueprint",
+      "value": "any",
+      "edition": "negative",
       "antes": [
         1,
         2,
@@ -93,7 +84,8 @@
     },
     {
       "type": "joker",
-      "value": "Brainstorm",
+      "value": "any",
+      "edition": "negative",
       "antes": [
         1,
         2,
@@ -111,6 +103,60 @@
           2,
           3
         ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "any",
+      "edition": "negative",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "souljoker",
+      "value": "any",
+      "edition": "negative",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
         "packSlots": [
           0,
           1,

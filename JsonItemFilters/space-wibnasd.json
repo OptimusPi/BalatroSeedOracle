@@ -1,0 +1,12 @@
+{
+  "name": "space wibnasd",
+  "description": "fdafvsdfv",
+  "author": "pifreak",
+  "dateCreated": "2025-08-14 22:21:38",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

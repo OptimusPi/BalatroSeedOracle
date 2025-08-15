@@ -124,10 +124,52 @@ public partial class PanelSpinner : UserControl
         if (_descriptionText != null)
             _descriptionText.Text = item.Description;
 
-        if (_spriteImage != null && item.GetImage != null)
+        // Check if we should show a custom control or an image
+        if (_spriteImage != null)
         {
-            var image = item.GetImage();
-            _spriteImage.Source = image;
+            var viewbox = _spriteImage.Parent as Viewbox;
+            if (viewbox?.Parent is Grid grid)
+            {
+                // Clear any existing custom control (important to do this ALWAYS)
+                var customControls = grid.Children.ToList().Where(child => 
+                    child != viewbox && 
+                    child.GetType().Name != "TextBlock" && 
+                    child.GetType().Name != "Border" && 
+                    child.GetType().Name != "StackPanel" &&
+                    child.GetType().Name != "Button").ToList();
+                
+                foreach (var child in customControls)
+                {
+                    grid.Children.Remove(child);
+                }
+                
+                // Only show custom control if this specific item has one AND it's the special create item
+                if (item.GetControl != null && item.Value == "__CREATE_NEW__")
+                {
+                    // Show custom control instead of image
+                    var customControl = item.GetControl();
+                    if (customControl != null)
+                    {
+                        viewbox.IsVisible = false;
+                        Grid.SetRow(customControl, 1);
+                        grid.Children.Add(customControl);
+                    }
+                }
+                else
+                {
+                    // Show image for regular filters
+                    viewbox.IsVisible = true;
+                    if (item.GetImage != null)
+                    {
+                        var image = item.GetImage();
+                        _spriteImage.Source = image;
+                    }
+                    else
+                    {
+                        _spriteImage.Source = null;
+                    }
+                }
+            }
         }
 
         // Update button states
@@ -173,6 +215,7 @@ public class PanelItem
     public required string Description { get; set; }
     public required string Value { get; set; } // The actual value (e.g., "Red_Deck", "White_Stake")
     public Func<IImage?>? GetImage { get; set; }
+    public Func<Control?>? GetControl { get; set; } // Optional custom control instead of image
 }
 
 // Helper factory for creating deck panel items

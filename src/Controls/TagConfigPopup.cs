@@ -29,10 +29,13 @@ namespace BalatroSeedOracle.Controls
             true,
         };
         private HashSet<string> _selectedSources = new() { "skip" };
+        private string _tagType = "smallblindtag"; // Default to small blind
 
         // UI Controls
         private CheckBox[] _anteCheckBoxes = new CheckBox[8];
         private CheckBox? _sourceSkip;
+        private RadioButton? _smallBlindRadio;
+        private RadioButton? _bigBlindRadio;
 
         public TagConfigPopup()
         {
@@ -52,6 +55,9 @@ namespace BalatroSeedOracle.Controls
             // Header
             mainPanel.Children.Add(CreateHeader());
 
+            // Tag Type section (Small Blind vs Big Blind)
+            mainPanel.Children.Add(CreateTagTypeSection());
+
             // Antes section
             mainPanel.Children.Add(CreateAntesSection());
 
@@ -62,6 +68,88 @@ namespace BalatroSeedOracle.Controls
             mainPanel.Children.Add(CreateButtonBar());
 
             return mainPanel;
+        }
+
+        private Border CreateTagTypeSection()
+        {
+            var border = new Border
+            {
+                Background =
+                    Application.Current?.FindResource("ItemConfigDarkBg") as IBrush
+                    ?? Application.Current?.FindResource("DarkerGrey") as IBrush
+                    ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(10, 8),
+            };
+
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
+
+            // Header
+            var header = new TextBlock
+            {
+                Text = "TAG TYPE",
+                FontFamily =
+                    Application.Current?.FindResource("BalatroFont") as FontFamily
+                    ?? FontFamily.Default,
+                FontSize = 11,
+                Foreground =
+                    Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
+            };
+            Grid.SetRow(header, 0);
+            grid.Children.Add(header);
+
+            // Radio buttons for tag type
+            var radioPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 15,
+            };
+
+            _smallBlindRadio = new RadioButton
+            {
+                GroupName = "TagType",
+                IsChecked = true,
+                Content = new TextBlock
+                {
+                    Text = "Small Blind",
+                    FontFamily =
+                        Application.Current?.FindResource("BalatroFont") as FontFamily
+                        ?? FontFamily.Default,
+                    FontSize = 12,
+                    Foreground =
+                        Application.Current?.FindResource("AccentGreen") as IBrush ?? Brushes.Green,
+                }
+            };
+
+            _bigBlindRadio = new RadioButton
+            {
+                GroupName = "TagType",
+                IsChecked = false,
+                Content = new TextBlock
+                {
+                    Text = "Big Blind",
+                    FontFamily =
+                        Application.Current?.FindResource("BalatroFont") as FontFamily
+                        ?? FontFamily.Default,
+                    FontSize = 12,
+                    Foreground =
+                        Application.Current?.FindResource("AccentRed") as IBrush ?? Brushes.Red,
+                }
+            };
+
+            // Add handlers
+            _smallBlindRadio.Click += (s, e) => _tagType = "smallblindtag";
+            _bigBlindRadio.Click += (s, e) => _tagType = "bigblindtag";
+
+            radioPanel.Children.Add(_smallBlindRadio);
+            radioPanel.Children.Add(_bigBlindRadio);
+
+            Grid.SetRow(radioPanel, 1);
+            grid.Children.Add(radioPanel);
+
+            border.Child = grid;
+            return border;
         }
 
         private Border CreateAntesSection()
@@ -269,6 +357,22 @@ namespace BalatroSeedOracle.Controls
             if (config == null)
                 return;
 
+            // Load tag type
+            if (!string.IsNullOrEmpty(config.TagType))
+            {
+                _tagType = config.TagType;
+                if (_tagType == "bigblindtag" && _bigBlindRadio != null)
+                {
+                    _bigBlindRadio.IsChecked = true;
+                    _smallBlindRadio!.IsChecked = false;
+                }
+                else if (_smallBlindRadio != null)
+                {
+                    _smallBlindRadio.IsChecked = true;
+                    _bigBlindRadio!.IsChecked = false;
+                }
+            }
+
             // Load antes
             if (config.Antes != null && config.Antes.Count > 0)
             {
@@ -301,6 +405,7 @@ namespace BalatroSeedOracle.Controls
                 Antes = GetSelectedAntes(),
                 Edition = "none", // Tags don't have editions
                 Sources = new List<string> { "skip" }, // Always from skipping
+                TagType = _tagType, // Include the tag type (smallblindtag or bigblindtag)
             };
 
             return config;
@@ -317,13 +422,9 @@ namespace BalatroSeedOracle.Controls
                 }
             }
 
-            // If all antes are selected, return null (means "any ante")
-            if (antes.Count == 8)
-            {
-                return null;
-            }
-
-            return antes.Count > 0 ? antes : null;
+            // Always return the actual selected antes, never null
+            // This ensures the user's selection is preserved exactly
+            return antes.Count > 0 ? antes : new List<int>();
         }
     }
 }

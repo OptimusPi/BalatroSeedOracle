@@ -1,0 +1,154 @@
+{
+  "name": "AnyNeg",
+  "description": "fiond any negative",
+  "author": "pifreak",
+  "dateCreated": "2025-08-14T22:10:11.8254261Z",
+  "must": [
+    {
+      "type": "joker",
+      "value": "any",
+      "edition": "negative",
+      "antes": [
+        2
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "joker",
+      "value": "any",
+      "Rarity": "common",
+      "edition": "negative",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+      "value": "any",
+            "Rarity": "uncommon",
+      "edition": "negative",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "joker",
+            "Rarity": "rare",
+            "Edition": "negative",
+      "value": "any",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "shopSlots": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    },
+    {
+      "type": "souljoker",
+      "Edition": "negative",
+      "value": "any",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

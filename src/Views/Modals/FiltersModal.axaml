@@ -267,7 +267,7 @@
     </UserControl.Styles>
     
     <!-- Main Layout with top nav -->
-    <Grid DragDrop.AllowDrop="True">
+    <Grid DragDrop.AllowDrop="True" Margin="0,0,0,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
             <RowDefinition Height="Auto"/> <!-- Tabs -->
@@ -338,7 +338,7 @@
                     IsEnabled="False"
                     Click="OnTabClick"/>
             <Button Name="SaveFilterTab" 
-                    Content="Save Filter" 
+                    Content="Filter Info" 
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>
@@ -547,8 +547,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center"
                                          AutoLoadEnabled="False"
-                                         FilterLoaded="OnFilterSelected"
-                                         NewFilterRequested="OnNewFilterRequested"/>
+                                         FilterLoaded="OnFilterSelected"/>
             </Grid>
 
             <!-- JSON Panel -->
@@ -615,69 +614,114 @@
                 </Border>
             </Grid>
             
-            <!-- Save Filter Panel -->
+            <!-- Filter Info/Metadata Panel -->
             <Grid Name="SaveFilterPanel" IsVisible="False">
                 <Border Background="{StaticResource ContainerDarkPrecise}" 
                         BorderThickness="0" 
                         CornerRadius="8" 
                         Padding="16"
                         ClipToBounds="True">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/> <!-- Title -->
-                            <RowDefinition Height="16"/>
-                            <RowDefinition Height="Auto"/> <!-- Author -->
-                            <RowDefinition Height="12"/>
-                            <RowDefinition Height="Auto"/> <!-- Filter Name -->
-                            <RowDefinition Height="16"/>
-                            <RowDefinition Height="Auto"/> <!-- Description Label -->
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="*" MinHeight="120"/> <!-- Description TextBox -->
-                            <RowDefinition Height="16"/>
-                            <RowDefinition Height="Auto"/> <!-- Save Button -->
-                        </Grid.RowDefinitions>
-                        
-                        <TextBlock Grid.Row="0"
-                                   Text="SAVE FILTER" 
-                                   FontSize="20" 
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"/>
-                        
-                        <!-- Author Row -->
-                        <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- Title -->
+                                <RowDefinition Height="20"/>
+                                <RowDefinition Height="Auto"/> <!-- Metadata Info Grid -->
+                                <RowDefinition Height="20"/>
+                                <RowDefinition Height="Auto"/> <!-- Filter Name -->
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/> <!-- Description Label -->
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="150"/> <!-- Description TextBox -->
+                                <RowDefinition Height="20"/>
+                                <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+                            </Grid.RowDefinitions>
                             
-                            <Border Grid.Column="0"
-                                    Background="{StaticResource LightGrey}"
-                                    CornerRadius="4"
-                                    Padding="12,6"
-                                    Height="32">
-                                <TextBlock Text="Author"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource Black}"/>
-                            </Border>
-                            
-                            <Border Grid.Column="2"
-                                    Background="{StaticResource ModalGrey}"
-                                    BorderBrush="{StaticResource ModalBorder}"
-                                    BorderThickness="1"
-                                    CornerRadius="16"
-                                    Padding="16,6"
-                                    Height="32">
-                                <TextBlock Name="AuthorDisplay"
-                                           Text="{Binding Author}"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource White}"
-                                           VerticalAlignment="Center"/>
-                            </Border>
-                        </Grid>
+                            <TextBlock Grid.Row="0"
+                                       Text="FILTER INFORMATION" 
+                                       FontSize="20" 
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource Gold}"
+                                       HorizontalAlignment="Center"/>
+                        
+                            <!-- Metadata Info Grid -->
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Left Column - Author and Created Date -->
+                                <StackPanel Grid.Column="0" Spacing="12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Author:" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource MediumGrey}"/>
+                                        <TextBlock Grid.Column="1" Name="AuthorDisplay"
+                                                   Text="Unknown"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Grid>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Created:" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource MediumGrey}"/>
+                                        <TextBlock Grid.Column="1" Name="CreatedDateDisplay"
+                                                   Text="Unknown"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Grid>
+                                </StackPanel>
+                                
+                                <!-- Right Column - File Info -->
+                                <StackPanel Grid.Column="2" Spacing="12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="File:" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource MediumGrey}"/>
+                                        <TextBlock Grid.Column="1" Name="FileNameDisplay"
+                                                   Text="Not saved"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Grid>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Modified:" 
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource MediumGrey}"/>
+                                        <TextBlock Grid.Column="1" Name="ModifiedDateDisplay"
+                                                   Text="Never"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
                         
                         <!-- Filter Name Row -->
                         <Grid Grid.Row="4">
@@ -723,33 +767,42 @@
                                  VerticalContentAlignment="Top"
                                  Padding="8"/>
                         
-                        <!-- Save and Search Buttons -->
-                        <Grid Grid.Row="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Button Grid.Column="0"
-                                    Name="SaveFilterButton"
-                                    Content="Save Filter"
-                                    Classes="btn-green"
-                                    Height="48"
-                                    FontSize="18"
-                                    IsEnabled="False"
-                                    Click="OnSaveFilterClick"/>
-                                    
-                            <Button Grid.Column="2"
-                                    Name="SearchForSeedsButton"
-                                    Content="Search for Seeds"
-                                    Classes="btn-blue"
-                                    Height="48"
-                                    FontSize="18"
-                                    IsEnabled="False"
-                                    Click="OnSearchForSeedsClick"/>
+                            <!-- Action Buttons -->
+                            <Grid Grid.Row="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <Button Grid.Column="0"
+                                        Name="SaveChangesButton"
+                                        Content="Save Changes"
+                                        Classes="btn-green"
+                                        Height="40"
+                                        FontSize="16"
+                                        Click="OnSaveChangesClick"/>
+                                        
+                                <Button Grid.Column="2"
+                                        Name="SearchButton"
+                                        Content="SEARCH"
+                                        Classes="btn-blue"
+                                        Height="40"
+                                        FontSize="16"
+                                        Click="OnSearchClick"/>
+                                        
+                                <Button Grid.Column="4"
+                                        Name="ExportButton"
+                                        Content="Export"
+                                        Classes="btn-blue"
+                                        Height="40"
+                                        FontSize="16"
+                                        Click="OnExportClick"/>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </ScrollViewer>
                 </Border>
             </Grid>
         </Grid>

@@ -1,0 +1,74 @@
+TreeDataGrid Example Code - Alternative to DataGrid
+
+To use TreeDataGrid as an alternative to DataGrid, you need to:
+
+1. Install NuGet package:
+   <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.3.4" />
+
+2. Add theme to App.axaml:
+   <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+
+3. XAML Example:
+   <TreeDataGrid Name="ResultsTreeGrid"
+                 Source="{Binding ResultsSource}"
+                 CanUserReorderColumns="True"
+                 CanUserResizeColumns="True"
+                 CanUserSortColumns="True"
+                 SelectionMode="Multiple"/>
+
+4. ViewModel Example:
+   public class ResultsViewModel : INotifyPropertyChanged
+   {
+       private ObservableCollection<SearchResultRow> _results;
+       private FlatTreeDataGridSource<SearchResultRow> _resultsSource;
+
+       public FlatTreeDataGridSource<SearchResultRow> ResultsSource
+       {
+           get => _resultsSource;
+           set
+           {
+               _resultsSource = value;
+               PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ResultsSource)));
+           }
+       }
+
+       public ResultsViewModel()
+       {
+           _results = new ObservableCollection<SearchResultRow>();
+           _resultsSource = new FlatTreeDataGridSource<SearchResultRow>(_results)
+           {
+               Columns =
+               {
+                   new TextColumn<SearchResultRow, int>("Rank", x => x.Rank, width: new GridLength(60)),
+                   new TextColumn<SearchResultRow, string>("Seed", x => x.Seed, width: new GridLength(150)),
+                   new TextColumn<SearchResultRow, int>("Total Score", x => x.TotalScore, width: new GridLength(100)),
+                   // Add dynamic tally columns based on your filter configuration
+               }
+           };
+       }
+
+       public event PropertyChangedEventHandler? PropertyChanged;
+   }
+
+5. Data Model:
+   public class SearchResultRow
+   {
+       public int Rank { get; set; }
+       public string Seed { get; set; } = string.Empty;
+       public int TotalScore { get; set; }
+       public List<int> TallyScores { get; set; } = new();
+
+       public int GetTallyScore(int index)
+       {
+           return TallyScores != null && index >= 0 && index < TallyScores.Count ? TallyScores[index] : 0;
+       }
+   }
+
+Benefits of TreeDataGrid over DataGrid:
+- Better performance with large datasets
+- AOT (Ahead-of-Time) compilation friendly
+- More customizable
+- Better selection and sorting capabilities
+- More MVVM-friendly (though still requires some setup)
+
+See TreeDataGrid_Alternative_Guide.md for complete implementation details.

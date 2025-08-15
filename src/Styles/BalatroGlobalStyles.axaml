@@ -250,6 +250,11 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
         <Setter Property="Background" Value="{StaticResource BlueHover}" />
     </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-blue:disabled">
+        <Setter Property="Background" Value="{StaticResource MediumGrey}" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-orange">
         <Setter Property="Background" Value="{StaticResource Orange}" />
@@ -263,6 +268,11 @@
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
         <Setter Property="Background" Value="{StaticResource GreenHover}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-green:disabled">
+        <Setter Property="Background" Value="{StaticResource MediumGrey}" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="Opacity" Value="0.5" />
     </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-red">

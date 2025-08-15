@@ -31,6 +31,8 @@
     <!-- JSON Processing -->
     <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
+    <!-- Excel Export -->
+    <PackageVersion Include="ClosedXML" Version="0.104.1" />
     <!-- Additional Dependencies -->
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />

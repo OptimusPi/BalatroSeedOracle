@@ -1,0 +1,12 @@
+{
+  "name": "negative spacechad",
+  "description": "negative space joker. negative hanging chad. OH forgot to mention, ankh the oops in ante 1, grab the booty in antes 2 and 3!",
+  "author": "pifreak",
+  "dateCreated": "2025-08-15T00:00:47.3359945Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

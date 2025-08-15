@@ -54,6 +54,21 @@
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
+            
+            <!-- Nuke Everything Button -->
+            <Button Name="NukeEverythingButton"
+                   Click="OnNukeEverythingClick"
+                   Classes="btn-red"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center"
+                   Background="#FF0000">
+                <TextBlock Text="🔥 Nuke Everything 🔥" 
+                           FontSize="20"
+                           Foreground="White"
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

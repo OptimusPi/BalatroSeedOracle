@@ -1,0 +1,46 @@
+{
+  "name": "Untitled Filter",
+  "description": "",
+  "author": "pifreak",
+  "dateCreated": "2025-08-15T00:47:02.0190085Z",
+  "must": [
+    {
+      "type": "souljoker",
+      "value": "Triboulet",
+      "edition": "Negative",
+      "antes": [
+        1
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "souljoker",
+      "value": "Perkeo",
+      "edition": "Negative",
+      "antes": [
+        1
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

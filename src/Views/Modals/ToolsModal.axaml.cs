@@ -173,5 +173,181 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
             }
         }
+
+        private void OnNukeEverythingClick(object? sender, RoutedEventArgs e)
+        {
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu == null)
+            {
+                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
+                return;
+            }
+
+            // Create confirmation modal
+            var confirmModal = new StandardModal("⚠️ CONFIRM NUKE ⚠️");
+            var confirmPanel = new StackPanel
+            {
+                Spacing = 20,
+                Margin = new Avalonia.Thickness(20),
+            };
+
+            confirmPanel.Children.Add(new TextBlock
+            {
+                Text = "This will DELETE ALL:",
+                FontSize = 18,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                TextAlignment = Avalonia.Media.TextAlignment.Center,
+                Foreground = Avalonia.Media.Brushes.Red
+            });
+
+            confirmPanel.Children.Add(new TextBlock
+            {
+                Text = "• All filter files in JsonItemFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!",
+                FontSize = 16,
+                TextAlignment = Avalonia.Media.TextAlignment.Center,
+            });
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Spacing = 20,
+                Margin = new Avalonia.Thickness(0, 20, 0, 0)
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Classes = { "btn-green" },
+                MinWidth = 100,
+                MinHeight = 40
+            };
+
+            var nukeButton = new Button
+            {
+                Content = "🔥 NUKE IT ALL 🔥",
+                Classes = { "btn-red" },
+                MinWidth = 150,
+                MinHeight = 40,
+                Background = Avalonia.Media.Brushes.DarkRed
+            };
+
+            cancelButton.Click += (s, ev) =>
+            {
+                mainMenu.HideModalContent();
+                mainMenu.ShowToolsModal();
+            };
+
+            nukeButton.Click += (s, ev) =>
+            {
+                try
+                {
+                    int deletedFilters = 0;
+                    int deletedResults = 0;
+
+                    // Delete all files in JsonItemFilters
+                    var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                    if (Directory.Exists(filtersDir))
+                    {
+                        var filterFiles = Directory.GetFiles(filtersDir, "*.json");
+                        foreach (var file in filterFiles)
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                deletedFilters++;
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    // Delete all files in SearchResults
+                    var resultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
+                    if (Directory.Exists(resultsDir))
+                    {
+                        var resultFiles = Directory.GetFiles(resultsDir, "*.*", SearchOption.AllDirectories);
+                        foreach (var file in resultFiles)
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                deletedResults++;
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                            }
+                        }
+
+                        // Also delete subdirectories
+                        var subdirs = Directory.GetDirectories(resultsDir);
+                        foreach (var dir in subdirs)
+                        {
+                            try
+                            {
+                                Directory.Delete(dir, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError("NukeEverything", $"Failed to delete directory {dir}: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    // Show results
+                    mainMenu.HideModalContent();
+                    
+                    var resultModal = new StandardModal("💥 NUKE COMPLETE 💥");
+                    var resultText = new TextBlock
+                    {
+                        Text = $"Deleted:\n{deletedFilters} filter files\n{deletedResults} search result files\n\npifreak loves you!",
+                        FontSize = 16,
+                        Margin = new Avalonia.Thickness(20),
+                        TextAlignment = Avalonia.Media.TextAlignment.Center,
+                    };
+                    resultModal.SetContent(resultText);
+                    resultModal.BackClicked += (s, ev) =>
+                    {
+                        mainMenu.HideModalContent();
+                        mainMenu.ShowToolsModal();
+                    };
+                    mainMenu.ShowModalContent(resultModal, "NUKE COMPLETE");
+
+                    DebugLogger.Log("NukeEverything", $"Nuked {deletedFilters} filters and {deletedResults} results");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("NukeEverything", $"Nuke operation failed: {ex.Message}");
+                    
+                    mainMenu.HideModalContent();
+                    var errorModal = new StandardModal("ERROR");
+                    var errorText = new TextBlock
+                    {
+                        Text = $"Nuke operation failed:\n{ex.Message}",
+                        FontSize = 16,
+                        Margin = new Avalonia.Thickness(20),
+                        TextAlignment = Avalonia.Media.TextAlignment.Center,
+                        Foreground = Avalonia.Media.Brushes.Red
+                    };
+                    errorModal.SetContent(errorText);
+                    errorModal.BackClicked += (s, ev) =>
+                    {
+                        mainMenu.HideModalContent();
+                        mainMenu.ShowToolsModal();
+                    };
+                    mainMenu.ShowModalContent(errorModal, "ERROR");
+                }
+            };
+
+            buttonPanel.Children.Add(cancelButton);
+            buttonPanel.Children.Add(nukeButton);
+            confirmPanel.Children.Add(buttonPanel);
+
+            confirmModal.SetContent(confirmPanel);
+            mainMenu.ShowModalContent(confirmModal, "CONFIRM NUKE");
+        }
     }
 }

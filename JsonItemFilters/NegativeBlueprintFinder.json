@@ -1,12 +1,13 @@
 {
-  "name": "bullsprite",
-  "description": "test",
-  "dateCreated": "2025-08-13T22:51:32.372Z",
+  "name": "NegativeBlueprintFinder",
+  "description": "Created with visual filter builder",
   "author": "pifreak",
+  "dateCreated": "2025-08-14T21:30:54.8749209Z",
   "must": [
     {
       "type": "joker",
-      "value": "Bull",
+      "value": "Blueprint",
+      "edition": "negative",
       "antes": [
         1,
         2,
@@ -36,7 +37,8 @@
   "should": [
     {
       "type": "joker",
-      "value": "TurtleBean",
+      "value": "Blueprint",
+      "edition": "negative",
       "antes": [
         1,
         2,

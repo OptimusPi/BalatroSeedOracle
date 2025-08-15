@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+  <ApplicationIcon>BalatroSeedOracle.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <!-- Velopack Configuration -->
     <AssemblyName>BalatroSeedOracle</AssemblyName>
@@ -47,6 +48,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+    <PackageReference Include="ClosedXML" />
     <!-- Velopack for auto-updates and packaging -->
     <PackageReference Include="Velopack" />
   </ItemGroup>

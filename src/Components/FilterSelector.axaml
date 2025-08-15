@@ -3,28 +3,23 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.FilterSelector">
     
-    <StackPanel Spacing="8">
-                   
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
         <!-- Filter browser using PanelSpinner -->
-        <controls:PanelSpinner Name="FilterSpinner" />
+        <controls:PanelSpinner Grid.Row="0" Name="FilterSpinner" />
         
-        <!-- Select Button (moved higher up, no spacer) -->
-        <Button Name="SelectButton" 
-                Content="Select Filter" 
-                Classes="btn-blue" 
-                MinWidth="200"
-                HorizontalAlignment="Center"
-                Click="OnSelectClick"/>
-        
-        <!-- "or" text between buttons -->
-        <Border Height="4" HorizontalAlignment="Stretch"/>
-        
-        <!-- Create new filter section -->
-        <Button Name="CreateFilterButton" 
-                Content="Start with a BLANK filter" 
-                Classes="btn-green" 
-                MinWidth="200"
-                HorizontalAlignment="Center"
-                Click="OnCreateFilterClick"/>
-    </StackPanel>
+        <!-- Action buttons below spinner -->
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,8,0,0">
+            <Button Name="SelectButton" 
+                    Content="Select Filter" 
+                    Classes="btn-blue" 
+                    MinWidth="200"
+                    HorizontalAlignment="Center"
+                    Click="OnSelectClick"/>
+        </StackPanel>
+    </Grid>
 </UserControl>

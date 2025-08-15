@@ -55,6 +55,8 @@ namespace BalatroSeedOracle.Views.Modals
         private string _currentCategory = "Jokers";
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0; // For making each dropped item unique
+        private string? _currentFilterPath; // Path to the currently loaded filter
+        private Motely.Filters.OuijaConfig? _loadedConfig; // Currently loaded filter configuration
         
         private string MakeUniqueKey(string itemKey)
         {
@@ -89,6 +91,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBox? _configDescriptionBox;
         private int _currentTabIndex = 0;
         private Polygon? _tabTriangle;
+    private bool _isSwitchingTab = false; // reentrancy guard for tab switching
         private TextBox? _jsonTextBox;
         private object? _originalItemPaletteContent;
         private TextBlock? _statusText;
@@ -102,6 +105,9 @@ namespace BalatroSeedOracle.Views.Modals
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
+            
+            // Setup auto-save timer
+            SetupAutoSave();
 
             // Initialize item categories from BalatroData
             _itemCategories = new Dictionary<string, List<string>>
@@ -187,7 +193,6 @@ namespace BalatroSeedOracle.Views.Modals
                 // DISABLE auto-loading - user must explicitly click a button to load a filter
                 filterSelector.AutoLoadEnabled = false;
                 filterSelector.FilterLoaded += OnFilterSelected;
-                filterSelector.NewFilterRequested += OnNewFilterRequested;
                 
                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
@@ -235,12 +240,6 @@ namespace BalatroSeedOracle.Views.Modals
                 );
                 UpdateStatus($"Error loading filter: {ex.Message}", true);
             }
-        }
-
-        private void OnNewFilterRequested(object? sender, EventArgs e)
-        {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "New filter requested");
-            OnCreateNewClick(null, new RoutedEventArgs());
         }
 
         private void OnModeToggleChanged(object? sender, bool isChecked)
@@ -362,8 +361,11 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     filterItem.Label = itemConfig.Label;
 
-                    // Copy other config properties
-                    filterItem.Antes = itemConfig.Antes ?? new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 };
+                    // Copy other config properties - preserve exact antes selection
+                    if (itemConfig.Antes != null)
+                    {
+                        filterItem.Antes = itemConfig.Antes;
+                    }
                     filterItem.Edition = itemConfig.Edition != "none" ? itemConfig.Edition : null;
 
                     // Convert sources to boolean flags
@@ -468,11 +470,61 @@ namespace BalatroSeedOracle.Views.Modals
                 authorDisplay.Text = userProfileService?.GetAuthorName() ?? "Jimbo";
             }
             
-            // Clear the description if it's a new filter
-            var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
-            if (descriptionInput != null && string.IsNullOrWhiteSpace(descriptionInput.Text))
+            // Update file name display
+            var fileNameDisplay = this.FindControl<TextBlock>("FileNameDisplay");
+            if (fileNameDisplay != null)
             {
-                descriptionInput.Text = "Created with visual filter builder";
+                if (!string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    fileNameDisplay.Text = System.IO.Path.GetFileName(_currentFilterPath);
+                }
+                else
+                {
+                    fileNameDisplay.Text = "Not saved yet";
+                }
+            }
+            
+            // Update created date
+            var createdDateDisplay = this.FindControl<TextBlock>("CreatedDateDisplay");
+            if (createdDateDisplay != null && _loadedConfig != null)
+            {
+                if (_loadedConfig.DateCreated.HasValue)
+                {
+                    createdDateDisplay.Text = _loadedConfig.DateCreated.Value.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+                else
+                {
+                    createdDateDisplay.Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+            }
+            
+            // Update filter name input
+            var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
+            if (filterNameInput != null)
+            {
+                if (_loadedConfig != null && !string.IsNullOrWhiteSpace(_loadedConfig.Name))
+                {
+                    filterNameInput.Text = _loadedConfig.Name;
+                }
+                else if (!string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    // Use filename without extension as default name
+                    filterNameInput.Text = System.IO.Path.GetFileNameWithoutExtension(_currentFilterPath);
+                }
+            }
+            
+            // Update filter description
+            var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
+            if (descriptionInput != null)
+            {
+                if (_loadedConfig != null && !string.IsNullOrWhiteSpace(_loadedConfig.Description))
+                {
+                    descriptionInput.Text = _loadedConfig.Description;
+                }
+                else if (string.IsNullOrWhiteSpace(descriptionInput.Text))
+                {
+                    descriptionInput.Text = "Created with visual filter builder";
+                }
             }
         }
         
@@ -481,6 +533,47 @@ namespace BalatroSeedOracle.Views.Modals
             // Get the saved filter path from the button's Tag
             var searchButton = sender as Button;
             var filterPath = searchButton?.Tag as string;
+            
+            if (string.IsNullOrEmpty(filterPath))
+            {
+                UpdateStatus("Error: No filter path found. Please save the filter first.", true);
+                return;
+            }
+            
+            // Get the main window to find BalatroMainMenu
+            var mainWindow = TopLevel.GetTopLevel(this) as Window;
+            if (mainWindow?.Content is Grid grid)
+            {
+                var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
+                if (mainMenu != null)
+                {
+                    // Close this modal first
+                    mainMenu.HideModalContent();
+                    
+                    // Open the search modal with the SAVED FILE PATH
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        var searchModal = mainMenu.ShowSearchModal(filterPath);
+                        
+                        // The modal needs a moment to initialize before we can switch tabs
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            // Find the SearchModal content within the StandardModal
+                            if (searchModal?.Content is SearchModal searchContent)
+                            {
+                                // Go directly to the Search tab
+                                searchContent.GoToSearchTab();
+                            }
+                        }, DispatcherPriority.Background);
+                    }, DispatcherPriority.Background);
+                }
+            }
+        }
+        
+        private void OnSearchClick(object? sender, RoutedEventArgs e)
+        {
+            // Use the current filter path
+            var filterPath = _currentFilterPath;
             
             if (string.IsNullOrEmpty(filterPath))
             {
@@ -542,18 +635,6 @@ namespace BalatroSeedOracle.Views.Modals
                 var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
                 var description = descriptionInput?.Text ?? "Created with visual filter builder";
                 
-                // Create wrapper with metadata
-                var filterWithMetadata = new
-                {
-                    name = filterName,
-                    description = description,
-                    author = authorName,
-                    dateCreated = DateTime.UtcNow,
-                    must = config.Must,
-                    should = config.Should,
-                    mustNot = config.MustNot
-                };
-
                 // Save to file
                 var directory = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                 if (!Directory.Exists(directory))
@@ -574,14 +655,9 @@ namespace BalatroSeedOracle.Views.Modals
                 // Write the JSON file using the proper serializer
                 var json = SerializeOuijaConfig(config);
                 
-                // Replace the empty name, description, and add dateCreated
+                // Replace the empty name and description (dateCreated is already handled by SerializeOuijaConfig)
                 json = json.Replace("\"name\": \"\"", $"\"name\": \"{filterName}\"");
                 json = json.Replace("\"description\": \"\"", $"\"description\": \"{description}\"");
-                
-                // Add dateCreated after description
-                var dateCreatedString = $"\"dateCreated\": \"{DateTime.UtcNow:yyyy-MM-dd'T'HH:mm:ss.fff'Z'}\"";
-                json = json.Replace("\"description\": \"" + description + "\"", 
-                    "\"description\": \"" + description + "\",\n  " + dateCreatedString);
                 
                 await File.WriteAllTextAsync(filePath, json);
 
@@ -1004,6 +1080,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
                             _selectedMust.Add(uniqueKey);
+                            MarkAsChanged();
                         }
                     }
 
@@ -1142,6 +1219,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to wants (allow item in multiple lists)
                             _selectedShould.Add(uniqueKey);
+                            MarkAsChanged();
                         }
                     }
 
@@ -2140,6 +2218,14 @@ namespace BalatroSeedOracle.Views.Modals
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+            
+            // Add window-level event handlers for drag cleanup
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                window.LostFocus += OnWindowLostFocus;
+                window.Deactivated += OnWindowDeactivated;
+            }
 
             // Ensure search box gets focus after the control is fully attached to visual tree
             Dispatcher.UIThread.Post(
@@ -2178,6 +2264,44 @@ namespace BalatroSeedOracle.Views.Modals
         {
             base.OnDetachedFromVisualTree(e);
             this.RemoveHandler(DragDrop.DragOverEvent, OnGlobalDragOver);
+            
+            // Remove window-level event handlers
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                window.LostFocus -= OnWindowLostFocus;
+                window.Deactivated -= OnWindowDeactivated;
+            }
+        }
+        
+        private void OnWindowLostFocus(object? sender, RoutedEventArgs e)
+        {
+            // Clean up drag state if window loses focus during drag
+            if (_draggingSet != null)
+            {
+                _draggingSet = null;
+                RestoreNormalDropZones();
+            }
+            if (_isDragging)
+            {
+                _isDragging = false;
+                CleanupDragVisuals();
+            }
+        }
+        
+        private void OnWindowDeactivated(object? sender, EventArgs e)
+        {
+            // Clean up drag state if window is deactivated during drag
+            if (_draggingSet != null)
+            {
+                _draggingSet = null;
+                RestoreNormalDropZones();
+            }
+            if (_isDragging)
+            {
+                _isDragging = false;
+                CleanupDragVisuals();
+            }
         }
 
         private void OnGlobalDragOver(object? sender, DragEventArgs e)
@@ -2803,8 +2927,8 @@ namespace BalatroSeedOracle.Views.Modals
                         // Track that we're dragging a set
                         _draggingSet = set;
                         
-                        // DON'T merge drop zones - keep them separate so user can choose
-                        // MergeDropZonesForSet();
+                        // Merge drop zones into a single zone for set drops
+                        MergeDropZonesForSet();
 
                         // Create drag data with JokerSet object
                         var dataObject = new DataObject();
@@ -2813,9 +2937,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                         await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Copy);
                         
-                        // Reset drag state
+                        // Reset drag state after drag completes (whether dropped or cancelled)
                         _draggingSet = null;
-                        // RestoreNormalDropZones();
+                        RestoreNormalDropZones();
                     }
                 };
 
@@ -3091,7 +3215,7 @@ namespace BalatroSeedOracle.Views.Modals
                 }
             }
 
-            // Load appropriate image based on actual category
+            // Load appropriate image based on actual category (no stickers in palette - base items only)
             IImage? imageSource = actualCategory switch
             {
                 "Jokers" => SpriteService.Instance.GetJokerImage(itemName),
@@ -3660,6 +3784,30 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 return;
             }
+
+            // Prevent re-entrant tab logic if user double-clicks or triggers via keyboard quickly
+            if (_isSwitchingTab)
+            {
+                return;
+            }
+            _isSwitchingTab = true;
+            try
+            {
+                // Wrap full logic in try/catch so any transient null access doesn't crash app
+                SafeHandleTabSwitch(button);
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Exception during tab switch: {ex}");
+            }
+            finally
+            {
+                _isSwitchingTab = false;
+            }
+        }
+
+        private void SafeHandleTabSwitch(Button button)
+        {
             
             // Ensure button has focus (fixes first-click issue)
             button.Focus();
@@ -3730,6 +3878,8 @@ namespace BalatroSeedOracle.Views.Modals
                     RestoreDragDropModeLayout();
                     LoadAllCategories();
                     UpdateDropZoneVisibility();
+                    // RELOAD from current config to refresh drop zones
+                    RefreshDropZonesFromConfig();
                     break;
 
                 case "JsonTab":
@@ -3742,6 +3892,8 @@ namespace BalatroSeedOracle.Views.Modals
                     AnimateTriangleToTab(2);
                     EnterEditJsonMode();
                     UpdateJsonEditor();
+                    // RELOAD JSON from current config every time JSON tab is selected
+                    ReloadJsonFromCurrentConfig();
                     break;
                     
                 case "SaveFilterTab":
@@ -4668,7 +4820,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // Create stacked layout for legendary joker
                 var grid = new Grid { Width = 53, Height = 71 };
 
-                // Joker face image on top
+                // Joker face image on top (legendary jokers can't have stickers)
                 var jokerImageSource = SpriteService.Instance.GetJokerImage(itemName);
                 if (jokerImageSource != null)
                 {
@@ -4749,9 +4901,16 @@ namespace BalatroSeedOracle.Views.Modals
                     $"🎴 Getting image for regular item: '{itemName}' (category: '{category}')"
                 );
 
+                // Get stickers from config if it's a joker
+                List<string>? stickers = null;
+                if (category == "Jokers" && config != null && config.Stickers != null)
+                {
+                    stickers = config.Stickers;
+                }
+
                 IImage? imageSource = category switch
                 {
-                    "Jokers" => SpriteService.Instance.GetJokerImage(itemName),
+                    "Jokers" => SpriteService.Instance.GetJokerImageWithStickers(itemName, stickers),
                     "Tarots" => SpriteService.Instance.GetTarotImage(itemName),
                     "Spectrals" => SpriteService.Instance.GetSpectralImage(itemName),
                     "Vouchers" => SpriteService.Instance.GetVoucherImage(itemName),
@@ -4777,8 +4936,18 @@ namespace BalatroSeedOracle.Views.Modals
                     // Use correct size based on category (75% of original)
                     double imgWidth = 53;
                     double imgHeight = 71;
-
-                    if (category == "Tags")
+                    
+                    // Special handling for Wee Joker - make him 50% size
+                    var isWeeJoker = itemName.Equals("jolly", StringComparison.OrdinalIgnoreCase) || 
+                                     itemName.Equals("weejoker", StringComparison.OrdinalIgnoreCase) ||
+                                     itemName.Equals("j_jolly", StringComparison.OrdinalIgnoreCase);
+                    
+                    if (isWeeJoker)
+                    {
+                        imgWidth = 27;
+                        imgHeight = 36;
+                    }
+                    else if (category == "Tags")
                     {
                         imgWidth = 15;
                         imgHeight = 15;
@@ -4977,6 +5146,7 @@ namespace BalatroSeedOracle.Views.Modals
                 "Spectrals" => CreateSpectralConfigPopup(itemName),
                 "Vouchers" => new VoucherConfigPopup(),
                 "Tags" => new TagConfigPopup(),
+                "PlayingCards" => new PlayingCardConfigPopup(),
                 _ => new JokerConfigPopup(), // Fallback to joker config
             };
 
@@ -5132,6 +5302,7 @@ namespace BalatroSeedOracle.Views.Modals
                     case "needs":
                         if (_selectedMust.Remove(key))
                         {
+                            MarkAsChanged();
                             removed = true;
                             BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from NEEDS zone");
                         }
@@ -5139,6 +5310,7 @@ namespace BalatroSeedOracle.Views.Modals
                     case "wants":
                         if (_selectedShould.Remove(key))
                         {
+                            MarkAsChanged();
                             removed = true;
                             BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from WANTS zone");
                         }
@@ -5146,6 +5318,7 @@ namespace BalatroSeedOracle.Views.Modals
                     case "mustnot":
                         if (_selectedMustNot.Remove(key))
                         {
+                            MarkAsChanged();
                             removed = true;
                             BalatroSeedOracle.Helpers.DebugLogger.Log($"Removed {key} from MUST NOT zone");
                         }
@@ -5709,14 +5882,27 @@ namespace BalatroSeedOracle.Views.Modals
 
             writer.WriteStartObject();
             
-            // Add metadata fields
-            writer.WriteString("name", "");
-            writer.WriteString("description", "");
-            
-            // Get author from user profile
+            // Add metadata fields (write actual values instead of placeholders)
+            if (!string.IsNullOrWhiteSpace(config.Name))
+            {
+                writer.WriteString("name", config.Name);
+            }
+            else
+            {
+                writer.WriteString("name", "Untitled Filter");
+            }
+            writer.WriteString("description", config.Description ?? string.Empty);
+
+            // Author (prefer config.Author, fall back to profile service)
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            var authorName = userProfileService?.GetAuthorName() ?? "Jimbo";
+            var authorName = !string.IsNullOrWhiteSpace(config.Author)
+                ? config.Author
+                : (userProfileService?.GetAuthorName() ?? "Jimbo");
             writer.WriteString("author", authorName);
+
+            // Creation timestamp (ISO 8601 UTC)
+            var created = config.DateCreated ?? DateTime.UtcNow;
+            writer.WriteString("dateCreated", created.ToString("o"));
 
             // Write must array
             writer.WriteStartArray("must");
@@ -5863,6 +6049,12 @@ namespace BalatroSeedOracle.Views.Modals
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             config.Author = userProfileService?.GetAuthorName() ?? "Jimbo";
 
+            // Set creation date if not already provided
+            if (!config.DateCreated.HasValue)
+            {
+                config.DateCreated = DateTime.UtcNow;
+            }
+
             // Convert all items using the helper method that handles unique keys
             FixUniqueKeyParsing(_selectedMust, config.Must, 0);
             FixUniqueKeyParsing(_selectedShould, config.Should, 1);
@@ -5917,6 +6109,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // The JokerConfigPopup returns null for both cases
                 // We'll use an empty array for now and let Motely handle the default
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                Min = config.Min // Support minimum count for Must items
             };
 
             // Handle category mappings 
@@ -5996,15 +6189,20 @@ namespace BalatroSeedOracle.Views.Modals
                         filterItem.Sources.ShopSlots = Array.Empty<int>();
                     }
                     // Soul jokers can have editions
-                    if (config.Edition != null && config.Edition != "none")
+                    if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
                     {
-                        filterItem.Edition = config.Edition.ToString();
+                        filterItem.Edition = config.Edition;
                     }
                     break;
                     
                 case "jokers":
-                    // Check if it's a legendary joker or "any legendary"
-                    if (IsLegendaryJoker(itemName) || itemName.ToLower() == "anylegendary")
+                    // Check if it's a wildcard - ALWAYS use "any" as value for wildcards
+                    if (itemName.ToLower() == "anyjoker")
+                    {
+                        filterItem.Type = "joker";
+                        filterItem.Value = "any";
+                    }
+                    else if (itemName.ToLower() == "anylegendary" || IsLegendaryJoker(itemName))
                     {
                         filterItem.Type = "souljoker";
                         // Handle "anylegendary" as a special case
@@ -6027,19 +6225,18 @@ namespace BalatroSeedOracle.Views.Modals
                              itemName.ToLower() == "anycommon")
                     {
                         // For other "any" rarities, just use joker type with "any" value
-                        // The search engine will handle the rarity filtering based on context
                         filterItem.Type = "joker";
                         filterItem.Value = "any";
-                        // Note: We could add rarity metadata here if needed in the future
                     }
                     else
                     {
                         filterItem.Type = "joker";
                         filterItem.Value = itemName;
                     }
-                    if (config.Edition != null && config.Edition != "none")
+                    // Add edition if configured
+                    if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
                     {
-                        filterItem.Edition = config.Edition.ToString();
+                        filterItem.Edition = config.Edition;
                     }
                     break;
 
@@ -6059,9 +6256,15 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case "tags":
-                    // Tags can be small blind or big blind - default to small blind
-                    // TODO: Allow user to specify which type of tag
-                    filterItem.Type = "smallblindtag";
+                    // Use the tag type from config if available, otherwise default to small blind
+                    if (config != null && !string.IsNullOrEmpty(config.TagType))
+                    {
+                        filterItem.Type = config.TagType;
+                    }
+                    else
+                    {
+                        filterItem.Type = "smallblindtag"; // Default to small blind
+                    }
                     filterItem.Value = itemName;
                     break;
 
@@ -6089,6 +6292,60 @@ namespace BalatroSeedOracle.Views.Modals
             filterItem.Antes = filterItem.Antes;
 
             return filterItem;
+        }
+        
+        private void ReloadJsonFromCurrentConfig()
+        {
+            try
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "ReloadJsonFromCurrentConfig called");
+                
+                var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+                if (jsonEditor != null)
+                {
+                    // Build current config from selections and reload into JSON editor
+                    var config = BuildOuijaConfigFromSelections();
+                    var json = SerializeOuijaConfig(config);
+                    
+                    jsonEditor.Text = json;
+                    
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                        "FiltersModal", 
+                        $"Reloaded JSON editor with current config ({json.Length} characters)"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error in ReloadJsonFromCurrentConfig: {ex}");
+            }
+        }
+        
+        private void RefreshDropZonesFromConfig()
+        {
+            try
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "RefreshDropZonesFromConfig called");
+                
+                // Clear existing drop zones
+                ClearNeeds();
+                ClearWants();
+                ClearMustNot();
+                
+                // Rebuild from current selections
+                UpdateSelectedItemsPanel("NeedsPanel", _selectedMust);
+                UpdateSelectedItemsPanel("WantsPanel", _selectedShould);
+                UpdateSelectedItemsPanel("MustNotPanel", _selectedMustNot);
+                
+                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    "FiltersModal", 
+                    $"Refreshed drop zones - Must: {_selectedMust.Count}, Should: {_selectedShould.Count}, MustNot: {_selectedMustNot.Count}"
+                );
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error in RefreshDropZonesFromConfig: {ex}");
+            }
         }
 
         private string GetDefaultOuijaConfigJson()
@@ -6408,6 +6665,17 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
                         _selectedMust.Add(uniqueKey);
+                        
+                        // Store the full item config including edition, stickers, antes, etc.
+                        _itemConfigs[uniqueKey] = new ItemConfig
+                        {
+                            ItemKey = uniqueKey,
+                            Edition = item.Edition ?? "none",
+                            Antes = item.Antes?.ToList(),
+                            Sources = item.Sources,
+                            Min = item.Min,
+                            // TODO: Add stickers if they're in the config
+                        };
                     }
                 }
             }
@@ -6425,6 +6693,16 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
                         _selectedShould.Add(uniqueKey);
+                        
+                        // Store the full item config
+                        _itemConfigs[uniqueKey] = new ItemConfig
+                        {
+                            ItemKey = uniqueKey,
+                            Edition = item.Edition ?? "none",
+                            Antes = item.Antes?.ToList(),
+                            Sources = item.Sources,
+                            Min = item.Min,
+                        };
                     }
                 }
             }
@@ -6442,6 +6720,16 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
                         _selectedMustNot.Add(uniqueKey);
+                        
+                        // Store the full item config
+                        _itemConfigs[uniqueKey] = new ItemConfig
+                        {
+                            ItemKey = uniqueKey,
+                            Edition = item.Edition ?? "none",
+                            Antes = item.Antes?.ToList(),
+                            Sources = item.Sources,
+                            Min = item.Min,
+                        };
                     }
                 }
             }
@@ -6449,14 +6737,17 @@ namespace BalatroSeedOracle.Views.Modals
             // The new format doesn't have a separate filters section
             // All items are directly in Must/Should/MustNot lists
 
+            // Store the loaded config
+            _loadedConfig = config;
+            
             // Update the UI to show the loaded items
             UpdateDropZoneVisibility();
             RefreshItemPalette();
+            UpdateSaveFilterPanel();
 
             BalatroSeedOracle.Helpers.DebugLogger.Log(
                 $"LoadConfigIntoUI: Loaded {_selectedMust.Count} needs, {_selectedShould.Count} wants, {_selectedMustNot.Count} must not"
             );
-            RefreshItemPalette();
         }
 
         private string GetCategoryFromType(string type)
@@ -6563,6 +6854,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to must not (allow item in multiple lists)
                             _selectedMustNot.Add(uniqueKey);
+                            MarkAsChanged();
                         }
                     }
 
@@ -7346,6 +7638,7 @@ namespace BalatroSeedOracle.Views.Modals
         
         private IImage? GetItemImageForCategory(string itemName, string category)
         {
+            // No stickers in selection popup - these are base items
             return category switch
             {
                 "Jokers" or "SoulJokers" => SpriteService.Instance.GetJokerImage(itemName),
@@ -7361,6 +7654,212 @@ namespace BalatroSeedOracle.Views.Modals
                 "Boosters" or "Packs" => SpriteService.Instance.GetBoosterImage(itemName),
                 _ => SpriteService.Instance.GetItemImage(itemName, category),
             };
+        }
+        
+        // Auto-save functionality
+        private void SetupAutoSave()
+        {
+            // No longer using timer - saving immediately on changes
+        }
+        
+        private async void MarkAsChanged()
+        {
+            // Save immediately if we have a filter path
+            if (!string.IsNullOrEmpty(_currentFilterPath))
+            {
+                await SaveCurrentFilterAsync();
+                UpdateStatus("Saved", false);
+            }
+        }
+        
+        // New helper methods for Filter Info tab
+        private async Task SaveCurrentFilterAsync()
+        {
+            if (string.IsNullOrEmpty(_currentFilterPath))
+            {
+                // No current path, save as new
+                var filterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
+                if (filterNameInput != null && !string.IsNullOrWhiteSpace(filterNameInput.Text))
+                {
+                    await SaveFilterAsAsync(filterNameInput.Text.Trim());
+                }
+                else
+                {
+                    UpdateStatus("Please enter a filter name", true);
+                }
+                return;
+            }
+            
+            // Save to existing path
+            try
+            {
+                var config = BuildOuijaConfigFromSelections();
+                
+                // Update name and description from inputs
+                var nameInput = this.FindControl<TextBox>("SaveFilterNameInput");
+                var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
+                
+                if (nameInput != null)
+                    config.Name = nameInput.Text?.Trim() ?? "";
+                if (descriptionInput != null)
+                    config.Description = descriptionInput.Text?.Trim() ?? "";
+                
+                var json = SerializeOuijaConfig(config);
+                await File.WriteAllTextAsync(_currentFilterPath, json);
+                
+                UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
+                
+                // Update modified date display
+                var modifiedDateDisplay = this.FindControl<TextBlock>("ModifiedDateDisplay");
+                if (modifiedDateDisplay != null)
+                {
+                    modifiedDateDisplay.Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Failed to save filter: {ex.Message}");
+                UpdateStatus($"Failed to save: {ex.Message}", true);
+            }
+        }
+        
+        private async Task SaveFilterAsAsync(string newName)
+        {
+            try
+            {
+                var config = BuildOuijaConfigFromSelections();
+                config.Name = newName;
+                
+                // Update description if provided
+                var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
+                if (descriptionInput != null)
+                    config.Description = descriptionInput.Text?.Trim() ?? "";
+                
+                // Generate filename
+                var fileName = NormalizeFileName(newName);
+                var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters", $"{fileName}.json");
+                
+                // Handle duplicates
+                int counter = 1;
+                while (File.Exists(filePath))
+                {
+                    filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters", $"{fileName}{counter}.json");
+                    counter++;
+                }
+                
+                var json = SerializeOuijaConfig(config);
+                await File.WriteAllTextAsync(filePath, json);
+                
+                _currentFilterPath = filePath;
+                _loadedConfig = config;
+                
+                UpdateStatus($"Filter saved as {System.IO.Path.GetFileName(filePath)}", false);
+                UpdateSaveFilterPanel();
+                
+                // Enable search button
+                var searchButton = this.FindControl<Button>("SearchForSeedsButton");
+                if (searchButton != null)
+                {
+                    searchButton.IsEnabled = true;
+                    searchButton.Tag = filePath;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Failed to save filter as: {ex.Message}");
+                UpdateStatus($"Failed to save: {ex.Message}", true);
+            }
+        }
+        
+        private string NormalizeFileName(string name)
+        {
+            // Remove special characters and replace with hyphens
+            var normalized = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9]+", "-");
+            
+            // Remove leading/trailing hyphens
+            normalized = normalized.Trim('-');
+            
+            // If empty, use default
+            if (string.IsNullOrEmpty(normalized))
+                normalized = "NewFilter";
+                
+            return normalized;
+        }
+        
+        // New event handlers for Filter Info buttons
+        private async void OnSaveChangesClick(object? sender, RoutedEventArgs e)
+        {
+            await SaveCurrentFilterAsync();
+        }
+        
+        private async void OnSaveAsClick(object? sender, RoutedEventArgs e)
+        {
+            var filterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
+            if (filterNameInput == null || string.IsNullOrWhiteSpace(filterNameInput.Text))
+            {
+                UpdateStatus("Please enter a filter name", true);
+                return;
+            }
+            
+            var newName = filterNameInput.Text.Trim() + " (Copy)";
+            await SaveFilterAsAsync(newName);
+        }
+        
+        private async void OnDuplicateClick(object? sender, RoutedEventArgs e)
+        {
+            var filterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
+            if (filterNameInput != null && !string.IsNullOrWhiteSpace(filterNameInput.Text))
+            {
+                var duplicateName = filterNameInput.Text.Trim() + " (Copy)";
+                await SaveFilterAsAsync(duplicateName);
+                
+                var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
+                filterSelector?.RefreshFilters();
+            }
+        }
+        
+        private async void OnExportClick(object? sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_currentFilterPath))
+            {
+                UpdateStatus("Please save the filter first", true);
+                return;
+            }
+            
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+            
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Export Filter",
+                DefaultExtension = "json",
+                FileTypeChoices = new[] { new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } } },
+                SuggestedFileName = System.IO.Path.GetFileName(_currentFilterPath)
+            });
+            
+            if (file != null && File.Exists(_currentFilterPath))
+            {
+                var content = await File.ReadAllTextAsync(_currentFilterPath);
+                await File.WriteAllTextAsync(file.Path.LocalPath, content);
+                UpdateStatus($"Filter exported to {file.Name}", false);
+            }
+        }
+        
+        private async void OnShareClick(object? sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_currentFilterPath) || !File.Exists(_currentFilterPath))
+            {
+                UpdateStatus("Please save the filter first", true);
+                return;
+            }
+            
+            var content = await File.ReadAllTextAsync(_currentFilterPath);
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+            {
+                await clipboard.SetTextAsync(content);
+                UpdateStatus("Filter JSON copied to clipboard!", false);
+            }
         }
     }
 }

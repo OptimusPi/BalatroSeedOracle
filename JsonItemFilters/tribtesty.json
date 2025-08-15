@@ -1,0 +1,58 @@
+{
+  "name": "tribtesty",
+  "description": "sdfasdf",
+  "author": "pifreak",
+  "dateCreated": "2025-08-15T00:47:18.2544442Z",
+  "must": [
+    {
+      "type": "souljoker",
+      "value": "Triboulet",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "souljoker",
+      "value": "Perkeo",
+      "antes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sources": {
+        "packSlots": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "score": 1
+    }
+  ],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

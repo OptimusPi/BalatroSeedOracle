@@ -43,6 +43,7 @@ namespace BalatroSeedOracle.Views.Modals
         private SearchManager? _searchManager;
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
+        private Motely.Filters.OuijaConfig? _loadedConfig;
 
         // Tab panels
         private Panel? _filterPanel;
@@ -67,6 +68,7 @@ namespace BalatroSeedOracle.Views.Modals
         // Action buttons
         private Button? _cookButton;
         private Button? _saveWidgetButton;
+        private Button? _popOutButton;
 
         // Balatro Spinners
         private SpinnerControl? _threadsSpinner;
@@ -259,17 +261,29 @@ namespace BalatroSeedOracle.Views.Modals
                 AddToConsole("──────────────────────────────────");
                 AddToConsole($"Resuming search from batch {resumeState.LastCompletedBatch:N0}...");
                 
-                // Create a new search instance
-                CreateNewSearchInstance();
-                
-                if (_searchInstance == null) return;
-                
-                // Load the config from file
+                // Load the config from file FIRST before creating search instance
                 if (!string.IsNullOrEmpty(resumeState.ConfigPath))
                 {
                     _currentFilterPath = resumeState.ConfigPath;
-                    await LoadFilterAsync(resumeState.ConfigPath);
+                    // Don't use LoadFilterAsync here as it creates its own search instance
+                    // Just load the config directly
+                    if (File.Exists(resumeState.ConfigPath))
+                    {
+                        var json = await File.ReadAllTextAsync(resumeState.ConfigPath);
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            AllowTrailingCommas = true,
+                            ReadCommentHandling = JsonCommentHandling.Skip
+                        };
+                        _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                    }
                 }
+                
+                // NOW create a new search instance with the loaded config
+                CreateNewSearchInstance();
+                
+                if (_searchInstance == null) return;
                 
                 if (!string.IsNullOrEmpty(_currentFilterPath))
                 {
@@ -385,6 +399,7 @@ namespace BalatroSeedOracle.Views.Modals
             // Find buttons
             _cookButton = this.FindControl<Button>("CookButton");
             _saveWidgetButton = this.FindControl<Button>("SaveWidgetButton");
+            _popOutButton = this.FindControl<Button>("PopOutButton");
 
             // Find Balatro spinners and set up their ranges
             _threadsSpinner = this.FindControl<SpinnerControl>("ThreadsSpinner");
@@ -609,25 +624,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnNewFilterRequested(object? sender, EventArgs e)
-        {
-            // Close this modal and open the filters modal
-            var window = TopLevel.GetTopLevel(this) as Window;
-            if (window != null)
-            {
-                // Find and close the current modal
-                var modalHost = window.FindControl<Grid>("ModalHost");
-                if (modalHost != null && modalHost.Children.Count > 0)
-                {
-                    modalHost.Children.Clear();
-
-                    // Open the filters modal
-                    var filtersModal = new BalatroSeedOracle.Views.Modals.FiltersModalContent();
-                    modalHost.Children.Add(filtersModal);
-                }
-            }
-        }
-
         private void UpdateTabStates(bool filterLoaded)
         {
             // Check if we have an active search instance (might be from a shortcut)
@@ -775,6 +771,46 @@ namespace BalatroSeedOracle.Views.Modals
             _ = LoadTopResultsAsync();
         }
 
+        private async void OnPopOutClick(object? sender, RoutedEventArgs e)
+        {
+            if (_searchInstance == null)
+            {
+                DebugLogger.LogError("SearchModal", "Cannot open advanced view: SearchInstance is null");
+                return;
+            }
+
+            try
+            {
+                // Get the filter name to display
+                string? filterName = null;
+                if (_loadedConfig != null)
+                {
+                    filterName = _loadedConfig.Name;
+                }
+                else if (!string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    filterName = System.IO.Path.GetFileNameWithoutExtension(_currentFilterPath);
+                }
+                
+                var window = new Windows.DataGridResultsWindow(_searchInstance, filterName);
+                
+                // Get the parent window to show dialog relative to it
+                var parentWindow = this.FindAncestorOfType<Window>();
+                if (parentWindow != null)
+                {
+                    await window.ShowDialog(parentWindow);
+                }
+                else
+                {
+                    window.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModal", $"Failed to open advanced view: {ex}");
+            }
+        }
+
         /// <summary>
         /// Connect to an existing search instance (when opened from desktop icon)
         /// </summary>
@@ -821,6 +857,25 @@ namespace BalatroSeedOracle.Views.Modals
                 else
                 {
                     DebugLogger.LogError("SearchModal", $"Search instance not found: {searchId}");
+                    
+                    // Create a new search instance since the placeholder doesn't exist
+                    // This happens when resuming from a saved desktop icon
+                    DebugLogger.Log("SearchModal", "Creating new search instance for resumed search");
+                    CreateNewSearchInstance();
+                    
+                    // Check if we have a saved search state to restore
+                    var userProfileService = App.GetService<UserProfileService>();
+                    if (userProfileService != null)
+                    {
+                        var searchState = userProfileService.GetSearchState();
+                        if (searchState != null && _searchInstance != null)
+                        {
+                            DebugLogger.Log("SearchModal", $"Restoring search state from batch {searchState.LastCompletedBatch}");
+                            // The search instance will restore its state when it starts
+                        }
+                    }
+                    
+                    UpdateCookButtonState();
                 }
             }
         }
@@ -844,7 +899,6 @@ namespace BalatroSeedOracle.Views.Modals
                 CreateNewSearchInstance();
             }
 
-            Motely.Filters.OuijaConfig? config = null;
             try
             {
                 // Load the config file asynchronously - proper async I/O
@@ -857,26 +911,26 @@ namespace BalatroSeedOracle.Views.Modals
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         AllowTrailingCommas = true
                     };
-                    config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                    _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
                 }
 
-                if (config != null)
+                if (_loadedConfig != null)
                 {
                     // Just log that we loaded successfully
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "SearchModal",
-                        $"Filter loaded successfully: {config.Name}"
+                        $"Filter loaded successfully: {_loadedConfig.Name}"
                     );
                     
                     // Show in console what filter was loaded
                     AddToConsole($"Loaded filter: {System.IO.Path.GetFileName(filePath)}");
-                    AddToConsole($"Name: {config.Name ?? "Unnamed"}");
-                    AddToConsole($"Description: {config.Description ?? "No description"}");
+                    AddToConsole($"Name: {_loadedConfig.Name ?? "Unnamed"}");
+                    AddToConsole($"Description: {_loadedConfig.Description ?? "No description"}");
                     
                     // Update the active filter name display
                     if (_activeFilterNameText != null)
                     {
-                        _activeFilterNameText.Text = config.Name ?? System.IO.Path.GetFileNameWithoutExtension(filePath);
+                        _activeFilterNameText.Text = _loadedConfig.Name ?? System.IO.Path.GetFileNameWithoutExtension(filePath);
                     }
 
                     // Update JSON validation status
@@ -1647,7 +1701,11 @@ namespace BalatroSeedOracle.Views.Modals
             if (_consoleOutput != null)
             {
                 var timestamp = DateTime.UtcNow.ToString("HH:mm:ss");
-                _consoleOutput.Text += $"[{timestamp}] {message}\n";
+                
+                // Truncate message to max 100 characters
+                var truncatedMessage = message.Length > 100 ? message.Substring(0, 100) + "..." : message;
+                
+                _consoleOutput.Text += $"[{timestamp}] {truncatedMessage}\n";
 
                 // Auto-scroll to bottom
                 _consoleOutput.CaretIndex = _consoleOutput.Text.Length;
@@ -2262,6 +2320,13 @@ namespace BalatroSeedOracle.Views.Modals
             // Update summary
             var total = await _searchInstance.GetResultCountAsync();
             _lastKnownResultCount = total;
+            
+            // Enable/disable pop-out button based on results
+            if (_popOutButton != null)
+            {
+                _popOutButton.IsEnabled = total > 0;
+            }
+            
             if (_resultsSummary != null)
             {
                 _resultsSummary.Text = $"Showing top {top.Count:N0} / {total:N0} results";

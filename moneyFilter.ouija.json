@@ -292,8 +292,7 @@
   ],
   "filter": {
     "deck": "Red",
-    "stake": "White",
-    "maxAnte": 8
+    "stake": "White"
   },
   "minimumScore": 0
 }

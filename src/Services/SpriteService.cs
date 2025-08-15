@@ -295,6 +295,54 @@ namespace BalatroSeedOracle.Services
             return GetSpriteImage(name, jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
         }
 
+        // Get joker image with stickers applied
+        public IImage? GetJokerImageWithStickers(
+            string name,
+            List<string>? stickers,
+            int spriteWidth = UIConstants.JokerSpriteWidth,
+            int spriteHeight = UIConstants.JokerSpriteHeight
+        )
+        {
+            // Get the base joker image
+            var jokerImage = GetJokerImage(name, spriteWidth, spriteHeight);
+            if (jokerImage == null)
+                return null;
+
+            // If no stickers, return base image
+            if (stickers == null || stickers.Count == 0)
+                return jokerImage;
+
+            // Legendary jokers (soul jokers) cannot have stickers
+            var legendaryJokers = new[] { "perkeo", "canio", "chicot", "triboulet", "yorick" };
+            if (legendaryJokers.Contains(name.ToLowerInvariant()))
+                return jokerImage;
+
+            // Create a composite with stickers
+            var renderTarget = new RenderTargetBitmap(new PixelSize(spriteWidth, spriteHeight), new Vector(96, 96));
+            using (var context = renderTarget.CreateDrawingContext())
+            {
+                // Draw the base joker
+                context.DrawImage(jokerImage, new Rect(0, 0, spriteWidth, spriteHeight));
+
+                // Apply stickers (stickers are 142x190, scale to fit joker size)
+                foreach (var sticker in stickers)
+                {
+                    var stickerImage = GetStickerImage(sticker.ToLowerInvariant());
+                    if (stickerImage != null)
+                    {
+                        // Scale sticker from 142x190 to joker size (71x95)
+                        context.DrawImage(
+                            stickerImage,
+                            new Rect(0, 0, 142, 190),
+                            new Rect(0, 0, spriteWidth, spriteHeight)
+                        );
+                    }
+                }
+            }
+
+            return renderTarget;
+        }
+
         public IImage? GetJokerSoulImage(
             string name_in,
             int spriteWidth = UIConstants.JokerSpriteWidth,
