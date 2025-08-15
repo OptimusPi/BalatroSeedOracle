@@ -793,7 +793,7 @@ namespace BalatroSeedOracle.Views.Modals
                     filterName = System.IO.Path.GetFileNameWithoutExtension(_currentFilterPath);
                 }
                 
-                var window = new Windows.DataGridResultsWindow(_searchInstance, filterName);
+                var window = new BalatroSeedOracle.Windows.DataGridResultsWindow(_searchInstance, filterName);
                 
                 // Get the parent window to show dialog relative to it
                 var parentWindow = this.FindAncestorOfType<Window>();
