@@ -75,6 +75,12 @@ namespace BalatroSeedOracle.Components
             {
                 _filterSpinner.SelectionChanged += OnFilterSelectionChanged;
             }
+            
+            // CRITICAL FIX: Wire up the Select button!
+            if (_selectButton != null)
+            {
+                _selectButton.Click += OnSelectClick;
+            }
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

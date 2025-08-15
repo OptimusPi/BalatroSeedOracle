@@ -1,0 +1,21 @@
+{
+  "name": "Negative Triboulet Test",
+  "description": "Test filter for Negative Triboulet from Soul",
+  "author": "pifreak",
+  "dateCreated": "2025-08-15T00:00:00Z",
+  "must": [
+    {
+      "type": "souljoker",
+      "value": "Triboulet",
+      "edition": "negative",
+      "antes": [1],
+      "sources": {
+        "packSlots": [3]
+      }
+    }
+  ],
+  "should": [],
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "White"
+}

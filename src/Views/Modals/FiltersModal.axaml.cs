@@ -3892,8 +3892,12 @@ namespace BalatroSeedOracle.Views.Modals
                     AnimateTriangleToTab(2);
                     EnterEditJsonMode();
                     UpdateJsonEditor();
-                    // RELOAD JSON from current config every time JSON tab is selected
-                    ReloadJsonFromCurrentConfig();
+                    // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
+                    // Only reload from selections if we're building a filter from scratch in Visual mode
+                    if (_loadedConfig == null)
+                    {
+                        ReloadJsonFromCurrentConfig();
+                    }
                     break;
                     
                 case "SaveFilterTab":

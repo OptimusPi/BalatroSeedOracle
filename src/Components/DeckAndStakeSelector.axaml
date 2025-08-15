@@ -4,7 +4,7 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
     
-    <StackPanel Spacing="20">
+    <StackPanel Spacing="14">
         <!-- Deck Selection using PanelSpinner -->
         <components:DeckSpinner Name="DeckSpinnerControl" />
         
@@ -15,7 +15,7 @@
                                 Minimum="0"
                                 Maximum="7"
                                 Value="0"
-                                Width="170"
+                                Width="145"
                                 HorizontalAlignment="Center" />
         
         <!-- Select Button -->
@@ -23,7 +23,7 @@
                 Content="Select this Deck" 
                 Classes="btn-blue" 
                 MinWidth="200"
-                MinHeight="50"
+                MinHeight="32"
                 HorizontalAlignment="Center"
                 Click="OnSelectClick"/>
     </StackPanel>

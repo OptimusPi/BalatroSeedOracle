@@ -77,6 +77,7 @@
         <!-- DataGrid -->
         <DataGrid Grid.Row="2"
                   Name="ResultsGrid"
+                  MinHeight="200"
                   AutoGenerateColumns="False"
                   CanUserReorderColumns="True"
                   CanUserResizeColumns="True"
@@ -149,6 +150,7 @@
                 <!-- Query Results -->
                 <Grid Grid.Row="3">
                     <DataGrid Name="QueryResultsGrid"
+                              MinHeight="200"
                               AutoGenerateColumns="True"
                               CanUserReorderColumns="True"
                               CanUserResizeColumns="True"

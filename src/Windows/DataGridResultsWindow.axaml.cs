@@ -395,31 +395,31 @@ LIMIT 100;";
             var query = selected switch
             {
                 0 => @"-- Top 100 Seeds by Score
-SELECT seed, total_score 
+SELECT seed, score 
 FROM results 
-ORDER BY total_score DESC 
+ORDER BY score DESC 
 LIMIT 100;",
                 
                 1 => @"-- Statistical Analysis
 SELECT 
     COUNT(*) as total_seeds,
-    AVG(total_score) as avg_score,
-    MIN(total_score) as min_score,
-    MAX(total_score) as max_score,
-    MEDIAN(total_score) as median_score
+    AVG(score) as avg_score,
+    MIN(score) as min_score,
+    MAX(score) as max_score,
+    MEDIAN(score) as median_score
 FROM results;",
                 
                 2 => @"-- Seeds with high scores
-SELECT seed, total_score 
+SELECT seed, score 
 FROM results
-WHERE total_score > 50
-ORDER BY total_score DESC
+WHERE score > 50
+ORDER BY score DESC
 LIMIT 100;",
                 
                 3 => @"-- Show all columns (first 50 rows)
 SELECT * 
 FROM results
-ORDER BY total_score DESC
+ORDER BY score DESC
 LIMIT 50;",
                 
                 _ => ""

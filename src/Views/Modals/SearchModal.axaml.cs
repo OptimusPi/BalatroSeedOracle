@@ -414,7 +414,8 @@ namespace BalatroSeedOracle.Views.Modals
             
             if (_batchSizeSpinner != null)
             {
-                _batchSizeSpinner.DisplayValues = new[] { "minimal", "low", "default", "high" };
+                _batchSizeSpinner.DisplayValues = new[] { "low", "default", "large", "huge" };
+                _batchSizeSpinner.Value = 1; // Set default to "default" which is index 1, batch size 2
             }
             
             if (_minScoreSpinner != null)
@@ -1041,7 +1042,7 @@ namespace BalatroSeedOracle.Views.Modals
                     Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
 
                     // Get parameters from Balatro spinners
-                    int batchSize = (_batchSizeSpinner?.Value ?? 2) + 1; // Convert 0-3 to 1-4 for actual batch size (minimal=1, low=2, default=3, high=4)
+                    int batchSize = (_batchSizeSpinner?.Value ?? 1) + 1; // Convert 0-3 to 1-4 for actual batch size (low=1, default=2, large=3, huge=4)
                     _isDebugMode = _debugCheckBox?.IsChecked ?? false;
                     
                     // Check if we should resume from a saved batch

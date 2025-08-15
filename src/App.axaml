@@ -152,6 +152,9 @@
         <!-- Include base Fluent theme for control templates (unfortunately needed for DataGrid, ComboBox, etc.) -->
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         
+        <!-- Include DataGrid styles (required for DataGrid to be visible) -->
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        
         <!-- Include AvaloniaEdit styles -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         
