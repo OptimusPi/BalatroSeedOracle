@@ -126,8 +126,45 @@ public partial class PanelSpinner : UserControl
 
         if (_spriteImage != null && item.GetImage != null)
         {
-            var image = item.GetImage();
-            _spriteImage.Source = image;
+            var viewbox = _spriteImage.Parent as Viewbox;
+            if (viewbox?.Parent is Grid grid)
+            {
+                var customControlsInImageRow = grid.Children
+                    .Where(child => Grid.GetRow(child) == 1 && child != viewbox)
+                    .ToList();
+                
+                foreach (var child in customControlsInImageRow)
+                {
+                    grid.Children.Remove(child);
+                }
+                
+                // Only show custom control if this specific item has one AND it's the special create item
+                if (item.GetControl != null && item.Value == "__CREATE_NEW__")
+                {
+                    // Show custom control instead of image
+                    var customControl = item.GetControl();
+                    if (customControl != null)
+                    {
+                        viewbox.IsVisible = false;
+                        Grid.SetRow(customControl, 1);
+                        grid.Children.Add(customControl);
+                    }
+                }
+                else
+                {
+                    // Show image for regular filters
+                    viewbox.IsVisible = true;
+                    if (item.GetImage != null)
+                    {
+                        var image = item.GetImage();
+                        _spriteImage.Source = image;
+                    }
+                    else
+                    {
+                        _spriteImage.Source = null;
+                    }
+                }
+            }
         }
 
         // Update button states
