@@ -445,6 +445,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 // Connect new event (FilterSelected returns path or null for create new)
                 _filterSelector.FilterSelected += OnChallengesFilterChosen;
+                _filterSelector.AutoFireSelection = true; // enable immediate selection firing
             }
 
             // Find results panel controls

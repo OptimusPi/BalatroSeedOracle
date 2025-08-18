@@ -29,6 +29,16 @@ public partial class ChallengesFilterSelector : UserControl
     private int _currentPage = 0;
     private int _selectedIndex = -1;
     private string? _selectedFilterPath;
+    private string? _selectedFilterNameCache; // cached name for persistence across refresh
+    private FileSystemWatcher? _watcher;
+    private DateTime _lastFsEventUtc = DateTime.MinValue;
+    private bool _pendingRefresh;
+    private readonly TimeSpan _fsDebounce = TimeSpan.FromMilliseconds(250);
+    private readonly object _refreshLock = new();
+    private bool _disposed;
+    private bool _suppressAutoFireOnce;
+
+    public bool AutoFireSelection { get; set; } = false; // when true clicking item triggers FilterSelected immediately
     
     private StackPanel? _filterListPanel;
     private TextBlock? _selectedFilterName;
@@ -54,6 +64,7 @@ public partial class ChallengesFilterSelector : UserControl
         // Enable keyboard navigation
         this.Focusable = true;
         this.KeyDown += OnKeyDown;
+    SetupFileWatcher();
     }
     
     private void InitializeComponent()
@@ -92,6 +103,7 @@ public partial class ChallengesFilterSelector : UserControl
     {
         try
         {
+            var previous = _selectedFilterNameCache; // remember selection name
             _availableFilters.Clear();
             
             var filterDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
@@ -122,11 +134,107 @@ public partial class ChallengesFilterSelector : UserControl
             _currentPage = 0;
             UpdateFilterList();
             UpdateStatus();
+
+            // attempt to restore previous selection
+            if (!string.IsNullOrWhiteSpace(previous))
+            {
+                var idx = _availableFilters.FindIndex(f => string.Equals(f, previous, StringComparison.OrdinalIgnoreCase));
+                if (idx >= 0)
+                {
+                    _selectedIndex = idx;
+                    if (idx == 0)
+                    {
+                        _selectedFilterPath = null;
+                        UpdatePreview(null);
+                    }
+                    else
+                    {
+                        _selectedFilterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters", previous + ".json");
+                        UpdatePreview(_selectedFilterPath);
+                    }
+                    UpdateFilterList();
+                }
+            }
         }
         catch (Exception ex)
         {
             DebugLogger.LogError($"Failed to refresh filters: {ex.Message}");
         }
+    }
+
+    private void SetupFileWatcher()
+    {
+        try
+        {
+            var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
+            if (!Directory.Exists(dir)) return;
+            _watcher = new FileSystemWatcher(dir, "*.json")
+            {
+                IncludeSubdirectories = false,
+                EnableRaisingEvents = true,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite
+            };
+            _watcher.Created += OnFsChanged;
+            _watcher.Deleted += OnFsChanged;
+            _watcher.Renamed += OnFsRenamed;
+            _watcher.Changed += OnFsChanged;
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError($"Failed to setup filter watcher: {ex.Message}");
+        }
+    }
+
+    private void OnFsChanged(object sender, FileSystemEventArgs e) => DebouncedRefresh();
+    private void OnFsRenamed(object sender, RenamedEventArgs e) => DebouncedRefresh();
+
+    private void DebouncedRefresh()
+    {
+        lock (_refreshLock)
+        {
+            _lastFsEventUtc = DateTime.UtcNow;
+            if (_pendingRefresh) return;
+            _pendingRefresh = true;
+            // schedule check loop
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+            {
+                try
+                {
+                    while (DateTime.UtcNow - _lastFsEventUtc < _fsDebounce)
+                        await Task.Delay(100);
+                    // suppress auto-fire during background refresh
+                    _suppressAutoFireOnce = true;
+                    RefreshFilters();
+                }
+                catch { }
+                finally { _pendingRefresh = false; }
+            });
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        DisposeWatcher();
+    }
+
+    private void DisposeWatcher()
+    {
+        if (_disposed) return;
+        try
+        {
+            if (_watcher != null)
+            {
+                _watcher.EnableRaisingEvents = false;
+                _watcher.Created -= OnFsChanged;
+                _watcher.Deleted -= OnFsChanged;
+                _watcher.Renamed -= OnFsRenamed;
+                _watcher.Changed -= OnFsChanged;
+                _watcher.Dispose();
+            }
+        }
+        catch { }
+        finally { _disposed = true; }
     }
     
     private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
@@ -266,6 +374,7 @@ public partial class ChallengesFilterSelector : UserControl
         if (sender is Button button && button.Tag is int index)
         {
             _selectedIndex = index;
+            _selectedFilterNameCache = index >= 0 && index < _availableFilters.Count ? _availableFilters[index] : null;
             
             if (index == 0)
             {
@@ -289,6 +398,16 @@ public partial class ChallengesFilterSelector : UserControl
             
             if (_selectButton is not null)
                 _selectButton.IsEnabled = true;
+
+            if (AutoFireSelection && !_suppressAutoFireOnce)
+            {
+                // mimic select button
+                if (_selectedIndex == 0)
+                    FilterSelected?.Invoke(this, null);
+                else
+                    FilterSelected?.Invoke(this, _selectedFilterPath);
+            }
+            _suppressAutoFireOnce = false; // reset
         }
     }
     
