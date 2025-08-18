@@ -1085,12 +1085,9 @@ namespace BalatroSeedOracle.Services
                     filterDesc
                 ).WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
-                    .WithStartBatchIndex((int)criteria.StartBatch)
                     .WithSequentialSearch()
-                    .WithProgressCallback(motelyProgress);
-
-                // Use the already declared effectiveEndBatch
-                searchSettings.WithEndBatchIndex(effectiveEndBatch);
+                    .WithStartBatchIndex((int)criteria.StartBatch)
+                    .WithEndBatchIndex(effectiveEndBatch);
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
@@ -1179,23 +1176,22 @@ namespace BalatroSeedOracle.Services
 
 
                 // Report completion (get count before disposing)
-                var finalBatchCount = 0UL;
+                ulong finalBatchCount = 0UL;
                 if (_currentSearch != null)
                 {
                     try
                     {
-                        finalBatchCount = _currentSearch.CompletedBatchCount;
+                        finalBatchCount = (ulong)_currentSearch.CompletedBatchCount;
                     }
                     catch
                     {
-                        // If disposed, use 0
-                        finalBatchCount = 0UL;
+                        finalBatchCount = 0UL; // Disposed
                     }
                 }
                 ulong finalSeeds = finalBatchCount * (ulong)Math.Pow(35, batchSize);
 
                 // Clear search state if completed successfully
-                if (!cancellationToken.IsCancellationRequested && _isRunning && finalBatchCount >= effectiveEndBatch)
+                if (!cancellationToken.IsCancellationRequested && _isRunning && finalBatchCount >= (ulong)effectiveEndBatch)
                 {
                     _userProfileService?.ClearSearchState();
                 }
