@@ -210,11 +210,17 @@ public partial class ChallengesStyleFilterGrid : UserControl
             // Number badge
             if (!filter.IsNew)
             {
+                var app = Application.Current;
+                var green = app?.FindResource("Green") as IBrush;
+                var gold = app?.FindResource("Gold") as IBrush;
+                var black = app?.FindResource("Black") as IBrush;
+                var balatroFont = app?.FindResource("BalatroFont") as FontFamily;
+                if (green == null || gold == null || black == null || balatroFont == null)
+                    return; // resources not ready yet
+
                 var numberBorder = new Border
                 {
-                    Background = filter.IsCompleted 
-                        ? Application.Current!.FindResource("Green") as IBrush
-                        : Application.Current!.FindResource("Gold") as IBrush,
+                    Background = filter.IsCompleted ? green : gold,
                     Width = 32,
                     Height = 32,
                     CornerRadius = new CornerRadius(16),
@@ -225,7 +231,7 @@ public partial class ChallengesStyleFilterGrid : UserControl
                 var numberText = new TextBlock
                 {
                     Text = i.ToString(),
-                    FontFamily = Application.Current!.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = balatroFont,
                     FontSize = 16,
                     FontWeight = FontWeight.Bold,
                     Foreground = Application.Current!.FindResource("Black") as IBrush,
@@ -240,9 +246,15 @@ public partial class ChallengesStyleFilterGrid : UserControl
             else
             {
                 // Special icon for "Create New"
+                var app2 = Application.Current;
+                var gold2 = app2?.FindResource("Gold") as IBrush;
+                var black2 = app2?.FindResource("Black") as IBrush;
+                var font2 = app2?.FindResource("BalatroFont") as FontFamily;
+                if (gold2 == null || black2 == null || font2 == null)
+                    return;
                 var iconBorder = new Border
                 {
-                    Background = Application.Current!.FindResource("Gold") as IBrush,
+                    Background = gold2,
                     Width = 32,
                     Height = 32,
                     CornerRadius = new CornerRadius(16),
@@ -253,7 +265,7 @@ public partial class ChallengesStyleFilterGrid : UserControl
                 var iconText = new TextBlock
                 {
                     Text = "+",
-                    FontFamily = Application.Current!.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = font2,
                     FontSize = 20,
                     FontWeight = FontWeight.Bold,
                     Foreground = Application.Current!.FindResource("Black") as IBrush,
@@ -272,25 +284,31 @@ public partial class ChallengesStyleFilterGrid : UserControl
                 VerticalAlignment = VerticalAlignment.Center
             };
             
-            var nameText = new TextBlock
+                var app3 = Application.Current;
+                var white3 = app3?.FindResource("White") as IBrush;
+                var balatro3 = app3?.FindResource("BalatroFont") as FontFamily;
+                if (white3 == null || balatro3 == null) return;
+                var nameText = new TextBlock
             {
                 Text = filter.Name,
-                FontFamily = Application.Current!.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = balatro3,
                 FontSize = 14,
                 FontWeight = FontWeight.Bold,
-                Foreground = Application.Current!.FindResource("White") as IBrush,
+                    Foreground = white3,
                 TextWrapping = TextWrapping.Wrap
             };
             infoPanel.Children.Add(nameText);
             
             if (!string.IsNullOrEmpty(filter.Description))
             {
+                var silver = app3?.FindResource("Silver") as IBrush;
+                if (silver == null) return;
                 var descText = new TextBlock
                 {
                     Text = filter.Description,
-                    FontFamily = Application.Current!.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = balatro3,
                     FontSize = 10,
-                    Foreground = Application.Current!.FindResource("Silver") as IBrush,
+                    Foreground = silver,
                     TextWrapping = TextWrapping.Wrap,
                     MaxWidth = 160
                 };
@@ -299,12 +317,14 @@ public partial class ChallengesStyleFilterGrid : UserControl
             
             if (filter.SearchCount > 0)
             {
+                var green4 = app3?.FindResource("Green") as IBrush;
+                if (green4 == null) return;
                 var statsText = new TextBlock
                 {
                     Text = $"🔍 {filter.SearchCount} searches",
-                    FontFamily = Application.Current!.FindResource("BalatroFont") as FontFamily,
+                    FontFamily = balatro3,
                     FontSize = 9,
-                    Foreground = Application.Current!.FindResource("Green") as IBrush,
+                    Foreground = green4,
                     Margin = new Thickness(0, 2, 0, 0)
                 };
                 infoPanel.Children.Add(statsText);

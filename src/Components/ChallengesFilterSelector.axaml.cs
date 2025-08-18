@@ -83,12 +83,12 @@ public partial class ChallengesFilterSelector : UserControl
         Loaded += OnLoaded;
     }
     
-    private async void OnLoaded(object? _, RoutedEventArgs __)
+    private void OnLoaded(object? _, RoutedEventArgs __)
     {
-        await RefreshFilters();
+        RefreshFilters(); // intentional fire-and-forget
     }
     
-    public async Task RefreshFilters()
+    public void RefreshFilters()
     {
         try
         {
@@ -192,11 +192,11 @@ public partial class ChallengesFilterSelector : UserControl
             // Item number (skip for Create New)
             if (actualIndex > 0)
             {
-                System.Diagnostics.Debug.Assert(Application.Current != null, "Application.Current should not be null when building filter list");
-                var fontFam = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
-                var whiteBrush = Application.Current?.FindResource("White") as Avalonia.Media.IBrush;
-                System.Diagnostics.Debug.Assert(fontFam != null, "BalatroFont resource missing");
-                System.Diagnostics.Debug.Assert(whiteBrush != null, "White brush resource missing");
+                var app = Application.Current;
+                var fontFam = app?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
+                var whiteBrush = app?.FindResource("White") as Avalonia.Media.IBrush;
+                if (fontFam == null || whiteBrush == null)
+                    return; // resources unavailable yet
                 var numberText = new TextBlock
                 {
                     Text = actualIndex.ToString(),
@@ -210,10 +210,11 @@ public partial class ChallengesFilterSelector : UserControl
             }
             
             // Filter name
-            System.Diagnostics.Debug.Assert(Application.Current != null);
-            var fontFam2 = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
-            var whiteBrush2 = Application.Current?.FindResource("White") as Avalonia.Media.IBrush;
-            System.Diagnostics.Debug.Assert(fontFam2 != null && whiteBrush2 != null);
+            var app2 = Application.Current;
+            var fontFam2 = app2?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
+            var whiteBrush2 = app2?.FindResource("White") as Avalonia.Media.IBrush;
+            if (fontFam2 == null || whiteBrush2 == null)
+                return;
             var nameText = new TextBlock
             {
                 Text = filterName,
@@ -228,11 +229,13 @@ public partial class ChallengesFilterSelector : UserControl
             // Selection arrow (visible when selected)
             if (actualIndex == _selectedIndex)
             {
+                var goldBrush = Application.Current?.FindResource("Gold") as Avalonia.Media.IBrush;
+                if (goldBrush == null) return;
                 var arrow = new TextBlock
                 {
                     Text = "▶",
                     FontSize = 12,
-                    Foreground = Application.Current.FindResource("Gold") as Avalonia.Media.IBrush,
+                    Foreground = goldBrush,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                 };
                 Grid.SetColumn(arrow, 2);
@@ -402,10 +405,13 @@ public partial class ChallengesFilterSelector : UserControl
                             sprite = spriteService.GetBossImage(value);
                             break;
                         case "playingcard":
-                            // Playing cards need special handling for rank/suit
+                            // Expect value like "AS" (rank+suite) or similar; minimal parsing
                             if (value.Length >= 2)
                             {
-                                sprite = spriteService.GetPlayingCardImage(value, null, null, null);
+                                var rankChar = value[0].ToString();
+                                var suitChar = value[1].ToString();
+                                // Provide non-null strings to satisfy signature; enhancement/seal optional
+                                sprite = spriteService.GetPlayingCardImage(suitChar, rankChar, enhancement: null, seal: null, edition: null);
                             }
                             break;
                     }
@@ -426,7 +432,8 @@ public partial class ChallengesFilterSelector : UserControl
                         container.PointerEntered += (s, e) => 
                         {
                             container.RenderTransform = new ScaleTransform(1.1, 1.1);
-                            container.Background = Application.Current!.FindResource("BlueDarker") as IBrush;
+                            if (Application.Current != null && Application.Current.FindResource("BlueDarker") is IBrush blue)
+                                container.Background = blue;
                         };
                         container.PointerExited += (s, e) => 
                         {
@@ -452,9 +459,10 @@ public partial class ChallengesFilterSelector : UserControl
                         };
                         
                         var tooltip = $"{displayType}: {value}";
-                        if (item.TryGetProperty("antes", out var antes))
+                        if (item.TryGetProperty("antes", out var antes) && antes.ValueKind == JsonValueKind.Array)
                         {
-                            tooltip += $" (Ante {antes})";
+                            var antesList = string.Join(",", antes.EnumerateArray().Select(a => a.GetInt32()));
+                            tooltip += $" (Antes {antesList})";
                         }
                         ToolTip.SetTip(container, tooltip);
                         
@@ -465,16 +473,16 @@ public partial class ChallengesFilterSelector : UserControl
                         // Fallback text for items without sprites
                         var text = new Border
                         {
-                            Background = Application.Current!.FindResource("GreyDarker") as Avalonia.Media.IBrush,
+                            Background = Application.Current?.FindResource("GreyDarker") as Avalonia.Media.IBrush ?? Brushes.Transparent,
                             CornerRadius = new CornerRadius(4),
                             Padding = new Thickness(8, 4),
                             Margin = new Thickness(2),
                             Child = new TextBlock
                             {
                                 Text = value,
-                                FontFamily = Application.Current.FindResource("BalatroFont") as Avalonia.Media.FontFamily,
+                                FontFamily = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily ?? FontFamily.Default,
                                 FontSize = 11,
-                                Foreground = Application.Current.FindResource("Silver") as Avalonia.Media.IBrush
+                                Foreground = (Application.Current?.FindResource("Silver") as Avalonia.Media.IBrush) ?? Brushes.Gray
                             }
                         };
                         panel.Children.Add(text);
@@ -514,12 +522,14 @@ public partial class ChallengesFilterSelector : UserControl
                     Opacity = 0.5
                 };
                 
+                var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily ?? FontFamily.Default;
+                var silverDarker = Application.Current?.FindResource("SilverDarker") as Avalonia.Media.IBrush ?? Brushes.Gray;
                 var emptyText = new TextBlock
                 {
                     Text = "Empty",
-                    FontFamily = Application.Current!.FindResource("BalatroFont") as Avalonia.Media.FontFamily,
+                    FontFamily = balatroFont,
                     FontSize = 12,
-                    Foreground = Application.Current.FindResource("SilverDarker") as Avalonia.Media.IBrush,
+                    Foreground = silverDarker,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                 };
                 
