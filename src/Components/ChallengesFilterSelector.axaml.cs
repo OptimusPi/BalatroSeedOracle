@@ -32,9 +32,9 @@ public partial class ChallengesFilterSelector : UserControl
     
     private StackPanel? _filterListPanel;
     private TextBlock? _selectedFilterName;
-    private StackPanel? _mustHavePanel;
-    private StackPanel? _shouldHavePanel;
-    private StackPanel? _mustNotHavePanel;
+    private Panel? _mustHavePanel;
+    private Panel? _shouldHavePanel;
+    private Panel? _mustNotHavePanel;
     private TextBlock? _pageIndicator;
     private TextBlock? _statusText;
     private Button? _prevPageButton;
@@ -62,9 +62,9 @@ public partial class ChallengesFilterSelector : UserControl
         
         _filterListPanel = this.FindControl<StackPanel>("FilterListPanel");
         _selectedFilterName = this.FindControl<TextBlock>("SelectedFilterName");
-        _mustHavePanel = this.FindControl<StackPanel>("MustHavePanel");
-        _shouldHavePanel = this.FindControl<StackPanel>("ShouldHavePanel");
-        _mustNotHavePanel = this.FindControl<StackPanel>("MustNotHavePanel");
+    _mustHavePanel = this.FindControl<Panel>("MustHavePanel");
+    _shouldHavePanel = this.FindControl<Panel>("ShouldHavePanel");
+    _mustNotHavePanel = this.FindControl<Panel>("MustNotHavePanel");
         _pageIndicator = this.FindControl<TextBlock>("PageIndicator");
         _statusText = this.FindControl<TextBlock>("StatusText");
         _prevPageButton = this.FindControl<Button>("PrevPageButton");
@@ -102,12 +102,22 @@ public partial class ChallengesFilterSelector : UserControl
                     .Where(name => !string.IsNullOrEmpty(name))
                     .OrderBy(name => name)
                     .ToList();
-                
                 _availableFilters = files!;
+            }
+            if (_availableFilters.Count == 0)
+            {
+                // Force at least create option visible
+                _availableFilters = new List<string>();
             }
             
             // Add "Create New" option at the beginning
-            _availableFilters.Insert(0, "📝 Create New Filter");
+            _availableFilters.Insert(0, "CREATE NEW");
+            if (_availableFilters.Count == 1)
+            {
+                _filteredFilters = new List<string>(_availableFilters);
+                _selectedIndex = 0;
+                _selectedFilterPath = null;
+            }
             
             _currentPage = 0;
             UpdateFilterList();
@@ -140,10 +150,10 @@ public partial class ChallengesFilterSelector : UserControl
                 .ToList();
                 
             // Always keep "Create New" at the top
-            if (!_filteredFilters.Contains("📝 Create New Filter") && 
-                _availableFilters.Contains("📝 Create New Filter"))
+            if (!_filteredFilters.Contains("CREATE NEW") && 
+                _availableFilters.Contains("CREATE NEW"))
             {
-                _filteredFilters.Insert(0, "📝 Create New Filter");
+                _filteredFilters.Insert(0, "CREATE NEW");
             }
         }
         
@@ -287,15 +297,16 @@ public partial class ChallengesFilterSelector : UserControl
         if (_selectedFilterName == null) return;
         
         // Clear preview panels
-        _mustHavePanel?.Children.Clear();
-        _shouldHavePanel?.Children.Clear();
-        _mustNotHavePanel?.Children.Clear();
+    _mustHavePanel?.Children.Clear();
+    _shouldHavePanel?.Children.Clear();
+    _mustNotHavePanel?.Children.Clear();
         
-        if (filterPath == null)
-        {
-            _selectedFilterName.Text = "Create New Filter";
-            return;
-        }
+            if (filterPath == null)
+            {
+                _selectedFilterName.Text = "Create New Filter";
+                ToggleGroupsVisible(false);
+                return;
+            }
         
         try
         {
@@ -310,22 +321,15 @@ public partial class ChallengesFilterSelector : UserControl
                 var root = doc.RootElement;
                 
                 // Parse and display must items
-                if (root.TryGetProperty("must", out var mustArray))
-                {
-                    DisplayFilterItems(_mustHavePanel, mustArray);
-                }
+                bool any = false;
+                if (root.TryGetProperty("must", out var mustArray)) { DisplayFilterItems(_mustHavePanel, mustArray); any = any || (mustArray.GetArrayLength()>0); }
                 
                 // Parse and display should items
-                if (root.TryGetProperty("should", out var shouldArray))
-                {
-                    DisplayFilterItems(_shouldHavePanel, shouldArray);
-                }
+                if (root.TryGetProperty("should", out var shouldArray)) { DisplayFilterItems(_shouldHavePanel, shouldArray); any = any || (shouldArray.GetArrayLength()>0); }
                 
                 // Parse and display mustNot items
-                if (root.TryGetProperty("mustNot", out var mustNotArray))
-                {
-                    DisplayFilterItems(_mustNotHavePanel, mustNotArray);
-                }
+                if (root.TryGetProperty("mustNot", out var mustNotArray)) { DisplayFilterItems(_mustNotHavePanel, mustNotArray); any = any || (mustNotArray.GetArrayLength()>0); }
+                ToggleGroupsVisible(any);
             }
         }
         catch (Exception ex)
@@ -334,7 +338,7 @@ public partial class ChallengesFilterSelector : UserControl
         }
     }
     
-    private void DisplayFilterItems(StackPanel? panel, System.Text.Json.JsonElement items)
+    private void DisplayFilterItems(Panel? panel, System.Text.Json.JsonElement items)
     {
         if (panel == null) return;
         
@@ -429,7 +433,7 @@ public partial class ChallengesFilterSelector : UserControl
                         container.Child = image;
                         
                         // Add hover effect
-                        container.PointerEntered += (s, e) => 
+                        container.PointerEntered += (s, e) =>
                         {
                             container.RenderTransform = new ScaleTransform(1.1, 1.1);
                             if (Application.Current != null && Application.Current.FindResource("BlueDarker") is IBrush blue)
@@ -466,7 +470,7 @@ public partial class ChallengesFilterSelector : UserControl
                         }
                         ToolTip.SetTip(container, tooltip);
                         
-                        panel.Children.Add(container);
+                        if (panel is Panel p1) p1.Children.Add(container);
                     }
                     else
                     {
@@ -485,7 +489,7 @@ public partial class ChallengesFilterSelector : UserControl
                                 Foreground = (Application.Current?.FindResource("Silver") as Avalonia.Media.IBrush) ?? Brushes.Gray
                             }
                         };
-                        panel.Children.Add(text);
+                        if (panel is Panel p2) p2.Children.Add(text);
                     }
                 }
             }
@@ -535,13 +539,25 @@ public partial class ChallengesFilterSelector : UserControl
                 
                 emptyContainer.Children.Add(emptyIcon);
                 emptyContainer.Children.Add(emptyText);
-                panel.Children.Add(emptyContainer);
+                if (panel is Panel p3) p3.Children.Add(emptyContainer);
             }
         }
         catch (Exception ex)
         {
             DebugLogger.LogError($"Failed to display filter items: {ex.Message}");
         }
+    }
+
+    private void ToggleGroupsVisible(bool any)
+    {
+        var mustGroup = this.FindControl<StackPanel>("MustGroup");
+        var shouldGroup = this.FindControl<StackPanel>("ShouldGroup");
+        var mustNotGroup = this.FindControl<StackPanel>("MustNotGroup");
+        var hint = this.FindControl<TextBlock>("NoFilterHint");
+        if (mustGroup != null) mustGroup.IsVisible = any;
+        if (shouldGroup != null) shouldGroup.IsVisible = any;
+        if (mustNotGroup != null) mustNotGroup.IsVisible = any;
+        if (hint != null) hint.IsVisible = !any;
     }
     
     private void UpdatePageIndicator()
@@ -756,6 +772,28 @@ public partial class ChallengesFilterSelector : UserControl
             
             if (_selectButton is not null)
                 _selectButton.IsEnabled = true;
+        }
+    }
+
+    private void OnCreateNewClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Force select CREATE NEW (index 0)
+            if (_filteredFilters.Count == 0 || _filteredFilters[0] != "CREATE NEW")
+            {
+                RefreshFilters();
+            }
+            _selectedIndex = 0;
+            _selectedFilterPath = null;
+            UpdateFilterList();
+            UpdatePreview(null);
+            if (_selectButton != null) _selectButton.IsEnabled = true;
+            this.Focus();
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError($"OnCreateNewClick failed: {ex.Message}");
         }
     }
 }

@@ -49,6 +49,7 @@ namespace BalatroSeedOracle.Controls
         private CheckBox? _stickerPerishable;
         private CheckBox? _stickerRental;
         private bool _isLegendaryJoker = false;
+    private Border? _stickersSection; // container for sticker controls so we can hide for soul jokers
 
         public JokerConfigPopup()
         {
@@ -68,6 +69,16 @@ namespace BalatroSeedOracle.Controls
                 // Uncheck shop if it was checked
                 _sourceShop.IsChecked = false;
                 _selectedSources["shopSlots"] = new List<int>();
+            }
+
+            // Soul (legendary) jokers cannot have stickers – hide the stickers section entirely
+            if (_isLegendaryJoker && _stickersSection != null)
+            {
+                _stickersSection.IsVisible = false;
+                // Clear any sticker selections just in case user toggled before marking legendary
+                _stickerEternal = null;
+                _stickerPerishable = null;
+                _stickerRental = null;
             }
         }
 
@@ -334,6 +345,14 @@ namespace BalatroSeedOracle.Controls
             grid.Children.Add(stickerPanel);
 
             border.Child = grid;
+            _stickersSection = border;
+
+            // If this popup was already marked as legendary before section creation (edge case), hide now
+            if (_isLegendaryJoker)
+            {
+                border.IsVisible = false;
+            }
+
             return border;
         }
 

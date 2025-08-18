@@ -108,7 +108,7 @@ namespace BalatroSeedOracle.Components
                 var filterItems = new List<(PanelItem? item, DateTime? dateCreated)>();
 
                 // Look for .json files in JsonItemFilters directory
-                var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
 
                 // Create directory if it doesn't exist
                 if (!Directory.Exists(directory))
@@ -714,7 +714,7 @@ namespace BalatroSeedOracle.Components
         {
             try
             {
-                var filterDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                var filterDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
                 if (!Directory.Exists(filterDir))
                     Directory.CreateDirectory(filterDir);
                 

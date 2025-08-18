@@ -155,7 +155,7 @@
             <!-- Main content area -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="260"/>
                     <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*" MinWidth="400"/>
                 </Grid.ColumnDefinitions>
@@ -197,244 +197,56 @@
                     </Grid>
                 </Border>
                 
-                <!-- Right side: Preview panels -->
+                <!-- Right side: Condensed preview -->
                 <Grid Grid.Column="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    
-                    <!-- Filter name header -->
-                    <Border Grid.Row="0"
-                            Background="{StaticResource Red}"
-                            CornerRadius="6"
-                            Padding="8,4"
-                            Margin="0,0,0,8">
-                        <TextBlock Name="SelectedFilterName"
-                                   Text="Select a Filter"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="16"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"/>
+                    <!-- Header -->
+                    <Border Grid.Row="0" Background="{StaticResource Red}" CornerRadius="6" Padding="8,4" Margin="0,0,0,8">
+                        <TextBlock Name="SelectedFilterName" Text="Select a Filter" FontFamily="{StaticResource BalatroFont}" FontSize="16" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                     </Border>
-                    
-                    <!-- Must Have panel with enhanced styling -->
-                    <Grid Grid.Row="1" Margin="0,0,0,6">
-                        <!-- Shadow layer -->
-                        <Border Background="{StaticResource ShadowBlack}"
-                                CornerRadius="10"
-                                Margin="0,2,0,-2"
-                                Opacity="0.4"/>
-                        <Border Background="{StaticResource BlueDarker}"
-                                CornerRadius="10"
-                                Margin="0,1,0,-1"/>
-                        <!-- Main panel -->
-                        <Border Background="{StaticResource Blue}"
-                                CornerRadius="10"
-                                Padding="10"
-                                Margin="0,0,0,0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <Grid Grid.Row="0" Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="✓"
-                                               FontSize="16"
-                                               Foreground="{StaticResource White}"
-                                               Margin="0,0,6,0"/>
-                                    <TextBlock Grid.Column="1"
-                                               Text="MUST HAVE"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="14"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"/>
-                                    <Border Grid.Column="2"
-                                            Name="MustCount"
-                                            Background="{StaticResource BlueDarker}"
-                                            CornerRadius="10"
-                                            Padding="6,2"
-                                            MinWidth="24">
-                                        <TextBlock Name="MustCountText"
-                                                   Text="0"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="11"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center"/>
+                    <!-- Scrollable groups -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MinHeight="320">
+                        <StackPanel Spacing="16">
+                            <StackPanel Name="EmptyStatePanel" Spacing="8" HorizontalAlignment="Center">
+                                <TextBlock Name="NoFilterHint" Text="No filters yet." FontFamily="{StaticResource BalatroFont}" FontSize="14" Foreground="{StaticResource Silver}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Drop .json filter files into JsonItemFilters folder or click Create New." FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource Silver}" TextAlignment="Center"/>
+                                <Button Name="CreateNewCtaButton" Content="CREATE NEW FILTER" Width="220" Height="40" Background="{StaticResource Blue}" Foreground="{StaticResource White}" FontFamily="{StaticResource BalatroFont}" FontSize="14" BorderThickness="0" CornerRadius="8" Cursor="Hand" Click="OnCreateNewClick"/>
+                            </StackPanel>
+                            <!-- Must group -->
+                            <StackPanel Name="MustGroup" IsVisible="False">
+                                <DockPanel LastChildFill="False" Margin="0,0,0,4">
+                                    <TextBlock Text="MUST" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" FontSize="13"/>
+                                    <Border Background="{StaticResource Blue}" CornerRadius="10" Padding="6,2" Margin="6,0,0,0">
+                                        <TextBlock Name="MustCountText" Text="0" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource White}"/>
                                     </Border>
-                                </Grid>
-                                
-                                <Border Grid.Row="1"
-                                        Background="{StaticResource Black}"
-                                        CornerRadius="6"
-                                        Padding="4"
-                                        MinHeight="80">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled">
-                                        <StackPanel Name="MustHavePanel"
-                                                   Orientation="Horizontal"
-                                                   Spacing="6">
-                                            <!-- Sprite previews go here -->
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                    
-                    <!-- Should Have panel with enhanced styling -->
-                    <Grid Grid.Row="2" Margin="0,0,0,6">
-                        <!-- Shadow layer -->
-                        <Border Background="{StaticResource ShadowBlack}"
-                                CornerRadius="10"
-                                Margin="0,2,0,-2"
-                                Opacity="0.4"/>
-                        <Border Background="{StaticResource GreenDarker}"
-                                CornerRadius="10"
-                                Margin="0,1,0,-1"/>
-                        <!-- Main panel -->
-                        <Border Background="{StaticResource Green}"
-                                CornerRadius="10"
-                                Padding="10"
-                                Margin="0,0,0,0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <Grid Grid.Row="0" Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="★"
-                                               FontSize="16"
-                                               Foreground="{StaticResource Gold}"
-                                               Margin="0,0,6,0"/>
-                                    <TextBlock Grid.Column="1"
-                                               Text="SHOULD HAVE"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="14"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"/>
-                                    <Border Grid.Column="2"
-                                            Name="ShouldCount"
-                                            Background="{StaticResource GreenDarker}"
-                                            CornerRadius="10"
-                                            Padding="6,2"
-                                            MinWidth="24">
-                                        <TextBlock Name="ShouldCountText"
-                                                   Text="0"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="11"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center"/>
+                                </DockPanel>
+                                <WrapPanel Name="MustHavePanel" ItemHeight="80" ItemWidth="56" MinHeight="40" />
+                            </StackPanel>
+                            <!-- Should group -->
+                            <StackPanel Name="ShouldGroup" IsVisible="False">
+                                <DockPanel LastChildFill="False" Margin="0,0,0,4">
+                                    <TextBlock Text="SHOULD" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" FontSize="13"/>
+                                    <Border Background="{StaticResource Green}" CornerRadius="10" Padding="6,2" Margin="6,0,0,0">
+                                        <TextBlock Name="ShouldCountText" Text="0" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource White}"/>
                                     </Border>
-                                </Grid>
-                                
-                                <Border Grid.Row="1"
-                                        Background="{StaticResource Black}"
-                                        CornerRadius="6"
-                                        Padding="4"
-                                        MinHeight="80">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled">
-                                        <StackPanel Name="ShouldHavePanel"
-                                                   Orientation="Horizontal"
-                                                   Spacing="6">
-                                            <!-- Sprite previews go here -->
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                    
-                    <!-- Must Not Have panel with enhanced styling -->
-                    <Grid Grid.Row="3">
-                        <!-- Shadow layer -->
-                        <Border Background="{StaticResource ShadowBlack}"
-                                CornerRadius="10"
-                                Margin="0,2,0,-2"
-                                Opacity="0.4"/>
-                        <Border Background="{StaticResource RedDarker}"
-                                CornerRadius="10"
-                                Margin="0,1,0,-1"/>
-                        <!-- Main panel -->
-                        <Border Background="{StaticResource Red}"
-                                CornerRadius="10"
-                                Padding="10"
-                                Margin="0,0,0,0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <Grid Grid.Row="0" Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0"
-                                               Text="✗"
-                                               FontSize="16"
-                                               Foreground="{StaticResource White}"
-                                               Margin="0,0,6,0"/>
-                                    <TextBlock Grid.Column="1"
-                                               Text="MUST NOT HAVE"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="14"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"/>
-                                    <Border Grid.Column="2"
-                                            Name="MustNotCount"
-                                            Background="{StaticResource RedDarker}"
-                                            CornerRadius="10"
-                                            Padding="6,2"
-                                            MinWidth="24">
-                                        <TextBlock Name="MustNotCountText"
-                                                   Text="0"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="11"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center"/>
+                                </DockPanel>
+                                <WrapPanel Name="ShouldHavePanel" ItemHeight="80" ItemWidth="56" MinHeight="40" />
+                            </StackPanel>
+                            <!-- Must Not group -->
+                            <StackPanel Name="MustNotGroup" IsVisible="False">
+                                <DockPanel LastChildFill="False" Margin="0,0,0,4">
+                                    <TextBlock Text="MUST NOT" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" FontSize="13"/>
+                                    <Border Background="{StaticResource Red}" CornerRadius="10" Padding="6,2" Margin="6,0,0,0">
+                                        <TextBlock Name="MustNotCountText" Text="0" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource White}"/>
                                     </Border>
-                                </Grid>
-                                
-                                <Border Grid.Row="1"
-                                        Background="{StaticResource Black}"
-                                        CornerRadius="6"
-                                        Padding="4"
-                                        MinHeight="80">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled">
-                                        <StackPanel Name="MustNotHavePanel"
-                                                   Orientation="Horizontal"
-                                                   Spacing="6">
-                                            <!-- Sprite previews go here -->
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-                        </Border>
-                    </Grid>
+                                </DockPanel>
+                                <WrapPanel Name="MustNotHavePanel" ItemHeight="80" ItemWidth="56" MinHeight="40" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </Grid>
             

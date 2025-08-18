@@ -2,123 +2,29 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "restore",
+			"command": "dotnet",
+			"type": "process",
+			"args": [
+				"restore",
+				"${workspaceFolder}/src/BalatroSeedOracle.csproj"
+			],
+			"group": "build",
+			"presentation": { "reveal": "silent" }
+		},
+		{
 			"label": "build (dotnet)",
 			"command": "dotnet",
 			"type": "process",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
 			"group": "build",
-			"presentation": {
-				"reveal": "silent"
-			},
+			"presentation": { "reveal": "silent" },
 			"problemMatcher": "$msCompile"
-		},
-		{
-			"label": "restore",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"restore",
-				"${workspaceFolder}/src/Oracle.csproj"
-			],
-			"group": "build",
-			"presentation": {
-				"reveal": "silent"
-			}
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"x:\\BalatroSeedOracle\\src\\Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"isBackground": false,
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"x:\\BalatroSeedOracle\\src\\Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"isBackground": false,
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": "build"
-		},
-		{
-			"label": "restore",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"restore",
-				"${workspaceFolder}/src/Oracle.csproj"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
 		}
 	]
 }

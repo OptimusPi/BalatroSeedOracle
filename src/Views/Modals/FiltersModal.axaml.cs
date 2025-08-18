@@ -647,8 +647,8 @@ namespace BalatroSeedOracle.Views.Modals
                 var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
                 var description = descriptionInput?.Text ?? "Created with visual filter builder";
                 
-                // Save to file
-                var directory = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                // Save to file (use AppDomain base directory to avoid CWD differences when launched from shortcuts/installer)
+                var directory = IoPath.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
@@ -1180,6 +1180,8 @@ namespace BalatroSeedOracle.Views.Modals
                         UpdateDropZoneVisibility();
                         UpdatePersistentFavorites();
                         RefreshItemPalette();
+                        // Keep JSON editor (if open) in sync immediately
+                        try { UpdateJsonEditor(); } catch { }
                     }
                 }
             }
@@ -1320,6 +1322,8 @@ namespace BalatroSeedOracle.Views.Modals
                         UpdateDropZoneVisibility();
                         UpdatePersistentFavorites();
                         RefreshItemPalette();
+                        // Keep JSON editor (if open) in sync immediately
+                        try { UpdateJsonEditor(); } catch { }
                     }
                 }
             }
@@ -3900,6 +3904,11 @@ namespace BalatroSeedOracle.Views.Modals
                     EnterEditJsonMode();
                     // Always update JSON from current visual selections when switching to JSON tab
                     UpdateJsonEditor();
+                    // Schedule a second refresh on next UI tick to catch any async state changes (e.g. recent drops)
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        try { UpdateJsonEditor(); } catch { /* ignore */ }
+                    }, DispatcherPriority.Background);
                     break;
                     
                 case "SaveFilterTab":
@@ -6429,8 +6438,13 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private bool IsLegendaryJoker(string jokerName)
         {
-            // Check if the joker exists in the MotelyJokerLegendary enum
-            return Enum.TryParse<MotelyJokerLegendary>(jokerName, out _);
+            // Robust legendary (souljoker) detection:
+            // 1. Fast list lookup (case-insensitive) using pre-built lowercase list from BalatroData
+            // 2. Fallback to enum parse ignoring case (covers any future additions where list not updated yet)
+            if (string.IsNullOrWhiteSpace(jokerName)) return false;
+            var lower = jokerName.ToLowerInvariant();
+            if (BalatroData.LegendaryJokers.Contains(lower)) return true;
+            return Enum.TryParse<MotelyJokerLegendary>(jokerName, ignoreCase: true, out _);
         }
         
         private JokerConfigPopup CreateJokerConfigPopup(string itemName)
@@ -7756,13 +7770,13 @@ namespace BalatroSeedOracle.Views.Modals
                 
                 // Generate filename
                 var fileName = NormalizeFileName(newName);
-                var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters", $"{fileName}.json");
+                var filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters", $"{fileName}.json");
                 
                 // Handle duplicates
                 int counter = 1;
                 while (File.Exists(filePath))
                 {
-                    filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters", $"{fileName}{counter}.json");
+                    filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters", $"{fileName}{counter}.json");
                     counter++;
                 }
                 
