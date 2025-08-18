@@ -1085,7 +1085,7 @@ namespace BalatroSeedOracle.Services
                     filterDesc
                 ).WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
-                    .WithStartBatchIndex(criteria.StartBatch)
+                    .WithStartBatchIndex((int)criteria.StartBatch)
                     .WithSequentialSearch()
                     .WithProgressCallback(motelyProgress);
 
