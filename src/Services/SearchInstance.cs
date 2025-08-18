@@ -1086,7 +1086,7 @@ namespace BalatroSeedOracle.Services
                 ).WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
                     .WithSequentialSearch()
-                    .WithStartBatchIndex((int)criteria.StartBatch)
+                    .WithStartBatchIndex(criteria.StartBatch)
                     .WithEndBatchIndex(effectiveEndBatch);
 
                 DebugLogger.LogImportant(
