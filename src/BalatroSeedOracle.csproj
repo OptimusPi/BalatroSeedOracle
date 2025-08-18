@@ -53,6 +53,6 @@
     <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely.csproj" />
+    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />
   </ItemGroup>
 </Project>
