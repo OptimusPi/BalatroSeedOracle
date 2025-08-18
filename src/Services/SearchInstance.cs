@@ -43,6 +43,8 @@ namespace BalatroSeedOracle.Services
         private readonly object _consoleHistoryLock = new();
         private Task? _searchTask;
         private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
+        private readonly bool _isResume;  // Flag to indicate this is a resumed search
+        private string? _lastProcessedBatch;
         
     // Persistent DuckDB connection & appender for high throughput streaming inserts
     private readonly DuckDBConnection _connection; // opened in ctor, never null after
@@ -110,11 +112,12 @@ namespace BalatroSeedOracle.Services
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
         public event EventHandler<SearchResultEventArgs>? ResultFound;
 
-        public SearchInstance(string searchId, string dbPath)
+        public SearchInstance(string searchId, string dbPath, bool isResume = false)
         {
             _searchId = searchId;
             _userProfileService = ServiceHelper.GetService<UserProfileService>();
             _results = new ObservableCollection<BalatroSeedOracle.Models.SearchResult>();
+            _isResume = isResume;
 
             // Require a non-empty path immediately so query helpers are safe to call early
             if (string.IsNullOrWhiteSpace(dbPath))
@@ -127,6 +130,12 @@ namespace BalatroSeedOracle.Services
             // Open persistent connection immediately (simple, no EnsureConnection later)
             _connection = new DuckDBConnection(_connectionString);
             _connection.Open();
+            
+            // If resuming, load existing results
+            if (_isResume)
+            {
+                LoadExistingResults();
+            }
         }
         
     private void SetupDatabase(OuijaConfig config, string configPath)
@@ -1256,6 +1265,119 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to save search state: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Gets the last processed batch from the database for resuming
+        /// </summary>
+        public string? GetLastProcessedBatch()
+        {
+            try
+            {
+                // Check if metadata table exists
+                using var cmd = _connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT batch_id FROM search_metadata 
+                    ORDER BY last_updated DESC 
+                    LIMIT 1";
+                
+                var result = cmd.ExecuteScalar();
+                _lastProcessedBatch = result?.ToString();
+                return _lastProcessedBatch;
+            }
+            catch
+            {
+                // Table might not exist or no data
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Loads existing results from the database when resuming
+        /// </summary>
+        private void LoadExistingResults()
+        {
+            try
+            {
+                using var cmd = _connection.CreateCommand();
+                
+                // First check if results table exists
+                cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'results'";
+                var tableExists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                
+                if (!tableExists)
+                {
+                    DebugLogger.Log("SearchInstance", "No results table found - nothing to resume");
+                    return;
+                }
+                
+                // Load results
+                cmd.CommandText = "SELECT * FROM results ORDER BY score DESC";
+                using var reader = cmd.ExecuteReader();
+                
+                while (reader.Read())
+                {
+                    var seed = reader.GetString(reader.GetOrdinal("seed"));
+                    var score = reader.GetInt32(reader.GetOrdinal("score"));
+                    
+                    // Create SearchResult object
+                    var result = new SearchResult
+                    {
+                        Seed = seed
+                        // Score = score,
+                        // Details = new List<int>()
+                    };
+                    
+                    // Load detail columns (should clause scores)
+                    // for (int i = 2; i < reader.FieldCount; i++)
+                    // {
+                    //     if (!reader.IsDBNull(i))
+                    //     {
+                    //         result.Details.Add(reader.GetInt32(i));
+                    //     }
+                    // }
+                    
+                    _results.Add(result);
+                }
+                
+                DebugLogger.Log("SearchInstance", $"Loaded {_results.Count} existing results from database");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchInstance", $"Failed to load existing results: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// Saves the current batch ID to metadata for resume capability
+        /// </summary>
+        private void SaveBatchProgress(string batchId)
+        {
+            try
+            {
+                using var cmd = _connection.CreateCommand();
+                
+                // Create metadata table if not exists
+                cmd.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS search_metadata (
+                        batch_id VARCHAR PRIMARY KEY,
+                        last_updated TIMESTAMP
+                    )";
+                cmd.ExecuteNonQuery();
+                
+                // Update or insert current batch
+                cmd.CommandText = @"
+                    INSERT OR REPLACE INTO search_metadata (batch_id, last_updated) 
+                    VALUES ($1, CURRENT_TIMESTAMP)";
+                cmd.Parameters.Add(new DuckDBParameter { Value = batchId });
+                cmd.ExecuteNonQuery();
+                
+                _lastProcessedBatch = batchId;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchInstance", $"Failed to save batch progress: {ex.Message}");
             }
         }
 

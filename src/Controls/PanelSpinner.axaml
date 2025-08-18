@@ -3,82 +3,36 @@
              x:Class="BalatroSeedOracle.Controls.PanelSpinner">
     
     <UserControl.Styles>
-        <!-- Arrow button style - Red navigation buttons -->
-        <Style Selector="Button.panel-arrow">
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="MinHeight" Value="224"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
-            
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <!-- Drop shadow -->
-                        <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <!-- Button face -->
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        
-        <Style Selector="Button.panel-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Pressed state - hide shadow and move button down -->
-        <Style Selector="Button.panel-arrow:pressed">
-            <Setter Property="RenderTransform" Value="translateY(3px)"/>
-        </Style>
-        <Style Selector="Button.panel-arrow:pressed /template/ Border#DropShadow">
-            <Setter Property="IsVisible" Value="False"/>
-        </Style>
-        
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
             <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="450"/>
-            <Setter Property="MinHeight" Value="224"/>
-            <Setter Property="MaxHeight" Value="280"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Silver}"/>
+            <Setter Property="Width" Value="380"/>
+            <Setter Property="MinHeight" Value="140"/>
+            <Setter Property="MaxHeight" Value="180"/>
         </Style>
         
         <!-- Title text style -->
         <Style Selector="TextBlock.panel-title">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="Margin" Value="0,4,0,2"/>
         </Style>
         
         <!-- Description text style -->
         <Style Selector="TextBlock.panel-description">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource Silver}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Margin" Value="16,0"/>
+            <Setter Property="Margin" Value="12,0"/>
         </Style>
         
         <!-- Position dots container -->
@@ -86,13 +40,13 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Orientation" Value="Horizontal"/>
             <Setter Property="Spacing" Value="4"/>
-            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
         </Style>
         
         <!-- Position dots style -->
         <Style Selector="TextBlock.position-dot">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Text" Value="•"/>
         </Style>
         
@@ -103,28 +57,18 @@
         
         <!-- Inactive dot -->
         <Style Selector="TextBlock.position-dot:not(.active)">
-            <Setter Property="Foreground" Value="{StaticResource MediumDarkGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource GreyDarker}"/>
         </Style>
     </UserControl.Styles>
     
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        
-        <!-- Left arrow -->
-        <Button Grid.Column="0"
-                Name="PrevButton"
-                Classes="panel-arrow"
-                Content="&lt;"
-                Click="OnPrevClick"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         
         <!-- Main panel content -->
-        <Border Grid.Column="2" Classes="panel-content">
+        <Border Grid.Row="0" Classes="panel-content" Margin="0,0,0,4">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>     <!-- Title -->
@@ -141,17 +85,17 @@
                 <!-- Sprite Image Container -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
-                         MaxHeight="140"
+                         MaxHeight="80"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
-                         Margin="0,4">
+                         Margin="0,2">
                     <Image Name="SpriteImage"
-                           Width="400"
-                           Height="200"/>
+                           Width="320"
+                           Height="120"/>
                 </Viewbox>
                 
                 <!-- Description -->
-                <Border Grid.Row="2" MinHeight="40" Margin="0,-4,0,0">
+                <Border Grid.Row="2" MinHeight="30" Margin="0,-2,0,0">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
                                VerticalAlignment="Center"/>
@@ -164,11 +108,99 @@
             </Grid>
         </Border>
         
-        <!-- Right arrow -->
-        <Button Grid.Column="4"
-                Name="NextButton"
-                Classes="panel-arrow"
-                Content="&gt;"
-                Click="OnNextClick"/>
+        <!-- Navigation controls like Balatro challenges screen -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left arrow -->
+            <Button Grid.Column="0"
+                    Name="PrevButton"
+                    Width="40"
+                    Height="36"
+                    Background="{StaticResource GreyLighter}"
+                    Content="&lt;"
+                    FontFamily="{StaticResource BalatroFont}"
+                    FontSize="20"
+                    Foreground="{StaticResource White}"
+                    CornerRadius="8,0,0,8"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="OnPrevClick">
+                <Button.Template>
+                    <ControlTemplate>
+                        <Grid>
+                            <Border Background="{StaticResource GreyDarker}"
+                                    CornerRadius="8,0,0,8"
+                                    Margin="0,3,0,0"/>
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="8,0,0,8"
+                                    Margin="0,0,0,3">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            
+            <!-- Page indicator panel -->
+            <Border Grid.Column="1"
+                    Background="{StaticResource GreyLighter}"
+                    Height="36">
+                <Grid>
+                    <!-- Drop shadow -->
+                    <Border Background="{StaticResource GreyDarker}"
+                            Margin="0,3,0,0"/>
+                    <!-- Main panel -->
+                    <Border Background="{StaticResource Grey}"
+                            Margin="0,0,0,3">
+                        <TextBlock Name="PageIndicator"
+                                   Text="Page 1/1"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+            
+            <!-- Right arrow -->
+            <Button Grid.Column="2"
+                    Name="NextButton"
+                    Width="40"
+                    Height="36"
+                    Background="{StaticResource GreyLighter}"
+                    Content="&gt;"
+                    FontFamily="{StaticResource BalatroFont}"
+                    FontSize="20"
+                    Foreground="{StaticResource White}"
+                    CornerRadius="0,8,8,0"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="OnNextClick">
+                <Button.Template>
+                    <ControlTemplate>
+                        <Grid>
+                            <Border Background="{StaticResource GreyDarker}"
+                                    CornerRadius="0,8,8,0"
+                                    Margin="0,3,0,0"/>
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="0,8,8,0"
+                                    Margin="0,0,0,3">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>

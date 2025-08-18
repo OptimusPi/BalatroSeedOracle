@@ -129,8 +129,15 @@ namespace BalatroSeedOracle.Views.Modals
             // Start with tabs disabled until a filter is selected by clicking a button
             UpdateTabStates(false);
             
-            // Hide all tab panels initially - only show filter selector
+            // Hide all tab panels initially
             HideAllTabPanels();
+            
+            // Show only the filter selector panel
+            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+            if (loadSavePanel != null)
+            {
+                loadSavePanel.IsVisible = true;
+            }
         }
 
         private void InitializeComponent()
@@ -187,12 +194,21 @@ namespace BalatroSeedOracle.Views.Modals
             _currentTabIndex = 0;
 
             // Setup FilterSelector component
-            var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
+            var filterSelector = this.FindControl<ChallengesFilterSelector>("FilterSelectorComponent");
             if (filterSelector != null)
             {
-                // DISABLE auto-loading - user must explicitly click a button to load a filter
-                filterSelector.AutoLoadEnabled = false;
-                filterSelector.FilterLoaded += OnFilterSelected;
+                filterSelector.FilterSelected += (s, path) =>
+                {
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        OnFilterSelected(s, path!);
+                    }
+                    else
+                    {
+                        // Create new -> switch to Load/Save tab so user can create via old flow
+                        // (Could be enhanced to open a creation UI directly.)
+                    }
+                };
                 
                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
@@ -216,7 +232,7 @@ namespace BalatroSeedOracle.Views.Modals
         
 
         // FilterSelector event handlers
-        private async void OnFilterSelected(object? sender, string filterPath)
+    private async void OnFilterSelected(object? sender, string filterPath)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
 
@@ -272,6 +288,7 @@ namespace BalatroSeedOracle.Views.Modals
             var visualPanel = this.FindControl<Grid>("VisualPanel");
             var jsonPanel = this.FindControl<Grid>("JsonPanel");
             var savePanel = this.FindControl<Grid>("SaveFilterPanel");
+            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
             
             if (visualPanel != null)
                 visualPanel.IsVisible = false;
@@ -279,13 +296,8 @@ namespace BalatroSeedOracle.Views.Modals
                 jsonPanel.IsVisible = false;
             if (savePanel != null)
                 savePanel.IsVisible = false;
-                
-            // Show the load/save panel (filter selector)
-            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
             if (loadSavePanel != null)
-            {
-                loadSavePanel.IsVisible = true;
-            }
+                loadSavePanel.IsVisible = false;
         }
         
         private void UpdateTabStates(bool configLoaded)
@@ -1436,24 +1448,10 @@ namespace BalatroSeedOracle.Views.Modals
                 var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
                 if (jsonEditor != null)
                 {
-                    string json;
-                    
-                    // If we have a saved file path, load from file to get the latest content
-                    if (!string.IsNullOrEmpty(_currentFilePath) && File.Exists(_currentFilePath))
-                    {
-                        json = File.ReadAllText(_currentFilePath);
-                        BalatroSeedOracle.Helpers.DebugLogger.Log(
-                            "FiltersModal",
-                            $"Loaded JSON from file: {_currentFilePath}"
-                        );
-                    }
-                    else
-                    {
-                        // Create OuijaConfig from current selections
-                        var config = BuildOuijaConfigFromSelections();
-                        // Use the same serialization method that properly handles sources
-                        json = SerializeOuijaConfig(config);
-                    }
+                    // Always generate JSON from current visual selections to show live updates
+                    var config = BuildOuijaConfigFromSelections();
+                    // Use the same serialization method that properly handles sources
+                    string json = SerializeOuijaConfig(config);
                     
                     jsonEditor.Text = json;
 
@@ -1465,6 +1463,15 @@ namespace BalatroSeedOracle.Views.Modals
                 else
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", "JsonEditor control not found");
+                }
+                
+                // Also update the fallback TextBox if it exists
+                if (_jsonTextBox != null)
+                {
+                    // Always generate JSON from current visual selections to show live updates
+                    var config = BuildOuijaConfigFromSelections();
+                    string json = SerializeOuijaConfig(config);
+                    _jsonTextBox.Text = json;
                 }
             }
             catch (Exception ex)
@@ -3891,13 +3898,8 @@ namespace BalatroSeedOracle.Views.Modals
 
                     AnimateTriangleToTab(2);
                     EnterEditJsonMode();
+                    // Always update JSON from current visual selections when switching to JSON tab
                     UpdateJsonEditor();
-                    // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
-                    // Only reload from selections if we're building a filter from scratch in Visual mode
-                    if (_loadedConfig == null)
-                    {
-                        ReloadJsonFromCurrentConfig();
-                    }
                     break;
                     
                 case "SaveFilterTab":
@@ -3944,6 +3946,10 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void UpdateDropZoneVisibility()
         {
+            // Update the JSON editor to reflect any changes
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "UpdateDropZoneVisibility called - updating JSON");
+            UpdateJsonEditor();
+            
             // Update NEEDS panel
             var needsPlaceholder = this.FindControl<TextBlock>("NeedsPlaceholder");
             var needsScrollViewer = this.FindControl<ScrollViewer>("NeedsScrollViewer");
@@ -4312,7 +4318,10 @@ namespace BalatroSeedOracle.Views.Modals
                     _itemConfigs[itemKey] = new ItemConfig 
                     { 
                         ItemKey = itemKey,
-                        Edition = "none"
+                        Edition = "none",
+                        // Default to no specific antes (empty list means user hasn't configured)
+                        // This will be handled properly in BuildOuijaConfigFromSelections
+                        Antes = new List<int>()
                     };
                 }
                 
@@ -6109,10 +6118,13 @@ namespace BalatroSeedOracle.Views.Modals
         {
             var filterItem = new Motely.Filters.OuijaConfig.FilterItem
             {
-                // If Antes is null, it means either all antes or no antes were selected
-                // The JokerConfigPopup returns null for both cases
-                // We'll use an empty array for now and let Motely handle the default
-                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                // Handle antes configuration:
+                // - null: All antes were explicitly selected in popup
+                // - empty list: User hasn't configured antes (don't include in filter)
+                // - specific values: Use those exact antes
+                Antes = config.Antes != null && config.Antes.Count > 0 
+                    ? config.Antes.ToArray() 
+                    : null, // null means "any ante" in the filter
                 Min = config.Min // Support minimum count for Must items
             };
 
@@ -7674,6 +7686,9 @@ namespace BalatroSeedOracle.Views.Modals
                 await SaveCurrentFilterAsync();
                 UpdateStatus("Saved", false);
             }
+            
+            // Update the JSON editor to reflect the changes
+            UpdateJsonEditor();
         }
         
         // New helper methods for Filter Info tab

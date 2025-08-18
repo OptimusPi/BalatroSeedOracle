@@ -1,0 +1,419 @@
+<components:ExpandableWidgetBase xmlns="https://github.com/avaloniaui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                  xmlns:components="clr-namespace:BalatroSeedOracle.Components"
+                                  x:Class="BalatroSeedOracle.Components.SearchWidget">
+    
+    <components:ExpandableWidgetBase.Styles>
+        <Style Selector="Button.widget-control">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="Button.widget-control:pointerover">
+            <Setter Property="Background" Value="{StaticResource GreyLighter}"/>
+        </Style>
+        
+        <Style Selector="ProgressBar.search-progress">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="Foreground" Value="{StaticResource Green}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Silver}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </components:ExpandableWidgetBase.Styles>
+    
+    <components:ExpandableWidgetBase.MinimizedContentValue>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Status indicator -->
+            <Border Grid.Row="0" 
+                    Name="StatusIndicator"
+                    Height="4"
+                    Background="{StaticResource Grey}"
+                    CornerRadius="2"
+                    Margin="10,5,10,0"/>
+            
+            <!-- Animated Icon -->
+            <Viewbox Grid.Row="1" 
+                     Stretch="Uniform"
+                     MaxHeight="48"
+                     Margin="5">
+                <Grid>
+                    <!-- Background state icon -->
+                    <Image Name="StateIcon"
+                           Width="48"
+                           Height="48"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                    
+                    <!-- Filter preview overlay -->
+                    <Canvas Name="FilterPreviewCanvas"
+                            Width="48"
+                            Height="48"
+                            IsVisible="False"/>
+                </Grid>
+            </Viewbox>
+            
+            <!-- Info panel -->
+            <StackPanel Grid.Row="2" Margin="5,0,5,5">
+                <TextBlock Name="MinFilterName"
+                           Text="No Filter"
+                           FontSize="11"
+                           FontWeight="Bold"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Name="MinStatusText"
+                           Text="Ready"
+                           FontSize="9"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource Silver}"/>
+                
+                <!-- Mini progress bar -->
+                <ProgressBar Name="MiniProgress"
+                             Height="3"
+                             Value="0"
+                             Maximum="100"
+                             Margin="0,2,0,0"
+                             Background="{StaticResource GreyDarker}"
+                             Foreground="{StaticResource Green}"
+                             IsVisible="False"/>
+            </StackPanel>
+            
+            <!-- Result count badge -->
+            <Border Name="ResultBadge"
+                    Grid.Row="0"
+                    Classes="notification-badge"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,2,2,0"
+                    IsVisible="False">
+                <TextBlock Name="ResultCount" Text="0"/>
+            </Border>
+        </Grid>
+    </components:ExpandableWidgetBase.MinimizedContentValue>
+    
+    <components:ExpandableWidgetBase.ExpandedContentValue>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="15" Spacing="12">
+                
+                <!-- Current Search Header -->
+                <Border Background="{StaticResource GreyDarker}"
+                        BorderBrush="{StaticResource Silver}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Large state icon -->
+                        <Image Grid.Column="0"
+                               Name="LargeStateIcon"
+                               Width="64"
+                               Height="64"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                        
+                        <!-- Search info -->
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Name="ExpFilterName"
+                                       Text="No Filter Loaded"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                           Text="Status:" 
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource Silver}"
+                                           Margin="0,0,8,0"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Name="ExpStatusText"
+                                           Text="Idle"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           FontWeight="Bold"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                           Text="Seeds Found:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource Silver}"
+                                           Margin="0,0,8,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1"
+                                           Name="ExpSeedsFound"
+                                           Text="0"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource Green}"/>
+                                
+                                <TextBlock Grid.Row="2" Grid.Column="0"
+                                           Text="Progress:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource Silver}"
+                                           Margin="0,0,8,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1"
+                                           Name="ExpProgressText"
+                                           Text="0%"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource Gold}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Progress Bar -->
+                <Grid>
+                    <ProgressBar Name="SearchProgress"
+                                 Classes="search-progress"
+                                 Value="0"
+                                 Maximum="100"/>
+                    <TextBlock Name="ProgressText"
+                               Text="0%"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource White}"/>
+                </Grid>
+                
+                <!-- Control Buttons -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0"
+                            Name="PlayPauseButton"
+                            Classes="widget-control"
+                            Margin="2"
+                            Click="OnPlayPauseClick">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Name="PlayPauseIcon" Text="▶" FontSize="12"/>
+                            <TextBlock Name="PlayPauseText" Text="Start" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Grid.Column="1"
+                            Name="StopButton"
+                            Classes="widget-control"
+                            Margin="2"
+                            Click="OnStopClick">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="■" FontSize="12"/>
+                            <TextBlock Text="Stop" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Grid.Column="2"
+                            Name="ResultsButton"
+                            Classes="widget-control"
+                            Margin="2"
+                            Click="OnViewResultsClick">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📊" FontSize="12"/>
+                            <TextBlock Text="Results" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Grid.Column="3"
+                            Name="ConfigButton"
+                            Classes="widget-control"
+                            Margin="2"
+                            Click="OnConfigClick">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⚙" FontSize="12"/>
+                            <TextBlock Text="Config" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                
+                <!-- Search Statistics -->
+                <Border Background="{StaticResource GreyDarker}"
+                        BorderBrush="{StaticResource Silver}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="10">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Search Statistics"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource Gold}"
+                                   Margin="0,0,0,4"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="Seeds Processed:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Name="SeedsProcessed"
+                                       Text="0"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource White}"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Text="Matches Found:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       Name="MatchesFound"
+                                       Text="0"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Green}"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Text="Seeds/Second:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Name="SeedsPerSecond"
+                                       Text="0"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Blue}"/>
+                            
+                            <TextBlock Grid.Row="3" Grid.Column="0"
+                                       Text="Time Elapsed:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1"
+                                       Name="TimeElapsed"
+                                       Text="00:00:00"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource White}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Top Seeds Preview -->
+                <Border Background="{StaticResource GreyDarker}"
+                        BorderBrush="{StaticResource Silver}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="10"
+                        Name="TopSeedsPanel"
+                        IsVisible="False">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Top Seeds"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource Gold}"
+                                   Margin="0,0,0,4"/>
+                        
+                        <ItemsControl Name="TopSeedsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource Grey}"
+                                            CornerRadius="4"
+                                            Padding="6"
+                                            Margin="0,2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="30"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="50"/>
+                                                <ColumnDefinition Width="30"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Rank}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource Gold}"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Seed}"
+                                                       FontFamily="Consolas,Courier New,monospace"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       Margin="5,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Score}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource Green}"
+                                                       HorizontalAlignment="Right"/>
+                                            <Button Grid.Column="3"
+                                                    Content="📋"
+                                                    FontSize="10"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Seed}"
+                                                    Click="OnCopySeedClick"
+                                                    ToolTip.Tip="Copy seed"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </components:ExpandableWidgetBase.ExpandedContentValue>
+    
+</components:ExpandableWidgetBase>

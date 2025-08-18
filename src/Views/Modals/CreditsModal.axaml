@@ -3,7 +3,7 @@
              x:Class="BalatroSeedOracle.Views.Modals.CreditsModal">
     <UserControl.Styles>
         <Style Selector="TextBlock#CreditLink:pointerover">
-            <Setter Property="Foreground" Value="{StaticResource BrighterBlue}"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
     </UserControl.Styles>

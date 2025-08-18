@@ -1,0 +1,278 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.ChallengesStyleFilterGrid">
+    
+    <UserControl.Styles>
+        <!-- Challenge item card style (like Balatro's challenge buttons) -->
+        <Style Selector="Button.challenge-card">
+            <Setter Property="Width" Value="240"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource RedDarker}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <!-- Drop shadow -->
+                        <Border Background="{StaticResource Black}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"
+                                Opacity="0.5"/>
+                        <!-- Card face -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Number badge -->
+                                <Border Grid.Column="0"
+                                        Background="{StaticResource Gold}"
+                                        Width="32"
+                                        Height="32"
+                                        CornerRadius="16"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Name="PART_Number"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource Black}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- Filter name -->
+                                <TextBlock Grid.Column="1"
+                                           Name="PART_Name"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Hover effect -->
+        <Style Selector="Button.challenge-card:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <!-- Selected state -->
+        <Style Selector="Button.challenge-card.selected">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GreenDarker}"/>
+        </Style>
+        
+        <!-- Locked/disabled state -->
+        <Style Selector="Button.challenge-card.locked">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Grey}"/>
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="IsEnabled" Value="False"/>
+        </Style>
+        
+        <!-- New filter card -->
+        <Style Selector="Button.challenge-card.new-filter">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BlueDarker}"/>
+        </Style>
+        
+        <!-- Page navigation button -->
+        <Style Selector="Button.page-nav">
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <!-- Drop shadow -->
+                        <Border Background="{StaticResource OrangeDarker}"
+                                CornerRadius="20"
+                                Margin="0,3,0,0"/>
+                        <!-- Button face -->
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="20"
+                                Margin="0,0,0,3">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.page-nav:pointerover">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+        </Style>
+        
+        <Style Selector="Button.page-nav:disabled">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <!-- Main container matching Balatro's Challenges layout -->
+    <Border Background="{StaticResource ModalGrey}"
+            BorderBrush="{StaticResource Silver}"
+            BorderThickness="3"
+            CornerRadius="16"
+            Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Filter grid -->
+                <RowDefinition Height="Auto"/> <!-- Navigation -->
+            </Grid.RowDefinitions>
+            
+            <!-- Header with title and stats -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="SELECT FILTER"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="32"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource Gold}"/>
+                    <TextBlock Name="SubtitleText"
+                               Text="Choose a filter or create a new one"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Silver}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <!-- Stats -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource GreyDarker}"
+                        CornerRadius="8"
+                        Padding="16,8">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <StackPanel>
+                            <TextBlock Text="FILTERS"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Name="FilterCountText"
+                                       Text="0"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="COMPLETED"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Silver}"/>
+                            <TextBlock Name="CompletedCountText"
+                                       Text="0/0"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Green}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- Filter grid (3x4 layout like Balatro) -->
+            <ScrollViewer Grid.Row="1"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Hidden">
+                <ItemsControl Name="FilterGrid">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"
+                                       HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+            
+            <!-- Bottom navigation bar -->
+            <Grid Grid.Row="2" Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Page indicator -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource GreyDarker}"
+                        CornerRadius="20"
+                        Padding="16,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Page"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource Silver}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Name="PageIndicator"
+                                   Text="1/2"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Action buttons -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                    <Button Name="PrevPageButton"
+                            Classes="page-nav"
+                            Content="← PREV"/>
+                    <Button Name="NextPageButton"
+                            Classes="page-nav"
+                            Content="NEXT →"/>
+                    <Border Width="20"/> <!-- Spacer -->
+                    <Button Name="SelectButton"
+                            Classes="page-nav"
+                            Background="{StaticResource Blue}"
+                            Width="140"
+                            Height="48"
+                            FontSize="16"
+                            Content="PLAY"
+                            IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

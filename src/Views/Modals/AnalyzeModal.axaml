@@ -251,7 +251,7 @@
                                        Content="ANALYZE"
                                        Click="OnAnalyzeClick"
                                        MinWidth="120"
-                                       Background="{StaticResource AccentGreen}"
+                                       Background="{StaticResource Green}"
                                        Foreground="{StaticResource White}"
                                        
                                        FontSize="16"

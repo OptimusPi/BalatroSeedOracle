@@ -41,6 +41,12 @@
     <PackageVersion Include="Motely.Core" Version="1.0.0" />
     <!-- Auto-update and packaging -->
     <PackageVersion Include="Velopack" Version="0.0.1298" />
+    <!-- Testing packages -->
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="Verify.Xunit" Version="28.6.0" />
+    <PackageVersion Include="Verify.DiffPlex" Version="3.1.2" />
   </ItemGroup>
   <ItemGroup>
     <!-- Avalonia UI License Key -->

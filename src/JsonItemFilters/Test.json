@@ -1,0 +1,12 @@
+{
+  "name": "Test",
+  "description": "something",
+  "author": "pifreak",
+  "dateCreated": "2025-08-16T02:15:16.2890271Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

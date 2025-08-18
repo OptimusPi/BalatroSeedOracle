@@ -5,135 +5,8 @@
              RequestedThemeVariant="Dark">
     
     <Application.Resources>
+        <!-- Keep only the font - ALL colors moved to BalatroColors.axaml -->
         <FontFamily x:Key="BalatroFont">avares://BalatroSeedOracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
-        <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
-
-        <!-- Game colors -->
-        <SolidColorBrush x:Key="Red">#ff4c40</SolidColorBrush>
-        <SolidColorBrush x:Key="Blue">#0093ff</SolidColorBrush>
-        <SolidColorBrush x:Key="Green">#429f79</SolidColorBrush>
-        <SolidColorBrush x:Key="PaleGreen">#56a887</SolidColorBrush>
-        <SolidColorBrush x:Key="Orange">#ff9800</SolidColorBrush>
-        <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="Purple">#525db0</SolidColorBrush>
-        
-        <!-- Hover/Pressed states -->
-        <SolidColorBrush x:Key="BlueHover">#0057a1</SolidColorBrush>
-        <SolidColorBrush x:Key="OrangeHover">#a05b00</SolidColorBrush>
-        <SolidColorBrush x:Key="RedHover">#a02721</SolidColorBrush>
-        <SolidColorBrush x:Key="GreenHover">#215f46</SolidColorBrush>
-        <SolidColorBrush x:Key="PurpleHover">#2c336b</SolidColorBrush>
-        
-        <!-- Disabled states -->
-        <SolidColorBrush x:Key="RedDisabled">#a94640</SolidColorBrush>
-        
-        <!-- UI Container colors -->
-        <SolidColorBrush x:Key="DockGrey">#3a5055</SolidColorBrush>
-        <SolidColorBrush x:Key="DropShadow">#1e2e32</SolidColorBrush>
-        <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
-        <SolidColorBrush x:Key="ModalShadow">#777e89</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkModalGrey">#1e2b2d</SolidColorBrush>
-        
-        <!-- UI Colors from C.UI -->
-        <SolidColorBrush x:Key="TextLight">#FFFFFF</SolidColorBrush>
-        <SolidColorBrush x:Key="TextDark">#4F6367</SolidColorBrush>
-        <SolidColorBrush x:Key="TextInactive">#88888899</SolidColorBrush>
-        <SolidColorBrush x:Key="Text">#FFFFFF</SolidColorBrush>
-        <SolidColorBrush x:Key="CardBackground">#cdd9dc</SolidColorBrush>
-        <SolidColorBrush x:Key="Border">#7A9E9F</SolidColorBrush>
-        <SolidColorBrush x:Key="BackgroundLight">#B8D8D8</SolidColorBrush>
-        <SolidColorBrush x:Key="BackgroundDark">#7A9E9F</SolidColorBrush>
-        <SolidColorBrush x:Key="BackgroundInactive">#b9c2d2FF</SolidColorBrush>
-        <SolidColorBrush x:Key="OutlineLight">#D8D8D8</SolidColorBrush>
-        <SolidColorBrush x:Key="OutlineDark">#7A9E9F</SolidColorBrush>
-        <SolidColorBrush x:Key="Hover">#00000055</SolidColorBrush>
-        
-        <!-- Set colors (card backgrounds) -->
-        <SolidColorBrush x:Key="SetDefault">#cdd9dc</SolidColorBrush>
-        <SolidColorBrush x:Key="SetJoker">#424e54</SolidColorBrush>
-        <SolidColorBrush x:Key="SetTarot">#424e54</SolidColorBrush>
-        <SolidColorBrush x:Key="SetPlanet">#424e54</SolidColorBrush>
-        <SolidColorBrush x:Key="SetSpectral">#424e54</SolidColorBrush>
-        <SolidColorBrush x:Key="SetVoucher">#424e54</SolidColorBrush>
-        
-        <!-- Secondary set colors -->
-        <SolidColorBrush x:Key="SecondaryJoker">#708b91</SolidColorBrush>
-        <SolidColorBrush x:Key="SecondaryTarot">#a782d1</SolidColorBrush>
-        <SolidColorBrush x:Key="SecondaryPlanet">#13afce</SolidColorBrush>
-        <SolidColorBrush x:Key="SecondarySpectral">#4584fa</SolidColorBrush>
-        <SolidColorBrush x:Key="SecondaryVoucher">#fd682b</SolidColorBrush>
-        
-        <!-- Background -->
-        <SolidColorBrush x:Key="MainBackground">#374244</SolidColorBrush>
-        
-        <!-- Missing secondary color -->
-        <SolidColorBrush x:Key="Secondary">#eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="Background">#4f6367</SolidColorBrush>
-        
-        <!-- EXACT COLOR PICKER VALUES - Pixel Perfect Balatro Colors -->
-        <SolidColorBrush x:Key="RedShadowPrecise">#70150f</SolidColorBrush>
-        <SolidColorBrush x:Key="ContainerDarkPrecise">#1e2b2d</SolidColorBrush>
-        <SolidColorBrush x:Key="InfoTextPrecise">#a3acb9</SolidColorBrush>
-        
-        <!-- Terminal and UI specific colors -->
-        <SolidColorBrush x:Key="TerminalGreen">#00ff00</SolidColorBrush>
-        <SolidColorBrush x:Key="TerminalBackground">#0a0a0a</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkerGrey">#1a1a1a</SolidColorBrush>
-        <SolidColorBrush x:Key="MediumGrey">#CCCCCC</SolidColorBrush>
-        <SolidColorBrush x:Key="LightGrey">#888888</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryLightGrey">#E2E2E3</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkBackground">#2e3f42</SolidColorBrush>
-        <SolidColorBrush x:Key="MediumBackground">#374147</SolidColorBrush>
-        <SolidColorBrush x:Key="LightBackground">#536570</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentBlack">#88000000</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryTransparentBlack">#12010001</SolidColorBrush>
-        <SolidColorBrush x:Key="PureBlack">#000000</SolidColorBrush>
-        <SolidColorBrush x:Key="ToggleRed">#FE5F55</SolidColorBrush>
-        <SolidColorBrush x:Key="ToggleBlue">#009dff</SolidColorBrush>
-        <SolidColorBrush x:Key="LightBlue">#4A90E2</SolidColorBrush>
-        <SolidColorBrush x:Key="BrighterBlue">#5BA0F2</SolidColorBrush>
-        <SolidColorBrush x:Key="TealGrey">#708386</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkBorder">#555a5c</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryDarkGrey">#2d2d2d</SolidColorBrush>
-        <SolidColorBrush x:Key="MediumBorder">#666a6c</SolidColorBrush>
-        <SolidColorBrush x:Key="BrightGreen">#00ff66</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkBlue">#004d7a</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkRed">#8b1538</SolidColorBrush>
-        <SolidColorBrush x:Key="InsetShadow">#20000000</SolidColorBrush>
-        <SolidColorBrush x:Key="MediumLightGrey">#AAAAAA</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkGreen">#2d5c3e</SolidColorBrush>
-        <SolidColorBrush x:Key="MediumDarkGrey">#666666</SolidColorBrush>
-        <SolidColorBrush x:Key="PopupBackground">#1E1E1E</SolidColorBrush>
-        <SolidColorBrush x:Key="PopupHover">#3A3A3A</SolidColorBrush>
-        <SolidColorBrush x:Key="AccentGreen">#4BC292</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryDarkBackground">#2a2a2a</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkGreyBorder">#4a4a4a</SolidColorBrush>
-        <SolidColorBrush x:Key="LightTextGrey">#D0D0D0</SolidColorBrush>
-        
-        <!-- Frequently used inline colors that need to be globalized -->
-        <SolidColorBrush x:Key="ItemConfigDarkBg">#1e2b2d</SolidColorBrush>
-        <SolidColorBrush x:Key="ItemConfigMediumBg">#3a5055</SolidColorBrush>
-        <SolidColorBrush x:Key="GridLineGrey">#3a3a3a</SolidColorBrush>
-        <SolidColorBrush x:Key="GreenAccentDark">#2a3a2a</SolidColorBrush>
-        <SolidColorBrush x:Key="GreenAccentVeryDark">#223322</SolidColorBrush>
-        <SolidColorBrush x:Key="RedAccentDark">#332222</SolidColorBrush>
-        <SolidColorBrush x:Key="LightPurple">#B19CD9</SolidColorBrush>
-        <SolidColorBrush x:Key="RedHighlight">#ff4444</SolidColorBrush>
-        <SolidColorBrush x:Key="DarkBackground2">#1a1a1a</SolidColorBrush>
-        <SolidColorBrush x:Key="SearchHighlight">#4a6065</SolidColorBrush>
-        <SolidColorBrush x:Key="ToggleGreen">#5FD3A3</SolidColorBrush>
-        <SolidColorBrush x:Key="ToggleGreenHover">#4BC292</SolidColorBrush>
-        <SolidColorBrush x:Key="ToggleRedHover">#FF7F75</SolidColorBrush>
-        <SolidColorBrush x:Key="ResponsiveCardGreen">#1a2c2a</SolidColorBrush>
-        <SolidColorBrush x:Key="ResponsiveCardRed">#2a1a1a</SolidColorBrush>
-        <SolidColorBrush x:Key="ResponsiveCardGreenHover">#2a3c3a</SolidColorBrush>
-        <SolidColorBrush x:Key="ResponsiveCardRedHover">#3a2a2a</SolidColorBrush>
-        <SolidColorBrush x:Key="GoldGradient1">#FFD700</SolidColorBrush>
-        <SolidColorBrush x:Key="GoldGradient2">#FFA500</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentShadow">#44000000</SolidColorBrush>
-        <SolidColorBrush x:Key="PaleOrange">#FEB95F</SolidColorBrush>
-        <SolidColorBrush x:Key="DaytroOrange">#FDB462</SolidColorBrush>
-        <SolidColorBrush x:Key="PinkRed">#FF6B6B</SolidColorBrush>
         
         <!-- AvaloniaEdit font size resources -->
         <x:Double x:Key="FontSizeNormal">14</x:Double>
@@ -149,6 +22,9 @@
     </Application.Resources>
 
     <Application.Styles>
+        <!-- COLORS MUST BE LOADED FIRST -->
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroColors.axaml" />
+        
         <!-- Include base Fluent theme for control templates (unfortunately needed for DataGrid, ComboBox, etc.) -->
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         
@@ -163,14 +39,6 @@
         
         <!-- Component-specific styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroModal.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/ButtonStyles.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
-        
-        <!-- Popup and Flyout styles -->
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />
-        
-        <!-- Exact color picker precision styles -->
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroPreciseColors.axaml" />
 
     </Application.Styles>
 </Application>

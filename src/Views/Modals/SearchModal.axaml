@@ -7,14 +7,14 @@
     <UserControl.Styles>
         <!-- Modal content styles -->
         <Style Selector="Border.modal-content-panel">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="24"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <Style Selector="Border.modal-content-box">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -143,7 +143,7 @@
         
         <!-- Input field style matching Balatro -->
         <Style Selector="TextBox.balatro-input">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="16"/>
@@ -194,8 +194,8 @@
         
         <!-- Terminal style for console -->
         <Style Selector="TextBox.terminal">
-            <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
-            <Setter Property="Foreground" Value="{StaticResource TerminalGreen}"/>
+            <Setter Property="Background" Value="{StaticResource TerminalGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource Green}"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="10"/>
@@ -246,7 +246,7 @@
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
             
-            <Setter Property="Foreground" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource GreyDarker}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -375,11 +375,10 @@
             <!-- Filter Selection Panel -->
             <Grid Name="FilterPanel" IsVisible="True">
                 <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
-                    <components:FilterSelector Name="FilterSelector" 
-                                             HorizontalAlignment="Center" 
-                                             VerticalAlignment="Stretch"
-                                             AutoLoadEnabled="False"
-                                             FilterLoaded="OnFilterSelected"/>
+                    <components:ChallengesFilterSelector Name="FilterSelector" 
+                                                         HorizontalAlignment="Center" 
+                                                         VerticalAlignment="Stretch"
+                                                         FilterSelected="OnFilterSelected"/>
                 </Grid>
             </Grid>
             
@@ -741,7 +740,7 @@
                 
                 <!-- Filter controls -->
                 <Border Grid.Row="0" 
-                        Background="{StaticResource DarkerGrey}"
+                        Background="{StaticResource GreyDarker}"
                         CornerRadius="8"
                         Padding="12"
                         Margin="0,0,0,10">
@@ -810,7 +809,7 @@
                         
                         <!-- Table Header -->
                         <Border Grid.Row="0"
-                                Background="{StaticResource DarkerGrey}"
+                                Background="{StaticResource GreyDarker}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="2,2,2,1">
                             <Grid Name="ResultsHeaderGrid">
@@ -967,7 +966,7 @@
                 
                 <!-- Footer -->
                 <Border Grid.Row="2"
-                        Background="{StaticResource DarkerGrey}"
+                        Background="{StaticResource GreyDarker}"
                         Padding="8"
                         BorderThickness="0,2,0,0"
                         BorderBrush="{StaticResource ModalBorder}"

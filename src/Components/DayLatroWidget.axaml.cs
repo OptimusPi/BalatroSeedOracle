@@ -15,10 +15,10 @@ using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Components
 {
-    public partial class DayLatroWidget : UserControl
+    public partial class DayLatroWidget : CollapsibleWidgetBase
     {
-        private Grid? _minimizedView;
-        private Border? _expandedView;
+    private Grid? _minimizedView;
+    private Border? _expandedView;
         private TextBlock? _dateText;
         private TextBlock? _seedText;
         private TextBlock? _minimizedSeedText;
@@ -40,6 +40,7 @@ namespace BalatroSeedOracle.Components
         {
             InitializeComponent();
 
+            InitializeCollapsibleParts();
             _minimizedView = this.FindControl<Grid>("MinimizedView");
             _expandedView = this.FindControl<Border>("ExpandedView");
             _dateText = this.FindControl<TextBlock>("DateText");
@@ -111,8 +112,7 @@ namespace BalatroSeedOracle.Components
         {
             if (_minimizedView != null && _expandedView != null)
             {
-                _minimizedView.IsVisible = false;
-                _expandedView.IsVisible = true;
+                Expand();
 
                 // Hide new day badge when opened
                 var badge = this.FindControl<Border>("NewDayBadge");
@@ -131,8 +131,7 @@ namespace BalatroSeedOracle.Components
         {
             if (_minimizedView != null && _expandedView != null)
             {
-                _minimizedView.IsVisible = true;
-                _expandedView.IsVisible = false;
+                Collapse();
                 
                 // Stop auto-refresh when minimized
                 _autoRefreshTimer?.Stop();

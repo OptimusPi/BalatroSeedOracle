@@ -1,0 +1,158 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Styles.Resources>
+    
+    <!-- ============================================ -->
+    <!-- OFFICIAL BALATRO COLOR PALETTE - NEVER CHANGE -->
+    <!-- ============================================ -->
+    
+    <!-- PRIMARY ACTION COLORS -->
+    <Color x:Key="ColorBlue">#0093ff</Color>
+    <Color x:Key="ColorBlueDarker">#0057a1</Color>
+    <Color x:Key="ColorOrangeYellow">#ff9800</Color>
+    <Color x:Key="ColorOrangeYellowDarker">#a05b00</Color>
+    <Color x:Key="ColorRed">#ff4c40</Color>
+    <Color x:Key="ColorRedDarker">#a02721</Color>
+    <Color x:Key="ColorGreen">#429f79</Color>
+    <Color x:Key="ColorGreenDarker">#215f46</Color>
+    <Color x:Key="ColorPurple">#525db0</Color>
+    <Color x:Key="ColorPurpleDarker">#2c336b</Color>
+    
+    <!-- MODAL & BACKGROUND COLORS -->
+    <Color x:Key="ColorGreyLighter">#708386</Color>
+    <Color x:Key="ColorGrey">#3a5055</Color>
+    <Color x:Key="ColorGreyDarker">#1e2e32</Color>
+    
+    <!-- BORDER & SHADOW COLORS -->
+    <Color x:Key="ColorSilver">#b9c2d2</Color>
+    <Color x:Key="ColorSilverAlt">#a3acb9</Color>
+    <Color x:Key="ColorSilverDarker">#777e89</Color>
+    <Color x:Key="ColorShadowBlack">#0b1415</Color>
+    
+    <!-- TEXT COLORS -->
+    <Color x:Key="ColorBlack">#000000</Color>
+    <Color x:Key="ColorWhite">#FFFFFF</Color>
+    <Color x:Key="ColorYellowGold">#eaba44</Color>
+    <Color x:Key="ColorOrange">#ff8f00</Color>
+    
+    <!-- GRADIENT COLORS FOR LEGENDARY -->
+    <Color x:Key="ColorGoldGradient1">#eaba44</Color>
+    <Color x:Key="ColorGoldGradient2">#ffdd66</Color>
+    
+    <!-- BADGE & SPECIAL EFFECT COLORS -->
+    <Color x:Key="ColorRedAlt">#a92b23</Color>
+    <Color x:Key="ColorRedAltDarker">#70150f</Color>
+    <Color x:Key="ColorPinkRed">#ff6b6b</Color>
+    <Color x:Key="ColorLightPurple">#9d84d6</Color>
+    
+    <!-- TRANSPARENT -->
+    <Color x:Key="ColorTransparent">#00000000</Color>
+    <Color x:Key="ColorBlackTranslucent">#00000033</Color>
+    
+    <!-- ============================================ -->
+    <!-- BRUSHES - WHAT WE ACTUALLY USE -->
+    <!-- ============================================ -->
+    
+    <!-- PRIMARY ACTION BRUSHES -->
+    <SolidColorBrush x:Key="Blue" Color="{StaticResource ColorBlue}"/>
+    <SolidColorBrush x:Key="BlueDarker" Color="{StaticResource ColorBlueDarker}"/>
+    <SolidColorBrush x:Key="OrangeYellow" Color="{StaticResource ColorOrangeYellow}"/>
+    <SolidColorBrush x:Key="OrangeYellowDarker" Color="{StaticResource ColorOrangeYellowDarker}"/>
+    <SolidColorBrush x:Key="Red" Color="{StaticResource ColorRed}"/>
+    <SolidColorBrush x:Key="RedDarker" Color="{StaticResource ColorRedDarker}"/>
+    <SolidColorBrush x:Key="Green" Color="{StaticResource ColorGreen}"/>
+    <SolidColorBrush x:Key="GreenDarker" Color="{StaticResource ColorGreenDarker}"/>
+    <SolidColorBrush x:Key="Purple" Color="{StaticResource ColorPurple}"/>
+    <SolidColorBrush x:Key="PurpleDarker" Color="{StaticResource ColorPurpleDarker}"/>
+    
+    <!-- MODAL & BACKGROUND BRUSHES -->
+    <SolidColorBrush x:Key="GreyLighter" Color="{StaticResource ColorGreyLighter}"/>
+    <SolidColorBrush x:Key="Grey" Color="{StaticResource ColorGrey}"/>
+    <SolidColorBrush x:Key="GreyDarker" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ButtonGrey" Color="{StaticResource ColorGreyLighter}"/>
+    
+    <!-- BORDER & SHADOW BRUSHES -->
+    <SolidColorBrush x:Key="Silver" Color="{StaticResource ColorSilver}"/>
+    <SolidColorBrush x:Key="SilverAlt" Color="{StaticResource ColorSilverAlt}"/>
+    <SolidColorBrush x:Key="SilverDarker" Color="{StaticResource ColorSilverDarker}"/>
+    <SolidColorBrush x:Key="ShadowBlack" Color="{StaticResource ColorShadowBlack}"/>
+    
+    <!-- TEXT BRUSHES -->
+    <SolidColorBrush x:Key="Black" Color="{StaticResource ColorBlack}"/>
+    <SolidColorBrush x:Key="White" Color="{StaticResource ColorWhite}"/>
+    <SolidColorBrush x:Key="YellowGold" Color="{StaticResource ColorYellowGold}"/>
+    <SolidColorBrush x:Key="Orange" Color="{StaticResource ColorOrange}"/>
+    
+    <!-- GRADIENT BRUSHES -->
+    <SolidColorBrush x:Key="GoldGradient1" Color="{StaticResource ColorGoldGradient1}"/>
+    <SolidColorBrush x:Key="GoldGradient2" Color="{StaticResource ColorGoldGradient2}"/>
+    
+    <!-- BADGE & SPECIAL EFFECT BRUSHES -->
+    <SolidColorBrush x:Key="RedAlt" Color="{StaticResource ColorRedAlt}"/>
+    <SolidColorBrush x:Key="RedAltDarker" Color="{StaticResource ColorRedAltDarker}"/>
+    <SolidColorBrush x:Key="PinkRed" Color="{StaticResource ColorPinkRed}"/>
+    <SolidColorBrush x:Key="LightPurple" Color="{StaticResource ColorLightPurple}"/>
+    <SolidColorBrush x:Key="RedAccentDark" Color="{StaticResource ColorRedAltDarker}"/>
+    <SolidColorBrush x:Key="PaleOrange" Color="{StaticResource ColorOrangeYellow}"/>
+    
+    <!-- TRANSPARENT BRUSHES -->
+    <SolidColorBrush x:Key="Transparent" Color="{StaticResource ColorTransparent}"/>
+    <SolidColorBrush x:Key="BlackTranslucent" Color="{StaticResource ColorBlackTranslucent}"/>
+    
+    <!-- ============================================ -->
+    <!-- SEMANTIC ALIASES - DESCRIBE USAGE NOT COLOR -->
+    <!-- ============================================ -->
+    
+    <!-- MODAL STRUCTURE -->
+    <SolidColorBrush x:Key="ModalGrey" Color="{StaticResource ColorGrey}"/>
+    <SolidColorBrush x:Key="ModalGreyDarker" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ModalInnerPanel" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ModalBorder" Color="{StaticResource ColorSilver}"/>
+    <SolidColorBrush x:Key="ModalDropShadow" Color="{StaticResource ColorSilverDarker}"/>
+    
+    <!-- BUTTON SHADOWS -->
+    <SolidColorBrush x:Key="ButtonDropShadow" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ButtonRedDropShadow" Color="{StaticResource ColorRedDarker}"/>
+    <SolidColorBrush x:Key="ButtonBlueDropShadow" Color="{StaticResource ColorBlueDarker}"/>
+    <SolidColorBrush x:Key="ButtonGreenDropShadow" Color="{StaticResource ColorGreenDarker}"/>
+    <SolidColorBrush x:Key="ButtonOrangeDropShadow" Color="{StaticResource ColorOrangeYellowDarker}"/>
+    
+    <!-- TEXT SEMANTIC -->
+    <SolidColorBrush x:Key="PrimaryText" Color="{StaticResource ColorWhite}"/>
+    <SolidColorBrush x:Key="SpecialText" Color="{StaticResource ColorYellowGold}"/>
+    <SolidColorBrush x:Key="AccentText" Color="{StaticResource ColorOrange}"/>
+    <SolidColorBrush x:Key="DisabledText" Color="{StaticResource ColorSilverDarker}"/>
+    
+    <!-- CONTROL STATES -->
+    <SolidColorBrush x:Key="ControlGrey" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ControlBorder" Color="{StaticResource ColorSilver}"/>
+    <SolidColorBrush x:Key="ControlShadow" Color="{StaticResource ColorShadowBlack}"/>
+    
+    <!-- TERMINAL/CONSOLE STYLES (using Balatro dark colors) -->
+    <SolidColorBrush x:Key="TerminalGrey" Color="{StaticResource ColorShadowBlack}"/>
+    
+    <!-- LEGACY COMPATIBILITY (TO BE REMOVED) -->
+    <!-- Keep only the most commonly used ones for now -->
+    <SolidColorBrush x:Key="BlueHover" Color="{StaticResource ColorBlueDarker}"/>
+    <SolidColorBrush x:Key="OrangeHover" Color="{StaticResource ColorOrangeYellowDarker}"/>
+    <SolidColorBrush x:Key="RedHover" Color="{StaticResource ColorRedDarker}"/>
+    <SolidColorBrush x:Key="GreenHover" Color="{StaticResource ColorGreenDarker}"/>
+    <SolidColorBrush x:Key="PurpleHover" Color="{StaticResource ColorPurpleDarker}"/>
+    <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorGrey}"/>
+    <SolidColorBrush x:Key="Gold" Color="{StaticResource ColorYellowGold}"/>
+    <SolidColorBrush x:Key="DarkGrey" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="Border" Color="{StaticResource ColorSilver}"/>
+    <SolidColorBrush x:Key="DropShadow" Color="{StaticResource ColorGreyDarker}"/>
+    <SolidColorBrush x:Key="ToggleGreen" Color="{StaticResource ColorGreen}"/>
+    <SolidColorBrush x:Key="ToggleRed" Color="{StaticResource ColorRed}"/>
+    <SolidColorBrush x:Key="ToggleBlue" Color="{StaticResource ColorBlue}"/>
+    <SolidColorBrush x:Key="DockGrey" Color="{StaticResource ColorGrey}"/>
+    <SolidColorBrush x:Key="DarkBorder" Color="{StaticResource ColorSilverDarker}"/>
+    <SolidColorBrush x:Key="RedDisabled" Color="{StaticResource ColorRedAlt}"/>
+    <SolidColorBrush x:Key="RedHighlight" Color="{StaticResource ColorRedAltDarker}"/>
+    <SolidColorBrush x:Key="TextLight" Color="{StaticResource ColorSilver}"/>
+    <SolidColorBrush x:Key="ContainerDarkPrecise" Color="{StaticResource ColorGreyDarker}"/>
+    
+    </Styles.Resources>
+</Styles>

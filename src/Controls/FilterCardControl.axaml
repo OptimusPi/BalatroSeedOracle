@@ -21,7 +21,7 @@
         <Style Selector="TextBlock.section-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource Silver}"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
         </Style>
     </UserControl.Styles>
@@ -29,7 +29,7 @@
     <Grid>
         <!-- Mini preview section at bottom of card -->
         <Border Name="PreviewSection"
-                Background="{StaticResource TerminalBackground}"
+                Background="{StaticResource TerminalGrey}"
                 CornerRadius="6"
                 Padding="8,4"
                 Margin="-12,0,-12,-12"

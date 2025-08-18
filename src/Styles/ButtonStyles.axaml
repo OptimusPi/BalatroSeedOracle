@@ -61,11 +61,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-blue:pointerover">
-        <Setter Property="Background" Value="#0095f0" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource BlueDarker}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-blue:pressed">
-        <Setter Property="Background" Value="#0095f0" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource BlueDarker}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -80,11 +80,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-yellow-orange:pointerover">
-        <Setter Property="Background" Value="#f59d00" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource OrangeYellowDarker}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-yellow-orange:pressed">
-        <Setter Property="Background" Value="#f59d00" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource OrangeYellowDarker}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -99,11 +99,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-purple:pointerover">
-        <Setter Property="Background" Value="#82619f" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource PurpleDarker}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-purple:pressed">
-        <Setter Property="Background" Value="#82619f" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource PurpleDarker}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -118,11 +118,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-red:pointerover">
-        <Setter Property="Background" Value="#f55a50" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource RedDarker}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-red:pressed">
-        <Setter Property="Background" Value="#f55a50" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource RedDarker}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -137,11 +137,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-green:pointerover">
-        <Setter Property="Background" Value="#47bc8d" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource GreenDarker}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-green:pressed">
-        <Setter Property="Background" Value="#47bc8d" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource GreenDarker}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -156,11 +156,11 @@
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-gold:pointerover">
-        <Setter Property="Background" Value="#e5bb54" /> <!-- Very slightly darker -->
+        <Setter Property="Background" Value="{StaticResource YellowGold}" />
     </Style>
     
     <Style Selector="Button.BalatroSeedOracle-btn.button-color-gold:pressed">
-        <Setter Property="Background" Value="#e5bb54" /> <!-- Keep hover shade -->
+        <Setter Property="Background" Value="{StaticResource YellowGold}" />
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     
@@ -180,17 +180,17 @@
         <Setter Property="Cursor" Value="Hand" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="#4a5e62" /> <!-- Slightly darker than DarkBackground (#4f6367) -->
+            <Setter Property="Background" Value="{StaticResource GreyDarker}" />
         </Style>
         
         <Style Selector="^:pressed">
-            <Setter Property="Background" Value="#4a5e62" /> <!-- Keep hover shade -->
+            <Setter Property="Background" Value="{StaticResource GreyDarker}" />
             <Setter Property="RenderTransform" Value="translateY(3px)" />
         </Style>
         
         <Style Selector="^.active">
             <Setter Property="Background" Value="{StaticResource Blue}" />
-            <Setter Property="BorderBrush" Value="#0088cc" />
+            <Setter Property="BorderBrush" Value="{StaticResource BlueDarker}" />
         </Style>
     </Style>
     

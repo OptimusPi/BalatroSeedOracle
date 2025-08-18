@@ -1,0 +1,12 @@
+{
+  "name": "dfgbsdF",
+  "description": "vsdfbsFvsdfv",
+  "author": "pifreak",
+  "dateCreated": "2025-08-16T13:39:18.7123302Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

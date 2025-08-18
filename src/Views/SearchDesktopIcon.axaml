@@ -10,6 +10,18 @@
             <Setter Property="Padding" Value="8,8,15,8"/>
         </Style>
         
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+        </Style>
+        
         <Style Selector="Button.desktop-icon">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -18,88 +30,172 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
         
+        <!-- Hover: use existing Blue border & light shadow resource -->
         <Style Selector="Button.desktop-icon:pointerover Border.icon-border">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+            <Setter Property="BoxShadow" Value="{StaticResource LightBoxShadow}"/>
+            <Setter Property="Opacity" Value="0.98"/>
+        </Style>
+
+        <!-- Running/searching visual state -->
+        <!-- Searching state: accent with Green border -->
+        <Style Selector="Border.icon-border.searching">
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
+        </Style>
+
+        <!-- Idle / default gradient background -->
+        <!-- Base icon border: use semantic resources (no magic colors) -->
+        <Style Selector="Border.icon-border">
+            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BoxShadow" Value="{StaticResource LightBoxShadow}"/>
         </Style>
         
         <!-- Notification badge styles are now in global styles -->
         
         <Style Selector="ProgressBar.search-progress">
             <Setter Property="Height" Value="6"/>
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="Foreground" Value="{StaticResource Green}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="3"/>
         </Style>
     </UserControl.Styles>
     
-    <Border Classes="desktop-icon-container">
-        <StackPanel Spacing="4">
-            <!-- Icon Button -->
-            <Grid>
-                <Button Classes="desktop-icon" Click="OnIconClick" ContextRequested="OnContextRequested">
-                    <Grid Width="128" Height="128">
-                        <!-- Icon background -->
-                        <Border Name="IconBorder"
-                                Classes="icon-border"
-                                Background="{StaticResource DockGrey}"
-                                CornerRadius="12"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2">
-                            <Grid>
-                                <!-- Search state icon (updated dynamically) -->
-                                <Image Name="StateIcon"
-                                       Width="64"
-                                       Height="64"
-                                       Stretch="Uniform"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                            </Grid>
+    <Grid>
+        <!-- Minimized View (existing icon) -->
+        <Border Classes="desktop-icon-container" Name="MinimizedRoot" IsVisible="True">
+            <StackPanel Spacing="4">
+                <!-- Icon Button -->
+                <Grid>
+                    <Button Classes="desktop-icon" PointerPressed="OnMinimizedClick" ContextRequested="OnContextRequested">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open Search" Click="OnOpenFullSearch"/>
+                                <MenuItem Header="Resume" Click="OnQuickResume" Name="ContextResumeItem"/>
+                                <MenuItem Header="Stop" Click="OnQuickStop" Name="ContextStopItem"/>
+                                <Separator/>
+                                <MenuItem Header="Dismiss Widget" Click="OnDismissClick"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                        <Grid Width="128" Height="128">
+                            <!-- Icon background -->
+                            <Border Name="IconBorder" Classes="icon-border">
+                                <Grid>
+                                    <!-- Search state icon (updated dynamically) -->
+                                    <Image Name="StateIcon"
+                                           Width="64"
+                                           Height="64"
+                                           Stretch="Uniform"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Button>
+                    
+                    <!-- Notification badge overlay using Canvas -->
+                    <Canvas ZIndex="100">
+                        <Border Name="NotificationBadge"
+                                Classes="notification-badge"
+                                Canvas.Right="-8"
+                                Canvas.Top="-8"
+                                IsVisible="False">
+                            <TextBlock Name="BadgeText"
+                                       Text="0" />
                         </Border>
-                    </Grid>
-                </Button>
+                    </Canvas>
+                </Grid>
                 
-                <!-- Notification badge overlay using Canvas -->
-                <Canvas ZIndex="100">
-                    <Border Name="NotificationBadge"
-                            Classes="notification-badge"
-                            Canvas.Right="-8"
-                            Canvas.Top="-8"
-                            IsVisible="False">
-                        <TextBlock Name="BadgeText"
-                                   Text="0" />
-                    </Border>
-                </Canvas>
-            </Grid>
-            
-            <!-- Filter Name -->
-            <TextBlock Name="FilterNameText"
-                       Text="Filter Name"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="12"
-                       Foreground="{StaticResource White}"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap"
-                       MaxWidth="100"/>
-            
-            <!-- Progress Bar with Percentage -->
-            <Grid>
-                <ProgressBar Name="SearchProgress"
-                             Classes="search-progress"
-                             Value="0"
-                             Maximum="100"
-                             IsVisible="True"/>
-                <TextBlock Name="ProgressText"
-                           Text="0%"
+                <!-- Filter Name -->
+                <TextBlock Name="FilterNameText"
+                           Text="Filter Name"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="10"
+                           FontSize="12"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="0,-1,0,0"/>
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           MaxWidth="100"/>
+                
+                <!-- Progress Bar with Percentage -->
+                <Grid>
+                    <ProgressBar Name="SearchProgress"
+                                 Classes="search-progress"
+                                 Value="0"
+                                 Maximum="100"
+                                 IsVisible="True"/>
+                    <TextBlock Name="ProgressText"
+                               Text="0%"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="10"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,-1,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Expanded Quick View -->
+        <Border Name="ExpandedView" IsVisible="False" Classes="widget-container" Width="360" Padding="0" Background="{StaticResource Grey}" CornerRadius="8" BorderBrush="{StaticResource Border}" BorderThickness="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" Classes="widget-header">
+                    <Grid Height="32" ColumnDefinitions="*,Auto,Auto,Auto">
+                        <TextBlock Grid.Column="0" Name="QuickFilterName" Text="Filter" FontFamily="{StaticResource BalatroFont}" FontSize="14" Foreground="{StaticResource White}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <Button Grid.Column="1" Content="Open" FontSize="11" Padding="6,2" Margin="4,0" VerticalAlignment="Center" Click="OnOpenFullSearch"/>
+                        <Button Grid.Column="2" Content="Dismiss" FontSize="11" Padding="6,2" Margin="4,0" VerticalAlignment="Center" Click="OnDismissClick"/>
+                        <Button Grid.Column="3" Content="_" FontSize="14" Width="24" Height="20" Background="Transparent" BorderThickness="0" VerticalAlignment="Center" Margin="0,0,5,0" Click="OnMinimizeClick"/>
+                    </Grid>
+                </Border>
+
+                <!-- Status / Progress -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,8,12,8">
+                    <TextBlock Text="Results:" FontSize="12"/>
+                    <TextBlock Name="QuickResultCount" Text="0" FontSize="12" FontWeight="Bold"/>
+                    <TextBlock Text="Progress:" FontSize="12" Margin="12,0,0,0"/>
+                    <TextBlock Name="QuickProgressText" Text="0%" FontSize="12"/>
+                    <TextBlock Name="QuickStateText" Text="Idle" FontSize="12" Margin="12,0,0,0"/>
+                </StackPanel>
+
+                <ProgressBar Grid.Row="1" Value="0" Maximum="100" Height="8" Margin="12,26,12,0" Name="QuickProgressBar"/>
+
+                <!-- Recent Results -->
+                <StackPanel Grid.Row="2" Margin="12,8,12,8">
+                    <TextBlock Text="Recent Results" FontSize="12" Margin="0,0,0,4"/>
+                    <Border Background="{StaticResource DarkGrey}" CornerRadius="6" Padding="6" MaxHeight="140">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Name="QuickResultsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding Seed}" FontSize="11"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TotalScore}" FontSize="11" HorizontalAlignment="Right"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Scores[0]}" FontSize="11" Margin="12,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+
+                <!-- Actions -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="12,0,12,12">
+                    <Button Name="QuickStopButton" Content="Stop" Padding="10,4" Click="OnQuickStop"/>
+                    <Button Name="QuickResumeButton" Content="Resume" Padding="10,4" IsVisible="False" Click="OnQuickResume"/>
+                </StackPanel>
             </Grid>
-        </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

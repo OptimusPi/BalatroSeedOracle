@@ -48,7 +48,7 @@
         </Border>
         
         <!-- Text Editor -->
-        <Border Background="{StaticResource VeryDarkBackground}"
+        <Border Background="{StaticResource GreyDarker}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="2"
                 CornerRadius="8"
@@ -61,7 +61,7 @@
                 
                 <!-- Editor header -->
                 <Border Grid.Row="0" 
-                        Background="{StaticResource DarkBackground}"
+                        Background="{StaticResource DarkGrey}"
                         CornerRadius="6,6,0,0"
                         Padding="12,8">
                     <TextBlock Text="One word or phrase per line"

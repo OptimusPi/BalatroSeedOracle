@@ -117,7 +117,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         // Current filter info
         private string? _currentFilterPath;
-        private FilterSelector? _filterSelector;
+    // Replaced legacy FilterSelector with new ChallengesFilterSelector
+    private ChallengesFilterSelector? _filterSelector;
         private DateTime _lastResultBatchUpdate = DateTime.UtcNow;
         private DateTime _lastProgressUpdate = DateTime.UtcNow;
         
@@ -439,14 +440,11 @@ namespace BalatroSeedOracle.Views.Modals
             _debugCheckBox = this.FindControl<CheckBox>("DebugCheckBox");
 
             // Find filter selector component
-            _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
+            _filterSelector = this.FindControl<ChallengesFilterSelector>("FilterSelector");
             if (_filterSelector != null)
             {
-                // Hide the "New Blank Filter" button in SearchModal
-                _filterSelector.ShowCreateButton = false;
-
-                // Connect the FilterLoaded event
-                _filterSelector.FilterLoaded += OnFilterSelected;
+                // Connect new event (FilterSelected returns path or null for create new)
+                _filterSelector.FilterSelected += OnChallengesFilterChosen;
             }
 
             // Find results panel controls
@@ -555,7 +553,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private bool _isLoadingFilter = false;
         
-        private async void OnFilterSelected(object? sender, string filterPath)
+    private async void OnFilterSelected(object? sender, string filterPath)
         {
             // Prevent double loading while in progress
             if (_isLoadingFilter)
@@ -585,6 +583,31 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 _isLoadingFilter = false;
             }
+        }
+
+        // Adapter for new ChallengesFilterSelector control
+        private void OnChallengesFilterChosen(object? sender, string? filterPath)
+        {
+            if (string.IsNullOrEmpty(filterPath))
+            {
+                // Create new requested – open Filters modal to build one
+                try
+                {
+                    if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        var mainWindow = desktop.MainWindow;
+                        if (mainWindow != null)
+                        {
+                            // Find BalatroMainMenu in the visual tree
+                            var mainMenu = mainWindow.FindControl<BalatroSeedOracle.Views.BalatroMainMenu>("MainMenu");
+                            mainMenu?.ShowFiltersModal();
+                        }
+                    }
+                }
+                catch { }
+                return;
+            }
+            OnFilterSelected(sender, filterPath!);
         }
 
         private void OnDeckSelected(object? sender, EventArgs e)
@@ -1926,7 +1949,14 @@ namespace BalatroSeedOracle.Views.Modals
                 // Unsubscribe from any previous search events
                 UnsubscribeFromSearchEvents();
                 
-                _currentSearchId = _searchManager.CreateSearch();
+                // Pass filter name for better file naming
+                string? filterName = null;
+                if (!string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    filterName = System.IO.Path.GetFileNameWithoutExtension(_currentFilterPath);
+                }
+                
+                _currentSearchId = _searchManager.CreateSearch(filterName);
                 _searchInstance = _searchManager.GetSearch(_currentSearchId);
 
                 if (_searchInstance != null)
@@ -1966,15 +1996,18 @@ namespace BalatroSeedOracle.Views.Modals
             // Update UI based on search state
             if (_cookButton != null)
             {
-                _cookButton.Content = _isSearching ? "Stop Jimbo!" : "Let Jimbo COOK!";
-                if (_isSearching)
+                // Standardize running label so users always see STOP SEARCH
+                _cookButton.Content = _isSearching ? "STOP SEARCH" : "Let Jimbo COOK!";
+                if (_isSearching && !_cookButton.Classes.Contains("stop"))
                 {
                     _cookButton.Classes.Add("stop");
                 }
-                else
+                else if (!_isSearching && _cookButton.Classes.Contains("stop"))
                 {
                     _cookButton.Classes.Remove("stop");
                 }
+                // Ensure button is always enabled for immediate stop attempts
+                _cookButton.IsEnabled = true;
             }
 
             // Don't disable search tab - user should always be able to see search status

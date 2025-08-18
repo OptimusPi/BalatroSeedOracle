@@ -13,16 +13,16 @@
     <UserControl.Styles>
         <!-- Modal panel style - Balatro card style with beveled border -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
             <Setter Property="CornerRadius" Value="18"/>
             <Setter Property="Padding" Value="2"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PureBlack}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ShadowBlack}"/>
             <Setter Property="BorderThickness" Value="3"/>
         </Style>
         
         <!-- Inner content panel (darker) -->
         <Style Selector="Border.inner-panel">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
             <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="2"/>
@@ -30,7 +30,7 @@
         
         <!-- Kill any weird focus/selection effects -->
         <Style Selector="Button:focus">
-            <Setter Property="BorderBrush" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Silver}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="Button:focus /template/ ContentPresenter">
@@ -41,7 +41,7 @@
         <Style Selector="Button.author-button">
             <Setter Property="FontSize" Value="16"/>
             
-            <Setter Property="Background" Value="{StaticResource TealGrey}"/>
+            <Setter Property="Background" Value="{StaticResource ButtonGrey}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -54,7 +54,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
         </Style>
         <Style Selector="Button.author-button:pressed">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
         </Style>
         <Style Selector="Button.author-button TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -62,7 +62,7 @@
             
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource Silver}"/>
         </Style>
     </UserControl.Styles>
 
@@ -146,12 +146,12 @@
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
                                              
-                                             Background="{StaticResource TealGrey}"
+                                             Background="{StaticResource ButtonGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
-                                             Foreground="{StaticResource VeryLightGrey}"
+                                             Foreground="{StaticResource Silver}"
                                              IsVisible="False"
                                              LostFocus="OnAuthorEditLostFocus"
                                              KeyDown="OnAuthorEditKeyDown"/>
@@ -252,13 +252,13 @@
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="{StaticResource TealGrey}"
+                                    Background="{StaticResource ButtonGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Click="OnThemeCycleClick"
                                     ToolTip.Tip="Cycle background theme">
-                                <TextBlock Text="🎨" 
+                                <TextBlock Text="FILTERS" 
                                            FontFamily="Segoe UI Emoji, Noto Color Emoji"
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"
@@ -271,13 +271,13 @@
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="{StaticResource TealGrey}"
+                                    Background="{StaticResource ButtonGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Click="OnAnimationToggleClick"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <TextBlock Text="⏸" 
+                                <TextBlock Text="||" 
                                            FontFamily="Segoe UI Symbol, Segoe UI Emoji"
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"

@@ -1,0 +1,177 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using BalatroSeedOracle.Helpers;
+using Motely.Filters;
+
+namespace BalatroSeedOracle.Services
+{
+    /// <summary>
+    /// Handles filter operations: validation, persistence, and management
+    /// Extracted from FiltersModal to reduce god class complexity
+    /// </summary>
+    public class FilterOperationsService
+    {
+        private readonly JsonSerializerOptions _jsonOptions;
+        
+        public FilterOperationsService()
+        {
+            _jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+        }
+        
+        /// <summary>
+        /// Validates a filter configuration
+        /// </summary>
+        public (bool isValid, string? error) ValidateFilter(OuijaConfig config)
+        {
+            Debug.Assert(config != null, "Config should not be null");
+            
+            // Must have at least one criterion
+            if ((config.Must == null || config.Must.Count == 0) &&
+                (config.Should == null || config.Should.Count == 0) &&
+                (config.MustNot == null || config.MustNot.Count == 0))
+            {
+                return (false, "Filter must have at least one criterion");
+            }
+            
+            // Validate deck and stake
+            if (string.IsNullOrWhiteSpace(config.Deck))
+            {
+                return (false, "Deck is required");
+            }
+            
+            if (string.IsNullOrWhiteSpace(config.Stake))
+            {
+                return (false, "Stake is required");
+            }
+            
+            return (true, null);
+        }
+        
+        /// <summary>
+        /// Saves a filter to disk with normalized naming
+        /// </summary>
+        public string SaveFilter(OuijaConfig config, string filterName, string? directory = null)
+        {
+            Debug.Assert(config != null, "Config should not be null");
+            Debug.Assert(!string.IsNullOrWhiteSpace(filterName), "Filter name required");
+            
+            // Normalize the filter name
+            var normalizedName = FilterNameNormalizer.NormalizeFilterName(filterName);
+            
+            // Default to JsonItemFilters directory
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            }
+            
+            Directory.CreateDirectory(directory);
+            
+            var filePath = Path.Combine(directory, $"{normalizedName}.json");
+            
+            // Set metadata
+            config.Name = filterName;
+            config.DateCreated = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            
+            // Serialize and save
+            var json = JsonSerializer.Serialize(config, _jsonOptions);
+            File.WriteAllText(filePath, json);
+            
+            DebugLogger.Log("FilterOperations", $"Saved filter to: {filePath}");
+            return filePath;
+        }
+        
+        /// <summary>
+        /// Loads a filter from disk
+        /// </summary>
+        public OuijaConfig? LoadFilter(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                DebugLogger.LogError("FilterOperations", $"Filter file not found: {filePath}");
+                return null;
+            }
+            
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                var config = JsonSerializer.Deserialize<OuijaConfig>(json, _jsonOptions);
+                
+                if (config != null)
+                {
+                    DebugLogger.Log("FilterOperations", $"Loaded filter from: {filePath}");
+                }
+                
+                return config;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterOperations", $"Failed to load filter: {ex.Message}");
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Lists all available filter files
+        /// </summary>
+        public string[] GetAvailableFilters(string? directory = null)
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            }
+            
+            if (!Directory.Exists(directory))
+            {
+                return Array.Empty<string>();
+            }
+            
+            return Directory.GetFiles(directory, "*.json");
+        }
+        
+        /// <summary>
+        /// Deletes a filter file
+        /// </summary>
+        public bool DeleteFilter(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                    DebugLogger.Log("FilterOperations", $"Deleted filter: {filePath}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterOperations", $"Failed to delete filter: {ex.Message}");
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Creates a copy of a filter with a new name
+        /// </summary>
+        public string? DuplicateFilter(string originalPath, string newName)
+        {
+            var config = LoadFilter(originalPath);
+            if (config == null)
+            {
+                return null;
+            }
+            
+            config.Name = newName;
+            config.DateCreated = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            
+            var directory = Path.GetDirectoryName(originalPath);
+            return SaveFilter(config, newName, directory);
+        }
+    }
+}

@@ -21,23 +21,86 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Creates a new search instance
         /// </summary>
+        /// <param name="filterName">Optional filter name for better file naming</param>
         /// <returns>The unique ID of the created search</returns>
-        public string CreateSearch()
+        public string CreateSearch(string? filterName = null)
         {
             var searchId = Guid.NewGuid().ToString();
-            // Preallocate a database file path so SearchInstance always has a connection string
-            var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
-            System.IO.Directory.CreateDirectory(searchResultsDir);
-            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.duckdb");
+            
+            // Create a meaningful filename if filter name provided
+            string dbPath;
+            if (!string.IsNullOrWhiteSpace(filterName))
+            {
+                dbPath = FilterNameNormalizer.CreateDuckDbFilename(filterName, searchId);
+                DebugLogger.Log("SearchManager", $"Using filter-based filename: {dbPath}");
+            }
+            else
+            {
+                // Fallback to GUID-based name
+                var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
+                System.IO.Directory.CreateDirectory(searchResultsDir);
+                dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.duckdb");
+            }
+            
             var searchInstance = new SearchInstance(searchId, dbPath);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
             {
-                DebugLogger.Log("SearchManager", $"Created new search instance: {searchId}");
+                DebugLogger.Log("SearchManager", $"Created new search instance: {searchId} at {dbPath}");
                 return searchId;
             }
 
             throw new InvalidOperationException("Failed to create search instance");
+        }
+        
+        /// <summary>
+        /// Resumes an existing search from a DuckDB file
+        /// </summary>
+        /// <param name="dbPath">Path to the existing DuckDB file</param>
+        /// <returns>The search ID if resume successful, null otherwise</returns>
+        public string? ResumeSearch(string dbPath)
+        {
+            if (!System.IO.File.Exists(dbPath))
+            {
+                DebugLogger.LogError("SearchManager", $"Cannot resume - file not found: {dbPath}");
+                return null;
+            }
+            
+            try
+            {
+                var searchId = Guid.NewGuid().ToString(); // New ID for this session
+                var searchInstance = new SearchInstance(searchId, dbPath, isResume: true);
+                
+                if (_activeSearches.TryAdd(searchId, searchInstance))
+                {
+                    DebugLogger.Log("SearchManager", $"Resumed search from: {dbPath} with new ID: {searchId}");
+                    
+                    // Load the last processed batch from the database
+                    var lastBatch = searchInstance.GetLastProcessedBatch();
+                    if (lastBatch != null)
+                    {
+                        DebugLogger.Log("SearchManager", $"Resuming from batch: {lastBatch}");
+                    }
+                    
+                    return searchId;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchManager", $"Failed to resume search: {ex.Message}");
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Finds existing search databases for a filter
+        /// </summary>
+        /// <param name="filterName">The filter name to search for</param>
+        /// <returns>Array of matching DuckDB file paths</returns>
+        public string[] FindExistingSearches(string filterName)
+        {
+            return FilterNameNormalizer.FindMatchingDuckDbFiles(filterName);
         }
 
         /// <summary>

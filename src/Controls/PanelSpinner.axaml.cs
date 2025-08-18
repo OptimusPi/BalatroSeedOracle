@@ -21,6 +21,7 @@ public partial class PanelSpinner : UserControl
     private TextBlock? _descriptionText;
     private Image? _spriteImage;
     private StackPanel? _dotsPanel;
+    private TextBlock? _pageIndicator;
 
     private int _currentIndex = 0;
     private List<PanelItem> _items = new();
@@ -91,6 +92,7 @@ public partial class PanelSpinner : UserControl
         _descriptionText = this.FindControl<TextBlock>("DescriptionText");
         _spriteImage = this.FindControl<Image>("SpriteImage");
         _dotsPanel = this.FindControl<StackPanel>("DotsPanel");
+        _pageIndicator = this.FindControl<TextBlock>("PageIndicator");
     }
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)
@@ -174,6 +176,14 @@ public partial class PanelSpinner : UserControl
 
         if (_nextButton != null)
             _nextButton.IsEnabled = _currentIndex < _items.Count - 1;
+            
+        // Update page indicator
+        if (_pageIndicator != null && _items.Count > 0)
+        {
+            int currentPage = _currentIndex + 1;
+            int totalPages = _items.Count;
+            _pageIndicator.Text = $"Filter {currentPage}/{totalPages}";
+        }
     }
 
     private void UpdateDots()

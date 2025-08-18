@@ -19,7 +19,7 @@ using BalatroSeedOracle.Views.Modals;
 
 namespace BalatroSeedOracle.Views
 {
-    public partial class SearchDesktopIcon : UserControl
+    public partial class SearchDesktopIcon : BalatroSeedOracle.Components.CollapsibleWidgetBase
     {
         private Border? _notificationBadge;
         private TextBlock? _badgeText;
@@ -28,6 +28,19 @@ namespace BalatroSeedOracle.Views
         private ProgressBar? _searchProgress;
     private Image? _stateIcon;
     private Control? _filterPreview;
+    private Border? _iconBorder;
+    // Quick view references
+    private Border? _expandedView;
+    private Border? _minimizedRoot;
+    private TextBlock? _quickFilterName;
+    private TextBlock? _quickResultCount;
+    private TextBlock? _quickProgressText;
+    private TextBlock? _quickStateText;
+    private ProgressBar? _quickProgressBar;
+    private ItemsControl? _quickResultsList;
+    private Button? _quickStopButton;
+    private Button? _quickResumeButton;
+    private readonly System.Collections.ObjectModel.ObservableCollection<BalatroSeedOracle.Models.SearchResult> _quickRecentResults = new();
         private SearchInstance? _searchInstance;
         private SearchManager? _searchManager;
         private string _searchId = string.Empty;
@@ -39,6 +52,7 @@ namespace BalatroSeedOracle.Views
         public SearchDesktopIcon()
         {
             InitializeComponent();
+            InitializeCollapsibleParts();
         }
 
         private void InitializeComponent()
@@ -51,6 +65,22 @@ namespace BalatroSeedOracle.Views
             _progressText = this.FindControl<TextBlock>("ProgressText");
             _searchProgress = this.FindControl<ProgressBar>("SearchProgress");
             _stateIcon = this.FindControl<Image>("StateIcon");
+            _iconBorder = this.FindControl<Border>("IconBorder");
+            _expandedView = this.FindControl<Border>("ExpandedView");
+            _minimizedRoot = this.FindControl<Border>("MinimizedRoot");
+            _quickFilterName = this.FindControl<TextBlock>("QuickFilterName");
+            _quickResultCount = this.FindControl<TextBlock>("QuickResultCount");
+            _quickProgressText = this.FindControl<TextBlock>("QuickProgressText");
+            _quickStateText = this.FindControl<TextBlock>("QuickStateText");
+            _quickProgressBar = this.FindControl<ProgressBar>("QuickProgressBar");
+            _quickResultsList = this.FindControl<ItemsControl>("QuickResultsList");
+            _quickStopButton = this.FindControl<Button>("QuickStopButton");
+            _quickResumeButton = this.FindControl<Button>("QuickResumeButton");
+
+            if (_quickResultsList != null)
+            {
+                _quickResultsList.ItemsSource = _quickRecentResults;
+            }
 
             // Get search manager service
             _searchManager = App.GetService<SearchManager>();
@@ -125,11 +155,39 @@ namespace BalatroSeedOracle.Views
                 // Show search modal with current search instance
                 mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
                 DebugLogger.Log("SearchDesktopIcon", "ShowSearchModalForInstance called successfully");
+                // Collapse back to minimized after opening full modal
+                Collapse();
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("SearchDesktopIcon", $"Error showing search modal: {ex}");
             }
+        }
+
+        private void OnMinimizedClick(object? sender, PointerPressedEventArgs e)
+        {
+            Expand();
+            UpdateQuickView();
+        }
+
+        private void OnMinimizeClick(object? sender, RoutedEventArgs e)
+        {
+            Collapse();
+        }
+
+        private void OnOpenFullSearch(object? sender, RoutedEventArgs e)
+        {
+            OnIconClick(sender, e);
+        }
+
+        private void OnQuickStop(object? sender, RoutedEventArgs e)
+        {
+            OnStopSearch(sender, e);
+        }
+
+        private void OnQuickResume(object? sender, RoutedEventArgs e)
+        {
+            OnResumeSearch(sender, e);
         }
 
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
@@ -178,6 +236,9 @@ namespace BalatroSeedOracle.Views
                 UpdateBadge();
                 UpdateProgress(0);
                 UpdateStateIcon();
+                if (_iconBorder != null && !_iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Add("searching");
+                UpdateQuickView();
             });
         }
 
@@ -189,6 +250,9 @@ namespace BalatroSeedOracle.Views
                 // Don't update progress to 100% - keep current progress
                 // Search may have been stopped/cancelled early
                 UpdateStateIcon();
+                if (_iconBorder != null && _iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Remove("searching");
+                UpdateQuickView();
             });
         }
 
@@ -199,6 +263,14 @@ namespace BalatroSeedOracle.Views
                 _resultCount++;
                 UpdateBadge();
                 // Keep running icon; no change needed here.
+                if (_searchInstance != null && e?.Result != null)
+                {
+                    // Store up to last 15
+                    _quickRecentResults.Insert(0, e.Result);
+                    while (_quickRecentResults.Count > 15)
+                        _quickRecentResults.RemoveAt(_quickRecentResults.Count - 1);
+                }
+                UpdateQuickView();
             });
         }
 
@@ -207,6 +279,7 @@ namespace BalatroSeedOracle.Views
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 UpdateProgress((int)e.PercentComplete);
+                UpdateQuickView();
             });
         }
 
@@ -243,6 +316,7 @@ namespace BalatroSeedOracle.Views
             _searchInstance?.PauseSearch();
             _isSearching = false;
             UpdateStateIcon();
+            UpdateQuickView();
         }
 
         private void OnResumeSearch(object? sender, RoutedEventArgs e)
@@ -250,6 +324,7 @@ namespace BalatroSeedOracle.Views
             _searchInstance?.ResumeSearch();
             _isSearching = true;
             UpdateStateIcon();
+            UpdateQuickView();
         }
 
         private void OnStopSearch(object? sender, RoutedEventArgs e)
@@ -258,6 +333,12 @@ namespace BalatroSeedOracle.Views
             _isSearching = false;
             // Don't update progress - keep current progress when stopped
             UpdateStateIcon();
+            UpdateQuickView();
+        }
+
+        private void OnDismissClick(object? sender, RoutedEventArgs e)
+        {
+            OnDeleteIcon(sender, e);
         }
 
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)
@@ -329,31 +410,67 @@ namespace BalatroSeedOracle.Views
                 // Running - use a spectral card (The Soul)
                 _stateIcon.IsVisible = true;
                 _stateIcon.Source = spriteService.GetSpectralImage("soul");
+                if (_iconBorder != null && !_iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Add("searching");
             }
             else if (!_isSearching && (_searchInstance?.IsPaused ?? false))
             {
                 // Paused - use a tag (double tag for pause symbol)
                 _stateIcon.IsVisible = true;
                 _stateIcon.Source = spriteService.GetTagImage("double");
+                if (_iconBorder != null && _iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Remove("searching");
             }
             else if (!_isSearching && (_searchProgress?.Value == 100))
             {
                 // Completed - use gold seal
                 _stateIcon.IsVisible = true;
                 _stateIcon.Source = spriteService.GetStickerImage("GoldSeal");
+                if (_iconBorder != null && _iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Remove("searching");
             }
             else if (!_isSearching && _resultCount > 0)
             {
                 // Has results - use a voucher
                 _stateIcon.IsVisible = true;
                 _stateIcon.Source = spriteService.GetVoucherImage("grabber");
+                if (_iconBorder != null && _iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Remove("searching");
             }
             else
             {
                 // Idle / default - show the filter preview if possible
+                if (_iconBorder != null && _iconBorder.Classes.Contains("searching"))
+                    _iconBorder.Classes.Remove("searching");
                 ShowFilterPreview();
             }
+            UpdateQuickView();
         }
+
+        private void UpdateQuickView()
+        {
+            if (_quickFilterName != null)
+                _quickFilterName.Text = _filterName;
+            if (_quickResultCount != null)
+                _quickResultCount.Text = _resultCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (_quickProgressText != null && _searchProgress != null)
+                _quickProgressText.Text = _searchProgress.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) + "%";
+            if (_quickProgressBar != null && _searchProgress != null)
+                _quickProgressBar.Value = _searchProgress.Value;
+            if (_quickStateText != null)
+            {
+                if (_isSearching && (_searchInstance?.IsRunning ?? false)) _quickStateText.Text = "Running";
+                else if (_searchInstance?.IsPaused ?? false) _quickStateText.Text = "Paused";
+                else if (_searchProgress?.Value == 100) _quickStateText.Text = "Complete";
+                else _quickStateText.Text = "Idle";
+            }
+            if (_quickStopButton != null)
+                _quickStopButton.IsVisible = _isSearching && (_searchInstance?.IsRunning ?? false);
+            if (_quickResumeButton != null)
+                _quickResumeButton.IsVisible = !_isSearching && (_searchInstance?.IsPaused ?? false);
+        }
+
+    // (Handlers defined earlier in file retained)
         
         private void ShowFilterPreview()
         {

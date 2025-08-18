@@ -303,7 +303,7 @@ namespace BalatroSeedOracle.Models
                 { "madness", "Madness" },
                 { "squarejoker", "Square Joker" },
                 { "seance", "Seance" },
-                { "riffraff", "Riff-Raff" },
+                { "riffraff", "Riff-raff" },
                 { "vampire", "Vampire" },
                 { "shortcut", "Shortcut" },
                 { "hologram", "Hologram" },
@@ -463,7 +463,7 @@ namespace BalatroSeedOracle.Models
                 // Multi-word special formatting
                 { "ToTheMoon", "To the Moon" },
                 { "ToDoList", "To Do List" },
-                { "RiffRaff", "Riff-Raff" },
+                { "RiffRaff", "Riff-raff" },
                 { "MailInRebate", "Mail-In Rebate" },
                 { "WheelofFortune", "Wheel of Fortune" },
                 { "SockandBuskin", "Sock and Buskin" },
@@ -522,6 +522,137 @@ namespace BalatroSeedOracle.Models
                 "Planet" => PlanetCards.ContainsKey(itemId),
                 _ => false,
             };
+        }
+
+        /// <summary>
+        /// Formats a boss blind name for display
+        /// </summary>
+        public static string FormatBossName(string bossName)
+        {
+            // Most bosses have "The" prefix
+            if (bossName.StartsWith("The") && bossName.Length > 3)
+                return "The " + bossName.Substring(3);
+            
+            // Special cases
+            return bossName switch
+            {
+                "VioletVessel" => "Violet Vessel",
+                "CrimsonHeart" => "Crimson Heart",
+                "AmberAcorn" => "Amber Acorn",
+                "CeruleanBell" => "Cerulean Bell",
+                _ => bossName
+            };
+        }
+
+        /// <summary>
+        /// Formats a pack name for display
+        /// </summary>
+        public static string FormatPackName(string packName)
+        {
+            return packName switch
+            {
+                "Arcana" => "Arcana Pack",
+                "JumboArcana" => "Jumbo Arcana Pack",
+                "MegaArcana" => "Mega Arcana Pack",
+                "Celestial" => "Celestial Pack",
+                "JumboCelestial" => "Jumbo Celestial Pack",
+                "MegaCelestial" => "Mega Celestial Pack",
+                "Spectral" => "Spectral Pack",
+                "JumboSpectral" => "Jumbo Spectral Pack",
+                "MegaSpectral" => "Mega Spectral Pack",
+                "Buffoon" => "Buffoon Pack",
+                "JumboBuffoon" => "Jumbo Buffoon Pack",
+                "MegaBuffoon" => "Mega Buffoon Pack",
+                "Standard" => "Standard Pack",
+                "JumboStandard" => "Jumbo Standard Pack",
+                "MegaStandard" => "Mega Standard Pack",
+                _ => packName
+            };
+        }
+
+        /// <summary>
+        /// Formats a playing card for display
+        /// </summary>
+        public static string FormatPlayingCard(string cardStr)
+        {
+            if (cardStr.Length >= 2)
+            {
+                var suit = cardStr[0] switch
+                {
+                    'C' => "Clubs",
+                    'D' => "Diamonds",
+                    'H' => "Hearts",
+                    'S' => "Spades",
+                    _ => "Unknown"
+                };
+
+                var rank = cardStr.Substring(1) switch
+                {
+                    "2" => "2",
+                    "3" => "3",
+                    "4" => "4",
+                    "5" => "5",
+                    "6" => "6",
+                    "7" => "7",
+                    "8" => "8",
+                    "9" => "9",
+                    "10" => "10",
+                    "J" => "Jack",
+                    "Q" => "Queen",
+                    "K" => "King",
+                    "A" => "Ace",
+                    _ => cardStr.Substring(1)
+                };
+
+                return $"{rank} of {suit}";
+            }
+            return cardStr;
+        }
+
+        /// <summary>
+        /// Formats a joker name for display (analyzer output)
+        /// </summary>
+        public static string FormatJokerNameForAnalyzer(string name)
+        {
+            // Use existing display name logic, but add special cases for analyzer
+            if (Jokers.TryGetValue(name, out var displayName))
+                return displayName;
+                
+            // Fallback to FormatDisplayName if not found
+            return FormatDisplayName(name);
+        }
+
+        /// <summary>
+        /// Formats a tarot name for display (analyzer output)
+        /// </summary>
+        public static string FormatTarotNameForAnalyzer(string name)
+        {
+            if (TarotCards.TryGetValue(name, out var displayName))
+                return FormatDisplayName(displayName);
+                
+            return FormatDisplayName(name);
+        }
+
+        /// <summary>
+        /// Formats a voucher name for display (analyzer output)
+        /// </summary>
+        public static string FormatVoucherNameForAnalyzer(string name)
+        {
+            if (Vouchers.TryGetValue(name, out var displayName))
+                return displayName;
+                
+            return FormatDisplayName(name);
+        }
+
+        /// <summary>
+        /// Formats a tag name for display (analyzer output)
+        /// </summary>
+        public static string FormatTagNameForAnalyzer(string name)
+        {
+            if (Tags.TryGetValue(name, out var displayName))
+                return displayName;
+                
+            return FormatDisplayName(name);
         }
 
         public static readonly List<string> LegendaryJokers = new List<string>();

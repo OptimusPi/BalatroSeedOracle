@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.ExpandableWidgetBase">
+    
+    <UserControl.Styles>
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Transitions">
+                <Setter.Value>
+                    <Transitions>
+                        <DoubleTransition Property="Width" Duration="0:0:0.2"/>
+                        <DoubleTransition Property="Height" Duration="0:0:0.2"/>
+                    </Transitions>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+            <Setter Property="Cursor" Value="SizeAll"/>
+            <Setter Property="Height" Value="32"/>
+        </Style>
+        
+        <Style Selector="Button.minimize-button">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <!-- Glow effect when active -->
+        <Style Selector="Border.widget-container.active">
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
+            <Setter Property="BoxShadow" Value="0 0 20 2 #00FF00"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <!-- Minimized State -->
+        <Grid Name="MinimizedView" IsVisible="True">
+            <Border Classes="widget-container" 
+                    Name="MinimizedContainer"
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedClick">
+                <ContentPresenter Name="MinimizedContent" 
+                                  Content="{Binding MinimizedContent}"/>
+            </Border>
+            
+            <!-- Notification badge overlay -->
+            <Canvas ZIndex="100">
+                <Border Name="NotificationBadge"
+                        Classes="notification-badge"
+                        Canvas.Right="-5"
+                        Canvas.Top="-5"
+                        IsVisible="False">
+                    <TextBlock Name="BadgeText" Text="0"/>
+                </Border>
+            </Canvas>
+        </Grid>
+        
+        <!-- Expanded State -->
+        <Border Name="ExpandedView" 
+                Classes="widget-container"
+                IsVisible="False">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Draggable Header -->
+                <Border Grid.Row="0" 
+                        Classes="widget-header"
+                        Name="DragHeader"
+                        PointerPressed="OnDragStart"
+                        PointerMoved="OnDragMove"
+                        PointerReleased="OnDragEnd">
+                    <Grid>
+                        <TextBlock Name="HeaderText"
+                                   Text="{Binding HeaderText}"
+                                   VerticalAlignment="Center" 
+                                   Margin="10,0,0,0"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <!-- Additional header buttons placeholder -->
+                            <ContentPresenter Name="HeaderButtons" 
+                                              Content="{Binding HeaderButtons}"/>
+                            <!-- Minimize button -->
+                            <Button Content="_" 
+                                    Classes="minimize-button"
+                                    Click="OnMinimizeClick"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Content -->
+                <ContentPresenter Grid.Row="1"
+                                  Name="ExpandedContent" 
+                                  Content="{Binding ExpandedContent}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,86 +1,207 @@
-# BalatroSeedOracle
+# 🃏 Balatro Seed Oracle
 
-Find the perfect Balatro seeds with powerful filtering and search capabilities.
+**The Ultimate Balatro Seed Search Tool** - Find perfect seeds with lightning-fast CPU SIMD technology and powerful JSON filters!
 
-[TODO: SCREENSHOT HERE - Main application window]
+![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4)
+![Avalonia UI](https://img.shields.io/badge/Avalonia-11.0-purple)
+![DuckDB](https://img.shields.io/badge/DuckDB-Powered-yellow)
+![SIMD](https://img.shields.io/badge/SIMD-AVX512-red)
 
-## Quick Start
+## ⚡ What Makes This Special?
 
+- **Blazing Fast**: Powered by Motely's CPU SIMD engine - searches 8 seeds simultaneously per thread using AVX-512 instructions
+- **100% Accurate PRNG**: Exact Balatro game logic reproduction - if we say it's there, it's there!
+- **Never Lose Results**: DuckDB persistence means your searches survive crashes, power outages, and ragequits
+- **Visual Filter Builder**: Drag-and-drop interface for creating complex JSON filters without writing code
+- **Professional UI**: Beautiful AvaloniaUI interface that makes seed searching actually fun
+
+## 🚀 Quick Start
+
+### Windows Users
 ```powershell
-./start.ps1
+# Clone the repo
+git clone https://github.com/yourusername/BalatroSeedOracle.git
+cd BalatroSeedOracle
+
+# Initialize submodules (gets Motely engine)
+git submodule update --init --recursive
+
+# Build and run
+dotnet build
+dotnet run --project src/BalatroSeedOracle.csproj
 ```
 
-That's it! The script handles everything.
+### WSL/Linux Users  
+**IMPORTANT**: Run from native WSL filesystem (`/home/username/`), NOT from `/mnt/` drives for 10-100x better performance!
 
-## Manual Setup
+```bash
+# Clone to WSL native filesystem
+cd ~
+git clone https://github.com/yourusername/BalatroSeedOracle.git
+cd BalatroSeedOracle
 
-1. **Prerequisites**
-   - [Git](https://git-scm.com/downloads)
-   - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+# Initialize submodules
+git submodule update --init --recursive
 
-2. **Clone & Build**
-   ```bash
-   git clone https://github.com/yourusername/BalatroSeedOracle.git
-   cd BalatroSeedOracle
-   git submodule update --init --recursive
-   dotnet restore
-   dotnet build
-   ```
+# Build and run
+dotnet build
+dotnet run --project src/BalatroSeedOracle.csproj
+```
 
-3. **Run**
-   ```bash
-   dotnet run --project src/Oracle.csproj
-   ```
+## 🛠️ Architecture
 
-## Features
+### Frontend: Balatro Seed Oracle (AvaloniaUI)
+- Cross-platform desktop application
+- Visual filter builder with drag-and-drop
+- Real-time search progress visualization
+- DuckDB integration for persistent storage
+- Export to CSV/Excel for analysis
 
-- **Visual Filter Builder** - Drag & drop items to create complex filters
-- **Multi-threaded Search** - Fast seed searching with configurable threads
-- **Smart Scoring** - Automatically scores seeds based on filter criteria  
-- **Export Results** - Export to Excel/CSV for further analysis
-- **Save/Load Filters** - Share your filters with the community
+### Backend: Motely Engine (C# SIMD)
+- Fork of tacodiva's legendary Motely engine
+- CPU-based SIMD optimization (AVX-512/AVX2)
+- Searches 8 seeds in parallel per thread
+- 100% accurate Balatro PRNG simulation
+- JSON-powered filter system
 
-## Usage
+### Testing the Backend First
+**CRITICAL**: Always test Motely CLI before expecting UI to work!
 
-### Creating a Filter
+```bash
+cd external/Motely
+dotnet run -- --config naninf --seed dev5B111 --debug
+```
 
-1. Click "Analyze" to open the search modal
-2. Drag items from the library to the drop zones
-3. Configure ante ranges and sources for each item
-4. Save your filter with a memorable name
+If the CLI doesn't work, the UI won't work. The PRNG accuracy is paramount!
 
-[TODO: SCREENSHOT HERE - Filter builder interface]
+## 📋 Features
 
-### Searching Seeds
+### 🎯 JSON Filter System
+Create complex search filters with the visual builder or write JSON directly:
 
-1. Select your filter
-2. Choose deck and stake
-3. Click "Let Jimbo COOK!" to start searching
-4. View results with detailed scoring breakdowns
+```json
+{
+  "name": "Perkeo Black Hole Dream",
+  "must": [
+    {
+      "type": "souljoker",
+      "value": "Perkeo",
+      "antes": [1],
+      "sources": { "packSlots": [1] }
+    },
+    {
+      "type": "SpectralCard",
+      "value": "BlackHole",
+      "antes": [1],
+      "sources": { "packSlots": [1] }
+    }
+  ],
+  "deck": "Ghost",
+  "stake": "White"
+}
+```
 
-[TODO: SCREENSHOT HERE - Search results]
+### 💾 DuckDB Persistence
+- Never lose search results
+- Resume interrupted searches
+- Query historical results
+- Export to any format
 
-### Keyboard Shortcuts
+### 🎨 Visual Filter Builder
+- Drag items from library
+- Configure antes and sources
+- Real-time filter validation
+- Save/load filter presets
 
-- `Ctrl+C` - Copy selected seed
-- `Esc` - Close modal windows
-- `Tab` - Navigate between fields
+## 🔧 Development
 
-## Filter Examples
+### Prerequisites
+- .NET 9 SDK
+- Git
+- 64-bit CPU with AVX2 support (AVX-512 preferred)
 
-Filters are stored as JSON in the `JsonItemFilters` directory:
-- `ExplosiveBoi.json` - Focus on explosive jokers
-- `PirateEgg.json` - Egg synergy builds  
-- `BurgleMeBaby.json` - Burglar-focused runs
+### Project Structure
+```
+BalatroSeedOracle/
+├── src/                    # AvaloniaUI frontend application
+│   ├── Views/             # UI views and modals
+│   ├── Services/          # Search manager, DuckDB integration
+│   └── Models/            # Data models and DTOs
+├── external/
+│   ├── Motely/            # SIMD search engine (submodule)
+│   │   ├── filters/       # Filter implementations
+│   │   ├── enums/         # Balatro game enums
+│   │   └── JsonItemFilters/ # JSON filter examples
+│   └── Balatro/           # Original game Lua files (reference)
+├── JsonItemFilters/       # User filter library
+└── SearchResults/         # DuckDB storage files
+```
 
-## Dependencies
+### Building from Source
+```bash
+# Full rebuild
+dotnet clean
+dotnet restore
+dotnet build -c Release
 
-- [Motely](https://github.com/piefox/Motely) - Core Balatro simulation engine (fork of tacodiva's work)
-- [Avalonia UI](https://avaloniaui.net/) - Cross-platform UI framework
-- [DuckDB](https://duckdb.org/) - Analytics database for results
+# Run tests (if you break PRNG accuracy, we cry)
+cd external/Motely
+dotnet run -- --config test --debug
+```
 
-## License
+## 🎮 Usage Examples
 
-MIT License - See LICENSE file for details
+### Finding Legendary Jokers Early
+1. Open Balatro Seed Oracle
+2. Click "Analyze" 
+3. Drag desired jokers to ante 1-2 slots
+4. Name your filter
+5. Click "Let Jimbo COOK!"
+6. Watch as thousands of seeds are analyzed per second
 
-`pifreak loves you!`
+### Exporting Results
+1. Complete a search
+2. Click "Export Results"
+3. Choose format (CSV/Excel/JSON)
+4. Open in your favorite spreadsheet app
+
+### CLI Power User Mode
+```bash
+cd external/Motely
+# Search with custom filter
+dotnet run -- --config legendary-map-2 --threads 16
+
+# Debug specific seed
+dotnet run -- --seed ABC123 --debug --config naninf
+```
+
+## ⚠️ Important Notes
+
+### PRNG Accuracy is Sacred
+The Motely engine must maintain 100.0000000000% accuracy with Balatro's PRNG. Any changes to core PRNG logic require:
+1. Extensive testing against known seeds
+2. Verification with game behavior
+3. Extreme caution and rethinking
+
+### Performance Tips
+- WSL users: ALWAYS use native filesystem (`/home/`), never `/mnt/`
+- More threads = more speed (up to your CPU core count)
+- AVX-512 CPUs get best performance
+- Close other applications for maximum speed
+
+## 📜 License
+
+MIT License - Use it, fork it, love it!
+
+## 🙏 Credits
+
+- **OptimusPi** - Commissioned Motely development, made this possible
+- **tacodiva** - Original Motely engine creator
+- **LocalThunk** - For making Balatro, the best roguelike deckbuilder ever
+- **pifreak** - For the vision and UI magic
+
+---
+
+**pifreak loves you!** 💜
+
+Remember: If the backend (Motely) is broken, the frontend will never work. Test CLI first, always!

@@ -15,7 +15,7 @@
         <TextBlock Text="SELECT PLAYING CARDS"
                    FontFamily="{DynamicResource BalatroFont}"
                    FontSize="16"
-                   Foreground="{DynamicResource LightGrey}"
+                   Foreground="{DynamicResource Silver}"
                    Margin="0,0,0,10"/>
         
         <WrapPanel>

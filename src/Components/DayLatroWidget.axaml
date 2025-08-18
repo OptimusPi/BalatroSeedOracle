@@ -5,29 +5,29 @@
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="{StaticResource MainBackground}"/>
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
         
         <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="{StaticResource Background}"/>
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="TextBox.score-input">
-            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SilverDarker}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
         
         <Style Selector="Button.submit-button">
-            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Background" Value="{StaticResource Green}"/>
             <Setter Property="Foreground" Value="{StaticResource White}" />
             
             <Setter Property="Padding" Value="12,6"/>
@@ -195,7 +195,7 @@
                                     ToolTip.Tip="Refresh scores"/>
                         </Grid>
                         
-                        <Border Background="{StaticResource VeryDarkBackground}"
+                        <Border Background="{StaticResource GreyDarker}"
                                 CornerRadius="6"
                                 Padding="10"
                                 MaxHeight="200">

@@ -167,9 +167,9 @@
         </Style>
         <!-- Local TextBox override (do not duplicate global balatro-input) -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="{StaticResource PureBlack}" />
+            <Setter Property="Background" Value="{StaticResource ShadowBlack}" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="{StaticResource PureBlack}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ShadowBlack}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CaretBrush" Value="White" />
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
@@ -179,20 +179,20 @@
             <Setter Property="MinHeight" Value="32" />
         </Style>
         <Style Selector="TextBox:focus">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Background" Value="{StaticResource DarkGrey}" />
             <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
         </Style>
         <Style Selector="TextBox:pointerover">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Background" Value="{StaticResource DarkGrey}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="{StaticResource MediumLightGrey}" />
+            <Setter Property="Foreground" Value="{StaticResource Silver}" />
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="TextBox:watermark">
-            <Setter Property="Foreground" Value="{StaticResource TextInactive}" />
+            <Setter Property="Foreground" Value="{StaticResource SilverDarker}" />
         </Style>
         <Style Selector="TextBox /template/ TextPresenter#PART_TextPresenter">
             <Setter Property="CaretBrush" Value="White" />
@@ -221,7 +221,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
         <Style Selector="Border#DragDropModeButton.mode-inactive">
-            <Setter Property="Background" Value="{StaticResource PureBlack}" />
+            <Setter Property="Background" Value="{StaticResource ShadowBlack}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         <Style Selector="Border#JsonEditorModeButton.mode-active">
@@ -229,12 +229,12 @@
             <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
         </Style>
         <Style Selector="Border#JsonEditorModeButton.mode-inactive">
-            <Setter Property="Background" Value="{StaticResource PureBlack}" />
+            <Setter Property="Background" Value="{StaticResource ShadowBlack}" />
             <Setter Property="BorderBrush" Value="{StaticResource Border}" />
         </Style>
         <!-- Scroll / editor -->
         <Style Selector="ScrollBar">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Background" Value="{StaticResource DarkGrey}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="ScrollBar /template/ Thumb">
@@ -248,14 +248,14 @@
             <Setter Property="Margin" Value="0,0,2,0" />
         </Style>
         <Style Selector="ScrollBar /template/ Thumb:pointerover">
-            <Setter Property="Background" Value="{StaticResource TextInactive}" />
+            <Setter Property="Background" Value="{StaticResource SilverDarker}" />
         </Style>
         <Style Selector="ScrollViewer">
             <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="avalonedit|TextEditor">
             <Setter Property="Background" Value="#FFF5F5DC" />
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}" />
+            <Setter Property="Foreground" Value="{StaticResource ShadowBlack}" />
             <Setter Property="FontFamily" Value="Cascadia Code,Consolas,Menlo,Monaco,monospace" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="LineNumbersForeground" Value="{StaticResource DockGrey}" />
@@ -541,13 +541,12 @@
             </Grid>
             
             <!-- Load/Save Panel -->
-            <Grid Name="LoadSavePanel" IsVisible="True">
+            <Grid Name="LoadSavePanel" IsVisible="False">
                 <!-- Use the FilterSelector component -->
-                <components:FilterSelector x:Name="FilterSelectorComponent" 
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"
-                                         AutoLoadEnabled="False"
-                                         FilterLoaded="OnFilterSelected"/>
+                <components:ChallengesFilterSelector x:Name="FilterSelectorComponent" 
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     FilterSelected="OnFilterSelected"/>
             </Grid>
 
             <!-- JSON Panel -->
@@ -600,12 +599,12 @@
                                         VerticalAlignment="Center"
                                         Padding="12,4"
                                         Height="28"
-                                        Background="{StaticResource GreenAccentVeryDark}"
-                                        BorderBrush="{StaticResource AccentGreen}"
+                                        Background="{StaticResource GreenDarker}"
+                                        BorderBrush="{StaticResource Green}"
                                         BorderThickness="2"
                                         FontFamily="{StaticResource BalatroFont}"
                                         FontSize="12"
-                                        Foreground="{StaticResource AccentGreen}"
+                                        Foreground="{StaticResource Green}"
                                         Cursor="Hand"
                                         Click="OnSaveJsonClick"/>
                             </Grid>
@@ -732,7 +731,7 @@
                             </Grid.ColumnDefinitions>
                             
                             <Border Grid.Column="0"
-                                    Background="{StaticResource LightGrey}"
+                                    Background="{StaticResource Silver}"
                                     CornerRadius="4"
                                     Padding="12,6"
                                     Height="32">

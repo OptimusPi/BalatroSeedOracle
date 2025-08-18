@@ -12,7 +12,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 8 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
     </Style>
     
     <!-- Precise modal with exact south-only shadow - Medium grey background -->
@@ -22,12 +22,12 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
     </Style>
     
     <!-- Inner content panel - Dark grey with no borders like in Balatro -->
     <Style Selector="Border.modal-content-panel">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="20"/>
@@ -36,7 +36,7 @@
     
     <!-- Modal content box - Same as content panel, NO BORDERS -->
     <Style Selector="Border.modal-content-box">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="24"/>
@@ -57,8 +57,8 @@
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="30"/>
         
-        <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Background" Value="{StaticResource ShadowBlack}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="BorderBrush" Value="{StaticResource Purple}" />
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="0,8"/>
@@ -83,7 +83,7 @@
     <Style Selector="Button.back-button">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="28"/>
-        <Setter Property="Foreground" Value="#000000"/>
+        <Setter Property="Foreground" Value="{StaticResource ShadowBlack}"/>
         <Setter Property="Background" Value="{StaticResource Orange}"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Height" Value="42"/>
@@ -101,7 +101,7 @@
                     <Grid>
                         <!-- Drop shadow (first = behind) -->
                         <Border Name="DropShadow"
-                                Background="#1e2e32"
+                                Background="{StaticResource GreyDarker}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <!-- Main button -->

@@ -1,0 +1,12 @@
+{
+  "name": "dxzfgvb",
+  "description": "dxfg",
+  "author": "pifreak",
+  "dateCreated": "2025-08-16T02:16:02.8177977Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

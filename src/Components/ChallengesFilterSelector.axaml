@@ -1,0 +1,576 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.ChallengesFilterSelector">
+    
+    <UserControl.Styles>
+        <!-- Filter list item button style (like challenge buttons) -->
+        <Style Selector="Button.filter-item">
+            <Setter Property="Background" Value="{StaticResource GreyLighter}"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <!-- Multi-layer shadow for depth -->
+                        <Border Background="{StaticResource ShadowBlack}"
+                                CornerRadius="8"
+                                Margin="0,3,0,-1"
+                                Opacity="0.3"/>
+                        <Border Background="{StaticResource GreyDarker}"
+                                CornerRadius="8"
+                                Margin="0,2,0,0"/>
+                        <!-- Button face -->
+                        <Border Name="ButtonFace"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Item number badge -->
+                                <Border Grid.Column="0"
+                                        Background="{StaticResource BlueDarker}"
+                                        CornerRadius="4"
+                                        Padding="6,2"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Name="ItemNumber"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- Filter name -->
+                                <TextBlock Grid.Column="1"
+                                           Name="FilterName"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- Selection indicator with animation -->
+                                <Border Grid.Column="2"
+                                        Name="SelectionIndicator"
+                                        Background="{StaticResource Gold}"
+                                        Width="4"
+                                        Height="20"
+                                        CornerRadius="2"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        IsVisible="False">
+                                    <Border.Transitions>
+                                        <Transitions>
+                                            <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                                        </Transitions>
+                                    </Border.Transitions>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <!-- Selected filter item -->
+        <Style Selector="Button.filter-item.selected">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="RenderTransform">
+                <TranslateTransform X="4" Y="0"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.filter-item.selected /template/ Border#SelectionIndicator">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="Button.filter-item.selected /template/ Border#ButtonFace">
+            <Setter Property="Margin" Value="0,1,0,1"/>
+        </Style>
+        
+        <!-- Hover state -->
+        <Style Selector="Button.filter-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="RenderTransform">
+                <TranslateTransform X="2" Y="-1"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.filter-item:pointerover /template/ Border#ButtonFace">
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+        <Style Selector="Button.filter-item.selected:pointerover">
+            <Setter Property="Background" Value="{StaticResource OrangeYellow}"/>
+            <Setter Property="RenderTransform">
+                <TranslateTransform X="5" Y="-1"/>
+            </Setter>
+        </Style>
+        
+        <!-- Locked filter style -->
+        <Style Selector="Button.filter-item.locked">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="IsEnabled" Value="False"/>
+        </Style>
+        <Style Selector="Button.filter-item.locked /template/ TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource SilverDarker}"/>
+        </Style>
+        
+        <!-- Page navigation style -->
+        <Style Selector="Button.page-nav">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Background="{StaticResource ModalGrey}"
+            BorderBrush="{StaticResource Silver}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Main content area -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*" MinWidth="400"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Left side: Filter list with search -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource GreyDarker}"
+                        CornerRadius="8"
+                        Padding="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Search box -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource Black}"
+                                CornerRadius="6"
+                                Padding="8,4"
+                                Margin="0,0,0,8">
+                            <Grid>
+                                <TextBox Name="SearchBox"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Watermark="Search filters..."
+                                         FontFamily="{StaticResource BalatroFont}"
+                                         FontSize="12"
+                                         Foreground="{StaticResource White}"/>
+                            </Grid>
+                        </Border>
+                        
+                        <ScrollViewer Grid.Row="1" 
+                                      VerticalScrollBarVisibility="Auto">
+                            <StackPanel Name="FilterListPanel">
+                                <!-- Filter items will be added here dynamically -->
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                
+                <!-- Right side: Preview panels -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Filter name header -->
+                    <Border Grid.Row="0"
+                            Background="{StaticResource Red}"
+                            CornerRadius="6"
+                            Padding="8,4"
+                            Margin="0,0,0,8">
+                        <TextBlock Name="SelectedFilterName"
+                                   Text="Select a Filter"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"/>
+                    </Border>
+                    
+                    <!-- Must Have panel with enhanced styling -->
+                    <Grid Grid.Row="1" Margin="0,0,0,6">
+                        <!-- Shadow layer -->
+                        <Border Background="{StaticResource ShadowBlack}"
+                                CornerRadius="10"
+                                Margin="0,2,0,-2"
+                                Opacity="0.4"/>
+                        <Border Background="{StaticResource BlueDarker}"
+                                CornerRadius="10"
+                                Margin="0,1,0,-1"/>
+                        <!-- Main panel -->
+                        <Border Background="{StaticResource Blue}"
+                                CornerRadius="10"
+                                Padding="10"
+                                Margin="0,0,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Grid Grid.Row="0" Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="✓"
+                                               FontSize="16"
+                                               Foreground="{StaticResource White}"
+                                               Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="MUST HAVE"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                    <Border Grid.Column="2"
+                                            Name="MustCount"
+                                            Background="{StaticResource BlueDarker}"
+                                            CornerRadius="10"
+                                            Padding="6,2"
+                                            MinWidth="24">
+                                        <TextBlock Name="MustCountText"
+                                                   Text="0"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                                
+                                <Border Grid.Row="1"
+                                        Background="{StaticResource Black}"
+                                        CornerRadius="6"
+                                        Padding="4"
+                                        MinHeight="80">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Disabled">
+                                        <StackPanel Name="MustHavePanel"
+                                                   Orientation="Horizontal"
+                                                   Spacing="6">
+                                            <!-- Sprite previews go here -->
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    
+                    <!-- Should Have panel with enhanced styling -->
+                    <Grid Grid.Row="2" Margin="0,0,0,6">
+                        <!-- Shadow layer -->
+                        <Border Background="{StaticResource ShadowBlack}"
+                                CornerRadius="10"
+                                Margin="0,2,0,-2"
+                                Opacity="0.4"/>
+                        <Border Background="{StaticResource GreenDarker}"
+                                CornerRadius="10"
+                                Margin="0,1,0,-1"/>
+                        <!-- Main panel -->
+                        <Border Background="{StaticResource Green}"
+                                CornerRadius="10"
+                                Padding="10"
+                                Margin="0,0,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Grid Grid.Row="0" Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="★"
+                                               FontSize="16"
+                                               Foreground="{StaticResource Gold}"
+                                               Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="SHOULD HAVE"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                    <Border Grid.Column="2"
+                                            Name="ShouldCount"
+                                            Background="{StaticResource GreenDarker}"
+                                            CornerRadius="10"
+                                            Padding="6,2"
+                                            MinWidth="24">
+                                        <TextBlock Name="ShouldCountText"
+                                                   Text="0"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                                
+                                <Border Grid.Row="1"
+                                        Background="{StaticResource Black}"
+                                        CornerRadius="6"
+                                        Padding="4"
+                                        MinHeight="80">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Disabled">
+                                        <StackPanel Name="ShouldHavePanel"
+                                                   Orientation="Horizontal"
+                                                   Spacing="6">
+                                            <!-- Sprite previews go here -->
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    
+                    <!-- Must Not Have panel with enhanced styling -->
+                    <Grid Grid.Row="3">
+                        <!-- Shadow layer -->
+                        <Border Background="{StaticResource ShadowBlack}"
+                                CornerRadius="10"
+                                Margin="0,2,0,-2"
+                                Opacity="0.4"/>
+                        <Border Background="{StaticResource RedDarker}"
+                                CornerRadius="10"
+                                Margin="0,1,0,-1"/>
+                        <!-- Main panel -->
+                        <Border Background="{StaticResource Red}"
+                                CornerRadius="10"
+                                Padding="10"
+                                Margin="0,0,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Grid Grid.Row="0" Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="✗"
+                                               FontSize="16"
+                                               Foreground="{StaticResource White}"
+                                               Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="MUST NOT HAVE"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                    <Border Grid.Column="2"
+                                            Name="MustNotCount"
+                                            Background="{StaticResource RedDarker}"
+                                            CornerRadius="10"
+                                            Padding="6,2"
+                                            MinWidth="24">
+                                        <TextBlock Name="MustNotCountText"
+                                                   Text="0"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                                
+                                <Border Grid.Row="1"
+                                        Background="{StaticResource Black}"
+                                        CornerRadius="6"
+                                        Padding="4"
+                                        MinHeight="80">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Disabled">
+                                        <StackPanel Name="MustNotHavePanel"
+                                                   Orientation="Horizontal"
+                                                   Spacing="6">
+                                            <!-- Sprite previews go here -->
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+            
+            <!-- Bottom navigation bar -->
+            <Grid Grid.Row="1" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Page navigation (left) -->
+                <Grid Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Previous button -->
+                    <Button Grid.Column="0"
+                            Name="PrevPageButton"
+                            Classes="page-nav"
+                            Content="◀"
+                            CornerRadius="6,0,0,6"
+                            Click="OnPrevPageClick">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Grid>
+                                    <Border Background="{StaticResource RedDarker}"
+                                            CornerRadius="6,0,0,6"
+                                            Margin="0,2,0,0"/>
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="6,0,0,6"
+                                            Margin="0,0,0,2">
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    
+                    <!-- Page indicator -->
+                    <Border Grid.Column="1"
+                            Background="{StaticResource Red}"
+                            Height="32"
+                            MinWidth="80">
+                        <Grid>
+                            <Border Background="{StaticResource RedDarker}"
+                                    Margin="0,2,0,0"/>
+                            <Border Background="{StaticResource Red}"
+                                    Margin="0,0,0,2">
+                                <TextBlock Name="PageIndicator"
+                                           Text="Page 1/2"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Next button -->
+                    <Button Grid.Column="2"
+                            Name="NextPageButton"
+                            Classes="page-nav"
+                            Content="▶"
+                            CornerRadius="0,6,6,0"
+                            Click="OnNextPageClick">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Grid>
+                                    <Border Background="{StaticResource RedDarker}"
+                                            CornerRadius="0,6,6,0"
+                                            Margin="0,2,0,0"/>
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="0,6,6,0"
+                                            Margin="0,0,0,2">
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+                
+                <!-- Status text (center) -->
+                <TextBlock Grid.Column="1"
+                           Name="StatusText"
+                           Text="0/0 Filters Available"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           Foreground="{StaticResource Silver}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                
+                <!-- Action buttons (right) -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <Button Name="SelectButton"
+                            Content="SELECT"
+                            Width="100"
+                            Height="32"
+                            Background="{StaticResource Blue}"
+                            Foreground="{StaticResource White}"
+                            FontFamily="{StaticResource BalatroFont}"
+                            FontSize="14"
+                            CornerRadius="6"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="OnSelectClick">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Grid>
+                                    <Border Background="{StaticResource BlueDarker}"
+                                            CornerRadius="6"
+                                            Margin="0,2,0,0"/>
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            Margin="0,0,0,2">
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

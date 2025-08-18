@@ -278,6 +278,37 @@ namespace BalatroSeedOracle.Services
         )
         {
             ArgumentNullException.ThrowIfNull(name);
+            
+            // Special handling for Wee Joker - it's just a tiny version of regular Joker! LOL
+            if (name.Equals("WeeJoker", StringComparison.OrdinalIgnoreCase) || 
+                name.Equals("Wee Joker", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("weejoker", StringComparison.OrdinalIgnoreCase))
+            {
+                // Get the regular Joker sprite
+                var regularJoker = GetSpriteImage("Joker", jokerPositions, jokerSheet, spriteWidth, spriteHeight, "joker");
+                if (regularJoker == null) return null;
+                
+                // Create a 50% scaled version - it's wee!
+                var scaledWidth = spriteWidth / 2;
+                var scaledHeight = spriteHeight / 2;
+                var renderTarget = new RenderTargetBitmap(new PixelSize(spriteWidth, spriteHeight));
+                
+                using (var context = renderTarget.CreateDrawingContext())
+                {
+                    // Center the tiny joker in the normal sprite area
+                    var offsetX = (spriteWidth - scaledWidth) / 2;
+                    var offsetY = (spriteHeight - scaledHeight) / 2;
+                    
+                    // Draw the joker at 50% size, centered - so cute and wee!
+                    context.DrawImage(regularJoker, 
+                        new Rect(0, 0, spriteWidth, spriteHeight),  // Source
+                        new Rect(offsetX, offsetY, scaledWidth, scaledHeight)); // Destination (50% size, centered)
+                }
+                
+                DebugLogger.Log("SpriteService", "Created a wee little Joker!");
+                return renderTarget;
+            }
+            
             // Special handling for "any" soul joker
             if (name.Equals("any", StringComparison.OrdinalIgnoreCase))
             {
@@ -772,6 +803,7 @@ namespace BalatroSeedOracle.Services
 
                 if (baseCard == null)
                 {
+                    DebugLogger.LogError("SpriteService", "Failed to get base card image");
                     return null;
                 }
 
@@ -779,19 +811,94 @@ namespace BalatroSeedOracle.Services
                 var cardPattern = GetPlayingCardPattern(suit, rank);
                 if (cardPattern == null)
                 {
+                    DebugLogger.LogError("SpriteService", $"Failed to get card pattern for {suit} {rank}");
                     return baseCard; // Return just the base if no pattern found
                 }
 
-                // Composite the images together using Avalonia's image manipulation
-                // Note: Full compositing implementation requires RenderTargetBitmap
-                // For now, return the pattern overlay as the primary visual
-                return cardPattern;
+                // Composite the images together
+                var renderTarget = new RenderTargetBitmap(new PixelSize(142, 190));
+                using (var context = renderTarget.CreateDrawingContext())
+                {
+                    // Draw the base card (white card or enhancement)
+                    context.DrawImage(baseCard, new Rect(0, 0, 142, 190));
+                    
+                    // Draw the card pattern (suit/rank) on top
+                    context.DrawImage(cardPattern, new Rect(0, 0, 142, 190));
+                    
+                    // If there's a seal, draw it on top
+                    if (!string.IsNullOrEmpty(seal))
+                    {
+                        var sealImage = GetSealImage(seal);
+                        if (sealImage != null)
+                        {
+                            context.DrawImage(sealImage, new Rect(0, 0, 142, 190));
+                        }
+                    }
+                }
+
+                return renderTarget;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "SpriteService",
                     $"Error creating playing card image: {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        // Helper method to get playing card by key format (e.g., "c_2_Hearts", "c_A_Spades")
+        public IImage? GetPlayingCardByKey(
+            string cardKey,
+            string? enhancement = null,
+            string? seal = null,
+            string? edition = null
+        )
+        {
+            try
+            {
+                // Parse card key format: c_[rank]_[suit]
+                if (string.IsNullOrEmpty(cardKey) || !cardKey.StartsWith("c_"))
+                {
+                    DebugLogger.LogError("SpriteService", $"Invalid card key format: {cardKey}");
+                    return null;
+                }
+
+                var parts = cardKey.Substring(2).Split('_'); // Remove "c_" prefix and split
+                if (parts.Length != 2)
+                {
+                    DebugLogger.LogError("SpriteService", $"Invalid card key format: {cardKey}");
+                    return null;
+                }
+
+                var rank = parts[0];
+                var suit = parts[1];
+
+                // Convert rank aliases if needed
+                switch (rank.ToUpperInvariant())
+                {
+                    case "J":
+                        rank = "Jack";
+                        break;
+                    case "Q":
+                        rank = "Queen";
+                        break;
+                    case "K":
+                        rank = "King";
+                        break;
+                    case "A":
+                        rank = "Ace";
+                        break;
+                }
+
+                return GetPlayingCardImage(suit, rank, enhancement, seal, edition);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error parsing playing card key '{cardKey}': {ex.Message}"
                 );
                 return null;
             }

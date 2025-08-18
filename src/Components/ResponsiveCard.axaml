@@ -5,25 +5,25 @@
     
     <UserControl.Styles>
         <Style Selector="local|ResponsiveCard.selected-need Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardGreen}"/>
+            <Setter Property="Background" Value="{StaticResource Green}"/>
         </Style>
 
         <Style Selector="local|ResponsiveCard.selected-want Border#CardBorder">
             <Setter Property="BorderBrush" Value="{StaticResource ToggleRed}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardRed}"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
         </Style>
 
         <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#CardBorder">
             <Setter Property="BorderBrush" Value="{StaticResource ToggleGreen}"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardGreenHover}"/>
+            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
         </Style>
 
         <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource ToggleRedHover}"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardRedHover}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
         <!-- Soul image styles for legendary jokers -->

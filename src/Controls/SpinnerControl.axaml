@@ -70,7 +70,7 @@
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="12"/>
             
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource Silver}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>

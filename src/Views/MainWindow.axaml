@@ -15,12 +15,12 @@
         
         <Style Selector="TextBlock.attribution-link">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{StaticResource LightBlue}"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link:pointerover">
-            <Setter Property="Foreground" Value="{StaticResource BrighterBlue}"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
     </Window.Styles>
@@ -31,7 +31,7 @@
         
         <!-- Attribution line -->
         <Border Grid.Row="1" 
-                Background="{StaticResource DarkBackground}" 
+                Background="{StaticResource DarkGrey}" 
                 Padding="4,3">
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Center"

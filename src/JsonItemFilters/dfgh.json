@@ -1,0 +1,12 @@
+{
+  "name": "dfgh",
+  "description": "dfg",
+  "author": "pifreak",
+  "dateCreated": "2025-08-16T03:23:17.9313683Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}
