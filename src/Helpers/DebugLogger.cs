@@ -8,8 +8,8 @@ namespace BalatroSeedOracle.Helpers;
 public static class DebugLogger
 {
     // Set to false for production builds
-    private static bool EnableDebugLogging = false; // Disabled by default
-    private static bool EnableVerboseLogging = false; // For extra verbose output
+    private static bool EnableDebugLogging = true; // Temporarily enabled for debugging
+    private static bool EnableVerboseLogging = true; // For extra verbose output
 
     /// <summary>
     /// Sets whether debug logging is enabled

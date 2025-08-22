@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var filtersContent = new FiltersModalContent();
+            var filtersContent = new Components.ChallengesFilterSelector();
             return menu.ShowModal("FILTER CONFIGURATION", filtersContent);
         }
     
@@ -175,6 +175,28 @@ namespace BalatroSeedOracle.Helpers
         {
             var creditsView = new CreditsModal();
             return menu.ShowModal("CREDITS", creditsView);
+        }
+
+        /// <summary>
+        /// Creates and shows a filter creation modal
+        /// </summary>
+        /// <param name="menu">The main menu to show the modal on</param>
+        /// <returns>The created modal</returns>
+        public static StandardModal ShowFilterCreationModal(this Views.BalatroMainMenu menu)
+        {
+            var filterCreationView = new FilterCreationModal();
+            return menu.ShowModal("CREATE FILTER", filterCreationView);
+        }
+
+        /// <summary>
+        /// Shows a modal without requiring a menu instance (for components)
+        /// </summary>
+        /// <param name="modal">The modal to show</param>
+        public static void ShowModal(UserControl modal)
+        {
+            // This is a simplified version for components that don't have access to the main menu
+            // In a real implementation, you might want to find the main window and show the modal there
+            DebugLogger.Log("ModalHelper", "Modal display requested from component");
         }
 
     }

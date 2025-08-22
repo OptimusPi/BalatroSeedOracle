@@ -3,23 +3,188 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.FilterSelector">
     
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <UserControl.Styles>
+        <!-- Filter card style -->
+        <Style Selector="Button.filter-card">
+            <Setter Property="Background" Value="{StaticResource GreyLighter}"/>
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Width" Value="180"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Silver}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
         
-        <!-- Filter browser using PanelSpinner -->
-        <controls:PanelSpinner Grid.Row="0" Name="FilterSpinner" />
+        <Style Selector="Button.filter-card:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="RenderTransform">
+                <TranslateTransform X="2" Y="-2"/>
+            </Setter>
+        </Style>
         
-        <!-- Action buttons below spinner -->
-        <StackPanel Grid.Row="1" Spacing="8" Margin="0,8,0,0">
-            <Button Name="SelectButton" 
-                    Content="Select Filter" 
-                    Classes="btn-blue" 
-                    MinWidth="200"
-                    HorizontalAlignment="Center"
-                    Click="OnSelectClick"/>
-        </StackPanel>
-    </Grid>
+        <Style Selector="Button.filter-card.selected">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GreenBright}"/>
+        </Style>
+        
+        <Style Selector="Button.filter-card.selected:pointerover">
+            <Setter Property="Background" Value="{StaticResource GreenBright}"/>
+        </Style>
+        
+        <!-- Create new filter card style -->
+        <Style Selector="Button.create-filter-card">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Orange}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        
+        <Style Selector="Button.create-filter-card:pointerover">
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Background="{StaticResource ModalGrey}"
+            BorderBrush="{StaticResource Silver}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Title -->
+            <TextBlock Grid.Row="0" 
+                       Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="20"
+                       Foreground="{StaticResource White}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,12"/>
+            
+            <!-- Search and controls -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Grid.Column="0" 
+                         Name="SearchBox"
+                         Watermark="Search filters..."
+                         Classes="balatro-input"
+                         Height="36"
+                         FontSize="14"/>
+                         
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal" 
+                           Spacing="8" 
+                           Margin="8,0,0,0">
+                    <Button Name="RefreshButton"
+                            Content="🔄"
+                            Classes="btn-blue"
+                            Width="36"
+                            Height="36"
+                            ToolTip.Tip="Refresh filters"/>
+                </StackPanel>
+            </Grid>
+            
+            <!-- Filter grid -->
+            <ScrollViewer Grid.Row="2" 
+                         HorizontalScrollBarVisibility="Disabled"
+                         VerticalScrollBarVisibility="Auto"
+                         MaxHeight="400">
+                <ItemsControl Name="FilterGrid">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" 
+                                      HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+            
+            <!-- Status and pagination -->
+            <Grid Grid.Row="3" Margin="0,12,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Name="StatusText"
+                          Text="No filters found"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="12"
+                          Foreground="{StaticResource Silver}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center"/>
+                          
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal" 
+                           Spacing="8"
+                           HorizontalAlignment="Center">
+                    <Button Name="PrevPageButton"
+                            Content="‹"
+                            Classes="page-nav"
+                            Width="32"
+                            Height="32"/>
+                    <TextBlock Name="PageIndicator"
+                              Text="1 / 1"
+                              FontFamily="{StaticResource BalatroFont}"
+                              FontSize="14"
+                              Foreground="{StaticResource White}"
+                              VerticalAlignment="Center"/>
+                    <Button Name="NextPageButton"
+                            Content="›"
+                            Classes="page-nav"
+                            Width="32"
+                            Height="32"/>
+                </StackPanel>
+                
+                <TextBlock Grid.Column="2" 
+                          Name="SelectedFilterName"
+                          Text="No filter selected"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="12"
+                          Foreground="{StaticResource Silver}"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"/>
+            </Grid>
+            
+            <!-- Action buttons -->
+            <StackPanel Grid.Row="4" 
+                       Orientation="Horizontal" 
+                       Spacing="12" 
+                       HorizontalAlignment="Center">
+                <Button Name="SelectButton" 
+                        Content="Select Filter" 
+                        Classes="btn-blue" 
+                        MinWidth="120"
+                        Height="36"
+                        IsEnabled="False"/>
+                <Button Name="CreateButton" 
+                        Content="Create New" 
+                        Classes="btn-green" 
+                        MinWidth="120"
+                        Height="36"/>
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

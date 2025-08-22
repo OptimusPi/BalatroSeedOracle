@@ -1049,13 +1049,7 @@
             "y": 8
         }
     },
-    {
-        "name": "anylegendary",
-        "pos": {
-            "x": 9,
-            "y": 9
-        }
-    },
+
     {
         "name": "anyrare",
         "pos": {

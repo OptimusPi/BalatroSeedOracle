@@ -493,7 +493,7 @@ namespace BalatroSeedOracle.Components
                 { "anycommon", "Any Common" },
                 { "anyuncommon", "Any Uncommon" },
                 { "anyrare", "Any Rare" },
-                { "anylegendary", "Any Legendary" },
+
             };
 
             if (wildcardNames.TryGetValue(name, out var wildcardDisplay))

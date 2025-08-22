@@ -624,7 +624,7 @@ namespace BalatroSeedOracle.Views
                 {
                     // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as FiltersModalContent;
+                    var filtersModal = modalContent?.Content as Components.ChallengesFilterSelector;
                     if (filtersModal != null)
                     {
                         // FiltersModal may have active searches to stop

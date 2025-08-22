@@ -25,6 +25,7 @@ public partial class PanelSpinner : UserControl
 
     private int _currentIndex = 0;
     private List<PanelItem> _items = new();
+    private string _pageIndicatorLabel = "Filter";
 
     public static readonly DirectProperty<PanelSpinner, List<PanelItem>> ItemsProperty =
         AvaloniaProperty.RegisterDirect<PanelSpinner, List<PanelItem>>(
@@ -44,6 +45,13 @@ public partial class PanelSpinner : UserControl
         AvaloniaProperty.RegisterDirect<PanelSpinner, PanelItem?>(
             nameof(SelectedItem),
             o => o.SelectedItem
+        );
+
+    public static readonly DirectProperty<PanelSpinner, string> PageIndicatorLabelProperty =
+        AvaloniaProperty.RegisterDirect<PanelSpinner, string>(
+            nameof(PageIndicatorLabel),
+            o => o.PageIndicatorLabel,
+            (o, v) => o.PageIndicatorLabel = v
         );
 
     public List<PanelItem> Items
@@ -74,6 +82,16 @@ public partial class PanelSpinner : UserControl
 
     public PanelItem? SelectedItem =>
         _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
+
+    public string PageIndicatorLabel
+    {
+        get => _pageIndicatorLabel;
+        set
+        {
+            SetAndRaise(PageIndicatorLabelProperty, ref _pageIndicatorLabel, value);
+            UpdateDisplay();
+        }
+    }
 
     public event EventHandler<PanelItem?>? SelectionChanged;
 
@@ -182,7 +200,7 @@ public partial class PanelSpinner : UserControl
         {
             int currentPage = _currentIndex + 1;
             int totalPages = _items.Count;
-            _pageIndicator.Text = $"Filter {currentPage}/{totalPages}";
+            _pageIndicator.Text = $"{_pageIndicatorLabel} {currentPage}/{totalPages}";
         }
     }
 

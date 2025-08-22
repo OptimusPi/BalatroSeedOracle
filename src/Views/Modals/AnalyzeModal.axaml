@@ -97,7 +97,7 @@
         
         <!-- Content box style -->
         <Style Selector="Border.content-box">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -105,7 +105,7 @@
         
         <!-- Ante Panel Style -->
         <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Margin" Value="5,5,5,10"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -113,7 +113,7 @@
         
         <!-- Shop Slot Style -->
         <Style Selector="Border.shop-slot">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
@@ -124,7 +124,7 @@
         
         <!-- Tag Display Style -->
         <Style Selector="Border.tag-display">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="5"/>
@@ -202,7 +202,7 @@
         <Grid Grid.Row="2">
             <!-- Settings Panel (Deck/Stake) -->
             <StackPanel Name="SettingsPanel" IsVisible="True" Spacing="24">
-                <Border Background="{StaticResource DarkModalGrey}" 
+                <Border Background="{StaticResource DarkGrey}" 
                         CornerRadius="12" 
                         Padding="40"
                         HorizontalAlignment="Center"
@@ -215,7 +215,7 @@
             <ScrollViewer Name="AnalyzerPanel" IsVisible="False" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Input Section -->
-                    <Border Background="{StaticResource DarkModalGrey}" CornerRadius="12" Margin="10">
+                    <Border Background="{StaticResource DarkGrey}" CornerRadius="12" Margin="10">
                             <Grid Margin="15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -241,7 +241,7 @@
                                         Height="40"
                                         Margin="0,0,15,0"
                                         CornerRadius="6"
-                                        Background="{StaticResource VeryDarkGrey}"
+                                        Background="{StaticResource DarkGrey}"
                                         BorderBrush="{StaticResource DarkBorder}"
                                         BorderThickness="0"/>
                                 
@@ -265,7 +265,7 @@
                     <StackPanel Name="ResultsPanel" Margin="5">
                         <!-- Placeholder -->
                         <Border Name="PlaceholderPanel" 
-                               Background="{StaticResource DarkModalGrey}" 
+                               Background="{StaticResource DarkGrey}" 
                                CornerRadius="12" 
                                Padding="40"
                                HorizontalAlignment="Center"

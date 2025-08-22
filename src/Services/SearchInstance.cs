@@ -576,6 +576,10 @@ namespace BalatroSeedOracle.Services
 
                 // Load the config from file - use LoadFromJson to get PostProcess!
                 var ouijaConfig = OuijaConfig.LoadFromJson(configPath);
+                if (ouijaConfig == null)
+                {
+                    throw new InvalidOperationException($"Config validation failed for: {configPath}");
+                }
                 
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
@@ -704,6 +708,10 @@ namespace BalatroSeedOracle.Services
 
             // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
             var config = OuijaConfig.LoadFromJson(criteria.ConfigPath);
+            if (config == null)
+            {
+                throw new InvalidOperationException($"Config validation failed for: {criteria.ConfigPath}");
+            }
             
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
@@ -926,7 +934,6 @@ namespace BalatroSeedOracle.Services
         )
         {
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "RunSearchInProcess ENTERED!");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OnResultFound is {(OuijaJsonFilterDesc.OnResultFound != null ? "SET" : "NULL")}");
             
             try
             {
@@ -941,14 +948,11 @@ namespace BalatroSeedOracle.Services
                     DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Debug mode enabled - Motely DebugLogger activated");
                 }
 
-                // Create filter descriptor
+                // Create filter descriptor with result callback
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating OuijaJsonFilterDesc with config: {config.Name ?? "unnamed"}");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
                 
-                var filterDesc = new OuijaJsonFilterDesc(config);
-
-                // Assign result callback AFTER creating filterDesc to avoid it being reset inside constructor logic
-                OuijaJsonFilterDesc.OnResultFound = async (seed, totalScore, scores) =>
+                Action<string, int, int[]> onResultFound = (seed, totalScore, scores) =>
                 {
                     DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Direct callback - Found: {seed} Score: {totalScore}");
 
@@ -961,7 +965,7 @@ namespace BalatroSeedOracle.Services
                     };
 
                     // Marshal collection & UI event updates to UI thread; DB insert stays background
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _results.Add(result);
                         ResultFound?.Invoke(
@@ -979,8 +983,11 @@ namespace BalatroSeedOracle.Services
                     });
 
                     // Save to database (background thread OK)
-                    await AddSearchResultAsync(result);
+                    Task.Run(async () => await AddSearchResultAsync(result));
                 };
+                
+                // Create filter descriptor with new constructor
+                var filterDesc = new OuijaJsonFilterDesc(false, config, onResultFound);
                 
                 // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
                 // MinScore=0 means auto-cutoff in Motely

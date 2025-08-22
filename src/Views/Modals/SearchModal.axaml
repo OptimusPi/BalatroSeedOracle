@@ -493,7 +493,7 @@
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="14"
                                              TextAlignment="Center"
-                                             Background="{StaticResource VeryDarkGrey}"
+                                             Background="{StaticResource DarkGrey}"
                                              BorderBrush="{StaticResource DarkBorder}"
                                              BorderThickness="1"
                                              IsEnabled="False"

@@ -54,6 +54,9 @@ namespace BalatroSeedOracle.Components
             _panelSpinner = this.FindControl<PanelSpinner>("InnerPanelSpinner");
             if (_panelSpinner != null)
             {
+                // Set the page indicator label to "Deck" instead of "Filter"
+                _panelSpinner.PageIndicatorLabel = "Deck";
+                
                 // Create panel items from deck data
                 var items = _decks
                     .Select(

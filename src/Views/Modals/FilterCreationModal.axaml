@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Modals.FilterCreationModal">
+    
+    <!-- Full screen modal with Balatro-style overlay -->
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <Border Background="{StaticResource SemiTransparentBlack}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False" />
+        
+        <!-- Modal positioning grid -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Main modal container - Balatro style -->
+            <Border Grid.Column="1" Grid.Row="1"
+                    Background="{StaticResource DockGrey}"
+                    CornerRadius="20"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="600"
+                    Height="400"
+                    BoxShadow="{StaticResource StandardModalShadow}"
+                    ClipToBounds="False">
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="60"/>   <!-- Header -->
+                        <RowDefinition Height="*"/>    <!-- Content -->
+                        <RowDefinition Height="60"/>   <!-- Footer -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <TextBlock Grid.Row="0"
+                               Text="Create New Filter"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Content area -->
+                    <StackPanel Grid.Row="1"
+                                Orientation="Vertical"
+                                Margin="40,20"
+                                Spacing="20">
+                        
+                        <TextBlock Text="Filter creation functionality coming soon!"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"/>
+                        
+                        <TextBlock Text="This feature will allow you to create custom filters for seed searching."
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="LightGray"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"/>
+                        
+                    </StackPanel>
+
+                    <!-- Footer with close button -->
+                    <Button Grid.Row="2"
+                            x:Name="CloseButton"
+                            Content="Close"
+                            Classes="back-button"
+                            HorizontalAlignment="Stretch"
+                            Margin="3"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+</UserControl>

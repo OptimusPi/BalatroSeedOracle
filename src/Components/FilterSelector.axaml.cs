@@ -5,765 +5,542 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform.Storage;
-using Avalonia.VisualTree;
-using BalatroSeedOracle.Constants;
-using BalatroSeedOracle.Controls;
-using BalatroSeedOracle.Helpers;
+using Avalonia.Media.Transformation;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Views.Modals;
 
-namespace BalatroSeedOracle.Components
+namespace BalatroSeedOracle.Components;
+
+public partial class FilterSelector : UserControl
 {
-    public partial class FilterSelector : UserControl
-    {
-        // Events
-        public event EventHandler<string>? FilterSelected;
-        public event EventHandler<string>? FilterLoaded;
+    private const int ITEMS_PER_PAGE = 12;
+    
+    private List<FilterInfo> _availableFilters = new();
+    private List<FilterInfo> _filteredFilters = new();
+    private string _searchQuery = string.Empty;
+    private int _currentPage = 0;
+    private int _selectedIndex = -1;
+    private FilterInfo? _selectedFilter;
+    private FileSystemWatcher? _watcher;
+    private DateTime _lastFsEventUtc = DateTime.MinValue;
+    private bool _pendingRefresh;
+    private readonly TimeSpan _fsDebounce = TimeSpan.FromMilliseconds(250);
+    private readonly object _refreshLock = new();
+    private bool _disposed;
 
-        // Properties
-        private bool _autoLoadEnabled = true;
-        public bool AutoLoadEnabled
-        {
-            get => _autoLoadEnabled;
-            set => _autoLoadEnabled = value;
-        }
-
-        // Services
-        private readonly SpriteService _spriteService;
-
-        public bool ShowCreateButton { get; set; } = true;
-        public bool ShouldSwitchToVisualTab { get; set; } = false;
-        public bool IsInSearchModal { get; set; } = false;
+    public bool AutoFireSelection { get; set; } = false;
+    
+    public static readonly StyledProperty<string> TitleProperty = 
+        AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
         
-        public static readonly StyledProperty<string> TitleProperty = 
-            AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
-            
-        public string Title
+    public string Title
+    {
+        get => GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+    
+    private ItemsControl? _filterGrid;
+    private TextBlock? _selectedFilterName;
+    private TextBlock? _pageIndicator;
+    private TextBlock? _statusText;
+    private Button? _prevPageButton;
+    private Button? _nextPageButton;
+    private Button? _selectButton;
+    private Button? _createButton;
+    private TextBox? _searchBox;
+    
+    public event EventHandler<string?>? FilterSelected;
+    
+    public FilterSelector()
+    {
+        InitializeComponent();
+        
+        this.Focusable = true;
+        this.KeyDown += OnKeyDown;
+        SetupFileWatcher();
+    }
+    
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+        
+        _filterGrid = this.FindControl<ItemsControl>("FilterGrid");
+        _selectedFilterName = this.FindControl<TextBlock>("SelectedFilterName");
+        _pageIndicator = this.FindControl<TextBlock>("PageIndicator");
+        _statusText = this.FindControl<TextBlock>("StatusText");
+        _prevPageButton = this.FindControl<Button>("PrevPageButton");
+        _nextPageButton = this.FindControl<Button>("NextPageButton");
+        _selectButton = this.FindControl<Button>("SelectButton");
+        _createButton = this.FindControl<Button>("CreateButton");
+        _searchBox = this.FindControl<TextBox>("SearchBox");
+        
+        if (_searchBox != null)
         {
-            get => GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
+            _searchBox.TextChanged += OnSearchTextChanged;
         }
-
-        // Controls
-        private PanelSpinner? _filterSpinner;
-        private Button? _selectButton;
-        private bool _hasFilters = false;
-
-        public FilterSelector()
+        
+        if (_prevPageButton != null)
         {
-            InitializeComponent();
-            _spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+            _prevPageButton.Click += OnPrevPageClick;
         }
-
-        private void InitializeComponent()
+        
+        if (_nextPageButton != null)
         {
-            AvaloniaXamlLoader.Load(this);
-
-            // Get controls
-            _filterSpinner = this.FindControl<PanelSpinner>("FilterSpinner");
-            _selectButton = this.FindControl<Button>("SelectButton");
-
-            // Setup panel spinner
-            if (_filterSpinner != null)
+            _nextPageButton.Click += OnNextPageClick;
+        }
+        
+        if (_selectButton != null)
+        {
+            _selectButton.Click += OnSelectClick;
+        }
+        
+        if (_createButton != null)
+        {
+            _createButton.Click += OnCreateClick;
+        }
+        
+        Loaded += OnLoaded;
+    }
+    
+    private void OnLoaded(object? _, RoutedEventArgs __)
+    {
+        RefreshFilters();
+    }
+    
+    private void SetupFileWatcher()
+    {
+        try
+        {
+            var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            if (!Directory.Exists(directory))
             {
-                _filterSpinner.SelectionChanged += OnFilterSelectionChanged;
+                Directory.CreateDirectory(directory);
             }
             
-            // CRITICAL FIX: Wire up the Select button!
-            if (_selectButton != null)
+            _watcher = new FileSystemWatcher(directory)
             {
-                _selectButton.Click += OnSelectClick;
+                Filter = "*.json",
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                EnableRaisingEvents = true
+            };
+            
+            _watcher.Created += OnFileSystemEvent;
+            _watcher.Changed += OnFileSystemEvent;
+            _watcher.Deleted += OnFileSystemEvent;
+            _watcher.Renamed += OnFileSystemEvent;
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("FilterSelector", $"Failed to setup file watcher: {ex.Message}");
+        }
+    }
+    
+    private void OnFileSystemEvent(object sender, FileSystemEventArgs e)
+    {
+        lock (_refreshLock)
+        {
+            _lastFsEventUtc = DateTime.UtcNow;
+            if (!_pendingRefresh)
+            {
+                _pendingRefresh = true;
+                Task.Delay(_fsDebounce).ContinueWith(_ => DebouncedRefresh());
             }
         }
-
-        protected override void OnLoaded(RoutedEventArgs e)
+    }
+    
+    private void DebouncedRefresh()
+    {
+        lock (_refreshLock)
         {
-            base.OnLoaded(e);
-            LoadAvailableFilters();
-
-            // Update button text based on context
-            if (IsInSearchModal)
+            if (DateTime.UtcNow - _lastFsEventUtc >= _fsDebounce)
             {
-                if (_selectButton != null)
-                    _selectButton.Content = "SEARCH SEEDS USING THIS FILTER";
+                _pendingRefresh = false;
+                Avalonia.Threading.Dispatcher.UIThread.Post(RefreshFilters);
             }
             else
             {
-                if (_selectButton != null)
-                    _selectButton.Content = "Continue➡️";
+                Task.Delay(_fsDebounce).ContinueWith(_ => DebouncedRefresh());
             }
         }
-
-        private void LoadAvailableFilters()
+    }
+    
+    private void RefreshFilters()
+    {
+        try
         {
-            try
+            var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            if (!Directory.Exists(directory))
             {
-                var filterItems = new List<(PanelItem? item, DateTime? dateCreated)>();
-
-                // Look for .json files in JsonItemFilters directory
-                var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
-
-                // Create directory if it doesn't exist
-                if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            }
+            
+            var filters = new List<FilterInfo>();
+            var jsonFiles = Directory.GetFiles(directory, "*.json");
+            
+            foreach (var file in jsonFiles)
+            {
+                try
                 {
-                    Directory.CreateDirectory(directory);
-                }
-
-                var rootJsonFiles = Directory.GetFiles(directory, "*.json");
-
-                foreach (var file in rootJsonFiles)
-                {
-                    var result = CreateFilterPanelItemWithDate(file);
-                    if (result.item != null)
-                    {
-                        filterItems.Add(result);
-                    }
-                }
-
-                // Sort by DateCreated DESC (newest first)
-                var sortedItems = filterItems
-                    .Where(x => x.item != null)
-                    .OrderByDescending(x => x.dateCreated ?? DateTime.MinValue)
-                    .Select(x => x.item!)
-                    .ToList();
-
-                DebugLogger.Log("FilterSelector", $"Found {sortedItems.Count} filters");
-                _hasFilters = sortedItems.Count > 0;
-
-                // Determine what to show based on context and filter availability
-                if (ShowCreateButton && !IsInSearchModal)
-                {
-                    // In FiltersModal - always add create option at the beginning
-                    sortedItems.Insert(0, CreateNewFilterPanelItem());
+                    var content = File.ReadAllText(file);
+                    using var doc = JsonDocument.Parse(content);
                     
-                    if (_selectButton != null)
-                        _selectButton.IsEnabled = false;
-                }
-                else if (_hasFilters)
-                {
-                    if (_selectButton != null)
-                        _selectButton.IsEnabled = true;
-                }
-
-                if (_filterSpinner != null)
-                    _filterSpinner.Items = sortedItems;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FilterSelector", $"Error loading filters: {ex.Message}");
-            }
-        }
-
-        private (PanelItem? item, DateTime? dateCreated) CreateFilterPanelItemWithDate(string filterPath)
-        {
-            try
-            {
-                var filterContent = File.ReadAllText(filterPath);
-                using var doc = JsonDocument.Parse(filterContent);
-
-                // Get filter name - skip if no name property
-                if (
-                    !doc.RootElement.TryGetProperty("name", out var nameElement)
-                    || string.IsNullOrEmpty(nameElement.GetString())
-                )
-                {
-                    DebugLogger.Log(
-                        "FilterSelector",
-                        $"Filter '{filterPath}' has no 'name' property - skipping"
-                    );
-                    return (null, null);
-                }
-
-                var filterName = nameElement.GetString()!;
-
-                // Get description
-                string description = "No description";
-                if (doc.RootElement.TryGetProperty("description", out var descElement))
-                {
-                    description = descElement.GetString() ?? "No description";
-                }
-
-                // Get author if available
-                string? author = null;
-                if (doc.RootElement.TryGetProperty("author", out var authorElement))
-                {
-                    author = authorElement.GetString();
-                }
-
-                if (!string.IsNullOrEmpty(author))
-                {
-                    description = $"by {author}\n{description}";
-                }
-
-                // Get dateCreated if available
-                DateTime? dateCreated = null;
-                if (doc.RootElement.TryGetProperty("dateCreated", out var dateElement))
-                {
-                    if (DateTime.TryParse(dateElement.GetString(), out var parsedDate))
+                    if (!doc.RootElement.TryGetProperty("name", out var nameElement) ||
+                        string.IsNullOrEmpty(nameElement.GetString()))
                     {
-                        dateCreated = parsedDate;
+                        continue;
                     }
-                }
-
-                // Clone the root element to use after the document is disposed
-                var clonedRoot = doc.RootElement.Clone();
-
-                var item = new PanelItem
-                {
-                    Title = filterName,
-                    Description = description,
-                    Value = filterPath,
-                    GetImage = () => CreateFannedPreviewImage(clonedRoot),
-                };
-
-                return (item, dateCreated);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FilterSelector",
-                    $"Error parsing filter {filterPath}: {ex.Message}"
-                );
-                return (null, null);
-            }
-        }
-
-        private PanelItem? CreateFilterPanelItem(string filterPath)
-        {
-            var result = CreateFilterPanelItemWithDate(filterPath);
-            return result.item;
-        }
-
-        private IImage? CreateFannedPreviewImage(JsonElement filterRoot)
-        {
-            try
-            {
-                DebugLogger.Log("FilterSelector", "Creating fanned preview image");
-                
-                // Collect items from all categories
-                var previewItems = new List<(string value, string? type)>();
-
-                // Check must items first
-                if (filterRoot.TryGetProperty("must", out var mustItems))
-                {
-                    foreach (var item in mustItems.EnumerateArray())
-                    {
-                        if (item.TryGetProperty("value", out var value) && 
-                            item.TryGetProperty("type", out var type))
-                        {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 4) break;
-                        }
-                    }
-                }
-
-                // Add should items if we have space
-                if (previewItems.Count < 4 && filterRoot.TryGetProperty("should", out var shouldItems))
-                {
-                    foreach (var item in shouldItems.EnumerateArray())
-                    {
-                        if (item.TryGetProperty("value", out var value) && 
-                            item.TryGetProperty("type", out var type))
-                        {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 4) break;
-                        }
-                    }
-                }
-
-                if (previewItems.Count == 0)
-                {
-                    DebugLogger.Log("FilterSelector", "No preview items found, showing MysteryJoker");
-                    // Return a MysteryJoker image for empty filters
-                    return _spriteService.GetJokerImage("j_joker");
-                }
-                
-                DebugLogger.Log("FilterSelector", $"Found {previewItems.Count} preview items");
-
-                // Create a render target bitmap for the composite image
-                var pixelSize = new PixelSize(400, 200);
-                var dpi = new Vector(96, 96);
-                var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
-
-                // Create a canvas to arrange the cards
-                var canvas = new Canvas
-                {
-                    Width = pixelSize.Width,
-                    Height = pixelSize.Height,
-                    Background = Brushes.Transparent,
-                    ClipToBounds = true,
-                };
-
-                // Add cards in a fanned arrangement
-                int cardIndex = 0;
-                int totalCards = Math.Min(previewItems.Count, 4);
-                double startX = 50;
-                double cardSpacing = 60;
-                
-                foreach (var (value, type) in previewItems.Take(totalCards))
-                {
-                    var image = GetItemImage(value, type);
-                    if (image != null)
-                    {
-                        DebugLogger.Log("FilterSelector", $"Got image for {value} (type: {type})");
-                        var imgControl = new Image
-                        {
-                            Source = image,
-                            Width = 110,
-                            Height = 150,
-                            Stretch = Stretch.Uniform,
-                        };
-
-                        // Calculate position and rotation
-                        double rotation = (cardIndex - totalCards / 2.0 + 0.5) * 8;
-                        double xPos = startX + (cardIndex * cardSpacing);
-                        double yPos = 20 + Math.Abs(cardIndex - totalCards / 2.0 + 0.5) * 8;
-
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new RotateTransform(rotation, 55, 75));
-                        transformGroup.Children.Add(new TranslateTransform(xPos, yPos));
-                        
-                        imgControl.RenderTransform = transformGroup;
-                        imgControl.ZIndex = cardIndex;
-
-                        canvas.Children.Add(imgControl);
-                        cardIndex++;
-                    }
-                }
-
-                // Measure and arrange the canvas
-                canvas.Measure(new Size(pixelSize.Width, pixelSize.Height));
-                canvas.Arrange(new Rect(0, 0, pixelSize.Width, pixelSize.Height));
-                
-                // Force layout update
-                canvas.UpdateLayout();
-
-                // Render to bitmap
-                renderBitmap.Render(canvas);
-                
-                DebugLogger.Log("FilterSelector", $"Successfully created fanned preview with {cardIndex} cards");
-
-                return renderBitmap;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FilterSelector", $"Error creating fanned preview: {ex.Message}");
-                // Fallback to single image
-                return GetFilterPreviewImage(filterRoot);
-            }
-        }
-
-        private Control? GetFilterPreviewControl(JsonElement filterRoot)
-        {
-            try
-            {
-                // Collect items from all categories
-                var previewItems = new List<(string value, string? type)>();
-
-                // Check must items first
-                if (filterRoot.TryGetProperty("must", out var mustItems))
-                {
-                    foreach (var item in mustItems.EnumerateArray())
-                    {
-                        if (item.TryGetProperty("value", out var value) && 
-                            item.TryGetProperty("type", out var type))
-                        {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 5) break;
-                        }
-                    }
-                }
-
-                // Add should items if we have space
-                if (previewItems.Count < 5 && filterRoot.TryGetProperty("should", out var shouldItems))
-                {
-                    foreach (var item in shouldItems.EnumerateArray())
-                    {
-                        if (item.TryGetProperty("value", out var value) && 
-                            item.TryGetProperty("type", out var type))
-                        {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 5) break;
-                        }
-                    }
-                }
-
-                if (previewItems.Count == 0)
-                {
-                    return null;
-                }
-
-                // Create a canvas to hold the fanned cards
-                var canvas = new Canvas
-                {
-                    Width = 200,
-                    Height = 100,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                };
-
-                // Create fanned display
-                int cardIndex = 0;
-                foreach (var (value, type) in previewItems.Take(5))
-                {
-                    var image = GetItemImage(value, type);
-                    if (image != null)
-                    {
-                        var imgControl = new Image
-                        {
-                            Source = image,
-                            Width = 60,
-                            Height = 80,
-                        };
-
-                        // Fan out the cards
-                        var rotation = (cardIndex - 2) * 5; // -10, -5, 0, 5, 10 degrees
-                        var xOffset = cardIndex * 25 + 20;
-                        var yOffset = Math.Abs(cardIndex - 2) * 3; // Slight Y offset for depth
-
-                        imgControl.RenderTransform = new Avalonia.Media.RotateTransform(rotation);
-                        Canvas.SetLeft(imgControl, xOffset);
-                        Canvas.SetTop(imgControl, yOffset);
-                        imgControl.ZIndex = cardIndex;
-
-                        canvas.Children.Add(imgControl);
-                        cardIndex++;
-                    }
-                }
-
-                return canvas;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FilterSelector", $"Error creating preview: {ex.Message}");
-                return null;
-            }
-        }
-
-        private IImage? GetFilterPreviewImage(JsonElement filterRoot)
-        {
-            // Fallback for single image if needed
-            try
-            {
-                if (filterRoot.TryGetProperty("must", out var items))
-                {
-                    foreach (var item in items.EnumerateArray())
-                    {
-                        if (item.TryGetProperty("value", out var value) && 
-                            item.TryGetProperty("type", out var type))
-                        {
-                            return GetItemImage(value.GetString() ?? "", type.GetString());
-                        }
-                    }
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private IImage? GetItemImage(string value, string? type)
-        {
-            // Get image based on type
-            var lowerType = type?.ToLower();
-            
-            // Special handling for souljoker - create composite with card base and face overlay
-            if (lowerType == "souljoker")
-            {
-                var cardBase = _spriteService.GetJokerImage(value);
-                var jokerFace = _spriteService.GetJokerSoulImage(value);
-                
-                if (cardBase != null && jokerFace != null)
-                {
-                    // Create a composite image with card base and face overlay
-                    var pixelSize = new PixelSize(UIConstants.JokerSpriteWidth, UIConstants.JokerSpriteHeight);
-                    var dpi = new Vector(96, 96);
                     
-                    try
+                    var name = nameElement.GetString()!;
+                    var description = "No description";
+                    var author = "";
+                    var dateCreated = File.GetCreationTime(file);
+                    
+                    if (doc.RootElement.TryGetProperty("description", out var descElement))
                     {
-                        var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
-                        
-                        using (var context = renderBitmap.CreateDrawingContext())
+                        description = descElement.GetString() ?? "No description";
+                    }
+                    
+                    if (doc.RootElement.TryGetProperty("author", out var authorElement))
+                    {
+                        author = authorElement.GetString() ?? "";
+                    }
+                    
+                    if (doc.RootElement.TryGetProperty("dateCreated", out var dateElement))
+                    {
+                        if (DateTime.TryParse(dateElement.GetString(), out var parsedDate))
                         {
-                            // Draw card base first
-                            var cardRect = new Rect(0, 0, pixelSize.Width, pixelSize.Height);
-                            context.DrawImage(cardBase, cardRect);
-                            
-                            // Draw face overlay on top
-                            context.DrawImage(jokerFace, cardRect);
+                            dateCreated = parsedDate;
                         }
-                        
-                        return renderBitmap;
                     }
-                    catch (Exception ex)
+                    
+                    filters.Add(new FilterInfo
                     {
-                        DebugLogger.LogError("FilterSelector", $"Failed to create composite image: {ex.Message}");
-                        // Fallback to just the face if composite fails
-                        return jokerFace ?? cardBase;
-                    }
+                        Name = name,
+                        Description = description,
+                        Author = author,
+                        FilePath = file,
+                        DateCreated = dateCreated
+                    });
                 }
-                else if (jokerFace != null)
+                catch (Exception ex)
                 {
-                    // If we only have the face, use that
-                    return jokerFace;
-                }
-                else if (cardBase != null)
-                {
-                    // Fallback to just the card if we can't get the face
-                    return cardBase;
+                    DebugLogger.LogError("FilterSelector", $"Error parsing filter {file}: {ex.Message}");
                 }
             }
             
-            return lowerType switch
-            {
-                "joker" => _spriteService.GetJokerImage(value),
-                "voucher" => _spriteService.GetVoucherImage(value),
-                "tag" => _spriteService.GetTagImage(value),
-                "boss" => _spriteService.GetBossImage(value),
-                "spectral" => _spriteService.GetSpectralImage(value),
-                "tarot" => _spriteService.GetTarotImage(value),
-                _ => null,
-            };
+            _availableFilters = filters.OrderByDescending(f => f.DateCreated).ToList();
+            ApplySearchFilter();
+            UpdateUI();
         }
-
-        private void OnFilterSelectionChanged(object? sender, PanelItem? item)
+        catch (Exception ex)
         {
-            if (item?.Value != null && !string.IsNullOrEmpty(item.Value) && item.Value != "__CREATE_NEW__")
-            {
-                // Regular filter selection
-                FilterSelected?.Invoke(this, item.Value);
-                
-                // Update button text based on context
-                if (_selectButton != null)
-                {
-                    if (IsInSearchModal)
-                        _selectButton.Content = "USE THIS FILTER";
-                    else
-                        _selectButton.Content = "LOAD THIS FILTER";
-                        
-                    _selectButton.IsEnabled = true;
-                    _selectButton.IsVisible = true;
-                }
-
-                // Auto-load if enabled
-                if (_autoLoadEnabled)
-                {
-                    DebugLogger.Log("FilterSelector", $"Auto-loading filter: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
-                    FilterLoaded?.Invoke(this, item.Value);
-                }
-                else
-                {
-                    DebugLogger.Log("FilterSelector", $"Filter selected but NOT auto-loading: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
-                }
-            }
-            else if (item?.Value == "__CREATE_NEW__")
-            {
-                // Disable the blue button for create new filter
-                if (_selectButton != null)
-                {
-                    _selectButton.IsEnabled = false;
-                    _selectButton.IsVisible = true;
-                }
-            }
+            DebugLogger.LogError("FilterSelector", $"Error refreshing filters: {ex.Message}");
         }
-
-        private void OnSelectClick(object? sender, RoutedEventArgs e)
+    }
+    
+    private void ApplySearchFilter()
+    {
+        if (string.IsNullOrWhiteSpace(_searchQuery))
         {
-            var selectedItem = _filterSpinner?.SelectedItem;
-            
-            if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value) && selectedItem.Value != "__CREATE_NEW__")
-            {
-                // Load the selected filter
-                FilterLoaded?.Invoke(this, selectedItem.Value);
-            }
+            _filteredFilters = _availableFilters.ToList();
         }
-
-
-        private PanelItem CreateNewFilterPanelItem()
+        else
         {
-            return new PanelItem
-            {
-                Title = "Create New Filter",
-                Description = "Start with a blank filter",
-                Value = "__CREATE_NEW__",
-                GetImage = () => null,
-                GetControl = () => CreateNewFilterInputPanel()
-            };
+            var query = _searchQuery.ToLowerInvariant();
+            _filteredFilters = _availableFilters.Where(f => 
+                f.Name.ToLowerInvariant().Contains(query) ||
+                f.Description.ToLowerInvariant().Contains(query) ||
+                f.Author.ToLowerInvariant().Contains(query)
+            ).ToList();
         }
         
-        private Control CreateNewFilterInputPanel()
+        _currentPage = 0;
+        if (_selectedFilter != null && !_filteredFilters.Contains(_selectedFilter))
         {
-            // Simple stack panel - no extra borders
-            var panel = new StackPanel
-            {
-                Spacing = 15,
-                Width = 380,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            };
-            
-            // Name input
-            var nameInput = new TextBox
-            {
-                Name = "FilterNameInput",
-                Watermark = "Filter name...",
-                Classes = { "balatro-input" },
-                Height = 36,
-                FontSize = 14
-            };
-            panel.Children.Add(nameInput);
-            
-            // Description input (optional)
-            var descInput = new TextBox
-            {
-                Name = "FilterDescriptionInput",
-                Watermark = "Description (optional)...",
-                Classes = { "balatro-input" },
-                Height = 70,
-                FontSize = 14,
-                AcceptsReturn = true,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap
-            };
-            panel.Children.Add(descInput);
-            
-            // Add Create button at the bottom
+            _selectedFilter = null;
+            _selectedIndex = -1;
+        }
+    }
+    
+    private void UpdateUI()
+    {
+        UpdateFilterGrid();
+        UpdatePagination();
+        UpdateStatus();
+        UpdateSelection();
+    }
+    
+    private void UpdateFilterGrid()
+    {
+        if (_filterGrid == null) return;
+        
+        var startIndex = _currentPage * ITEMS_PER_PAGE;
+        var pageFilters = _filteredFilters.Skip(startIndex).Take(ITEMS_PER_PAGE).ToList();
+        
+        var buttons = new List<Button>();
+        
+        // Add "Create New" button if on first page
+        if (_currentPage == 0)
+        {
             var createButton = new Button
             {
-                Content = "CREATE",
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 0),
-                IsEnabled = false,
-                Classes = { "btn-green" },
-                MinWidth = 120,
-                Height = 36
-            };
-            
-            // Wire up text change events to enable/disable create button
-            Action updateButtonState = () =>
-            {
-                var hasName = !string.IsNullOrWhiteSpace(nameInput.Text);
-                createButton.IsEnabled = hasName;
-            };
-            
-            nameInput.TextChanged += (s, e) => updateButtonState();
-            
-            createButton.Click += (s, e) =>
-            {
-                var filterName = nameInput.Text?.Trim() ?? "";
-                var filterDescription = descInput.Text?.Trim() ?? "No description";
-                
-                if (!string.IsNullOrEmpty(filterName))
+                Classes = { "filter-card", "create-filter-card" },
+                Content = new StackPanel
                 {
-                    var createdFilterPath = SaveBasicFilter(filterName, filterDescription);
-                    if (!string.IsNullOrEmpty(createdFilterPath))
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Children =
                     {
-                        // Refresh the filter list and select the new filter
-                        LoadAvailableFilters();
-                        
-                        // Find and select the new filter
-                        if (_filterSpinner != null)
+                        new TextBlock
                         {
-                            for (int i = 0; i < _filterSpinner.Items.Count; i++)
-                            {
-                                if (_filterSpinner.Items[i].Value == createdFilterPath)
-                                {
-                                    _filterSpinner.SelectedIndex = i;
-                                    break;
-                                }
-                            }
+                            Text = "➕",
+                            FontSize = 32,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Foreground = Brushes.White
+                        },
+                        new TextBlock
+                        {
+                            Text = "Create New",
+                            FontFamily = this.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                            FontSize = 12,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Foreground = Brushes.White,
+                            Margin = new Thickness(0, 4, 0, 0)
                         }
-                        
-                        // Load it
-                        FilterLoaded?.Invoke(this, createdFilterPath);
-                        
-                        DebugLogger.Log("FilterSelector", $"Created and loaded new filter: {createdFilterPath}");
+                    }
+                }
+            };
+            createButton.Click += OnCreateClick;
+            buttons.Add(createButton);
+        }
+        
+        // Add filter buttons
+        for (int i = 0; i < pageFilters.Count; i++)
+        {
+            var filter = pageFilters[i];
+            var globalIndex = startIndex + i;
+            var isSelected = _selectedFilter == filter;
+            
+            var button = new Button
+            {
+                Classes = { "filter-card" },
+                Tag = filter,
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = filter.Name,
+                            FontFamily = this.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                            FontSize = 14,
+                            FontWeight = FontWeight.Bold,
+                            Foreground = Brushes.White,
+                            TextWrapping = TextWrapping.Wrap,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Margin = new Thickness(0, 0, 0, 4)
+                        },
+                        new TextBlock
+                        {
+                            Text = string.IsNullOrEmpty(filter.Author) ? filter.Description : $"by {filter.Author}",
+                            FontFamily = this.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                            FontSize = 10,
+                            Foreground = Brushes.LightGray,
+                            TextWrapping = TextWrapping.Wrap,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            MaxHeight = 40
+                        }
                     }
                 }
             };
             
-            panel.Children.Add(createButton);
-            
-            return panel;
-        }
-        
-        private string NormalizeFileName(string name)
-        {
-            // Remove special characters and replace with hyphens
-            var normalized = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9]+", "-");
-            
-            // Remove leading/trailing hyphens
-            normalized = normalized.Trim('-');
-            
-            // If empty, use default
-            if (string.IsNullOrEmpty(normalized))
-                normalized = "NewFilter";
-                
-            return normalized;
-        }
-        
-        private string? SaveBasicFilter(string name, string description)
-        {
-            try
+            if (isSelected)
             {
-                var filterDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonItemFilters");
-                if (!Directory.Exists(filterDir))
-                    Directory.CreateDirectory(filterDir);
-                
-                // Create basic filter structure
-                var basicFilter = new
+                button.Classes.Add("selected");
+            }
+            
+            button.Click += OnFilterClick;
+            buttons.Add(button);
+        }
+        
+        _filterGrid.ItemsSource = buttons;
+    }
+    
+    private void UpdatePagination()
+    {
+        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_filteredFilters.Count / ITEMS_PER_PAGE));
+        
+        if (_pageIndicator != null)
+        {
+            _pageIndicator.Text = $"{_currentPage + 1} / {totalPages}";
+        }
+        
+        if (_prevPageButton != null)
+        {
+            _prevPageButton.IsEnabled = _currentPage > 0;
+        }
+        
+        if (_nextPageButton != null)
+        {
+            _nextPageButton.IsEnabled = _currentPage < totalPages - 1;
+        }
+    }
+    
+    private void UpdateStatus()
+    {
+        if (_statusText != null)
+        {
+            var total = _availableFilters.Count;
+            var filtered = _filteredFilters.Count;
+            
+            if (total == 0)
+            {
+                _statusText.Text = "No filters found";
+            }
+            else if (filtered == total)
+            {
+                _statusText.Text = $"{total} filter{(total == 1 ? "" : "s")} available";
+            }
+            else
+            {
+                _statusText.Text = $"{filtered} of {total} filter{(total == 1 ? "" : "s")}";
+            }
+        }
+    }
+    
+    private void UpdateSelection()
+    {
+        if (_selectedFilterName != null)
+        {
+            _selectedFilterName.Text = _selectedFilter?.Name ?? "No filter selected";
+        }
+        
+        if (_selectButton != null)
+        {
+            _selectButton.IsEnabled = _selectedFilter != null;
+        }
+    }
+    
+    private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            _searchQuery = textBox.Text ?? string.Empty;
+            ApplySearchFilter();
+            UpdateUI();
+        }
+    }
+    
+    private void OnPrevPageClick(object? sender, RoutedEventArgs e)
+    {
+        if (_currentPage > 0)
+        {
+            _currentPage--;
+            UpdateUI();
+        }
+    }
+    
+    private void OnNextPageClick(object? sender, RoutedEventArgs e)
+    {
+        var totalPages = Math.Max(1, (int)Math.Ceiling((double)_filteredFilters.Count / ITEMS_PER_PAGE));
+        if (_currentPage < totalPages - 1)
+        {
+            _currentPage++;
+            UpdateUI();
+        }
+    }
+    
+    private void OnFilterClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is FilterInfo filter)
+        {
+            _selectedFilter = filter;
+            _selectedIndex = _filteredFilters.IndexOf(filter);
+            UpdateUI();
+            
+            if (AutoFireSelection)
+            {
+                FilterSelected?.Invoke(this, filter.FilePath);
+            }
+        }
+    }
+    
+    private void OnSelectClick(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedFilter != null)
+        {
+            FilterSelected?.Invoke(this, _selectedFilter.FilePath);
+        }
+    }
+    
+    private void OnCreateClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // For now, just log that the feature is not yet implemented
+            DebugLogger.Log("FilterSelector", "Filter creation feature requested - not yet implemented");
+            
+            // TODO: Implement filter creation modal
+            // This would require access to the main window/menu to properly show the modal
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("FilterSelector", $"Error handling create click: {ex.Message}");
+        }
+    }
+    
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Enter:
+                if (_selectedFilter != null)
                 {
-                    name = name,
-                    description = description,
-                    author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Anonymous",
-                    dateCreated = DateTime.UtcNow.ToString("o"),
-                    must = new object[] { },
-                    should = new object[] { },
-                    mustNot = new object[] { },
-                    scoring = new
-                    {
-                        type = "sum"
-                    }
-                };
-                
-                // Generate filename from name using NormalizeFileName
-                var fileName = NormalizeFileName(name);
-                var filePath = Path.Combine(filterDir, $"{fileName}.json");
-                
-                // Handle duplicates
-                int counter = 1;
-                while (File.Exists(filePath))
-                {
-                    filePath = Path.Combine(filterDir, $"{fileName}{counter}.json");
-                    counter++;
+                    FilterSelected?.Invoke(this, _selectedFilter.FilePath);
+                    e.Handled = true;
                 }
+                break;
                 
-                // Save the file
-                var json = JsonSerializer.Serialize(basicFilter, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(filePath, json);
+            case Key.Left:
+                OnPrevPageClick(null, new RoutedEventArgs());
+                e.Handled = true;
+                break;
                 
-                DebugLogger.Log("FilterSelector", $"Created basic filter: {filePath}");
-                return filePath; // Return the created file path
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FilterSelector", $"Failed to save basic filter: {ex.Message}");
-                return null;
-            }
+            case Key.Right:
+                OnNextPageClick(null, new RoutedEventArgs());
+                e.Handled = true;
+                break;
         }
-
-        public void RefreshFilters()
+    }
+    
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        
+        if (!_disposed)
         {
-            LoadAvailableFilters();
+            _disposed = true;
+            _watcher?.Dispose();
         }
-
+    }
+    
+    private class FilterInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
+        public DateTime DateCreated { get; set; }
     }
 }

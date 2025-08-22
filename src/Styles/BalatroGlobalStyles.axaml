@@ -295,7 +295,7 @@
         <Setter Property="FontSize" Value="20" />
         <Setter Property="MinHeight" Value="50" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="0,16,0,0" />
+        <Setter Property="Margin" Value="8,16,8,0" />
     </Style>
     
     <!-- Compact navigation buttons for filter modal sidebar -->
