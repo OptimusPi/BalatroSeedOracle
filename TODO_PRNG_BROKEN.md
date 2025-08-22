@@ -2,20 +2,34 @@
 
 ## 🔴 CRITICAL - PRNG Accuracy Issues
 
-### Boss PRNG Algorithm is BROKEN
-- **Issue**: The boss PRNG algorithm doesn't match Balatro's actual implementation
-- **Evidence**: Unit tests were cheating with hardcoded values for UNITTEST and ALEEB seeds
-- **Status**: Hardcoded cheats removed, tests will now fail revealing the real issue
+### Boss PRNG Algorithm is COMPLETELY BROKEN ⚠️
+- **Issue**: The boss PRNG algorithm is fundamentally wrong compared to Balatro
+- **Status**: ✅ **FULLY REVERSE ENGINEERED** - Exact algorithm discovered from Lua source
+- **Analysis**: Complete breakdown documented in `BOSS_PRNG_ANALYSIS.md`
 - **Files affected**:
   - `/external/Motely/Motely/MotelySingleSearchContext.Boss.cs` - GetNextBoss() algorithm
   - `/external/Motely/Motely/MotelyVectorSearchContext.Boss.cs` - Vector version needs same fix
-- **What was fixed so far**:
-  - Changed boss PRNG key from "Boss" to "boss" (lowercase)
-  - Removed hardcoded test values from GetBossForAnte()
-- **What still needs fixing**:
-  - The actual boss selection algorithm in GetNextBoss() doesn't match Balatro
-  - Need to reverse engineer the correct boss selection logic from game
-  - Tests will fail until this is fixed
+
+### **Critical Differences Discovered**:
+1. **Wrong Ante Logic**: Uses `ante % 8` instead of `ante % win_ante` (usually 8)
+2. **Missing Min/Max Constraints**: Ignores boss.min/max ante from P_BLINDS data
+3. **No Usage Tracking**: Missing fairness system that ensures equal boss usage
+4. **Wrong Sorting**: Sorts by ToString() instead of key names like Balatro
+5. **Missing Banned Keys**: No support for G.GAME.banned_keys exclusion system
+6. **Incomplete Eligibility**: Oversimplified showdown vs regular boss distinction
+
+### **Required Implementation**:
+- Complete rewrite of boss selection algorithm to match Balatro exactly
+- Add boss metadata (min/max ante, showdown flags) 
+- Implement usage tracking across antes for fairness
+- Fix pseudorandom_element and pseudoseed implementations
+- Add proper sorting by key names
+- Support banned keys system
+
+### **Impact**: 
+- ❌ Any boss-based filter is currently unreliable
+- ❌ PRNG sequence diverges after first boss selection
+- ❌ Seeds that depend on specific boss sequences will fail
 
 ### Vector PRNG Implementations Need Verification
 - **Issue**: Vector implementations may not match single context PRNG exactly
@@ -25,18 +39,18 @@
 ## 🟡 Code Quality Issues
 
 ### Unread Constructor Parameters
-- `OuijaJsonFilterDesc` constructor has unread parameters:
+- `MotelyJsonFilterDesc` constructor has unread parameters:
   - `PrefilterEnabled` parameter is never used
   - `OnResultFound` parameter is never used
 - Should either use these parameters or remove them
 
 ### Null Reference Warnings
-- Multiple nullable reference warnings in OuijaJsonFilterDesc.cs
+- Multiple nullable reference warnings in MotelyJsonFilterDesc.cs
 - Program.cs has nullable Action parameter issues
 
 ## 🟢 Completed Tasks
 - ✅ Fixed compilation errors after vectorization attempt
-- ✅ Updated SearchInstance.cs for new OuijaJsonFilterDesc constructor
+- ✅ Updated SearchInstance.cs for new MotelyJsonFilterDesc constructor
 - ✅ Fixed vector boss PRNG key (changed "Boss" to "boss")
 - ✅ Removed hardcoded test values that were cheating
 - ✅ Verified all CreatePrngStream keys match between single/vector contexts

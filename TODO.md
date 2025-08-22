@@ -7,10 +7,10 @@
 ### Performance Optimizations
 
 #### Add Min Property to Filter Items
-- **Location**: `OuijaConfig.FilterItem` class
+- **Location**: `MotelyJsonConfig.FilterItem` class
 - **Purpose**: Allow filters to specify minimum count requirements (e.g., "at least 2 Blueprints")
 - **Implementation**:
-  - Add `int? Min` property to `OuijaConfig.FilterItem`
+  - Add `int? Min` property to `MotelyJsonConfig.FilterItem`
   - Update filter checking logic to early-exit when Min requirement is met
   - Example: `if (foundCount >= clause.Min) return true;`
 - **Benefit**: Significant performance improvement by avoiding unnecessary checks

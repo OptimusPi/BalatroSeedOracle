@@ -8,7 +8,7 @@ namespace BalatroSeedOracle.Models;
 /// <summary>
 /// MongoDB-style compound query configuration for Balatro seed searching
 /// </summary>
-public class OuijaConfig
+public class MotelyJsonConfig
 {
     private static readonly JsonSerializerOptions s_jsonOptionsIndented = new()
     {

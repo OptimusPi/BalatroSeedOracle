@@ -43,7 +43,7 @@ namespace BalatroSeedOracle.Views.Modals
         private SearchManager? _searchManager;
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
-        private Motely.Filters.OuijaConfig? _loadedConfig;
+        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
 
         // Tab panels
         private Panel? _filterPanel;
@@ -277,7 +277,7 @@ namespace BalatroSeedOracle.Views.Modals
                             AllowTrailingCommas = true,
                             ReadCommentHandling = JsonCommentHandling.Skip
                         };
-                        _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                        _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
                     }
                 }
                 
@@ -935,7 +935,7 @@ namespace BalatroSeedOracle.Views.Modals
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         AllowTrailingCommas = true
                     };
-                    _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                    _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
                 }
 
                 if (_loadedConfig != null)
@@ -1062,7 +1062,7 @@ namespace BalatroSeedOracle.Views.Modals
                     _newResultsCount = 0; // Reset new results counter
 
                     // Reset the Motely cancellation flag
-                    Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                    Motely.Filters.MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 1) + 1; // Convert 0-3 to 1-4 for actual batch size (low=1, default=2, large=3, huge=4)

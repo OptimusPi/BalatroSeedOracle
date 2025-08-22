@@ -27,7 +27,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Validates a filter configuration
         /// </summary>
-        public (bool isValid, string? error) ValidateFilter(OuijaConfig config)
+        public (bool isValid, string? error) ValidateFilter(MotelyJsonConfig config)
         {
             Debug.Assert(config != null, "Config should not be null");
             
@@ -56,7 +56,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Saves a filter to disk with normalized naming
         /// </summary>
-        public string SaveFilter(OuijaConfig config, string filterName, string? directory = null)
+        public string SaveFilter(MotelyJsonConfig config, string filterName, string? directory = null)
         {
             Debug.Assert(config != null, "Config should not be null");
             Debug.Assert(!string.IsNullOrWhiteSpace(filterName), "Filter name required");
@@ -89,7 +89,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Loads a filter from disk
         /// </summary>
-        public OuijaConfig? LoadFilter(string filePath)
+        public MotelyJsonConfig? LoadFilter(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var json = File.ReadAllText(filePath);
-                var config = JsonSerializer.Deserialize<OuijaConfig>(json, _jsonOptions);
+                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, _jsonOptions);
                 
                 if (config != null)
                 {

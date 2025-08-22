@@ -2,11 +2,11 @@
 #include "lib/ouija_config.cl" 
 #include "lib/ouija_result.cl" 
 
-void ouija_filter(instance *inst, __constant OuijaConfig *config, __global OuijaResult *result);
+void ouija_filter(instance *inst, __constant MotelyJsonConfig *config, __global OuijaResult *result);
 
 __kernel void ouija_search(char8 starting_seed_char8, // Renamed to avoid conflict with seed type
                            long num_seeds_for_this_dispatch, // Total seeds this kernel dispatch should handle
-                           __constant OuijaConfig *config,
+                           __constant MotelyJsonConfig *config,
                            __global OuijaResult *results,
                            long batch_seed_offset) { // Changed from pointer to value
     size_t current_global_id = get_global_id(0); // Original OpenCL type: size_t

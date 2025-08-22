@@ -14,7 +14,7 @@
     ],
     "dotnet.server.useOmnisharp": false,
     "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
-    "terminal.integrated.gpuAcceleration": "on",
+    "terminal.integrated.gpuAcceleration": "off",
     "editor.experimentalGpuAcceleration": "off",
     "terminal.integrated.enableImages": true
 }

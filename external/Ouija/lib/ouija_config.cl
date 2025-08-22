@@ -1,6 +1,6 @@
 /**
  * @file ouija_config.cl
- * @brief Definition of the OuijaConfig structure shared between host and device
+ * @brief Definition of the MotelyJsonConfig structure shared between host and device
  */
 
 #ifndef OUIJA_CONFIG_H
@@ -42,6 +42,6 @@ typedef struct {
     int deepSearchTotal;               // Total jokers for deep search (default: 16)
     int minimumErraticRankMatches;     // Minimum number of matching ranks required for Erratic deck (0 = no requirement)
     int minimumErraticSuitMatches;     // Minimum number of matching suits required for Erratic deck (0 = no requirement)
-} OuijaConfig;
+} MotelyJsonConfig;
 
 #endif

@@ -2,11 +2,11 @@
 #include "lib/ouija_config.cl" 
 #include "lib/ouija_result.cl" 
 
-void ouija_filter(instance *inst, __constant OuijaConfig *config, __global OuijaResult *result);
+void ouija_filter(instance *inst, __constant MotelyJsonConfig *config, __global OuijaResult *result);
 
 __kernel void ouija_list_search(__global char8 *seed_list, // Array of seeds from file
                                 long num_seeds_for_this_dispatch, // Total seeds this kernel dispatch should handle
-                                __constant OuijaConfig *config,
+                                __constant MotelyJsonConfig *config,
                                 __global OuijaResult *results,
                                 long batch_seed_offset) { // Offset into the seed list
     size_t current_global_id = get_global_id(0);

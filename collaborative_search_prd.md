@@ -36,7 +36,7 @@ public class PublicLobby
     public string Name { get; set; }                  // "Legendary Joker Hunt"
     public string CreatedBy { get; set; }             // "@Alice"
     public bool IsPublic { get; set; } = true;        // Always true for now
-    public OuijaConfig SearchCriteria { get; set; }   // What we're searching for
+    public MotelyJsonConfig SearchCriteria { get; set; }   // What we're searching for
     public uint StartSeed { get; set; }               // 10000000 
     public uint EndSeed { get; set; }                 // 99999999
     public int BatchSize { get; set; }                // 10000 seeds per batch

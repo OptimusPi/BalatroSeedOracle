@@ -38,10 +38,10 @@ typedef struct {
     cl_bool scoreDesiredNegatives;   // Score desired jokers that are naturally negative
     cl_int minimumErraticRankMatches; // Minimum number of matching ranks required for Erratic deck (0 = no requirement)
     cl_int minimumErraticSuitMatches; // Minimum number of matching suits required for Erratic deck (0 = no requirement)
-} OuijaConfig;
+} MotelyJsonConfig;
 
 // Load configuration from JSON file
-int load_config_from_json(const char* config_filename, OuijaConfig* config) {
+int load_config_from_json(const char* config_filename, MotelyJsonConfig* config) {
     char config_path[MAX_PATH];
     char executable_dir[MAX_PATH] = {0}; // Initialize to empty string
     char full_exe_path[MAX_PATH];
