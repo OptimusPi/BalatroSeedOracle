@@ -179,7 +179,7 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
         
-        private string FormatColumnName(MotelyJsonConfig.FilterItem should)
+        private string FormatColumnName(MotelyJsonConfig.MotleyJsonFilterClause should)
         {
             if (should == null) return "should";
             
@@ -1393,7 +1393,7 @@ namespace BalatroSeedOracle.Services
                 StopSearch();
                 
                 // Wait a bit for graceful shutdown
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(314);
             }
             
             // Ensure the search task is completed or abandoned
