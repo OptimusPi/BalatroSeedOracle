@@ -616,7 +616,7 @@ namespace BalatroSeedOracle.Services
                 // Database should already be configured by StartSearchAsync
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database properly configured with {_columnNames.Count} columns");
 
-                // Register direct callback with MotelyJsonFinalTallyScoresDescDesc
+                // Register direct callback with MotelyJsonSeedScoreDesc
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {MotelyJsonConfig.Must?.Count ?? 0} MUST clauses");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {MotelyJsonConfig.Should?.Count ?? 0} SHOULD clauses");
@@ -861,7 +861,7 @@ namespace BalatroSeedOracle.Services
                 _isRunning = false;
                 
                 // Set the cancellation flag that Motely checks
-                MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = true;
+                MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -939,7 +939,7 @@ namespace BalatroSeedOracle.Services
             {
                 
                 // Reset cancellation flag
-                MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
+                MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
                 
                 // Enable Motely's DebugLogger if in debug mode
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
@@ -949,7 +949,7 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Create filter descriptor with result callback
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonFinalTallyScoresDescDesc with config: {config.Name ?? "unnamed"}");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonSeedScoreDesc with config: {config.Name ?? "unnamed"}");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
                 
                 Action<string, int, int[]> onResultFound = (seed, totalScore, scores) =>
@@ -987,7 +987,7 @@ namespace BalatroSeedOracle.Services
                 };
                 
                 // Create filter descriptor with new constructor
-                var filterDesc = new MotelyJsonFinalTallyScoresDescDesc(config, onResultFound);
+                var filterDesc = new MotelyJsonSeedScoreDesc(config, onResultFound);
                 
                 // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
                 // MinScore=0 means auto-cutoff in Motely
@@ -1088,7 +1088,7 @@ namespace BalatroSeedOracle.Services
                     }
                 });
                 
-                var searchSettings = new MotelySearchSettings<MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc>(
+                var searchSettings = new MotelySearchSettings<MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc>(
                     filterDesc
                 ).WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
@@ -1129,7 +1129,7 @@ namespace BalatroSeedOracle.Services
                 )
                 {
                     // Check for cancellation
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled)
+                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",

@@ -1062,7 +1062,7 @@ namespace BalatroSeedOracle.Views.Modals
                     _newResultsCount = 0; // Reset new results counter
 
                     // Reset the Motely cancellation flag
-                    Motely.Filters.MotelyJsonFinalTallyScoresDescDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
+                    Motely.Filters.MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 1) + 1; // Convert 0-3 to 1-4 for actual batch size (low=1, default=2, large=3, huge=4)
