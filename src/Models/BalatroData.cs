@@ -525,26 +525,6 @@ namespace BalatroSeedOracle.Models
         }
 
         /// <summary>
-        /// Formats a boss blind name for display
-        /// </summary>
-        public static string FormatBossName(string bossName)
-        {
-            // Most bosses have "The" prefix
-            if (bossName.StartsWith("The") && bossName.Length > 3)
-                return "The " + bossName.Substring(3);
-            
-            // Special cases
-            return bossName switch
-            {
-                "VioletVessel" => "Violet Vessel",
-                "CrimsonHeart" => "Crimson Heart",
-                "AmberAcorn" => "Amber Acorn",
-                "CeruleanBell" => "Cerulean Bell",
-                _ => bossName
-            };
-        }
-
-        /// <summary>
         /// Formats a pack name for display
         /// </summary>
         public static string FormatPackName(string packName)
