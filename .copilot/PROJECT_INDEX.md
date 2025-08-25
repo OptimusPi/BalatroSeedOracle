@@ -1,4 +1,4 @@
-# Project Index: Oracle (AvaloniaUI, Motely, Balatro)
+# Project Index: Balatro Seed Oracle (AvaloniaUI, C#, git submodule: Motely (OptimusPi fork of tacodiva) a CPU SIMD Balatro Seed Searcher)
 
 ## 1. Overview
 

@@ -574,17 +574,17 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
-                // Load the config from file - use LoadFromJson to get PostProcess!
-                var MotelyJsonConfig = MotelyJsonConfig.LoadFromJson(configPath);
-                if (MotelyJsonConfig == null)
+                // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
+                var motelyJsonConfig = MotelyJsonConfig.TryLoadFromJsonFile(configPath);
+                if (motelyJsonConfig == null)
                 {
                     throw new InvalidOperationException($"Config validation failed for: {configPath}");
                 }
-                
-                _currentConfig = MotelyJsonConfig;
+
+                _currentConfig = motelyJsonConfig;
                 _currentSearchConfig = config;
                 ConfigPath = configPath;
-                FilterName = MotelyJsonConfig.Name ?? Path.GetFileNameWithoutExtension(configPath);
+                FilterName = motelyJsonConfig.Name ?? Path.GetFileNameWithoutExtension(configPath);
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
@@ -706,8 +706,8 @@ namespace BalatroSeedOracle.Services
                 $"Loading config from: {criteria.ConfigPath}"
             );
 
-            // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
-            var config = MotelyJsonConfig.LoadFromJson(criteria.ConfigPath);
+            // Load and validate the Ouija config - use TryLoadFromJsonFile to get PostProcess!
+            var config = MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath);
             if (config == null)
             {
                 throw new InvalidOperationException($"Config validation failed for: {criteria.ConfigPath}");
@@ -861,7 +861,7 @@ namespace BalatroSeedOracle.Services
                 _isRunning = false;
                 
                 // Set the cancellation flag that Motely checks
-                MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = true;
+                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -939,7 +939,7 @@ namespace BalatroSeedOracle.Services
             {
                 
                 // Reset cancellation flag
-                MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled = false;
+                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled = false;
                 
                 // Enable Motely's DebugLogger if in debug mode
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
@@ -1088,7 +1088,7 @@ namespace BalatroSeedOracle.Services
                     }
                 });
                 
-                var searchSettings = new MotelySearchSettings<MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc>(
+                var searchSettings = new MotelySearchSettings<MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc>(
                     filterDesc
                 ).WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
@@ -1129,7 +1129,7 @@ namespace BalatroSeedOracle.Services
                 )
                 {
                     // Check for cancellation
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonSeedScoreDesc.MotelyJsonFinalTallyScoresDesc.IsCancelled)
+                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",

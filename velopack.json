@@ -7,7 +7,7 @@
     "path": "./CHANGELOG.md"
   },
   "icon": "./src/Assets/icon.ico",
-  "mainExe": "Oracle",
+  "mainExe": "BalatroSeedOracle",
   "splashImage": "./src/Assets/splash.png",
   "shortcuts": {
     "desktop": true,
