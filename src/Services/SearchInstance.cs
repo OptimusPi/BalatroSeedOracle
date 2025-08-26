@@ -716,9 +716,9 @@ namespace BalatroSeedOracle.Services
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Name: '{config.Name}'");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Must: {(config.Must?.Count ?? 0)} items");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Should: {(config.Should?.Count ?? 0)} items");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.MustNot: {(config.MustNot?.Count ?? 0)} items");
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Must: {config.Must?.Count ?? 0} items");
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Should: {config.Should?.Count ?? 0} items");
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.MustNot: {config.MustNot?.Count ?? 0} items");
 
             string? rawJsonForDebug = null; // only load if needed
             
@@ -1026,7 +1026,7 @@ namespace BalatroSeedOracle.Services
                     ulong absoluteBatchCount = criteria.StartBatch + mp.CompletedBatchCount;
                     
                     // Calculate REAL percentage of total search space
-                    double actualPercent = (absoluteBatchCount / (double)totalBatches) * 100.0;
+                    double actualPercent = absoluteBatchCount / (double)totalBatches * 100.0;
                     
                     // This runs on the captured synchronization context
                     progress?.Report(
