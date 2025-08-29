@@ -575,8 +575,7 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
-                var motelyJsonConfig = MotelyJsonConfig.TryLoadFromJsonFile(configPath);
-                if (motelyJsonConfig == null)
+                if (!MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var motelyJsonConfig))
                 {
                     throw new InvalidOperationException($"Config validation failed for: {configPath}");
                 }
@@ -618,21 +617,21 @@ namespace BalatroSeedOracle.Services
 
                 // Register direct callback with MotelyJsonSeedScoreDesc
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {MotelyJsonConfig.Must?.Count ?? 0} MUST clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {MotelyJsonConfig.Should?.Count ?? 0} SHOULD clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {MotelyJsonConfig.MustNot?.Count ?? 0} MUST NOT clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {motelyJsonConfig.Must?.Count ?? 0} MUST clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {motelyJsonConfig.Should?.Count ?? 0} SHOULD clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {motelyJsonConfig.MustNot?.Count ?? 0} MUST NOT clauses");
                 
                 // Log the actual filter content for debugging
-                if (MotelyJsonConfig.Must != null)
+                if (motelyJsonConfig.Must != null)
                 {
-                    foreach (var must in MotelyJsonConfig.Must)
+                    foreach (var must in motelyJsonConfig.Must)
                     {
                         DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  MUST: Type={must.Type}, Value={must.Value}");
                     }
                 }
-                if (MotelyJsonConfig.Should != null)
+                if (motelyJsonConfig.Should != null)
                 {
-                    foreach (var should in MotelyJsonConfig.Should)
+                    foreach (var should in motelyJsonConfig.Should)
                     {
                         DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  SHOULD: Type={should.Type}, Value={should.Value}, Score={should.Score}");
                     }
@@ -646,7 +645,7 @@ namespace BalatroSeedOracle.Services
                 _searchTask = Task.Run(
                     () =>
                         RunSearchInProcess(
-                            MotelyJsonConfig,
+                            motelyJsonConfig,
                             searchCriteria,
                             progress,
                             _cancellationTokenSource.Token
@@ -707,8 +706,7 @@ namespace BalatroSeedOracle.Services
             );
 
             // Load and validate the Ouija config - use TryLoadFromJsonFile to get PostProcess!
-            var config = MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath);
-            if (config == null)
+            if (!MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath, out var config))
             {
                 throw new InvalidOperationException($"Config validation failed for: {criteria.ConfigPath}");
             }
@@ -861,7 +859,7 @@ namespace BalatroSeedOracle.Services
                 _isRunning = false;
                 
                 // Set the cancellation flag that Motely checks
-                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled = true;
+                Motely.Filters.MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -939,7 +937,7 @@ namespace BalatroSeedOracle.Services
             {
                 
                 // Reset cancellation flag
-                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled = false;
+                Motely.Filters.MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled = false;
                 
                 // Enable Motely's DebugLogger if in debug mode
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
@@ -952,8 +950,12 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonSeedScoreDesc with config: {config.Name ?? "unnamed"}");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
                 
-                Action<string, int, int[]> onResultFound = (seed, totalScore, scores) =>
+                Action<MotelySeedScoreTally> onResultFound = (tally) =>
                 {
+                    var seed = tally.Seed;
+                    var totalScore = tally.Score;
+                    var scores = tally.TallyColumns?.ToArray() ?? new int[0];
+                    
                     DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Direct callback - Found: {seed} Score: {totalScore}");
 
                     var result = new SearchResult
@@ -987,12 +989,14 @@ namespace BalatroSeedOracle.Services
                 };
                 
                 // Create filter descriptor with new constructor
-                var filterDesc = new MotelyJsonSeedScoreDesc(config, onResultFound);
-                
-                // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
                 // MinScore=0 means auto-cutoff in Motely
-                filterDesc.Cutoff = criteria.MinScore;
-                filterDesc.AutoCutoff = criteria.MinScore == 0;
+                var filterDesc = new MotelyJsonSeedScoreDesc(
+                    config,
+                    criteria.MinScore,
+                    criteria.MinScore == 0,
+                    onResultFound,
+                    false
+                );
                 
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Passing cutoff={criteria.MinScore} to Motely (0=auto)");
 
@@ -1023,7 +1027,7 @@ namespace BalatroSeedOracle.Services
                 {
                     // IMPORTANT: mp.CompletedBatchCount is relative to this session!
                     // We need to add the start batch to get the absolute position
-                    ulong absoluteBatchCount = criteria.StartBatch + mp.CompletedBatchCount;
+                    ulong absoluteBatchCount = criteria.StartBatch + (ulong)mp.CompletedBatchCount;
                     
                     // Calculate REAL percentage of total search space
                     double actualPercent = absoluteBatchCount / (double)totalBatches * 100.0;
@@ -1032,7 +1036,7 @@ namespace BalatroSeedOracle.Services
                     progress?.Report(
                         new SearchProgress
                         {
-                            SeedsSearched = mp.SeedsSearched,
+                            SeedsSearched = (ulong)mp.SeedsSearched,
                             SeedsPerMillisecond = mp.SeedsPerMillisecond,
                             PercentComplete = actualPercent,
                             Message = $"⏱️ {mp.FormattedMessage}",
@@ -1045,7 +1049,7 @@ namespace BalatroSeedOracle.Services
                         this,
                         new SearchProgressEventArgs
                         {
-                            SeedsSearched = mp.SeedsSearched,
+                            SeedsSearched = (ulong)mp.SeedsSearched,
                             ResultsFound = Results.Count,
                             SeedsPerMillisecond = mp.SeedsPerMillisecond,
                             PercentComplete = actualPercent,
@@ -1055,9 +1059,9 @@ namespace BalatroSeedOracle.Services
                     );
                     
                     // Update batch in memory on every progress update
-                    if (mp.CompletedBatchCount != _lastSavedBatch)
+                    if ((ulong)mp.CompletedBatchCount != _lastSavedBatch)
                     {
-                        _lastSavedBatch = mp.CompletedBatchCount;
+                        _lastSavedBatch = (ulong)mp.CompletedBatchCount;
                         
                         // Save to database for resume - save the completed batch count
                         // The actual resume will be from absoluteBatchCount which already includes the start offset
@@ -1088,13 +1092,16 @@ namespace BalatroSeedOracle.Services
                     }
                 });
                 
-                var searchSettings = new MotelySearchSettings<MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc>(
-                    filterDesc
-                ).WithThreadCount(criteria.ThreadCount)
+                // Create base search settings with MUST clauses
+                var mustClauses = config.Must?.ToList() ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                var searchSettings = new MotelySearchSettings<MotelyJsonFilterDesc.MotelyFilter>(
+                    new MotelyJsonFilterDesc(Motely.Filters.FilterCategory.Mixed, mustClauses))
+                    .WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
                     .WithSequentialSearch()
-                    .WithStartBatchIndex(criteria.StartBatch)
-                    .WithEndBatchIndex(effectiveEndBatch);
+                    .WithStartBatchIndex((long)criteria.StartBatch)
+                    .WithEndBatchIndex((long)effectiveEndBatch)
+                    .WithSeedScoreProvider(filterDesc);
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
@@ -1129,7 +1136,7 @@ namespace BalatroSeedOracle.Services
                 )
                 {
                     // Check for cancellation
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreDesc.IsCancelled)
+                    if (!_isRunning || cancellationToken.IsCancellationRequested || Motely.Filters.MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
