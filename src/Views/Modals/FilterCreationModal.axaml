@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.Modals.FilterCreationModal">
     
     <!-- Full screen modal with Balatro-style overlay -->
@@ -23,7 +24,7 @@
                 <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container - Balatro style -->
+            <!-- Main modal container - Balatro style with enhanced animations -->
             <Border Grid.Column="1" Grid.Row="1"
                     Background="{StaticResource DockGrey}"
                     CornerRadius="20"
@@ -32,9 +33,19 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Width="600"
-                    Height="400"
-                    BoxShadow="{StaticResource StandardModalShadow}"
-                    ClipToBounds="False">
+                    Height="500"
+                    BoxShadow="0 8 24 #000000AA, 0 0 0 1 #FFFFFF22 inset"
+                    ClipToBounds="False"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Border.Transitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="BackEaseOut"/>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                    </Transitions>
+                </Border.Transitions>
                 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -45,7 +56,7 @@
 
                     <!-- Header -->
                     <TextBlock Grid.Row="0"
-                               Text="Create New Filter"
+                               Text="FILTER CONFIGURATION"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="24"
                                FontWeight="Bold"
@@ -53,35 +64,69 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
 
-                    <!-- Content area -->
-                    <StackPanel Grid.Row="1"
-                                Orientation="Vertical"
-                                Margin="40,20"
-                                Spacing="20">
+                    <!-- Content area with PanelSpinner -->
+                    <Grid Grid.Row="1" Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         
-                        <TextBlock Text="Filter creation functionality coming soon!"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="16"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   TextWrapping="Wrap"/>
-                        
-                        <TextBlock Text="This feature will allow you to create custom filters for seed searching."
+                        <!-- Instructions -->
+                        <TextBlock Grid.Row="0"
+                                   Text="Select a filter template or start fresh"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   Foreground="LightGray"
+                                   Foreground="{StaticResource Silver}"
                                    HorizontalAlignment="Center"
-                                   TextWrapping="Wrap"/>
+                                   Margin="0,0,0,20"/>
                         
-                    </StackPanel>
+                        <!-- Filter carousel using PanelSpinner -->
+                        <controls:PanelSpinner Grid.Row="1" 
+                                             Name="FilterSpinner"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                        
+                        <!-- Action buttons -->
+                        <StackPanel Grid.Row="2" 
+                                    Spacing="12"
+                                    Margin="0,20,0,0">
+                            
+                            <Button Name="CreateCopyButton"
+                                    Content="Create a new COPY of this filter"
+                                    Classes="btn-blue"
+                                    Width="350"
+                                    Height="45"
+                                    HorizontalAlignment="Center"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="16"
+                                    Click="OnCreateCopyClick"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Button.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Button.RenderTransform>
+                            </Button>
+                            
+                            <Button Name="StartBlankButton"
+                                    Content="Start with a BLANK filter"
+                                    Classes="btn-green"
+                                    Width="350"
+                                    Height="45"
+                                    HorizontalAlignment="Center"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="16"
+                                    Click="OnStartBlankClick"/>
+                        </StackPanel>
+                    </Grid>
 
-                    <!-- Footer with close button -->
+                    <!-- Footer with back button -->
                     <Button Grid.Row="2"
-                            x:Name="CloseButton"
-                            Content="Close"
+                            Name="CloseButton"
+                            Content="Back"
                             Classes="back-button"
                             HorizontalAlignment="Stretch"
-                            Margin="3"/>
+                            Margin="3"
+                            Click="OnCloseButtonClick"/>
                 </Grid>
             </Border>
         </Grid>

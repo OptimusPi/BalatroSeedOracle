@@ -1,0 +1,258 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.BalatroFilterSelector">
+    
+    <UserControl.Styles>
+        <!-- Filter list item style -->
+        <Style Selector="Button.filter-item">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Width" Value="196"/>
+            <Setter Property="MinWidth" Value="196"/>
+            <Setter Property="MaxWidth" Value="196"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="ClipToBounds" Value="True"/>
+        </Style>
+        
+        <!-- Selected filter item -->
+        <Style Selector="Button.filter-item.selected">
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
+        </Style>
+        
+        <!-- Create new filter button -->
+        <Style Selector="Button.filter-item.create-filter-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        
+        <!-- Filter number style -->
+        <Style Selector="TextBlock.filter-number">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+        
+        <!-- Info panel style -->
+        <Style Selector="Border.info-panel">
+            <Setter Property="Background" Value="{StaticResource White}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,8"/>
+        </Style>
+        
+        <!-- Info panel header -->
+        <Style Selector="TextBlock.panel-header">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        
+        <!-- Info panel content -->
+        <Style Selector="TextBlock.panel-content">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        
+        <!-- Tab button style -->
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <!-- Active tab -->
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        
+        <!-- Page indicator style -->
+        <Style Selector="Border.page-indicator">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        
+        <!-- Navigation arrow style -->
+        <Style Selector="Button.nav-arrow">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <!-- Main layout grid -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>  <!-- Left side - smaller for 196px buttons + margins -->
+            <ColumnDefinition Width="*"/>    <!-- Right side - filter details -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- Left side - Filter list -->
+        <Grid Grid.Column="0" Margin="30,30,15,30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>      <!-- Filter list -->
+                <RowDefinition Height="Auto"/>   <!-- Navigation -->
+                <RowDefinition Height="Auto"/>   <!-- Status -->
+            </Grid.RowDefinitions>
+            
+            <!-- Scrollable filter list -->
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Name="FilterListPanel" Spacing="2">
+                    <!-- Filter items will be added here dynamically -->
+                </StackPanel>
+            </ScrollViewer>
+            
+            <!-- Navigation controls -->
+            <Grid Grid.Row="1" Margin="0,12,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" Name="PrevPageButton" Classes="nav-arrow" Content="&lt;" Click="OnPrevPageClick"/>
+                <Border Grid.Column="1" Classes="page-indicator">
+                    <TextBlock Name="PageIndicatorText" 
+                               Text="Page 1/1"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <Button Grid.Column="2" Name="NextPageButton" Classes="nav-arrow" Content="&gt;" Click="OnNextPageClick"/>
+            </Grid>
+            
+            <!-- Status text -->
+            <TextBlock Grid.Row="2" 
+                       Name="StatusText"
+                       Text="Available 0/0 Filters"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="14"
+                       Foreground="{StaticResource Silver}"
+                       HorizontalAlignment="Center"/>
+        </Grid>
+        
+        <!-- Right side - Filter details -->
+        <Grid Grid.Column="1" Margin="15,30,30,30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>   <!-- Joker preview cards -->
+                <RowDefinition Height="Auto"/>   <!-- Tab buttons -->
+                <RowDefinition Height="*"/>      <!-- Info panels -->
+                <RowDefinition Height="Auto"/>   <!-- Action button -->
+            </Grid.RowDefinitions>
+            
+            <!-- Joker preview cards row -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource GreyDarker}"
+                    CornerRadius="12"
+                    Padding="16"
+                    Margin="0,0,0,16">
+                <StackPanel Name="JokerPreviewPanel" 
+                           Orientation="Horizontal" 
+                           HorizontalAlignment="Center"
+                           Spacing="8">
+                    <!-- Joker images will be added here dynamically -->
+                </StackPanel>
+            </Border>
+            
+            <!-- Tab buttons -->
+            <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16">
+                <Button Name="OverviewTab" Classes="tab-button active" Content="Overview" Click="OnTabClick" Tag="overview"/>
+                <Button Name="FilterRulesTab" Classes="tab-button" Content="Filter Rules" Click="OnTabClick" Tag="filter-rules"/>
+                <Button Name="ScoringRulesTab" Classes="tab-button" Content="Scoring Rules" Click="OnTabClick" Tag="scoring-rules"/>
+            </UniformGrid>
+            
+            <!-- Info panels -->
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Top info panel -->
+                <Border Grid.Row="0" Classes="info-panel">
+                    <StackPanel>
+                        <TextBlock Name="TopPanelHeader" Classes="panel-header" Text="Filter Requirements"/>
+                        <TextBlock Name="TopPanelContent" Classes="panel-content" Text="None"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Bottom info panel -->
+                <Border Grid.Row="1" Classes="info-panel">
+                    <StackPanel>
+                        <TextBlock Name="BottomPanelHeader" Classes="panel-header" Text="Configuration"/>
+                        <StackPanel Name="BottomPanelContent">
+                            <!-- Config details will be added here -->
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- Action buttons -->
+            <Grid Grid.Row="3" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>  <!-- Spacing -->
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0"
+                        Name="EditInDesignerButton"
+                        Content="Edit In Designer"
+                        Background="{StaticResource Blue}"
+                        Foreground="White"
+                        FontFamily="{StaticResource BalatroFont}"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Height="60"
+                        CornerRadius="12"
+                        BorderThickness="0"
+                        Click="OnEditInDesignerClick"
+                        IsEnabled="False"/>
+                
+                <Button Grid.Column="2"
+                        Name="CloneFilterButton"
+                        Content="Clone this filter"
+                        Background="{StaticResource Green}"
+                        Foreground="White"
+                        FontFamily="{StaticResource BalatroFont}"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Height="60"
+                        CornerRadius="12"
+                        BorderThickness="0"
+                        Click="OnCloneFilterClick"
+                        IsEnabled="False"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,298 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModal">
+    
+    <UserControl.Styles>
+        <!-- Copy ALL the beautiful styling from SearchModal -->
+        <Style Selector="Border.modal-content-panel">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <!-- Beautiful Balatro-style tab buttons with drop shadows -->
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
+            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinWidth" Value="144"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Name="DropShadow" Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.tab-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+        <Style Selector="Button.tab-button:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="RenderTransform" Value="translateY(3px)"/>
+        </Style>
+        <Style Selector="Button.tab-button:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+        <Style Selector="Button.tab-button:disabled">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+        
+        <!-- Input field style matching Balatro -->
+        <Style Selector="TextBox.balatro-input">
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        
+        <!-- Big COOK button style -->
+        <Style Selector="Button.cook-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="MinWidth" Value="200"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.cook-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <!-- Full screen modal with Balatro-style overlay -->
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <Border Background="{StaticResource SemiTransparentBlack}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False" />
+        
+        <!-- Modal positioning grid -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Main modal container -->
+            <Border Grid.Column="1" Grid.Row="1"
+                    Background="{StaticResource ModalGrey}"
+                    CornerRadius="20"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="4"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ClipToBounds="False">
+                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/> <!-- Triangle pointer fixed -->
+                        <RowDefinition Height="60"/> <!-- Tabs fixed -->
+                        <RowDefinition Height="*"/>  <!-- Content stretches -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Triangle pointer above tabs -->
+                    <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="148"/> <!-- Config -->
+                            <ColumnDefinition Width="148"/> <!-- Filter -->
+                            <ColumnDefinition Width="148"/> <!-- Scoring -->
+                            <ColumnDefinition Width="148"/> <!-- Validate -->
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Triangle container with shadow and main triangle -->
+                        <Grid Grid.Column="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Bottom">
+                            
+                            <!-- Drop shadow triangle -->
+                            <Polygon Points="10,20 20,5 0,5" 
+                                     Fill="{StaticResource SemiTransparentShadow}"
+                                     Margin="2,2,0,0"/>
+                            
+                            <!-- Main triangle that bounces -->
+                            <Polygon Name="TabTriangle"
+                                     Points="10,20 20,5 0,5" 
+                                     Fill="{StaticResource Red}">
+                                <Polygon.Styles>
+                                    <Style Selector="Polygon">
+                                        <Style.Animations>
+                                            <Animation Duration="0:0:1.2" 
+                                                       IterationCount="Infinite"
+                                                       PlaybackDirection="Alternate"
+                                                       Easing="SineEaseInOut">
+                                                <KeyFrame Cue="0%">
+                                                    <Setter Property="Margin" Value="0,0,0,0"/>
+                                                </KeyFrame>
+                                                <KeyFrame Cue="100%">
+                                                    <Setter Property="Margin" Value="0,-8,0,8"/>
+                                                </KeyFrame>
+                                            </Animation>
+                                        </Style.Animations>
+                                    </Style>
+                                </Polygon.Styles>
+                            </Polygon>
+                        </Grid>
+                    </Grid>
+                    
+                    <!-- Tab buttons -->
+                    <StackPanel Grid.Row="1" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Center"
+                                Margin="0,4,0,4">
+                        <Button Name="ConfigTab" 
+                                Content="CONFIG FILE" 
+                                Classes="tab-button active ActiveTab"
+                                Click="OnTabClick"/>
+                        <Button Name="FilterTab" 
+                                Content="FILTER" 
+                                Classes="tab-button InactiveTab"
+                                IsEnabled="False"
+                                Click="OnTabClick"/>
+                        <Button Name="ScoringTab" 
+                                Content="SCORING"
+                                Classes="tab-button InactiveTab"
+                                IsEnabled="False" 
+                                Click="OnTabClick"/>
+                        <Button Name="ValidateTab" 
+                                Content="VALIDATE"
+                                Classes="tab-button InactiveTab"
+                                IsEnabled="False"
+                                Click="OnTabClick"/>
+                    </StackPanel>
+
+                    <!-- Content area - simple and clean like real Balatro -->
+                    <Grid Grid.Row="2" Margin="20">
+                        
+                        <!-- Config File Tab -->
+                        <StackPanel Name="ConfigPanel" IsVisible="True" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                            <TextBlock Text="Create New Filter"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Gold}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,20"/>
+                            
+                            <StackPanel Spacing="16">
+                                <StackPanel>
+                                    <TextBlock Text="Filter Name:"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="16"
+                                               Foreground="{StaticResource White}"
+                                               Margin="0,0,0,8"/>
+                                    <TextBox Name="FilterNameInput"
+                                             Classes="balatro-input"
+                                             Width="400"
+                                             Height="40"
+                                             FontSize="16"
+                                             HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Description:"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="16"
+                                               Foreground="{StaticResource White}"
+                                               Margin="0,0,0,8"/>
+                                    <TextBox Name="FilterDescriptionInput"
+                                             Classes="balatro-input"
+                                             Width="400"
+                                             Height="80"
+                                             FontSize="14"
+                                             TextWrapping="Wrap"
+                                             AcceptsReturn="True"
+                                             HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <Button Name="CreateFilterButton"
+                                        Content="Create Filter"
+                                        Classes="cook-button"
+                                        Width="200"
+                                        Height="50"
+                                        FontSize="18"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,20,0,0"
+                                        Click="OnCreateFilterClick"/>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <!-- Filter Tab -->
+                        <Grid Name="FilterPanel" IsVisible="False">
+                            <!-- Visual filter builder with drag and drop -->
+                            <components:VisualFilterBuilder Name="VisualFilterBuilder" 
+                                                           HorizontalAlignment="Stretch"
+                                                           VerticalAlignment="Stretch"/>
+                        </Grid>
+                        
+                        <!-- Scoring Tab -->
+                        <Grid Name="ScoringPanel" IsVisible="False">
+                            <!-- Scoring configuration goes here -->
+                            <TextBlock Text="Scoring Configuration"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                        
+                        <!-- Validate Tab -->
+                        <Grid Name="ValidatePanel" IsVisible="False">
+                            <!-- Filter validation goes here -->
+                            <TextBlock Text="Filter Validation"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+</UserControl>

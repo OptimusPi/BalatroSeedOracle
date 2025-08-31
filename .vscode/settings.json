@@ -16,5 +16,14 @@
     "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
     "terminal.integrated.gpuAcceleration": "off",
     "editor.experimentalGpuAcceleration": "off",
-    "terminal.integrated.enableImages": true
+    "terminal.integrated.enableImages": true,
+    "sqltools.connections": [
+        {
+            "name": "DuckDB",
+            "accessMode": "Read/Write",
+            "previewLimit": 50,
+            "driver": "DuckDB",
+            "group": "kingandqueen_scorebasedonsoulouija.db"
+        }
+    ]
 }

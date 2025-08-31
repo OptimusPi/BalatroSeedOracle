@@ -1,0 +1,19 @@
+{
+  "name": "balatro-genie",
+  "version": "1.0.0",
+  "description": "Natural language to MotelyJson filter converter for Balatro Seed Oracle",
+  "main": "worker.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "cp index.html dist/ && cp -r src dist/",
+    "test": "node test.js"
+  },
+  "keywords": ["balatro", "seed", "filter", "ai", "cloudflare"],
+  "author": "pifreak",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

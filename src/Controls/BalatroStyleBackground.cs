@@ -28,7 +28,7 @@ namespace BalatroSeedOracle.Controls
 
         private BackgroundTheme _currentTheme = BackgroundTheme.Default;
         private float _contrast = 1.0f;
-        private float _spinAmount = 0.5f;
+        private float _spinAmount = 0.6f;
         private bool _isAnimating = true;
         private DispatcherTimer? _animationTimer;
         private float _currentHue = 0.0f;
@@ -90,7 +90,7 @@ namespace BalatroSeedOracle.Controls
             // Initialize animation timer
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(33), // ~30 FPS
+                Interval = TimeSpan.FromMilliseconds(15), // ~60 FPS
             };
             _animationTimer.Tick += (s, e) => InvalidateVisual();
 
@@ -179,9 +179,6 @@ namespace BalatroSeedOracle.Controls
                     _currentHue
                 )
             );
-
-            // We no longer need this as we're using a timer for animation
-            // Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
         }
     }
 
@@ -227,8 +224,8 @@ namespace BalatroSeedOracle.Controls
                 uniform float contrast;
                 uniform float spin_amount;
 
-                const float PIXEL_SIZE_FAC = 700.0;
-                const float SPIN_EASE = 0.5;
+                const float PIXEL_SIZE_FAC = 420.0;
+                const float SPIN_EASE = 0.9;
 
                 float4 main(float2 screen_coords) {
                     // Convert to UV coords (0-1) and floor for pixel effect

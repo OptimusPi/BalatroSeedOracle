@@ -8,11 +8,14 @@
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BoxShadow" Value="0 2 8 #22000000"/>
             <Setter Property="Transitions">
                 <Setter.Value>
                     <Transitions>
-                        <DoubleTransition Property="Width" Duration="0:0:0.2"/>
-                        <DoubleTransition Property="Height" Duration="0:0:0.2"/>
+                        <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.3"/>
+                        <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
                     </Transitions>
                 </Setter.Value>
             </Setter>
@@ -35,12 +38,32 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,5,0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="Transitions">
+                <Setter.Value>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                    </Transitions>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.minimize-button:pointerover">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="scale(1.1)"/>
         </Style>
         
         <!-- Glow effect when active -->
         <Style Selector="Border.widget-container.active">
             <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
-            <Setter Property="BoxShadow" Value="0 0 20 2 #00FF00"/>
+            <Setter Property="BoxShadow" Value="0 0 15 1 #00FF0066, 0 2 8 #22000000"/>
+        </Style>
+        
+        <!-- Hover effect for minimized view -->
+        <Style Selector="Border.widget-container:pointerover">
+            <Setter Property="BoxShadow" Value="0 4 12 #33000000"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
     </UserControl.Styles>
     
@@ -92,8 +115,7 @@
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <!-- Additional header buttons placeholder -->
-                            <ContentPresenter Name="HeaderButtons" 
-                                              Content="{Binding HeaderButtons}"/>
+                            <ContentPresenter Name="HeaderButtons"/>
                             <!-- Minimize button -->
                             <Button Content="_" 
                                     Classes="minimize-button"

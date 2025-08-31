@@ -120,7 +120,9 @@ public partial class FilterSelector : UserControl
     {
         try
         {
-            var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            // Look in project root for filters, not working directory
+            var projectRoot = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) ?? Directory.GetCurrentDirectory();
+            var directory = Path.Combine(projectRoot, "JsonItemFilters");
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -177,7 +179,9 @@ public partial class FilterSelector : UserControl
     {
         try
         {
-            var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+            // Look in project root for filters, not working directory
+            var projectRoot = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory())) ?? Directory.GetCurrentDirectory();
+            var directory = Path.Combine(projectRoot, "JsonItemFilters");
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);

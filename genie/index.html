@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balatro Seed Oracle Genie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result pre {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+        }
+
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+
+        .examples h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .example-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .example-item:hover {
+            background: #e8ecff;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧞 Balatro Seed Oracle Genie</h1>
+        <p class="subtitle">Describe your dream Balatro seed in natural language</p>
+        
+        <div class="input-group">
+            <label for="prompt">What kind of seed are you looking for?</label>
+            <textarea id="prompt" placeholder="e.g., I want a Perkeo seed with Observatory voucher on ghost deck"></textarea>
+        </div>
+        
+        <button id="generateBtn" onclick="generateConfig()">
+            <span id="buttonText">Generate Filter Config</span>
+            <span id="loadingSpinner" class="loading" style="display: none;"></span>
+        </button>
+        
+        <div class="examples">
+            <h4>Example Requests:</h4>
+            <div class="example-item" onclick="setExample('I want a Perkeo seed with Observatory')">
+                🎯 Perkeo + Observatory combo
+            </div>
+            <div class="example-item" onclick="setExample('Blueprint and negative jokers on red deck')">
+                📋 Blueprint with negative jokers
+            </div>
+            <div class="example-item" onclick="setExample('Lots of money early with green deck')">
+                💰 Early economy build
+            </div>
+            <div class="example-item" onclick="setExample('Turtle Bean with Ankh and Blueprint')">
+                🐢 Turtle Bean combo
+            </div>
+        </div>
+        
+        <div id="result" class="result">
+            <h3>Generated Filter Config:</h3>
+            <pre id="resultContent"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { BalatroGenie } from './src/genie.js';
+        
+        // Initialize Genie
+        const genie = new BalatroGenie({
+            aiProvider: window.AVALONIA_WEBVIEW ? 'local' : 'cloudflare',
+            apiEndpoint: window.GENIE_API_URL || '/api/generate'
+        });
+        
+        // Make functions available globally
+        window.generateConfig = async function() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a description of the seed you want');
+                return;
+            }
+            
+            const button = document.getElementById('generateBtn');
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('loadingSpinner');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Show loading state
+            button.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            
+            try {
+                let result;
+                
+                if (window.AVALONIA_WEBVIEW) {
+                    // Call directly for WebView
+                    result = await genie.generateConfig(prompt);
+                } else {
+                    // Call API for web
+                    const response = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+                    result = await response.json();
+                }
+                
+                // Show result
+                resultDiv.classList.add('show');
+                if (result.success) {
+                    resultContent.textContent = JSON.stringify(result.config, null, 2);
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    
+                    // If in WebView, send to Avalonia
+                    if (window.AVALONIA_WEBVIEW && window.sendToAvalonia) {
+                        window.sendToAvalonia(JSON.stringify({
+                            type: 'filter_generated',
+                            config: result.config
+                        }));
+                    }
+                } else {
+                    resultContent.textContent = `Error: ${result.error}`;
+                    resultDiv.classList.add('error');
+                    resultDiv.classList.remove('success');
+                }
+            } catch (error) {
+                resultDiv.classList.add('show', 'error');
+                resultContent.textContent = `Error: ${error.message}`;
+            } finally {
+                // Reset button
+                button.disabled = false;
+                buttonText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        };
+        
+        window.setExample = function(text) {
+            document.getElementById('prompt').value = text;
+        };
+        
+        // Handle Enter key
+        document.getElementById('prompt').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                generateConfig();
+            }
+        });
+    </script>
+</body>
+</html>

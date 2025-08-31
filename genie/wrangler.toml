@@ -1,0 +1,19 @@
+name = "balatro-genie"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"
+
+[site]
+bucket = "./dist"
+
+[env.production]
+vars = { AI_MODEL = "@cf/meta/llama-3-8b-instruct" }
+
+[env.development]
+vars = { AI_MODEL = "@cf/meta/llama-3-8b-instruct" }

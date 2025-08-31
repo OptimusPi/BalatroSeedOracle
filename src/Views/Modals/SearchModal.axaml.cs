@@ -590,7 +590,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (string.IsNullOrEmpty(filterPath))
             {
-                // Create new requested – open Filters modal to build one
+                // Create new requested – close this modal first, then open Filter Creation modal
                 try
                 {
                     if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
@@ -600,7 +600,17 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             // Find BalatroMainMenu in the visual tree
                             var mainMenu = mainWindow.FindControl<BalatroSeedOracle.Views.BalatroMainMenu>("MainMenu");
-                            mainMenu?.ShowFiltersModal();
+                            if (mainMenu != null)
+                            {
+                                // Close this modal first
+                                mainMenu.HideModalContent();
+                                
+                                // Open FilterCreationModal after a small delay to ensure proper cleanup
+                                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                                {
+                                    mainMenu.ShowFilterCreationModal();
+                                }, Avalonia.Threading.DispatcherPriority.Background);
+                            }
                         }
                     }
                 }
@@ -1061,8 +1071,8 @@ namespace BalatroSeedOracle.Views.Modals
                     _searchResults.Clear();
                     _newResultsCount = 0; // Reset new results counter
 
-                    // Reset the Motely cancellation flag
-                    Motely.Filters.MotelyJsonFilterDesc.IsCancelled = false;
+                    // Reset cancellation flag (remove the non-existent IsCancelled reference)
+                    // Cancellation is handled by the SearchInstance
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 1) + 1; // Convert 0-3 to 1-4 for actual batch size (low=1, default=2, large=3, huge=4)

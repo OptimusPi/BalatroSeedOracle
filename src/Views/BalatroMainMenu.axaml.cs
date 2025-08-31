@@ -11,6 +11,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Layout;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -154,8 +156,55 @@ namespace BalatroSeedOracle.Views
 
         private void OnEditorClick(object? sender, RoutedEventArgs e)
         {
-            // Open filters modal with blank/new filter
-            this.ShowFiltersModal();
+            // Open the gorgeous Balatro-style filter selector
+            var filterSelector = new Components.BalatroFilterSelector();
+            
+            // Handle filter selection (Edit In Designer button)
+            filterSelector.FilterSelected += (s, filter) => 
+            {
+                if (filter != null)
+                {
+                    DebugLogger.Log("BalatroMainMenu", $"Filter selected for editing: {filter.Name}");
+                    
+                    // Close the selector modal
+                    HideModalContent();
+                    
+                    // TODO: Open Visual Filter Builder with selected filter
+                    // Open the real FiltersModal instead of placeholder
+                    var filtersModal = new FiltersModal();
+                    // Load the selected filter for editing
+                    filtersModal.LoadFilter(filter.FilePath);
+                    
+                    var modal = new StandardModal("VISUAL FILTER BUILDER");
+                    modal.SetContent(filtersModal);
+                    modal.BackClicked += (s, ev) => HideModalContent();
+                    ShowModalContent(modal, "VISUAL FILTER BUILDER");
+                }
+            };
+            
+            // Handle create new filter request
+            filterSelector.CreateNewFilterRequested += (s, e) =>
+            {
+                DebugLogger.Log("BalatroMainMenu", "Create new filter requested");
+                
+                // Close the selector modal
+                HideModalContent();
+                
+                // TODO: Open Visual Filter Builder with blank filter
+                // Open the real FiltersModal instead of placeholder
+                var filtersModal = new FiltersModal();
+                // Start with blank filter (Config tab will be active)
+                
+                var modal = new StandardModal("VISUAL FILTER BUILDER");
+                modal.SetContent(filtersModal);
+                modal.BackClicked += (s, ev) => HideModalContent();
+                ShowModalContent(modal, "VISUAL FILTER BUILDER");
+            };
+            
+            var modal = new StandardModal("FILTER SELECTION");
+            modal.SetContent(filterSelector);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "SELECT FILTER");
         }
 
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)

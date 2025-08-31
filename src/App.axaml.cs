@@ -102,9 +102,10 @@ public partial class App : Application
     {
         try
         {
-            // Create JsonItemFilters directory
+            // Create JsonItemFilters directory - look in project root
+            var projectRoot = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) ?? System.IO.Directory.GetCurrentDirectory();
             var jsonFiltersDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
+                projectRoot,
                 "JsonItemFilters"
             );
             if (!System.IO.Directory.Exists(jsonFiltersDir))

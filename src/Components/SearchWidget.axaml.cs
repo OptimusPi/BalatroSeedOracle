@@ -78,6 +78,8 @@ namespace BalatroSeedOracle.Components
         private DateTime _searchStartTime = DateTime.UtcNow;
         private DispatcherTimer? _statsTimer;
         
+        // No need for separate HeaderButtons property - use base class HeaderButtonsValue
+        
         public SearchWidget()
         {
             // Set widget properties
@@ -87,12 +89,14 @@ namespace BalatroSeedOracle.Components
             
             InitializeComponent();
             SetupStatsTimer();
+            SetupHeaderButtons();
         }
         
         protected override void InitializeComponent()
         {
             base.InitializeComponent();
             
+
             // Find minimized controls
             _statusIndicator = this.FindControl<Border>("StatusIndicator");
             _stateIcon = this.FindControl<Image>("StateIcon");
@@ -139,6 +143,46 @@ namespace BalatroSeedOracle.Components
                 Interval = TimeSpan.FromSeconds(1)
             };
             _statsTimer.Tick += UpdateStatistics;
+        }
+        
+        private void SetupHeaderButtons()
+        {
+            // Create maximize button
+            var maximizeButton = new Button
+            {
+                Content = "□",
+                Width = 24,
+                Height = 20,
+                FontSize = 14,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 5, 0),
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
+            };
+            
+            ToolTip.SetTip(maximizeButton, "Open in full screen");
+            
+            maximizeButton.Click += OnMaximizeClick;
+            
+            // Set as header buttons content
+            HeaderButtonsValue = maximizeButton;
+        }
+        
+        private void OnMaximizeClick(object? sender, RoutedEventArgs e)
+        {
+            // Find the main menu and show search modal for this instance
+            var current = this.GetLogicalParent();
+            while (current != null)
+            {
+                if (current is BalatroMainMenu mainMenu)
+                {
+                    mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
+                    break;
+                }
+                current = current.GetLogicalParent();
+            }
         }
         
         public void Initialize(string searchId, string configPath, string filterName)

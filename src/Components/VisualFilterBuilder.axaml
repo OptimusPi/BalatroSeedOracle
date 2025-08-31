@@ -1,0 +1,269 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.VisualFilterBuilder">
+             
+    <UserControl.Styles>
+        <!-- Drop Zone Base Styling -->
+        <Style Selector="Border.drop-zone">
+            <Setter Property="Background" Value="{StaticResource GreyDarker}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="120" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <!-- Drop Zone Hover State -->
+        <Style Selector="Border.drop-zone.drag-over">
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #eac05880" />
+        </Style>
+        
+        <!-- MUST Zone Specific Styling -->
+        <Style Selector="Border.must-zone.drag-over">
+            <Setter Property="BorderBrush" Value="{StaticResource Red}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #ff4c4080" />
+        </Style>
+        
+        <!-- SHOULD Zone Specific Styling -->
+        <Style Selector="Border.should-zone.drag-over">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #0093ff80" />
+        </Style>
+        
+        <!-- MUST NOT Zone Specific Styling -->
+        <Style Selector="Border.mustnot-zone.drag-over">
+            <Setter Property="BorderBrush" Value="{StaticResource Orange}" />
+            <Setter Property="BoxShadow" Value="0 0 15 #ff980080" />
+        </Style>
+        
+        <!-- Draggable Item Styling -->
+        <Style Selector="Border.draggable-item">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <!-- Item Being Dragged -->
+        <Style Selector="Border.draggable-item.is-dragging">
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+        
+        <!-- Dropped Item Styling -->
+        <Style Selector="Border.dropped-item">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        
+        <!-- Dropped Item Hover -->
+        <Style Selector="Border.dropped-item:pointerover">
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid DragDrop.AllowDrop="True">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <!-- Left Sidebar with categories -->
+        <Border Grid.Column="0" Background="{StaticResource GreyDarker}" CornerRadius="8" Padding="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="2">
+                    <Button Name="FavoritesTab" Content="Favorites ⭐" Classes="nav-button" />
+                    <Button Name="SoulJokersTab" Content="Legendary" Classes="nav-button" />
+                    <Button Name="RareJokersTab" Content="Rare" Classes="nav-button" />
+                    <Button Name="UncommonJokersTab" Content="Uncommon" Classes="nav-button" />
+                    <Button Name="CommonJokersTab" Content="Common" Classes="nav-button" />
+                    <Button Name="VouchersTab" Content="Voucher" Classes="nav-button" />
+                    <Button Name="TarotsTab" Content="Tarot Card" Classes="nav-button" />
+                    <Button Name="SpectralsTab" Content="Spectral Card" Classes="nav-button" />
+                    <Button Name="TagsTab" Content="Tag" Classes="nav-button" />
+                    <Button Name="BossesTab" Content="Boss" Classes="nav-button" />
+                    <Button Name="ClearTab" Content="CLEAR ALL" Classes="nav-button" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Column="2" DragDrop.AllowDrop="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="400" />
+                <ColumnDefinition Width="15" />
+                <ColumnDefinition Width="*" MinWidth="400" />
+            </Grid.ColumnDefinitions>
+            
+            <!-- LEFT: Item Palette -->
+            <Border Grid.Column="0" Background="{StaticResource GreyDarker}" CornerRadius="8" Padding="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Search Bar -->
+                    <TextBox Grid.Row="0" Name="SearchBox" 
+                             Watermark="Search items..." 
+                             Height="32"
+                             Classes="balatro-input" />
+                    
+                    <!-- Items Grid -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl Name="ItemPalette">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="draggable-item" 
+                                            PointerPressed="OnDragStart"
+                                            Width="80" Height="100"
+                                            Background="{StaticResource Red}"
+                                            CornerRadius="8">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   FontSize="10"
+                                                   TextWrapping="Wrap"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="White" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            
+            <!-- RIGHT: Drop Zones -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <!-- MUST Drop Zone -->
+                <Border Grid.Row="0" 
+                        Classes="drop-zone must-zone"
+                        Name="MustDropZone"
+                        DragDrop.AllowDrop="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" 
+                                   Text="MUST HAVE (AND)" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Red}"
+                                   Margin="8,4" />
+                        
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Name="MustItems">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                
+                <!-- SHOULD Drop Zone -->
+                <Border Grid.Row="2" 
+                        Classes="drop-zone should-zone"
+                        Name="ShouldDropZone"
+                        DragDrop.AllowDrop="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" 
+                                   Text="SHOULD HAVE (OR)" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Blue}"
+                                   Margin="8,4" />
+                        
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Name="ShouldItems">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                
+                <!-- MUST NOT Drop Zone -->
+                <Border Grid.Row="4" 
+                        Classes="drop-zone mustnot-zone"
+                        Name="MustNotDropZone"
+                        DragDrop.AllowDrop="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" 
+                                   Text="MUST NOT HAVE" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Orange}"
+                                   Margin="8,4" />
+                        
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Name="MustNotItems">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
