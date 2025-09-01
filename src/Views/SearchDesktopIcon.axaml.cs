@@ -122,9 +122,13 @@ namespace BalatroSeedOracle.Views
 
             try
             {
-                // Show search modal with current search instance
-                mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
-                DebugLogger.Log("SearchDesktopIcon", "ShowSearchModalForInstance called successfully");
+                // Just open fresh Search modal and load the filter
+                mainMenu.ShowSearchModal(); // Open fresh modal
+                // TODO: Load filter after modal opens
+                DebugLogger.Log("SearchDesktopIcon", "ShowSearchModalWithFilter called successfully");
+                
+                // Remove this desktop icon since we're returning to the modal
+                RemoveDesktopIcon();
             }
             catch (Exception ex)
             {
@@ -260,6 +264,29 @@ namespace BalatroSeedOracle.Views
             UpdateStateIcon();
         }
 
+        private void RemoveDesktopIcon()
+        {
+            DebugLogger.Log("SearchDesktopIcon", $"RemoveDesktopIcon called for search {_searchId}");
+            
+            // Clear the saved search state when returning to modal
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            if (userProfileService != null)
+            {
+                DebugLogger.Log("SearchDesktopIcon", "Clearing saved search state from user profile");
+                userProfileService.ClearSearchState();
+                userProfileService.FlushProfile();
+            }
+
+            // Remove this icon from parent
+            if (this.Parent is Panel parent)
+            {
+                DebugLogger.Log("SearchDesktopIcon", "Removing icon from parent");
+                parent.Children.Remove(this);
+            }
+            
+            DebugLogger.Log("SearchDesktopIcon", "Desktop icon removed");
+        }
+
         private void OnDeleteIcon(object? sender, RoutedEventArgs e)
         {
             DebugLogger.Log("SearchDesktopIcon", $"OnDeleteIcon called for search {_searchId}, isSearching={_isSearching}");
@@ -277,18 +304,6 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.Log("SearchDesktopIcon", "No search instance to stop (placeholder icon)");
             }
             
-            // ALWAYS clear the saved search state, even for placeholder icons!
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            if (userProfileService != null)
-            {
-                DebugLogger.Log("SearchDesktopIcon", "Clearing saved search state from user profile");
-                userProfileService.ClearSearchState();
-                
-                // Force save the profile immediately to persist the deletion
-                DebugLogger.Log("SearchDesktopIcon", "Flushing profile to disk");
-                userProfileService.FlushProfile();
-            }
-
             // Remove search from manager if it exists
             if (!string.IsNullOrEmpty(_searchId) && _searchManager != null)
             {
@@ -296,12 +311,8 @@ namespace BalatroSeedOracle.Views
                 _searchManager.RemoveSearch(_searchId);
             }
 
-            // Remove this icon from parent
-            if (this.Parent is Panel parent)
-            {
-                DebugLogger.Log("SearchDesktopIcon", "Removing icon from parent");
-                parent.Children.Remove(this);
-            }
+            // Use shared removal logic
+            RemoveDesktopIcon();
             
             DebugLogger.Log("SearchDesktopIcon", "Icon deletion complete");
         }

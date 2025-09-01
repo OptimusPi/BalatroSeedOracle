@@ -442,8 +442,9 @@ namespace BalatroSeedOracle.Views.Modals
             _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
             if (_filterSelector != null)
             {
-                // Hide the "New Blank Filter" button in SearchModal
+                // Configure for SearchModal context
                 _filterSelector.ShowCreateButton = false;
+                _filterSelector.IsInSearchModal = true;
 
                 // Connect the FilterLoaded event
                 _filterSelector.FilterLoaded += OnFilterSelected;

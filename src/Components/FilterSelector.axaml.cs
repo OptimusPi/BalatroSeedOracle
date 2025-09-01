@@ -88,16 +88,17 @@ namespace BalatroSeedOracle.Components
             base.OnLoaded(e);
             LoadAvailableFilters();
 
-            // Update button text based on context
-            if (IsInSearchModal)
+            // Set button text based on context
+            if (_selectButton != null)
             {
-                if (_selectButton != null)
-                    _selectButton.Content = "SEARCH SEEDS USING THIS FILTER";
-            }
-            else
-            {
-                if (_selectButton != null)
-                    _selectButton.Content = "Continue➡️";
+                if (IsInSearchModal)
+                {
+                    _selectButton.Content = "SEARCH WITH THIS FILTER";
+                }
+                else
+                {
+                    _selectButton.Content = "FILTER DESIGNER";
+                }
             }
         }
 
@@ -137,19 +138,17 @@ namespace BalatroSeedOracle.Components
                 DebugLogger.Log("FilterSelector", $"Found {sortedItems.Count} filters");
                 _hasFilters = sortedItems.Count > 0;
 
-                // Determine what to show based on context and filter availability
+                // Add create option only in Filters Modal (not Search Modal)
                 if (ShowCreateButton && !IsInSearchModal)
                 {
-                    // In FiltersModal - always add create option at the beginning
+                    // In FiltersModal - add create option at the beginning
                     sortedItems.Insert(0, CreateNewFilterPanelItem());
-                    
-                    if (_selectButton != null)
-                        _selectButton.IsEnabled = false;
                 }
-                else if (_hasFilters)
+                
+                // Enable button always (for FILTER DESIGNER)
+                if (_selectButton != null)
                 {
-                    if (_selectButton != null)
-                        _selectButton.IsEnabled = true;
+                    _selectButton.IsEnabled = true;
                 }
 
                 if (_filterSpinner != null)
@@ -580,10 +579,18 @@ namespace BalatroSeedOracle.Components
         {
             var selectedItem = _filterSpinner?.SelectedItem;
             
-            if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value) && selectedItem.Value != "__CREATE_NEW__")
+            if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value))
             {
-                // Load the selected filter
-                FilterLoaded?.Invoke(this, selectedItem.Value);
+                if (selectedItem.Value == "__CREATE_NEW__")
+                {
+                    // Open filter designer with blank filter
+                    FilterLoaded?.Invoke(this, ""); // Empty string = new filter
+                }
+                else
+                {
+                    // Load the selected filter
+                    FilterLoaded?.Invoke(this, selectedItem.Value);
+                }
             }
         }
 

@@ -533,9 +533,9 @@
                                      Classes="terminal" 
                                      IsReadOnly="True"
                                      AcceptsReturn="True"
-                                     TextWrapping="NoWrap"
+                                     TextWrapping="Wrap"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                      Text="> Motely Search Console&#x0a;> Ready for Jimbo to cook...&#x0a;"/>
                             
                             <!-- JSON Validation Status -->
