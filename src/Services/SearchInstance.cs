@@ -15,7 +15,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
-using OuijaConfig = Motely.Filters.OuijaConfig;
+using OuijaConfig = Motely.Filters.MotelyJsonConfig;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 
 namespace BalatroSeedOracle.Services
@@ -170,7 +170,7 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
         
-        private string FormatColumnName(OuijaConfig.FilterItem should)
+        private string FormatColumnName(OuijaConfig.MotleyJsonFilterClause should)
         {
             if (should == null) return "should";
             

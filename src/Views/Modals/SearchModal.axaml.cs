@@ -43,7 +43,7 @@ namespace BalatroSeedOracle.Views.Modals
         private SearchManager? _searchManager;
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
-        private Motely.Filters.OuijaConfig? _loadedConfig;
+        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
 
         // Tab panels
         private Panel? _filterPanel;

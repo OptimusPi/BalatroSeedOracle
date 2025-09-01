@@ -86,7 +86,7 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="config">The OuijaConfig object to search with</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.OuijaConfig config)
+        public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
         {
             // This method should not be used - filters must be saved first!
             throw new NotSupportedException("Filters must be saved before searching. Use ShowSearchModal with a file path instead.");

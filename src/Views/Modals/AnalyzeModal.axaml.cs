@@ -17,7 +17,7 @@ using Motely;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using SeedAnalyzerCapture = Motely.SeedAnalyzerCapture;
+// using Motely.Analysis.MotelySeedAnalyzer = Motely.Motely.Analysis.MotelySeedAnalyzer; // TODO: Fix analyzer reference
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -178,7 +178,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Run analysis in background
             var analysisData = await Task.Run(() =>
-                SeedAnalyzerCapture.CaptureAnalysis(seed, deck, stake)
+                Motely.Analysis.MotelySeedAnalyzer.CaptureAnalysis(seed, deck, stake)
             );
 
             // Remove loading indicator
@@ -192,7 +192,7 @@ namespace BalatroSeedOracle.Views.Modals
             string seed,
             MotelyDeck deck,
             MotelyStake stake,
-            List<SeedAnalyzerCapture.AnteData> analysisData
+            object analysisData
         )
         {
             if (_resultsPanel == null)
@@ -332,7 +332,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private Control CreateShopItemDisplay(SeedAnalyzerCapture.ShopItem item)
+        private Control CreateShopItemDisplay(object item)
         {
             var container = new Border
             {
@@ -450,7 +450,7 @@ namespace BalatroSeedOracle.Views.Modals
             return container;
         }
 
-        private Control CreateBoosterPackDisplay(SeedAnalyzerCapture.PackContent pack)
+        private Control CreateBoosterPackDisplay(object pack)
         {
             var container = new Border
             {
