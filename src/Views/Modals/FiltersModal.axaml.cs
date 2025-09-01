@@ -56,7 +56,7 @@ namespace BalatroSeedOracle.Views.Modals
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0; // For making each dropped item unique
         private string? _currentFilterPath; // Path to the currently loaded filter
-        private Motely.Filters.OuijaConfig? _loadedConfig; // Currently loaded filter configuration
+        private Motely.Filters.MotelyJsonConfig? _loadedConfig; // Currently loaded filter configuration
         
         private string MakeUniqueKey(string itemKey)
         {
@@ -624,8 +624,8 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var filterName = filterNameInput.Text.Trim();
 
-                // Build the OuijaConfig from current selections
-                var config = BuildOuijaConfigFromSelections();
+                // Build the MotelyJsonConfig from current selections
+                var config = BuildMotelyJsonConfigFromSelections();
                 
                 // Get author from user profile
                 var userProfileService = ServiceHelper.GetService<UserProfileService>();
@@ -653,9 +653,9 @@ namespace BalatroSeedOracle.Views.Modals
                 }
 
                 // Write the JSON file using the proper serializer
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 
-                // Replace the empty name and description (dateCreated is already handled by SerializeOuijaConfig)
+                // Replace the empty name and description (dateCreated is already handled by SerializeMotelyJsonConfig)
                 json = json.Replace("\"name\": \"\"", $"\"name\": \"{filterName}\"");
                 json = json.Replace("\"description\": \"\"", $"\"description\": \"{description}\"");
                 
@@ -1449,10 +1449,10 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     else
                     {
-                        // Create OuijaConfig from current selections
-                        var config = BuildOuijaConfigFromSelections();
+                        // Create MotelyJsonConfig from current selections
+                        var config = BuildMotelyJsonConfigFromSelections();
                         // Use the same serialization method that properly handles sources
-                        json = SerializeOuijaConfig(config);
+                        json = SerializeMotelyJsonConfig(config);
                     }
                     
                     jsonEditor.Text = json;
@@ -1484,14 +1484,14 @@ namespace BalatroSeedOracle.Views.Modals
                 if (_selectedMust.Any() || _selectedShould.Any() || _selectedMustNot.Any())
                 {
                     // Build JSON from current selections
-                    var config = BuildOuijaConfigFromSelections();
-                    jsonContent = SerializeOuijaConfig(config);
+                    var config = BuildMotelyJsonConfigFromSelections();
+                    jsonContent = SerializeMotelyJsonConfig(config);
                     BalatroSeedOracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
                 }
                 else
                 {
                     // Use default example JSON only if no selections exist
-                    jsonContent = GetDefaultOuijaConfigJson();
+                    jsonContent = GetDefaultMotelyJsonConfigJson();
                     BalatroSeedOracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
                 }
 
@@ -1957,8 +1957,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var content = await File.ReadAllTextAsync(configPath);
 
                 // Parse the config
-                var config = Motely.Filters.OuijaConfig.LoadFromJson(configPath);
-                if (config != null)
+                if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var config))
                 {
                     // Load into UI (this populates the visual drop zones)
                     LoadConfigIntoUI(config);
@@ -3450,7 +3449,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
 
-                // Check for proper OuijaConfig structure
+                // Check for proper MotelyJsonConfig structure
                 bool hasValidStructure = jsonDocument.RootElement.TryGetProperty("must", out _) ||
                                         jsonDocument.RootElement.TryGetProperty("should", out _) ||
                                         jsonDocument.RootElement.TryGetProperty("mustNot", out _);
@@ -5349,8 +5348,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void SaveConfigurationToFile(string filePath)
         {
-            var config = BuildOuijaConfigFromSelections();
-            var json = SerializeOuijaConfig(config);
+            var config = BuildMotelyJsonConfigFromSelections();
+            var json = SerializeMotelyJsonConfig(config);
             File.WriteAllText(filePath, json);
         }
 
@@ -5360,7 +5359,7 @@ namespace BalatroSeedOracle.Views.Modals
             var configName = configNameBox?.Text ?? "Untitled Filter";
 
             // Create the config object using the existing method
-            var config = BuildOuijaConfigFromSelections();
+            var config = BuildMotelyJsonConfigFromSelections();
             var json = System.Text.Json.JsonSerializer.Serialize(
                 config,
                 new System.Text.Json.JsonSerializerOptions
@@ -5462,8 +5461,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var config = BuildOuijaConfigFromSelections();
-                var json = SerializeOuijaConfig(config);
+                var config = BuildMotelyJsonConfigFromSelections();
+                var json = SerializeMotelyJsonConfig(config);
 
                 // Show a simple preview dialog (you could enhance this)
                 BalatroSeedOracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
@@ -5829,8 +5828,8 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Create ouija config from selections - always use compound format
-                var config = BuildOuijaConfigFromSelections();
-                var json = SerializeOuijaConfig(config);
+                var config = BuildMotelyJsonConfigFromSelections();
+                var json = SerializeMotelyJsonConfig(config);
 
                 // Get top level visual
                 var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
@@ -5874,7 +5873,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private string SerializeOuijaConfig(Motely.Filters.OuijaConfig config)
+        private string SerializeMotelyJsonConfig(Motely.Filters.MotelyJsonConfig config)
         {
             // Manually build the JSON to ensure we get the exact nested format
             using var stream = new MemoryStream();
@@ -5940,7 +5939,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void WriteFilterItem(
             Utf8JsonWriter writer,
-            Motely.Filters.OuijaConfig.FilterItem item,
+            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause item,
             bool includeScore = false
         )
         {
@@ -6019,9 +6018,9 @@ namespace BalatroSeedOracle.Views.Modals
             writer.WriteEndObject();
         }
 
-        private Motely.Filters.OuijaConfig BuildOuijaConfigFromSelections()
+        private Motely.Filters.MotelyJsonConfig BuildMotelyJsonConfigFromSelections()
         {
-            var config = new Motely.Filters.OuijaConfig
+            var config = new Motely.Filters.MotelyJsonConfig
             {
                 Deck = "Red", // Default deck
                 Stake = "White", // Default stake
@@ -6065,7 +6064,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void FixUniqueKeyParsing(
             List<string> items,
-            List<Motely.Filters.OuijaConfig.FilterItem> targetList,
+            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> targetList,
             int defaultScore = 0
         )
         {
@@ -6097,13 +6096,13 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private Motely.Filters.OuijaConfig.FilterItem? CreateFilterItemFromSelection(
+        private Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterItemFromSelection(
             string category,
             string itemName,
             ItemConfig config
         )
         {
-            var filterItem = new Motely.Filters.OuijaConfig.FilterItem
+            var filterItem = new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
             {
                 // If Antes is null, it means either all antes or no antes were selected
                 // The JokerConfigPopup returns null for both cases
@@ -6126,7 +6125,7 @@ namespace BalatroSeedOracle.Views.Modals
             if (canHaveSources)
             {
                 // Create Sources config only for items that can have sources
-                filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
+                filterItem.Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig();
                 
                 if (config.Sources != null)
                 {
@@ -6304,8 +6303,8 @@ namespace BalatroSeedOracle.Views.Modals
                 if (jsonEditor != null)
                 {
                     // Build current config from selections and reload into JSON editor
-                    var config = BuildOuijaConfigFromSelections();
-                    var json = SerializeOuijaConfig(config);
+                    var config = BuildMotelyJsonConfigFromSelections();
+                    var json = SerializeMotelyJsonConfig(config);
                     
                     jsonEditor.Text = json;
                     
@@ -6348,21 +6347,21 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private string GetDefaultOuijaConfigJson()
+        private string GetDefaultMotelyJsonConfigJson()
         {
-            // Return a default OuijaConfig format example
-            var defaultConfig = new Motely.Filters.OuijaConfig
+            // Return a default MotelyJsonConfig format example
+            var defaultConfig = new Motely.Filters.MotelyJsonConfig
             {
                 Deck = "Red",
                 Stake = "White",
-                Must = new List<Motely.Filters.OuijaConfig.FilterItem>
+                Must = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
                 {
-                    new Motely.Filters.OuijaConfig.FilterItem
+                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
                     {
                         Type = "Joker",
                         Value = "Perkeo",
                         Antes = new[] { 1, 2 },
-                        Sources = new Motely.Filters.OuijaConfig.SourcesConfig
+                        Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig
                         {
                             ShopSlots = new[] { 0, 1, 2, 3 },
                             PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
@@ -6370,9 +6369,9 @@ namespace BalatroSeedOracle.Views.Modals
                         },
                     },
                 },
-                Should = new List<Motely.Filters.OuijaConfig.FilterItem>
+                Should = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
                 {
-                    new Motely.Filters.OuijaConfig.FilterItem
+                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
                     {
                         Type = "tag",
                         Value = "NegativeTag",
@@ -6380,13 +6379,13 @@ namespace BalatroSeedOracle.Views.Modals
                         Antes = new[] { 1, 2, 3 },
                         // NO SOURCES for tags!
                     },
-                    new Motely.Filters.OuijaConfig.FilterItem
+                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
                     {
                         Type = "Joker",
                         Value = "Blueprint",
                         Score = 30,
                         Antes = new[] { 1, 2, 3, 4 },
-                        Sources = new Motely.Filters.OuijaConfig.SourcesConfig
+                        Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig
                         {
                             ShopSlots = new[] { 0, 1, 2, 3 },
                             PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
@@ -6394,9 +6393,9 @@ namespace BalatroSeedOracle.Views.Modals
                         },
                     },
                 },
-                MustNot = new List<Motely.Filters.OuijaConfig.FilterItem>
+                MustNot = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
                 {
-                    new Motely.Filters.OuijaConfig.FilterItem
+                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
                     {
                         Type = "voucher",
                         Value = "CreditCard",
@@ -6405,7 +6404,7 @@ namespace BalatroSeedOracle.Views.Modals
                 },
             };
 
-            return SerializeOuijaConfig(defaultConfig);
+            return SerializeMotelyJsonConfig(defaultConfig);
         }
 
         /// <summary>
@@ -6580,7 +6579,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var json = await System.IO.File.ReadAllTextAsync(file.Path.LocalPath);
 
                     // Parse the JSON to load into UI
-                    var config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(
+                    var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                         json,
                         new JsonSerializerOptions
                         {
@@ -6632,7 +6631,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void LoadConfigIntoUI(Motely.Filters.OuijaConfig config)
+        private void LoadConfigIntoUI(Motely.Filters.MotelyJsonConfig config)
         {
             // Clear existing selections
             ClearNeeds();
@@ -7693,7 +7692,7 @@ namespace BalatroSeedOracle.Views.Modals
             // Save to existing path
             try
             {
-                var config = BuildOuijaConfigFromSelections();
+                var config = BuildMotelyJsonConfigFromSelections();
                 
                 // Update name and description from inputs
                 var nameInput = this.FindControl<TextBox>("SaveFilterNameInput");
@@ -7704,7 +7703,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (descriptionInput != null)
                     config.Description = descriptionInput.Text?.Trim() ?? "";
                 
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 await File.WriteAllTextAsync(_currentFilterPath, json);
                 
                 UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
@@ -7727,7 +7726,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var config = BuildOuijaConfigFromSelections();
+                var config = BuildMotelyJsonConfigFromSelections();
                 config.Name = newName;
                 
                 // Update description if provided
@@ -7747,7 +7746,7 @@ namespace BalatroSeedOracle.Views.Modals
                     counter++;
                 }
                 
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 await File.WriteAllTextAsync(filePath, json);
                 
                 _currentFilterPath = filePath;

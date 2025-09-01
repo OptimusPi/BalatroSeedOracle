@@ -6,7 +6,7 @@
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
             <Setter Property="Width" Value="36"/>
-            <Setter Property="MinHeight" Value="224"/>
+            <Setter Property="MinHeight" Value="180"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
@@ -56,7 +56,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="450"/>
-            <Setter Property="MinHeight" Value="224"/>
+            <Setter Property="MinHeight" Value="180"/>
             <Setter Property="MaxHeight" Value="280"/>
         </Style>
         
@@ -141,7 +141,7 @@
                 <!-- Sprite Image Container -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
-                         MaxHeight="140"
+                         MaxHeight="100"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
                          Margin="0,4">

@@ -15,7 +15,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
-using OuijaConfig = Motely.Filters.OuijaConfig;
+using MotelyJsonConfig = Motely.Filters.MotelyJsonConfig;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 
 namespace BalatroSeedOracle.Services
@@ -35,7 +35,7 @@ namespace BalatroSeedOracle.Services
         private CancellationTokenSource? _cancellationTokenSource;
         private volatile bool _isRunning;
         private volatile bool _isPaused;
-        private OuijaConfig? _currentConfig;
+        private MotelyJsonConfig? _currentConfig;
         private IMotelySearch? _currentSearch;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
@@ -73,7 +73,7 @@ namespace BalatroSeedOracle.Services
         public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
-        public OuijaConfig? GetFilterConfig() => _currentConfig;
+        public MotelyJsonConfig? GetFilterConfig() => _currentConfig;
         public int ResultCount => _results.Count;
     public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
     public string DatabasePath => _dbPath;
@@ -129,7 +129,7 @@ namespace BalatroSeedOracle.Services
             _connection.Open();
         }
         
-    private void SetupDatabase(OuijaConfig config, string configPath)
+    private void SetupDatabase(MotelyJsonConfig config, string configPath)
         {
             // Build column names from the Should[] criteria
             _columnNames.Clear();
@@ -174,7 +174,7 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
         
-        private string FormatColumnName(OuijaConfig.FilterItem should)
+        private string FormatColumnName(MotelyJsonConfig.MotleyJsonFilterClause should)
         {
             if (should == null) return "should";
             
@@ -569,8 +569,9 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
-                // Load the config from file - use LoadFromJson to get PostProcess!
-                var ouijaConfig = OuijaConfig.LoadFromJson(configPath);
+                // Load the config from file
+                if (!MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var ouijaConfig))
+                    throw new InvalidOperationException($"Failed to load config from {configPath}");
                 
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
@@ -607,11 +608,11 @@ namespace BalatroSeedOracle.Services
                 // Database should already be configured by StartSearchAsync
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database properly configured with {_columnNames.Count} columns");
 
-                // Register direct callback with OuijaJsonFilterDesc
+                // Register direct callback with MotelyJsonFilterDesc
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses");
                 
                 // Log the actual filter content for debugging
                 if (ouijaConfig.Must != null)
@@ -697,8 +698,9 @@ namespace BalatroSeedOracle.Services
                 $"Loading config from: {criteria.ConfigPath}"
             );
 
-            // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
-            var config = OuijaConfig.LoadFromJson(criteria.ConfigPath);
+            // Load and validate the config
+            if (!MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath, out var config))
+                throw new InvalidOperationException($"Failed to load config from {criteria.ConfigPath}");
             
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
@@ -848,7 +850,7 @@ namespace BalatroSeedOracle.Services
                 _isRunning = false;
                 
                 // Set the cancellation flag that Motely checks
-                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
+                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -914,20 +916,20 @@ namespace BalatroSeedOracle.Services
 
 
         private async Task RunSearchInProcess(
-            OuijaConfig config,
+            MotelyJsonConfig config,
             SearchCriteria criteria,
             IProgress<SearchProgress>? progress,
             CancellationToken cancellationToken
         )
         {
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "RunSearchInProcess ENTERED!");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OnResultFound is {(OuijaJsonFilterDesc.OnResultFound != null ? "SET" : "NULL")}");
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Starting search process");
             
             try
             {
                 
                 // Reset cancellation flag
-                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled = false;
                 
                 // Enable Motely's DebugLogger if in debug mode
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
@@ -937,52 +939,21 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Create filter descriptor
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating OuijaJsonFilterDesc with config: {config.Name ?? "unnamed"}");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonFilterDesc with config: {config.Name ?? "unnamed"}");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
                 
-                var filterDesc = new OuijaJsonFilterDesc(config);
-
-                // Assign result callback AFTER creating filterDesc to avoid it being reset inside constructor logic
-                OuijaJsonFilterDesc.OnResultFound = async (seed, totalScore, scores) =>
-                {
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Direct callback - Found: {seed} Score: {totalScore}");
-
-                    var result = new SearchResult
-                    {
-                        Seed = seed,
-                        TotalScore = totalScore,
-                        Scores = scores,
-                        Labels = config.Should?.Select(s => s.Value ?? "Unknown").ToArray()
-                    };
-
-                    // Marshal collection & UI event updates to UI thread; DB insert stays background
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        _results.Add(result);
-                        ResultFound?.Invoke(
-                            this,
-                            new SearchResultEventArgs
-                            {
-                                Result = new BalatroSeedOracle.Models.SearchResult
-                                {
-                                    Seed = seed,
-                                    TotalScore = totalScore,
-                                    Scores = scores
-                                },
-                            }
-                        );
-                    });
-
-                    // Save to database (background thread OK)
-                    await AddSearchResultAsync(result);
-                };
+                // Combine all clauses from config
+                var allClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                if (config.Must != null) allClauses.AddRange(config.Must);
+                if (config.Should != null) allClauses.AddRange(config.Should);
+                if (config.MustNot != null) allClauses.AddRange(config.MustNot);
                 
-                // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
-                // MinScore=0 means auto-cutoff in Motely
-                filterDesc.Cutoff = criteria.MinScore;
-                filterDesc.AutoCutoff = criteria.MinScore == 0;
+                var filterDesc = new MotelyJsonFilterDesc(FilterCategory.Mixed, allClauses);
+
+                // Result callback system has changed - results handled through search instance
                 
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Passing cutoff={criteria.MinScore} to Motely (0=auto)");
+                // MinScore/cutoff is now handled through search settings
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"MinScore: {criteria.MinScore}");
 
                 // Create search settings - following Motely Program.cs pattern
                 var batchSize = criteria.BatchSize;
@@ -1006,86 +977,40 @@ namespace BalatroSeedOracle.Services
                 // If no end batch specified, search all
                 ulong effectiveEndBatch = (criteria.EndBatch == 0) ? totalBatches : criteria.EndBatch;
                 
-                // Create progress callback for Motely
-                var motelyProgress = new Progress<Motely.MotelyProgress>(mp =>
-                {
-                    // IMPORTANT: mp.CompletedBatchCount is relative to this session!
-                    // We need to add the start batch to get the absolute position
-                    ulong absoluteBatchCount = criteria.StartBatch + mp.CompletedBatchCount;
-                    
-                    // Calculate REAL percentage of total search space
-                    double actualPercent = (absoluteBatchCount / (double)totalBatches) * 100.0;
-                    
-                    // This runs on the captured synchronization context
-                    progress?.Report(
-                        new SearchProgress
-                        {
-                            SeedsSearched = mp.SeedsSearched,
-                            SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = actualPercent,
-                            Message = $"⏱️ {mp.FormattedMessage}",
-                            ResultsFound = Results.Count,
-                        }
-                    );
-                    
-                    // Also raise our event
-                    ProgressUpdated?.Invoke(
-                        this,
-                        new SearchProgressEventArgs
-                        {
-                            SeedsSearched = mp.SeedsSearched,
-                            ResultsFound = Results.Count,
-                            SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = actualPercent,
-                            BatchesSearched = absoluteBatchCount,  // Use absolute batch count
-                            TotalBatches = totalBatches,  // Use the real total, not effective end
-                        }
-                    );
-                    
-                    // Update batch in memory on every progress update
-                    if (mp.CompletedBatchCount != _lastSavedBatch)
-                    {
-                        _lastSavedBatch = mp.CompletedBatchCount;
-                        
-                        // Save to database for resume - save the completed batch count
-                        // The actual resume will be from absoluteBatchCount which already includes the start offset
-                        _ = SaveLastBatchAsync(absoluteBatchCount);
-                        
-                        // Only save state if not prevented
-                        if (!_preventStateSave)
-                        {
-                            // First time? Save the full state
-                            if (_userProfileService?.GetSearchState() == null)
-                            {
-                                SaveSearchState(absoluteBatchCount, totalBatches, effectiveEndBatch);
-                                _lastStateSave = DateTime.UtcNow;
-                            }
-                            else
-                            {
-                                // Just update the batch number in memory
-                                _userProfileService?.UpdateSearchBatch(absoluteBatchCount);
-                                
-                                // Write to disk every 10 seconds
-                                if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
-                                {
-                                    _userProfileService?.FlushProfile();
-                                    _lastStateSave = DateTime.UtcNow;
-                                }
-                            }
-                        }
-                    }
-                });
                 
-                var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
-                    filterDesc
-                ).WithThreadCount(criteria.ThreadCount)
+                var searchSettings = new MotelySearchSettings<MotelyJsonFilterDesc.MotelyFilter>(filterDesc)
+                    .WithThreadCount(criteria.ThreadCount)
                     .WithBatchCharacterCount(batchSize)
-                    .WithStartBatchIndex(criteria.StartBatch)
+                    .WithStartBatchIndex((long)criteria.StartBatch)
                     .WithSequentialSearch()
-                    .WithProgressCallback(motelyProgress);
+                    .WithProgressCallback((completed, total, seedsSearched, seedsPerMs) =>
+                    {
+                        // Convert to our progress format
+                        var absoluteBatchCount = criteria.StartBatch + (ulong)completed;
+                        var actualPercent = total > 0 ? ((double)absoluteBatchCount / totalBatches) * 100.0 : 0.0;
+                        
+                        progress?.Report(new SearchProgress
+                        {
+                            SeedsSearched = (ulong)seedsSearched,
+                            SeedsPerMillisecond = seedsPerMs,
+                            PercentComplete = actualPercent,
+                            Message = $"Batch {completed:N0} of {total:N0}",
+                            ResultsFound = Results.Count,
+                        });
+                        
+                        ProgressUpdated?.Invoke(this, new SearchProgressEventArgs
+                        {
+                            SeedsSearched = (ulong)seedsSearched,
+                            ResultsFound = Results.Count,
+                            SeedsPerMillisecond = seedsPerMs,
+                            PercentComplete = actualPercent,
+                            BatchesSearched = (ulong)completed,
+                            TotalBatches = (ulong)total
+                        });
+                    });
 
                 // Use the already declared effectiveEndBatch
-                searchSettings.WithEndBatchIndex(effectiveEndBatch);
+                searchSettings = searchSettings.WithEndBatchIndex((long)effectiveEndBatch);
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
@@ -1120,7 +1045,7 @@ namespace BalatroSeedOracle.Services
                 )
                 {
                     // Check for cancellation
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
+                    if (!_isRunning || cancellationToken.IsCancellationRequested || MotelyJsonSeedScoreDesc.MotelyJsonSeedScoreProvider.IsCancelled)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -1179,7 +1104,7 @@ namespace BalatroSeedOracle.Services
                 {
                     try
                     {
-                        finalBatchCount = _currentSearch.CompletedBatchCount;
+                        finalBatchCount = (ulong)_currentSearch.CompletedBatchCount;
                     }
                     catch
                     {
