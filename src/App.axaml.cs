@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Extensions;
 
 namespace BalatroSeedOracle;
 
@@ -89,12 +90,11 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        // Register services
-        // SearchHistoryService removed - SearchInstance handles its own DuckDB connection
-        services.AddSingleton<Services.SearchManager>();
+        // Register all MVVM services and ViewModels
+        services.AddBalatroSeedOracleServices();
+        
+        // Register existing singleton services
         services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
-        services.AddSingleton<Services.FavoritesService>();
-        services.AddSingleton<Services.UserProfileService>();
         // ClipboardService is static, no need to register
     }
 

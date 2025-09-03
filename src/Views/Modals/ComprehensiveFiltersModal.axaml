@@ -1,0 +1,486 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.ComprehensiveFiltersModal"
+             x:DataType="vm:ComprehensiveFiltersModalViewModel">
+             
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>   <!-- Left: Filter Builder -->
+            <ColumnDefinition Width="20"/>  <!-- Spacer -->
+            <ColumnDefinition Width="*"/>   <!-- Right: Search Tester -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT HALF: MVVM Filter Builder -->
+        <Border Grid.Column="0" 
+                Background="{StaticResource DarkModalGrey}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Title -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Filter Name -->
+                    <RowDefinition Height="10"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Description -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>     <!-- Filter Content -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Actions -->
+                </Grid.RowDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Row="0" 
+                           Text="FILTER BUILDER" 
+                           FontSize="24" 
+                           Foreground="{StaticResource Gold}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"/>
+                
+                <!-- Filter Name Input -->
+                <TextBox Grid.Row="2"
+                         Text="{Binding FilterName}"
+                         Watermark="Filter Name..."
+                         FontSize="16"
+                         Height="40"/>
+                
+                <!-- Description Input -->
+                <TextBox Grid.Row="4"
+                         Text="{Binding FilterDescription}"
+                         Watermark="Filter Description..."
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         FontSize="14"
+                         Height="80"/>
+                
+                <!-- Filter Content Area -->
+                <ScrollViewer Grid.Row="6" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="20">
+                        <!-- MUST Section -->
+                        <StackPanel>
+                            <TextBlock Text="MUST HAVE" 
+                                       FontSize="18" 
+                                       Foreground="{StaticResource Green}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Margin="0,0,0,10"/>
+                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderThickness="2"
+                                    BorderBrush="{StaticResource Green}"
+                                    CornerRadius="8"
+                                    MinHeight="60"
+                                    Padding="10">
+                                <ItemsControl ItemsSource="{Binding SelectedMust}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource Green}" 
+                                                    CornerRadius="6" 
+                                                    Padding="8,4" 
+                                                    Margin="2">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding DisplayName}" 
+                                                               Foreground="{StaticResource White}"
+                                                               FontFamily="{StaticResource BalatroFont}"/>
+                                                    <Button Content="×" 
+                                                            Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).RemoveFromMustCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            Foreground="{StaticResource White}"
+                                                            FontSize="12"
+                                                            Padding="4,0"
+                                                            Margin="5,0,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                        
+                        <!-- SHOULD Section -->
+                        <StackPanel>
+                            <TextBlock Text="SHOULD HAVE" 
+                                       FontSize="18" 
+                                       Foreground="{StaticResource Blue}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Margin="0,0,0,10"/>
+                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderThickness="2"
+                                    BorderBrush="{StaticResource Blue}"
+                                    CornerRadius="8"
+                                    MinHeight="60"
+                                    Padding="10">
+                                <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource Blue}" 
+                                                    CornerRadius="6" 
+                                                    Padding="8,4" 
+                                                    Margin="2">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding DisplayName}" 
+                                                               Foreground="{StaticResource White}"
+                                                               FontFamily="{StaticResource BalatroFont}"/>
+                                                    <Button Content="×" 
+                                                            Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).RemoveFromShouldCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            Foreground="{StaticResource White}"
+                                                            FontSize="12"
+                                                            Padding="4,0"
+                                                            Margin="5,0,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                        
+                        <!-- Available Items Palette -->
+                        <StackPanel>
+                            <TextBlock Text="AVAILABLE ITEMS" 
+                                       FontSize="18" 
+                                       Foreground="{StaticResource Gold}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Margin="0,0,0,10"/>
+                            
+                            <!-- Jokers -->
+                            <Expander Header="Jokers" IsExpanded="True">
+                                <ItemsControl ItemsSource="{Binding AvailableJokers}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource ModalGrey}" 
+                                                    CornerRadius="4" 
+                                                    Padding="6,3" 
+                                                    Margin="2"
+                                                    Cursor="Hand">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Add to MUST" 
+                                                                  Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToMustCommand}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="Add to SHOULD" 
+                                                                  Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToShouldCommand}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="Add to MUST NOT" 
+                                                                  Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToMustNotCommand}"
+                                                                  CommandParameter="{Binding}"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <TextBlock Text="{Binding DisplayName}" 
+                                                           Foreground="{StaticResource White}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Expander>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="8" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            Spacing="15">
+                    <Button Content="NEW"
+                            Command="{Binding NewFilterCommand}"
+                            Classes="btn-blue"
+                            Width="100"
+                            Height="40"/>
+                    <Button Content="SAVE" 
+                            Command="{Binding SaveFilterCommand}"
+                            Classes="btn-green"
+                            Width="100"
+                            Height="40"/>
+                    <Button Content="LOAD"
+                            Command="{Binding LoadFilterCommand}"
+                            Classes="btn-blue"
+                            Width="100"
+                            Height="40"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- RIGHT HALF: Search Tester -->
+        <Grid Grid.Column="2">
+            <Border Background="{StaticResource DarkModalGrey}" 
+                    BorderThickness="0" 
+                    CornerRadius="8" 
+                    Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- Title -->
+                        <RowDefinition Height="20"/>    <!-- Spacer -->
+                        <RowDefinition Height="Auto"/>  <!-- Test Button -->
+                        <RowDefinition Height="20"/>    <!-- Spacer -->
+                        <RowDefinition Height="*"/>     <!-- Status/Results -->
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0" 
+                               Text="FILTER TEST" 
+                               FontSize="20" 
+                               Foreground="{StaticResource Gold}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               HorizontalAlignment="Center"/>
+                    
+                    <!-- Test Button -->
+                    <Button Grid.Row="2"
+                            Content="🧪 TEST FILTER"
+                            Command="{Binding TestFilterCommand}"
+                            Classes="btn-green"
+                            Height="50"
+                            FontSize="16"
+                            FontFamily="{StaticResource BalatroFont}"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding !IsTestRunning}"/>
+                    
+                    <!-- Status/Results Area -->
+                    <Border Grid.Row="4"
+                            Background="{StaticResource ContainerDarkPrecise}"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            CornerRadius="8"
+                            Padding="15">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>  <!-- Status Text -->
+                                <RowDefinition Height="*"/>     <!-- Loading/Results -->
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Status -->
+                            <TextBlock Grid.Row="0"
+                                       Text="{Binding TestStatus}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextLight}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,10"/>
+                            
+                            <!-- Loading/Results Display -->
+                            <Grid Grid.Row="1">
+                                <!-- Loading Spinner -->
+                                <Border Background="{StaticResource ContainerDarkPrecise}"
+                                        CornerRadius="50"
+                                        Width="60"
+                                        Height="60"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{Binding ShowTestSpinner}">
+                                    <TextBlock Text="🔄"
+                                               FontSize="24"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.RenderTransform>
+                                            <RotateTransform Angle="0"/>
+                                        </TextBlock.RenderTransform>
+                                        <TextBlock.Styles>
+                                            <Style Selector="TextBlock">
+                                                <Style.Animations>
+                                                    <Animation Duration="0:0:1" IterationCount="INFINITE">
+                                                        <KeyFrame Cue="0%">
+                                                            <Setter Property="RenderTransform" Value="rotate(0deg)"/>
+                                                        </KeyFrame>
+                                                        <KeyFrame Cue="100%">
+                                                            <Setter Property="RenderTransform" Value="rotate(360deg)"/>
+                                                        </KeyFrame>
+                                                    </Animation>
+                                                </Style.Animations>
+                                            </Style>
+                                        </TextBlock.Styles>
+                                    </TextBlock>
+                                </Border>
+                                
+                                <!-- Success Checkmark -->
+                                <Border Background="{StaticResource Green}"
+                                        CornerRadius="50"
+                                        Width="80"
+                                        Height="80"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{Binding ShowTestSuccess}">
+                                    <TextBlock Text="✓"
+                                               FontSize="40"
+                                               Foreground="{StaticResource White}"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- Error Display -->
+                                <Border Background="{StaticResource Red}"
+                                        CornerRadius="50"
+                                        Width="80"
+                                        Height="80"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{Binding ShowTestError}">
+                                    <TextBlock Text="✗"
+                                               FontSize="40"
+                                               Foreground="{StaticResource White}"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- Default State -->
+                                <Border Background="{StaticResource ContainerDarkPrecise}"
+                                        CornerRadius="50"
+                                        Width="80"
+                                        Height="80"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{Binding !ShowTestSpinner}">
+                                    <Border.IsVisible>
+                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                            <Binding Path="!ShowTestSpinner"/>
+                                            <Binding Path="!ShowTestSuccess"/>
+                                            <Binding Path="!ShowTestError"/>
+                                        </MultiBinding>
+                                    </Border.IsVisible>
+                                    <TextBlock Text="?"
+                                               FontSize="40"
+                                               Foreground="{StaticResource TextLight}"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+        
+        <!-- RIGHT HALF: Item Palette -->
+        <Border Grid.Column="2" 
+                Background="{StaticResource DarkModalGrey}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Title -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>     <!-- Available Items -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Test Button -->
+                </Grid.RowDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Row="0" 
+                           Text="ITEM PALETTE" 
+                           FontSize="20" 
+                           Foreground="{StaticResource Gold}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"/>
+                
+                <!-- Available Items -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="15">
+                        <!-- Jokers -->
+                        <Expander Header="🃏 Jokers" IsExpanded="True">
+                            <ItemsControl ItemsSource="{Binding AvailableJokers}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource ModalGrey}" 
+                                                CornerRadius="4" 
+                                                Padding="6,3" 
+                                                Margin="2"
+                                                Cursor="Hand">
+                                            <Border.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Add to MUST" 
+                                                              Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToMustCommand}"
+                                                              CommandParameter="{Binding}"/>
+                                                    <MenuItem Header="Add to SHOULD" 
+                                                              Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToShouldCommand}"
+                                                              CommandParameter="{Binding}"/>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
+                                            <TextBlock Text="{Binding DisplayName}" 
+                                                       Foreground="{StaticResource White}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Expander>
+                        
+                        <!-- Tags -->
+                        <Expander Header="🏷️ Tags">
+                            <ItemsControl ItemsSource="{Binding AvailableTags}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource ModalGrey}" 
+                                                CornerRadius="4" 
+                                                Padding="6,3" 
+                                                Margin="2"
+                                                Cursor="Hand">
+                                            <Border.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Add to MUST" 
+                                                              Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToMustCommand}"
+                                                              CommandParameter="{Binding}"/>
+                                                    <MenuItem Header="Add to SHOULD" 
+                                                              Command="{Binding $parent[UserControl].((vm:ComprehensiveFiltersModalViewModel)DataContext).AddToShouldCommand}"
+                                                              CommandParameter="{Binding}"/>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
+                                            <TextBlock Text="{Binding DisplayName}" 
+                                                       Foreground="{StaticResource White}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+                
+                <!-- Test Button at Bottom -->
+                <Button Grid.Row="4"
+                        Content="🧪 TEST FILTER"
+                        Command="{Binding TestFilterCommand}"
+                        Classes="btn-green"
+                        Height="50"
+                        FontSize="16"
+                        FontFamily="{StaticResource BalatroFont}"
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="{Binding !IsTestRunning}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

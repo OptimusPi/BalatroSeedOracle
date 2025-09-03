@@ -7,7 +7,7 @@
     
     <!-- Balatro Modal Card Style - Medium grey background like in Balatro -->
     <Style Selector="Border.BalatroSeedOracle-modal-card">
-        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="Background" Value="{StaticResource Grey}"/>
         <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
@@ -17,7 +17,7 @@
     
     <!-- Precise modal with exact south-only shadow - Medium grey background -->
     <Style Selector="Border.BalatroSeedOracle-modal-card-precise">
-        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="Background" Value="{StaticResource Grey}"/>
         <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>

@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:modals="using:BalatroSeedOracle.Views.Modals"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="BalatroSeedOracle.Windows.AnalyzerWindow"
+        Title="Seed Analyzer"
+        Width="1000"
+        Height="700"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+    
+    <!-- Just embed the AnalyzeModal content directly -->
+    <modals:AnalyzeModal Name="AnalyzeModalContent" />
+    
+</Window>

@@ -112,7 +112,7 @@
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource Grey}"
                             CornerRadius="8"
                             Padding="4,0,4,2"
                             Margin="0,0,0,4">
@@ -168,7 +168,7 @@
                             CornerRadius="8"
                             Margin="0,4,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource Grey}"
                             CornerRadius="8"
                             Padding="2"
                             Margin="0,0,0,4">
@@ -241,7 +241,7 @@
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource Grey}"
                             CornerRadius="8"
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">

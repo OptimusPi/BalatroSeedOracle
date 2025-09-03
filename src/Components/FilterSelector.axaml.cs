@@ -34,6 +34,7 @@ namespace BalatroSeedOracle.Components
             get => _autoLoadEnabled;
             set => _autoLoadEnabled = value;
         }
+        
 
         // Services
         private readonly SpriteService _spriteService;
@@ -41,6 +42,7 @@ namespace BalatroSeedOracle.Components
         public bool ShowCreateButton { get; set; } = true;
         public bool ShouldSwitchToVisualTab { get; set; } = false;
         public bool IsInSearchModal { get; set; } = false;
+        public bool ShowSelectButton { get; set; } = true;
         
         public static readonly StyledProperty<string> TitleProperty = 
             AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
@@ -97,7 +99,7 @@ namespace BalatroSeedOracle.Components
                 }
                 else
                 {
-                    _selectButton.Content = "FILTER DESIGNER";
+                    _selectButton.Content = "LOAD THIS FILTER";
                 }
             }
         }
@@ -138,17 +140,13 @@ namespace BalatroSeedOracle.Components
                 DebugLogger.Log("FilterSelector", $"Found {sortedItems.Count} filters");
                 _hasFilters = sortedItems.Count > 0;
 
-                // Add create option only in Filters Modal (not Search Modal)
-                if (ShowCreateButton && !IsInSearchModal)
-                {
-                    // In FiltersModal - add create option at the beginning
-                    sortedItems.Insert(0, CreateNewFilterPanelItem());
-                }
+                // Create filter option removed - handled by dedicated FilterCreationModal
                 
-                // Enable button always (for FILTER DESIGNER)
+                // Control button visibility and state
                 if (_selectButton != null)
                 {
                     _selectButton.IsEnabled = true;
+                    _selectButton.IsVisible = ShowSelectButton;
                 }
 
                 if (_filterSpinner != null)
@@ -536,7 +534,7 @@ namespace BalatroSeedOracle.Components
 
         private void OnFilterSelectionChanged(object? sender, PanelItem? item)
         {
-            if (item?.Value != null && !string.IsNullOrEmpty(item.Value) && item.Value != "__CREATE_NEW__")
+            if (item?.Value != null && !string.IsNullOrEmpty(item.Value))
             {
                 // Regular filter selection
                 FilterSelected?.Invoke(this, item.Value);
@@ -564,15 +562,6 @@ namespace BalatroSeedOracle.Components
                     DebugLogger.Log("FilterSelector", $"Filter selected but NOT auto-loading: {item.Value} (AutoLoadEnabled={_autoLoadEnabled})");
                 }
             }
-            else if (item?.Value == "__CREATE_NEW__")
-            {
-                // Disable the blue button for create new filter
-                if (_selectButton != null)
-                {
-                    _selectButton.IsEnabled = false;
-                    _selectButton.IsVisible = true;
-                }
-            }
         }
 
         private void OnSelectClick(object? sender, RoutedEventArgs e)
@@ -581,189 +570,8 @@ namespace BalatroSeedOracle.Components
             
             if (selectedItem?.Value != null && !string.IsNullOrEmpty(selectedItem.Value))
             {
-                if (selectedItem.Value == "__CREATE_NEW__")
-                {
-                    // Open filter designer with blank filter
-                    FilterLoaded?.Invoke(this, ""); // Empty string = new filter
-                }
-                else
-                {
-                    // Load the selected filter
-                    FilterLoaded?.Invoke(this, selectedItem.Value);
-                }
-            }
-        }
-
-
-        private PanelItem CreateNewFilterPanelItem()
-        {
-            return new PanelItem
-            {
-                Title = "Create New Filter",
-                Description = "Start with a blank filter",
-                Value = "__CREATE_NEW__",
-                GetImage = () => null,
-                GetControl = () => CreateNewFilterInputPanel()
-            };
-        }
-        
-        private Control CreateNewFilterInputPanel()
-        {
-            // Simple stack panel - no extra borders
-            var panel = new StackPanel
-            {
-                Spacing = 15,
-                Width = 380,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            };
-            
-            // Name input
-            var nameInput = new TextBox
-            {
-                Name = "FilterNameInput",
-                Watermark = "Filter name...",
-                Classes = { "balatro-input" },
-                Height = 36,
-                FontSize = 14
-            };
-            panel.Children.Add(nameInput);
-            
-            // Description input (optional)
-            var descInput = new TextBox
-            {
-                Name = "FilterDescriptionInput",
-                Watermark = "Description (optional)...",
-                Classes = { "balatro-input" },
-                Height = 70,
-                FontSize = 14,
-                AcceptsReturn = true,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap
-            };
-            panel.Children.Add(descInput);
-            
-            // Add Create button at the bottom
-            var createButton = new Button
-            {
-                Content = "CREATE",
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 0),
-                IsEnabled = false,
-                Classes = { "btn-green" },
-                MinWidth = 120,
-                Height = 36
-            };
-            
-            // Wire up text change events to enable/disable create button
-            Action updateButtonState = () =>
-            {
-                var hasName = !string.IsNullOrWhiteSpace(nameInput.Text);
-                createButton.IsEnabled = hasName;
-            };
-            
-            nameInput.TextChanged += (s, e) => updateButtonState();
-            
-            createButton.Click += (s, e) =>
-            {
-                var filterName = nameInput.Text?.Trim() ?? "";
-                var filterDescription = descInput.Text?.Trim() ?? "No description";
-                
-                if (!string.IsNullOrEmpty(filterName))
-                {
-                    var createdFilterPath = SaveBasicFilter(filterName, filterDescription);
-                    if (!string.IsNullOrEmpty(createdFilterPath))
-                    {
-                        // Refresh the filter list and select the new filter
-                        LoadAvailableFilters();
-                        
-                        // Find and select the new filter
-                        if (_filterSpinner != null)
-                        {
-                            for (int i = 0; i < _filterSpinner.Items.Count; i++)
-                            {
-                                if (_filterSpinner.Items[i].Value == createdFilterPath)
-                                {
-                                    _filterSpinner.SelectedIndex = i;
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        // Load it
-                        FilterLoaded?.Invoke(this, createdFilterPath);
-                        
-                        DebugLogger.Log("FilterSelector", $"Created and loaded new filter: {createdFilterPath}");
-                    }
-                }
-            };
-            
-            panel.Children.Add(createButton);
-            
-            return panel;
-        }
-        
-        private string NormalizeFileName(string name)
-        {
-            // Remove special characters and replace with hyphens
-            var normalized = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9]+", "-");
-            
-            // Remove leading/trailing hyphens
-            normalized = normalized.Trim('-');
-            
-            // If empty, use default
-            if (string.IsNullOrEmpty(normalized))
-                normalized = "NewFilter";
-                
-            return normalized;
-        }
-        
-        private string? SaveBasicFilter(string name, string description)
-        {
-            try
-            {
-                var filterDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
-                if (!Directory.Exists(filterDir))
-                    Directory.CreateDirectory(filterDir);
-                
-                // Create basic filter structure
-                var basicFilter = new
-                {
-                    name = name,
-                    description = description,
-                    author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Anonymous",
-                    dateCreated = DateTime.UtcNow.ToString("o"),
-                    must = new object[] { },
-                    should = new object[] { },
-                    mustNot = new object[] { },
-                    scoring = new
-                    {
-                        type = "sum"
-                    }
-                };
-                
-                // Generate filename from name using NormalizeFileName
-                var fileName = NormalizeFileName(name);
-                var filePath = Path.Combine(filterDir, $"{fileName}.json");
-                
-                // Handle duplicates
-                int counter = 1;
-                while (File.Exists(filePath))
-                {
-                    filePath = Path.Combine(filterDir, $"{fileName}{counter}.json");
-                    counter++;
-                }
-                
-                // Save the file
-                var json = JsonSerializer.Serialize(basicFilter, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(filePath, json);
-                
-                DebugLogger.Log("FilterSelector", $"Created basic filter: {filePath}");
-                return filePath; // Return the created file path
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FilterSelector", $"Failed to save basic filter: {ex.Message}");
-                return null;
+                // Load the selected filter
+                FilterLoaded?.Invoke(this, selectedItem.Value);
             }
         }
 

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -13,7 +14,7 @@ namespace BalatroSeedOracle.Views.Modals
         public CreditsModal()
         {
             InitializeComponent();
-            DataContext = new CreditsModalViewModel();
+            DataContext = ServiceHelper.GetRequiredService<CreditsModalViewModel>();
             
             // Set up event handler for link clicks
             this.AddHandler(PointerPressedEvent, OnLinkClick, handledEventsToo: true);

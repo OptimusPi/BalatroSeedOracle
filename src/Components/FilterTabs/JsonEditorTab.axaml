@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.JsonEditorTab"
+             x:DataType="vm:JsonEditorTabViewModel">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="10"/>    <!-- Spacer -->
+            <RowDefinition Height="*"/>     <!-- Editor -->
+            <RowDefinition Height="Auto"/>  <!-- Status Bar -->
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="JSON EDITOR" 
+                       FontSize="20" 
+                       Foreground="{StaticResource Gold}"
+                       FontFamily="{StaticResource BalatroFont}"/>
+            <StackPanel Grid.Column="1" 
+                        Orientation="Horizontal" 
+                        Spacing="10">
+                <Button Content="Generate from Visual" 
+                        Command="{Binding GenerateFromVisualCommand}"
+                        Classes="btn-blue"
+                        Height="32"
+                        FontSize="12"/>
+                <Button Content="Apply to Visual" 
+                        Command="{Binding ApplyToVisualCommand}"
+                        Classes="btn-green"
+                        Height="32"
+                        FontSize="12"/>
+            </StackPanel>
+        </Grid>
+        
+        <!-- JSON Editor -->
+        <Border Grid.Row="2"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderThickness="2"
+                BorderBrush="{StaticResource ModalBorder}"
+                CornerRadius="8"
+                Padding="5">
+            <avalonedit:TextEditor Name="JsonEditor"
+                                   SyntaxHighlighting="Json"
+                                   ShowLineNumbers="True"
+                                   FontFamily="Cascadia Code, Consolas, monospace"
+                                   FontSize="14"
+                                   Background="{StaticResource ContainerDarkPrecise}"
+                                   Foreground="{StaticResource White}"/>
+        </Border>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="3"
+                Background="{StaticResource Grey}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,1,0,0"
+                Padding="8,4"
+                Margin="0,4,0,0"
+                CornerRadius="0,0,8,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="{Binding ValidationStatus}"
+                           Foreground="{Binding ValidationStatusColor}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Validate" 
+                            Command="{Binding ValidateJsonCommand}"
+                            Classes="btn-blue"
+                            Height="28"
+                            FontSize="11"/>
+                    <Button Content="Format" 
+                            Command="{Binding FormatJsonCommand}"
+                            Classes="btn-green"
+                            Height="28"
+                            FontSize="11"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

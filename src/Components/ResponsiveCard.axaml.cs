@@ -323,8 +323,7 @@ namespace BalatroSeedOracle.Components
                         // IMPORTANT: Clean up drag visual state when drag ends
                         this.Classes.Remove("is-dragging");
                         this.RenderTransform = null; // Reset any transforms
-                        this.Width = double.NaN; // Reset to auto width
-                        this.Height = double.NaN; // Reset to auto height
+                        // Don't reset Width/Height to prevent layout shifts
                         _isDragging = false;
                         _dragStartPoint = null;
                     }

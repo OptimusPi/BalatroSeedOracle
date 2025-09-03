@@ -43,7 +43,7 @@
                         <!-- Icon background -->
                         <Border Name="IconBorder"
                                 Classes="icon-border"
-                                Background="{StaticResource DockGrey}"
+                                Background="{StaticResource Grey}"
                                 CornerRadius="12"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="2">

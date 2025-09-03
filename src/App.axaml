@@ -28,10 +28,11 @@
         <SolidColorBrush x:Key="RedDisabled">#a94640</SolidColorBrush>
         
         <!-- UI Container colors -->
-        <SolidColorBrush x:Key="DockGrey">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="Grey">#3a5055</SolidColorBrush>
         <SolidColorBrush x:Key="DropShadow">#1e2e32</SolidColorBrush>
         <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
         <SolidColorBrush x:Key="ModalShadow">#777e89</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalGrey">#4a5c62</SolidColorBrush>
         <SolidColorBrush x:Key="DarkModalGrey">#1e2b2d</SolidColorBrush>
         
         <!-- UI Colors from C.UI -->

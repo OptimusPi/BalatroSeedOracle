@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tabs="using:BalatroSeedOracle.Components.FilterTabs"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.ModularFiltersModal"
+             x:DataType="vm:FiltersModalViewModel">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Tab Navigation -->
+            <RowDefinition Height="10"/>    <!-- Spacer -->
+            <RowDefinition Height="*"/>     <!-- Tab Content -->
+        </Grid.RowDefinitions>
+        
+        <!-- Tab Navigation -->
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkModalGrey}"
+                BorderThickness="0"
+                CornerRadius="8,8,0,0"
+                Padding="10">
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Center" 
+                        Spacing="5">
+                <Button Content="VISUAL" 
+                        Name="VisualTab"
+                        Classes="tab-button"
+                        Command="{Binding SwitchTabCommand}"
+                        CommandParameter="Visual"/>
+                <Button Content="JSON" 
+                        Name="JsonTab"
+                        Classes="tab-button"
+                        Command="{Binding SwitchTabCommand}"
+                        CommandParameter="Json"/>
+                <Button Content="SAVE" 
+                        Name="SaveTab"
+                        Classes="tab-button"
+                        Command="{Binding SwitchTabCommand}"
+                        CommandParameter="Save"/>
+                <Button Content="LOAD" 
+                        Name="LoadTab"
+                        Classes="tab-button"
+                        Command="{Binding SwitchTabCommand}"
+                        CommandParameter="Load"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Tab Content -->
+        <Border Grid.Row="2"
+                Background="{StaticResource DarkModalGrey}"
+                BorderThickness="0"
+                CornerRadius="0,0,8,8"
+                Padding="10">
+            <Grid>
+                <!-- Visual Builder Tab -->
+                <tabs:VisualBuilderTab IsVisible="{Binding IsVisualTabActive}"/>
+                
+                <!-- JSON Editor Tab -->
+                <tabs:JsonEditorTab IsVisible="{Binding IsJsonTabActive}"/>
+                
+                <!-- Save Filter Tab -->
+                <tabs:SaveFilterTab IsVisible="{Binding IsSaveTabActive}"/>
+                
+                <!-- Load Filter Tab (placeholder for now) -->
+                <Border IsVisible="{Binding IsLoadTabActive}"
+                        Background="{StaticResource ContainerDarkPrecise}"
+                        CornerRadius="8"
+                        Padding="20">
+                    <StackPanel Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="LOAD FILTER" 
+                                   FontSize="24" 
+                                   Foreground="{StaticResource Gold}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Load filter functionality coming soon..." 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource TextLight}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

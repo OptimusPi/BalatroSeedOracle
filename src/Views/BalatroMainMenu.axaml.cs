@@ -160,12 +160,17 @@ namespace BalatroSeedOracle.Views
 
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
         {
-            // Show the analyze modal
-            var analyzeModal = new AnalyzeModal();
-            var modal = new StandardModal("ANALYZE");
-            modal.SetContent(analyzeModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal, "SEED ANALYZER");
+            try
+            {
+                // Show the dedicated analyzer window
+                var analyzerWindow = new Windows.AnalyzerWindow();
+                analyzerWindow.Show();
+                DebugLogger.Log("BalatroMainMenu", "Opened analyzer window");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error opening analyzer window: {ex.Message}");
+            }
         }
 
         private void OnToolClick(object? sender, RoutedEventArgs e)

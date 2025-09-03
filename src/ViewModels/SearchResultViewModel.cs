@@ -6,7 +6,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 
-namespace BalatroSeedOracle.Services
+namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
     /// View model for displaying search results in the DataGrid

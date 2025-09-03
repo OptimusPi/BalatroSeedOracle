@@ -1,0 +1,246 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
+             x:DataType="vm:VisualBuilderTabViewModel">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>     <!-- Left: Item Palette -->
+            <ColumnDefinition Width="20"/>    <!-- Spacer -->
+            <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT: Item Palette -->
+        <Border Grid.Column="0"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderThickness="2"
+                BorderBrush="{StaticResource ModalBorder}"
+                CornerRadius="8"
+                Padding="15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Search -->
+                    <RowDefinition Height="10"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>     <!-- Items -->
+                </Grid.RowDefinitions>
+                
+                <!-- Search -->
+                <TextBox Grid.Row="0"
+                         Text="{Binding SearchFilter}"
+                         Watermark="Search items..."
+                         FontSize="14"
+                         Height="32"/>
+                
+                <!-- Available Items -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="10">
+                        <!-- Jokers -->
+                        <Expander Header="🃏 Jokers" IsExpanded="True">
+                            <ItemsControl ItemsSource="{Binding FilteredJokers}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource ModalGrey}" 
+                                                CornerRadius="4" 
+                                                Padding="8,4" 
+                                                Margin="2"
+                                                Cursor="Hand">
+                                            <TextBlock Text="{Binding Name}" 
+                                                       Foreground="{StaticResource White}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"/>
+                                            <!-- TODO: Add drag/drop behavior -->
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Expander>
+                        
+                        <!-- Tags -->
+                        <Expander Header="🏷️ Tags">
+                            <ItemsControl ItemsSource="{Binding FilteredTags}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource ModalGrey}" 
+                                                CornerRadius="4" 
+                                                Padding="8,4" 
+                                                Margin="2"
+                                                Cursor="Hand">
+                                            <TextBlock Text="{Binding Name}" 
+                                                       Foreground="{StaticResource White}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- RIGHT: Drop Zones -->
+        <Border Grid.Column="2"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderThickness="2"
+                BorderBrush="{StaticResource ModalBorder}"
+                CornerRadius="8"
+                Padding="15">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="20">
+                    <!-- MUST Zone -->
+                    <StackPanel>
+                        <TextBlock Text="MUST HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Green}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Green}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Green}"
+                                CornerRadius="8"
+                                MinHeight="80"
+                                Padding="10">
+                            <ItemsControl ItemsSource="{Binding SelectedMust}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource White}" 
+                                                CornerRadius="6" 
+                                                Padding="8,4" 
+                                                Margin="3">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           Foreground="{StaticResource Black}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"/>
+                                                <Button Content="×" 
+                                                        Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Foreground="{StaticResource Red}"
+                                                        FontSize="14"
+                                                        FontWeight="Bold"
+                                                        Padding="4,0"
+                                                        Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- SHOULD Zone -->
+                    <StackPanel>
+                        <TextBlock Text="SHOULD HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Blue}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Blue}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Blue}"
+                                CornerRadius="8"
+                                MinHeight="80"
+                                Padding="10">
+                            <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource White}" 
+                                                CornerRadius="6" 
+                                                Padding="8,4" 
+                                                Margin="3">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           Foreground="{StaticResource Black}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"/>
+                                                <Button Content="×" 
+                                                        Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromShouldCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Foreground="{StaticResource Red}"
+                                                        FontSize="14"
+                                                        FontWeight="Bold"
+                                                        Padding="4,0"
+                                                        Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- MUST NOT Zone -->
+                    <StackPanel>
+                        <TextBlock Text="MUST NOT HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Red}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Red}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Red}"
+                                CornerRadius="8"
+                                MinHeight="80"
+                                Padding="10">
+                            <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource White}" 
+                                                CornerRadius="6" 
+                                                Padding="8,4" 
+                                                Margin="3">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           Foreground="{StaticResource Black}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"/>
+                                                <Button Content="×" 
+                                                        Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustNotCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Foreground="{StaticResource Red}"
+                                                        FontSize="14"
+                                                        FontWeight="Bold"
+                                                        Padding="4,0"
+                                                        Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

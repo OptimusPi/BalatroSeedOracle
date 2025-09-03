@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 using System.Reflection;
 
 namespace BalatroSeedOracle.Helpers
@@ -36,8 +37,51 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var filtersContent = new FiltersModalContent();
-            return menu.ShowModal("FILTER CONFIGURATION", filtersContent);
+            var creationModal = new Views.Modals.FilterCreationModal();
+            
+            // Handle events from the creation modal
+            creationModal.FilterSelectedForEdit += async (s, filterPath) =>
+            {
+                // User selected existing filter - open filters modal with that filter
+                menu.HideModalContent();
+                var filtersContent = new FiltersModalContent();
+                await filtersContent.LoadConfigAsync(filterPath);
+                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
+            };
+            
+            creationModal.ViewModel.FilterCloneRequested += async (s, filterPath) =>
+            {
+                // User wants to clone a filter - create a copy and open filters modal
+                menu.HideModalContent();
+                var filtersContent = new FiltersModalContent();
+                var clonedPath = await CreateClonedFilter(filterPath);
+                if (!string.IsNullOrEmpty(clonedPath))
+                {
+                    await filtersContent.LoadConfigAsync(clonedPath);
+                }
+                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
+            };
+            
+            creationModal.NewFilterRequested += async (s, e) =>
+            {
+                // User wants to create new filter - create temp filter and open filters modal
+                menu.HideModalContent();
+                var filtersContent = new FiltersModalContent();
+                var tempPath = await CreateTempFilter();
+                await filtersContent.LoadConfigAsync(tempPath);
+                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
+            };
+            
+            creationModal.FilterImported += async (s, importPath) =>
+            {
+                // User imported a filter - open filters modal with imported filter
+                menu.HideModalContent();
+                var filtersContent = new FiltersModalContent();
+                await filtersContent.LoadConfigAsync(importPath);
+                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
+            };
+            
+            return menu.ShowModal("NEW FILTER", creationModal);
         }
     
         /// <summary>
@@ -175,6 +219,70 @@ namespace BalatroSeedOracle.Helpers
         {
             var creditsView = new CreditsModal();
             return menu.ShowModal("CREDITS", creditsView);
+        }
+
+        /// <summary>
+        /// Creates a temp filter file for new filter creation
+        /// </summary>
+        private static async System.Threading.Tasks.Task<string> CreateTempFilter()
+        {
+            var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+            var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+            System.IO.Directory.CreateDirectory(filtersDir);
+            
+            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+            
+            // Create basic empty filter structure
+            var emptyFilter = new Motely.Filters.MotelyJsonConfig
+            {
+                Name = "New Filter",
+                Description = "Created with Filter Designer",
+                Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                DateCreated = System.DateTime.UtcNow,
+                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(emptyFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            await System.IO.File.WriteAllTextAsync(tempPath, json);
+            
+            return tempPath;
+        }
+
+        /// <summary>
+        /// Creates a cloned copy of an existing filter
+        /// </summary>
+        private static async System.Threading.Tasks.Task<string> CreateClonedFilter(string originalPath)
+        {
+            try
+            {
+                var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(originalJson);
+                
+                if (config != null)
+                {
+                    // Update clone metadata
+                    config.Name = $"{config.Name} (Copy)";
+                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+                    config.DateCreated = System.DateTime.UtcNow;
+                    
+                    var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+                    var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                    var clonedPath = System.IO.Path.Combine(filtersDir, $"{config.Name}.json");
+                    
+                    var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    await System.IO.File.WriteAllTextAsync(clonedPath, json);
+                    
+                    return clonedPath;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to clone filter: {ex.Message}");
+            }
+            
+            return string.Empty;
         }
 
     }

@@ -51,7 +51,7 @@
   </Style>
   <!-- Precise modal -->
   <Style Selector="Border.balatro-modal-precise">
-    <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+    <Setter Property="Background" Value="{StaticResource Grey}"/>
     <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
     <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="CornerRadius" Value="12"/>
@@ -138,7 +138,7 @@
     </Setter>
   </Style>
   <Style Selector="Button.nav-tab-precise:pointerover">
-    <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+    <Setter Property="Background" Value="{StaticResource Grey}"/>
   </Style>
   <Style Selector="Button.nav-tab-precise.active">
     <Setter Property="Background" Value="{StaticResource Red}"/>

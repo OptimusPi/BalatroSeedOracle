@@ -1,0 +1,253 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModalMVVM"
+             x:DataType="vm:FiltersModalViewModel">
+             
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>   <!-- Left: Filter Builder -->
+            <ColumnDefinition Width="20"/>  <!-- Spacer -->
+            <ColumnDefinition Width="*"/>   <!-- Right: Search Tester -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT HALF: Clean MVVM Filter Builder -->
+        <Border Grid.Column="0" 
+                Background="{StaticResource DarkModalGrey}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Title -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Filter Name -->
+                    <RowDefinition Height="10"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Description -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>     <!-- Filter Content -->
+                    <RowDefinition Height="20"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Actions -->
+                </Grid.RowDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Row="0" 
+                           Text="FILTER BUILDER" 
+                           FontSize="24" 
+                           Foreground="{StaticResource Gold}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           HorizontalAlignment="Center"/>
+                
+                <!-- Filter Name Input -->
+                <TextBox Grid.Row="2"
+                         Text="{Binding FilterName}"
+                         Watermark="Filter Name..."
+                         FontSize="16"
+                         Height="40"/>
+                
+                <!-- Description Input -->
+                <TextBox Grid.Row="4"
+                         Text="{Binding FilterDescription}"
+                         Watermark="Filter Description..."
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         FontSize="14"
+                         Height="80"/>
+                
+                <!-- Filter Content Area -->
+                <Border Grid.Row="6"
+                        Background="{StaticResource ContainerDarkPrecise}"
+                        BorderThickness="2"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        CornerRadius="8"
+                        Padding="15">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="15">
+                            <!-- MUST Section -->
+                            <StackPanel>
+                                <TextBlock Text="MUST HAVE" 
+                                           FontSize="18" 
+                                           Foreground="{StaticResource Green}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           Margin="0,0,0,10"/>
+                                <ItemsControl ItemsSource="{Binding SelectedMust}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource Green}" 
+                                                    CornerRadius="6" 
+                                                    Padding="8,4" 
+                                                    Margin="2">
+                                                <TextBlock Text="{Binding}" 
+                                                           Foreground="{StaticResource White}"
+                                                           FontFamily="{StaticResource BalatroFont}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                            
+                            <!-- SHOULD Section -->
+                            <StackPanel>
+                                <TextBlock Text="SHOULD HAVE" 
+                                           FontSize="18" 
+                                           Foreground="{StaticResource Blue}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           Margin="0,0,0,10"/>
+                                <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource Blue}" 
+                                                    CornerRadius="6" 
+                                                    Padding="8,4" 
+                                                    Margin="2">
+                                                <TextBlock Text="{Binding}" 
+                                                           Foreground="{StaticResource White}"
+                                                           FontFamily="{StaticResource BalatroFont}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                            
+                            <!-- MUST NOT Section -->
+                            <StackPanel>
+                                <TextBlock Text="MUST NOT HAVE" 
+                                           FontSize="18" 
+                                           Foreground="{StaticResource Red}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           Margin="0,0,0,10"/>
+                                <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource Red}" 
+                                                    CornerRadius="6" 
+                                                    Padding="8,4" 
+                                                    Margin="2">
+                                                <TextBlock Text="{Binding}" 
+                                                           Foreground="{StaticResource White}"
+                                                           FontFamily="{StaticResource BalatroFont}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="8" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            Spacing="15">
+                    <Button Content="NEW"
+                            Command="{Binding NewCommand}"
+                            Classes="btn-blue"
+                            Width="100"
+                            Height="40"/>
+                    <Button Content="SAVE" 
+                            Command="{Binding SaveCommand}"
+                            Classes="btn-green"
+                            Width="100"
+                            Height="40"/>
+                    <Button Content="LOAD"
+                            Command="{Binding LoadCommand}"
+                            Classes="btn-blue"
+                            Width="100"
+                            Height="40"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- RIGHT HALF: Search Tester (from existing implementation) -->
+        <Grid Grid.Column="2">
+            <Border Background="{StaticResource DarkModalGrey}" 
+                    BorderThickness="0" 
+                    CornerRadius="8" 
+                    Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- Title -->
+                        <RowDefinition Height="20"/>    <!-- Spacer -->
+                        <RowDefinition Height="Auto"/>  <!-- Test Button -->
+                        <RowDefinition Height="20"/>    <!-- Spacer -->
+                        <RowDefinition Height="*"/>     <!-- Status/Results -->
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0" 
+                               Text="FILTER TEST" 
+                               FontSize="20" 
+                               Foreground="{StaticResource Gold}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               HorizontalAlignment="Center"/>
+                    
+                    <!-- Test Button -->
+                    <Button Grid.Row="2"
+                            Name="TestFilterButton"
+                            Content="🧪 TEST FILTER"
+                            Classes="btn-green"
+                            Height="50"
+                            FontSize="16"
+                            FontFamily="{StaticResource BalatroFont}"
+                            HorizontalAlignment="Stretch"/>
+                    
+                    <!-- Status/Results Area -->
+                    <Border Grid.Row="4"
+                            Background="{StaticResource ContainerDarkPrecise}"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            CornerRadius="8"
+                            Padding="15">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>  <!-- Status Text -->
+                                <RowDefinition Height="*"/>     <!-- Loading/Results -->
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Status -->
+                            <TextBlock Grid.Row="0"
+                                       Text="Ready to test filter..."
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextLight}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+                            
+                            <!-- Results Placeholder -->
+                            <Border Grid.Row="1"
+                                    Background="{StaticResource ContainerDarkPrecise}"
+                                    CornerRadius="50"
+                                    Width="80"
+                                    Height="80"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="?"
+                                           FontSize="40"
+                                           Foreground="{StaticResource TextLight}"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

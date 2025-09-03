@@ -637,8 +637,18 @@ LIMIT 50;",
         {
             if (_resultsGrid?.SelectedItem is DataGridResultItem item)
             {
-                // TODO: Open analyzer with this seed
-                DebugLogger.Log("DataGridResultsWindow", $"View in analyzer: {item.Seed}");
+                try
+                {
+                    // Create and show dedicated analyzer window
+                    var analyzerWindow = new AnalyzerWindow(item.Seed);
+                    analyzerWindow.Show(this); // Show relative to this window
+                    
+                    DebugLogger.Log("DataGridResultsWindow", $"Opened analyzer window for seed: {item.Seed}");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("DataGridResultsWindow", $"Error opening analyzer window: {ex.Message}");
+                }
             }
         }
         

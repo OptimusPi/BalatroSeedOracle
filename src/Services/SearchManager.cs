@@ -2,7 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Views.Modals;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
 {
@@ -12,6 +16,13 @@ namespace BalatroSeedOracle.Services
     public class SearchManager : IDisposable
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
+
+        // Events for MVVM (temporarily unused - will be used when MVVM is fully integrated)
+        #pragma warning disable CS0067
+        public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
+        public event EventHandler<SearchResultEventArgs>? ResultFound;
+        public event EventHandler? SearchCompleted;
+        #pragma warning restore CS0067
 
         public SearchManager()
         {
@@ -86,6 +97,23 @@ namespace BalatroSeedOracle.Services
         public IEnumerable<SearchInstance> GetAllSearches()
         {
             return _activeSearches.Values;
+        }
+
+        /// <summary>
+        /// Starts a new search with the given criteria and config
+        /// </summary>
+        public async Task<SearchInstance> StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
+        {
+            var searchId = CreateSearch();
+            var searchInstance = GetSearch(searchId);
+            
+            if (searchInstance == null)
+                throw new InvalidOperationException("Failed to create search instance");
+            
+            // Start the search with just criteria - config is handled separately
+            await searchInstance.StartSearchAsync(criteria);
+            
+            return searchInstance;
         }
 
         /// <summary>

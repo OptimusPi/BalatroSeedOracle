@@ -95,20 +95,34 @@ public partial class PanelSpinner : UserControl
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)
     {
+        if (_items.Count == 0) return;
+        
+        // Circular navigation: if at beginning, wrap to end
         if (_currentIndex > 0)
         {
             SelectedIndex = _currentIndex - 1;
-            SelectionChanged?.Invoke(this, SelectedItem);
         }
+        else
+        {
+            SelectedIndex = _items.Count - 1; // Wrap to last item
+        }
+        SelectionChanged?.Invoke(this, SelectedItem);
     }
 
     private void OnNextClick(object? sender, RoutedEventArgs e)
     {
+        if (_items.Count == 0) return;
+        
+        // Circular navigation: if at end, wrap to beginning
         if (_currentIndex < _items.Count - 1)
         {
             SelectedIndex = _currentIndex + 1;
-            SelectionChanged?.Invoke(this, SelectedItem);
         }
+        else
+        {
+            SelectedIndex = 0; // Wrap to first item
+        }
+        SelectionChanged?.Invoke(this, SelectedItem);
     }
 
     private void UpdateDisplay()
@@ -168,12 +182,12 @@ public partial class PanelSpinner : UserControl
             }
         }
 
-        // Update button states
+        // Update button states - with circular navigation, buttons are always enabled if we have items
         if (_prevButton != null)
-            _prevButton.IsEnabled = _currentIndex > 0;
+            _prevButton.IsEnabled = _items.Count > 1;
 
         if (_nextButton != null)
-            _nextButton.IsEnabled = _currentIndex < _items.Count - 1;
+            _nextButton.IsEnabled = _items.Count > 1;
     }
 
     private void UpdateDots()

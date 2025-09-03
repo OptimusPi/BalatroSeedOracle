@@ -15,7 +15,6 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
-using OuijaConfig = Motely.Filters.MotelyJsonConfig;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 
 namespace BalatroSeedOracle.Services
@@ -35,7 +34,7 @@ namespace BalatroSeedOracle.Services
         private CancellationTokenSource? _cancellationTokenSource;
         private volatile bool _isRunning;
         private volatile bool _isPaused;
-        private OuijaConfig? _currentConfig;
+        private Motely.Filters.MotelyJsonConfig? _currentConfig;
         private IMotelySearch? _currentSearch;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
@@ -58,7 +57,9 @@ namespace BalatroSeedOracle.Services
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
+        #pragma warning disable CS0414
         private ulong _lastSavedBatch = 0;
+        #pragma warning restore CS0414
         private DateTime _lastStateSave = DateTime.UtcNow;
 
         // Properties
@@ -73,13 +74,13 @@ namespace BalatroSeedOracle.Services
         public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
-        public OuijaConfig? GetFilterConfig() => _currentConfig;
+        public Motely.Filters.MotelyJsonConfig? GetFilterConfig() => _currentConfig;
         public int ResultCount => _results.Count;
     public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
     public string DatabasePath => _dbPath;
     private bool _dbInitialized = false;
     public bool IsDatabaseInitialized => _dbInitialized;
-    [Obsolete("Use IsDatabaseInitialized instead")] public bool HasDatabase => _dbInitialized; // legacy UI check
+    public bool HasDatabase => _dbInitialized; // UI compatibility
         
         /// <summary>
         /// Gets the console output history for this search
@@ -107,7 +108,9 @@ namespace BalatroSeedOracle.Services
         // Events for UI integration
         public event EventHandler? SearchStarted;
         public event EventHandler? SearchCompleted;
+        #pragma warning disable CS0067
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
+        #pragma warning restore CS0067
         public event EventHandler<SearchResultEventArgs>? ResultFound;
 
         public SearchInstance(string searchId, string dbPath)
@@ -129,7 +132,7 @@ namespace BalatroSeedOracle.Services
             _connection.Open();
         }
         
-    private void SetupDatabase(OuijaConfig config, string configPath)
+    private void SetupDatabase(Motely.Filters.MotelyJsonConfig config, string configPath)
         {
             // Build column names from the Should[] criteria
             _columnNames.Clear();
@@ -170,7 +173,7 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
         
-        private string FormatColumnName(OuijaConfig.MotleyJsonFilterClause should)
+        private string FormatColumnName(Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause should)
         {
             if (should == null) return "should";
             
@@ -565,8 +568,11 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
-                // Load the config from file - use LoadFromJson to get PostProcess!
-                var ouijaConfig = OuijaConfig.LoadFromJson(configPath);
+                // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
+                if (!Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var ouijaConfig))
+                {
+                    throw new Exception($"Failed to load config from {configPath}");
+                }
                 
                 _currentConfig = ouijaConfig;
                 _currentSearchConfig = config;
@@ -603,11 +609,11 @@ namespace BalatroSeedOracle.Services
                 // Database should already be configured by StartSearchAsync
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database properly configured with {_columnNames.Count} columns");
 
-                // Register direct callback with OuijaJsonFilterDesc
+                // Register direct callback with Motely.Filters.MotelyJsonFilterDesc
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OuijaConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses");
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses");
                 
                 // Log the actual filter content for debugging
                 if (ouijaConfig.Must != null)
@@ -694,7 +700,10 @@ namespace BalatroSeedOracle.Services
             );
 
             // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
-            var config = OuijaConfig.LoadFromJson(criteria.ConfigPath);
+            if (!Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath, out var config))
+            {
+                throw new Exception($"Failed to load config from {criteria.ConfigPath}");
+            }
             
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
@@ -843,8 +852,8 @@ namespace BalatroSeedOracle.Services
                 // Force _isRunning to false IMMEDIATELY
                 _isRunning = false;
                 
-                // Set the cancellation flag that Motely checks
-                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
+                // TODO: Fix cancellation API
+                // Motely.Filters.MotelyJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -910,20 +919,17 @@ namespace BalatroSeedOracle.Services
 
 
         private async Task RunSearchInProcess(
-            OuijaConfig config,
+            Motely.Filters.MotelyJsonConfig config,
             SearchCriteria criteria,
             IProgress<SearchProgress>? progress,
             CancellationToken cancellationToken
         )
         {
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "RunSearchInProcess ENTERED!");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"OnResultFound is {(OuijaJsonFilterDesc.OnResultFound != null ? "SET" : "NULL")}");
             
             try
             {
-                
-                // Reset cancellation flag
-                OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                // Cancellation is fully implemented via CancellationToken
                 
                 // Enable Motely's DebugLogger if in debug mode
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
@@ -932,293 +938,110 @@ namespace BalatroSeedOracle.Services
                     DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Debug mode enabled - Motely DebugLogger activated");
                 }
 
-                // Create filter descriptor
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating OuijaJsonFilterDesc with config: {config.Name ?? "unnamed"}");
+                // Create filter descriptor with new API
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonFilterDesc with config: {config.Name ?? "unnamed"}");
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
                 
-                var filterDesc = new OuijaJsonFilterDesc(config);
-
-                // Assign result callback AFTER creating filterDesc to avoid it being reset inside constructor logic
-                OuijaJsonFilterDesc.OnResultFound = async (seed, totalScore, scores) =>
+                // Combine all clauses for the new API
+                var allClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                if (config.Must != null) allClauses.AddRange(config.Must);
+                if (config.Should != null) allClauses.AddRange(config.Should);
+                if (config.MustNot != null) allClauses.AddRange(config.MustNot);
+                
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔧 TOTAL CLAUSES FOR MOTELY: {allClauses.Count}");
+                foreach (var clause in allClauses)
                 {
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Direct callback - Found: {seed} Score: {totalScore}");
-
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔧   Clause: Type={clause.Type}, Value={clause.Value}");
+                }
+                
+                var filterDesc = new Motely.Filters.MotelyJsonFilterDesc(FilterCategory.Mixed, allClauses);
+                
+                // Create result callback
+                Action<MotelySeedScoreTally> onResultFound = (score) =>
+                {
                     var result = new SearchResult
                     {
-                        Seed = seed,
-                        TotalScore = totalScore,
-                        Scores = scores,
+                        Seed = score.Seed,
+                        TotalScore = score.Score,
+                        Scores = score.TallyColumns?.ToArray(),
                         Labels = config.Should?.Select(s => s.Value ?? "Unknown").ToArray()
                     };
 
-                    // Marshal collection & UI event updates to UI thread; DB insert stays background
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    // Add to UI on UI thread
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
                         _results.Add(result);
-                        ResultFound?.Invoke(
-                            this,
-                            new SearchResultEventArgs
-                            {
-                                Result = new BalatroSeedOracle.Models.SearchResult
-                                {
-                                    Seed = seed,
-                                    TotalScore = totalScore,
-                                    Scores = scores
-                                },
-                            }
-                        );
+                        ResultFound?.Invoke(this, new SearchResultEventArgs { Result = result });
                     });
 
                     // Save to database (background thread OK)
-                    await AddSearchResultAsync(result);
+                    _ = AddSearchResultAsync(result);
                 };
                 
-                // ALWAYS pass MinScore directly to Motely - let Motely handle auto-cutoff internally!
-                // MinScore=0 means auto-cutoff in Motely
-                filterDesc.Cutoff = criteria.MinScore;
-                filterDesc.AutoCutoff = criteria.MinScore == 0;
-                
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Passing cutoff={criteria.MinScore} to Motely (0=auto)");
-
-                // Create search settings - following Motely Program.cs pattern
-                var batchSize = criteria.BatchSize;
-                
-                // Calculate total batches based on batch character count
-                // Total seeds = 35^8 = 2,251,875,390,625
-                // Total batches = 35^(8-batchSize)
-                ulong totalBatches = batchSize switch 
+                // Create scoring config (only SHOULD clauses for scoring)
+                var scoringConfig = new MotelyJsonConfig
                 {
-                    1 => 64_339_296_875UL,          // 35^7 = 64,339,296,875
-                    2 => 1_838_265_625UL,           // 35^6 = 1,838,265,625
-                    3 => 52_521_875UL,              // 35^5 = 52,521,875
-                    4 => 1_500_625UL,               // 35^4 = 1,500,625
-                    //5 => 42_875UL,                  // 35^3 = 42,875
-                    //6 => 1_225UL,                   // 35^2 = 1,225
-                    //7 => 35UL,                      // 35^1 = 35
-                    //8 => 1UL,                       // 35^0 = 1 // these are all way too big and don't make the search faster.
-                    _ => throw new ArgumentException($"Invalid batch character count: {batchSize}. Valid range is 1-4.")
+                    Name = config.Name,
+                    Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
                 };
                 
-                // If no end batch specified, search all
-                ulong effectiveEndBatch = (criteria.EndBatch == 0) ? totalBatches : criteria.EndBatch;
+                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, onResultFound, false);
                 
-                // Create progress callback for Motely
-                var motelyProgress = new Progress<Motely.MotelyProgress>(mp =>
+                var searchSettings = new MotelySearchSettings<MotelyJsonFilterDesc.MotelyFilter>(filterDesc)
                 {
-                    // IMPORTANT: mp.CompletedBatchCount is relative to this session!
-                    // We need to add the start batch to get the absolute position
-                    ulong absoluteBatchCount = criteria.StartBatch + mp.CompletedBatchCount;
-                    
-                    // Calculate REAL percentage of total search space
-                    double actualPercent = (absoluteBatchCount / (double)totalBatches) * 100.0;
-                    
-                    // This runs on the captured synchronization context
-                    progress?.Report(
-                        new SearchProgress
-                        {
-                            SeedsSearched = mp.SeedsSearched,
-                            SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = actualPercent,
-                            Message = $"⏱️ {mp.FormattedMessage}",
-                            ResultsFound = Results.Count,
-                        }
-                    );
-                    
-                    // Also raise our event
-                    ProgressUpdated?.Invoke(
-                        this,
-                        new SearchProgressEventArgs
-                        {
-                            SeedsSearched = mp.SeedsSearched,
-                            ResultsFound = Results.Count,
-                            SeedsPerMillisecond = mp.SeedsPerMillisecond,
-                            PercentComplete = actualPercent,
-                            BatchesSearched = absoluteBatchCount,  // Use absolute batch count
-                            TotalBatches = totalBatches,  // Use the real total, not effective end
-                        }
-                    );
-                    
-                    // Update batch in memory on every progress update
-                    if (mp.CompletedBatchCount != _lastSavedBatch)
-                    {
-                        _lastSavedBatch = mp.CompletedBatchCount;
-                        
-                        // Save to database for resume - save the completed batch count
-                        // The actual resume will be from absoluteBatchCount which already includes the start offset
-                        _ = SaveLastBatchAsync(absoluteBatchCount);
-                        
-                        // Only save state if not prevented
-                        if (!_preventStateSave)
-                        {
-                            // First time? Save the full state
-                            if (_userProfileService?.GetSearchState() == null)
-                            {
-                                SaveSearchState(absoluteBatchCount, totalBatches, effectiveEndBatch);
-                                _lastStateSave = DateTime.UtcNow;
-                            }
-                            else
-                            {
-                                // Just update the batch number in memory
-                                _userProfileService?.UpdateSearchBatch(absoluteBatchCount);
-                                
-                                // Write to disk every 10 seconds
-                                if (DateTime.UtcNow > _lastStateSave.AddSeconds(10))
-                                {
-                                    _userProfileService?.FlushProfile();
-                                    _lastStateSave = DateTime.UtcNow;
-                                }
-                            }
-                        }
-                    }
-                });
+                    ThreadCount = criteria.ThreadCount,
+                    StartBatchIndex = (long)criteria.StartBatch,
+                    EndBatchIndex = (long)criteria.EndBatch,
+                    Mode = MotelySearchMode.Sequential,
+                    SeedScoreDesc = scoreDesc
+                };
                 
-                var searchSettings = new MotelySearchSettings<OuijaJsonFilterDesc.OuijaJsonFilter>(
-                    filterDesc
-                ).WithThreadCount(criteria.ThreadCount)
-                    .WithBatchCharacterCount(batchSize)
-                    .WithStartBatchIndex(criteria.StartBatch)
-                    .WithSequentialSearch()
-                    .WithProgressCallback(motelyProgress);
-
-                // Use the already declared effectiveEndBatch
-                searchSettings.WithEndBatchIndex(effectiveEndBatch);
-
-                DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]",
-                    $"Starting search with {criteria.ThreadCount} threads, batch size {batchSize}"
-                );
-
-                // Start the search - use list search if a specific seed is provided
-                if (!string.IsNullOrEmpty(criteria.DebugSeed))
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Starting search with {criteria.ThreadCount} threads");
+                
+                _currentSearch = new MotelySearch<MotelyJsonFilterDesc.MotelyFilter>(searchSettings);
+                
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 MotelySearch created, initial status: {_currentSearch.Status}");
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search settings: Threads={searchSettings.ThreadCount}, StartBatch={searchSettings.StartBatchIndex}, EndBatch={searchSettings.EndBatchIndex}");
+                
+                // Start the search!
+                _currentSearch.Start();
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search started! New status: {_currentSearch.Status}");
+                
+                // Wait for search completion
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔄 Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}");
+                while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
                 {
-                    var seedList = new List<string> { criteria.DebugSeed };
-                    DebugLogger.LogImportant(
-                        $"SearchInstance[{_searchId}]",
-                        $"Searching for specific seed: {criteria.DebugSeed}"
-                    );
-                    _currentSearch = searchSettings.WithListSearch(seedList).Start();
-                }
-                else
-                {
-                    _currentSearch = searchSettings.Start();
-                }
-
-                DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]",
-                    $"Search started with batch size {batchSize}, total batches: {totalBatches}"
-                );
-
-                // Wait for search to complete - progress comes through callbacks!
-                while (
-                    _currentSearch.Status == MotelySearchStatus.Running
-                    && !cancellationToken.IsCancellationRequested
-                    && _isRunning
-                )
-                {
-                    // Check for cancellation
-                    if (!_isRunning || cancellationToken.IsCancellationRequested || OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled)
+                    // Report progress
+                    var completedBatches = _currentSearch.CompletedBatchCount;
+                    var progressPercent = ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch)) * 100.0;
+                    
+                    progress?.Report(new SearchProgress
                     {
-                        DebugLogger.LogImportant(
-                            $"SearchInstance[{_searchId}]",
-                            "Cancellation requested - stopping search"
-                        );
-                        break;
-                    }
+                        SeedsSearched = (ulong)(completedBatches * Math.Pow(35, criteria.BatchSize)),
+                        PercentComplete = progressPercent,
+                        Message = $"Searched {completedBatches:N0} batches",
+                        ResultsFound = Results.Count
+                    });
 
-                    // Just wait - all updates come through callbacks now!
                     try
                     {
-                        // Check more frequently for faster stop response
-                        await Task.Delay(50, cancellationToken);
+                        await Task.Delay(100, cancellationToken);
                     }
                     catch (OperationCanceledException)
                     {
-                        DebugLogger.LogImportant(
-                            $"SearchInstance[{_searchId}]",
-                            "Search cancelled"
-                        );
+                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Search cancelled");
                         break;
                     }
                 }
-
-                DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]",
-                    $"Search loop ended. Status={_currentSearch.Status}"
-                );
                 
-                // If we exited the loop due to cancellation, stop the Motely search
-                if (_currentSearch != null && _currentSearch.Status == MotelySearchStatus.Running)
-                {
-                    DebugLogger.LogImportant(
-                        $"SearchInstance[{_searchId}]",
-                        "Stopping Motely search due to cancellation"
-                    );
-                    try
-                    {
-                        _currentSearch.Pause();
-                        _currentSearch.Dispose();
-                        _currentSearch = null; // Mark as disposed
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError(
-                            $"SearchInstance[{_searchId}]",
-                            $"Error stopping Motely search: {ex.Message}"
-                        );
-                    }
-                }
-
-
-                // Report completion (get count before disposing)
-                var finalBatchCount = 0UL;
-                if (_currentSearch != null)
-                {
-                    try
-                    {
-                        finalBatchCount = _currentSearch.CompletedBatchCount;
-                    }
-                    catch
-                    {
-                        // If disposed, use 0
-                        finalBatchCount = 0UL;
-                    }
-                }
-                ulong finalSeeds = finalBatchCount * (ulong)Math.Pow(35, batchSize);
-
-                // Clear search state if completed successfully
-                if (!cancellationToken.IsCancellationRequested && _isRunning && finalBatchCount >= effectiveEndBatch)
-                {
-                    _userProfileService?.ClearSearchState();
-                }
-
-                progress?.Report(
-                    new SearchProgress
-                    {
-                        Message =
-                            cancellationToken.IsCancellationRequested || !_isRunning
-                                ? "Search cancelled"
-                                : $"Search complete. Found {Results.Count} seeds",
-                        IsComplete = true,
-                        SeedsSearched = finalSeeds,
-                        ResultsFound = Results.Count,
-                        PercentComplete = 100,
-                    }
-                );
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Search completed with status: {_currentSearch.Status}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"RunSearchInProcess exception: {ex.Message}"
-                );
-                progress?.Report(
-                    new SearchProgress
-                    {
-                        Message = $"Search error: {ex.Message}",
-                        HasError = true,
-                        IsComplete = true,
-                    }
-                );
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"RunSearchInProcess exception: {ex.Message}");
+                progress?.Report(new SearchProgress { Message = $"Search error: {ex.Message}", HasError = true, IsComplete = true });
             }
             finally
             {

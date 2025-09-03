@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 
@@ -29,6 +30,14 @@ namespace BalatroSeedOracle.Services
         /// Get the current user profile
         /// </summary>
         public UserProfile GetProfile() => _currentProfile;
+
+        /// <summary>
+        /// Load the user profile asynchronously
+        /// </summary>
+        public async Task<UserProfile> LoadUserProfileAsync()
+        {
+            return await Task.FromResult(_currentProfile);
+        }
 
         /// <summary>
         /// Get the author name

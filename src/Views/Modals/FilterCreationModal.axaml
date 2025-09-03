@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.FilterCreationModal"
+             x:DataType="vm:FilterCreationModalViewModel">
+             
+    <!-- Two-sided layout for filter creation -->
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>   <!-- Left: Edit existing -->
+            <ColumnDefinition Width="20"/>  <!-- Spacer -->
+            <ColumnDefinition Width="*"/>   <!-- Right: Create new -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT SIDE: Edit Existing Filter -->
+        <Border Grid.Column="0" 
+                Background="{StaticResource DarkModalGrey}" 
+                BorderThickness="0" 
+                CornerRadius="12" 
+                Padding="15">
+            <StackPanel Spacing="15">
+                <!-- Header -->
+                <TextBlock Text="Edit Existing Filter?" 
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="24"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,5"/>
+                
+                <!-- Filter Selector -->
+                <components:FilterSelector x:Name="ExistingFilterSelector" 
+                                         Title="Select Filter to Edit"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         AutoLoadEnabled="False"/>
+                
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
+                    <Button Content="EDIT THIS FILTER"
+                            Classes="btn-blue"
+                            Height="50"
+                            MinWidth="160"
+                            FontSize="14"
+                            FontFamily="{StaticResource BalatroFont}"
+                            Command="{Binding EditFilterCommand}"/>
+                    
+                    <Button Content="CLONE AND EDIT A COPY"
+                            Classes="btn-green"
+                            Height="50"
+                            MinWidth="180"
+                            FontSize="14"
+                            FontFamily="{StaticResource BalatroFont}"
+                            Command="{Binding CloneFilterCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- RIGHT SIDE: Create New Filter -->
+        <Border Grid.Column="2" 
+                Background="{StaticResource DarkModalGrey}" 
+                BorderThickness="0" 
+                CornerRadius="12" 
+                Padding="30">
+            <StackPanel Spacing="25">
+                <!-- Header -->
+                <TextBlock Text="Create New Filter?" 
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="24"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+                
+                <!-- Start Designing Button -->
+                <Button Content="START DESIGNING"
+                        Classes="btn-green"
+                        Height="60"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding StartDesigningCommand}"/>
+                
+                <!-- Spacer -->
+                <Border Height="20"/>
+                
+                <!-- Import Section -->
+                <TextBlock Text="Import JSON File?" 
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="18"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
+                
+                <Button Content="BROWSE..."
+                        Classes="btn-blue"
+                        Height="45"
+                        FontSize="14"
+                        FontFamily="{StaticResource BalatroFont}"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding BrowseCommand}"/>
+                
+                <!-- Import Status -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox Grid.Column="0"
+                             IsReadOnly="True"
+                             Focusable="False"
+                             Text="{Binding ImportPath}"
+                             Watermark="No file selected..."
+                             FontSize="12"
+                             Height="32"
+                             VerticalContentAlignment="Center"
+                             Background="{StaticResource Grey}"
+                             BorderThickness="0"/>
+                    
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ImportStatusIcon}"
+                               FontSize="16"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

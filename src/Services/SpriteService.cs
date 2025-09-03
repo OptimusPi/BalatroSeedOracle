@@ -801,6 +801,17 @@ namespace BalatroSeedOracle.Services
         public IImage? GetBossImage(string name, int frameIndex = 0)
         {
             ArgumentNullException.ThrowIfNull(name);
+            
+            // SmallBlind and BigBlind are not actual bosses - they're tags
+            var normalizedName = name.Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+            if (normalizedName == "smallblind" || normalizedName == "bigblind")
+            {
+                DebugLogger.Log("SpriteService", $"Redirecting {name} from boss to tag image");
+                return GetTagImage(name); // Redirect to tag images
+            }
+            
             if (bossPositions == null || bossSheet == null)
             {
                 DebugLogger.LogError(
@@ -809,10 +820,6 @@ namespace BalatroSeedOracle.Services
                 );
                 return null;
             }
-
-            var normalizedName = name.Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
             if (!bossPositions.TryGetValue(normalizedName, out var position))
             {
                 DebugLogger.LogError(

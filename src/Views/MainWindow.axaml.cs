@@ -6,16 +6,22 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views;
 
 public partial class MainWindow : Window
 {
     private BalatroMainMenu? _mainMenu;
+    
+    public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
     {
         InitializeComponent();
+        
+        // Set DataContext to ViewModel from DI
+        DataContext = ServiceHelper.GetRequiredService<MainWindowViewModel>();
 
         // Set up the Buy Balatro link
         var buyBalatroLink = this.FindControl<TextBlock>("BuyBalatroLink");

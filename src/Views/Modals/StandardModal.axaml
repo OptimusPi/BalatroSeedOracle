@@ -25,7 +25,7 @@
             
             <!-- Main modal container - Balatro style -->
             <Border Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource DockGrey}"
+                    Background="{StaticResource Grey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="4"

@@ -122,10 +122,9 @@ namespace BalatroSeedOracle.Views
 
             try
             {
-                // Just open fresh Search modal and load the filter
-                mainMenu.ShowSearchModal(); // Open fresh modal
-                // TODO: Load filter after modal opens
-                DebugLogger.Log("SearchDesktopIcon", "ShowSearchModalWithFilter called successfully");
+                // Open search modal and load the filter using existing method
+                mainMenu.ShowSearchModalForInstance(_searchId, _configPath);
+                DebugLogger.Log("SearchDesktopIcon", "Opened search modal with filter loaded successfully");
                 
                 // Remove this desktop icon since we're returning to the modal
                 RemoveDesktopIcon();

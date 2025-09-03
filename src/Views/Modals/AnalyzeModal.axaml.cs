@@ -177,8 +177,8 @@ namespace BalatroSeedOracle.Views.Modals
             _resultsPanel.Children.Add(loadingText);
 
             // Run analysis in background
-            var analysisData = await Task.Run(() =>
-                Motely.Analysis.MotelySeedAnalyzer.CaptureAnalysis(seed, deck, stake)
+            Motely.Analysis.MotelySeedAnalysis analysisData = await Task.Run(() =>
+                Motely.Analysis.MotelySeedAnalyzer.Analyze(new Motely.Analysis.MotelySeedAnalysisConfig(seed, deck, stake))
             );
 
             // Remove loading indicator
@@ -192,7 +192,7 @@ namespace BalatroSeedOracle.Views.Modals
             string seed,
             MotelyDeck deck,
             MotelyStake stake,
-            object analysisData
+            Motely.Analysis.MotelySeedAnalysis analysisData
         )
         {
             if (_resultsPanel == null)
@@ -223,7 +223,7 @@ namespace BalatroSeedOracle.Views.Modals
             _resultsPanel.Children.Add(headerPanel);
 
             // Display each ante
-            foreach (var ante in analysisData)
+            foreach (var ante in analysisData.Antes)
             {
                 var antePanel = new Border
                 {
@@ -306,33 +306,26 @@ namespace BalatroSeedOracle.Views.Modals
                 }
 
                 // Tags section
-                if (ante.Tags.Count > 0)
-                {
-                    anteContent.Children.Add(
-                        new TextBlock
-                        {
-                            Text = "SKIP TAGS",
-                            FontSize = 16,
-
-                            Margin = new Thickness(0, 15, 0, 5),
-                        }
-                    );
-
-                    var tagsPanel = new WrapPanel { Orientation = Orientation.Horizontal };
-                    for (int i = 0; i < ante.Tags.Count; i++)
+                anteContent.Children.Add(
+                    new TextBlock
                     {
-                        var blindType = i == 0 ? "Small Blind" : "Big Blind";
-                        tagsPanel.Children.Add(CreateTagDisplay(blindType, ante.Tags[i]));
+                        Text = "SKIP TAGS",
+                        FontSize = 16,
+                        Margin = new Thickness(0, 15, 0, 5),
                     }
-                    anteContent.Children.Add(tagsPanel);
-                }
+                );
+
+                var tagsPanel = new WrapPanel { Orientation = Orientation.Horizontal };
+                tagsPanel.Children.Add(CreateTagDisplay("Small Blind", ante.SmallBlindTag));
+                tagsPanel.Children.Add(CreateTagDisplay("Big Blind", ante.BigBlindTag));
+                anteContent.Children.Add(tagsPanel);
 
                 antePanel.Child = anteContent;
                 _resultsPanel.Children.Add(antePanel);
             }
         }
 
-        private Control CreateShopItemDisplay(object item)
+        private Control CreateShopItemDisplay(MotelyItem item)
         {
             var container = new Border
             {
@@ -348,10 +341,10 @@ namespace BalatroSeedOracle.Views.Modals
             };
 
             // Add sprite based on item type
-            switch (item.Item.TypeCategory)
+            switch (item.TypeCategory)
             {
                 case MotelyItemTypeCategory.Joker:
-                    var joker = (MotelyJoker)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var joker = item.GetJoker();
                     var jokerSprite = _spriteService.GetJokerImage(joker.ToString());
                     if (jokerSprite != null)
                     {
@@ -366,22 +359,22 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     // Add edition indicator if applicable
-                    if (item.Item.Edition != MotelyItemEdition.None)
+                    if (item.Edition != MotelyItemEdition.None)
                     {
                         content.Children.Add(
                             new TextBlock
                             {
-                                Text = item.Item.Edition.ToString(),
+                                Text = item.Edition.ToString(),
                                 FontSize = 10,
                                 HorizontalAlignment = HorizontalAlignment.Center,
-                                Foreground = GetEditionColor(item.Item.Edition),
+                                Foreground = GetEditionColor(item.Edition),
                             }
                         );
                     }
                     break;
 
                 case MotelyItemTypeCategory.TarotCard:
-                    var tarot = (MotelyTarotCard)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var tarot = item.GetTarot();
                     var tarotSprite = _spriteService.GetTarotImage(tarot.ToString());
                     if (tarotSprite != null)
                     {
@@ -397,7 +390,7 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case MotelyItemTypeCategory.PlanetCard:
-                    var planet = (MotelyPlanetCard)(item.Item.Value & 0xFFFF & ~(0b1111 << 16));
+                    var planet = item.GetPlanet();
                     var planetSprite = _spriteService.GetTarotImage(planet.ToString());
                     if (planetSprite != null)
                     {
@@ -416,7 +409,7 @@ namespace BalatroSeedOracle.Views.Modals
                     content.Children.Add(
                         new TextBlock
                         {
-                            Text = item.FormattedName,
+                            Text = item.ToString(),
                             TextAlignment = TextAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                         }
@@ -424,33 +417,12 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
             }
 
-            // Add slot number badge
-            var slotBadge = new Border
-            {
-                Background =
-                    Application.Current?.FindResource("GridLineGrey") as IBrush
-                    ?? new SolidColorBrush(Color.Parse("#3a3a3a")),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(6, 2),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 0),
-            };
-
-            slotBadge.Child = new TextBlock
-            {
-                Text = $"#{item.Slot}",
-                FontSize = 10,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                FontWeight = FontWeight.Medium,
-            };
-
-            content.Children.Add(slotBadge);
 
             container.Child = content;
             return container;
         }
 
-        private Control CreateBoosterPackDisplay(object pack)
+        private Control CreateBoosterPackDisplay(Motely.Analysis.MotelyBoosterPackAnalysis pack)
         {
             var container = new Border
             {
@@ -468,7 +440,7 @@ namespace BalatroSeedOracle.Views.Modals
             };
 
             // Get pack sprite from the new booster sprites
-            var packName = pack.PackType.ToString().ToLowerInvariant().Replace("_", "");
+            var packName = pack.Type.ToString().ToLowerInvariant().Replace("_", "");
             var packSprite = _spriteService.GetBoosterImage(packName);
             if (packSprite != null)
             {
@@ -486,19 +458,19 @@ namespace BalatroSeedOracle.Views.Modals
             packText.Children.Add(
                 new TextBlock
                 {
-                    Text = pack.PackType.ToString().Replace("Pack", ""),
+                    Text = pack.Type.ToString().Replace("Pack", ""),
                     FontSize = 10,
                     HorizontalAlignment = HorizontalAlignment.Center
                 }
             );
 
             // Show pack contents
-            if (pack.Contents.Count > 0)
+            if (pack.Items.Count > 0)
             {
                 packText.Children.Add(
                     new TextBlock
                     {
-                        Text = string.Join(", ", pack.Contents),
+                        Text = string.Join(", ", pack.Items),
                         FontSize = 8,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         TextWrapping = TextWrapping.Wrap,

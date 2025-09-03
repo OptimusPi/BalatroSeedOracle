@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.Views.Modals
                             AllowTrailingCommas = true,
                             ReadCommentHandling = JsonCommentHandling.Skip
                         };
-                        _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                        _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
                     }
                 }
                 
@@ -893,8 +893,6 @@ namespace BalatroSeedOracle.Views.Modals
         
         public async Task LoadFilterAsync(string filePath)
         {
-            _currentFilterPath = filePath;
-
             // Create a search instance if we don't have one
             if (string.IsNullOrEmpty(_currentSearchId))
             {
@@ -913,7 +911,19 @@ namespace BalatroSeedOracle.Views.Modals
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         AllowTrailingCommas = true
                     };
-                    _loadedConfig = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(json, options);
+                    var tempConfig = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
+                    
+                    // Only update state after successful loading and validation
+                    if (tempConfig != null)
+                    {
+                        _loadedConfig = tempConfig;
+                        _currentFilterPath = filePath;
+                        AddToConsole($"✅ Filter path updated to: {filePath}");
+                    }
+                    else
+                    {
+                        BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"❌ DEBUG: Failed to deserialize config from: {filePath}");
+                    }
                 }
 
                 if (_loadedConfig != null)
@@ -969,12 +979,17 @@ namespace BalatroSeedOracle.Views.Modals
                     // Enable tabs now that filter is loaded
                     UpdateTabStates(true);
                     
-                    // Stay on the filter tab - don't auto-switch
+                    // Auto-switch to settings tab after loading filter
+                    if (_settingsTab != null)
+                    {
+                        OnTabClick(_settingsTab, new RoutedEventArgs());
+                    }
                 }
             }
             catch (Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading filter: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error loading filter from {filePath}: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"_currentFilterPath remains: {_currentFilterPath ?? "null"}");
             }
         }
 
@@ -1040,7 +1055,7 @@ namespace BalatroSeedOracle.Views.Modals
                     _newResultsCount = 0; // Reset new results counter
 
                     // Reset the Motely cancellation flag
-                    Motely.Filters.OuijaJsonFilterDesc.OuijaJsonFilter.IsCancelled = false;
+                    // TODO: Fix cancellation API
 
                     // Get parameters from Balatro spinners
                     int batchSize = (_batchSizeSpinner?.Value ?? 1) + 1; // Convert 0-3 to 1-4 for actual batch size (low=1, default=2, large=3, huge=4)
@@ -1093,6 +1108,9 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     // Start search
+                    AddToConsole($"🔍 DEBUG: Using filter path: {_currentFilterPath}");
+                    AddToConsole($"🔍 DEBUG: Loaded config name: {_loadedConfig?.Name ?? "null"}");
+                    
                     var searchCriteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
                         ConfigPath = _currentFilterPath!, // validated above
