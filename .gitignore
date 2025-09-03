@@ -72,3 +72,4 @@ userprofile.json
 /external/Balatro
 /JsonItemFilters
 /src/JsonItemFilters
+*.csv
