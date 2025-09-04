@@ -1440,7 +1440,7 @@ namespace BalatroSeedOracle.Views.Modals
                 else
                     _searchStartTime = DateTime.UtcNow;
                 _peakSpeed = 0;
-    _etaText = this.FindControl<TextBlock>("EtaText");
+                _etaText = this.FindControl<TextBlock>("EtaText");
                 _totalSeeds = 0;
                 _lastSeedsAtProgress = 0;
                 _lastSeedsProgressTime = DateTime.UtcNow;
@@ -1448,12 +1448,15 @@ namespace BalatroSeedOracle.Views.Modals
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
                 _lastKnownResultCount = 0;
-                
+
                 // Results now fetched directly from SearchInstance (legacy _resultsProvider removed)
-                
+
                 // Disable auto-refresh timer (manual model now)
                 _uiRefreshTimer?.Stop();
                 _uiRefreshTimer = null;
+
+                // Immediately show 'Still Searching...' on search start
+                UpdateRarityUI(0);
 
                 // Start a lightweight UI timer JUST for elapsed time & rarity so they feel real-time.
                 // Progress events from Motely can be sparse (batch-sized), causing perceived stutter.
@@ -1466,11 +1469,9 @@ namespace BalatroSeedOracle.Views.Modals
                         var elapsed = DateTime.UtcNow - _searchStartTime;
                         _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
                     }
-                    if (_totalSeeds > 0)
-                    {
-                        double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                        UpdateRarityUI(rarityPercent);
-                    }
+                    // Always call UpdateRarityUI so 'Still Searching...' is shown until a result is found
+                    double rarityPercent = (_totalSeeds > 0) ? (_newResultsCount / (double)_totalSeeds) * 100.0 : 0;
+                    UpdateRarityUI(rarityPercent);
                     if (_latestProgress != null)
                     {
                         // Interpolate seeds smoothly between progress events if we have recent speed
@@ -1499,38 +1500,8 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                 };
                 _uiRefreshTimer.Start();
-                
-                // Generate column headers from active search instance
-                if (_searchInstance != null)
-                {
-                    GenerateTableHeadersFromSearchInstance(_searchInstance);
-                }
-
-                // Update cook button
-                if (_cookButton != null)
-                {
-                    _cookButton.Content = "STOP SEARCH";
-                    // Just add the stop class, don't remove and re-add cook-button
-                    _cookButton.Classes.Add("stop");
-                }
-
-                // Enable results tab
-                if (_resultsTab != null)
-                {
-                    _resultsTab.IsEnabled = true;
-                }
-
-                // No auto load; user will open Results tab and hit Refresh if desired
-                AddToConsole("──────────────────────────────────");
-                AddToConsole("Manual results mode: Open Results tab + Refresh to load top 1000.");
-
-                // Enable save widget button
-                if (_saveWidgetButton != null)
-                {
-                    _saveWidgetButton.IsEnabled = true;
-                }
             });
-        }
+    }
 
         private void OnSearchCompleted(object? sender, EventArgs e)
         {
@@ -1864,6 +1835,16 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void UpdateRarityUI(double rarityPercent, bool immediate = false)
         {
+            // Show 'Still Searching...' if search is running and no results found yet
+            if (_isSearching && _newResultsCount == 0)
+            {
+                if (_rarityStringText != null)
+                    _rarityStringText.Text = "Still Searching...";
+                if (_rarityText != null)
+                    _rarityText.Text = "--";
+                return;
+            }
+
             if (_rarityText == null) return;
             _rarityText.Text = $"{rarityPercent:F6}%";
 
