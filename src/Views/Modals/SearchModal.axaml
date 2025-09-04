@@ -374,27 +374,16 @@
             
             <!-- Filter Selection Panel -->
             <Grid Name="FilterPanel" IsVisible="True">
-                <StackPanel MaxWidth="600" HorizontalAlignment="Center" Margin="40" Spacing="15">
+                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
                     <components:FilterSelector Name="FilterSelector" 
                                              HorizontalAlignment="Center" 
-                                             VerticalAlignment="Stretch"
+                                             VerticalAlignment="Center"
                                              AutoLoadEnabled="False"
                                              ShowActionButtons="False"
                                              ShowSelectButton="True"
                                              IsInSearchModal="True"
                                              FilterLoaded="OnFilterSelected"/>
-                    
-                    <!-- Edit in Filter Designer Button -->
-                    <Button Name="EditInDesignerButton"
-                            Content="EDIT IN FILTER DESIGNER"
-                            Classes="btn-orange"
-                            Height="50"
-                            FontSize="18"
-                            FontFamily="{StaticResource BalatroFont}"
-                            HorizontalAlignment="Center"
-                            MinWidth="300"
-                            Click="OnEditInDesignerClick"/>
-                </StackPanel>
+                </Grid>
             </Grid>
             
             <!-- Settings Panel (now just Deck/Stake) -->
@@ -493,6 +482,11 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Spacing="10">
+                                <!-- TODO: Add throttle spinner control here - "Every N batches to update UI"
+                                     Default throttle value, user can adjust responsiveness vs spam trade-off
+                                     Report batch function should: 1) Update DuckDB with thread-safe appender
+                                     2) Check if UI throttle is ready to print -->
+                                
                                 <!-- Threads -->
                                 <controls:SpinnerControl Name="ThreadsSpinner" 
                                                         Label="CPU Threads"
@@ -603,6 +597,13 @@
                                         HorizontalAlignment="Right"
                                         Spacing="8"
                                         Margin="0,8,0,0">
+                                <Button Name="EditInDesignerButton"
+                                        Content="EDIT IN FILTER DESIGNER"
+                                        Classes="btn-orange"
+                                        Height="50"
+                                        FontSize="16"
+                                        MinWidth="200"
+                                        Click="OnEditInDesignerClick"/>
                                 <Button Name="CookButton"
                                         Content="Let Jimbo COOK!"
                                         Classes="cook-button"

@@ -555,6 +555,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center"
                                          AutoLoadEnabled="False"
+                                         ShowSelectButton="False"
                                          FilterLoaded="OnFilterSelected"/>
             </Grid>
 

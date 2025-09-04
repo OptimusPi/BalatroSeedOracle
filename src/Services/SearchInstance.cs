@@ -116,7 +116,7 @@ namespace BalatroSeedOracle.Services
         #pragma warning disable CS0067
         public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
         #pragma warning restore CS0067
-        public event EventHandler<SearchResultEventArgs>? ResultFound;
+        public event EventHandler<SearchResultEventArgs>? ResultFound; // Keep for compatibility but rarely used
 
         public SearchInstance(string searchId, string dbPath)
         {
@@ -299,17 +299,17 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private Task AddSearchResultAsync(SearchResult result)
+        private void AddSearchResult(SearchResult result)
         {
-            if (!_dbInitialized) return Task.CompletedTask;
+            if (!_dbInitialized) return;
             try
             {
                 // Duplicate suppression outside lock (fast path) – BUT we must re-check inside lock to avoid race if ForceFlush resets seed set (currently it doesn't).
-                if (!_seenSeeds.Add(result.Seed)) return Task.CompletedTask;
+                if (!_seenSeeds.Add(result.Seed)) return;
 
                 lock (_appenderSync)
                 {
-                    if (_appender == null) return Task.CompletedTask; // search shutting down
+                    if (_appender == null) return; // search shutting down
                     var row = _appender.CreateRow();
                     row.AppendValue(result.Seed).AppendValue(result.TotalScore);
                     int tallyCount = _columnNames.Count - 2;
@@ -350,7 +350,7 @@ namespace BalatroSeedOracle.Services
                 {
                     // Silently ignore - duplicates are already filtered by _seenSeeds HashSet
                     // This can happen when auto-cutoff increases and reprocesses batches
-                    return Task.CompletedTask;
+                    return;
                 }
                 else
                 {
@@ -358,7 +358,7 @@ namespace BalatroSeedOracle.Services
                     // DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to add result: {ex.Message}");
                 }
             }
-            return Task.CompletedTask;
+            return;
         }
 
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetResultsPageAsync(int offset, int limit)
@@ -382,7 +382,15 @@ namespace BalatroSeedOracle.Services
                     scores = new int[tallyCount];
                     for (int i = 0; i < tallyCount; i++)
                     {
-                        scores[i] = !reader.IsDBNull(i + 2) ? reader.GetInt32(i + 2) : 0;
+                        int columnIndex = i + 2;
+                        if (columnIndex < reader.FieldCount && !reader.IsDBNull(columnIndex))
+                        {
+                            scores[i] = reader.GetInt32(columnIndex);
+                        }
+                        else
+                        {
+                            scores[i] = 0; // Default value if column doesn't exist
+                        }
                     }
                 }
                 list.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
@@ -453,7 +461,15 @@ namespace BalatroSeedOracle.Services
                     scores = new int[tallyCount];
                     for (int i = 0; i < tallyCount; i++)
                     {
-                        scores[i] = !reader.IsDBNull(i + 2) ? reader.GetInt32(i + 2) : 0;
+                        int columnIndex = i + 2;
+                        if (columnIndex < reader.FieldCount && !reader.IsDBNull(columnIndex))
+                        {
+                            scores[i] = reader.GetInt32(columnIndex);
+                        }
+                        else
+                        {
+                            scores[i] = 0; // Default value if column doesn't exist
+                        }
                     }
                 }
                 results.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
@@ -499,7 +515,7 @@ namespace BalatroSeedOracle.Services
                 while (await reader.ReadAsync())
                 {
                     var values = new string[_columnNames.Count];
-                    for (int i = 0; i < _columnNames.Count; i++)
+                    for (int i = 0; i < _columnNames.Count && i < reader.FieldCount; i++)
                     {
                         values[i] = reader.IsDBNull(i) ? string.Empty : reader.GetValue(i)?.ToString() ?? string.Empty;
                     }
@@ -982,10 +998,16 @@ namespace BalatroSeedOracle.Services
                     };
 
                     // Save directly to DuckDB (thread-safe, fast)
-                    _ = AddSearchResultAsync(result);
+                    AddSearchResult(result);
                     
                     // Increment result counter
                     Interlocked.Increment(ref _resultCount);
+                    
+                    // Fire ResultFound event for UI counter updates (throttled to prevent spam)
+                    if (_resultCount % 50 == 0) // Every 50th result to avoid overwhelming UI
+                    {
+                        ResultFound?.Invoke(this, new SearchResultEventArgs { Result = result });
+                    }
                     
                     // Batched console output (every 10 results)
                     if (_resultCount % 10 == 0)

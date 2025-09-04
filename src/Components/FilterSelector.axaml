@@ -13,7 +13,7 @@
         <controls:PanelSpinner Grid.Row="0" Name="FilterSpinner" />
         
         <!-- Action buttons below spinner -->
-        <StackPanel Grid.Row="1" Spacing="12" Margin="0,8,0,0">
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,6,0,0">
             
             <!-- Main Select Button (for SearchModal) -->
             <Button Name="SelectButton" 
@@ -26,7 +26,7 @@
                     Click="OnSelectClick"/>
             
             <!-- Filter-specific actions (horizontal) -->
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                 <Button Name="CopyFilterButton"
                         Content="MAKE A COPY"
                         Classes="btn-blue"
