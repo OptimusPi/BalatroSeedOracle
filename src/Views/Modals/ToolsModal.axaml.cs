@@ -23,6 +23,38 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
+        private void OnTestModal1Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Find the main menu to show the test modal
+                var parent = this.Parent;
+                while (parent != null && parent is not Views.BalatroMainMenu)
+                {
+                    parent = (parent as Control)?.Parent;
+                }
+
+                if (parent is Views.BalatroMainMenu mainMenu)
+                {
+                    var testModal = new TestModal1();
+                    var modal = new StandardModal("TEST MODAL 1");
+                    modal.SetContent(testModal);
+                    modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
+                    mainMenu.ShowModalContent(modal, "TESTING ENVIRONMENT");
+                    
+                    DebugLogger.Log("ToolsModal", "Opened Test Modal 1 - safe testing environment");
+                }
+                else
+                {
+                    DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu to show test modal");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ToolsModal", $"Error opening test modal: {ex.Message}");
+            }
+        }
+
         private async void OnImportFilesClick(object? sender, RoutedEventArgs e)
         {
             var topLevel = TopLevel.GetTopLevel(this);
@@ -195,7 +227,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "This will DELETE ALL:",
                 FontSize = 18,
-                FontWeight = Avalonia.Media.FontWeight.Bold,
                 TextAlignment = Avalonia.Media.TextAlignment.Center,
                 Foreground = Avalonia.Media.Brushes.Red
             });

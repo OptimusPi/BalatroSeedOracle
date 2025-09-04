@@ -218,7 +218,6 @@ namespace BalatroSeedOracle.Controls
                                 Application.Current?.FindResource("BalatroFont") as FontFamily
                                 ?? FontFamily.Default,
                             FontSize = 14,
-                            FontWeight = FontWeight.SemiBold,
                             Foreground = new SolidColorBrush(Color.Parse(borderColor)),
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,

@@ -5237,7 +5237,6 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         Text = displayText,
                         FontSize = 10,
-                        FontWeight = FontWeight.SemiBold,
                         Foreground = Brushes.White,
                         TextTrimming = TextTrimming.CharacterEllipsis,
                         TextAlignment = TextAlignment.Center,
@@ -6161,7 +6160,28 @@ namespace BalatroSeedOracle.Views.Modals
             writer.WriteEndObject();
             writer.Flush();
 
-            return Encoding.UTF8.GetString(stream.ToArray());
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+            return CompactifyArrays(json);
+        }
+
+        /// <summary>
+        /// Post-processes JSON to make numeric arrays compact (single-line format)
+        /// </summary>
+        private string CompactifyArrays(string json)
+        {
+            // Regex to match multi-line numeric arrays and convert them to single-line format
+            // This pattern matches arrays that contain only numbers, whitespace, and commas
+            var pattern = @"\[\s*(\d+(?:\s*,\s*\d+)*)\s*\]";
+            
+            return System.Text.RegularExpressions.Regex.Replace(json, pattern, match =>
+            {
+                // Extract the numbers and compress whitespace
+                var numbers = match.Groups[1].Value;
+                // Remove all whitespace around commas and numbers
+                var compressed = System.Text.RegularExpressions.Regex.Replace(numbers, @"\s*,\s*", ",");
+                compressed = System.Text.RegularExpressions.Regex.Replace(compressed, @"\s+", "");
+                return $"[{compressed}]";
+            }, System.Text.RegularExpressions.RegexOptions.Multiline);
         }
 
         private void WriteFilterItem(

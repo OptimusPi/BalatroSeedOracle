@@ -285,7 +285,6 @@ namespace BalatroSeedOracle.Controls
             {
                 Text = rank,
                 FontSize = 18,
-                FontWeight = FontWeight.Bold,
                 Foreground = suitColor,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center

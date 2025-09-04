@@ -561,56 +561,31 @@
                         ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
-                        <TextBlock Grid.Row="0" 
-                                   Text="JSON EDITOR" 
-                                   FontSize="20" 
-                                    
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"/>
-                        
-                        <avalonedit:TextEditor Grid.Row="2"
+                        <avalonedit:TextEditor Grid.Row="0"
                                                Name="JsonEditor"
                                                SyntaxHighlighting="Json"
                                                ShowLineNumbers="True"
                                                FontFamily="Cascadia Code, Consolas, monospace"
                                                FontSize="14"/>
                         
-                        <!-- JSON Validation Status Bar with SAVE button -->
-                        <Border Grid.Row="3"
+                        <!-- Compact JSON Status Bar -->
+                        <Border Grid.Row="1"
                                 Background="{StaticResource Grey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="0,1,0,0"
-                                Padding="8,4"
-                                Margin="0,4,0,0">
-                            <Grid>
-                                <TextBlock Name="JsonValidationStatus"
-                                           Text="JSON: Valid ✓"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
-                                           Foreground="{StaticResource Green}"
-                                           HorizontalAlignment="Left"
-                                           VerticalAlignment="Center"/>
-                                <Button Name="SaveJsonButton"
-                                        Content="SAVE"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Padding="12,4"
-                                        Height="28"
-                                        Background="{StaticResource GreenAccentVeryDark}"
-                                        BorderBrush="{StaticResource AccentGreen}"
-                                        BorderThickness="2"
-                                        FontFamily="{StaticResource BalatroFont}"
-                                        FontSize="12"
-                                        Foreground="{StaticResource AccentGreen}"
-                                        Cursor="Hand"
-                                        Click="OnSaveJsonClick"/>
-                            </Grid>
+                                Padding="8,2"
+                                Height="24">
+                            <TextBlock Name="JsonValidationStatus"
+                                       Text="JSON: Valid ✓"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource Green}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>

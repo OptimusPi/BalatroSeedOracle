@@ -146,6 +146,25 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        private void OnPopOutAnalyzerClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Get the current seed value
+                var seed = _seedInput?.Text ?? "";
+                
+                // Create and show dedicated analyzer window
+                var analyzerWindow = new Windows.AnalyzerWindow(seed);
+                analyzerWindow.Show();
+                
+                BalatroSeedOracle.Helpers.DebugLogger.Log("AnalyzeModal", $"Opened pop-out analyzer window for seed: {seed}");
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("AnalyzeModal", $"Error opening pop-out analyzer: {ex.Message}");
+            }
+        }
+
         // Analyzer functionality
         private async void OnAnalyzeClick(object? sender, RoutedEventArgs e)
         {

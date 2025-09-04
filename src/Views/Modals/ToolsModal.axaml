@@ -13,6 +13,20 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,20"/>
             
+            <!-- Test Modal Button -->
+            <Button Name="TestModal1Button"
+                   Click="OnTestModal1Click"
+                   Classes="btn-blue"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="Test Modal 1" 
+                           FontSize="20"
+                           
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+            
             <!-- Import Files Button -->
             <Button Name="ImportFilesButton"
                    Click="OnImportFilesClick"

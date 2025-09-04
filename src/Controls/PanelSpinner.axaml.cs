@@ -198,11 +198,28 @@ public partial class PanelSpinner : UserControl
         // Clear existing dots
         _dotsPanel.Children.Clear();
 
+        // Adjust dot spacing based on number of items
+        bool manyItems = _items.Count > 10;
+        if (manyItems)
+        {
+            _dotsPanel.Spacing = 2; // Closer together
+        }
+        else
+        {
+            _dotsPanel.Spacing = 4; // Normal spacing
+        }
+
         // Create new dots
         for (int i = 0; i < _items.Count; i++)
         {
             var dot = new TextBlock();
             dot.Classes.Add("position-dot");
+            
+            // Make dots smaller for many items
+            if (manyItems)
+            {
+                dot.Classes.Add("compact");
+            }
 
             if (i == _currentIndex)
             {

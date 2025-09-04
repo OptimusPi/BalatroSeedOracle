@@ -120,6 +120,7 @@ namespace BalatroSeedOracle.Views.Modals
         private FilterSelector? _filterSelector;
         private DateTime _lastResultBatchUpdate = DateTime.UtcNow;
         private DateTime _lastProgressUpdate = DateTime.UtcNow;
+        private DateTime _lastUIUpdate = DateTime.UtcNow;
         
         // Resume search support
         private ulong? _resumeFromBatch = null;
@@ -341,7 +342,90 @@ namespace BalatroSeedOracle.Views.Modals
                             Stake = searchConfig.Stake
                         };
                         
-                        await _searchInstance.StartSearchAsync(searchCriteria);
+                        // Create progress callback to update UI stat boxes
+                    var progressCallback = new Progress<BalatroSeedOracle.Models.SearchProgress>(progress =>
+                    {
+                        // Throttle UI updates to prevent blocking (only update every 100ms)
+                        var now = DateTime.UtcNow;
+                        if ((now - _lastUIUpdate).TotalMilliseconds < 100) 
+                        {
+                            return; // Skip this update
+                        }
+                        _lastUIUpdate = now;
+                        
+                        // Update all the stat boxes on the right side
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            // Progress percentage
+                            var progressText = this.FindControl<TextBlock>("ProgressPercentText");
+                            if (progressText != null) progressText.Text = $"{progress.PercentComplete:F1}%";
+                            
+                            // Speed (seeds per second - convert from millisecond)
+                            var speedText = this.FindControl<TextBlock>("SpeedText");
+                            if (speedText != null && progress.SeedsPerMillisecond > 0)
+                            {
+                                var seedsPerSecond = progress.SeedsPerMillisecond * 1000;
+                                speedText.Text = $"{seedsPerSecond:N0} seeds/s";
+                            }
+                            
+                            // Total seeds searched
+                            var seedsText = this.FindControl<TextBlock>("TotalSeedsText");
+                            if (seedsText != null) seedsText.Text = progress.SeedsSearched.ToString("N0");
+                            
+                            // Results found
+                            var foundText = this.FindControl<TextBlock>("ResultsFoundText");
+                            if (foundText != null) foundText.Text = progress.ResultsFound.ToString();
+                            
+                            // Time elapsed
+                            var timeText = this.FindControl<TextBlock>("TimeElapsedText");
+                            if (timeText != null && _searchInstance != null)
+                            {
+                                var elapsed = _searchInstance.SearchDuration;
+                                timeText.Text = $"{elapsed.Hours:D2}:{elapsed.Minutes:D2}:{elapsed.Seconds:D2}";
+                            }
+                            
+                            // Current batch (calculate from message or use seeds searched)
+                            var batchText = this.FindControl<TextBlock>("CurrentBatchText");
+                            if (batchText != null && !string.IsNullOrEmpty(progress.Message))
+                            {
+                                // Extract batch number from message like "Searched 236 batches"
+                                var match = System.Text.RegularExpressions.Regex.Match(progress.Message, @"Searched (\d+) batches");
+                                if (match.Success && int.TryParse(match.Groups[1].Value, out var batchCount))
+                                {
+                                    batchText.Text = batchCount.ToString("N0");
+                                }
+                            }
+                            
+                            // Rarity calculation
+                            if (progress.SeedsSearched > 0 && progress.ResultsFound > 0)
+                            {
+                                var rarity = ((double)progress.ResultsFound / progress.SeedsSearched) * 100.0;
+                                var rarityText = this.FindControl<TextBlock>("RarityText");
+                                if (rarityText != null) rarityText.Text = $"{rarity:F6}%";
+                                
+                                var rarityStringText = this.FindControl<TextBlock>("RarityStringText");
+                                if (rarityStringText != null)
+                                {
+                                    rarityStringText.Text = rarity switch
+                                    {
+                                        > 1.0 => "common",
+                                        > 0.1 => "uncommon", 
+                                        > 0.01 => "rare",
+                                        > 0.001 => "legendary",
+                                        _ => "mythical"
+                                    };
+                                }
+                            }
+                        });
+                        
+                        // Still log errors to console
+                        if (progress.HasError)
+                        {
+                            AddToConsole($"ERROR: {progress.Message}");
+                        }
+                    });
+                    
+                    await _searchInstance.StartSearchAsync(searchCriteria, progressCallback);
                     
                     AddToConsole($"Search resumed successfully from batch {resumeState.LastCompletedBatch + 1}");
                 }
@@ -1111,17 +1195,23 @@ namespace BalatroSeedOracle.Views.Modals
                     AddToConsole($"🔍 DEBUG: Using filter path: {_currentFilterPath}");
                     AddToConsole($"🔍 DEBUG: Loaded config name: {_loadedConfig?.Name ?? "null"}");
                     
+                    AddToConsole($"🔧 DEBUG: searchConfig.EndBatch = {searchConfig.EndBatch}");
+                    
                     var searchCriteria = new BalatroSeedOracle.Models.SearchCriteria
                     {
                         ConfigPath = _currentFilterPath!, // validated above
                         ThreadCount = searchConfig.ThreadCount,
                         MinScore = searchConfig.MinScore,
                         BatchSize = searchConfig.BatchSize,
+                        StartBatch = searchConfig.StartBatch,
+                        EndBatch = searchConfig.EndBatch,
                         Deck = searchConfig.Deck,
                         Stake = searchConfig.Stake,
                         EnableDebugOutput = searchConfig.DebugMode,
                         DebugSeed = searchConfig.DebugSeed,
                     };
+                    
+                    AddToConsole($"🔧 DEBUG: searchCriteria.EndBatch = {searchCriteria.EndBatch}");
                     // No need to store batch size for interpolation anymore
 
                     if (_searchInstance == null)
@@ -1132,7 +1222,90 @@ namespace BalatroSeedOracle.Views.Modals
                         return;
                     }
 
-                    await _searchInstance.StartSearchAsync(searchCriteria);
+                    // Create progress callback to update UI stat boxes
+                    var progressCallback = new Progress<BalatroSeedOracle.Models.SearchProgress>(progress =>
+                    {
+                        // Throttle UI updates to prevent blocking (only update every 100ms)
+                        var now = DateTime.UtcNow;
+                        if ((now - _lastUIUpdate).TotalMilliseconds < 100) 
+                        {
+                            return; // Skip this update
+                        }
+                        _lastUIUpdate = now;
+                        
+                        // Update all the stat boxes on the right side
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            // Progress percentage
+                            var progressText = this.FindControl<TextBlock>("ProgressPercentText");
+                            if (progressText != null) progressText.Text = $"{progress.PercentComplete:F1}%";
+                            
+                            // Speed (seeds per second - convert from millisecond)
+                            var speedText = this.FindControl<TextBlock>("SpeedText");
+                            if (speedText != null && progress.SeedsPerMillisecond > 0)
+                            {
+                                var seedsPerSecond = progress.SeedsPerMillisecond * 1000;
+                                speedText.Text = $"{seedsPerSecond:N0} seeds/s";
+                            }
+                            
+                            // Total seeds searched
+                            var seedsText = this.FindControl<TextBlock>("TotalSeedsText");
+                            if (seedsText != null) seedsText.Text = progress.SeedsSearched.ToString("N0");
+                            
+                            // Results found
+                            var foundText = this.FindControl<TextBlock>("ResultsFoundText");
+                            if (foundText != null) foundText.Text = progress.ResultsFound.ToString();
+                            
+                            // Time elapsed
+                            var timeText = this.FindControl<TextBlock>("TimeElapsedText");
+                            if (timeText != null && _searchInstance != null)
+                            {
+                                var elapsed = _searchInstance.SearchDuration;
+                                timeText.Text = $"{elapsed.Hours:D2}:{elapsed.Minutes:D2}:{elapsed.Seconds:D2}";
+                            }
+                            
+                            // Current batch (calculate from message or use seeds searched)
+                            var batchText = this.FindControl<TextBlock>("CurrentBatchText");
+                            if (batchText != null && !string.IsNullOrEmpty(progress.Message))
+                            {
+                                // Extract batch number from message like "Searched 236 batches"
+                                var match = System.Text.RegularExpressions.Regex.Match(progress.Message, @"Searched (\d+) batches");
+                                if (match.Success && int.TryParse(match.Groups[1].Value, out var batchCount))
+                                {
+                                    batchText.Text = batchCount.ToString("N0");
+                                }
+                            }
+                            
+                            // Rarity calculation
+                            if (progress.SeedsSearched > 0 && progress.ResultsFound > 0)
+                            {
+                                var rarity = ((double)progress.ResultsFound / progress.SeedsSearched) * 100.0;
+                                var rarityText = this.FindControl<TextBlock>("RarityText");
+                                if (rarityText != null) rarityText.Text = $"{rarity:F6}%";
+                                
+                                var rarityStringText = this.FindControl<TextBlock>("RarityStringText");
+                                if (rarityStringText != null)
+                                {
+                                    rarityStringText.Text = rarity switch
+                                    {
+                                        > 1.0 => "common",
+                                        > 0.1 => "uncommon", 
+                                        > 0.01 => "rare",
+                                        > 0.001 => "legendary",
+                                        _ => "mythical"
+                                    };
+                                }
+                            }
+                        });
+                        
+                        // Still log errors to console
+                        if (progress.HasError)
+                        {
+                            AddToConsole($"ERROR: {progress.Message}");
+                        }
+                    });
+                    
+                    await _searchInstance.StartSearchAsync(searchCriteria, progressCallback);
                 }
                 else
                 {

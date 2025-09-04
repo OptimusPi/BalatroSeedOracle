@@ -174,49 +174,32 @@
                             Margin="0,0,0,4">
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <!-- PLAY button equivalent - SEED SEARCH (blue) -->
-                    <Button Classes="btn-blue"
+                    <Button Classes="btn-green"
                             Click="OnSeedSearchClick"
                             MinHeight="64"
-                            MinWidth="160">
-                        <TextBlock Text="SEED SEARCH" 
-                                   FontSize="24" 
-                                   
+                            MinWidth="158">
+                        <TextBlock Text="SEARCH" 
+                                   FontSize="36"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- OPTIONS button equivalent - EDITOR (green) -->
-                    <Button Classes="btn-green"
+                    <Button Classes="btn-blue"
                             Click="OnEditorClick"
                             MinHeight="50"
                             MinWidth="100">
-                        <TextBlock Text="NEW FILTER"
-                                   FontSize="20"
+                        <TextBlock Text="DESIGNER"
+                                   FontSize="28"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
                     
-                    <!-- QUIT button (red) -->
-                    <Button Classes="btn-red"
-                            Click="OnExitClick"
-                            MinHeight="50"
-                            MinWidth="100">
-                        <TextBlock Text="QUIT" 
-                                   FontSize="20" 
-                                   
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
-                    
-                    <!-- COLLECTION button equivalent - ANALYZE (purple) -->
                     <Button Classes="btn-purple"
                             Click="OnAnalyzeClick"
-                            MinHeight="64"
-                            MinWidth="160">
-                        <TextBlock Text="ANALYZE" 
-                                   FontSize="24" 
-                                   
+                            MinHeight="50"
+                            MinWidth="100">
+                        <TextBlock Text="ANALYZER"
+                                   FontSize="28"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
@@ -225,9 +208,9 @@
                     <Button Classes="btn-orange"
                             Click="OnToolClick"
                             MinHeight="64"
-                            MinWidth="64">
-                        <TextBlock Text="MORE" 
-                                   FontSize="20" 
+                            MinWidth="158">
+                        <TextBlock Text="Settings" 
+                                   FontSize="36" 
                                    FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
                         </StackPanel>

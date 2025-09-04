@@ -15,7 +15,7 @@
                                 Minimum="0"
                                 Maximum="7"
                                 Value="0"
-                                Width="145"
+                                Width="157"
                                 HorizontalAlignment="Center" />
         
         <!-- Select Button -->
@@ -25,6 +25,7 @@
                 MinWidth="200"
                 MinHeight="32"
                 HorizontalAlignment="Center"
+                Margin="0,8,0,0"
                 Click="OnSelectClick"/>
     </StackPanel>
     

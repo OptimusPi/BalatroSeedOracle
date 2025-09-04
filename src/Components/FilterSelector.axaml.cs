@@ -163,7 +163,20 @@ namespace BalatroSeedOracle.Components
             try
             {
                 var filterContent = File.ReadAllText(filterPath);
-                using var doc = JsonDocument.Parse(filterContent);
+                
+                // Skip empty files
+                if (string.IsNullOrWhiteSpace(filterContent))
+                {
+                    DebugLogger.Log("FilterSelector", $"Skipping empty filter file: {filterPath}");
+                    return (null, null);
+                }
+                
+                var options = new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = System.Text.Json.JsonCommentHandling.Skip
+                };
+                using var doc = JsonDocument.Parse(filterContent, options);
 
                 // Get filter name - skip if no name property
                 if (

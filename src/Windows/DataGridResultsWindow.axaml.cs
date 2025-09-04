@@ -16,6 +16,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
@@ -544,7 +545,7 @@ LIMIT 50;",
                 var worksheet = workbook.Worksheets.Add("Search Results");
                 
                 // Headers
-                var headers = new List<string> { "Rank", "Seed", "Total Score" };
+                var headers = new List<string> { "Rank", "Seed", "Score" };
                 headers.AddRange(_searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " ")) ?? new List<string>());
                 
                 for (int i = 0; i < headers.Count; i++)
@@ -639,15 +640,31 @@ LIMIT 50;",
             {
                 try
                 {
-                    // Create and show dedicated analyzer window
-                    var analyzerWindow = new AnalyzerWindow(item.Seed);
-                    analyzerWindow.Show(this); // Show relative to this window
+                    // Find the main window and show as modal
+                    var mainWindow = this.GetVisualRoot() as Views.MainWindow;
+                    var mainMenu = mainWindow?.FindControl<Views.BalatroMainMenu>("MainMenu");
                     
-                    DebugLogger.Log("DataGridResultsWindow", $"Opened analyzer window for seed: {item.Seed}");
+                    if (mainMenu != null)
+                    {
+                        // Create analyzer modal with the seed
+                        var analyzeModal = new Views.Modals.AnalyzeModal();
+                        analyzeModal.SetSeedAndAnalyze(item.Seed);
+                        
+                        var modal = new Views.Modals.StandardModal("ANALYZE");
+                        modal.SetContent(analyzeModal);
+                        modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
+                        
+                        mainMenu.ShowModalContent(modal, "SEED ANALYZER");
+                        DebugLogger.Log("DataGridResultsWindow", $"Opened analyzer modal for seed: {item.Seed}");
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("DataGridResultsWindow", "Could not find main menu for modal display");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("DataGridResultsWindow", $"Error opening analyzer window: {ex.Message}");
+                    DebugLogger.LogError("DataGridResultsWindow", $"Error opening analyzer: {ex.Message}");
                 }
             }
         }

@@ -37,51 +37,9 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var creationModal = new Views.Modals.FilterCreationModal();
-            
-            // Handle events from the creation modal
-            creationModal.FilterSelectedForEdit += async (s, filterPath) =>
-            {
-                // User selected existing filter - open filters modal with that filter
-                menu.HideModalContent();
-                var filtersContent = new FiltersModalContent();
-                await filtersContent.LoadConfigAsync(filterPath);
-                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
-            };
-            
-            creationModal.ViewModel.FilterCloneRequested += async (s, filterPath) =>
-            {
-                // User wants to clone a filter - create a copy and open filters modal
-                menu.HideModalContent();
-                var filtersContent = new FiltersModalContent();
-                var clonedPath = await CreateClonedFilter(filterPath);
-                if (!string.IsNullOrEmpty(clonedPath))
-                {
-                    await filtersContent.LoadConfigAsync(clonedPath);
-                }
-                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
-            };
-            
-            creationModal.NewFilterRequested += async (s, e) =>
-            {
-                // User wants to create new filter - create temp filter and open filters modal
-                menu.HideModalContent();
-                var filtersContent = new FiltersModalContent();
-                var tempPath = await CreateTempFilter();
-                await filtersContent.LoadConfigAsync(tempPath);
-                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
-            };
-            
-            creationModal.FilterImported += async (s, importPath) =>
-            {
-                // User imported a filter - open filters modal with imported filter
-                menu.HideModalContent();
-                var filtersContent = new FiltersModalContent();
-                await filtersContent.LoadConfigAsync(importPath);
-                menu.ShowModal("FILTER CONFIGURATION", filtersContent);
-            };
-            
-            return menu.ShowModal("NEW FILTER", creationModal);
+            // Go directly to the filters modal - no chooser
+            var filtersContent = new FiltersModalContent();
+            return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
     
         /// <summary>
