@@ -48,6 +48,12 @@
     "link": "https://daylatro.fly.dev/"
   },
   {
+    "name": "qcom",
+    "role": "Fellow Seed Lover",
+    "note": "Thanks for the testing and filter criteria feedback!",
+    "link": "https://discord.com/invite/balatro"
+  },
+  {
     "name": "Cobmaster",
     "role": "Fellow Seed Lover",
     "note": "Thanks for testing (breaking things..), also for waiting on chat's seed requests.",
@@ -69,6 +75,12 @@
     "name": "Lokey",
     "role": "Fellow Seed Lover",
     "note": "Thanks for all the different perspectives and insight into Balatro mechanics!",
+    "link": "https://discord.com/invite/balatro"
+  },
+  {
+    "name": "(Various Cool People..like YOU!)",
+    "role": "Filter Authoring...Keep Creating!",
+    "note": "NOTE: If any problems arise, just beg Cobmaster to search for your seeds.",
     "link": "https://discord.com/invite/balatro"
   }
 ]

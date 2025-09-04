@@ -15,6 +15,16 @@
         <!-- Action buttons below spinner -->
         <StackPanel Grid.Row="1" Spacing="12" Margin="0,8,0,0">
             
+            <!-- Main Select Button (for SearchModal) -->
+            <Button Name="SelectButton" 
+                    Content="SELECT FILTER" 
+                    Classes="btn-blue" 
+                    MinWidth="300"
+                    Height="50"
+                    FontSize="18"
+                    HorizontalAlignment="Center"
+                    Click="OnSelectClick"/>
+            
             <!-- Filter-specific actions (horizontal) -->
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button Name="CopyFilterButton"

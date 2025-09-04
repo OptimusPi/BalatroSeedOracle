@@ -201,6 +201,12 @@ namespace BalatroSeedOracle.Views.Modals
                 filterSelector.AutoLoadEnabled = false;
                 filterSelector.FilterLoaded += OnFilterSelected;
                 
+                // Wire up the new action buttons
+                filterSelector.FilterCopyRequested += OnFilterCopyRequested;
+                filterSelector.FilterEditRequested += OnFilterEditRequested;
+                filterSelector.FilterDeleteRequested += OnFilterDeleteRequested;
+                filterSelector.NewFilterRequested += OnNewFilterRequested;
+                
                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal",
                     "FilterSelector component found and setup - auto-load DISABLED"
@@ -223,6 +229,150 @@ namespace BalatroSeedOracle.Views.Modals
         
 
         // FilterSelector event handlers
+        private async void OnFilterCopyRequested(object? sender, string filterPath)
+        {
+            try
+            {
+                // Create a copy of the selected filter
+                var originalJson = await File.ReadAllTextAsync(filterPath);
+                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(originalJson, new JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                });
+                
+                if (config != null)
+                {
+                    // Update copy metadata
+                    config.Name = $"{config.Name} (Copy)";
+                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+                    config.DateCreated = DateTime.UtcNow;
+                    
+                    // Save the copy
+                    var filename = $"{config.Name}.json";
+                    var filtersDir = System.IO.Path.GetDirectoryName(filterPath);
+                    var copyPath = System.IO.Path.Combine(filtersDir!, filename);
+                    
+                    var copyJson = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(copyPath, copyJson);
+                    
+                    // Load the copy for editing
+                    await LoadConfigAsync(copyPath);
+                    EnableAllTabs();
+                    SwitchToVisualTab();
+                    
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Created copy: {filename}");
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error copying filter: {ex.Message}");
+            }
+        }
+
+        private async void OnFilterEditRequested(object? sender, string filterPath)
+        {
+            try
+            {
+                // Load the selected filter for editing
+                await LoadConfigAsync(filterPath);
+                EnableAllTabs();
+                SwitchToVisualTab();
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Opened for editing: {System.IO.Path.GetFileName(filterPath)}");
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error loading filter for edit: {ex.Message}");
+            }
+        }
+
+        private void OnFilterDeleteRequested(object? sender, string filterPath)
+        {
+            try
+            {
+                // TODO: Add confirmation dialog
+                File.Delete(filterPath);
+                
+                // Refresh the filter list
+                var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
+                filterSelector?.RefreshFilters();
+                
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Deleted filter: {System.IO.Path.GetFileName(filterPath)}");
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error deleting filter: {ex.Message}");
+            }
+        }
+
+        private async void OnNewFilterRequested(object? sender, EventArgs e)
+        {
+            try
+            {
+                // Create temp filter and load it
+                var tempPath = await CreateTempFilter();
+                await LoadConfigAsync(tempPath);
+                EnableAllTabs();
+                SwitchToVisualTab();
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Created new filter for editing");
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Error creating new filter: {ex.Message}");
+            }
+        }
+
+        private void EnableAllTabs()
+        {
+            var visualTab = this.FindControl<Button>("VisualTab");
+            var jsonTab = this.FindControl<Button>("JsonTab");
+            var saveTab = this.FindControl<Button>("SaveFilterTab");
+            
+            if (visualTab != null) visualTab.IsEnabled = true;
+            if (jsonTab != null) jsonTab.IsEnabled = true;
+            if (saveTab != null) saveTab.IsEnabled = true;
+        }
+
+        private void SwitchToVisualTab()
+        {
+            var visualTab = this.FindControl<Button>("VisualTab");
+            if (visualTab != null)
+            {
+                // Simulate click to switch to visual tab
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    visualTab.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                }, Avalonia.Threading.DispatcherPriority.Background);
+            }
+        }
+
+        private async System.Threading.Tasks.Task<string> CreateTempFilter()
+        {
+            var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+            var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+            System.IO.Directory.CreateDirectory(filtersDir);
+            
+            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+            
+            // Create basic empty filter structure
+            var emptyFilter = new Motely.Filters.MotelyJsonConfig
+            {
+                Name = "New Filter",
+                Description = "Created with Filter Designer",
+                Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                DateCreated = System.DateTime.UtcNow,
+                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(emptyFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            await System.IO.File.WriteAllTextAsync(tempPath, json);
+            
+            return tempPath;
+        }
+
         private async void OnFilterSelected(object? sender, string filterPath)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
@@ -4065,6 +4215,17 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     break;
 
+                case "PreferredDeckTab":
+                    button.Classes.Add("active");
+                    var preferredDeckPanel = this.FindControl<Grid>("PreferredDeckPanel");
+                    if (preferredDeckPanel != null)
+                    {
+                        preferredDeckPanel.IsVisible = true;
+                    }
+
+                    AnimateTriangleToTab(2);
+                    break;
+
                 case "JsonTab":
                     button.Classes.Add("active");
                     if (jsonPanel != null)
@@ -4072,7 +4233,7 @@ namespace BalatroSeedOracle.Views.Modals
                         jsonPanel.IsVisible = true;
                     }
 
-                    AnimateTriangleToTab(2);
+                    AnimateTriangleToTab(3);
                     EnterEditJsonMode();
                     UpdateJsonEditor();
                     
@@ -4098,7 +4259,7 @@ namespace BalatroSeedOracle.Views.Modals
                         saveFilterPanel.IsVisible = true;
                     }
 
-                    AnimateTriangleToTab(3);
+                    AnimateTriangleToTab(4);
                     UpdateSaveFilterPanel();
                     break;
             }

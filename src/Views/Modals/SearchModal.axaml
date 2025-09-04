@@ -379,6 +379,9 @@
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Stretch"
                                              AutoLoadEnabled="False"
+                                             ShowActionButtons="False"
+                                             ShowSelectButton="True"
+                                             IsInSearchModal="True"
                                              FilterLoaded="OnFilterSelected"/>
                     
                     <!-- Edit in Filter Designer Button -->
@@ -395,13 +398,44 @@
             </Grid>
             
             <!-- Settings Panel (now just Deck/Stake) -->
-            <Grid Name="SettingsPanel" IsVisible="False">
-                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
-                    <!-- Deck and Stake Selection -->
+            <Grid Name="SettingsPanel" IsVisible="False" Margin="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>  <!-- 2/3 for deck/stake selector -->
+                    <ColumnDefinition Width="20"/> <!-- Spacer -->
+                    <ColumnDefinition Width="*"/>   <!-- 1/3 for explanation -->
+                </Grid.ColumnDefinitions>
+                
+                <!-- Left: Deck and Stake Selection -->
+                <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <components:DeckAndStakeSelector Name="DeckAndStakeSelector" 
-                                                    HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Stretch"/>
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                 </Grid>
+                
+                <!-- Right: Explanation Panel -->
+                <Border Grid.Column="2" 
+                        Background="{StaticResource DarkModalGrey}" 
+                        BorderThickness="0" 
+                        CornerRadius="8" 
+                        Padding="20">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="DECK &amp; STAKE INFO" 
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextLight}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="16">
+                            <Run Text="There may be unintended consequences of searching with a deck other than preferred by the filter designer. For example, if this filter searches for Spectral Cards in the shop items queue (not booster packs) for intent on placing in the player's consumable inventory, those items of course will not be found."/><LineBreak/><LineBreak/>
+                            <Run Text="Other things such as stickers of course, will only appear on the correct Stake so only change it if you know what you are doing."/><LineBreak/><LineBreak/>
+                            <Run Text="pifreak loves you!" Foreground="{StaticResource Gold}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
             </Grid>
             
             <!-- Search Panel -->

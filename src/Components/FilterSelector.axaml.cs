@@ -47,6 +47,7 @@ namespace BalatroSeedOracle.Components
         public bool ShouldSwitchToVisualTab { get; set; } = false;
         public bool IsInSearchModal { get; set; } = false;
         public bool ShowSelectButton { get; set; } = true;
+        public bool ShowActionButtons { get; set; } = true;
         
         public static readonly StyledProperty<string> TitleProperty = 
             AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
@@ -152,6 +153,17 @@ namespace BalatroSeedOracle.Components
                     _selectButton.IsEnabled = true;
                     _selectButton.IsVisible = ShowSelectButton;
                 }
+                
+                // Control action buttons visibility
+                var copyButton = this.FindControl<Button>("CopyFilterButton");
+                var editButton = this.FindControl<Button>("EditFilterButton");
+                var deleteButton = this.FindControl<Button>("DeleteFilterButton");
+                var createButton = this.FindControl<Button>("CreateNewFilterButton");
+                
+                if (copyButton != null) copyButton.IsVisible = ShowActionButtons;
+                if (editButton != null) editButton.IsVisible = ShowActionButtons;
+                if (deleteButton != null) deleteButton.IsVisible = ShowActionButtons;
+                if (createButton != null) createButton.IsVisible = ShowActionButtons;
 
                 if (_filterSpinner != null)
                     _filterSpinner.Items = sortedItems;
