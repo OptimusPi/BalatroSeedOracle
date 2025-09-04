@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -38,8 +39,12 @@ namespace BalatroSeedOracle.Services
         private IMotelySearch? _currentSearch;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
+        private readonly ConcurrentQueue<BalatroSeedOracle.Models.SearchResult> _pendingResults = new();
         private readonly List<string> _consoleHistory = new();
         private readonly object _consoleHistoryLock = new();
+        private volatile int _resultCount = 0;
+        private readonly List<string> _recentSeeds = new();
+        private readonly object _recentSeedsLock = new();
         private Task? _searchTask;
         private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
         
@@ -75,7 +80,7 @@ namespace BalatroSeedOracle.Services
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
         public Motely.Filters.MotelyJsonConfig? GetFilterConfig() => _currentConfig;
-        public int ResultCount => _results.Count;
+        public int ResultCount => _resultCount;
     public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
     public string DatabasePath => _dbPath;
     private bool _dbInitialized = false;
@@ -349,7 +354,8 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to add result: {ex.Message}");
+                    // SILENCE - Don't spam console with threading errors
+                    // DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to add result: {ex.Message}");
                 }
             }
             return Task.CompletedTask;
@@ -580,12 +586,19 @@ namespace BalatroSeedOracle.Services
                 FilterName = ouijaConfig.Name ?? Path.GetFileNameWithoutExtension(configPath);
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
+                
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationToken
                 );
 
-                // Clear previous results
-                _results.Clear();
+                // Clear previous results and pending queue
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _results.Clear();
+                });
+                
+                // Clear pending queue
+                while (_pendingResults.TryDequeue(out _)) { }
 
                 // Notify UI that search started
                 SearchStarted?.Invoke(this, EventArgs.Empty);
@@ -832,6 +845,7 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Stopping search...");
                 
                 _preventStateSave = preventStateSave;
+                
 
                 // Close then dispose appender so buffered rows are committed
                 if (_appender != null)
@@ -967,15 +981,27 @@ namespace BalatroSeedOracle.Services
                         Labels = config.Should?.Select(s => s.Value ?? "Unknown").ToArray()
                     };
 
-                    // Add to UI on UI thread
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        _results.Add(result);
-                        ResultFound?.Invoke(this, new SearchResultEventArgs { Result = result });
-                    });
-
-                    // Save to database (background thread OK)
+                    // Save directly to DuckDB (thread-safe, fast)
                     _ = AddSearchResultAsync(result);
+                    
+                    // Increment result counter
+                    Interlocked.Increment(ref _resultCount);
+                    
+                    // Batched console output (every 10 results)
+                    if (_resultCount % 10 == 0)
+                    {
+                        lock (_recentSeedsLock)
+                        {
+                            _recentSeeds.Add($"{result.Seed}({result.TotalScore})");
+                            
+                            // Output batch every 50 seeds
+                            if (_recentSeeds.Count >= 5)
+                            {
+                                AddToConsole($"Found: {string.Join(", ", _recentSeeds)}");
+                                _recentSeeds.Clear();
+                            }
+                        }
+                    }
                 };
                 
                 // Create scoring config (only SHOULD clauses for scoring)
@@ -1017,12 +1043,18 @@ namespace BalatroSeedOracle.Services
                     var completedBatches = _currentSearch.CompletedBatchCount;
                     var progressPercent = ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch)) * 100.0;
                     
+                    // Calculate speed
+                    var elapsed = DateTime.UtcNow - _searchStartTime;
+                    var seedsSearched = (ulong)(completedBatches * Math.Pow(35, criteria.BatchSize));
+                    var seedsPerMs = elapsed.TotalMilliseconds > 0 ? seedsSearched / elapsed.TotalMilliseconds : 0;
+                    
                     progress?.Report(new SearchProgress
                     {
-                        SeedsSearched = (ulong)(completedBatches * Math.Pow(35, criteria.BatchSize)),
+                        SeedsSearched = seedsSearched,
                         PercentComplete = progressPercent,
+                        SeedsPerMillisecond = seedsPerMs,
                         Message = $"Searched {completedBatches:N0} batches",
-                        ResultsFound = Results.Count
+                        ResultsFound = _resultCount
                     });
 
                     try
@@ -1082,6 +1114,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+
         public void Dispose()
         {
             // First stop the search if it's running
@@ -1107,6 +1140,7 @@ namespace BalatroSeedOracle.Services
             }
             
             _cancellationTokenSource?.Dispose();
+            
             
             // Dispose prepared command & connection
             try

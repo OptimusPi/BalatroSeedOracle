@@ -121,6 +121,7 @@ namespace BalatroSeedOracle.Views.Modals
         private DateTime _lastResultBatchUpdate = DateTime.UtcNow;
         private DateTime _lastProgressUpdate = DateTime.UtcNow;
         private DateTime _lastUIUpdate = DateTime.UtcNow;
+        private bool _uiUpdatePending = false;
         
         // Resume search support
         private ulong? _resumeFromBatch = null;
@@ -394,17 +395,19 @@ namespace BalatroSeedOracle.Views.Modals
                         // Create progress callback to update UI stat boxes
                     var progressCallback = new Progress<BalatroSeedOracle.Models.SearchProgress>(progress =>
                     {
-                        // Throttle UI updates to prevent blocking (only update every 100ms)
+                        // Throttle UI updates to 60FPS (16ms) with debouncing
                         var now = DateTime.UtcNow;
-                        if ((now - _lastUIUpdate).TotalMilliseconds < 100) 
+                        if ((now - _lastUIUpdate).TotalMilliseconds < 16 || _uiUpdatePending) 
                         {
                             return; // Skip this update
                         }
                         _lastUIUpdate = now;
+                        _uiUpdatePending = true;
                         
-                        // Update all the stat boxes on the right side
+                        // Update all the stat boxes on the right side (60FPS max)
                         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                         {
+                            _uiUpdatePending = false; // Reset flag
                             // Progress percentage
                             var progressText = this.FindControl<TextBlock>("ProgressPercentText");
                             if (progressText != null) progressText.Text = $"{progress.PercentComplete:F1}%";
@@ -1274,17 +1277,19 @@ namespace BalatroSeedOracle.Views.Modals
                     // Create progress callback to update UI stat boxes
                     var progressCallback = new Progress<BalatroSeedOracle.Models.SearchProgress>(progress =>
                     {
-                        // Throttle UI updates to prevent blocking (only update every 100ms)
+                        // Throttle UI updates to 60FPS (16ms) with debouncing
                         var now = DateTime.UtcNow;
-                        if ((now - _lastUIUpdate).TotalMilliseconds < 100) 
+                        if ((now - _lastUIUpdate).TotalMilliseconds < 16 || _uiUpdatePending) 
                         {
                             return; // Skip this update
                         }
                         _lastUIUpdate = now;
+                        _uiUpdatePending = true;
                         
-                        // Update all the stat boxes on the right side
+                        // Update all the stat boxes on the right side (60FPS max)
                         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                         {
+                            _uiUpdatePending = false; // Reset flag
                             // Progress percentage
                             var progressText = this.FindControl<TextBlock>("ProgressPercentText");
                             if (progressText != null) progressText.Text = $"{progress.PercentComplete:F1}%";
