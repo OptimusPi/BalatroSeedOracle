@@ -26,6 +26,10 @@ namespace BalatroSeedOracle.Components
         // Events
         public event EventHandler<string>? FilterSelected;
         public event EventHandler<string>? FilterLoaded;
+        public event EventHandler<string>? FilterCopyRequested;
+        public event EventHandler<string>? FilterEditRequested;
+        public event EventHandler<string>? FilterDeleteRequested;
+        public event EventHandler? NewFilterRequested;
 
         // Properties
         private bool _autoLoadEnabled = true;
@@ -586,6 +590,38 @@ namespace BalatroSeedOracle.Components
                 // Load the selected filter
                 FilterLoaded?.Invoke(this, selectedItem.Value);
             }
+        }
+
+        private void OnCopyFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var selectedItem = _filterSpinner?.SelectedItem;
+            if (selectedItem?.Value != null)
+            {
+                FilterCopyRequested?.Invoke(this, selectedItem.Value);
+            }
+        }
+
+        private void OnEditFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var selectedItem = _filterSpinner?.SelectedItem;
+            if (selectedItem?.Value != null)
+            {
+                FilterEditRequested?.Invoke(this, selectedItem.Value);
+            }
+        }
+
+        private void OnDeleteFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var selectedItem = _filterSpinner?.SelectedItem;
+            if (selectedItem?.Value != null)
+            {
+                FilterDeleteRequested?.Invoke(this, selectedItem.Value);
+            }
+        }
+
+        private void OnCreateNewFilterClick(object? sender, RoutedEventArgs e)
+        {
+            NewFilterRequested?.Invoke(this, EventArgs.Empty);
         }
 
         public void RefreshFilters()

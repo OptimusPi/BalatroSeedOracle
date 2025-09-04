@@ -13,13 +13,44 @@
         <controls:PanelSpinner Grid.Row="0" Name="FilterSpinner" />
         
         <!-- Action buttons below spinner -->
-        <StackPanel Grid.Row="1" Spacing="8" Margin="0,8,0,0">
-            <Button Name="SelectButton" 
-                    Content="Select Filter" 
-                    Classes="btn-blue" 
-                    MinWidth="200"
+        <StackPanel Grid.Row="1" Spacing="12" Margin="0,8,0,0">
+            
+            <!-- Filter-specific actions (horizontal) -->
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button Name="CopyFilterButton"
+                        Content="MAKE A COPY"
+                        Classes="btn-blue"
+                        Height="45"
+                        MinWidth="110"
+                        FontSize="14"
+                        Click="OnCopyFilterClick"/>
+                
+                <Button Name="EditFilterButton"
+                        Content="EDIT THIS FILTER"
+                        Classes="btn-orange"
+                        Height="45"
+                        MinWidth="130"
+                        FontSize="14"
+                        Click="OnEditFilterClick"/>
+                
+                <Button Name="DeleteFilterButton"
+                        Content="DELETE"
+                        Classes="btn-red"
+                        Height="45"
+                        Width="80"
+                        FontSize="14"
+                        Click="OnDeleteFilterClick"/>
+            </StackPanel>
+            
+            <!-- Create new filter (full width) -->
+            <Button Name="CreateNewFilterButton"
+                    Content="CREATE NEW FILTER"
+                    Classes="btn-green"
+                    Height="55"
+                    MinWidth="300"
+                    FontSize="18"
                     HorizontalAlignment="Center"
-                    Click="OnSelectClick"/>
+                    Click="OnCreateNewFilterClick"/>
         </StackPanel>
     </Grid>
 </UserControl>

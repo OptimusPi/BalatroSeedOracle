@@ -386,7 +386,7 @@
                             Content="EDIT IN FILTER DESIGNER"
                             Classes="btn-orange"
                             Height="50"
-                            FontSize="16"
+                            FontSize="18"
                             FontFamily="{StaticResource BalatroFont}"
                             HorizontalAlignment="Center"
                             MinWidth="300"
