@@ -164,6 +164,55 @@ namespace BalatroSeedOracle.Views.Modals
             _currentFilterPath = path;
         }
 
+        private async void OnEditInDesignerClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_currentFilterPath))
+                {
+                    AddToConsole("No filter loaded to edit");
+                    return;
+                }
+                
+                // Find the main menu to open the filters modal
+                var parent = this.Parent;
+                while (parent != null && parent is not Views.BalatroMainMenu)
+                {
+                    parent = (parent as Control)?.Parent;
+                }
+
+                if (parent is Views.BalatroMainMenu mainMenu)
+                {
+                    // Hide current search modal
+                    mainMenu.HideModalContent();
+                    
+                    // Open filters modal with current filter loaded
+                    var filtersContent = new Views.Modals.FiltersModalContent();
+                    await filtersContent.LoadConfigAsync(_currentFilterPath);
+                    
+                    // Show the modal
+                    var modal = new Views.Modals.StandardModal("FILTER DESIGNER");
+                    modal.SetContent(filtersContent);
+                    modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
+                    mainMenu.ShowModalContent(modal, "FILTER DESIGNER");
+                    
+                    // Switch to Visual Builder tab after a brief delay
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        var visualTab = filtersContent.FindControl<Button>("VisualTab");
+                        visualTab?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                    
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("SearchModal", $"Opened filter designer for: {System.IO.Path.GetFileName(_currentFilterPath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchModal", $"Error opening filter designer: {ex.Message}");
+                AddToConsole($"Failed to open filter designer: {ex.Message}");
+            }
+        }
+
         private void OnUnloaded(object? sender, EventArgs e)
         {
             // If search is running when modal closes, create home icon

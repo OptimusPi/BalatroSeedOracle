@@ -374,13 +374,24 @@
             
             <!-- Filter Selection Panel -->
             <Grid Name="FilterPanel" IsVisible="True">
-                <Grid MaxWidth="600" HorizontalAlignment="Center" Margin="40">
+                <StackPanel MaxWidth="600" HorizontalAlignment="Center" Margin="40" Spacing="15">
                     <components:FilterSelector Name="FilterSelector" 
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Stretch"
                                              AutoLoadEnabled="False"
                                              FilterLoaded="OnFilterSelected"/>
-                </Grid>
+                    
+                    <!-- Edit in Filter Designer Button -->
+                    <Button Name="EditInDesignerButton"
+                            Content="EDIT IN FILTER DESIGNER"
+                            Classes="btn-orange"
+                            Height="50"
+                            FontSize="16"
+                            FontFamily="{StaticResource BalatroFont}"
+                            HorizontalAlignment="Center"
+                            MinWidth="300"
+                            Click="OnEditInDesignerClick"/>
+                </StackPanel>
             </Grid>
             
             <!-- Settings Panel (now just Deck/Stake) -->
