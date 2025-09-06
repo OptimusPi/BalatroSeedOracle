@@ -76,8 +76,6 @@ namespace BalatroSeedOracle.Views
                     // Subscribe to search instance events
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
-                    _searchInstance.ResultFound += OnResultFound;
-                    _searchInstance.ProgressUpdated += OnProgressUpdated;
 
                     // Update UI with current state
                     _isSearching = _searchInstance.IsRunning;
@@ -195,23 +193,6 @@ namespace BalatroSeedOracle.Views
             });
         }
 
-    private void OnResultFound(object? sender, BalatroSeedOracle.Models.SearchResultEventArgs e)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                _resultCount++;
-                UpdateBadge();
-                // Keep running icon; no change needed here.
-            });
-        }
-
-        private void OnProgressUpdated(object? sender, SearchProgressEventArgs e)
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                UpdateProgress((int)e.PercentComplete);
-            });
-        }
 
         private void UpdateBadge()
         {

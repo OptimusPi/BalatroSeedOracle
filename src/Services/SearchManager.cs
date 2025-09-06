@@ -17,12 +17,6 @@ namespace BalatroSeedOracle.Services
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
 
-        // Events for MVVM (temporarily unused - will be used when MVVM is fully integrated)
-        #pragma warning disable CS0067
-        public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
-        public event EventHandler<SearchResultEventArgs>? ResultFound;
-        public event EventHandler? SearchCompleted;
-        #pragma warning restore CS0067
 
         public SearchManager()
         {

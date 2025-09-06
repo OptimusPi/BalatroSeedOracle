@@ -156,8 +156,6 @@ namespace BalatroSeedOracle.ViewModels
                 _searchInstance = await _searchManager.StartSearchAsync(searchCriteria, LoadedConfig);
 
                 // Subscribe to SearchInstance events directly
-                _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
-                _searchInstance.ResultFound += OnSearchResultFound;
                 _searchInstance.SearchCompleted += OnSearchCompleted;
 
                 DebugLogger.Log("SearchModalViewModel", $"Search started with ID: {_currentSearchId}");
@@ -249,19 +247,6 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Event Handlers
 
-        private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
-        {
-            LatestProgress = e;
-            AddConsoleMessage($"Progress: {e.SeedsSearched} seeds processed, {e.ResultsFound} results found");
-        }
-
-        private void OnSearchResultFound(object? sender, SearchResultEventArgs e)
-        {
-            SearchResults.Add(e.Result);
-            LastKnownResultCount = SearchResults.Count;
-            AddConsoleMessage($"Found result: Seed {e.Result.Seed} with score {e.Result.TotalScore}");
-        }
-
         private void OnSearchCompleted(object? sender, EventArgs e)
         {
             IsSearching = false;
@@ -307,8 +292,6 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_searchInstance != null)
             {
-                _searchInstance.ProgressUpdated -= OnSearchProgressUpdated;
-                _searchInstance.ResultFound -= OnSearchResultFound;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
                 _searchInstance.Dispose();
             }

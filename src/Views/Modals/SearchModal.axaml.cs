@@ -35,7 +35,6 @@ namespace BalatroSeedOracle.Views.Modals
         private CircularConsoleBuffer _consoleBuffer = new(1000);
         private Avalonia.Threading.DispatcherTimer? _uiRefreshTimer;
         private int _lastKnownResultCount = 0;
-        private SearchProgressEventArgs? _latestProgress;
         
         // TEMPORARY - for compilation until full refactor is done
         private readonly ObservableCollection<SearchResult> _searchResults = new();
@@ -92,11 +91,7 @@ namespace BalatroSeedOracle.Views.Modals
     private TextBlock? _etaText;
     // Smoothing state
     private DateTime _lastEtaUpdate = DateTime.MinValue;
-    private double _smoothedRemainingSeconds = -1; // moving average of remaining seconds
-    private readonly double _etaSmoothingFactor = 0.15; // EMA alpha
-    private long _lastSeedsAtProgress = 0;
     private DateTime _lastSeedsProgressTime = DateTime.MinValue;
-    private double _lastSeedsPerMsObserved = 0;
         private TextBlock? _resultsFoundText;
     private TextBlock? _rarityText; // now 'Rate' percent
     private TextBlock? _rarityStringText; // categorical rarity label
@@ -190,6 +185,11 @@ namespace BalatroSeedOracle.Views.Modals
                     // Open filters modal with current filter loaded
                     var filtersContent = new Views.Modals.FiltersModalContent();
                     await filtersContent.LoadConfigAsync(_currentFilterPath);
+                    
+                    // Enable all tabs since we're editing an existing filter
+                    var enableMethod = filtersContent.GetType().GetMethod("EnableAllTabs", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    enableMethod?.Invoke(filtersContent, null);
                     
                     // Show the modal
                     var modal = new Views.Modals.StandardModal("FILTER DESIGNER");
@@ -1447,9 +1447,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _peakSpeed = 0;
                 _etaText = this.FindControl<TextBlock>("EtaText");
                 _totalSeeds = 0;
-                _lastSeedsAtProgress = 0;
                 _lastSeedsProgressTime = DateTime.UtcNow;
-                _lastSeedsPerMsObserved = 0;
                 _lastSpeedUpdate = DateTime.UtcNow;
                 _newResultsCount = 0; // Reset new results counter
                 _lastKnownResultCount = 0;
@@ -1477,32 +1475,6 @@ namespace BalatroSeedOracle.Views.Modals
                     // Always call UpdateRarityUI so 'Still Searching...' is shown until a result is found
                     double rarityPercent = (_totalSeeds > 0) ? (_newResultsCount / (double)_totalSeeds) * 100.0 : 0;
                     UpdateRarityUI(rarityPercent);
-                    if (_latestProgress != null)
-                    {
-                        // Interpolate seeds smoothly between progress events if we have recent speed
-                        if (_totalSeedsText != null && _lastSeedsPerMsObserved > 0 && _lastSeedsProgressTime != DateTime.MinValue)
-                        {
-                            var msSince = (DateTime.UtcNow - _lastSeedsProgressTime).TotalMilliseconds;
-                            if (msSince > 0 && msSince < 5000) // don't extrapolate too far
-                            {
-                                long interpolated = _lastSeedsAtProgress + (long)(_lastSeedsPerMsObserved * msSince);
-                                if (interpolated > _totalSeeds) // only show forward
-                                {
-                                    _totalSeedsText.Text = interpolated.ToString("N0");
-                                }
-                            }
-                        }
-                        // Throttle ETA refresh to ~ once per 2s (smoother) using smoothed remaining seconds
-                        if ((DateTime.UtcNow - _lastEtaUpdate).TotalMilliseconds >= 2000)
-                        {
-                            UpdateEta(_latestProgress, true);
-                        }
-                        else if (_etaText != null && _smoothedRemainingSeconds > 0)
-                        {
-                            // Decrement displayed remaining time locally for perceived smoothness
-                            _etaText.Text = FormatEta(TimeSpan.FromSeconds(Math.Max(0, _smoothedRemainingSeconds - (DateTime.UtcNow - _lastEtaUpdate).TotalSeconds)));
-                        }
-                    }
                 };
                 _uiRefreshTimer.Start();
             });
@@ -1681,162 +1653,13 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (_searchInstance != null)
             {
-                _searchInstance.ProgressUpdated -= OnSearchProgressUpdated;
-                _searchInstance.ResultFound -= OnResultFound;
                 _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
             }
         }
 
-    private void OnSearchProgressUpdated(object? sender, SearchProgressEventArgs e)
-        {
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
-            {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => OnSearchProgressUpdated(sender, e));
-                return;
-            }
 
-            _latestProgress = e;
 
-            // UPDATE THE FUCKING PERCENTAGE DISPLAY!
-            if (_progressPercentText != null)
-            {
-                // Show more decimals when percentage is tiny
-                if (e.PercentComplete < 0.01)
-                    _progressPercentText.Text = $"{e.PercentComplete:F4}%";
-                else if (e.PercentComplete < 1.0)
-                    _progressPercentText.Text = $"{e.PercentComplete:F3}%";
-                else
-                    _progressPercentText.Text = $"{e.PercentComplete:F2}%";
-            }
-
-            // Update batch progress in separate boxes
-            if (_currentBatchText != null)
-            {
-                _currentBatchText.Text = $"{e.BatchesSearched:N0}";
-            }
-            if (_totalBatchesText != null)
-            {
-                _totalBatchesText.Text = FormatCompactNumber((long)e.TotalBatches);
-            }
-
-            if (_totalSeedsText != null)
-            {
-                _totalSeeds = (long)e.SeedsSearched;
-                _totalSeedsText.Text = ((long)e.SeedsSearched).ToString("N0");
-                _lastSeedsAtProgress = (long)e.SeedsSearched;
-                _lastSeedsProgressTime = DateTime.UtcNow;
-                _lastSeedsPerMsObserved = e.SeedsPerMillisecond;
-            }
-
-            if (_resultsFoundText != null)
-            {
-                _resultsFoundText.Text = _newResultsCount.ToString();
-            }
-
-            if (_totalSeeds > 0)
-            {
-                double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                UpdateRarityUI(rarityPercent);
-            }
-
-            if (_timeElapsedText != null)
-            {
-                var elapsed = DateTime.UtcNow - _searchStartTime;
-                _timeElapsedText.Text = $"{elapsed:hh\\:mm\\:ss}";
-            }
-            // Update ETA immediately only if enough time elapsed since last refresh (else let timer handle smoothing)
-            if ((DateTime.UtcNow - _lastEtaUpdate).TotalMilliseconds >= 2000)
-            {
-                UpdateEta(e, true);
-            }
-
-            UpdateSpeedometer(e.SeedsPerMillisecond, e.BatchesSearched);
-        }
-
-        private void UpdateEta(SearchProgressEventArgs e, bool recompute = false)
-        {
-            if (_etaText == null) return;
-            try
-            {
-                if (e.PercentComplete <= 0.000001 || e.PercentComplete >= 100.0)
-                {
-                    _etaText.Text = "--:--:--";
-                    _smoothedRemainingSeconds = -1;
-                    return;
-                }
-                var elapsed = DateTime.UtcNow - _searchStartTime;
-                double pct = e.PercentComplete / 100.0; // 0..1
-                var total = TimeSpan.FromTicks((long)(elapsed.Ticks / pct));
-                var remaining = total - elapsed;
-                if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-                if (recompute)
-                {
-                    double seconds = remaining.TotalSeconds;
-                    if (_smoothedRemainingSeconds < 0) _smoothedRemainingSeconds = seconds;
-                    else _smoothedRemainingSeconds = (_etaSmoothingFactor * seconds) + (1 - _etaSmoothingFactor) * _smoothedRemainingSeconds;
-                    _etaText.Text = FormatEta(TimeSpan.FromSeconds(_smoothedRemainingSeconds));
-                    _lastEtaUpdate = DateTime.UtcNow;
-                }
-            }
-            catch
-            {
-                _etaText.Text = "--:--:--";
-                _smoothedRemainingSeconds = -1;
-            }
-        }
-
-        private static string FormatEta(TimeSpan remaining)
-        {
-            if (remaining.TotalDays >= 1)
-            {
-                int d = (int)remaining.TotalDays;
-                int h = remaining.Hours;
-                return $"{d}d {h}h";
-            }
-            if (remaining.TotalHours >= 1)
-            {
-                int h = (int)remaining.TotalHours;
-                int m = remaining.Minutes;
-                return $"{h}h {m}m";
-            }
-            if (remaining.TotalMinutes >= 1)
-            {
-                int m = (int)remaining.TotalMinutes;
-                int s = remaining.Seconds;
-                return $"{m}m {s}s";
-            }
-            int sec = Math.Max(0, (int)Math.Round(remaining.TotalSeconds));
-            return sec + "s";
-        }
-
-    private void OnResultFound(object? sender, SearchResultEventArgs e)
-        {
-            // DuckDB handles the actual storage (via SearchInstance)
-            // We just update the counter - the timer will refresh the view
-            _newResultsCount++;
-            
-            // Add seed to console buffer for immediate feedback
-            if (e.Result != null)
-            {
-                // e.Result.TotalScore is the canonical property name in Models.SearchResult
-                _consoleBuffer.AddLine($"{e.Result.Seed},{e.Result.TotalScore}");
-                AddToConsole($"{e.Result.Seed},{e.Result.TotalScore}");
-            }
-
-            // Instant UI update for results count (no waiting for progress tick)
-            if (_resultsFoundText != null)
-            {
-                _resultsFoundText.Text = _newResultsCount.ToString();
-            }
-
-            // Update rarity immediately if we know total seeds
-            if (_totalSeeds > 0)
-            {
-                double rarityPercent = (_newResultsCount / (double)_totalSeeds) * 100.0;
-                UpdateRarityUI(rarityPercent, immediate:true);
-            }
-        }
 
         private void UpdateRarityUI(double rarityPercent, bool immediate = false)
         {
@@ -2078,8 +1901,6 @@ namespace BalatroSeedOracle.Views.Modals
                     UpdateTabStates(true);
                     
                     // Subscribe to events
-                    _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
-                    _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     
@@ -2159,8 +1980,6 @@ namespace BalatroSeedOracle.Views.Modals
                 if (_searchInstance != null)
                 {
                     // Subscribe to events
-                    _searchInstance.ProgressUpdated += OnSearchProgressUpdated;
-                    _searchInstance.ResultFound += OnResultFound;
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
 

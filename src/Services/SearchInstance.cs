@@ -48,23 +48,17 @@ namespace BalatroSeedOracle.Services
         private Task? _searchTask;
         private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
         
-    // Persistent DuckDB connection & appender for high throughput streaming inserts
+    // Persistent DuckDB connection for database operations
     private readonly DuckDBConnection _connection; // opened in ctor, never null after
-    private DuckDB.NET.Data.DuckDBAppender? _appender; // fastest row streaming API (REQUIRES our own synchronization)
-    private readonly object _appenderSync = new(); // guards _appender create/close and row appends
+    // Per-thread appenders - NO LOCKS NEEDED! Each thread gets its own appender instance
+    private static readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender = new();
     // Track last successful manual flush (for diagnostics only)
     private DateTime _lastAppenderFlush = DateTime.UtcNow;
     // Fast in-memory duplicate filter (only stores successful inserts). Assumes result count << total search space.
     private readonly HashSet<string> _seenSeeds = new HashSet<string>(StringComparer.Ordinal);
-    // Track rows added since last flush for periodic flushing
-    private int _rowsSinceFlush = 0;
-    private const int FLUSH_EVERY_N_ROWS = 100; // Flush every 100 rows for responsive UI
         
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
-        #pragma warning disable CS0414
-        private ulong _lastSavedBatch = 0;
-        #pragma warning restore CS0414
         private DateTime _lastStateSave = DateTime.UtcNow;
 
         // Properties
@@ -113,10 +107,6 @@ namespace BalatroSeedOracle.Services
         // Events for UI integration
         public event EventHandler? SearchStarted;
         public event EventHandler? SearchCompleted;
-        #pragma warning disable CS0067
-        public event EventHandler<SearchProgressEventArgs>? ProgressUpdated;
-        #pragma warning restore CS0067
-        public event EventHandler<SearchResultEventArgs>? ResultFound; // Keep for compatibility but rarely used
 
         public SearchInstance(string searchId, string dbPath)
         {
@@ -224,8 +214,7 @@ namespace BalatroSeedOracle.Services
                     createMeta.CommandText = "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )";
                     createMeta.ExecuteNonQuery();
                 }
-                _appender?.Dispose();
-                _appender = _connection.CreateAppender("results");
+                // Appenders created per-thread as needed - no global appender!
                 // Preload existing seeds for fast duplicate suppression (resume scenarios)
                 try
                 {
@@ -256,109 +245,62 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        // Explicit flush of the native appender so queries see latest rows.
-        // Safe to call frequently; only does work if appender exists.
-        private void CloseAppender()
-        {
-            lock (_appenderSync)
-            {
-                if (_appender == null) return;
-                try
-                {
-                    // Close finalizes the appender (native duckdb_appender_close) without destroying table
-                    var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    closeMethod?.Invoke(_appender, null);
-                    _lastAppenderFlush = DateTime.UtcNow;
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"CloseAppender failed: {ex.Message}");
-                }
-            }
-        }
-
-        // Force a flush so queries see latest rows without stopping search
+        // Force flush all thread-local appenders to make data visible for queries
         public void ForceFlush()
         {
-            lock (_appenderSync)
+            try
             {
-                if (_appender == null) return;
-                try
+                // Flush this thread's appender if it exists
+                var appender = _threadAppender.Value;
+                if (appender != null)
                 {
-                    // Close & recreate inside same lock so no concurrent row writes see a disposed appender
-                    var old = _appender;
-                    CloseAppender(); // will re-lock but is quick; could refactor to internal variant if needed
-                    _appender = _connection.CreateAppender("results");
-                    _rowsSinceFlush = 0; // Reset the counter after flush
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", "ForceFlush executed (appender recycled)");
+                    var closeMethod = appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    closeMethod?.Invoke(appender, null);
+                    // Recreate appender for continued use
+                    _threadAppender.Value = _connection.CreateAppender("results");
+                    _lastAppenderFlush = DateTime.UtcNow;
                 }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"ForceFlush failed: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"ForceFlush failed: {ex.Message}");
             }
         }
 
         private void AddSearchResult(SearchResult result)
         {
             if (!_dbInitialized) return;
+            
             try
             {
-                // Duplicate suppression outside lock (fast path) – BUT we must re-check inside lock to avoid race if ForceFlush resets seed set (currently it doesn't).
-                if (!_seenSeeds.Add(result.Seed)) return;
-
-                lock (_appenderSync)
+                // Get or create thread-local appender - NO LOCKS!
+                var appender = _threadAppender.Value;
+                if (appender == null)
                 {
-                    if (_appender == null) return; // search shutting down
-                    var row = _appender.CreateRow();
-                    row.AppendValue(result.Seed).AppendValue(result.TotalScore);
-                    int tallyCount = _columnNames.Count - 2;
-                    for (int i = 0; i < tallyCount; i++)
-                    {
-                        int val = (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
-                        row.AppendValue(val);
-                    }
-                    row.EndRow();
-                    
-                    // Increment counter and check if we need to flush
-                    _rowsSinceFlush++;
-                    if (_rowsSinceFlush >= FLUSH_EVERY_N_ROWS)
-                    {
-                        // Time to flush for responsive UI
-                        _rowsSinceFlush = 0;
-                        // Don't call ForceFlush here as it would deadlock (we're inside _appenderSync lock)
-                        // Instead, close and recreate the appender inline
-                        try
-                        {
-                            var closeMethod = _appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                            closeMethod?.Invoke(_appender, null);
-                            _appender = _connection.CreateAppender("results");
-                            _lastAppenderFlush = DateTime.UtcNow;
-                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Auto-flushed after {FLUSH_EVERY_N_ROWS} rows");
-                        }
-                        catch (Exception flushEx)
-                        {
-                            DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Auto-flush failed: {flushEx.Message}");
-                        }
-                    }
+                    appender = _connection.CreateAppender("results");
+                    _threadAppender.Value = appender;
                 }
+                
+                // Simple appender usage - NO LOCKS!
+                var row = appender.CreateRow();
+                row.AppendValue(result.Seed).AppendValue(result.TotalScore);
+                
+                int tallyCount = _columnNames.Count - 2;
+                for (int i = 0; i < tallyCount; i++)
+                {
+                    int val = (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
+                    row.AppendValue(val);
+                }
+                row.EndRow();
             }
             catch (Exception ex)
             {
-                string msg = ex.ToString();
-                if (msg.Contains("Duplicate key") || msg.Contains("violates primary key"))
+                // DuckDB PRIMARY KEY handles duplicates automatically
+                if (!ex.Message.Contains("PRIMARY KEY") && !ex.Message.Contains("Duplicate key"))
                 {
-                    // Silently ignore - duplicates are already filtered by _seenSeeds HashSet
-                    // This can happen when auto-cutoff increases and reprocesses batches
-                    return;
-                }
-                else
-                {
-                    // SILENCE - Don't spam console with threading errors
-                    // DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to add result: {ex.Message}");
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Insert failed: {ex.Message}");
                 }
             }
-            return;
         }
 
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetResultsPageAsync(int offset, int limit)
@@ -507,20 +449,12 @@ namespace BalatroSeedOracle.Services
                 if (!_dbInitialized) return 0;
                 var count = await GetResultCountAsync();
                 if (count == 0) return 0;
+                
+                // Use DuckDB native CSV export - MUCH faster and simpler!
                 using var cmd = _connection.CreateCommand();
-                cmd.CommandText = "SELECT * FROM results ORDER BY score DESC";
-                using var reader = await cmd.ExecuteReaderAsync();
-                using var writer = new StreamWriter(filePath);
-                await writer.WriteLineAsync(string.Join(",", _columnNames));
-                while (await reader.ReadAsync())
-                {
-                    var values = new string[_columnNames.Count];
-                    for (int i = 0; i < _columnNames.Count && i < reader.FieldCount; i++)
-                    {
-                        values[i] = reader.IsDBNull(i) ? string.Empty : reader.GetValue(i)?.ToString() ?? string.Empty;
-                    }
-                    await writer.WriteLineAsync(string.Join(",", values));
-                }
+                cmd.CommandText = $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{filePath.Replace("'", "''")}' (HEADER true, DELIMITER ',')";
+                await cmd.ExecuteNonQueryAsync();
+                
                 return count;
             }
             catch (Exception ex)
@@ -590,6 +524,27 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
+                // Check if filter file was modified since last search
+                if (File.Exists(_dbPath) && File.Exists(configPath))
+                {
+                    var filterModified = File.GetLastWriteTimeUtc(configPath);
+                    var dbModified = File.GetLastWriteTimeUtc(_dbPath);
+                    
+                    if (filterModified > dbModified)
+                    {
+                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Filter modified since last search - invalidating database");
+                        try
+                        {
+                            File.Delete(_dbPath);
+                            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Deleted outdated database: {_dbPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to delete outdated database: {ex.Message}");
+                        }
+                    }
+                }
+                
                 // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
                 if (!Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var ouijaConfig))
                 {
@@ -863,14 +818,22 @@ namespace BalatroSeedOracle.Services
                 _preventStateSave = preventStateSave;
                 
 
-                // Close then dispose appender so buffered rows are committed
-                if (_appender != null)
+                // Flush and close thread-local appenders
+                try
                 {
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Closing DuckDB appender...");
-                    CloseAppender();
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", "Disposing DuckDB appender (finalizing buffered rows)...");
-                    _appender.Dispose();
-                    _appender = null;
+                    var appender = _threadAppender.Value;
+                    if (appender != null)
+                    {
+                        DebugLogger.Log($"SearchInstance[{_searchId}]", "Closing thread-local DuckDB appender...");
+                        var closeMethod = appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        closeMethod?.Invoke(appender, null);
+                        appender.Dispose();
+                        _threadAppender.Value = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error closing appenders: {ex.Message}");
                 }
                 
                 // Flush any pending search state to disk before stopping (unless prevented)
@@ -881,9 +844,6 @@ namespace BalatroSeedOracle.Services
 
                 // Force _isRunning to false IMMEDIATELY
                 _isRunning = false;
-                
-                // TODO: Fix cancellation API
-                // Motely.Filters.MotelyJsonFilterDesc.OuijaJsonFilter.IsCancelled = true;
 
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
@@ -947,6 +907,46 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        private Dictionary<FilterCategory, List<MotelyJsonConfig.MotleyJsonFilterClause>> GroupClausesByCategory(List<MotelyJsonConfig.MotleyJsonFilterClause> clauses)
+        {
+            // Early validation - no messy checks later
+            if (clauses == null || clauses.Count == 0)
+                return new Dictionary<FilterCategory, List<MotelyJsonConfig.MotleyJsonFilterClause>>();
+            
+            var clausesByCategory = new Dictionary<FilterCategory, List<MotelyJsonConfig.MotleyJsonFilterClause>>();
+            
+            foreach (var clause in clauses)
+            {
+                FilterCategory category = clause.ItemTypeEnum switch
+                {
+                    MotelyFilterItemType.SoulJoker => FilterCategory.SoulJoker,
+                    MotelyFilterItemType.Joker => FilterCategory.Joker,
+                    MotelyFilterItemType.Voucher => FilterCategory.Voucher,
+                    MotelyFilterItemType.TarotCard => FilterCategory.TarotCard,
+                    MotelyFilterItemType.PlanetCard => FilterCategory.PlanetCard,
+                    MotelyFilterItemType.SpectralCard => FilterCategory.SpectralCard,
+                    MotelyFilterItemType.PlayingCard => FilterCategory.PlayingCard,
+                    MotelyFilterItemType.SmallBlindTag or MotelyFilterItemType.BigBlindTag => FilterCategory.Tag,
+                    _ => throw new ArgumentException($"Unsupported filter item type: {clause.ItemTypeEnum}")
+                };
+                
+                if (!clausesByCategory.ContainsKey(category))
+                {
+                    clausesByCategory[category] = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                }
+                clausesByCategory[category].Add(clause);
+            }
+            
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Clause analysis: {clausesByCategory.Count} categories found");
+            foreach (var kvp in clausesByCategory)
+            {
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  {kvp.Key}: {kvp.Value.Count} clauses");
+            }
+            
+            return clausesByCategory;
+        }
+
+        // Removed - using shared SpecializedFilterFactory instead
 
         private async Task RunSearchInProcess(
             Motely.Filters.MotelyJsonConfig config,
@@ -984,49 +984,24 @@ namespace BalatroSeedOracle.Services
                     DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔧   Clause: Type={clause.Type}, Value={clause.Value}");
                 }
                 
-                var filterDesc = new Motely.Filters.MotelyJsonFilterDesc(FilterCategory.Mixed, allClauses);
+                // Group clauses by category for specialized vectorized filters
+                var clausesByCategory = GroupClausesByCategory(allClauses);
                 
-                // Create result callback
-                Action<MotelySeedScoreTally> onResultFound = (score) =>
+                if (clausesByCategory.Count == 0)
                 {
-                    var result = new SearchResult
-                    {
-                        Seed = score.Seed,
-                        TotalScore = score.Score,
-                        Scores = score.TallyColumns?.ToArray(),
-                        Labels = config.Should?.Select(s => s.Value ?? "Unknown").ToArray()
-                    };
-
-                    // Save directly to DuckDB (thread-safe, fast)
-                    AddSearchResult(result);
-                    
-                    // Increment result counter
-                    Interlocked.Increment(ref _resultCount);
-                    
-                    // Fire ResultFound event for UI counter updates (throttled to prevent spam)
-                    if (_resultCount % 50 == 0) // Every 50th result to avoid overwhelming UI
-                    {
-                        ResultFound?.Invoke(this, new SearchResultEventArgs { Result = result });
-                    }
-                    
-                    // Batched console output (every 10 results)
-                    if (_resultCount % 10 == 0)
-                    {
-                        lock (_recentSeedsLock)
-                        {
-                            _recentSeeds.Add($"{result.Seed}({result.TotalScore})");
-                            
-                            // Output batch every 50 seeds
-                            if (_recentSeeds.Count >= 5)
-                            {
-                                AddToConsole($"Found: {string.Join(", ", _recentSeeds)}");
-                                _recentSeeds.Clear();
-                            }
-                        }
-                    }
-                };
+                    throw new Exception("No valid clauses found for filtering");
+                }
                 
-                // Create scoring config (only SHOULD clauses for scoring)
+                // Create base filter with detected category
+                var categories = clausesByCategory.Keys.ToList();
+                var primaryCategory = categories[0];
+                var primaryClauses = clausesByCategory[primaryCategory];
+                
+                // Use shared SpecializedFilterFactory
+                var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(primaryCategory, primaryClauses);
+                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Optimized filter: {primaryCategory} with {primaryClauses.Count} clauses");
+                
+                // Create scoring config (only SHOULD clauses for scoring)  
                 var scoringConfig = new MotelyJsonConfig
                 {
                     Name = config.Name,
@@ -1035,26 +1010,37 @@ namespace BalatroSeedOracle.Services
                     MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
                 };
                 
-                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, onResultFound, false);
+                Action<MotelySeedScoreTally> dummyCallback = _ => { }; // Empty callback for interface
+                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, dummyCallback, false);
                 
-                var searchSettings = new MotelySearchSettings<MotelyJsonFilterDesc.MotelyFilter>(filterDesc)
+                // Use interface approach for specialized filter compatibility
+                var searchSettings = Motely.Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
+                    .WithThreadCount(criteria.ThreadCount)
+                    .WithBatchCharacterCount(criteria.BatchSize)
+                    .WithStartBatchIndex((long)criteria.StartBatch)
+                    .WithEndBatchIndex((long)criteria.EndBatch)
+                    .WithSeedScoreProvider(scoreDesc);
+                    
+                
+                // Chain additional specialized filters for remaining categories
+                for (int i = 1; i < categories.Count; i++)
                 {
-                    ThreadCount = criteria.ThreadCount,
-                    StartBatchIndex = (long)criteria.StartBatch,
-                    EndBatchIndex = (long)criteria.EndBatch,
-                    Mode = MotelySearchMode.Sequential,
-                    SeedScoreDesc = scoreDesc
-                };
+                    var category = categories[i];
+                    var clauses = clausesByCategory[category];
+                    var additionalFilter = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(category, clauses);
+                    searchSettings.WithAdditionalFilter(additionalFilter);
+
+                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Chained filter: {category} with {clauses.Count} clauses");
+                }
                 
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Starting search with {criteria.ThreadCount} threads");
                 
-                _currentSearch = new MotelySearch<MotelyJsonFilterDesc.MotelyFilter>(searchSettings);
+                // Create search with specialized filters
+                var search = searchSettings.Start();
+                _currentSearch = search;
                 
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 MotelySearch created, initial status: {_currentSearch.Status}");
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search settings: Threads={searchSettings.ThreadCount}, StartBatch={searchSettings.StartBatchIndex}, EndBatch={searchSettings.EndBatchIndex}");
-                
-                // Start the search!
-                _currentSearch.Start();
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Specialized search created with {primaryCategory} filter");
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}");
                 DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search started! New status: {_currentSearch.Status}");
                 
                 // Wait for search completion
@@ -1164,11 +1150,16 @@ namespace BalatroSeedOracle.Services
             _cancellationTokenSource?.Dispose();
             
             
-            // Dispose prepared command & connection
+            // Dispose thread-local appenders and connection
             try
             {
-                _appender?.Dispose();
-                _appender = null;
+                var appender = _threadAppender.Value;
+                if (appender != null)
+                {
+                    appender.Dispose();
+                    _threadAppender.Value = null;
+                }
+                _threadAppender.Dispose(); // Dispose the ThreadLocal itself
                 _connection.Dispose();
             }
             catch { }

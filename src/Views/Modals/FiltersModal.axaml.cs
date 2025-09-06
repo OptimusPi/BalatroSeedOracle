@@ -797,35 +797,59 @@ namespace BalatroSeedOracle.Views.Modals
                     return;
                 }
 
-                var testCriteria = new SearchCriteria
-                {
-                    MaxSeeds = 1000, // Test with just 1000 seeds
-                    ThreadCount = 1,
-                    Deck = "Red",
-                    Stake = "White",
-                    ConfigPath = _currentFilterPath
-                };
-
-                // Load the config for testing
+                if (testStatusText != null) testStatusText.Text = "🔍 Testing filter...";
+                if (loadingSpinner != null) loadingSpinner.IsVisible = true;
+                
+                // Load the config first for testing
                 if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(_currentFilterPath, out var config))
                 {
+                    var testCriteria = new SearchCriteria
+                    {
+                        BatchSize = 1,
+                        StartBatch = 0,
+                        EndBatch = 1000, // Test 1000 batches for quick validation
+                        ThreadCount = 1,
+                        Deck = config?.Deck ?? "Red", 
+                        Stake = config?.Stake ?? "White",
+                        ConfigPath = _currentFilterPath,
+                        MinScore = 0
+                    };
+                    
+                    if (testStatusText != null) testStatusText.Text = "✓ Config loaded, starting search...";
+                    
                     var searchInstance = await searchManager.StartSearchAsync(testCriteria, config);
                     
-                    // Wait a few seconds for at least one result
-                    await Task.Delay(3000);
-                    
-                    var results = searchInstance.Results;
-                    if (results?.Count > 0)
+                    // Better progress tracking - check multiple times
+                    for (int i = 0; i < 30; i++) // Check for up to 30 seconds
                     {
-                        if (testStatusText != null) testStatusText.Text = $"✓ Filter working! Found {results.Count} result(s)";
-                        if (loadingSpinner != null) loadingSpinner.IsVisible = false;
-                        if (successCheckmark != null) successCheckmark.IsVisible = true;
-                    }
-                    else
-                    {
-                        if (testStatusText != null) testStatusText.Text = "No results found in test sample";
-                        if (loadingSpinner != null) loadingSpinner.IsVisible = false;
-                        if (errorDisplay != null) errorDisplay.IsVisible = true;
+                        await Task.Delay(1000);
+                        
+                        var results = searchInstance.Results;
+                        var isComplete = !searchInstance.IsRunning;
+                        
+                        if (results?.Count > 0)
+                        {
+                            // Show preview of actual results
+                            var preview = string.Join(", ", results.Take(3).Select(r => r.Seed));
+                            if (results.Count > 3) preview += "...";
+                            
+                            if (testStatusText != null) testStatusText.Text = $"✅ Working! Found {results.Count} result(s): {preview}";
+                            if (loadingSpinner != null) loadingSpinner.IsVisible = false;
+                            if (successCheckmark != null) successCheckmark.IsVisible = true;
+                            break;
+                        }
+                        else if (isComplete)
+                        {
+                            if (testStatusText != null) testStatusText.Text = "⚠️ No results found - filter may be too restrictive";
+                            if (loadingSpinner != null) loadingSpinner.IsVisible = false;
+                            if (errorDisplay != null) errorDisplay.IsVisible = true;
+                            break;
+                        }
+                        else
+                        {
+                            // Show progress
+                            if (testStatusText != null) testStatusText.Text = $"🔍 Testing... ({i + 1}/30s)";
+                        }
                     }
                     
                     // Stop the test search
@@ -2266,7 +2290,7 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                 }
 
-                _currentFilePath = configPath;
+                _currentFilterPath = configPath;
 
                 // Format the JSON for better readability
                 await Dispatcher.UIThread.InvokeAsync(
@@ -4487,7 +4511,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void AddItemFromJson(JsonElement item, List<string> targetSet)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"🔍 Processing JSON item: {item}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"🔍 Processing JSON item: {item}");
             
             if (
                 (item.TryGetProperty("type", out var typeElement) || item.TryGetProperty("Type", out typeElement))
@@ -4496,7 +4520,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var type = typeElement.GetString();
                 var value = valueElement.GetString();
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"🔍 Extracted - type: '{type}', value: '{value}'");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"🔍 Extracted - type: '{type}', value: '{value}'");
 
                 if (!string.IsNullOrEmpty(type) && !string.IsNullOrEmpty(value))
                 {
@@ -4511,27 +4535,27 @@ namespace BalatroSeedOracle.Views.Modals
                         _ => null,
                     };
 
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"🔍 Mapped category: '{category}'");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"🔍 Mapped category: '{category}'");
 
                     if (category != null)
                     {
                         var key = $"{category}:{value}";
                         targetSet.Add(key);
-                        BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"✅ Added to targetSet: '{key}', targetSet.Count now = {targetSet.Count}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"✅ Added to targetSet: '{key}', targetSet.Count now = {targetSet.Count}");
                     }
                     else
                     {
-                        BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"❌ Unknown type '{type}', item skipped");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Unknown type '{type}', item skipped");
                     }
                 }
                 else
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"❌ Type or value is null/empty");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Type or value is null/empty");
                 }
             }
             else
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("AddItemFromJson", $"❌ Failed to get type/value properties from JSON item");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Failed to get type/value properties from JSON item");
             }
         }
 
@@ -8313,6 +8337,38 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
+        private void OnGoToSearchClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Find the main menu to switch modals
+                var parent = this.Parent;
+                while (parent != null && parent is not Views.BalatroMainMenu)
+                {
+                    parent = (parent as Control)?.Parent;
+                }
+
+                if (parent is Views.BalatroMainMenu mainMenu)
+                {
+                    // Hide current filter modal
+                    mainMenu.HideModalContent();
+                    
+                    // Open search modal 
+                    var searchContent = new Views.Modals.SearchModal();
+                    
+                    // Show the search modal
+                    var modal = new Views.Modals.StandardModal("SEARCH");
+                    modal.SetContent(searchContent);
+                    modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
+                    mainMenu.ShowModalContent(modal, "SEARCH");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Failed to open search modal: {ex.Message}");
+            }
+        }
+
         private async void OnExportClick(object? sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_currentFilterPath))

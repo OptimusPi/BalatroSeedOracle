@@ -564,11 +564,11 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>  <!-- 2/3 for deck/stake selector -->
                     <ColumnDefinition Width="20"/> <!-- Spacer -->
-                    <ColumnDefinition Width="*"/>   <!-- 1/3 for explanation -->
+                    <ColumnDefinition Width="*" MinWidth="320"/>   <!-- Info box - 20px wider -->
                 </Grid.ColumnDefinitions>
                 
                 <!-- Left: Deck and Stake Selection -->
-                <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0,0,0">
                     <components:DeckAndStakeSelector Name="PreferredDeckSelector" 
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"/>
@@ -588,10 +588,10 @@
                                    HorizontalAlignment="Center"/>
                         
                         <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
+                                   FontSize="13"
                                    Foreground="{StaticResource TextLight}"
                                    TextWrapping="Wrap"
-                                   LineHeight="16">
+                                   LineHeight="17">
                             <Run Text="Set your preferred deck, or just pick Red Deck with White Stake."/><LineBreak/><LineBreak/>
                             <Run Text="There may be unintended consequences of selecting a deck. For example, if searching for Spectral Items, you need to select Ghost Deck if you intend to search the shop slots, instead of booster packs."/><LineBreak/><LineBreak/>
                             <Run Text="Other things such as stickers of course; please set Black Stake or higher if you intend to filter Jokers for &quot;Eternal&quot; sticker, for example."/><LineBreak/><LineBreak/>
@@ -807,6 +807,8 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="8"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
                                     <Button Grid.Column="0"
@@ -824,6 +826,15 @@
                                             Height="40"
                                             FontSize="16"
                                             Click="OnExportClick"/>
+                                            
+                                    <Button Grid.Column="4"
+                                            Name="GoToSearchButton"
+                                            Content="Go to Search Modal"
+                                            Classes="btn-blue"
+                                            Height="40"
+                                            FontSize="16"
+                                            IsEnabled="True"
+                                            Click="OnGoToSearchClick"/>
                                 </Grid>
                             </Grid>
                             

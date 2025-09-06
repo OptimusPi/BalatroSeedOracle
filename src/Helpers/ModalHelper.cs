@@ -70,8 +70,18 @@ namespace BalatroSeedOracle.Helpers
                 {
                     // Just set the filter path immediately so it's ready when user clicks Cook
                     searchContent.SetCurrentFilterPath(configPath);
-                    // Also load it async for the UI
-                    _ = searchContent.LoadFilterAsync(configPath);
+                    // Load filter async and THEN navigate to search tab
+                    _ = Task.Run(async () =>
+                    {
+                        await searchContent.LoadFilterAsync(configPath);
+                        // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
+                        Dispatcher.UIThread.Post(() => searchContent.GoToSearchTab());
+                    });
+                }
+                else
+                {
+                    // No filter to load, go to search tab immediately
+                    searchContent.GoToSearchTab();
                 }
                 return menu.ShowModal("MOTELY SEARCH", searchContent);
             }
@@ -114,6 +124,9 @@ namespace BalatroSeedOracle.Helpers
         public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu)
         {
             var searchModal = new SearchModal();
+            
+            // AUTO-NAVIGATE: Take user directly to search tab!
+            searchModal.GoToSearchTab();
         
             // Handle desktop icon creation when modal closes with active search
             searchModal.CreateShortcutRequested += (sender, configPath) => 
@@ -146,6 +159,9 @@ namespace BalatroSeedOracle.Helpers
         
             // Set the search ID so the modal can reconnect
             searchModal.SetSearchInstance(searchId);
+            
+            // AUTO-NAVIGATE: Take user directly to search tab after connection!
+            Dispatcher.UIThread.Post(() => searchModal.GoToSearchTab());
         
             // Handle desktop icon creation when modal closes with active search
             searchModal.CreateShortcutRequested += (sender, cfgPath) => 
