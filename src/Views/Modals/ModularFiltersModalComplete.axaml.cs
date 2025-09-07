@@ -14,7 +14,7 @@ namespace BalatroSeedOracle.Views.Modals
     /// Components:
     /// - VisualBuilderTab: Your sophisticated drag/drop functionality  
     /// - JsonEditorTab: JSON editor with syntax highlighting
-    /// - SaveFilterTab: Save/export with your complete BuildOuijaConfig logic
+    /// - SaveFilterTab: Save/export with your complete BuildMotelyJsonConfig logic
     /// - LoadFilterTab: Filter browsing and loading
     /// 
     /// Each component: ~50 lines code-behind, focused ViewModel, proper data binding

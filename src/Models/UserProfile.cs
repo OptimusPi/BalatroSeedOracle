@@ -9,9 +9,9 @@ namespace BalatroSeedOracle.Models
     public class UserProfile
     {
         /// <summary>
-        /// The author name (defaults to "pifreak")
+        /// The author name (defaults to "Jimbo")
         /// </summary>
-        public string AuthorName { get; set; } = "pifreak";
+        public string AuthorName { get; set; } = "Jimbo";
 
         /// <summary>
         /// SearchWidget removed - using desktop icons now

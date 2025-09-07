@@ -23,7 +23,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _searchFilter = "";
         private string _currentActiveTab = "Visual";
         private string? _currentFilterPath;
-        private MotelyJsonConfig? _loadedConfig;
+        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
         private string _filterName = "";
         private string _filterDescription = "";
 
@@ -81,7 +81,7 @@ namespace BalatroSeedOracle.ViewModels
             set => SetProperty(ref _currentFilterPath, value);
         }
 
-        public MotelyJsonConfig? LoadedConfig
+        public Motely.Filters.MotelyJsonConfig? LoadedConfig
         {
             get => _loadedConfig;
             set => SetProperty(ref _loadedConfig, value);
@@ -235,7 +235,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 DebugLogger.Log("FiltersModalViewModel", $"Reloading visual from file: {CurrentFilterPath}");
 
-                var config = await _configurationService.LoadFilterAsync<MotelyJsonConfig>(CurrentFilterPath);
+                var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(CurrentFilterPath);
                 if (config != null)
                 {
                     LoadConfigIntoState(config);
@@ -286,9 +286,9 @@ namespace BalatroSeedOracle.ViewModels
             };
         }
 
-        private MotelyJsonConfig BuildConfigFromCurrentState()
+        private Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            var config = new MotelyJsonConfig();
+            var config = new Motely.Filters.MotelyJsonConfig();
             
             // Build configuration from current selections and item configs
             // This would need to be implemented based on the existing logic
@@ -296,7 +296,7 @@ namespace BalatroSeedOracle.ViewModels
             return config;
         }
 
-        private void LoadConfigIntoState(MotelyJsonConfig config)
+        private void LoadConfigIntoState(Motely.Filters.MotelyJsonConfig config)
         {
             // Clear current state
             ClearAllSelections();

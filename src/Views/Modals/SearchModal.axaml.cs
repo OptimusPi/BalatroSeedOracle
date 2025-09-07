@@ -1974,7 +1974,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // Unsubscribe from any previous search events
                 UnsubscribeFromSearchEvents();
                 
-                _currentSearchId = _searchManager.CreateSearch();
+                _currentSearchId = _searchManager.CreateSearch("unknown", "Red", "White");
                 _searchInstance = _searchManager.GetSearch(_currentSearchId);
 
                 if (_searchInstance != null)

@@ -26,14 +26,19 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Creates a new search instance
         /// </summary>
+        /// <param name="filterNameNormalized">The normalized filter name</param>
+        /// <param name="deckName">The deck name</param>
+        /// <param name="stakeName">The stake name</param>
         /// <returns>The unique ID of the created search</returns>
-        public string CreateSearch()
+        /// <remark>Search results may be invalidated by filter columns, deck and stake selection.</remarks>
+        public string CreateSearch(string filterNameNormalized, string deckName, string stakeName)
         {
-            var searchId = Guid.NewGuid().ToString();
+            var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
+    
             // Preallocate a database file path so SearchInstance always has a connection string
             var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
             System.IO.Directory.CreateDirectory(searchResultsDir);
-            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.duckdb");
+            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
             var searchInstance = new SearchInstance(searchId, dbPath);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
@@ -57,6 +62,17 @@ namespace BalatroSeedOracle.Services
                 return search;
             }
             return null;
+        }
+        
+        /// <summary>
+        /// Gets an existing search instance
+        /// </summary>
+        /// <param name="searchId">The ID of the search to retrieve</param>
+        /// <returns>The search instance if found, null otherwise</returns>
+        public SearchInstance? GetSearch(string filterNameNormalized, string deckName, string stakeName)
+        {
+            var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
+            return GetSearch(searchId);
         }
 
         /// <summary>
@@ -96,9 +112,10 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Starts a new search with the given criteria and config
         /// </summary>
-        public async Task<SearchInstance> StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
+        public async Task<SearchInstance> StartSearchAsync(SearchCriteria criteria, Motely.Filters.MotelyJsonConfig config)
         {
-            var searchId = CreateSearch();
+            var filterId = config.Name?.Replace(" ", "_") ?? "unknown";
+            var searchId = $"{filterId}_{criteria.Deck}_{criteria.Stake}";
             var searchInstance = GetSearch(searchId);
             
             if (searchInstance == null)

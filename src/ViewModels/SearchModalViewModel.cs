@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.ViewModels
         private SearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
-        private MotelyJsonConfig? _loadedConfig;
+        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
         private string _currentActiveTab = "FilterTab";
         private SearchProgressEventArgs? _latestProgress;
         private int _lastKnownResultCount = 0;
@@ -64,7 +64,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        public MotelyJsonConfig? LoadedConfig
+        public Motely.Filters.MotelyJsonConfig? LoadedConfig
         {
             get => _loadedConfig;
             set => SetProperty(ref _loadedConfig, value);
@@ -262,7 +262,6 @@ namespace BalatroSeedOracle.ViewModels
         {
             return new SearchCriteria
             {
-                MaxSeeds = (ulong)MaxResults,
                 ThreadCount = Environment.ProcessorCount,
                 Deck = DeckSelection == "All Decks" ? null : DeckSelection,
                 Stake = StakeSelection == "All Stakes" ? null : StakeSelection

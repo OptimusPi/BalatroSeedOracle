@@ -9,7 +9,6 @@ public class SearchCriteria
 {
     public string? ConfigPath { get; set; }
     public int ThreadCount { get; set; } = Environment.ProcessorCount;
-    public ulong MaxSeeds { get; set; } = 2251875390625; // Search all seeds by default
     public int MinScore { get; set; } = 0;
     public int BatchSize { get; set; } = 2; // Default batch size to 2 digits, 35^2 seeds.
     public ulong StartBatch { get; set; } = 0;

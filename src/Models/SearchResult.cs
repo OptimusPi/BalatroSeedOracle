@@ -1,7 +1,7 @@
 namespace BalatroSeedOracle.Models;
 
 /// <summary>
-/// Represents a single search result from Motely
+/// Represents a single search result from MotelyJson
 /// </summary>
 public class SearchResult
 {

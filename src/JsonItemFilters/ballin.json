@@ -1,0 +1,12 @@
+{
+  "name": "ballin",
+  "description": "shot callin",
+  "author": "pifreak",
+  "dateCreated": "2025-09-02T19:02:19.0733579Z",
+  "must": [],
+  "should": [],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

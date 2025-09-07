@@ -358,9 +358,9 @@ namespace BalatroSeedOracle.ViewModels
             AvailableTags.Add(new FilterItem { Name = "Boss Tag", Type = "BigBlindTag" });
         }
 
-        private MotelyJsonConfig BuildConfigFromSelections()
+        private Motely.Filters.MotelyJsonConfig BuildConfigFromSelections()
         {
-            var config = new MotelyJsonConfig
+            var config = new Motely.Filters.MotelyJsonConfig
             {
                 Name = FilterName,
                 Description = FilterDescription,
@@ -389,9 +389,9 @@ namespace BalatroSeedOracle.ViewModels
             return config;
         }
 
-        private MotelyJsonConfig.MotleyJsonFilterClause CreateClauseFromItem(FilterItem item)
+        private Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause CreateClauseFromItem(FilterItem item)
         {
-            return new MotelyJsonConfig.MotleyJsonFilterClause
+            return new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Type = item.Type,
                 Value = item.Name,

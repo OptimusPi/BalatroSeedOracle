@@ -51,7 +51,7 @@ public partial class MainWindow : Window
             {
                 DebugLogger.Log("MainWindow", "Starting cleanup");
 
-                // CRITICAL: First ensure any running search state is saved
+                // First ensure any running search state is saved
                 var userProfileService = BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
                 if (userProfileService != null)
                 {
@@ -59,7 +59,7 @@ public partial class MainWindow : Window
                     userProfileService.FlushProfile();
                 }
                 
-                // CRITICAL: Stop any running Motely searches first
+                // Stop any running Motely searches first
                 if (_mainMenu != null)
                 {
                     DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");

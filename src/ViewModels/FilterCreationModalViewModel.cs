@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (config != null)
                 {
                     // Validation successful
-                    ImportStatusIcon = "✅";
+                    ImportStatusIcon = "";
                     ImportSuccess = true;
                     DebugLogger.Log("FilterCreationModalViewModel", $"Successfully imported filter: {config.Name ?? "Unnamed"}");
                     FilterImported?.Invoke(this, filePath);
@@ -124,7 +124,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ShowImportError(string errorMessage)
         {
-            ImportStatusIcon = "❌";
+            ImportStatusIcon = "";
             ImportSuccess = false;
             
             // Log error - View can handle showing user dialog if needed

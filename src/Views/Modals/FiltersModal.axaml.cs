@@ -817,7 +817,7 @@ namespace BalatroSeedOracle.Views.Modals
                     
                     if (testStatusText != null) testStatusText.Text = "✓ Config loaded, starting search...";
                     
-                    var searchInstance = await searchManager.StartSearchAsync(testCriteria, config);
+                    var searchInstance = await searchManager.StartSearchAsync(testCriteria, config!);
                     
                     // Better progress tracking - check multiple times
                     for (int i = 0; i < 30; i++) // Check for up to 30 seconds
@@ -833,7 +833,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var preview = string.Join(", ", results.Take(3).Select(r => r.Seed));
                             if (results.Count > 3) preview += "...";
                             
-                            if (testStatusText != null) testStatusText.Text = $"✅ Working! Found {results.Count} result(s): {preview}";
+                            if (testStatusText != null) testStatusText.Text = $" Working! Found {results.Count} result(s): {preview}";
                             if (loadingSpinner != null) loadingSpinner.IsVisible = false;
                             if (successCheckmark != null) successCheckmark.IsVisible = true;
                             break;
@@ -930,8 +930,8 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var filterName = filterNameInput.Text.Trim();
 
-                // Build the OuijaConfig from current selections
-                var config = BuildOuijaConfigFromSelections();
+                // Build the MotelyJsonConfig from current selections
+                var config = BuildMotelyJsonConfigFromSelections();
                 
                 // Get author from user profile
                 var userProfileService = ServiceHelper.GetService<UserProfileService>();
@@ -959,9 +959,9 @@ namespace BalatroSeedOracle.Views.Modals
                 }
 
                 // Write the JSON file using the proper serializer
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 
-                // Replace the empty name and description (dateCreated is already handled by SerializeOuijaConfig)
+                // Replace the empty name and description (dateCreated is already handled by SerializeMotelyJsonConfig)
                 json = json.Replace("\"name\": \"\"", $"\"name\": \"{filterName}\"");
                 json = json.Replace("\"description\": \"\"", $"\"description\": \"{description}\"");
                 
@@ -1404,7 +1404,7 @@ namespace BalatroSeedOracle.Views.Modals
                     e.Handled = true;
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
-                        $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to NEEDS"
+                        $" Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to NEEDS"
                     );
                     return;
                 }
@@ -1458,7 +1458,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
-                                    $"✅ Added set '{itemName}' ({setItems.Length} items) to NEEDS"
+                                    $" Added set '{itemName}' ({setItems.Length} items) to NEEDS"
                                 );
                             }
                         }
@@ -1474,7 +1474,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to NEEDS with key: {key}"
+                                $" Added {itemName} to NEEDS with key: {key}"
                             );
                         }
 
@@ -1544,7 +1544,7 @@ namespace BalatroSeedOracle.Views.Modals
                     e.Handled = true;
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
-                        $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to WANTS"
+                        $" Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to WANTS"
                     );
                     return;
                 }
@@ -1598,7 +1598,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
-                                    $"✅ Added set '{itemName}' ({setItems.Length} items) to WANTS"
+                                    $" Added set '{itemName}' ({setItems.Length} items) to WANTS"
                                 );
                             }
                         }
@@ -1614,7 +1614,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to WANTS"
+                                $" Added {itemName} to WANTS"
                             );
                         }
 
@@ -1762,10 +1762,10 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     else
                     {
-                        // Create OuijaConfig from current selections
-                        var config = BuildOuijaConfigFromSelections();
+                        // Create MotelyJsonConfig from current selections
+                        var config = BuildMotelyJsonConfigFromSelections();
                         // Use the same serialization method that properly handles sources
-                        json = SerializeOuijaConfig(config);
+                        json = SerializeMotelyJsonConfig(config);
                     }
                     
                     jsonEditor.Text = json;
@@ -1797,14 +1797,14 @@ namespace BalatroSeedOracle.Views.Modals
                 if (_selectedMust.Any() || _selectedShould.Any() || _selectedMustNot.Any())
                 {
                     // Build JSON from current selections
-                    var config = BuildOuijaConfigFromSelections();
-                    jsonContent = SerializeOuijaConfig(config);
+                    var config = BuildMotelyJsonConfigFromSelections();
+                    jsonContent = SerializeMotelyJsonConfig(config);
                     BalatroSeedOracle.Helpers.DebugLogger.Log("Using JSON built from current selections");
                 }
                 else
                 {
                     // Use default example JSON only if no selections exist
-                    jsonContent = GetDefaultOuijaConfigJson();
+                    jsonContent = GetDefaultMotelyJsonConfigJson();
                     BalatroSeedOracle.Helpers.DebugLogger.Log("Using default example JSON (no selections)");
                 }
 
@@ -2263,7 +2263,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 if (!File.Exists(configPath))
                 {
-                    UpdateStatus($"❌ File not found: {configPath}", isError: true);
+                    UpdateStatus($" File not found: {configPath}", isError: true);
                     return;
                 }
 
@@ -2302,11 +2302,11 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (JsonException ex)
             {
-                UpdateStatus($"❌ Invalid JSON file: {ex.Message}", isError: true);
+                UpdateStatus($" Invalid JSON file: {ex.Message}", isError: true);
             }
             catch (Exception ex)
             {
-                UpdateStatus($"❌ Error loading file: {ex.Message}", isError: true);
+                UpdateStatus($" Error loading file: {ex.Message}", isError: true);
             }
         }
 
@@ -2317,7 +2317,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel?.StorageProvider == null)
                 {
-                    UpdateStatus("❌ Cannot access file system", isError: true);
+                    UpdateStatus(" Cannot access file system", isError: true);
                     return;
                 }
 
@@ -2342,7 +2342,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                UpdateStatus($"❌ File picker error: {ex.Message}", isError: true);
+                UpdateStatus($" File picker error: {ex.Message}", isError: true);
             }
         }
 
@@ -3737,12 +3737,12 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (JsonException ex)
             {
-                UpdateStatus($"❌ JSON Error: {ex.Message}", isError: true);
+                UpdateStatus($" JSON Error: {ex.Message}", isError: true);
                 return false;
             }
             catch (Exception ex)
             {
-                UpdateStatus($"❌ Validation error: {ex.Message}", isError: true);
+                UpdateStatus($" Validation error: {ex.Message}", isError: true);
                 return false;
             }
         }
@@ -3765,7 +3765,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 using var jsonDocument = JsonDocument.Parse(jsonText);
 
-                // Check for proper OuijaConfig structure
+                // Check for proper MotelyJsonConfig structure
                 bool hasValidStructure = jsonDocument.RootElement.TryGetProperty("must", out _) ||
                                         jsonDocument.RootElement.TryGetProperty("should", out _) ||
                                         jsonDocument.RootElement.TryGetProperty("mustNot", out _);
@@ -3782,12 +3782,12 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (JsonException ex)
             {
-                UpdateStatus($"❌ JSON Error: {ex.Message}", isError: true);
+                UpdateStatus($" JSON Error: {ex.Message}", isError: true);
                 return false;
             }
             catch (Exception ex)
             {
-                UpdateStatus($"❌ Validation error: {ex.Message}", isError: true);
+                UpdateStatus($" Validation error: {ex.Message}", isError: true);
                 return false;
             }
         }
@@ -3803,7 +3803,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 if (string.IsNullOrWhiteSpace(textBox.Text))
                 {
-                    UpdateStatus("❌ Cannot format: Empty or null JSON", isError: true);
+                    UpdateStatus(" Cannot format: Empty or null JSON", isError: true);
                     return;
                 }
 
@@ -3822,7 +3822,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (JsonException ex)
             {
-                UpdateStatus($"❌ Cannot format: {ex.Message}", isError: true);
+                UpdateStatus($" Cannot format: {ex.Message}", isError: true);
             }
         }
 
@@ -3943,7 +3943,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 if (string.IsNullOrWhiteSpace(textEditor.Text))
                 {
-                    UpdateStatus("❌ Cannot format: Empty or null JSON", isError: true);
+                    UpdateStatus(" Cannot format: Empty or null JSON", isError: true);
                     return;
                 }
 
@@ -3962,7 +3962,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (JsonException ex)
             {
-                UpdateStatus($"❌ Cannot format: {ex.Message}", isError: true);
+                UpdateStatus($" Cannot format: {ex.Message}", isError: true);
             }
         }
 
@@ -4541,21 +4541,21 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         var key = $"{category}:{value}";
                         targetSet.Add(key);
-                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"✅ Added to targetSet: '{key}', targetSet.Count now = {targetSet.Count}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $" Added to targetSet: '{key}', targetSet.Count now = {targetSet.Count}");
                     }
                     else
                     {
-                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Unknown type '{type}', item skipped");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $" Unknown type '{type}', item skipped");
                     }
                 }
                 else
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Type or value is null/empty");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $" Type or value is null/empty");
                 }
             }
             else
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $"❌ Failed to get type/value properties from JSON item");
+                BalatroSeedOracle.Helpers.DebugLogger.Log("AddItemFromJson", $" Failed to get type/value properties from JSON item");
             }
         }
 
@@ -4781,7 +4781,7 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             translateTransform.Y = -3;
                             
-                            border.ZIndex = 2000;
+                            border.ZIndex = 10; // Lower z-index to not overlap tabs
                         }
                     };
 
@@ -4887,7 +4887,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     scale.ScaleX = 1.08;  // Noticeable but not huge
                                     scale.ScaleY = 1.08;
                                 }
-                                allBorders[j].ZIndex = 500; // Definitely on top
+                                allBorders[j].ZIndex = 20; // Lower z-index to not overlap tabs
                             }
                         }
                     }
@@ -5341,7 +5341,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
-                        $"✅ Found image for '{itemName}'"
+                        $" Found image for '{itemName}'"
                     );
                     // Use correct size based on category (75% of original)
                     double imgWidth = 53;
@@ -5411,7 +5411,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                         "CreateDroppedItem",
-                        $"❌ No image found for '{itemName}', using text fallback"
+                        $" No image found for '{itemName}', using text fallback"
                     );
                     // Get display name for items like "anyuncommon" -> "Any Uncommon"
                     var displayText =
@@ -5758,8 +5758,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void SaveConfigurationToFile(string filePath)
         {
-            var config = BuildOuijaConfigFromSelections();
-            var json = SerializeOuijaConfig(config);
+            var config = BuildMotelyJsonConfigFromSelections();
+            var json = SerializeMotelyJsonConfig(config);
             File.WriteAllText(filePath, json);
         }
 
@@ -5769,7 +5769,7 @@ namespace BalatroSeedOracle.Views.Modals
             var configName = configNameBox?.Text ?? "Untitled Filter";
 
             // Create the config object using the existing method
-            var config = BuildOuijaConfigFromSelections();
+            var config = BuildMotelyJsonConfigFromSelections();
             var json = System.Text.Json.JsonSerializer.Serialize(
                 config,
                 new System.Text.Json.JsonSerializerOptions
@@ -5871,8 +5871,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var config = BuildOuijaConfigFromSelections();
-                var json = SerializeOuijaConfig(config);
+                var config = BuildMotelyJsonConfigFromSelections();
+                var json = SerializeMotelyJsonConfig(config);
 
                 // Show a simple preview dialog (you could enhance this)
                 BalatroSeedOracle.Helpers.DebugLogger.Log("👁️ Config Preview:");
@@ -6239,8 +6239,8 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Create ouija config from selections - always use compound format
-                var config = BuildOuijaConfigFromSelections();
-                var json = SerializeOuijaConfig(config);
+                var config = BuildMotelyJsonConfigFromSelections();
+                var json = SerializeMotelyJsonConfig(config);
 
                 // Get top level visual
                 var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
@@ -6270,7 +6270,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (file != null)
                 {
                     await System.IO.File.WriteAllTextAsync(file.Path.LocalPath, json);
-                    BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config saved to: {file.Path.LocalPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log($" Config saved to: {file.Path.LocalPath}");
 
                     // Enable tabs after successful save
                     UpdateTabStates(true);
@@ -6284,7 +6284,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private string SerializeOuijaConfig(Motely.Filters.MotelyJsonConfig config)
+        private string SerializeMotelyJsonConfig(Motely.Filters.MotelyJsonConfig config)
         {
             // Manually build the JSON to ensure we get the exact nested format
             using var stream = new MemoryStream();
@@ -6450,7 +6450,7 @@ namespace BalatroSeedOracle.Views.Modals
             writer.WriteEndObject();
         }
 
-        private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
+        private Motely.Filters.MotelyJsonConfig BuildMotelyJsonConfigFromSelections()
         {
             var config = new Motely.Filters.MotelyJsonConfig
             {
@@ -6741,8 +6741,8 @@ namespace BalatroSeedOracle.Views.Modals
                 if (jsonEditor != null)
                 {
                     // Build current config from selections and reload into JSON editor
-                    var config = BuildOuijaConfigFromSelections();
-                    var json = SerializeOuijaConfig(config);
+                    var config = BuildMotelyJsonConfigFromSelections();
+                    var json = SerializeMotelyJsonConfig(config);
                     
                     jsonEditor.Text = json;
                     
@@ -6845,9 +6845,9 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private string GetDefaultOuijaConfigJson()
+        private string GetDefaultMotelyJsonConfigJson()
         {
-            // Return a default OuijaConfig format example
+            // Return a default MotelyJsonConfig format example
             var defaultConfig = new Motely.Filters.MotelyJsonConfig
             {
                 Deck = "Red",
@@ -6902,7 +6902,7 @@ namespace BalatroSeedOracle.Views.Modals
                 },
             };
 
-            return SerializeOuijaConfig(defaultConfig);
+            return SerializeMotelyJsonConfig(defaultConfig);
         }
 
         /// <summary>
@@ -7107,7 +7107,7 @@ namespace BalatroSeedOracle.Views.Modals
                             filterPathInput.Text = file.Path.LocalPath;
                         }
 
-                        BalatroSeedOracle.Helpers.DebugLogger.Log($"✅ Config loaded from: {file.Path.LocalPath}");
+                        BalatroSeedOracle.Helpers.DebugLogger.Log($" Config loaded from: {file.Path.LocalPath}");
 
                         // Enable tabs and switch to Visual tab
                         UpdateTabStates(true);
@@ -7365,7 +7365,7 @@ namespace BalatroSeedOracle.Views.Modals
                     e.Handled = true;
                     BalatroSeedOracle.Helpers.DebugLogger.Log(
                         "FiltersModal",
-                        $"✅ Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to MUST NOT"
+                        $" Added joker set '{jokerSet.Name}' ({jokerSet.Items.Count} items) to MUST NOT"
                     );
                     return;
                 }
@@ -7419,7 +7419,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                                     "FiltersModal",
-                                    $"✅ Added set '{itemName}' ({setItems.Length} items) to MUST NOT"
+                                    $" Added set '{itemName}' ({setItems.Length} items) to MUST NOT"
                                 );
                             }
                         }
@@ -7435,7 +7435,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to MUST NOT"
+                                $" Added {itemName} to MUST NOT"
                             );
                         }
 
@@ -8088,21 +8088,21 @@ namespace BalatroSeedOracle.Views.Modals
                             _selectedMust.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to NEEDS via popup"
+                                $" Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "should":
                             _selectedShould.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to WANTS via popup"
+                                $" Added {itemName} to WANTS via popup"
                             );
                             break;
                         case "mustNot":
                             _selectedMustNot.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
-                                $"✅ Added {itemName} to MUST NOT via popup"
+                                $" Added {itemName} to MUST NOT via popup"
                             );
                             break;
                     }
@@ -8205,7 +8205,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 BalatroSeedOracle.Helpers.DebugLogger.LogError("SaveCurrentFilterAsync", $"💾 Building config from selections: MUST={_selectedMust.Count}, SHOULD={_selectedShould.Count}, MUSTNOT={_selectedMustNot.Count}");
-                var config = BuildOuijaConfigFromSelections();
+                var config = BuildMotelyJsonConfigFromSelections();
                 BalatroSeedOracle.Helpers.DebugLogger.LogError("SaveCurrentFilterAsync", $"💾 Built config: MUST={config.Must?.Count ?? 0}, SHOULD={config.Should?.Count ?? 0}, MUSTNOT={config.MustNot?.Count ?? 0}");
                 
                 // Update name and description from inputs - check both NEW and SAVE tabs
@@ -8223,7 +8223,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (!string.IsNullOrEmpty(finalDesc))
                     config.Description = finalDesc;
                 
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 await File.WriteAllTextAsync(_currentFilterPath, json);
                 
                 UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
@@ -8246,7 +8246,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var config = BuildOuijaConfigFromSelections();
+                var config = BuildMotelyJsonConfigFromSelections();
                 config.Name = newName;
                 
                 // Update description if provided
@@ -8255,7 +8255,7 @@ namespace BalatroSeedOracle.Views.Modals
                     config.Description = descriptionInput.Text?.Trim() ?? "";
                 
                 // Generate filename
-                var fileName = NormalizeFileName(newName);
+                var fileName = newName.Replace(" ", "_").Replace("\\", "").Replace("/", "").Replace(":", "");
                 var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters", $"{fileName}.json");
                 
                 // Handle duplicates
@@ -8266,7 +8266,7 @@ namespace BalatroSeedOracle.Views.Modals
                     counter++;
                 }
                 
-                var json = SerializeOuijaConfig(config);
+                var json = SerializeMotelyJsonConfig(config);
                 await File.WriteAllTextAsync(filePath, json);
                 
                 _currentFilterPath = filePath;
@@ -8288,21 +8288,6 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("FiltersModal", $"Failed to save filter as: {ex.Message}");
                 UpdateStatus($"Failed to save: {ex.Message}", true);
             }
-        }
-        
-        private string NormalizeFileName(string name)
-        {
-            // Remove special characters and replace with hyphens
-            var normalized = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9]+", "-");
-            
-            // Remove leading/trailing hyphens
-            normalized = normalized.Trim('-');
-            
-            // If empty, use default
-            if (string.IsNullOrEmpty(normalized))
-                normalized = "NewFilter";
-                
-            return normalized;
         }
         
         // New event handlers for Filter Info buttons

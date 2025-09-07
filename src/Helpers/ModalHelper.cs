@@ -1,6 +1,8 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Threading;
 using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Services;
@@ -96,7 +98,7 @@ namespace BalatroSeedOracle.Helpers
         /// Creates and shows a search modal with a config object (no temp files!)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
-        /// <param name="config">The OuijaConfig object to search with</param>
+        /// <param name="config">The MotelyJsonConfig object to search with</param>
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
         {
@@ -125,8 +127,7 @@ namespace BalatroSeedOracle.Helpers
         {
             var searchModal = new SearchModal();
             
-            // AUTO-NAVIGATE: Take user directly to search tab!
-            searchModal.GoToSearchTab();
+            // DON'T auto-navigate for fresh launches - let user select filter first
         
             // Handle desktop icon creation when modal closes with active search
             searchModal.CreateShortcutRequested += (sender, configPath) => 

@@ -9,7 +9,7 @@ namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Shared service for converting between visual selections and Motely JSON config
-    /// Extracted from the original FiltersModal BuildOuijaConfigFromSelections logic
+    /// Extracted from the original FiltersModal BuildMotelyJsonConfigFromSelections logic
     /// </summary>
     public interface IFilterConfigurationService
     {

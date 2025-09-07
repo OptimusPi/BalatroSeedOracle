@@ -320,7 +320,7 @@ namespace BalatroSeedOracle.Components
                     }
                     finally
                     {
-                        // IMPORTANT: Clean up drag visual state when drag ends
+                        // Clean up drag visual state when drag ends
                         this.Classes.Remove("is-dragging");
                         this.RenderTransform = null; // Reset any transforms
                         // Don't reset Width/Height to prevent layout shifts

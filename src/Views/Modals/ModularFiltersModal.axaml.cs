@@ -26,7 +26,7 @@ namespace BalatroSeedOracle.Views.Modals
             // Set up MVVM ViewModel
             DataContext = ServiceHelper.GetRequiredService<FiltersModalViewModel>();
             
-            DebugLogger.Log("ModularFiltersModal", "✅ Modular MVVM FiltersModal created!");
+            DebugLogger.Log("ModularFiltersModal", " Modular MVVM FiltersModal created!");
             DebugLogger.Log("ModularFiltersModal", "🎯 8000-line god class ELIMINATED!");
             DebugLogger.Log("ModularFiltersModal", "🏗️ Clean component architecture achieved!");
         }
