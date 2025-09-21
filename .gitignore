@@ -63,3 +63,4 @@ userprofile.json
 /external/*
 /JsonItemFilters/*
 *.csv
+/.claude
