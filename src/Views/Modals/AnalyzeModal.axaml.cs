@@ -363,7 +363,7 @@ namespace BalatroSeedOracle.Views.Modals
             switch (item.TypeCategory)
             {
                 case MotelyItemTypeCategory.Joker:
-                    var joker = item.GetJoker();
+                    var joker = (MotelyJoker)item.Value;
                     var jokerSprite = _spriteService.GetJokerImage(joker.ToString());
                     if (jokerSprite != null)
                     {
@@ -393,7 +393,7 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case MotelyItemTypeCategory.TarotCard:
-                    var tarot = item.GetTarot();
+                    var tarot = (MotelyTarotCard)item.Value;
                     var tarotSprite = _spriteService.GetTarotImage(tarot.ToString());
                     if (tarotSprite != null)
                     {
@@ -409,7 +409,7 @@ namespace BalatroSeedOracle.Views.Modals
                     break;
 
                 case MotelyItemTypeCategory.PlanetCard:
-                    var planet = item.GetPlanet();
+                    var planet = (MotelyPlanetCard)item.Value;
                     var planetSprite = _spriteService.GetTarotImage(planet.ToString());
                     if (planetSprite != null)
                     {

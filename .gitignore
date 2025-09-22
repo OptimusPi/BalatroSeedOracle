@@ -64,3 +64,4 @@ userprofile.json
 /JsonItemFilters/*
 *.csv
 /.claude
+/.specify
