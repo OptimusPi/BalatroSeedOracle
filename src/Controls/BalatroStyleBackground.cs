@@ -100,8 +100,7 @@ namespace BalatroSeedOracle.Controls
 
         private void StartAnimation()
         {
-            // Animation is driven by shader time uniform - no timer needed!
-            // Just invalidate once to start the shader animation loop
+            // Self-invalidating render cycle
             if (_isAnimating)
             {
                 InvalidateVisual();
@@ -110,8 +109,7 @@ namespace BalatroSeedOracle.Controls
 
         private void StopAnimation()
         {
-            // Animation stops naturally when _isAnimating = false
-            // Shader will render static frame
+            // No timer to stop - animation controlled by _isAnimating flag
         }
 
         /// <summary>
@@ -221,6 +219,12 @@ namespace BalatroSeedOracle.Controls
             
             // Decay beat pulse
             _beatPulse *= 0.95f;
+
+            // Continue animation cycle for ALL animated themes
+            if (_isAnimating)
+            {
+                Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+            }
 
             context.Custom(
                 new BalatroStyleBackgroundDrawOp(

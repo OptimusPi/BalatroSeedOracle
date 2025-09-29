@@ -116,6 +116,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public void SetCategory(string category)
         {
+            // Ensure UI thread safety to prevent binding cascade errors
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetCategory(category));
+                return;
+            }
+            
             _currentCategory = category;
             CurrentCategoryDisplay = category;
             RefreshFilteredItems();
@@ -261,6 +268,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void LoadSampleData()
         {
+            // Ensure UI thread safety for collection initialization
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(LoadSampleData);
+                return;
+            }
+
             // Load from BalatroData with sprites
             try 
             {
@@ -364,19 +378,34 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
                 
                 // Load Planets from BalatroData
-                if (BalatroData.PlanetCards?.Keys != null)
+                try
                 {
-                    foreach (var planetName in BalatroData.PlanetCards.Keys)
+                    if (BalatroData.PlanetCards?.Keys != null)
                     {
-                        var item = new FilterItem 
-                        { 
-                            Name = planetName, 
-                            Type = "Planet",
-                            DisplayName = FormatDisplayName(planetName),
-                            ItemImage = spriteService.GetPlanetCardImage(planetName)
-                        };
-                        AllPlanets.Add(item);
+                        DebugLogger.Log("VisualBuilderTab", $"Loading {BalatroData.PlanetCards.Keys.Count} planets");
+                        foreach (var planetName in BalatroData.PlanetCards.Keys)
+                        {
+                            try
+                            {
+                                var item = new FilterItem 
+                                { 
+                                    Name = planetName, 
+                                    Type = "Planet",
+                                    DisplayName = FormatDisplayName(planetName),
+                                    ItemImage = spriteService.GetPlanetCardImage(planetName)
+                                };
+                                AllPlanets.Add(item);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError("VisualBuilderTab", $"Error loading planet {planetName}: {ex.Message}");
+                            }
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Error loading planets: {ex.Message}");
                 }
                 
                 // Load Spectrals from BalatroData
@@ -495,6 +524,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void ApplyFilter()
         {
+            // Ensure UI thread safety for all collection modifications
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(ApplyFilter);
+                return;
+            }
+
             FilteredJokers.Clear();
             FilteredTags.Clear();
             FilteredVouchers.Clear();
