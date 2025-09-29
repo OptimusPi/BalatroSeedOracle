@@ -40,6 +40,20 @@ public partial class App : Application
             {
                 desktop.MainWindow = new Views.MainWindow();
 
+                // Initialize background music!
+                try
+                {
+                    var audioManager = _serviceProvider.GetRequiredService<Services.VibeAudioManager>();
+                    DebugLogger.Log("App", "🎵 Starting background music...");
+                    // Force initialization by accessing a property
+                    var trackCount = audioManager.GetType();
+                    DebugLogger.Log("App", $"🎵 Audio manager initialized: {audioManager}");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
+                }
+
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
 
@@ -62,6 +76,10 @@ public partial class App : Application
         try
         {
             DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
+            
+            // Stop audio first
+            var audioManager = _serviceProvider?.GetService<Services.VibeAudioManager>();
+            audioManager?.Dispose();
             
             // Get the search manager and stop all active searches
             var searchManager = _serviceProvider?.GetService<Services.SearchManager>();

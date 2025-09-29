@@ -32,6 +32,37 @@ namespace BalatroSeedOracle.Models
         /// Last search state for resuming interrupted searches
         /// </summary>
         public SearchResumeState? LastSearchState { get; set; }
+
+        /// <summary>
+        /// Feature flags for experimental features
+        /// </summary>
+        public FeatureFlags Features { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Feature flags for enabling experimental features
+    /// </summary>
+    public class FeatureFlags
+    {
+        /// <summary>
+        /// Use new MVVM FiltersModal instead of old code-behind version
+        /// </summary>
+        public bool UseNewFiltersModal { get; set; } = false;
+
+        /// <summary>
+        /// Use new MVVM SearchModal instead of old code-behind version
+        /// </summary>
+        public bool UseNewSearchModal { get; set; } = false;
+
+        /// <summary>
+        /// Enable drag-and-drop in visual filter builder
+        /// </summary>
+        public bool EnableDragDropFilters { get; set; } = false;
+
+        /// <summary>
+        /// Use .NET 9 features when available
+        /// </summary>
+        public bool UseNet9Features { get; set; } = false;
     }
 
     /// <summary>

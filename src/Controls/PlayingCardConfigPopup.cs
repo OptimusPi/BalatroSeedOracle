@@ -9,6 +9,8 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Controls
 {
@@ -26,6 +28,23 @@ namespace BalatroSeedOracle.Controls
         private RadioButton? _holographicRadio;
         private RadioButton? _polychromeRadio;
         private RadioButton? _negativeRadio;
+        
+        // Seal controls
+        private RadioButton? _noSealRadio;
+        private RadioButton? _redSealRadio;
+        private RadioButton? _blueSealRadio;
+        private RadioButton? _goldSealRadio;
+        private RadioButton? _purpleSealRadio;
+        
+        // Enhancement controls  
+        private RadioButton? _noEnhancementRadio;
+        private RadioButton? _bonusRadio;
+        private RadioButton? _multRadio;
+        private RadioButton? _wildRadio;
+        private RadioButton? _glassRadio;
+        private RadioButton? _steelRadio;
+        private RadioButton? _stoneRadio;
+        private RadioButton? _luckyRadio;
 
         public PlayingCardConfigPopup()
         {
@@ -47,6 +66,12 @@ namespace BalatroSeedOracle.Controls
 
             // Editions section (playing cards can have editions)
             mainPanel.Children.Add(CreateEditionsSection());
+            
+            // Seals section (playing cards can have seals)
+            mainPanel.Children.Add(CreateSealsSection());
+            
+            // Enhancements section (playing cards can have enhancements)
+            mainPanel.Children.Add(CreateEnhancementsSection());
 
             // Antes section
             mainPanel.Children.Add(CreateAntesSection());
@@ -204,6 +229,102 @@ namespace BalatroSeedOracle.Controls
                     }
                 }
             }
+        }
+
+        private Border CreateSealsSection()
+        {
+            var border = new Border
+            {
+                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(10, 8),
+            };
+
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
+
+            // Header
+            var header = new TextBlock
+            {
+                Text = "SEAL",
+                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontSize = 11,
+                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
+            };
+            Grid.SetRow(header, 0);
+            grid.Children.Add(header);
+
+            // Seal radio buttons
+            var sealsPanel = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(-2) };
+
+            _noSealRadio = CreateEditionRadio("None", "none", true);
+            _redSealRadio = CreateEditionRadio("Red", "red", false);
+            _blueSealRadio = CreateEditionRadio("Blue", "blue", false);
+            _goldSealRadio = CreateEditionRadio("Gold", "gold", false);
+            _purpleSealRadio = CreateEditionRadio("Purple", "purple", false);
+
+            sealsPanel.Children.Add(_noSealRadio);
+            sealsPanel.Children.Add(_redSealRadio);
+            sealsPanel.Children.Add(_blueSealRadio);
+            sealsPanel.Children.Add(_goldSealRadio);
+            sealsPanel.Children.Add(_purpleSealRadio);
+
+            Grid.SetRow(sealsPanel, 1);
+            grid.Children.Add(sealsPanel);
+
+            border.Child = grid;
+            return border;
+        }
+
+        private Border CreateEnhancementsSection()
+        {
+            var border = new Border
+            {
+                Background = Application.Current?.FindResource("ItemConfigDarkBg") as IBrush ?? new SolidColorBrush(Color.Parse("#1a1a1a")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(10, 8),
+            };
+
+            var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto") };
+
+            // Header
+            var header = new TextBlock
+            {
+                Text = "ENHANCEMENT",
+                FontFamily = Application.Current?.FindResource("BalatroFont") as FontFamily ?? FontFamily.Default,
+                FontSize = 11,
+                Foreground = Application.Current?.FindResource("LightGrey") as IBrush ?? Brushes.LightGray,
+                Margin = new Thickness(0, 0, 0, 6),
+            };
+            Grid.SetRow(header, 0);
+            grid.Children.Add(header);
+
+            // Enhancement radio buttons
+            var enhancementsPanel = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(-2) };
+
+            _noEnhancementRadio = CreateEditionRadio("None", "none", true);
+            _bonusRadio = CreateEditionRadio("Bonus", "bonus", false);
+            _multRadio = CreateEditionRadio("Mult", "mult", false);
+            _wildRadio = CreateEditionRadio("Wild", "wild", false);
+            _glassRadio = CreateEditionRadio("Glass", "glass", false);
+            _steelRadio = CreateEditionRadio("Steel", "steel", false);
+            _stoneRadio = CreateEditionRadio("Stone", "stone", false);
+            _luckyRadio = CreateEditionRadio("Lucky", "lucky", false);
+
+            enhancementsPanel.Children.Add(_noEnhancementRadio);
+            enhancementsPanel.Children.Add(_bonusRadio);
+            enhancementsPanel.Children.Add(_multRadio);
+            enhancementsPanel.Children.Add(_wildRadio);
+            enhancementsPanel.Children.Add(_glassRadio);
+            enhancementsPanel.Children.Add(_steelRadio);
+            enhancementsPanel.Children.Add(_stoneRadio);
+            enhancementsPanel.Children.Add(_luckyRadio);
+
+            Grid.SetRow(enhancementsPanel, 1);
+            grid.Children.Add(enhancementsPanel);
+
+            border.Child = grid;
+            return border;
         }
 
         private Border CreateAntesSection()
@@ -383,10 +504,14 @@ namespace BalatroSeedOracle.Controls
                 ItemKey = ItemKey,
                 Antes = GetSelectedAntes(),
                 Edition = GetSelectedEdition(),
+                Seal = GetSelectedSeal(),
+                Enhancement = GetSelectedEnhancement(),
             };
 
             return config;
         }
+
+        // SetCard method removed - ConfiguredPlayingCard class deleted
 
         private string GetSelectedEdition()
         {
@@ -395,6 +520,27 @@ namespace BalatroSeedOracle.Controls
             if (_polychromeRadio?.IsChecked == true) return "polychrome";
             if (_negativeRadio?.IsChecked == true) return "negative";
             return "none";
+        }
+
+        private string GetSelectedSeal()
+        {
+            if (_redSealRadio?.IsChecked == true) return "Red";
+            if (_blueSealRadio?.IsChecked == true) return "Blue"; 
+            if (_goldSealRadio?.IsChecked == true) return "Gold";
+            if (_purpleSealRadio?.IsChecked == true) return "Purple";
+            return "None";
+        }
+
+        private string GetSelectedEnhancement()
+        {
+            if (_bonusRadio?.IsChecked == true) return "Bonus";
+            if (_multRadio?.IsChecked == true) return "Mult";
+            if (_wildRadio?.IsChecked == true) return "Wild";
+            if (_glassRadio?.IsChecked == true) return "Glass";
+            if (_steelRadio?.IsChecked == true) return "Steel";
+            if (_stoneRadio?.IsChecked == true) return "Stone";
+            if (_luckyRadio?.IsChecked == true) return "Lucky";
+            return "None";
         }
 
         private List<int>? GetSelectedAntes()

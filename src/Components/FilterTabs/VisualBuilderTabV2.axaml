@@ -1,0 +1,425 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTabV2"
+             x:DataType="vm:VisualBuilderTabViewModel">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>     <!-- Left: Item Palette -->
+            <ColumnDefinition Width="20"/>    <!-- Spacer -->
+            <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT: Item Palette with Images -->
+        <Border Grid.Column="0"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderThickness="2"
+                BorderBrush="{StaticResource ModalBorder}"
+                CornerRadius="8"
+                Padding="15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- Category Tabs -->
+                    <RowDefinition Height="10"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/>  <!-- Search -->
+                    <RowDefinition Height="10"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>     <!-- Items -->
+                </Grid.RowDefinitions>
+                
+                <!-- Category Tabs -->
+                <ListBox Grid.Row="0"
+                         SelectedIndex="{Binding SelectedCategoryIndex}"
+                         Background="Transparent"
+                         BorderThickness="0">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Background" Value="{StaticResource Grey}"/>
+                            <Setter Property="Padding" Value="15,8"/>
+                            <Setter Property="Margin" Value="2"/>
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected">
+                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBoxItem>🃏 Jokers</ListBoxItem>
+                    <ListBoxItem>🏷️ Tags</ListBoxItem>
+                    <ListBoxItem>🎟️ Vouchers</ListBoxItem>
+                    <ListBoxItem>🔮 Tarots</ListBoxItem>
+                    <ListBoxItem>🪐 Planets</ListBoxItem>
+                    <ListBoxItem>👻 Spectrals</ListBoxItem>
+                    <ListBoxItem>🃏 Cards</ListBoxItem>
+                    <ListBoxItem>👹 Bosses</ListBoxItem>
+                </ListBox>
+                
+                <!-- Search -->
+                <TextBox Grid.Row="2"
+                         Text="{Binding SearchFilter}"
+                         Watermark="Search items..."
+                         FontSize="14"
+                         Height="32"/>
+                
+                <!-- Item Grid with Images -->
+                <ScrollViewer Grid.Row="4" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding FilteredItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4"
+                                           Cursor="Hand"
+                                           PointerPressed="OnItemPointerPressed"
+                                           PointerMoved="OnItemPointerMoved"
+                                           PointerReleased="OnItemPointerReleased"
+                                           DragDrop.AllowDrop="False">
+                                    <!-- Card with proper background for visibility -->
+                                    <Border Background="{StaticResource SetJoker}"
+                                            CornerRadius="6"
+                                            Padding="4"
+                                            Width="64"
+                                            Height="64">
+                                        <Image Source="{Binding ItemImage}"
+                                               Width="56"
+                                               Height="56"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    </Border>
+                                    
+                                    <!-- Simple Name Below -->
+                                    <TextBlock Text="{Binding DisplayName}" 
+                                               Foreground="{StaticResource White}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding Name}"
+                                               Margin="0,4,0,0"
+                                               MaxWidth="70"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- RIGHT: Drop Zones -->
+        <Border Grid.Column="2"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderThickness="2"
+                BorderBrush="{StaticResource ModalBorder}"
+                CornerRadius="8"
+                Padding="15">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="20">
+                    <!-- MUST Zone -->
+                    <StackPanel>
+                        <TextBlock Text="MUST HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Green}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Green}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Green}"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="10"
+                                DragDrop.AllowDrop="True"
+                                Name="MustDropZone">
+                            <Border.Styles>
+                                <Style Selector="Border.drag-over">
+                                    <Setter Property="Background" Value="#60FF00"/>
+                                    <Setter Property="BorderBrush" Value="#00FF00"/>
+                                </Style>
+                            </Border.Styles>
+                            <ItemsControl ItemsSource="{Binding SelectedMust}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="60" Height="80" Margin="3">
+                                            <!-- Main Card Background -->
+                                            <Border Background="{StaticResource White}" 
+                                                    CornerRadius="6" 
+                                                    Padding="4">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <!-- Item Image -->
+                                                    <Image Grid.Row="0" 
+                                                           Source="{Binding ItemImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                    
+                                                    <!-- Item Name -->
+                                                    <TextBlock Grid.Row="1" 
+                                                               Text="{Binding DisplayName}" 
+                                                               Foreground="{StaticResource Black}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="9"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Remove Button - Only Visible on Hover -->
+                                            <Button Content="×" 
+                                                    Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#dc2626"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Width="20"
+                                                    Height="20"
+                                                    CornerRadius="10"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-8,-8,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="#b91c1c"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                            
+                                            <!-- Hover Trigger -->
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- SHOULD Zone -->
+                    <StackPanel>
+                        <TextBlock Text="SHOULD HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Blue}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Blue}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Blue}"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="10"
+                                DragDrop.AllowDrop="True"
+                                Name="ShouldDropZone">
+                            <Border.Styles>
+                                <Style Selector="Border.drag-over">
+                                    <Setter Property="Background" Value="#6060FF"/>
+                                    <Setter Property="BorderBrush" Value="#0000FF"/>
+                                </Style>
+                            </Border.Styles>
+                            <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="60" Height="80" Margin="3">
+                                            <!-- Main Card Background -->
+                                            <Border Background="{StaticResource White}" 
+                                                    CornerRadius="6" 
+                                                    Padding="4">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <!-- Item Image -->
+                                                    <Image Grid.Row="0" 
+                                                           Source="{Binding ItemImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                    
+                                                    <!-- Item Name -->
+                                                    <TextBlock Grid.Row="1" 
+                                                               Text="{Binding DisplayName}" 
+                                                               Foreground="{StaticResource Black}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="9"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Remove Button - Only Visible on Hover -->
+                                            <Button Content="×" 
+                                                    Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromShouldCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#dc2626"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Width="20"
+                                                    Height="20"
+                                                    CornerRadius="10"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-8,-8,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="#b91c1c"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                            
+                                            <!-- Hover Trigger -->
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- MUST NOT Zone -->
+                    <StackPanel>
+                        <TextBlock Text="MUST NOT HAVE" 
+                                   FontSize="16" 
+                                   Foreground="{StaticResource Red}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Margin="0,0,0,10"/>
+                        <Border Background="{StaticResource Red}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource Red}"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="10"
+                                DragDrop.AllowDrop="True"
+                                Name="MustNotDropZone">
+                            <Border.Styles>
+                                <Style Selector="Border.drag-over">
+                                    <Setter Property="Background" Value="#FF6060"/>
+                                    <Setter Property="BorderBrush" Value="#FF0000"/>
+                                </Style>
+                            </Border.Styles>
+                            <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="60" Height="80" Margin="3">
+                                            <!-- Main Card Background -->
+                                            <Border Background="{StaticResource White}" 
+                                                    CornerRadius="6" 
+                                                    Padding="4">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <!-- Item Image -->
+                                                    <Image Grid.Row="0" 
+                                                           Source="{Binding ItemImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                    
+                                                    <!-- Item Name -->
+                                                    <TextBlock Grid.Row="1" 
+                                                               Text="{Binding DisplayName}" 
+                                                               Foreground="{StaticResource Black}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="9"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Remove Button - Only Visible on Hover -->
+                                            <Button Content="×" 
+                                                    Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustNotCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#dc2626"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Width="20"
+                                                    Height="20"
+                                                    CornerRadius="10"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-8,-8,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="#b91c1c"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                            
+                                            <!-- Hover Trigger -->
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

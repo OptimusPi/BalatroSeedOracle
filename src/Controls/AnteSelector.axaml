@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.AnteSelector">
+    
+    <UserControl.Styles>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        
+        <Style Selector="CheckBox:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4400FF88"/>
+        </Style>
+        
+        <Style Selector="TextBlock.ante-label">
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Background="#22000000" 
+            BorderBrush="#00FF88" 
+            BorderThickness="2" 
+            CornerRadius="8" 
+            Padding="15">
+        <StackPanel Spacing="10">
+            <TextBlock Text="Search Antes" 
+                       Classes="ante-label"
+                       HorizontalAlignment="Center"/>
+            
+            <TextBlock Text="Select which antes to search for this item:"
+                       Foreground="#CCCCCC"
+                       FontSize="12"
+                       HorizontalAlignment="Center"/>
+            
+            <!-- Quick Select Options -->
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Center"
+                        Spacing="10"
+                        Margin="0,5,0,10">
+                <Button Content="All" 
+                        Click="SelectAll_Click"
+                        Background="#00FF88"
+                        Foreground="Black"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="None" 
+                        Click="SelectNone_Click"
+                        Background="#FF4444"
+                        Foreground="White"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="Early (1-3)" 
+                        Click="SelectEarly_Click"
+                        Background="#FFD700"
+                        Foreground="Black"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="Late (4-8)" 
+                        Click="SelectLate_Click"
+                        Background="#9966FF"
+                        Foreground="White"
+                        Padding="10,5"
+                        FontSize="12"/>
+            </StackPanel>
+            
+            <!-- Ante Checkboxes Grid -->
+            <UniformGrid Columns="4" Rows="2">
+                <CheckBox Name="Ante1CheckBox" Content="Ante 1" IsChecked="True"/>
+                <CheckBox Name="Ante2CheckBox" Content="Ante 2" IsChecked="True"/>
+                <CheckBox Name="Ante3CheckBox" Content="Ante 3" IsChecked="True"/>
+                <CheckBox Name="Ante4CheckBox" Content="Ante 4" IsChecked="True"/>
+                <CheckBox Name="Ante5CheckBox" Content="Ante 5" IsChecked="False"/>
+                <CheckBox Name="Ante6CheckBox" Content="Ante 6" IsChecked="False"/>
+                <CheckBox Name="Ante7CheckBox" Content="Ante 7" IsChecked="False"/>
+                <CheckBox Name="Ante8CheckBox" Content="Ante 8" IsChecked="False"/>
+            </UniformGrid>
+            
+            <!-- Selected Summary -->
+            <TextBlock Name="SummaryTextBlock"
+                       Text="Selected: Antes 1, 2, 3, 4"
+                       Foreground="#00FF88"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
+        </StackPanel>
+    </Border>
+</UserControl>

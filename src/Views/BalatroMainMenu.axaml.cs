@@ -105,6 +105,10 @@ namespace BalatroSeedOracle.Views
             {
                 SetTitle(title);
             }
+            
+            // Transition audio to modal open state
+            var audioManager = App.GetService<Services.VibeAudioManager>();
+            audioManager?.TransitionTo(Services.AudioState.ModalOpen);
         }
 
         /// <summary>
@@ -121,6 +125,10 @@ namespace BalatroSeedOracle.Views
 
             // Reset title to Welcome!
             SetTitle("Welcome!");
+            
+            // Transition audio back to main menu state
+            var audioManager = App.GetService<Services.VibeAudioManager>();
+            audioManager?.TransitionTo(Services.AudioState.MainMenu);
         }
 
         // Main menu button event handlers
@@ -613,7 +621,7 @@ namespace BalatroSeedOracle.Views
                 {
                     // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as FiltersModalContent;
+                    var filtersModal = modalContent?.Content as FiltersModal;
                     if (filtersModal != null)
                     {
                         // FiltersModal may have active searches to stop

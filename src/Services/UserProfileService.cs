@@ -158,10 +158,16 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Save profile to disk
         /// </summary>
-        private void SaveProfile()
+        public void SaveProfile(UserProfile? profile = null)
         {
             try
             {
+                // If profile provided, update the current profile
+                if (profile != null)
+                {
+                    _currentProfile = profile;
+                }
+                
                 // Ensure directory exists
                 var directory = Path.GetDirectoryName(_profilePath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))

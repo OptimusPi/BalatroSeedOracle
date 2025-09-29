@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.SourceSelector">
+    
+    <UserControl.Styles>
+        <Style Selector="ComboBox">
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="Background" Value="#22000000"/>
+            <Setter Property="BorderBrush" Value="#00FF88"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="5"/>
+        </Style>
+        
+        <Style Selector="ComboBox:pointerover">
+            <Setter Property="BorderBrush" Value="#00FFFF"/>
+        </Style>
+        
+        <Style Selector="TextBlock.source-label">
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        
+        <Style Selector="TextBlock.source-description">
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Background="#22000000" 
+            BorderBrush="#00FF88" 
+            BorderThickness="2" 
+            CornerRadius="8" 
+            Padding="15">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Item Source" 
+                       Classes="source-label"
+                       HorizontalAlignment="Center"/>
+            
+            <TextBlock Text="Where should this item come from?"
+                       Classes="source-description"
+                       HorizontalAlignment="Center"/>
+            
+            <ComboBox Name="SourceComboBox" 
+                      SelectedIndex="0"
+                      HorizontalAlignment="Stretch"
+                      SelectionChanged="SourceComboBox_SelectionChanged">
+                <ComboBoxItem Content="Any Source" Tag=""/>
+                <ComboBoxItem Content="🏷️ Small Blind Tag" Tag="SmallBlindTag"/>
+                <ComboBoxItem Content="🏷️ Big Blind Tag" Tag="BigBlindTag"/>
+                <ComboBoxItem Content="📦 Standard Pack" Tag="StandardPack"/>
+                <ComboBoxItem Content="🃏 Buffoon Pack" Tag="BuffoonPack"/>
+                <ComboBoxItem Content="🛒 Shop" Tag="Shop"/>
+                <ComboBoxItem Content="⭐ Starting Items" Tag="StartingItems"/>
+            </ComboBox>
+            
+            <!-- Source Description -->
+            <Border Background="#11000000" 
+                    CornerRadius="5" 
+                    Padding="10"
+                    Name="DescriptionBorder">
+                <TextBlock Name="DescriptionTextBlock"
+                           Text="Any source - item can come from anywhere in the run"
+                           Classes="source-description"
+                           HorizontalAlignment="Center"/>
+            </Border>
+            
+            <!-- Visual Preview -->
+            <Border Background="#11001100" 
+                    CornerRadius="8" 
+                    Padding="10"
+                    Name="PreviewBorder"
+                    IsVisible="False">
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Spacing="10">
+                    <TextBlock Text="🎯" FontSize="20"/>
+                    <TextBlock Name="PreviewTextBlock"
+                               Text="Preview of source selection"
+                               Classes="source-description"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

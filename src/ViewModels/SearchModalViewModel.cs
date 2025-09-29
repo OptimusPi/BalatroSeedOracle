@@ -8,6 +8,10 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Helpers;
 using Motely.Filters;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
+using Avalonia.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -20,9 +24,10 @@ namespace BalatroSeedOracle.ViewModels
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
         private Motely.Filters.MotelyJsonConfig? _loadedConfig;
-        private string _currentActiveTab = "FilterTab";
-        private SearchProgressEventArgs? _latestProgress;
+        private int _selectedTabIndex = 0;
+        private SearchProgress? _latestProgress;
         private int _lastKnownResultCount = 0;
+        private string? _currentFilterPath; // CRITICAL: Store the path to the loaded filter!
 
         // Search parameters
         private int _maxResults = 1000;
@@ -41,15 +46,39 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize commands
             StartSearchCommand = new AsyncRelayCommand(StartSearchAsync, CanStartSearch);
             StopSearchCommand = new RelayCommand(StopSearch, CanStopSearch);
+            PauseSearchCommand = new RelayCommand(PauseSearch, CanPauseSearch);
+            ExportResultsCommand = new RelayCommand(ExportResults, CanExportResults);
             ClearResultsCommand = new RelayCommand(ClearResults);
             LoadFilterCommand = new AsyncRelayCommand(LoadFilterAsync);
-            SwitchTabCommand = new RelayCommand<string>(SwitchTab);
             CreateShortcutCommand = new RelayCommand<string>(CreateShortcut);
+            EnterVibeOutModeCommand = new RelayCommand(EnterVibeOutMode);
+            CloseCommand = new RelayCommand(CloseModal);
+
+            // Initialize dynamic tabs
+            InitializeSearchTabs();
 
             // Events will be subscribed to individual SearchInstance when created
         }
 
         #region Properties
+
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set => SetProperty(ref _selectedTabIndex, value);
+        }
+
+        public int ThreadCount { get; set; } = Environment.ProcessorCount;
+        public int BatchSize { get; set; } = 3;
+        
+        public string SearchStatus => _isSearching ? "Searching..." : "Ready";
+        public double SearchProgress => _latestProgress?.PercentComplete ?? 0.0;
+        public string ProgressText => _latestProgress?.ToString() ?? "No search active";
+        public int ResultsCount => _searchInstance?.ResultCount ?? SearchResults.Count;
+        
+        public string CurrentSearchId => _currentSearchId;
+        
+        public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
 
         public bool IsSearching
         {
@@ -70,11 +99,7 @@ namespace BalatroSeedOracle.ViewModels
             set => SetProperty(ref _loadedConfig, value);
         }
 
-        public string CurrentActiveTab
-        {
-            get => _currentActiveTab;
-            set => SetProperty(ref _currentActiveTab, value);
-        }
+        // CurrentActiveTab removed - using proper TabControl SelectedIndex binding
 
         public int MaxResults
         {
@@ -100,7 +125,7 @@ namespace BalatroSeedOracle.ViewModels
             set => SetProperty(ref _stakeSelection, value);
         }
 
-        public SearchProgressEventArgs? LatestProgress
+        public SearchProgress? LatestProgress
         {
             get => _latestProgress;
             set => SetProperty(ref _latestProgress, value);
@@ -121,16 +146,20 @@ namespace BalatroSeedOracle.ViewModels
 
         public ICommand StartSearchCommand { get; }
         public ICommand StopSearchCommand { get; }
+        public ICommand PauseSearchCommand { get; }
+        public ICommand ExportResultsCommand { get; }
         public ICommand ClearResultsCommand { get; }
         public ICommand LoadFilterCommand { get; }
-        public ICommand SwitchTabCommand { get; }
         public ICommand CreateShortcutCommand { get; }
+        public ICommand EnterVibeOutModeCommand { get; }
+        public ICommand CloseCommand { get; }
 
         #endregion
 
         #region Events
 
         public event EventHandler<string>? CreateShortcutRequested;
+        public event EventHandler? CloseRequested;
 
         #endregion
 
@@ -157,6 +186,25 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Subscribe to SearchInstance events directly
                 _searchInstance.SearchCompleted += OnSearchCompleted;
+                _searchInstance.ProgressUpdated += OnProgressUpdated;
+                
+                // Hook up results to vibe mode if active
+                if (_activeVibeViewModel != null && _searchInstance?.Results != null)
+                {
+                    _searchInstance.Results.CollectionChanged += (s, e) =>
+                    {
+                        if (e.NewItems != null && _activeVibeViewModel != null)
+                        {
+                            foreach (SearchResult result in e.NewItems)
+                            {
+                                if (result != null && !string.IsNullOrEmpty(result.Seed))
+                                {
+                                    _activeVibeViewModel.ProcessSeedResult(result.Seed, result.TotalScore, result.Scores);
+                                }
+                            }
+                        }
+                    };
+                }
 
                 DebugLogger.Log("SearchModalViewModel", $"Search started with ID: {_currentSearchId}");
             }
@@ -208,7 +256,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("SearchModalViewModel", "Results cleared");
         }
 
-        private Task LoadFilterAsync()
+        public Task LoadFilterAsync()
         {
             try
             {
@@ -226,11 +274,24 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        public async Task LoadFilterAsync(string configPath)
+        {
+            try
+            {
+                LoadConfigFromPath(configPath);
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Error loading filter from path: {ex.Message}");
+            }
+        }
+
         private void SwitchTab(string? tabName)
         {
             if (!string.IsNullOrEmpty(tabName))
             {
-                CurrentActiveTab = tabName;
+                // CurrentActiveTab removed - using proper TabControl SelectedIndex binding
                 DebugLogger.Log("SearchModalViewModel", $"Switched to tab: {tabName}");
             }
         }
@@ -241,6 +302,89 @@ namespace BalatroSeedOracle.ViewModels
             {
                 CreateShortcutRequested?.Invoke(this, searchId);
             }
+        }
+
+        private Features.VibeOut.VibeOutViewModel? _activeVibeViewModel;
+        private Features.VibeOut.VibeOutView? _activeVibeWindow;
+        
+        private void CloseModal()
+        {
+            DebugLogger.Log("SearchModalViewModel", "Closing modal");
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+        
+        private void EnterVibeOutMode()
+        {
+            try
+            {
+                // Check if VibeOut is already open
+                if (_activeVibeWindow != null)
+                {
+                    _activeVibeWindow.Activate();
+                    return;
+                }
+                
+                // Create VibeOut window
+                _activeVibeWindow = new Features.VibeOut.VibeOutView();
+                _activeVibeViewModel = new Features.VibeOut.VibeOutViewModel();
+                _activeVibeWindow.DataContext = _activeVibeViewModel;
+                
+                // Start vibing
+                _activeVibeViewModel.StartVibing();
+                
+                // Hook search results to VibeOut
+                if (_searchInstance?.Results != null)
+                {
+                    _searchInstance.Results.CollectionChanged += (s, e) =>
+                    {
+                        if (e.NewItems != null && _activeVibeViewModel != null)
+                        {
+                            foreach (var result in e.NewItems)
+                            {
+                                if (result is Models.SearchResult searchResult)
+                                {
+                                    _activeVibeViewModel.ProcessSeedResult(searchResult.Seed, searchResult.TotalScore, searchResult.Scores);
+                                }
+                            }
+                        }
+                    };
+                }
+                
+                // Clean up when closed
+                _activeVibeWindow.Closed += (s, e) =>
+                {
+                    _activeVibeViewModel?.StopVibing();
+                    _activeVibeViewModel = null;
+                    _activeVibeWindow = null;
+                };
+                
+                _activeVibeWindow.Show();
+                DebugLogger.Log("SearchModalViewModel", "🎵 VibeOut mode activated!");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to start VibeOut: {ex.Message}");
+            }
+        }
+        
+        private void HookVibeToSearch(SearchInstance searchInstance)
+        {
+            if (_activeVibeViewModel == null || searchInstance?.Results == null) return;
+            
+            // Subscribe to results collection changes
+            searchInstance.Results.CollectionChanged += (s, e) =>
+            {
+                if (e.NewItems != null && _activeVibeViewModel != null)
+                {
+                    foreach (SearchResult result in e.NewItems)
+                    {
+                        if (result != null && !string.IsNullOrEmpty(result.Seed))
+                        {
+                            _activeVibeViewModel.ProcessSeedResult(result.Seed, result.TotalScore, result.Scores);
+                        }
+                    }
+                }
+            };
         }
 
         #endregion
@@ -260,8 +404,14 @@ namespace BalatroSeedOracle.ViewModels
 
         private SearchCriteria BuildSearchCriteria()
         {
+            if (string.IsNullOrEmpty(_currentFilterPath))
+            {
+                throw new InvalidOperationException("No filter path available - filter must be loaded first!");
+            }
+            
             return new SearchCriteria
             {
+                ConfigPath = _currentFilterPath, // CRITICAL: Pass the filter path!
                 ThreadCount = Environment.ProcessorCount,
                 Deck = DeckSelection == "All Decks" ? null : DeckSelection,
                 Stake = StakeSelection == "All Stakes" ? null : StakeSelection
@@ -291,10 +441,760 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_searchInstance != null)
             {
+                _searchInstance.SearchStarted -= OnSearchStarted;
                 _searchInstance.SearchCompleted -= OnSearchCompleted;
+                _searchInstance.ProgressUpdated -= OnProgressUpdated;
                 _searchInstance.Dispose();
             }
             // CircularConsoleBuffer doesn't need disposal
+        }
+
+        private void PauseSearch()
+        {
+            if (_searchInstance != null && _isSearching)
+            {
+                _searchInstance.PauseSearch();
+            }
+        }
+
+        private bool CanPauseSearch() => _isSearching;
+
+        private async void ExportResults()
+        {
+            try
+            {
+                if (SearchResults.Count == 0)
+                {
+                    DebugLogger.Log("SearchModalViewModel", "No results to export");
+                    return;
+                }
+                
+                // Create export text
+                var exportText = $"Balatro Seed Search Results\n";
+                exportText += $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n";
+                exportText += $"Filter: {_loadedConfig?.Name ?? "Unknown"}\n";
+                exportText += $"Total Results: {SearchResults.Count}\n";
+                exportText += new string('=', 50) + "\n\n";
+                
+                foreach (var result in SearchResults)
+                {
+                    exportText += $"Seed: {result.Seed}\n";
+                    exportText += $"Score: {result.TotalScore}\n";
+                    if (result.Scores != null && result.Scores.Length > 0)
+                    {
+                        exportText += $"Scores: {string.Join(", ", result.Scores)}\n";
+                    }
+                    exportText += "\n";
+                }
+                
+                // Save to file
+                var fileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                var filePath = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    fileName
+                );
+                
+                await System.IO.File.WriteAllTextAsync(filePath, exportText);
+                DebugLogger.Log("SearchModalViewModel", $"Results exported to: {filePath}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Export failed: {ex.Message}");
+            }
+        }
+
+        private bool CanExportResults() => SearchResults.Count > 0;
+
+        /// <summary>
+        /// Connect to an existing search instance (for resuming searches)
+        /// FIXES SEARCH RESUME BUG: Properly reconnect to running search with stats
+        /// </summary>
+        public async Task ConnectToExistingSearch(string searchId)
+        {
+            try
+            {
+                _currentSearchId = searchId;
+                _searchInstance = _searchManager.GetSearch(searchId);
+                
+                if (_searchInstance != null)
+                {
+                    // Subscribe to search events for live updates
+                    _searchInstance.SearchStarted += OnSearchStarted;
+                    _searchInstance.SearchCompleted += OnSearchCompleted;
+                    _searchInstance.ProgressUpdated += OnProgressUpdated;
+                    
+                    // Hook vibe mode if active
+                    if (_activeVibeViewModel != null && _searchInstance != null)
+                    {
+                        HookVibeToSearch(_searchInstance);
+                    }
+                    
+                    // CRITICAL: Update UI state from existing search
+                    IsSearching = _searchInstance?.IsRunning ?? false;
+                    
+                    // CRITICAL: Load existing results to show current progress
+                    await LoadExistingResults();
+                    
+                    // CRITICAL: Get current search progress/stats
+                    RefreshSearchStats();
+                    
+                    // Switch to Results tab to show the reconnected search
+                    SelectedTabIndex = 3; // Results tab
+                    
+                    DebugLogger.Log("SearchModalViewModel", $"Successfully reconnected to search: {searchId}, Running: {_searchInstance?.IsRunning ?? false}, Results: {SearchResults.Count}");
+                }
+                else
+                {
+                    DebugLogger.LogError("SearchModalViewModel", $"Search instance not found: {searchId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to connect to existing search: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Load existing results from the search instance
+        /// </summary>
+        private async Task LoadExistingResults()
+        {
+            if (_searchInstance == null) return;
+
+            try
+            {
+                SearchResults.Clear();
+                
+                // Load results from the search instance using async API
+                var existingResults = await _searchInstance.GetResultsPageAsync(0, 1000);
+                if (existingResults != null)
+                {
+                    foreach (var result in existingResults)
+                    {
+                        SearchResults.Add(result);
+                    }
+                }
+                
+                DebugLogger.Log("SearchModalViewModel", $"Loaded {SearchResults.Count} existing results");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to load existing results: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Refresh search statistics from the running instance
+        /// CRITICAL: This connects the UI to live search data
+        /// </summary>
+        private void RefreshSearchStats()
+        {
+            if (_searchInstance == null) return;
+
+            try
+            {
+                // Get LIVE stats from the running SearchInstance
+                _lastKnownResultCount = _searchInstance.ResultCount;
+                
+                // Update search state
+                _isSearching = _searchInstance.IsRunning;
+                
+                // Trigger ALL UI property updates for live stats
+                OnPropertyChanged(nameof(SearchStatus));
+                OnPropertyChanged(nameof(SearchProgress));
+                OnPropertyChanged(nameof(ProgressText));
+                OnPropertyChanged(nameof(ResultsCount));
+                OnPropertyChanged(nameof(IsSearching));
+                
+                DebugLogger.Log("SearchModalViewModel", $"🔄 RECONNECTED to search - Running: {_isSearching}, Results: {_lastKnownResultCount}");
+                
+                // Start a timer to periodically refresh stats for live updates
+                StartStatsRefreshTimer();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to refresh search stats: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Start periodic stats refresh for live updates while search is running
+        /// </summary>
+        private void StartStatsRefreshTimer()
+        {
+            if (_searchInstance == null || !_isSearching) return;
+            
+            // Use a simple timer to refresh stats every 500ms while search is active
+            Task.Run(async () =>
+            {
+                while (_searchInstance?.IsRunning == true && _isSearching)
+                {
+                    try
+                    {
+                        // Update result count from live search
+                        var liveResultCount = _searchInstance.ResultCount;
+                        if (liveResultCount != _lastKnownResultCount)
+                        {
+                            _lastKnownResultCount = liveResultCount;
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                            {
+                                OnPropertyChanged(nameof(ResultsCount));
+                            });
+                        }
+                        
+                        await Task.Delay(500); // Refresh every 500ms
+                    }
+                    catch
+                    {
+                        break; // Exit on any error
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Load configuration from file path
+        /// </summary>
+        public void LoadConfigFromPath(string configPath)
+        {
+            try
+            {
+                DebugLogger.Log("SearchModalViewModel", $"Loading config from: {configPath}");
+                
+                if (!System.IO.File.Exists(configPath))
+                {
+                    DebugLogger.LogError("SearchModalViewModel", $"Filter file not found: {configPath}");
+                    return;
+                }
+                
+                // Read and parse the filter configuration
+                var json = System.IO.File.ReadAllText(configPath);
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                
+                if (config != null)
+                {
+                    LoadedConfig = config;
+                    _currentFilterPath = configPath; // CRITICAL: Store the path for the search!
+                    
+                    // Update deck and stake from the loaded config
+                    if (!string.IsNullOrEmpty(config.Deck))
+                    {
+                        DeckSelection = config.Deck;
+                    }
+                    
+                    if (!string.IsNullOrEmpty(config.Stake))
+                    {
+                        StakeSelection = config.Stake;
+                    }
+                    
+                    DebugLogger.Log("SearchModalViewModel", $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})");
+                    
+                    // Switch to the Search tab so user can start searching
+                    SelectedTabIndex = 2; // Search tab
+                }
+                else
+                {
+                    DebugLogger.LogError("SearchModalViewModel", "Failed to deserialize filter config");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to load config: {ex.Message}");
+            }
+        }
+
+        // Missing event handlers for search events
+        private void OnSearchStarted(object? sender, EventArgs e)
+        {
+            IsSearching = true;
+            DebugLogger.Log("SearchModalViewModel", "Search started");
+        }
+
+        private void OnProgressUpdated(object? sender, SearchProgress e)
+        {
+            LatestProgress = e;
+            _lastKnownResultCount = e.ResultsFound;
+            OnPropertyChanged(nameof(SearchProgress));
+            OnPropertyChanged(nameof(ProgressText));
+            OnPropertyChanged(nameof(ResultsCount));
+        }
+
+
+        /// <summary>
+        /// Initialize dynamic tabs for consistent Balatro styling
+        /// </summary>
+        private void InitializeSearchTabs()
+        {
+            TabItems.Clear();
+            
+            // Create tab content as UserControls
+            var filterTab = CreateFilterTabContent();
+            var settingsTab = CreateSettingsTabContent();
+            var searchTab = CreateSearchTabContent();
+            var resultsTab = CreateResultsTabContent();
+            
+            TabItems.Add(new TabItemViewModel("🔍 FILTER", filterTab));
+            TabItems.Add(new TabItemViewModel("⚙️ SETTINGS", settingsTab));
+            TabItems.Add(new TabItemViewModel("🚀 SEARCH", searchTab));
+            TabItems.Add(new TabItemViewModel("📊 RESULTS", resultsTab));
+        }
+
+        private UserControl CreateFilterTabContent()
+        {
+            // Create the filter selector and wire up the event
+            var filterSelector = new Components.FilterSelector 
+            { 
+                Title = "Select Search Filter",
+                IsInSearchModal = true,
+                ShowActionButtons = false  // Hide edit/delete buttons in search modal
+            };
+            
+            // CRITICAL FIX: Wire up the FilterLoaded event!
+            filterSelector.FilterLoaded += async (sender, filterPath) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"FilterLoaded event fired with path: {filterPath}");
+                _currentFilterPath = filterPath; // Store the path immediately!
+                await LoadFilterAsync(filterPath);
+            };
+            
+            // Create the deck and stake selector and wire up events
+            var deckStakeSelector = new Components.DeckAndStakeSelector();
+            
+            // Wire up the deck/stake selection events
+            deckStakeSelector.SelectionChanged += (sender, selection) =>
+            {
+                var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", 
+                                        "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+                var stakeNames = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                
+                if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
+                    DeckSelection = deckNames[selection.deckIndex];
+                    
+                if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeNames.Length)
+                    StakeSelection = stakeNames[selection.stakeIndex];
+                    
+                DebugLogger.Log("SearchModalViewModel", $"Deck/Stake changed to {DeckSelection}/{StakeSelection}");
+            };
+            
+            deckStakeSelector.DeckSelected += (sender, e) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"Deck selected: {DeckSelection}/{StakeSelection}");
+                // Could switch to search tab or perform other action here
+            };
+            
+            // Create simple ante selector
+            var anteSelector = CreateAnteSelector();
+            
+            // Create simple source selector
+            var sourceSelector = CreateSourceSelector();
+            
+            // Create simple edition selector
+            var editionSelector = CreateEditionSelector();
+            
+            // Create the filter tab content as a UserControl
+            return new UserControl
+            {
+                Content = new Border
+                {
+                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"), // ContainerDarkPrecise
+                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
+                    Padding = new Avalonia.Thickness(25),
+                    Child = new ScrollViewer
+                    {
+                        Content = new StackPanel
+                        {
+                            Spacing = 15,
+                            Children =
+                            {
+                                new TextBlock 
+                                { 
+                                    Text = "SEARCH FILTERS", 
+                                    FontSize = 24, 
+                                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                                    Foreground = Avalonia.Media.Brush.Parse("#00FF88")
+                                },
+                                filterSelector,
+                                deckStakeSelector,
+                                anteSelector,
+                                sourceSelector,
+                                editionSelector
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private UserControl CreateSettingsTabContent()
+        {
+            return new UserControl
+            {
+                Content = new Border
+                {
+                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
+                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
+                    Padding = new Avalonia.Thickness(25),
+                    Child = new StackPanel
+                    {
+                        Spacing = 15,
+                        Children =
+                        {
+                            new TextBlock { Text = "SEARCH SETTINGS", FontSize = 24, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center, Margin = new Avalonia.Thickness(0, 0, 0, 20) },
+                            new StackPanel
+                            {
+                                Spacing = 15,
+                                Children =
+                                {
+                                    new TextBlock { Text = "Number of Threads:", FontSize = 14 },
+                                    new Slider
+                                    {
+                                        Minimum = 1,
+                                        Maximum = Environment.ProcessorCount,
+                                        Value = Math.Min(4, Environment.ProcessorCount),
+                                        Width = 300,
+                                        TickFrequency = 1,
+                                        IsSnapToTickEnabled = true
+                                    },
+                                    new TextBlock { Text = "Batch Size:", FontSize = 14, Margin = new Avalonia.Thickness(0, 10, 0, 0) },
+                                    new Slider
+                                    {
+                                        Minimum = 100,
+                                        Maximum = 10000,
+                                        Value = 1000,
+                                        Width = 300,
+                                        TickFrequency = 100,
+                                        IsSnapToTickEnabled = true
+                                    },
+                                    new CheckBox
+                                    {
+                                        Content = "Enable progress notifications",
+                                        IsChecked = true,
+                                        Margin = new Avalonia.Thickness(0, 10, 0, 0)
+                                    },
+                                    new CheckBox
+                                    {
+                                        Content = "Auto-save results",
+                                        IsChecked = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private UserControl CreateSearchTabContent()
+        {
+            var searchButton = new Button
+            {
+                Content = "START SEARCH",
+                Command = StartSearchCommand,
+                Background = Avalonia.Media.Brush.Parse("#00b300"),
+                Padding = new Avalonia.Thickness(30, 15),
+                FontSize = 18,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            
+            var stopButton = new Button
+            {
+                Content = "STOP SEARCH",
+                Command = StopSearchCommand,
+                Background = Avalonia.Media.Brush.Parse("#d9534f"),
+                Padding = new Avalonia.Thickness(30, 15),
+                FontSize = 18,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            
+            var vibeButton = new Button
+            {
+                Content = "🎵 VIBE OUT MODE 🎵",
+                Command = EnterVibeOutModeCommand,
+                Background = Avalonia.Media.Brush.Parse("#9b59b6"),
+                Foreground = Avalonia.Media.Brush.Parse("#00FF88"),
+                Padding = new Avalonia.Thickness(30, 15),
+                FontSize = 20,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            vibeButton.Classes.Add("vibe-button");
+            
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 20,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Children = { searchButton, stopButton, vibeButton }
+            };
+            
+            var progressBar = new ProgressBar
+            {
+                [!ProgressBar.ValueProperty] = new Avalonia.Data.Binding("SearchProgress"),
+                Maximum = 100,
+                Height = 30,
+                Margin = new Avalonia.Thickness(0, 20, 0, 10)
+            };
+            
+            var statusText = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Avalonia.Data.Binding("ProgressText"),
+                FontSize = 14,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            
+            return new UserControl
+            {
+                Content = new Border
+                {
+                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
+                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
+                    Padding = new Avalonia.Thickness(25),
+                    Child = new StackPanel
+                    {
+                        Spacing = 20,
+                        Children =
+                        {
+                            new TextBlock 
+                            { 
+                                Text = "SEARCH CONTROLS", 
+                                FontSize = 24, 
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                            },
+                            buttonPanel,
+                            progressBar,
+                            statusText
+                        }
+                    }
+                }
+            };
+        }
+
+        private UserControl CreateResultsTabContent()
+        {
+            // Simple results DataGrid with sorting
+            var dataGrid = new DataGrid
+            {
+                AutoGenerateColumns = false,
+                CanUserSortColumns = true,
+                CanUserReorderColumns = true,
+                CanUserResizeColumns = true,
+                Background = Avalonia.Media.Brush.Parse("#1a1a1a"),
+                Foreground = Avalonia.Media.Brush.Parse("#FFD700"),
+                GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+                HeadersVisibility = DataGridHeadersVisibility.Column
+            };
+            
+            // Bind to SearchResults
+            dataGrid.Bind(DataGrid.ItemsSourceProperty, new Avalonia.Data.Binding("SearchResults"));
+            
+            // Add columns
+            dataGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Seed",
+                Binding = new Avalonia.Data.Binding("Seed"),
+                Width = new DataGridLength(120),
+                CanUserSort = true
+            });
+            
+            dataGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Score",
+                Binding = new Avalonia.Data.Binding("TotalScore"),
+                Width = new DataGridLength(80),
+                CanUserSort = true
+            });
+            
+            dataGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Scores",
+                Binding = new Avalonia.Data.Binding("ScoresDisplay"),
+                Width = new DataGridLength(200),
+                CanUserSort = false
+            });
+            
+            // Double-click to copy seed
+            dataGrid.DoubleTapped += async (s, e) =>
+            {
+                if (dataGrid.SelectedItem is Models.SearchResult result)
+                {
+                    try
+                    {
+                        await ClipboardService.CopyToClipboardAsync(result.Seed);
+                        DebugLogger.Log("SearchModalViewModel", $"Copied seed: {result.Seed}");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("SearchModalViewModel", $"Copy failed: {ex.Message}");
+                    }
+                }
+            };
+            
+            return new UserControl
+            {
+                Content = new Border
+                {
+                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
+                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
+                    Padding = new Avalonia.Thickness(15),
+                    Child = new StackPanel
+                    {
+                        Spacing = 10,
+                        Children =
+                        {
+                            new TextBlock 
+                            {
+                                Text = "SEARCH RESULTS",
+                                FontSize = 18,
+                                FontWeight = Avalonia.Media.FontWeight.Bold,
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                                Foreground = Avalonia.Media.Brush.Parse("#00FF88")
+                            },
+                            new TextBlock
+                            {
+                                Text = "Double-click seed to copy to clipboard",
+                                FontSize = 12,
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                                Foreground = Avalonia.Media.Brush.Parse("#CCCCCC")
+                            },
+                            dataGrid
+                        }
+                    }
+                }
+            };
+        }
+
+        // CreateShortcutRequested already exists - removed duplicate
+        
+        /// <summary>
+        /// Create simple ante selector
+        /// </summary>
+        private Control CreateAnteSelector()
+        {
+            var checkBoxes = new CheckBox[8];
+            var antePanel = new WrapPanel();
+            
+            for (int i = 0; i < 8; i++)
+            {
+                checkBoxes[i] = new CheckBox
+                {
+                    Content = $"Ante {i + 1}",
+                    IsChecked = i < 4, // Default to first 4 antes
+                    Foreground = Avalonia.Media.Brush.Parse("#FFD700"),
+                    FontSize = 12
+                };
+                antePanel.Children.Add(checkBoxes[i]);
+            }
+            
+            return new Border
+            {
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                BorderBrush = Avalonia.Media.Brush.Parse("#00FF88"),
+                BorderThickness = new Avalonia.Thickness(1),
+                CornerRadius = new Avalonia.CornerRadius(5),
+                Padding = new Avalonia.Thickness(10),
+                Child = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock 
+                        { 
+                            Text = "Search Antes", 
+                            Foreground = Avalonia.Media.Brush.Parse("#00FF88"), 
+                            FontWeight = Avalonia.Media.FontWeight.Bold 
+                        },
+                        antePanel
+                    }
+                }
+            };
+        }
+        
+        /// <summary>
+        /// Create simple source selector
+        /// </summary>
+        private Control CreateSourceSelector()
+        {
+            var sourceCombo = new ComboBox
+            {
+                SelectedIndex = 0,
+                MinWidth = 200,
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                Foreground = Avalonia.Media.Brush.Parse("#FFD700")
+            };
+            
+            sourceCombo.Items.Add("Any Source");
+            sourceCombo.Items.Add("Small Blind Tag");
+            sourceCombo.Items.Add("Big Blind Tag");
+            sourceCombo.Items.Add("Standard Pack");
+            sourceCombo.Items.Add("Buffoon Pack");
+            sourceCombo.Items.Add("Shop");
+            sourceCombo.Items.Add("Starting Items");
+            
+            return new Border
+            {
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                BorderBrush = Avalonia.Media.Brush.Parse("#00FF88"),
+                BorderThickness = new Avalonia.Thickness(1),
+                CornerRadius = new Avalonia.CornerRadius(5),
+                Padding = new Avalonia.Thickness(10),
+                Child = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock 
+                        { 
+                            Text = "Item Source", 
+                            Foreground = Avalonia.Media.Brush.Parse("#00FF88"), 
+                            FontWeight = Avalonia.Media.FontWeight.Bold 
+                        },
+                        sourceCombo
+                    }
+                }
+            };
+        }
+        
+        /// <summary>
+        /// Create simple edition selector
+        /// </summary>
+        private Control CreateEditionSelector()
+        {
+            var editionCombo = new ComboBox
+            {
+                SelectedIndex = 0,
+                MinWidth = 200,
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                Foreground = Avalonia.Media.Brush.Parse("#FFD700")
+            };
+            
+            editionCombo.Items.Add("Any Edition");
+            editionCombo.Items.Add("Normal");
+            editionCombo.Items.Add("Foil (+50 chips)");
+            editionCombo.Items.Add("Holographic (+10 mult)");
+            editionCombo.Items.Add("Polychrome (x1.5 mult)");
+            editionCombo.Items.Add("Negative (+1 joker slot)");
+            
+            return new Border
+            {
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                BorderBrush = Avalonia.Media.Brush.Parse("#00FF88"),
+                BorderThickness = new Avalonia.Thickness(1),
+                CornerRadius = new Avalonia.CornerRadius(5),
+                Padding = new Avalonia.Thickness(10),
+                Child = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock 
+                        { 
+                            Text = "Card Edition", 
+                            Foreground = Avalonia.Media.Brush.Parse("#00FF88"), 
+                            FontWeight = Avalonia.Media.FontWeight.Bold 
+                        },
+                        editionCombo
+                    }
+                }
+            };
         }
 
         #endregion

@@ -109,111 +109,64 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
-        public void SetItem(string itemKey, string itemName, ItemConfig? existingConfig = null)
+        public void SetItem(string itemKey, string itemType, string displayName)
         {
             _itemKey = itemKey;
 
             // Check if this is a joker (editions only apply to jokers)
-            _isJoker = IsJokerItem(itemKey);
+            _isJoker = itemType == "Joker";
 
             var nameText = this.FindControl<TextBlock>("ItemNameText");
             if (nameText != null)
-                nameText.Text = itemName;
-
+                nameText.Text = displayName;
+        }
+        
+        public void LoadConfiguration(ItemConfig config)
+        {
+            // Load antes if configured
+            if (config.Antes != null && config.Antes.Count > 0)
+            {
+                _selectedAntes = new bool[8];
+                foreach (var ante in config.Antes)
+                {
+                    if (ante >= 1 && ante <= 8)
+                        _selectedAntes[ante - 1] = true;
+                }
+                UpdateAnteCheckboxes();
+            }
+            
+            // Load edition
+            if (!string.IsNullOrEmpty(config.Edition))
+            {
+                switch (config.Edition.ToLower())
+                {
+                    case "foil":
+                        SetRadioButton("EditionFoil");
+                        break;
+                    case "holographic":
+                        SetRadioButton("EditionHolo");
+                        break;
+                    case "polychrome":
+                        SetRadioButton("EditionPoly");
+                        break;
+                    case "negative":
+                        SetRadioButton("EditionNegative");
+                        break;
+                    default:
+                        SetRadioButton("EditionNormal");
+                        break;
+                }
+            }
+            
+            // Load score
+            var scoreBox = this.Find<TextBox>("ScoreBox");
+            if (scoreBox != null)
+                scoreBox.Text = config.Score.ToString();
+            
             // Show/hide edition section based on item type
             var editionBorder = this.FindControl<Border>("EditionSection");
             if (editionBorder != null)
                 editionBorder.IsVisible = _isJoker;
-
-            if (existingConfig != null)
-            {
-                // Load existing ante configuration
-                if (existingConfig.Antes != null && existingConfig.Antes.Count > 0)
-                {
-                    // Clear all antes first
-                    for (int i = 0; i < 8; i++)
-                    {
-                        _selectedAntes[i] = false;
-                    }
-
-                    // Set selected antes
-                    foreach (var ante in existingConfig.Antes)
-                    {
-                        if (ante >= 1 && ante <= 8)
-                        {
-                            _selectedAntes[ante - 1] = true;
-                        }
-                    }
-
-                    UpdateAnteCheckboxes();
-                }
-                else
-                {
-                    // Default to all antes selected
-                    for (int i = 0; i < 8; i++)
-                    {
-                        _selectedAntes[i] = true;
-                    }
-                    UpdateAnteCheckboxes();
-                }
-
-                // Set edition
-                if (!string.IsNullOrEmpty(existingConfig.Edition))
-                {
-                    switch (existingConfig.Edition.ToLower())
-                    {
-                        case "foil":
-                            SetRadioButton("EditionFoil");
-                            break;
-                        case "holographic":
-                            SetRadioButton("EditionHolo");
-                            break;
-                        case "polychrome":
-                            SetRadioButton("EditionPoly");
-                            break;
-                        case "negative":
-                            SetRadioButton("EditionNegative");
-                            break;
-                        default:
-                            SetRadioButton("EditionNormal");
-                            break;
-                    }
-                }
-
-                // Set sources
-                if (existingConfig.Sources != null)
-                {
-                    // Handle both old format (List<string>) and new format (Dictionary with slots)
-                    if (existingConfig.Sources is List<string> sourcesList)
-                    {
-                        SetCheckBox("SourceTags", sourcesList.Contains("tag"));
-                        SetCheckBox("SourcePacks", sourcesList.Contains("booster"));
-                        SetCheckBox("SourceShop", sourcesList.Contains("shop"));
-                    }
-                    else if (existingConfig.Sources is Dictionary<string, object> sourcesDict)
-                    {
-                        // New format - check if pack/shop slots exist
-                        bool hasPackSlots = sourcesDict.ContainsKey("packSlots") && 
-                                          sourcesDict["packSlots"] is List<int> packSlots && 
-                                          packSlots.Count > 0;
-                        bool hasShopSlots = sourcesDict.ContainsKey("shopSlots") && 
-                                          sourcesDict["shopSlots"] is List<int> shopSlots && 
-                                          shopSlots.Count > 0;
-                        
-                        SetCheckBox("SourceTags", hasPackSlots);
-                        SetCheckBox("SourcePacks", hasPackSlots);
-                        SetCheckBox("SourceShop", hasShopSlots);
-                    }
-                }
-
-                // Set label
-                if (!string.IsNullOrEmpty(existingConfig.Label))
-                {
-                    var labelTextBox = this.FindControl<TextBox>("LabelTextBox");
-                    if (labelTextBox != null)
-                        labelTextBox.Text = existingConfig.Label;
-                }
-            }
         }
 
         private void SetRadioButton(string name)
@@ -470,17 +423,30 @@ namespace BalatroSeedOracle.Controls
     public class ItemConfigEventArgs : EventArgs
     {
         public ItemConfig Config { get; set; } = new();
+        public ItemConfig Configuration => Config; // Alias for compatibility
     }
 
     public class ItemConfig
     {
         public string ItemKey { get; set; } = "";
+        public string ItemType { get; set; } = ""; // Joker, Tag, Voucher, etc
+        public string ItemName { get; set; } = ""; // Display name
         public List<int>? Antes { get; set; }
         public string Edition { get; set; } = "none";
+        public string Seal { get; set; } = "None"; // Red, Blue, Gold, Purple
+        public string Enhancement { get; set; } = "None"; // Bonus, Mult, Wild, Glass, Steel, Stone, Lucky
+        public int Score { get; set; } = 1; // Score for should clauses
         public object? Sources { get; set; }
         public string? Label { get; set; }
         public string? TagType { get; set; } // "smallblindtag" or "bigblindtag" for tag items
         public List<string>? Stickers { get; set; } // "eternal", "perishable", "rental"
         public int? Min { get; set; } // Minimum count required (for Must items)
+        public List<int>? ShopSlots { get; set; } // Shop slot positions
+        public List<int>? PackSlots { get; set; } // Pack slot positions
+        public bool SkipBlindTags { get; set; } // From skip blind tags
+        public bool IsMegaArcana { get; set; } // Mega arcana pack only
+        public bool IsSoulJoker { get; set; } // For SoulJoker type
+        public bool IsMultiValue { get; set; } // For multi-value clauses
+        public List<string>? Values { get; set; } // For multi-value clauses
     }
 }

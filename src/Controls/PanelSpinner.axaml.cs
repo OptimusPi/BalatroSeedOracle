@@ -97,6 +97,9 @@ public partial class PanelSpinner : UserControl
     {
         if (_items.Count == 0) return;
         
+        // Play filter switch sound
+        SoundEffectService.Instance.PlayFilterSwitch();
+        
         // Circular navigation: if at beginning, wrap to end
         if (_currentIndex > 0)
         {
@@ -112,6 +115,9 @@ public partial class PanelSpinner : UserControl
     private void OnNextClick(object? sender, RoutedEventArgs e)
     {
         if (_items.Count == 0) return;
+        
+        // Play filter switch sound
+        SoundEffectService.Instance.PlayFilterSwitch();
         
         // Circular navigation: if at end, wrap to beginning
         if (_currentIndex < _items.Count - 1)
@@ -198,35 +204,36 @@ public partial class PanelSpinner : UserControl
         // Clear existing dots
         _dotsPanel.Children.Clear();
 
-        // Adjust dot spacing based on number of items
-        bool manyItems = _items.Count > 10;
-        if (manyItems)
+        // If more than 8 items, show page counter instead of dots
+        if (_items.Count > 8)
         {
-            _dotsPanel.Spacing = 2; // Closer together
+            var pageIndicator = new TextBlock
+            {
+                Text = $"{_currentIndex + 1}/{_items.Count}",
+                FontFamily = Application.Current?.Resources["BalatroFont"] as FontFamily ?? FontFamily.Default,
+                FontSize = 14,
+                Foreground = Brushes.White,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            _dotsPanel.Children.Add(pageIndicator);
         }
         else
         {
-            _dotsPanel.Spacing = 4; // Normal spacing
-        }
+            // Show dots for 8 or fewer items
+            _dotsPanel.Spacing = 4;
 
-        // Create new dots
-        for (int i = 0; i < _items.Count; i++)
-        {
-            var dot = new TextBlock();
-            dot.Classes.Add("position-dot");
-            
-            // Make dots smaller for many items
-            if (manyItems)
+            for (int i = 0; i < _items.Count; i++)
             {
-                dot.Classes.Add("compact");
-            }
+                var dot = new TextBlock();
+                dot.Classes.Add("position-dot");
 
-            if (i == _currentIndex)
-            {
-                dot.Classes.Add("active");
-            }
+                if (i == _currentIndex)
+                {
+                    dot.Classes.Add("active");
+                }
 
-            _dotsPanel.Children.Add(dot);
+                _dotsPanel.Children.Add(dot);
+            }
         }
     }
 

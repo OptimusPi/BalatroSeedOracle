@@ -76,6 +76,7 @@ namespace BalatroSeedOracle.Views
                     // Subscribe to search instance events
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
+                    _searchInstance.ProgressUpdated += OnProgressUpdated;
 
                     // Update UI with current state
                     _isSearching = _searchInstance.IsRunning;
@@ -190,6 +191,17 @@ namespace BalatroSeedOracle.Views
                 // Don't update progress to 100% - keep current progress
                 // Search may have been stopped/cancelled early
                 UpdateStateIcon();
+            });
+        }
+
+        private void OnProgressUpdated(object? sender, SearchProgress progress)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                // Update progress bar and result count
+                UpdateProgress(progress.PercentComplete);
+                _resultCount = progress.ResultsFound;
+                UpdateBadge();
             });
         }
 

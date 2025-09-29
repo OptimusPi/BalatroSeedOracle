@@ -1,0 +1,224 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BalatroSeedOracle.Features.VibeOut"
+        xmlns:controls="using:BalatroSeedOracle.Controls"
+        x:Class="BalatroSeedOracle.Features.VibeOut.VibeOutView"
+        x:DataType="vm:VibeOutViewModel"
+        Title="VIBE OUT MODE"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Background="Black">
+    
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding StopVibingCommand}"/>
+        <KeyBinding Gesture="Space" Command="{Binding TogglePauseCommand}"/>
+        <KeyBinding Gesture="Up" Command="{Binding IncreaseVolumeCommand}"/>
+        <KeyBinding Gesture="Down" Command="{Binding DecreaseVolumeCommand}"/>
+
+        <KeyBinding Gesture="C" Command="{Binding ClearHistoryCommand}"/>
+    </Window.KeyBindings>
+    
+    <Grid>
+        <!-- 🎵 MUSIC-REACTIVE BALATRO BACKGROUND 🔥 -->
+        <controls:BalatroStyleBackground x:Name="VibeBackground" 
+                                        Theme="VibeOut"
+                                        IsAnimating="True" 
+                                        Contrast="1.5"
+                                        SpinAmount="0.7"/>
+        
+        <!-- Matrix rain overlay -->
+        <ItemsControl ItemsSource="{Binding MatrixSeeds}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FallingSeed">
+                    <TextBlock Text="{Binding Text}"
+                               Foreground="#00FF00"
+                               FontFamily="Consolas"
+                               FontSize="14"
+                               Opacity="{Binding Opacity}"
+                               Canvas.Left="{Binding X}"
+                               Canvas.Top="{Binding Y}">
+                        <TextBlock.Effect>
+                            <BlurEffect Radius="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        
+        <!-- Clickable seed pills -->
+        <ItemsControl ItemsSource="{Binding Pills}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SeedPill">
+                    <Button Content="{Binding Seed}"
+                            Command="{Binding $parent[Window].((vm:VibeOutViewModel)DataContext).CopySeedCommand}"
+                            CommandParameter="{Binding Seed}"
+                            Canvas.Left="{Binding X}"
+                            Canvas.Top="{Binding Y}"
+                            Padding="8,4"
+                            Background="#4400FF88"
+                            BorderBrush="#00FF88"
+                            BorderThickness="2"
+                            Foreground="#00FF88"
+                            FontFamily="{StaticResource BalatroFont}"
+                            FontSize="16"
+                            CornerRadius="20">
+                        <Button.RenderTransform>
+                            <RotateTransform Angle="{Binding Rotation}"/>
+                        </Button.RenderTransform>
+                        <Button.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                            </Transitions>
+                        </Button.Transitions>
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#8800FF88"/>
+                                <Setter Property="RenderTransform" Value="scale(1.2)"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        
+        <!-- Audio State & Vibe Status -->
+        <Border VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,50"
+                Background="#22000000"
+                BorderBrush="#00FF88"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="20,10">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <TextBlock Text="{Binding VibeStatus}"
+                           Foreground="#00FF88"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="20"
+                           VerticalAlignment="Center"/>
+                
+                <TextBlock Text="{Binding AudioState}"
+                           Foreground="#FFD700"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Opacity="0.8"/>
+                
+                <TextBlock Text="{Binding CurrentSeed}"
+                           Foreground="#FFD700"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="20"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Seed History Panel -->
+        <Border VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Margin="20"
+                Background="#33000000"
+                BorderBrush="#00FF88"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="15"
+                MaxHeight="300">
+            <StackPanel>
+                <TextBlock Text="🌟 RECENT SEEDS"
+                           Foreground="#00FF88"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           Margin="0,0,0,10"/>
+                <ScrollViewer MaxHeight="250">
+                    <ItemsControl ItemsSource="{Binding RecentSeeds}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding}"
+                                        Command="{Binding $parent[Window].((vm:VibeOutViewModel)DataContext).CopySeedCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="#FFD700"
+                                        FontFamily="Consolas"
+                                        FontSize="12"
+                                        HorizontalAlignment="Left"
+                                        Cursor="Hand"
+                                        Padding="5,2">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover">
+                                            <Setter Property="Background" Value="#22FFD700"/>
+                                        </Style>
+                                    </Button.Styles>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+        
+        <!-- Volume Controls -->
+        <Border VerticalAlignment="Top"
+                HorizontalAlignment="Center"
+                Margin="0,20,0,0"
+                Background="#33000000"
+                BorderBrush="#00FF88"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="20,10">
+            <StackPanel Orientation="Horizontal" Spacing="15">
+                <TextBlock Text="🔊 VOLUME:"
+                           Foreground="#00FF88"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                <Slider Value="{Binding MasterVolume}"
+                        Minimum="0"
+                        Maximum="1"
+                        Width="200"
+                        VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}"
+                           Foreground="#FFD700"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Exit button -->
+        <Button Content="EXIT VIBE [ESC]" 
+                Command="{Binding StopVibingCommand}"
+                VerticalAlignment="Top" 
+                HorizontalAlignment="Right"
+                Margin="20"
+                Opacity="0.3"
+                Background="#88000000"
+                BorderBrush="#FF0000"
+                BorderThickness="2"
+                Foreground="#FF0000"
+                FontFamily="{StaticResource BalatroFont}"
+                FontSize="16"
+                Padding="15,8"
+                CornerRadius="5">
+            <Button.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                </Transitions>
+            </Button.Transitions>
+            <Button.Styles>
+                <Style Selector="Button:pointerover">
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Style>
+            </Button.Styles>
+        </Button>
+    </Grid>
+</Window>

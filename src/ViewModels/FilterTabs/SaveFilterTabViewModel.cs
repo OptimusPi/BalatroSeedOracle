@@ -36,6 +36,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SaveCommand = new AsyncRelayCommand(SaveCurrentFilterAsync, CanSave);
             SaveAsCommand = new AsyncRelayCommand(SaveAsAsync, CanSave);
             ExportCommand = new AsyncRelayCommand(ExportFilterAsync, CanSave);
+            TestFilterCommand = new RelayCommand(TestFilter);
         }
 
         #region Properties
@@ -91,6 +92,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand SaveCommand { get; }
         public ICommand SaveAsCommand { get; }
         public ICommand ExportCommand { get; }
+        public ICommand TestFilterCommand { get; }
 
         #endregion
 
@@ -210,6 +212,33 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         // Logic moved to shared FilterConfigurationService
+        
+        private void TestFilter()
+        {
+            try
+            {
+                // Build the filter configuration
+                var config = BuildConfigFromCurrentState();
+                
+                // Validate the filter
+                if (string.IsNullOrWhiteSpace(config?.Name))
+                {
+                    UpdateStatus("Please enter a filter name before testing", true);
+                    return;
+                }
+                
+                // TODO: Launch a test search with this filter
+                UpdateStatus($"Filter '{config.Name}' is ready for testing!", false);
+                DebugLogger.Log("SaveFilterTab", $"Test filter clicked for: {config.Name}");
+                
+                // Could emit an event or call a service to actually run the test
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error testing filter: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Test filter error: {ex.Message}");
+            }
+        }
 
         private void UpdateStatus(string message, bool isError)
         {

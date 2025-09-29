@@ -16,5 +16,19 @@
     "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
     "terminal.integrated.gpuAcceleration": "on",
     "editor.experimentalGpuAcceleration": "off",
-    "terminal.integrated.enableImages": true
+    "terminal.integrated.enableImages": true,
+    "claude.exclude": [
+        "**/node_modules/**",
+        "**/bin/**",
+        "**/obj/**",
+        "**/.git/**",
+        "**/packages/**",
+        "**/Releases/**",
+        "**/publish/**",
+        "**/external/**",
+        "**/*.dll",
+        "**/*.exe",
+        "**/*.pdb",
+        "**/*.cache"
+    ]
 }

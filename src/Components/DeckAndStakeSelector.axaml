@@ -5,7 +5,7 @@
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
     
     <StackPanel Spacing="14">
-        <!-- Deck Selection using PanelSpinner -->
+        <!-- Deck Selection using DeckSpinner (restored for API compatibility) -->
         <components:DeckSpinner Name="DeckSpinnerControl" />
         
         <!-- Stake Selection using regular spinner -->

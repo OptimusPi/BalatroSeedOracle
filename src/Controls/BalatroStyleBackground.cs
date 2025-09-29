@@ -24,6 +24,7 @@ namespace BalatroSeedOracle.Controls
             Gold, // Gold/Black
             Monochrome, // Gray scale
             Dynamic, // Dynamic hue-shifted colors
+            VibeOut, // Music-reactive mode
         }
 
         private BackgroundTheme _currentTheme = BackgroundTheme.Default;
@@ -34,6 +35,10 @@ namespace BalatroSeedOracle.Controls
         private float _currentHue = 0.0f;
         private float _targetHue = 0.0f;
         private int _seedCount = 0;
+        
+        // Music visualizer properties
+        private float _vibeIntensity = 0f;
+        private float _beatPulse = 0f;
 
         public new BackgroundTheme Theme
         {
@@ -90,7 +95,7 @@ namespace BalatroSeedOracle.Controls
             // Initialize animation timer
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(33), // ~30 FPS
+                Interval = TimeSpan.FromMilliseconds(50), // 20 FPS - less laggy
             };
             _animationTimer.Tick += (s, e) => InvalidateVisual();
 
@@ -118,7 +123,7 @@ namespace BalatroSeedOracle.Controls
             _seedCount++;
 
             // Set theme to Dynamic if not already
-            if (_currentTheme != BackgroundTheme.Dynamic)
+            if (_currentTheme != BackgroundTheme.Dynamic && _currentTheme != BackgroundTheme.VibeOut)
             {
                 _currentTheme = BackgroundTheme.Dynamic;
             }
@@ -132,6 +137,52 @@ namespace BalatroSeedOracle.Controls
             {
                 IsAnimating = true;
             }
+        }
+        
+        /// <summary>
+        /// Enter VIBE OUT mode with music visualization
+        /// </summary>
+        public void EnterVibeOutMode()
+        {
+            Theme = BackgroundTheme.VibeOut;
+            IsAnimating = true;
+        }
+        
+        /// <summary>
+        /// Exit VIBE OUT mode
+        /// </summary>
+        public void ExitVibeOutMode()
+        {
+            Theme = BackgroundTheme.Default;
+            _beatPulse = 0f;
+            _vibeIntensity = 0f;
+        }
+        
+        /// <summary>
+        /// Update vibe intensity for music-reactive effects
+        /// </summary>
+        public void UpdateVibeIntensity(float intensity)
+        {
+            _vibeIntensity = Math.Clamp(intensity, 0f, 1f);
+            
+            if (_currentTheme == BackgroundTheme.VibeOut)
+            {
+                // Vibe intensity affects spin and contrast
+                SpinAmount = Math.Clamp(0.3f + _vibeIntensity * 0.7f, 0f, 1f);
+                Contrast = Math.Clamp(1f + _vibeIntensity * 1.5f, 0.5f, 3f);
+                
+                // Higher intensity = faster hue shifting
+                _targetHue = (_targetHue + _vibeIntensity * 10f) % 360f;
+            }
+        }
+        
+        /// <summary>
+        /// Trigger beat pulse effect
+        /// </summary>
+        public void OnBeatDetected(float intensity)
+        {
+            _beatPulse = Math.Clamp(intensity, 0f, 1f);
+            InvalidateVisual();
         }
 
         public float CurrentHue => _currentHue;
@@ -168,6 +219,9 @@ namespace BalatroSeedOracle.Controls
                     _currentHue -= 360;
                 }
             }
+            
+            // Decay beat pulse
+            _beatPulse *= 0.95f;
 
             context.Custom(
                 new BalatroStyleBackgroundDrawOp(
@@ -176,12 +230,11 @@ namespace BalatroSeedOracle.Controls
                     _contrast,
                     _spinAmount,
                     _isAnimating,
-                    _currentHue
+                    _currentHue,
+                    _vibeIntensity,
+                    _beatPulse
                 )
             );
-
-            // We no longer need this as we're using a timer for animation
-            // Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
         }
     }
 
@@ -193,6 +246,8 @@ namespace BalatroSeedOracle.Controls
         private readonly float _spinAmount;
         private readonly bool _isAnimating;
         private readonly float _hue;
+        private readonly float _vibeIntensity;
+        private readonly float _beatPulse;
         private static float _lastTime = Environment.TickCount / 1000.0f;
 
         public BalatroStyleBackgroundDrawOp(
@@ -201,7 +256,9 @@ namespace BalatroSeedOracle.Controls
             float contrast,
             float spinAmount,
             bool isAnimating,
-            float hue = 0.0f
+            float hue = 0.0f,
+            float vibeIntensity = 0f,
+            float beatPulse = 0f
         )
         {
             Bounds = bounds;
@@ -210,12 +267,14 @@ namespace BalatroSeedOracle.Controls
             _spinAmount = spinAmount;
             _isAnimating = isAnimating;
             _hue = hue;
+            _vibeIntensity = vibeIntensity;
+            _beatPulse = beatPulse;
             InitShader();
         }
 
         private void InitShader()
         {
-            // Direct conversion from Balatro's background.fs shader
+            // Enhanced Balatro shader with music visualization
             var sksl =
                 @"
                 uniform float2 resolution;
@@ -226,6 +285,8 @@ namespace BalatroSeedOracle.Controls
                 uniform float4 colour_3;
                 uniform float contrast;
                 uniform float spin_amount;
+                uniform float vibe_intensity;
+                uniform float beat_pulse;
 
                 const float PIXEL_SIZE_FAC = 700.0;
                 const float SPIN_EASE = 0.5;
@@ -236,33 +297,52 @@ namespace BalatroSeedOracle.Controls
                     float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution);
                     float uv_len = length(uv);
 
-                    // Adding in a center swirl, changes with time. Only applies meaningfully if the 'spin amount' is a non-zero number
-                    float speed = (spin_time * SPIN_EASE * 0.2) + 302.2;
-                    float new_pixel_angle = atan(uv.y, uv.x) + speed - SPIN_EASE * 20.0 * (1.0 * spin_amount * uv_len + (1.0 - 1.0 * spin_amount));
+                    // MUSIC VISUALIZATION: Modulate effects based on vibe
+                    float music_spin_boost = vibe_intensity * 2.0;
+                    float music_contrast_boost = vibe_intensity * 0.5;
+                    float beat_effect = beat_pulse * 3.0;
+
+                    // Adding in a center swirl, changes with time AND music
+                    float speed = (spin_time * SPIN_EASE * 0.2) + 302.2 + music_spin_boost;
+                    float new_pixel_angle = atan(uv.y, uv.x) + speed - SPIN_EASE * 20.0 * (1.0 * (spin_amount + music_spin_boost * 0.3) * uv_len + (1.0 - 1.0 * (spin_amount + music_spin_boost * 0.3)));
                     float2 mid = (resolution / length(resolution)) / 2.0;
                     uv = float2((uv_len * cos(new_pixel_angle) + mid.x), (uv_len * sin(new_pixel_angle) + mid.y)) - mid;
 
-                    // Now add the paint effect to the swirled UV
-                    uv *= 30.0;
-                    speed = time * 2.0;
+                    // BEAT PULSE: Scale UV based on beat detection
+                    uv *= 30.0 * (1.0 + beat_effect * 0.1);
+                    
+                    // MUSIC-REACTIVE PAINT EFFECT
+                    speed = time * 2.0 + vibe_intensity * 5.0;
                     float2 uv2 = float2(uv.x + uv.y);
 
                     for (int i = 0; i < 5; i++) {
                         uv2 += sin(max(uv.x, uv.y)) + uv;
-                        uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121), sin(uv2.x - 0.113 * speed));
+                        uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + speed * (0.131121 + vibe_intensity * 0.5)), sin(uv2.x - 0.113 * speed * (1.0 + vibe_intensity)));
                         uv -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
                     }
 
-                    // Make the paint amount range from 0 - 2
-                    float contrast_mod = (0.25 * contrast + 0.5 * spin_amount + 1.2);
+                    // Make the paint amount range from 0 - 2 with music modulation
+                    float contrast_mod = (0.25 * (contrast + music_contrast_boost) + 0.5 * spin_amount + 1.2);
                     float paint_res = min(8.0, max(0.0, length(uv) * 0.035 * contrast_mod));
                     float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));
                     float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));
                     float c3p = 1.0 - min(1.0, c1p + c2p);
 
-                    float4 ret_col = (0.3 / contrast) * colour_1 + (1.0 - 0.3 / contrast) * (colour_1 * c1p + colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a));
+                    // MUSIC VISUALIZATION: Color mixing based on vibe intensity
+                    float4 base_col = (0.3 / contrast) * colour_1 + (1.0 - 0.3 / contrast) * (colour_1 * c1p + colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a));
+                    
+                    // Vibe intensity adds color energy
+                    base_col.r += vibe_intensity * 0.3;
+                    base_col.g += vibe_intensity * 0.2;
+                    base_col.b += vibe_intensity * 0.4;
+                    
+                    // Beat pulse creates overall brightness boost
+                    base_col.rgb *= (1.0 + beat_pulse * 0.5);
+                    
+                    // Clamp to valid range
+                    base_col = clamp(base_col, 0.0, 1.0);
 
-                    return ret_col;
+                    return base_col;
                 }
 ";
 
@@ -280,6 +360,10 @@ namespace BalatroSeedOracle.Controls
                 // Apply user settings
                 _shaderBuilder.Uniforms["contrast"] = _contrast;
                 _shaderBuilder.Uniforms["spin_amount"] = _spinAmount;
+                
+                // Music visualization uniforms
+                _shaderBuilder.Uniforms["vibe_intensity"] = _vibeIntensity;
+                _shaderBuilder.Uniforms["beat_pulse"] = _beatPulse;
             }
             else if (!string.IsNullOrEmpty(errorStr))
             {
@@ -402,7 +486,7 @@ namespace BalatroSeedOracle.Controls
             BalatroStyleBackground.BackgroundTheme theme
         )
         {
-            if (theme == BalatroStyleBackground.BackgroundTheme.Dynamic)
+            if (theme == BalatroStyleBackground.BackgroundTheme.Dynamic || theme == BalatroStyleBackground.BackgroundTheme.VibeOut)
             {
                 // Use the current hue to generate colors
                 // Primary color: full saturation and value

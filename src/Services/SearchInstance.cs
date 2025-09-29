@@ -104,6 +104,7 @@ namespace BalatroSeedOracle.Services
         // Events for UI integration
         public event EventHandler? SearchStarted;
         public event EventHandler? SearchCompleted;
+        public event EventHandler<SearchProgress>? ProgressUpdated;
 
         public SearchInstance(string searchId, string dbPath)
         {
@@ -169,10 +170,37 @@ namespace BalatroSeedOracle.Services
         {
             if (should == null) return "should";
 
-            var name = !string.IsNullOrEmpty(should.Value) ? should.Value : should.Type;
+            // FIXED: Handle both single value and values array
+            string name;
+            if (!string.IsNullOrEmpty(should.Value))
+            {
+                // Single value case
+                name = should.Value;
+            }
+            else if (should.Values != null && should.Values.Length > 0)
+            {
+                // Multi-value case: Use first value + count indicator
+                if (should.Values.Length == 1)
+                {
+                    name = should.Values[0];
+                }
+                else
+                {
+                    // Multiple values: create descriptive name
+                    name = $"{should.Values[0]}_Plus{should.Values.Length - 1}More";
+                }
+            }
+            else
+            {
+                // Fallback to type
+                name = should.Type;
+            }
+
+            // Add edition prefix if specified
             if (!string.IsNullOrEmpty(should.Edition))
                 name = should.Edition + "_" + name;
 
+            // Add ante suffix if specified
             if (should.Antes != null && should.Antes.Length > 0)
                 name += "_ante" + should.Antes[0];
 
@@ -743,8 +771,8 @@ namespace BalatroSeedOracle.Services
                 ThreadCount = criteria.ThreadCount,
                 MinScore = criteria.MinScore,
                 BatchSize = criteria.BatchSize,
-                Deck = criteria.Deck,
-                Stake = criteria.Stake,
+                Deck = criteria.Deck ?? "Red",
+                Stake = criteria.Stake ?? "White",
                 StartBatch = criteria.StartBatch,
                 EndBatch = criteria.EndBatch,
                 DebugMode = criteria.EnableDebugOutput,
@@ -770,16 +798,44 @@ namespace BalatroSeedOracle.Services
 
         public void ResumeSearch()
         {
-            if (_isRunning && _isPaused)
+            if (_isRunning)
             {
-                _isPaused = false;
-                // Motely doesn't have a Resume method - search has to be restarted
-                // For now, just update the paused flag
-                DebugLogger.Log(
-                    $"SearchInstance[{_searchId}]",
-                    "Resume not supported - search needs to be restarted"
-                );
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running, cannot resume");
+                return;
             }
+
+            // Load saved search state
+            var resumeState = _userProfileService?.GetSearchState();
+            if (resumeState == null)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "No saved state to resume from");
+                return;
+            }
+
+            // Create search criteria from resume state
+            var resumeCriteria = new SearchCriteria
+            {
+                ConfigPath = resumeState.ConfigPath,
+                BatchSize = (int)resumeState.BatchSize,
+                ThreadCount = (int)resumeState.ThreadCount,
+                MinScore = resumeState.MinScore,
+                Deck = resumeState.Deck,
+                Stake = resumeState.Stake,
+                StartBatch = resumeState.LastCompletedBatch + 1,
+                EndBatch = resumeState.EndBatch,
+                EnableDebugOutput = false
+            };
+            
+            // Update our saved config path
+            ConfigPath = resumeState.ConfigPath ?? string.Empty;
+            
+            DebugLogger.Log(
+                $"SearchInstance[{_searchId}]",
+                $"Resuming search from batch {resumeCriteria.StartBatch} to {resumeCriteria.EndBatch}"
+            );
+            
+            // Restart the search from the saved position
+            StartSearchAsync(resumeCriteria).ConfigureAwait(false);
         }
 
         public void StopSearch()
@@ -1029,19 +1085,33 @@ namespace BalatroSeedOracle.Services
                     var completedBatches = _currentSearch.CompletedBatchCount;
                     var progressPercent = ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch)) * 100.0;
 
-                    // Calculate speed
+                    // Calculate speed - account for StartBatch offset and edge cases
                     var elapsed = DateTime.UtcNow - _searchStartTime;
-                    var seedsSearched = (ulong)(completedBatches * Math.Pow(35, criteria.BatchSize));
+                    var actualBatchesProcessed = Math.Max(0, completedBatches); // Ensure non-negative
+                    var seedsSearched = (ulong)(actualBatchesProcessed * Math.Pow(35, criteria.BatchSize));
+                    
+                    // Prevent division by zero and negative/invalid elapsed time
                     var seedsPerMs = elapsed.TotalMilliseconds > 0 ? seedsSearched / elapsed.TotalMilliseconds : 0;
+                    
+                    // Debug logging for negative seeds/ms issue
+                    if (seedsPerMs < 0)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", 
+                            $"Negative seeds/ms detected: seedsSearched={seedsSearched}, elapsed={elapsed.TotalMilliseconds}ms, completedBatches={completedBatches}");
+                        seedsPerMs = 0; // Reset to 0 to avoid displaying negative values
+                    }
 
-                    progress?.Report(new SearchProgress
+                    var currentProgress = new SearchProgress
                     {
                         SeedsSearched = seedsSearched,
                         PercentComplete = progressPercent,
                         SeedsPerMillisecond = seedsPerMs,
                         Message = $"Searched {completedBatches:N0} batches",
                         ResultsFound = _resultCount
-                    });
+                    };
+                    
+                    progress?.Report(currentProgress);
+                    ProgressUpdated?.Invoke(this, currentProgress);
 
                     try
                     {

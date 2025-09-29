@@ -1,0 +1,265 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.SortableResultsGrid">
+    
+    <UserControl.Styles>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="#1a1a1a"/>
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#00FF88"/>
+            <Setter Property="RowBackground" Value="Transparent"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="CanUserReorderColumns" Value="True"/>
+            <Setter Property="CanUserResizeColumns" Value="True"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+        </Style>
+        
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+        </Style>
+        
+        <Style Selector="DataGridColumnHeader:pointerover">
+            <Setter Property="Background" Value="#3a3a3a"/>
+        </Style>
+        
+        <Style Selector="DataGridCell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:selected DataGridCell">
+            <Setter Property="Background" Value="#00FF88"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:pointerover DataGridCell">
+            <Setter Property="Background" Value="#2200FF88"/>
+        </Style>
+        
+        <Style Selector="Button.copy-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#00FF88"/>
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="Button.copy-btn:pointerover">
+            <Setter Property="Background" Value="#2200FF88"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header with sorting controls -->
+        <Border Grid.Row="0" 
+                Background="#2a2a2a" 
+                BorderBrush="#00FF88" 
+                BorderThickness="0,0,0,1" 
+                Padding="10,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15">
+                    <TextBlock Text="🔍 SEARCH RESULTS" 
+                               Foreground="#00FF88" 
+                               FontFamily="{StaticResource BalatroFont}" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    
+                    <TextBlock Name="ResultsCountText" 
+                               Text="0 results" 
+                               Foreground="#FFD700" 
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <!-- Sort controls -->
+                    <TextBlock Text="Sort by:" 
+                               Foreground="#CCCCCC" 
+                               FontSize="12" 
+                               VerticalAlignment="Center"/>
+                    
+                    <ComboBox Name="SortComboBox" 
+                              Background="#1a1a1a"
+                              Foreground="#FFD700"
+                              BorderBrush="#00FF88"
+                              SelectionChanged="SortComboBox_SelectionChanged"
+                              MinWidth="120">
+                        <ComboBoxItem Content="Seed" Tag="Seed"/>
+                        <ComboBoxItem Content="Score ↓" Tag="TotalScore_Desc" IsSelected="True"/>
+                        <ComboBoxItem Content="Score ↑" Tag="TotalScore_Asc"/>
+                        <ComboBoxItem Content="Date Found ↓" Tag="DateFound_Desc"/>
+                        <ComboBoxItem Content="Date Found ↑" Tag="DateFound_Asc"/>
+                    </ComboBox>
+                    
+                    <!-- Export button -->
+                    <Button Content="📤 Export" 
+                            Name="ExportButton"
+                            Background="#4169E1"
+                            Foreground="White"
+                            Padding="8,4"
+                            FontSize="12"
+                            Click="ExportButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Main DataGrid -->
+        <DataGrid Grid.Row="1" 
+                  Name="ResultsDataGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  DoubleTapped="ResultsDataGrid_DoubleTapped">
+            <DataGrid.Columns>
+                <!-- Seed column with copy button -->
+                <DataGridTemplateColumn Header="🎲 Seed" Width="150" SortMemberPath="Seed">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="{Binding Seed}" 
+                                           FontFamily="Consolas" 
+                                           FontSize="12" 
+                                           VerticalAlignment="Center"/>
+                                <Button Classes="copy-btn"
+                                        Content="📋"
+                                        ToolTip.Tip="Copy seed to clipboard"
+                                        Command="{Binding $parent[UserControl].((vm:SortableResultsGridViewModel)DataContext).CopySeedCommand}"
+                                        CommandParameter="{Binding Seed}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- Score column -->
+                <DataGridTextColumn Header="🏆 Score" 
+                                    Binding="{Binding TotalScore}" 
+                                    Width="80"
+                                    SortMemberPath="TotalScore"/>
+                
+                <!-- Individual Scores column -->
+                <DataGridTemplateColumn Header="📊 Scores" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ScoresDisplay}" 
+                                       FontFamily="Consolas" 
+                                       FontSize="11"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- Date Found column -->
+                <DataGridTextColumn Header="⏰ Found" 
+                                    Binding="{Binding DateFound, StringFormat='{}{0:HH:mm:ss}'}" 
+                                    Width="80"
+                                    SortMemberPath="DateFound"/>
+                
+                <!-- Actions column -->
+                <DataGridTemplateColumn Header="⚡ Actions" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <Button Classes="copy-btn"
+                                        Content="🔍"
+                                        ToolTip.Tip="Search similar"
+                                        Command="{Binding $parent[UserControl].((vm:SortableResultsGridViewModel)DataContext).SearchSimilarCommand}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Classes="copy-btn"
+                                        Content="⭐"
+                                        ToolTip.Tip="Add to favorites"
+                                        Command="{Binding $parent[UserControl].((vm:SortableResultsGridViewModel)DataContext).AddToFavoritesCommand}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Classes="copy-btn"
+                                        Content="📤"
+                                        ToolTip.Tip="Export this seed"
+                                        Command="{Binding $parent[UserControl].((vm:SortableResultsGridViewModel)DataContext).ExportSeedCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+        <!-- Footer with pagination and stats -->
+        <Border Grid.Row="2" 
+                Background="#2a2a2a" 
+                BorderBrush="#00FF88" 
+                BorderThickness="0,1,0,0" 
+                Padding="10,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Stats -->
+                <TextBlock Grid.Column="0" 
+                           Name="StatsText"
+                           Text="Ready to search"
+                           Foreground="#CCCCCC" 
+                           FontSize="12"
+                           VerticalAlignment="Center"/>
+                
+                <!-- Pagination -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="⬅️ Previous" 
+                            Name="PreviousButton"
+                            Background="Transparent"
+                            Foreground="#00FF88"
+                            BorderBrush="#00FF88"
+                            BorderThickness="1"
+                            Padding="8,4"
+                            FontSize="11"
+                            IsEnabled="False"
+                            Click="PreviousButton_Click"/>
+                    
+                    <TextBlock Name="PageInfoText" 
+                               Text="Page 1 of 1" 
+                               Foreground="#FFD700" 
+                               FontSize="12"
+                               VerticalAlignment="Center"/>
+                    
+                    <Button Content="Next ➡️" 
+                            Name="NextButton"
+                            Background="Transparent"
+                            Foreground="#00FF88"
+                            BorderBrush="#00FF88"
+                            BorderThickness="1"
+                            Padding="8,4"
+                            FontSize="11"
+                            IsEnabled="False"
+                            Click="NextButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -409,11 +409,4 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
     }
-
-    public class FilterItem
-    {
-        public string Name { get; set; } = "";
-        public string Type { get; set; } = "";
-        public string DisplayName => Name;
-    }
 }

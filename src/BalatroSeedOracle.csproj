@@ -28,6 +28,13 @@
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
+  
+  <!-- Copy Audio files to output directory for Vibe Out mode -->
+  <ItemGroup>
+    <None Update="Assets\Audio\*.ogg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
@@ -40,6 +47,8 @@
     <PackageReference Include="DuckDB.NET.Data" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="NAudio.Vorbis" />
+    <PackageReference Include="NVorbis" />
     <PackageReference Include="ScottPlot.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
@@ -51,6 +60,8 @@
     <PackageReference Include="ClosedXML" />
     <!-- Velopack for auto-updates and packaging -->
     <PackageReference Include="Velopack" />
+    <!-- NAudio for Vibe Out mode audio -->
+    <PackageReference Include="NAudio" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />

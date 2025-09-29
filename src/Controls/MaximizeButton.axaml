@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.MaximizeButton">
+    
+    <UserControl.Styles>
+        <Style Selector="Button.maximize-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="Button.maximize-btn:pointerover">
+            <Setter Property="Background" Value="#2200FF88"/>
+        </Style>
+        
+        <Style Selector="Button.maximize-btn:pressed">
+            <Setter Property="Background" Value="#4400FF88"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Button Name="MaximizeBtn" 
+            Classes="maximize-btn"
+            ToolTip.Tip="Maximize Window"
+            Click="MaximizeBtn_Click">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock Name="IconBlock" Text="⛶" FontSize="18" VerticalAlignment="Center"/>
+            <TextBlock Name="LabelBlock" Text="" FontSize="12" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Button>
+</UserControl>

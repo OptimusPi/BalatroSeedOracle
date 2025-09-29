@@ -8,19 +8,72 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class ToolsModal : UserControl
     {
+        private readonly UserProfileService? _userProfileService;
+        private CheckBox? _useNewFiltersModalCheckBox;
+        private CheckBox? _useNewSearchModalCheckBox;
+        private CheckBox? _enableDragDropCheckBox;
+
         public ToolsModal()
         {
             InitializeComponent();
+            _userProfileService = ServiceHelper.GetService<UserProfileService>();
+            
+            // Load flags on creation and when modal becomes visible
+            LoadFeatureFlags();
+            this.AttachedToVisualTree += (s, e) => LoadFeatureFlags();
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            
+            // Get references to checkboxes
+            _useNewFiltersModalCheckBox = this.FindControl<CheckBox>("UseNewFiltersModalCheckBox");
+            _useNewSearchModalCheckBox = this.FindControl<CheckBox>("UseNewSearchModalCheckBox");
+            _enableDragDropCheckBox = this.FindControl<CheckBox>("EnableDragDropCheckBox");
+        }
+        
+        private void LoadFeatureFlags()
+        {
+            if (_userProfileService == null) return;
+            
+            var profile = _userProfileService.GetProfile();
+            if (profile?.Features != null)
+            {
+                if (_useNewFiltersModalCheckBox != null)
+                    _useNewFiltersModalCheckBox.IsChecked = profile.Features.UseNewFiltersModal;
+                if (_useNewSearchModalCheckBox != null)
+                    _useNewSearchModalCheckBox.IsChecked = profile.Features.UseNewSearchModal;
+                if (_enableDragDropCheckBox != null)
+                    _enableDragDropCheckBox.IsChecked = profile.Features.EnableDragDropFilters;
+            }
+        }
+        
+        private void OnFeatureFlagChanged(object? sender, RoutedEventArgs e)
+        {
+            if (_userProfileService == null) return;
+            
+            var profile = _userProfileService.GetProfile();
+            if (profile?.Features != null)
+            {
+                // Update feature flags based on checkbox states
+                profile.Features.UseNewFiltersModal = _useNewFiltersModalCheckBox?.IsChecked ?? false;
+                profile.Features.UseNewSearchModal = _useNewSearchModalCheckBox?.IsChecked ?? false;
+                profile.Features.EnableDragDropFilters = _enableDragDropCheckBox?.IsChecked ?? false;
+                
+                // Save the profile
+                _userProfileService.SaveProfile(profile);
+                
+                var flagName = (sender as CheckBox)?.Name ?? "Unknown";
+                var isEnabled = (sender as CheckBox)?.IsChecked ?? false;
+                DebugLogger.Log("ToolsModal", $"Feature flag {flagName} changed to: {isEnabled}");
+            }
         }
 
         private void OnTestModal1Click(object? sender, RoutedEventArgs e)

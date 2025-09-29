@@ -15,6 +15,8 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
+            services.AddSingleton<SoundEffectService>();
+            services.AddSingleton<VibeAudioManager>();
             // ClipboardService is static, no DI registration needed
             services.AddSingleton<FavoritesService>();
             services.AddSingleton<DaylatroHighScoreService>();
@@ -31,6 +33,8 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
+            
+            // Component ViewModels removed
 
             return services;
         }

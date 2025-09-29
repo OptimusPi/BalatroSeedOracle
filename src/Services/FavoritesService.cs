@@ -156,8 +156,6 @@ namespace BalatroSeedOracle.Services
                         {
                             "turtlebean",
                             "juggler",
-                            "giftcard",
-                            "palette",
                             "troubadour",
                         },
                         Tags = new List<string> { "#HandSize", "#Voucher", "#Utility" },

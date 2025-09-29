@@ -115,8 +115,10 @@ namespace BalatroSeedOracle.Services
         public async Task<SearchInstance> StartSearchAsync(SearchCriteria criteria, Motely.Filters.MotelyJsonConfig config)
         {
             var filterId = config.Name?.Replace(" ", "_") ?? "unknown";
-            var searchId = $"{filterId}_{criteria.Deck}_{criteria.Stake}";
-            var searchInstance = GetSearch(searchId);
+            
+            // First create the search instance
+            var createdSearchId = CreateSearch(filterId, criteria.Deck ?? "Red", criteria.Stake ?? "White");
+            var searchInstance = GetSearch(createdSearchId);
             
             if (searchInstance == null)
                 throw new InvalidOperationException("Failed to create search instance");
@@ -136,6 +138,56 @@ namespace BalatroSeedOracle.Services
             {
                 search.StopSearch();
             }
+        }
+
+        /// <summary>
+        /// CRITICAL: Stop and remove all searches for a specific filter
+        /// Called when filter is edited to prevent stale database corruption
+        /// </summary>
+        /// <param name="filterName">The filter name to stop searches for</param>
+        /// <returns>Number of searches stopped</returns>
+        public int StopSearchesForFilter(string filterName)
+        {
+            var stoppedCount = 0;
+            var searchesToRemove = new List<string>();
+
+            DebugLogger.Log("SearchManager", $"🛑 Stopping searches for filter: {filterName}");
+
+            // Find all searches that use this filter (searchId format: {filterName}_{deck}_{stake})
+            foreach (var kvp in _activeSearches)
+            {
+                var searchId = kvp.Key;
+                var searchInstance = kvp.Value;
+
+                if (searchId.StartsWith($"{filterName}_"))
+                {
+                    try
+                    {
+                        DebugLogger.Log("SearchManager", $"🛑 Stopping search: {searchId}");
+                        
+                        searchInstance.StopSearch();
+                        searchInstance.Dispose();
+                        
+                        searchesToRemove.Add(searchId);
+                        stoppedCount++;
+                        
+                        DebugLogger.Log("SearchManager", $"✅ Stopped search: {searchId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("SearchManager", $"Error stopping search {searchId}: {ex.Message}");
+                    }
+                }
+            }
+
+            // Remove stopped searches from active collection
+            foreach (var searchId in searchesToRemove)
+            {
+                _activeSearches.TryRemove(searchId, out _);
+            }
+
+            DebugLogger.Log("SearchManager", $"🧹 Filter cleanup complete - stopped {stoppedCount} searches");
+            return stoppedCount;
         }
 
         public void Dispose()

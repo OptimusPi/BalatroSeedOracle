@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
 using System.Reflection;
 
@@ -39,9 +40,37 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            // Go directly to the filters modal - no chooser
-            var filtersContent = new FiltersModalContent();
-            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            // Check feature flag to determine which modal to show
+            var userProfile = ServiceHelper.GetService<UserProfileService>()?.GetProfile();
+            var useNewModal = userProfile?.Features?.UseNewFiltersModal ?? false;
+            
+            if (useNewModal)
+            {
+                DebugLogger.Log("ModalHelper", "Using new MVVM FiltersModal (V2)");
+                
+                // Use the new MVVM version with proper ViewModel injection
+                var viewModel = ServiceHelper.GetService<FiltersModalViewModel>();
+                if (viewModel == null)
+                {
+                    DebugLogger.LogError("ModalHelper", "FiltersModalViewModel not registered in DI container");
+                    // Fallback to old version
+                    var fallbackContent = new FiltersModal();
+                    return menu.ShowModal("FILTER DESIGNER", fallbackContent);
+                }
+                
+                var filtersV2Content = new FiltersModal
+                {
+                    DataContext = viewModel
+                };
+                return menu.ShowModal("FILTER DESIGNER V2", filtersV2Content);
+            }
+            else
+            {
+                DebugLogger.Log("ModalHelper", "Using legacy FiltersModal (V1)");
+                // Go directly to the old filters modal - no chooser
+                var filtersContent = new FiltersModal();
+                return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            }
         }
     
         /// <summary>
@@ -56,6 +85,9 @@ namespace BalatroSeedOracle.Helpers
             {
                 var searchContent = new SearchModal();
             
+                // Handle modal close
+                searchContent.CloseRequested += (sender, e) => menu.HideModalContent();
+                
                 // Handle desktop icon creation when modal closes with active search
                 searchContent.CreateShortcutRequested += (sender, cfgPath) => 
                 {
