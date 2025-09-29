@@ -44,20 +44,6 @@ namespace BalatroSeedOracle.Models
     /// </summary>
     public class FeatureFlags
     {
-        /// <summary>
-        /// Use new MVVM FiltersModal instead of old code-behind version
-        /// </summary>
-        public bool UseNewFiltersModal { get; set; } = false;
-
-        /// <summary>
-        /// Use new MVVM SearchModal instead of old code-behind version
-        /// </summary>
-        public bool UseNewSearchModal { get; set; } = false;
-
-        /// <summary>
-        /// Enable drag-and-drop in visual filter builder
-        /// </summary>
-        public bool EnableDragDropFilters { get; set; } = false;
 
         /// <summary>
         /// Use .NET 9 features when available

@@ -138,7 +138,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 border.Classes.Remove("drag-over");
             }
             
-            if (e.Data.Contains("FilterItem") && DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            if (e.Data.Contains("FilterItem") && DataContext is BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
                 var item = e.Data.Get("FilterItem") as Models.FilterItem;
                 if (item != null && sender is Border dropBorder)
@@ -184,7 +184,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             
             if (item != null)
             {
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 if (vm == null) return;
                 
                 // Create and show configuration popup
@@ -231,7 +231,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (sender is Button button && button.Tag is string category)
             {
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 vm?.SetCategory(category);
             }
         }

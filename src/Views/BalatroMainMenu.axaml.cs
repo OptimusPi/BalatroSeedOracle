@@ -42,6 +42,23 @@ namespace BalatroSeedOracle.Views
 
             // Defer service initialization to OnLoaded to ensure services are ready
             this.Loaded += OnLoaded;
+            this.Loaded += InitializeVibeAudio;
+        }
+        
+        private void InitializeVibeAudio(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Start subtle background music on main menu
+                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                audioManager?.TransitionTo(AudioState.MainMenu);
+                
+                DebugLogger.Log("BalatroMainMenu", "🎵 Vibe audio system started");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to start vibe audio: {ex.Message}");
+            }
         }
 
         private void InitializeComponent()

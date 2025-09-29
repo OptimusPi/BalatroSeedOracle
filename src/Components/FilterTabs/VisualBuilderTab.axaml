@@ -162,7 +162,7 @@
                                             
                                             <!-- Hover-only Remove Button -->
                                             <Button Content="×" 
-                                                    Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromMustCommand}"
+                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
                                                     CommandParameter="{Binding}"
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"

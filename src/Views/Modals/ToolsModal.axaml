@@ -69,52 +69,6 @@
                            IsHitTestVisible="False"/>
             </Button>
             
-            <!-- Feature Flags Section -->
-            <Border Background="{StaticResource ContainerDarkPrecise}"
-                    BorderThickness="2"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    CornerRadius="8"
-                    Padding="15"
-                    Margin="0,20,0,0">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="🔧 EXPERIMENTAL FEATURES" 
-                               FontSize="16" 
-                               Foreground="{StaticResource Gold}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,10"/>
-                    
-                    <CheckBox Name="UseNewFiltersModalCheckBox"
-                             IsChecked="False"
-                             Checked="OnFeatureFlagChanged"
-                             Unchecked="OnFeatureFlagChanged">
-                        <TextBlock Text="Use MVVM Filters Modal (V2)" 
-                                   FontSize="14"
-                                   Foreground="{StaticResource TextLight}"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </CheckBox>
-                    
-                    <CheckBox Name="UseNewSearchModalCheckBox"
-                             IsChecked="False"
-                             Checked="OnFeatureFlagChanged"
-                             Unchecked="OnFeatureFlagChanged">
-                        <TextBlock Text="Use MVVM Search Modal (V2)" 
-                                   FontSize="14"
-                                   Foreground="{StaticResource TextLight}"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </CheckBox>
-                    
-                    <CheckBox Name="EnableDragDropCheckBox"
-                             IsChecked="False"
-                             Checked="OnFeatureFlagChanged"
-                             Unchecked="OnFeatureFlagChanged">
-                        <TextBlock Text="Enable Drag &amp; Drop in Filters" 
-                                   FontSize="14"
-                                   Foreground="{StaticResource TextLight}"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </CheckBox>
-                </StackPanel>
-            </Border>
             
             <!-- Nuke Everything Button -->
             <Button Name="NukeEverythingButton"

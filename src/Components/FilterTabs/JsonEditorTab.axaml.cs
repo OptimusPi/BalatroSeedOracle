@@ -1,7 +1,12 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using AvaloniaEdit;
+using AvaloniaEdit.CodeCompletion;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
 using BalatroSeedOracle.ViewModels.FilterTabs;
 using BalatroSeedOracle.Helpers;
 
@@ -20,8 +25,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             InitializeComponent();
             
-            // Note: DataContext will be set by parent, not via DI
-            // DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.JsonEditorTabViewModel>();
+            // Setup JSON editor after initialization
+            _jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (_jsonEditor != null)
+            {
+                _jsonEditor.TextArea.TextEntering += OnTextEntering;
+                _jsonEditor.TextArea.TextEntered += OnTextEntered;
+            }
         }
 
         private void InitializeComponent()
@@ -67,6 +77,71 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _jsonEditor.Text = ViewModel.JsonContent;
                 }
             }
+        }
+        
+        private void OnTextEntering(object? sender, TextInputEventArgs e)
+        {
+            // Simple autocomplete trigger - no complex window management
+        }
+        
+        private void OnTextEntered(object? sender, TextInputEventArgs e)
+        {
+            if (_jsonEditor?.TextArea == null) return;
+            
+            // Show autocomplete on quote or after colon
+            if (e.Text == "\"" || e.Text == ":")
+            {
+                ShowJsonCompletions();
+            }
+        }
+        
+        private void ShowJsonCompletions()
+        {
+            if (_jsonEditor?.TextArea == null) return;
+            
+            var completionWindow = new CompletionWindow(_jsonEditor.TextArea);
+            var data = completionWindow.CompletionList.CompletionData;
+            
+            // Add JSON property completions
+            data.Add(new JsonCompletionData("type", "\"type\": \"Joker\""));
+            data.Add(new JsonCompletionData("Value", "\"Value\": \"Blueprint\""));
+            data.Add(new JsonCompletionData("Edition", "\"Edition\": \"Negative\""));
+            data.Add(new JsonCompletionData("antes", "\"antes\": [1, 2, 3, 4, 5]"));
+            data.Add(new JsonCompletionData("must", "\"must\": []"));
+            data.Add(new JsonCompletionData("should", "\"should\": []"));
+            data.Add(new JsonCompletionData("mustNot", "\"mustNot\": []"));
+            data.Add(new JsonCompletionData("deck", "\"deck\": \"Red\""));
+            data.Add(new JsonCompletionData("stake", "\"stake\": \"White\""));
+            
+            // Add common types
+            data.Add(new JsonCompletionData("Joker", "\"Joker\""));
+            data.Add(new JsonCompletionData("SoulJoker", "\"SoulJoker\""));
+            data.Add(new JsonCompletionData("StandardCard", "\"StandardCard\""));
+            data.Add(new JsonCompletionData("Voucher", "\"Voucher\""));
+            data.Add(new JsonCompletionData("TarotCard", "\"TarotCard\""));
+            
+            completionWindow.Show();
+            completionWindow.Closed += (o, args) => completionWindow = null;
+        }
+    }
+    
+    public class JsonCompletionData : ICompletionData
+    {
+        public JsonCompletionData(string text, string content)
+        {
+            Text = text;
+            Content = content;
+        }
+        
+        public string Text { get; }
+        public object Content { get; }
+        public object Description => $"Insert {Text}";
+        public double Priority => 1.0;
+        public Avalonia.Media.IImage? Image => null;
+        
+        public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+        {
+            textArea.Document.Replace(completionSegment, Content.ToString());
         }
     }
 }
