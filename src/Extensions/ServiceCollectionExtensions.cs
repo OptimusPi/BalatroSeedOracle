@@ -26,14 +26,15 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<FiltersModalViewModel>();
             services.AddTransient<SearchModalViewModel>();
             services.AddTransient<AnalyzeModalViewModel>();
+            services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<ComprehensiveFiltersModalViewModel>();
-            
+
             // Filter Tab ViewModels
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
-            
+
             // Component ViewModels removed
 
             return services;

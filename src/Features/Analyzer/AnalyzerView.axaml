@@ -1,0 +1,324 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
+             x:DataType="vm:AnalyzerViewModel">
+
+    <Design.DataContext>
+        <vm:AnalyzerViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Header: Deck/Stake Selectors & Result Counter -->
+        <Border Grid.Row="0"
+                Background="#1A1A1A"
+                BorderBrush="#FFD700"
+                BorderThickness="0,0,0,2"
+                Padding="20">
+            <Grid ColumnDefinitions="Auto,20,Auto,*,Auto">
+
+                <!-- Deck Selector -->
+                <StackPanel Grid.Column="0" Spacing="5">
+                    <TextBlock Text="DECK"
+                               FontSize="12"
+                               Foreground="#888"
+                               FontWeight="Bold"/>
+                    <ComboBox x:Name="DeckComboBox"
+                              SelectedIndex="0"
+                              MinWidth="150"
+                              Classes="PanelSpinner">
+                        <ComboBoxItem Content="Red Deck"/>
+                        <ComboBoxItem Content="Blue Deck"/>
+                        <ComboBoxItem Content="Yellow Deck"/>
+                        <ComboBoxItem Content="Green Deck"/>
+                        <ComboBoxItem Content="Black Deck"/>
+                        <ComboBoxItem Content="Magic Deck"/>
+                        <ComboBoxItem Content="Nebula Deck"/>
+                        <ComboBoxItem Content="Ghost Deck"/>
+                        <ComboBoxItem Content="Abandoned Deck"/>
+                        <ComboBoxItem Content="Checkered Deck"/>
+                        <ComboBoxItem Content="Zodiac Deck"/>
+                        <ComboBoxItem Content="Painted Deck"/>
+                        <ComboBoxItem Content="Anaglyph Deck"/>
+                        <ComboBoxItem Content="Plasma Deck"/>
+                        <ComboBoxItem Content="Erratic Deck"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Stake Selector -->
+                <StackPanel Grid.Column="2" Spacing="5">
+                    <TextBlock Text="STAKE"
+                               FontSize="12"
+                               Foreground="#888"
+                               FontWeight="Bold"/>
+                    <ComboBox x:Name="StakeComboBox"
+                              SelectedIndex="0"
+                              MinWidth="150"
+                              Classes="PanelSpinner">
+                        <ComboBoxItem Content="White Stake"/>
+                        <ComboBoxItem Content="Red Stake"/>
+                        <ComboBoxItem Content="Green Stake"/>
+                        <ComboBoxItem Content="Black Stake"/>
+                        <ComboBoxItem Content="Blue Stake"/>
+                        <ComboBoxItem Content="Purple Stake"/>
+                        <ComboBoxItem Content="Orange Stake"/>
+                        <ComboBoxItem Content="Gold Stake"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Result Counter (Right side) -->
+                <StackPanel Grid.Column="4"
+                            Spacing="5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ResultCounter}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="#FFD700"
+                               HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="◀ PgUp"
+                                Command="{Binding PreviousResultCommand}"
+                                IsEnabled="{Binding HasPreviousResult}"
+                                ToolTip.Tip="Previous Seed (PgUp)"/>
+                        <Button Content="PgDn ▶"
+                                Command="{Binding NextResultCommand}"
+                                IsEnabled="{Binding HasNextResult}"
+                                ToolTip.Tip="Next Seed (PgDn)"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Current Seed Display -->
+        <Border Grid.Row="1"
+                Background="#252525"
+                Padding="20,10">
+            <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0"
+                           Text="SEED: "
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#888"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CurrentSeed}"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#FFD700"
+                           Margin="5,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Analysis Area (Scrollable Antes) -->
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel Spacing="20" Margin="20">
+
+                <!-- Loading Indicator -->
+                <Border IsVisible="{Binding IsAnalyzing}"
+                        Background="#1A1A1A"
+                        BorderBrush="#FFD700"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Padding="40">
+                    <TextBlock Text="🃏 Analyzing seed..."
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#FFD700"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Ante Display (when not analyzing) -->
+                <ContentControl Content="{Binding}"
+                                IsVisible="{Binding !IsAnalyzing}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate x:DataType="vm:AnalyzerViewModel">
+                            <StackPanel Spacing="20" x:Name="AnteContainer">
+                                <!-- Will be populated dynamically per ante -->
+                                <Border Background="#1A1A1A"
+                                        BorderBrush="#FFD700"
+                                        BorderThickness="2"
+                                        CornerRadius="8"
+                                        Padding="20">
+                                    <StackPanel Spacing="15">
+
+                                        <!-- Ante Header -->
+                                        <TextBlock Text="{Binding CurrentAnteDisplay}"
+                                                   FontSize="24"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FFD700"
+                                                   HorizontalAlignment="Center"/>
+
+                                        <!-- Boss & Voucher -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                                            <StackPanel Grid.Column="0" Spacing="5">
+                                                <TextBlock Text="BOSS"
+                                                           FontSize="14"
+                                                           FontWeight="Bold"
+                                                           Foreground="#888"/>
+                                                <Border Background="#252525"
+                                                        Padding="10"
+                                                        CornerRadius="4"
+                                                        MinHeight="60">
+                                                    <TextBlock Text="{Binding CurrentBossDisplay}"
+                                                               FontSize="16"
+                                                               Foreground="White"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Spacing="5">
+                                                <TextBlock Text="VOUCHER"
+                                                           FontSize="14"
+                                                           FontWeight="Bold"
+                                                           Foreground="#888"/>
+                                                <Border Background="#252525"
+                                                        Padding="10"
+                                                        CornerRadius="4"
+                                                        MinHeight="60">
+                                                    <TextBlock Text="{Binding CurrentVoucherDisplay}"
+                                                               FontSize="16"
+                                                               Foreground="White"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Tags -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="TAGS"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
+                                                       Foreground="#888"/>
+                                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                                <Border Grid.Column="0"
+                                                        Background="#252525"
+                                                        Padding="10"
+                                                        CornerRadius="4">
+                                                    <TextBlock Text="{Binding CurrentSmallTagDisplay}"
+                                                               FontSize="14"
+                                                               Foreground="White"/>
+                                                </Border>
+                                                <Border Grid.Column="1"
+                                                        Background="#252525"
+                                                        Padding="10"
+                                                        CornerRadius="4">
+                                                    <TextBlock Text="{Binding CurrentBigTagDisplay}"
+                                                               FontSize="14"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!-- Shop Queue -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="SHOP QUEUE"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
+                                                       Foreground="#888"/>
+                                            <Border Background="#252525"
+                                                    Padding="15"
+                                                    CornerRadius="4">
+                                                <ItemsControl ItemsSource="{Binding CurrentShopItems}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}"
+                                                                       Foreground="White"
+                                                                       Margin="0,2"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Booster Packs -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="BOOSTER PACKS"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
+                                                       Foreground="#888"/>
+                                            <ItemsControl ItemsSource="{Binding CurrentPacks}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="#252525"
+                                                                Padding="15"
+                                                                CornerRadius="4"
+                                                                Margin="0,0,10,10"
+                                                                MinWidth="200">
+                                                            <StackPanel Spacing="8">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{Binding PackColor}"/>
+                                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding StringFormat='• {0}'}"
+                                                                                       Foreground="White"
+                                                                                       FontSize="12"/>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom Navigation -->
+        <Border Grid.Row="3"
+                Background="#1A1A1A"
+                BorderBrush="#FFD700"
+                BorderThickness="0,2,0,0"
+                Padding="20,10">
+            <Grid ColumnDefinitions="*,Auto,*">
+
+                <!-- Ante Navigation -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="15"
+                            HorizontalAlignment="Center">
+                    <Button Content="▲ Prev Ante"
+                            Command="{Binding ScrollUpAnteCommand}"
+                            ToolTip.Tip="Previous Ante (↑)"/>
+                    <TextBlock Text="{Binding AnteNavigationDisplay}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="#FFD700"
+                               VerticalAlignment="Center"/>
+                    <Button Content="Next Ante ▼"
+                            Command="{Binding ScrollDownAnteCommand}"
+                            ToolTip.Tip="Next Ante (↓)"/>
+                </StackPanel>
+
+                <!-- Load More (Right side) -->
+                <Button Grid.Column="2"
+                        Content="Load Ante 9+"
+                        Command="{Binding LoadMoreAntesCommand}"
+                        HorizontalAlignment="Right"
+                        IsEnabled="False"
+                        ToolTip.Tip="Placeholder for Ante 9+ support"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>

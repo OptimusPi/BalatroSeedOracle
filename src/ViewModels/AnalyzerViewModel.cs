@@ -10,7 +10,7 @@ using Motely.Analysis;
 
 namespace BalatroSeedOracle.ViewModels;
 
-public partial class AnalyzerViewModel : ViewModelBase
+public partial class AnalyzerViewModel : ObservableObject
 {
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
@@ -198,4 +198,93 @@ public partial class AnalyzerViewModel : ViewModelBase
 
         return CurrentAnalysis.Antes[CurrentAnteIndex];
     }
+
+    // Properties for UI binding
+    public string CurrentAnteDisplay => CurrentAnteIndex >= 0 && CurrentAnalysis?.Antes.Count > 0
+        ? $"== ANTE {CurrentAnalysis.Antes[CurrentAnteIndex].Ante} =="
+        : "";
+
+    public string CurrentBossDisplay => GetCurrentAnte()?.Boss.ToString() ?? "";
+
+    public string CurrentVoucherDisplay => GetCurrentAnte()?.Voucher.ToString() ?? "None";
+
+    public string CurrentSmallTagDisplay => GetCurrentAnte()?.SmallBlindTag.ToString() ?? "";
+
+    public string CurrentBigTagDisplay => GetCurrentAnte()?.BigBlindTag.ToString() ?? "";
+
+    public List<string> CurrentShopItems
+    {
+        get
+        {
+            var ante = GetCurrentAnte();
+            if (ante == null) return [];
+
+            return ante.ShopQueue
+                .Select((item, i) => $"{i + 1}) {FormatUtils.FormatItem(item)}")
+                .ToList();
+        }
+    }
+
+    public List<PackDisplayInfo> CurrentPacks
+    {
+        get
+        {
+            var ante = GetCurrentAnte();
+            if (ante == null) return [];
+
+            return ante.Packs.Select(pack => new PackDisplayInfo
+            {
+                Name = FormatUtils.FormatPackName(pack.Type),
+                Items = pack.Items.Select(item => FormatUtils.FormatItem(item)).ToList(),
+                PackType = pack.Type.GetPackType()
+            }).ToList();
+        }
+    }
+
+    public string AnteNavigationDisplay => CurrentAnalysis != null && CurrentAnalysis.Antes.Count > 0
+        ? $"ANTE {(GetCurrentAnte()?.Ante ?? 1)} of {CurrentAnalysis.Antes.Count}"
+        : "ANTE 1 of 8";
+
+    partial void OnCurrentAnteIndexChanged(int value)
+    {
+        // Notify UI of all ante-related property changes
+        OnPropertyChanged(nameof(CurrentAnteDisplay));
+        OnPropertyChanged(nameof(CurrentBossDisplay));
+        OnPropertyChanged(nameof(CurrentVoucherDisplay));
+        OnPropertyChanged(nameof(CurrentSmallTagDisplay));
+        OnPropertyChanged(nameof(CurrentBigTagDisplay));
+        OnPropertyChanged(nameof(CurrentShopItems));
+        OnPropertyChanged(nameof(CurrentPacks));
+        OnPropertyChanged(nameof(AnteNavigationDisplay));
+    }
+
+    partial void OnCurrentAnalysisChanged(MotelySeedAnalysis? value)
+    {
+        // Notify UI of all ante-related property changes when analysis updates
+        OnPropertyChanged(nameof(CurrentAnteDisplay));
+        OnPropertyChanged(nameof(CurrentBossDisplay));
+        OnPropertyChanged(nameof(CurrentVoucherDisplay));
+        OnPropertyChanged(nameof(CurrentSmallTagDisplay));
+        OnPropertyChanged(nameof(CurrentBigTagDisplay));
+        OnPropertyChanged(nameof(CurrentShopItems));
+        OnPropertyChanged(nameof(CurrentPacks));
+        OnPropertyChanged(nameof(AnteNavigationDisplay));
+    }
+}
+
+public class PackDisplayInfo
+{
+    public required string Name { get; init; }
+    public required List<string> Items { get; init; }
+    public required MotelyBoosterPackType PackType { get; init; }
+
+    public string PackColor => PackType switch
+    {
+        MotelyBoosterPackType.Arcana => "#9370DB",
+        MotelyBoosterPackType.Celestial => "#4169E1",
+        MotelyBoosterPackType.Spectral => "#20B2AA",
+        MotelyBoosterPackType.Buffoon => "#FF6347",
+        MotelyBoosterPackType.Standard => "#4682B4",
+        _ => "#FFFFFF"
+    };
 }
