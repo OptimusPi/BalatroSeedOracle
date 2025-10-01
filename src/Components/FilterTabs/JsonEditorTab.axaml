@@ -100,14 +100,10 @@
                         </Grid.ColumnDefinitions>
                         
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <Ellipse Width="12" Height="12" Fill="#ff5f56"/> <!-- Red dot -->
-                            <Ellipse Width="12" Height="12" Fill="#ffbd2e"/> <!-- Yellow dot -->
-                            <Ellipse Width="12" Height="12" Fill="#27ca3f"/> <!-- Green dot -->
-                            <TextBlock Text="filter.json" 
+                            <TextBlock Text="📄 filter.json" 
                                        Foreground="#cccccc" 
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Margin="12,0,0,0"
+                                       FontSize="14"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                         
@@ -141,8 +137,9 @@
                                        ShowLineNumbers="True"
                                        FontFamily="JetBrains Mono, Cascadia Code, Fira Code, Consolas, monospace"
                                        FontSize="14"
-                                       Background="#0d1117"
-                                       Foreground="#e6edf3"
+                                       Background="#1e1e1e"
+                                       Foreground="#ffffff"
+                                       LineNumbersForeground="#888888"
                                        Margin="0"
                                        Padding="12,8"
                                        HorizontalScrollBarVisibility="Auto"

@@ -32,11 +32,7 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsTabStop" Value="True" />
-        <Setter Property="Transitions">
-            <Transitions>
-                <BrushTransition Property="Background" Duration="0:0:0.1" />
-            </Transitions>
-        </Setter>
+        <!-- Transitions removed - cause infinite loops during rapid clicking -->
         <Setter Property="Template">
             <ControlTemplate TargetType="Button">
                 <Grid>
@@ -298,16 +294,17 @@
         <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
     
-    <!-- Compact navigation buttons for filter modal sidebar -->
+    <!-- Category navigation buttons - 20% less wide, 25% taller -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="24" />
-        <Setter Property="Padding" Value="1,1" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Padding" Value="8,6" />
         <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="MaxWidth" Value="160" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
         <Setter Property="Background" Value="{StaticResource RedHover}" />
@@ -429,6 +426,18 @@
     <Style Selector="Button:focus-visible">
         <Setter Property="FocusAdorner" Value="{x:Null}"/>
     </Style>
+    <Style Selector="Button:focus">
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+    </Style>
+
+    <!-- Prevent text selection highlight in buttons -->
+    <Style Selector="Button:focus /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
+    </Style>
 
     <!-- Button pressed state - move down and hide shadows like back-button -->
     <Style Selector="Button:not(.SystemCaptionButton):pressed">
@@ -446,9 +455,7 @@
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="IsTabStop" Value="False"/>
     </Style>
-    
-    <!-- (Remove this style or set Focusable/IsTabStop back to True if you later re-enable keyboard nav) -->
-    
+
     <!-- Keep visual unchanged on focus (no background/border swap) -->
     <Style Selector="Button:focus, Button:focus-visible">
         <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>

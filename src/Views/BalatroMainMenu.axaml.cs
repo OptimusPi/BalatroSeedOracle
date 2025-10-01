@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -22,14 +24,26 @@ namespace BalatroSeedOracle.Views
     public partial class BalatroMainMenu : UserControl
     {
         private Grid? _modalContainer;
-        private BalatroStyleBackground? _background;
+        private Control? _background;
         private Button? _animationToggleButton;
         private TextBlock? _animationButtonText;
+        private Button? _musicToggleButton;
+        private TextBlock? _musicToggleIcon;
         private SearchDesktopIcon? _searchDesktopIcon;
         private bool _isAnimating = true;
+        private bool _isMusicPlaying = true;
         private int _widgetCounter = 0;
         private int _minimizedWidgetCount = 0;
         private UserProfileService? _userProfileService;
+
+        // VibeOut mode
+        private Grid? _vibeOutOverlay;
+        private Grid? _mainContent;
+        private bool _isVibeOutMode = false;
+
+        // Event handler references for proper cleanup
+        private Action<float>? _beatDetectedHandler;
+        private Action<float, float, float, float>? _audioAnalysisHandler;
 
         /// <summary>
         /// Callback to request main content swap (set by MainWindow)
@@ -47,13 +61,53 @@ namespace BalatroSeedOracle.Views
         
         private void InitializeVibeAudio(object? sender, RoutedEventArgs e)
         {
+            // Unsubscribe after first run to prevent multiple subscriptions
+            this.Loaded -= InitializeVibeAudio;
+
             try
             {
                 // Start subtle background music on main menu
                 var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-                audioManager?.TransitionTo(AudioState.MainMenu);
-                
-                DebugLogger.Log("BalatroMainMenu", "🎵 Vibe audio system started");
+
+                if (audioManager == null)
+                    return;
+
+                audioManager.TransitionTo(AudioState.MainMenu);
+
+                // Store handler references for cleanup
+                _beatDetectedHandler = (beatIntensity) =>
+                {
+                    if (_background is BalatroShaderBackground shader)
+                    {
+                        // Amplify beat intensity for dramatic effect
+                        shader.OnBeatDetected(beatIntensity * 3.0f);
+                    }
+                };
+
+                _audioAnalysisHandler = (bass, mid, treble, peak) =>
+                {
+                    if (_background is BalatroShaderBackground shader)
+                    {
+                        // Use overall peak energy as vibe intensity (smooth, not beat-reactive)
+                        shader.UpdateVibeIntensity(peak * 0.05f);
+
+                        // Pass melodic FFT values directly to shader
+                        shader.UpdateMelodicFFT(mid, treble, peak);
+
+                        // Pass individual track intensities
+                        shader.UpdateTrackIntensities(
+                            audioManager.MelodyIntensity,
+                            audioManager.ChordsIntensity,
+                            audioManager.BassTrackIntensity
+                        );
+                    }
+                };
+
+                // Hook up beat detection to background shader
+                audioManager.BeatDetected += _beatDetectedHandler;
+
+                // Hook up audio analysis for vibe intensity and melodic FFT
+                audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
             }
             catch (Exception ex)
             {
@@ -66,15 +120,27 @@ namespace BalatroSeedOracle.Views
             AvaloniaXamlLoader.Load(this);
 
             _modalContainer = this.FindControl<Grid>("ModalContainer");
-            _background = this.FindControl<BalatroStyleBackground>("BackgroundControl");
+            _background = this.FindControl<Control>("BackgroundControl");
             _animationToggleButton = this.FindControl<Button>("AnimationToggleButton");
+            _musicToggleButton = this.FindControl<Button>("MusicToggleButton");
             _searchDesktopIcon = this.FindControl<SearchDesktopIcon>("SearchDesktopIcon");
+            _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
+            _mainContent = this.FindControl<Grid>("MainContent");
 
             if (_animationToggleButton != null)
             {
                 // Find the TextBlock inside the button using logical tree traversal
                 _animationButtonText = LogicalExtensions
                     .GetLogicalChildren(_animationToggleButton)
+                    .OfType<TextBlock>()
+                    .FirstOrDefault();
+            }
+
+            if (_musicToggleButton != null)
+            {
+                // Find the music icon TextBlock
+                _musicToggleIcon = LogicalExtensions
+                    .GetLogicalChildren(_musicToggleButton)
                     .OfType<TextBlock>()
                     .FirstOrDefault();
             }
@@ -206,7 +272,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                // Search widgets removed - using desktop icons now
+                CleanupEventHandlers();
             }
             catch (Exception ex)
             {
@@ -214,6 +280,41 @@ namespace BalatroSeedOracle.Views
                     "BalatroMainMenu",
                     $"⚠️  Error during disposal: {ex.Message}"
                 );
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            CleanupEventHandlers();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void CleanupEventHandlers()
+        {
+            try
+            {
+                // Unsubscribe from audio manager events
+                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                if (audioManager != null)
+                {
+                    if (_beatDetectedHandler != null)
+                    {
+                        audioManager.BeatDetected -= _beatDetectedHandler;
+                        _beatDetectedHandler = null;
+                    }
+
+                    if (_audioAnalysisHandler != null)
+                    {
+                        audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
+                        _audioAnalysisHandler = null;
+                    }
+                }
+
+                DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error cleaning up event handlers: {ex.Message}");
             }
         }
 
@@ -235,21 +336,61 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Cycles through the available background themes when the theme button is clicked
+        /// Opens settings modal when settings button clicked
         /// </summary>
-        private void OnThemeCycleClick(object? sender, RoutedEventArgs e)
+        private void OnSettingsClick(object? sender, RoutedEventArgs e)
         {
-            if (_background == null)
-                return;
+            var popup = this.FindControl<Popup>("SettingsPopup");
+            if (popup != null)
+            {
+                popup.IsOpen = !popup.IsOpen;
 
-            // Get the current theme and cycle to the next one
-            var currentTheme = _background.Theme;
-            var themes = Enum.GetValues<BalatroStyleBackground.BackgroundTheme>();
-            var nextThemeIndex = ((int)currentTheme + 1) % themes.Length;
-            var nextTheme = themes[nextThemeIndex];
+                // Wire up settings modal events if opening
+                if (popup.IsOpen)
+                {
+                    var modal = this.FindControl<SettingsModal>("SettingsModal");
+                    if (modal != null)
+                    {
+                        // Unwire old events to prevent duplicates
+                        modal.CloseRequested -= OnSettingsClose;
+                        modal.ThemeChanged -= OnThemeChanged;
+                        modal.MusicVolumeChanged -= OnMusicVolumeChanged;
+                        modal.SfxVolumeChanged -= OnSfxVolumeChanged;
 
-            // Set the new theme
-            _background.Theme = nextTheme;
+                        // Wire new events
+                        modal.CloseRequested += OnSettingsClose;
+                        modal.ThemeChanged += OnThemeChanged;
+                        modal.MusicVolumeChanged += OnMusicVolumeChanged;
+                        modal.SfxVolumeChanged += OnSfxVolumeChanged;
+                    }
+                }
+            }
+        }
+
+        private void OnSettingsClose(object? sender, EventArgs e)
+        {
+            var popup = this.FindControl<Popup>("SettingsPopup");
+            if (popup != null) popup.IsOpen = false;
+        }
+
+        private void OnThemeChanged(object? sender, int themeIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTheme(themeIndex);
+            }
+        }
+
+        private void OnMusicVolumeChanged(object? sender, double volume)
+        {
+            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            audioManager?.SetMusicVolume((float)(volume / 100.0));
+        }
+
+        private void OnSfxVolumeChanged(object? sender, double volume)
+        {
+            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            audioManager?.SetSfxVolume((float)(volume / 100.0));
         }
 
         /// <summary>
@@ -257,17 +398,42 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
         {
-            if (_background == null)
-                return;
-
             // Toggle animation state
             _isAnimating = !_isAnimating;
-            _background.IsAnimating = _isAnimating;
+
+            if (_background is BalatroShaderBackground bg)
+            {
+                bg.IsAnimating = _isAnimating;
+            }
+            else if (_background is BalatroStyleBackground bg2)
+            {
+                bg2.IsAnimating = _isAnimating;
+            }
 
             // Update button icon based on animation state
             if (_animationButtonText != null)
             {
                 _animationButtonText.Text = _isAnimating ? "⏸" : "▶";
+            }
+        }
+
+        /// <summary>
+        /// Toggles background music on/off
+        /// </summary>
+        private void OnMusicToggleClick(object? sender, RoutedEventArgs e)
+        {
+            _isMusicPlaying = !_isMusicPlaying;
+
+            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            if (audioManager != null)
+            {
+                audioManager.SetMasterVolume(_isMusicPlaying ? 1.0f : 0.0f);
+            }
+
+            // Update icon
+            if (_musicToggleIcon != null)
+            {
+                _musicToggleIcon.Text = _isMusicPlaying ? "🔊" : "🔇";
             }
         }
 
@@ -654,6 +820,79 @@ namespace BalatroSeedOracle.Views
 
             DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Enter VibeOut mode - fullscreen background with ESC overlay
+        /// </summary>
+        public void EnterVibeOutMode()
+        {
+            if (_isVibeOutMode) return;
+
+            _isVibeOutMode = true;
+
+            // Hide main menu UI
+            if (_mainContent != null) _mainContent.IsVisible = false;
+            if (_modalContainer != null) _modalContainer.IsVisible = false;
+
+            // Show VibeOut overlay
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = true;
+
+            // Set background to VibeOut theme
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
+            }
+
+            // Optional: Request window maximize (if we have access to window)
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                window.WindowState = WindowState.Maximized;
+            }
+
+            DebugLogger.Log("BalatroMainMenu", "🎵 Entered VibeOut mode");
+        }
+
+        /// <summary>
+        /// Exit VibeOut mode
+        /// </summary>
+        public void ExitVibeOutMode()
+        {
+            if (!_isVibeOutMode) return;
+
+            _isVibeOutMode = false;
+
+            // Show main menu UI
+            if (_mainContent != null) _mainContent.IsVisible = true;
+
+            // Hide VibeOut overlay
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = false;
+
+            // Restore default theme
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.Default;
+            }
+
+            DebugLogger.Log("BalatroMainMenu", "👋 Exited VibeOut mode");
+        }
+
+        private void OnExitVibeOut(object? sender, RoutedEventArgs e)
+        {
+            ExitVibeOutMode();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            // ESC to exit VibeOut mode
+            if (e.Key == Key.Escape && _isVibeOutMode)
+            {
+                ExitVibeOutMode();
+                e.Handled = true;
+            }
         }
     }
 }

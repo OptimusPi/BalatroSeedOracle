@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using Avalonia.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Dsp;
@@ -29,32 +30,70 @@ namespace BalatroSeedOracle.Services
         
         // Individual audio tracks with gain control
         private readonly Dictionary<string, AudioTrack> _tracks = new();
-        private AudioState _currentState = AudioState.MainMenu;
+        private AudioState _currentState = AudioState.VibeLevel1; // Start as different state to force transition
         
-        // FFT Analysis for visualization
+        // FFT Analysis for drums (beat detection)
         private readonly float[] _fftBuffer = new float[2048];
         private readonly Complex[] _fftComplex = new Complex[2048];
         private readonly float[] _frequencyBands = new float[32];
         private int _fftPos = 0;
-        
+
+        // FFT Analysis for melodic content (color intensity)
+        private readonly float[] _melodicFftBuffer = new float[2048];
+        private readonly Complex[] _melodicFftComplex = new Complex[2048];
+        private int _melodicFftPos = 0;
+
         // Audio analysis results (for shader integration)
-        public float AudioBass { get; private set; } = 0f;      // 0-300 Hz
-        public float AudioMid { get; private set; } = 0f;       // 300-3000 Hz  
-        public float AudioTreble { get; private set; } = 0f;    // 3000+ Hz
-        public float AudioPeak { get; private set; } = 0f;      // Overall volume
+        public float AudioBass { get; private set; } = 0f;      // 0-300 Hz (drums)
+        public float AudioMid { get; private set; } = 0f;       // 300-3000 Hz (melodic)
+        public float AudioTreble { get; private set; } = 0f;    // 3000+ Hz (melodic)
+        public float AudioPeak { get; private set; } = 0f;      // Overall volume (melodic)
         public float BeatDetection { get; private set; } = 0f;  // Beat pulse for visual effects
+
+        // Individual track intensities
+        public float MelodyIntensity => GetTrackIntensity("Melody1", "Melody2");
+        public float ChordsIntensity => GetTrackIntensity("Chords1", "Chords2");
+        public float BassTrackIntensity => GetTrackIntensity("Bass1", "Bass2");
+
+        // Beat detection state
+        private float _lastBassLevel = 0f;
+        private int _beatCooldown = 0;
+        private const int BEAT_COOLDOWN_FRAMES = 20; // ~400ms between beats (prevent doubles)
         
         // Events for UI integration
         public event Action<float, float, float, float>? AudioAnalysisUpdated; // bass, mid, treble, peak
         public event Action<float>? BeatDetected; // beat intensity
+
+        private float GetTrackIntensity(string track1, string track2)
+        {
+            float intensity = 0f;
+            if (_tracks.TryGetValue(track1, out var t1))
+                intensity += t1.CurrentVolume;
+            if (_tracks.TryGetValue(track2, out var t2))
+                intensity += t2.CurrentVolume;
+            return intensity;
+        }
         
         public VibeAudioManager()
         {
-            DebugLogger.Log("VibeAudioManager", "🎵🎵🎵 VIBE AUDIO MANAGER STARTING UP! 🎵🎵🎵");
-            InitializeAudio();
-            LoadAllTracks();
-            TransitionTo(AudioState.MainMenu);
-            DebugLogger.Log("VibeAudioManager", $"🎵 Loaded {_tracks.Count} tracks, ready to vibe!");
+            Console.WriteLine("🎵🎵🎵 VIBE AUDIO MANAGER CONSTRUCTOR CALLED! 🎵🎵🎵");
+            try
+            {
+                InitializeAudio();
+                Console.WriteLine("✅ InitializeAudio() completed");
+
+                LoadAllTracks();
+                Console.WriteLine($"✅ LoadAllTracks() completed - Loaded {_tracks.Count} tracks");
+
+                TransitionTo(AudioState.MainMenu);
+                Console.WriteLine("✅ TransitionTo(MainMenu) completed");
+
+                Console.WriteLine($"🎵 VIBE AUDIO MANAGER READY! {_tracks.Count} tracks loaded");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ VIBE AUDIO MANAGER FAILED: {ex.Message}\n{ex.StackTrace}");
+            }
         }
         
         private void InitializeAudio()
@@ -62,14 +101,12 @@ namespace BalatroSeedOracle.Services
             try
             {
                 _waveOut = new WaveOutEvent();
-                _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 2)); // 48kHz stereo
+                _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
                 _mixer.ReadFully = true;
-                
+
                 _waveOut.Init(_mixer);
-                _waveOut.Volume = 1.0f; // MAX VOLUME FOR THE VIBE!
+                _waveOut.Volume = 1.0f;
                 _waveOut.Play();
-                
-                DebugLogger.Log("VibeAudioManager", "🎵 Audio system initialized");
             }
             catch (Exception ex)
             {
@@ -81,22 +118,22 @@ namespace BalatroSeedOracle.Services
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var audioPath = Path.Combine(baseDir, "Assets", "Audio");
-            
+
             if (!Directory.Exists(audioPath))
             {
                 DebugLogger.LogError("VibeAudioManager", $"Audio directory not found: {audioPath}");
                 return;
             }
-            
+
             // Load all your custom tracks
             var trackNames = new[] { "Drums1", "Drums2", "Bass1", "Bass2", "Chords1", "Chords2", "Melody1", "Melody2" };
-            
+
             foreach (var trackName in trackNames)
             {
                 // Try OGG first (preferred), then WAV, then MP3
                 var extensions = new[] { ".ogg", ".wav", ".mp3" };
                 bool loaded = false;
-                
+
                 foreach (var ext in extensions)
                 {
                     var filePath = Path.Combine(audioPath, $"{trackName}{ext}");
@@ -104,10 +141,33 @@ namespace BalatroSeedOracle.Services
                     {
                         try
                         {
-                            DebugLogger.Log("VibeAudioManager", $"Attempting to load: {filePath}");
                             var track = new AudioTrack(filePath, trackName);
                             _tracks[trackName] = track;
-                            DebugLogger.Log("VibeAudioManager", $"🎵 Successfully loaded: {trackName}{ext}");
+
+                            // ADD ALL TRACKS TO MIXER IMMEDIATELY (at silent volume)
+                            if (_mixer != null)
+                            {
+                                ISampleProvider provider;
+
+                                // Drums -> beat detection, Others -> color intensity
+                                if (trackName == "Drums1" || trackName == "Drums2")
+                                {
+                                    provider = new AudioAnalyzerProvider(track.SampleProvider, this, true); // Drums for beats
+                                }
+                                else if (trackName.StartsWith("Bass") || trackName.StartsWith("Chords") || trackName.StartsWith("Melody"))
+                                {
+                                    provider = new AudioAnalyzerProvider(track.SampleProvider, this, false); // Melodic for colors
+                                }
+                                else
+                                {
+                                    provider = track.SampleProvider; // No analysis
+                                }
+
+                                _mixer.AddMixerInput(provider);
+                                track.IsInMixer = true;
+                                track.SetImmediateVolume(0.01f);  // Nearly silent but still playing for sync
+                            }
+
                             loaded = true;
                             break;
                         }
@@ -117,10 +177,10 @@ namespace BalatroSeedOracle.Services
                         }
                     }
                 }
-                
+
                 if (!loaded)
                 {
-                    DebugLogger.Log("VibeAudioManager", $"⚠️ No compatible audio file found for {trackName}. Vibe Out audio will be limited.");
+                    DebugLogger.Log("VibeAudioManager", $"⚠️ No compatible audio file found for {trackName}.");
                 }
             }
         }
@@ -142,8 +202,11 @@ namespace BalatroSeedOracle.Services
             switch (newState)
             {
                 case AudioState.MainMenu:
-                    SetTrackVolume("Drums1", 0.6f); // LOUDER!
-                    SetTrackVolume("Bass1", 0.5f); // MORE BASS!
+                    // FULL VOLUME ALL TRACKS!
+                    SetTrackVolume("Drums1", 1.0f);
+                    SetTrackVolume("Bass1", 1.0f);
+                    SetTrackVolume("Chords1", 1.0f);
+                    SetTrackVolume("Melody1", 1.0f);
                     break;
                     
                 case AudioState.ModalOpen:
@@ -183,41 +246,66 @@ namespace BalatroSeedOracle.Services
         {
             if (_tracks.TryGetValue(trackName, out var track))
             {
-                track.SetTargetVolume(targetVolume);
+                Console.WriteLine($"SetTrackVolume: {trackName} = {targetVolume}");
+                track.SetImmediateVolume(targetVolume);  // ACTUALLY SET THE VOLUME NOW!
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ Track not found: {trackName}");
             }
         }
         
         private void EnsureActiveTracksInMixer()
         {
             if (_mixer == null) return;
-            
+
+            Console.WriteLine($"EnsureActiveTracksInMixer called - checking {_tracks.Count} tracks");
+
             foreach (var track in _tracks.Values)
             {
+                Console.WriteLine($"  Track: {track.Name}, TargetVolume: {track.TargetVolume}, IsInMixer: {track.IsInMixer}");
+
                 if (track.TargetVolume > 0f && !track.IsInMixer)
                 {
-                    var analyzerProvider = new AudioAnalyzerProvider(track.SampleProvider, this);
+                    Console.WriteLine($"    Adding {track.Name} to mixer...");
+                    // Determine if this is a drum track or melodic
+                    bool isDrums = track.Name == "Drums1" || track.Name == "Drums2";
+                    var analyzerProvider = new AudioAnalyzerProvider(track.SampleProvider, this, isDrums);
                     _mixer.AddMixerInput(analyzerProvider);
                     track.IsInMixer = true;
-                    DebugLogger.Log("VibeAudioManager", $"🎵 Added {track.Name} to mixer");
+                    Console.WriteLine($"    ✅ {track.Name} added to mixer");
                 }
             }
         }
         
         // Called by AudioAnalyzerProvider during audio processing
-        internal void ProcessAudioSample(float left, float right)
+        internal void ProcessDrumSample(float left, float right)
         {
-            // Add samples to FFT buffer
+            // Add samples to drums FFT buffer (for beat detection)
             _fftBuffer[_fftPos] = (left + right) * 0.5f; // Mono mix
             _fftPos = (_fftPos + 1) % _fftBuffer.Length;
-            
+
             // Perform FFT analysis every 1024 samples
             if (_fftPos % 1024 == 0)
             {
-                PerformFFTAnalysis();
+                PerformDrumFFTAnalysis();
+            }
+        }
+
+        internal void ProcessMelodicSample(float left, float right)
+        {
+            // Add samples to melodic FFT buffer (for color intensity)
+            _melodicFftBuffer[_melodicFftPos] = (left + right) * 0.5f; // Mono mix
+            _melodicFftPos = (_melodicFftPos + 1) % _melodicFftBuffer.Length;
+
+            // Perform FFT analysis every 1024 samples
+            if (_melodicFftPos % 1024 == 0)
+            {
+                PerformMelodicFFTAnalysis();
             }
         }
         
-        private void PerformFFTAnalysis()
+        private void PerformDrumFFTAnalysis()
         {
             // Copy buffer to complex array
             for (int i = 0; i < _fftBuffer.Length; i++)
@@ -263,7 +351,14 @@ namespace BalatroSeedOracle.Services
             var midLevel = midCount > 0 ? midSum / midCount : 0f;
             var trebleLevel = trebleCount > 0 ? trebleSum / trebleCount : 0f;
             var peakLevel = Math.Max(Math.Max(bassLevel, midLevel), trebleLevel);
-            
+
+            // AMPLIFY: Tracks are at low volume for sync, so amplify FFT values significantly
+            const float amplification = 100f;
+            bassLevel *= amplification;
+            midLevel *= amplification;
+            trebleLevel *= amplification;
+            peakLevel *= amplification;
+
             // Smooth the values (exponential moving average)
             const float smoothing = 0.8f;
             AudioBass = AudioBass * smoothing + bassLevel * (1f - smoothing);
@@ -271,20 +366,93 @@ namespace BalatroSeedOracle.Services
             AudioTreble = AudioTreble * smoothing + trebleLevel * (1f - smoothing);
             AudioPeak = AudioPeak * smoothing + peakLevel * (1f - smoothing);
             
-            // Simple beat detection (bass energy spike)
-            var beatThreshold = AudioBass * 1.5f;
-            if (bassLevel > beatThreshold && bassLevel > 0.1f)
+            // Beat detection: Look for sudden bass increase
+            _beatCooldown = Math.Max(0, _beatCooldown - 1);
+
+            if (_beatCooldown == 0)
             {
-                BeatDetection = Math.Min(1f, bassLevel * 2f);
-                BeatDetected?.Invoke(BeatDetection);
+                // More sensitive beat detection - catch all kicks!
+                var bassIncrease = bassLevel - _lastBassLevel;
+                if (bassIncrease > 0.15f && bassLevel > 0.3f) // Much more sensitive!
+                {
+                    BeatDetection = Math.Clamp(bassLevel * 0.5f, 0f, 1f);
+
+                    // Fire event on UI thread to prevent cross-thread exceptions
+                    var beatValue = BeatDetection;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        BeatDetected?.Invoke(beatValue);
+                    }, DispatcherPriority.Normal);
+
+                    _beatCooldown = BEAT_COOLDOWN_FRAMES;
+                }
             }
-            else
+
+            _lastBassLevel = bassLevel;
+            BeatDetection *= 0.95f; // Decay beat intensity
+        }
+
+        private void PerformMelodicFFTAnalysis()
+        {
+            // Copy buffer to complex array
+            for (int i = 0; i < _melodicFftBuffer.Length; i++)
             {
-                BeatDetection *= 0.9f; // Decay
+                _melodicFftComplex[i] = new Complex { X = _melodicFftBuffer[i], Y = 0 };
             }
-            
-            // Fire events for UI/shader integration
-            AudioAnalysisUpdated?.Invoke(AudioBass, AudioMid, AudioTreble, AudioPeak);
+
+            // Perform FFT
+            FastFourierTransform.FFT(true, (int)Math.Log2(_melodicFftComplex.Length), _melodicFftComplex);
+
+            // Extract frequency bands
+            var sampleRate = 44100f;
+            var frequencyStep = sampleRate / _melodicFftComplex.Length;
+
+            // Calculate mid and treble for color intensity
+            float midSum = 0f, trebleSum = 0f;
+            int midCount = 0, trebleCount = 0;
+
+            for (int i = 1; i < _melodicFftComplex.Length / 2; i++)
+            {
+                var frequency = i * frequencyStep;
+                var magnitude = (float)Math.Sqrt(_melodicFftComplex[i].X * _melodicFftComplex[i].X + _melodicFftComplex[i].Y * _melodicFftComplex[i].Y);
+
+                if (frequency >= 300 && frequency < 3000)
+                {
+                    midSum += magnitude;
+                    midCount++;
+                }
+                else if (frequency >= 3000 && frequency < 12000)
+                {
+                    trebleSum += magnitude;
+                    trebleCount++;
+                }
+            }
+
+            var midLevel = midCount > 0 ? midSum / midCount : 0f;
+            var trebleLevel = trebleCount > 0 ? trebleSum / trebleCount : 0f;
+            var peakLevel = Math.Max(midLevel, trebleLevel);
+
+            // Amplify melodic content (HUGE amplification since tracks at 0.01 volume)
+            const float amplification = 10000f; // 100x more since tracks are at 1% volume
+            midLevel *= amplification;
+            trebleLevel *= amplification;
+            peakLevel *= amplification;
+
+            // Smooth the values
+            const float smoothing = 0.8f;
+            AudioMid = AudioMid * smoothing + midLevel * (1f - smoothing);
+            AudioTreble = AudioTreble * smoothing + trebleLevel * (1f - smoothing);
+            AudioPeak = AudioPeak * smoothing + peakLevel * (1f - smoothing);
+
+            // Fire events for UI/shader integration on UI thread
+            var bass = AudioBass;
+            var mid = AudioMid;
+            var treble = AudioTreble;
+            var peak = AudioPeak;
+            Dispatcher.UIThread.Post(() =>
+            {
+                AudioAnalysisUpdated?.Invoke(bass, mid, treble, peak);
+            }, DispatcherPriority.Normal);
         }
         
         // Public interface for game events
@@ -310,6 +478,9 @@ namespace BalatroSeedOracle.Services
                 _waveOut.Volume = Math.Clamp(volume, 0f, 1f);
             }
         }
+
+        public void SetMusicVolume(float volume) => SetMasterVolume(volume);
+        public void SetSfxVolume(float volume) { /* TODO: SFX volume */ }
         
         public void Pause()
         {
@@ -378,7 +549,15 @@ namespace BalatroSeedOracle.Services
         {
             TargetVolume = Math.Clamp(volume, 0f, 1f);
         }
-        
+
+        public void SetImmediateVolume(float volume)
+        {
+            TargetVolume = Math.Clamp(volume, 0f, 1f);
+            CurrentVolume = TargetVolume;
+            _volumeProvider.Volume = CurrentVolume;
+            Console.WriteLine($"  → {Name} volume NOW: {_volumeProvider.Volume}");
+        }
+
         public void UpdateVolume()
         {
             // Smooth volume transitions
@@ -402,19 +581,21 @@ namespace BalatroSeedOracle.Services
     {
         private readonly ISampleProvider _source;
         private readonly VibeAudioManager _manager;
-        
+        private readonly bool _isDrums; // true = drums (beat detection), false = melodic (color intensity)
+
         public WaveFormat WaveFormat => _source.WaveFormat;
-        
-        public AudioAnalyzerProvider(ISampleProvider source, VibeAudioManager manager)
+
+        public AudioAnalyzerProvider(ISampleProvider source, VibeAudioManager manager, bool isDrums)
         {
             _source = source;
             _manager = manager;
+            _isDrums = isDrums;
         }
-        
+
         public int Read(float[] buffer, int offset, int count)
         {
             var samplesRead = _source.Read(buffer, offset, count);
-            
+
             // Analyze audio samples (stereo)
             for (int i = offset; i < offset + samplesRead; i += 2)
             {
@@ -422,10 +603,14 @@ namespace BalatroSeedOracle.Services
                 {
                     var left = buffer[i];
                     var right = buffer[i + 1];
-                    _manager.ProcessAudioSample(left, right);
+
+                    if (_isDrums)
+                        _manager.ProcessDrumSample(left, right);
+                    else
+                        _manager.ProcessMelodicSample(left, right);
                 }
             }
-            
+
             return samplesRead;
         }
     }

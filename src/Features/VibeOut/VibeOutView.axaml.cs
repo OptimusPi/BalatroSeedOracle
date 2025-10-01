@@ -7,25 +7,30 @@ namespace BalatroSeedOracle.Features.VibeOut
 {
     public partial class VibeOutView : Window
     {
-        private BalatroStyleBackground? _vibeBackground;
+        private BalatroShaderBackground? _vibeBackground;
 
         public VibeOutView()
         {
             InitializeComponent();
-            _vibeBackground = this.FindControl<BalatroStyleBackground>("VibeBackground");
-            
+            _vibeBackground = this.FindControl<BalatroShaderBackground>("VibeBackground");
+
             DataContextChanged += (s, e) =>
             {
                 if (DataContext is VibeOutViewModel vm)
                 {
                     // Connect vibe system to background
-                    vm.PropertyChanged += (_, e) =>
+                    vm.PropertyChanged += (_, args) =>
                     {
-                        if (e.PropertyName == nameof(VibeOutViewModel.IsVibing) && vm.IsVibing)
+                        if (args.PropertyName == nameof(VibeOutViewModel.IsVibing) && vm.IsVibing)
                         {
-                            _vibeBackground?.EnterVibeOutMode();
+                            // Set to VibeOut theme when starting
+                            if (_vibeBackground != null)
+                            {
+                                _vibeBackground.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
+                                _vibeBackground.UpdateVibeIntensity(0.5f);
+                            }
                         }
-                        else if (e.PropertyName == nameof(VibeOutViewModel.AudioState))
+                        else if (args.PropertyName == nameof(VibeOutViewModel.AudioState))
                         {
                             var intensity = vm.AudioState switch
                             {
@@ -36,6 +41,16 @@ namespace BalatroSeedOracle.Features.VibeOut
                             _vibeBackground?.UpdateVibeIntensity(intensity);
                         }
                     };
+
+                    // Hook up REAL beat detection from VibeAudioManager! 🔥
+                    var audioManager = BalatroSeedOracle.App.GetService<Services.VibeAudioManager>();
+                    if (audioManager != null)
+                    {
+                        audioManager.BeatDetected += (beatIntensity) =>
+                        {
+                            _vibeBackground?.OnBeatDetected(beatIntensity);
+                        };
+                    }
                 }
             };
         }

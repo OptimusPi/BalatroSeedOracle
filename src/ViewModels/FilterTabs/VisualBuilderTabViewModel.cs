@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -13,12 +14,11 @@ using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
-    public class VisualBuilderTabViewModel : BaseViewModel
+    public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+        [ObservableProperty]
         private string _searchFilter = "";
-        private string _currentCategory = "Legendary";
-        private string _currentCategoryDisplay = "Legendary";
 
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
@@ -38,13 +38,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> FilteredSpectrals { get; }
         public ObservableCollection<FilterItem> FilteredBosses { get; }
         
-        // Unified filtered items for current category
         public ObservableCollection<FilterItem> FilteredItems { get; }
 
-        public string CurrentCategoryDisplay
+        [ObservableProperty]
+        private string _selectedCategory = "Legendary";
+        
+        // Category view models for proper data template binding
+        public ObservableCollection<CategoryViewModel> Categories { get; }
+        
+        public class CategoryViewModel
         {
-            get => _currentCategoryDisplay;
-            set => SetProperty(ref _currentCategoryDisplay, value);
+            public string Name { get; set; } = "";
+            public string DisplayName { get; set; } = "";
+            public ObservableCollection<FilterItem> Items { get; set; } = new();
         }
 
 
@@ -79,6 +85,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             
             FilteredItems = new ObservableCollection<FilterItem>();
             
+            // Initialize categories with proper data template approach
+            Categories = new ObservableCollection<CategoryViewModel>
+            {
+                new() { Name = "Legendary", DisplayName = "🏆 Legendary", Items = FilteredJokers },
+                new() { Name = "Rare", DisplayName = "💎 Rare", Items = FilteredJokers },
+                new() { Name = "Uncommon", DisplayName = "🔸 Uncommon", Items = FilteredJokers },
+                new() { Name = "Common", DisplayName = "⚪ Common", Items = FilteredJokers },
+                new() { Name = "Voucher", DisplayName = "🎟️ Voucher", Items = FilteredVouchers },
+                new() { Name = "Tarot", DisplayName = "🔮 Tarot", Items = FilteredTarots },
+                new() { Name = "Planet", DisplayName = "🪐 Planet", Items = FilteredPlanets },
+                new() { Name = "Spectral", DisplayName = "👻 Spectral", Items = FilteredSpectrals },
+                new() { Name = "Tag", DisplayName = "🏷️ Tag", Items = FilteredTags },
+                new() { Name = "Boss", DisplayName = "👹 Boss", Items = FilteredBosses }
+            };
+            
             SelectedMust = new ObservableCollection<FilterItem>();
             SelectedShould = new ObservableCollection<FilterItem>();
             SelectedMustNot = new ObservableCollection<FilterItem>();
@@ -94,90 +115,81 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RemoveFromShouldCommand = new RelayCommand<FilterItem>(RemoveFromShould);
             RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
 
-            // Defer loading sample data to UI thread with a small delay to ensure UI is ready
-            Dispatcher.UIThread.Post(async () => {
-                try 
+            // Simple property change handling
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(SelectedCategory) || e.PropertyName == nameof(SearchFilter))
                 {
-                    // Small delay to ensure UI is fully initialized
-                    await Task.Delay(100);
-                    
-                    // Ensure SpriteService is initialized
-                    var _ = SpriteService.Instance;
-                    
-                    LoadSampleData();
-                    ApplyFilter();
+                    RefreshFilteredItems();
                 }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("VisualBuilderTab", $"Error loading sample data: {ex.Message}");
-                }
-            });
+            };
+
+            // Load initial data
+            LoadSampleData();
+            ApplyFilter();
         }
 
         public void SetCategory(string category)
         {
-            // Ensure UI thread safety to prevent binding cascade errors
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
-            {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetCategory(category));
-                return;
-            }
+            // Auto-clear search when switching tabs for clean navigation
+            SearchFilter = "";
+            SelectedCategory = category;
             
-            _currentCategory = category;
-            CurrentCategoryDisplay = category;
-            RefreshFilteredItems();
+            // Ensure collections are populated when switching categories
+            if (FilteredJokers.Count == 0)
+            {
+                ApplyFilter();
+            }
         }
 
         private void RefreshFilteredItems()
         {
-            // Ensure we're on UI thread to avoid binding errors
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            // CROSS-CATEGORY SEARCH - If searching, search ALL items regardless of category
+            if (!string.IsNullOrEmpty(SearchFilter))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(RefreshFilteredItems);
+                FilteredItems.Clear();
+                
+                // Search across ALL categories when filter is active
+                var allCollections = new[] { FilteredJokers, FilteredVouchers, FilteredTarots, FilteredPlanets, FilteredSpectrals, FilteredTags, FilteredBosses };
+                
+                foreach (var collection in allCollections)
+                {
+                    foreach (var item in collection)
+                    {
+                        if (item.Name?.Contains(SearchFilter, StringComparison.OrdinalIgnoreCase) == true ||
+                            item.DisplayName?.Contains(SearchFilter, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            FilteredItems.Add(item);
+                        }
+                    }
+                }
                 return;
             }
-
-            FilteredItems.Clear();
-
-            var sourceCollection = _currentCategory switch
+            
+            // CATEGORY-SPECIFIC DISPLAY when no search filter
+            var sourceCollection = SelectedCategory switch
             {
-                "Legendary" or "Rare" or "Uncommon" or "Common" => FilteredJokers,
+                "Favorites" => FilteredJokers.Where(j => j.IsFavorite == true),
+                "Legendary" => FilteredJokers.Where(j => j.Type == "SoulJoker"),
+                "Rare" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare"),
+                "Uncommon" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon"),
+                "Common" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common"),
                 "Voucher" => FilteredVouchers,
                 "Tarot" => FilteredTarots,
                 "Planet" => FilteredPlanets,
                 "Spectral" => FilteredSpectrals,
                 "Tag" => FilteredTags,
                 "Boss" => FilteredBosses,
-                "Favorites" => FilteredJokers,
-                _ => FilteredJokers
+                _ => FilteredJokers.Where(j => j.Type == "Joker")
             };
-
-            var filteredItems = string.IsNullOrEmpty(_searchFilter)
-                ? sourceCollection
-                : sourceCollection.Where(item => item.Name?.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase) == true ||
-                                                  item.DisplayName?.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase) == true);
-
-            foreach (var item in filteredItems)
+            
+            FilteredItems.Clear();
+            foreach (var item in sourceCollection)
             {
                 FilteredItems.Add(item);
             }
         }
 
-        #region Properties
-
-        public string SearchFilter
-        {
-            get => _searchFilter;
-            set
-            {
-                if (SetProperty(ref _searchFilter, value))
-                {
-                    ApplyFilter();
-                }
-            }
-        }
-
-        #endregion
 
         #region Commands
 
@@ -294,6 +306,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     AllJokers.Add(item);
                 }
 
+                // Load favorites FIRST (from FavoritesService)
+                var favoritesService = ServiceHelper.GetService<FavoritesService>();
+                var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
+                
+                foreach (var favoriteName in favoriteNames)
+                {
+                    var item = new FilterItem 
+                    { 
+                        Name = favoriteName, 
+                        Type = "Joker",
+                        Category = "Favorite",
+                        IsFavorite = true,
+                        DisplayName = FormatDisplayName(favoriteName),
+                        ItemImage = spriteService.GetJokerImage(favoriteName)
+                    };
+                    AllJokers.Add(item);
+                }
+
                 // Load Soul Jokers FIRST (they appear at top as legendary)
                 var legendaryJokers = new[] { "Triboulet", "Yorick", "Chicot", "Perkeo", "Canio" };
                 foreach (var legendaryName in legendaryJokers)
@@ -318,12 +348,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         if (AllJokers.Any(j => j.Name == jokerName))
                             continue;
                             
+                        // Determine actual rarity from BalatroData.JokersByRarity
+                        string rarity = "Common"; // Default
+                        foreach (var rarityKvp in BalatroData.JokersByRarity)
+                        {
+                            if (rarityKvp.Value.Contains(jokerName.ToLower()))
+                            {
+                                rarity = rarityKvp.Key;
+                                break;
+                            }
+                        }
+                        
                         var item = new FilterItem 
                         { 
                             Name = jokerName, 
                             Type = "Joker",
+                            Category = rarity, // Actual rarity from BalatroData
                             DisplayName = FormatDisplayName(jokerName),
-                            ItemImage = spriteService.GetJokerImage(jokerName) // null is OK if sprite missing
+                            ItemImage = spriteService.GetJokerImage(jokerName)
                         };
                         AllJokers.Add(item);
                     }
@@ -458,6 +500,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Skipping for now as they're more complex
 
                 DebugLogger.Log("VisualBuilderTab", $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses with images");
+                DebugLogger.Log("VisualBuilderTab", $"Joker types: {string.Join(", ", AllJokers.Take(5).Select(j => $"{j.Name}:{j.Type}:{j.Category}"))}");
+                DebugLogger.Log("VisualBuilderTab", $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}");
             }
             catch (Exception ex)
             {

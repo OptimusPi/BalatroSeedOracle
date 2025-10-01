@@ -15,9 +15,10 @@ public class Program
     {
         // Initialize Velopack
         VelopackApp.Build().Run();
-        
+            
         // Start Avalonia
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+
     }
 
     // Avalonia configuration, this method is called by the platform-specific entry points
@@ -25,7 +26,6 @@ public class Program
         AppBuilder
             .Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont()
             .LogToTrace()
-            .UseReactiveUI();
+;
 }

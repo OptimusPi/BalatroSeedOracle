@@ -220,11 +220,8 @@ namespace BalatroSeedOracle.Controls
             // Decay beat pulse
             _beatPulse *= 0.95f;
 
-            // Continue animation cycle for ALL animated themes
-            if (_isAnimating)
-            {
-                Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-            }
+            // YOUR SKIACONTROL PATTERN - Self-invalidating render cycle
+            Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 
             context.Custom(
                 new BalatroStyleBackgroundDrawOp(

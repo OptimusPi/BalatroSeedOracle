@@ -78,6 +78,20 @@ namespace BalatroSeedOracle.Models
                 }
             }
         }
+        
+        public IImage? SoulFaceImage
+        {
+            get
+            {
+                if (_type == "SoulJoker")
+                {
+                    return Services.SpriteService.Instance.GetJokerSoulImage(_name);
+                }
+                return null;
+            }
+        }
+        
+        public bool IsFavorite { get; set; }
 
         public string DisplayName
         {

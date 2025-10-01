@@ -23,6 +23,9 @@ namespace BalatroSeedOracle.ViewModels
         private SearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
         private bool _isSearching = false;
+
+        // Reference to main menu for VibeOut mode
+        public Views.BalatroMainMenu? MainMenu { get; set; }
         private Motely.Filters.MotelyJsonConfig? _loadedConfig;
         private int _selectedTabIndex = 0;
         private SearchProgress? _latestProgress;
@@ -187,24 +190,6 @@ namespace BalatroSeedOracle.ViewModels
                 // Subscribe to SearchInstance events directly
                 _searchInstance.SearchCompleted += OnSearchCompleted;
                 _searchInstance.ProgressUpdated += OnProgressUpdated;
-                
-                // Hook up results to vibe mode if active
-                if (_activeVibeViewModel != null && _searchInstance?.Results != null)
-                {
-                    _searchInstance.Results.CollectionChanged += (s, e) =>
-                    {
-                        if (e.NewItems != null && _activeVibeViewModel != null)
-                        {
-                            foreach (SearchResult result in e.NewItems)
-                            {
-                                if (result != null && !string.IsNullOrEmpty(result.Seed))
-                                {
-                                    _activeVibeViewModel.ProcessSeedResult(result.Seed, result.TotalScore, result.Scores);
-                                }
-                            }
-                        }
-                    };
-                }
 
                 DebugLogger.Log("SearchModalViewModel", $"Search started with ID: {_currentSearchId}");
             }
@@ -304,8 +289,6 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private Features.VibeOut.VibeOutViewModel? _activeVibeViewModel;
-        private Features.VibeOut.VibeOutView? _activeVibeWindow;
         
         private void CloseModal()
         {
@@ -317,49 +300,15 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // Check if VibeOut is already open
-                if (_activeVibeWindow != null)
+                if (MainMenu != null)
                 {
-                    _activeVibeWindow.Activate();
-                    return;
+                    MainMenu.EnterVibeOutMode();
+                    DebugLogger.Log("SearchModalViewModel", "🎵 VibeOut mode activated!");
                 }
-                
-                // Create VibeOut window
-                _activeVibeWindow = new Features.VibeOut.VibeOutView();
-                _activeVibeViewModel = new Features.VibeOut.VibeOutViewModel();
-                _activeVibeWindow.DataContext = _activeVibeViewModel;
-                
-                // Start vibing
-                _activeVibeViewModel.StartVibing();
-                
-                // Hook search results to VibeOut
-                if (_searchInstance?.Results != null)
+                else
                 {
-                    _searchInstance.Results.CollectionChanged += (s, e) =>
-                    {
-                        if (e.NewItems != null && _activeVibeViewModel != null)
-                        {
-                            foreach (var result in e.NewItems)
-                            {
-                                if (result is Models.SearchResult searchResult)
-                                {
-                                    _activeVibeViewModel.ProcessSeedResult(searchResult.Seed, searchResult.TotalScore, searchResult.Scores);
-                                }
-                            }
-                        }
-                    };
+                    DebugLogger.LogError("SearchModalViewModel", "MainMenu reference not set - cannot enter VibeOut mode");
                 }
-                
-                // Clean up when closed
-                _activeVibeWindow.Closed += (s, e) =>
-                {
-                    _activeVibeViewModel?.StopVibing();
-                    _activeVibeViewModel = null;
-                    _activeVibeWindow = null;
-                };
-                
-                _activeVibeWindow.Show();
-                DebugLogger.Log("SearchModalViewModel", "🎵 VibeOut mode activated!");
             }
             catch (Exception ex)
             {
@@ -367,25 +316,6 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
         
-        private void HookVibeToSearch(SearchInstance searchInstance)
-        {
-            if (_activeVibeViewModel == null || searchInstance?.Results == null) return;
-            
-            // Subscribe to results collection changes
-            searchInstance.Results.CollectionChanged += (s, e) =>
-            {
-                if (e.NewItems != null && _activeVibeViewModel != null)
-                {
-                    foreach (SearchResult result in e.NewItems)
-                    {
-                        if (result != null && !string.IsNullOrEmpty(result.Seed))
-                        {
-                            _activeVibeViewModel.ProcessSeedResult(result.Seed, result.TotalScore, result.Scores);
-                        }
-                    }
-                }
-            };
-        }
 
         #endregion
 
@@ -522,13 +452,7 @@ namespace BalatroSeedOracle.ViewModels
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     _searchInstance.ProgressUpdated += OnProgressUpdated;
-                    
-                    // Hook vibe mode if active
-                    if (_activeVibeViewModel != null && _searchInstance != null)
-                    {
-                        HookVibeToSearch(_searchInstance);
-                    }
-                    
+
                     // CRITICAL: Update UI state from existing search
                     IsSearching = _searchInstance?.IsRunning ?? false;
                     

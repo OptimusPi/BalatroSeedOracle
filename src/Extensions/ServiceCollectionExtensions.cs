@@ -17,8 +17,8 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SearchManager>();
             services.AddSingleton<SoundEffectService>();
             services.AddSingleton<VibeAudioManager>();
-            // ClipboardService is static, no DI registration needed
             services.AddSingleton<FavoritesService>();
+            // ClipboardService is static, no DI registration needed
             services.AddSingleton<DaylatroHighScoreService>();
 
             // ViewModels

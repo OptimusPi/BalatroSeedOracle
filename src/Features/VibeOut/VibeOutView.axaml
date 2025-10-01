@@ -20,11 +20,9 @@
     
     <Grid>
         <!-- 🎵 MUSIC-REACTIVE BALATRO BACKGROUND 🔥 -->
-        <controls:BalatroStyleBackground x:Name="VibeBackground" 
-                                        Theme="VibeOut"
-                                        IsAnimating="True" 
-                                        Contrast="1.5"
-                                        SpinAmount="0.7"/>
+        <controls:BalatroShaderBackground x:Name="VibeBackground"
+                                         Theme="VibeOut"
+                                         IsAnimating="True"/>
         
         <!-- Matrix rain overlay -->
         <ItemsControl ItemsSource="{Binding MatrixSeeds}">

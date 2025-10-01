@@ -170,7 +170,6 @@ namespace BalatroSeedOracle.ViewModels
         public ICommand DeleteCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand ReloadVisualCommand { get; }
-        // SwitchTabCommand removed - using proper TabControl SelectedIndex binding
 
         #endregion
 

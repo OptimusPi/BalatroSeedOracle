@@ -145,18 +145,60 @@ namespace BalatroSeedOracle.ViewModels
 
         private async Task AnalyzeSeedInternal(string seed)
         {
-            // TODO: Implement actual seed analysis logic
-            // This would use the Motely analyzer once the reference is fixed
-            
-            await Task.Delay(1000); // Simulate analysis time
-            
-            // Add some placeholder results for now
-            AnalysisResults.Add(new AnalysisResultItem
+            try
             {
-                Title = "Seed Information",
-                Description = $"Analyzing seed: {seed}",
-                Type = AnalysisResultType.Info
-            });
+                // USE THE REAL MOTELY ANALYZER 
+                var config = new Motely.Analysis.MotelySeedAnalysisConfig(
+                    seed, 
+                    Motely.MotelyDeck.Red, // TODO: Get from UI selection
+                    Motely.MotelyStake.White // TODO: Get from UI selection
+                );
+                
+                var analysis = await Task.Run(() => 
+                {
+                    return Motely.Analysis.MotelySeedAnalyzer.Analyze(config);
+                });
+                
+                // Display REAL analysis results
+                if (!string.IsNullOrEmpty(analysis.Error))
+                {
+                    AnalysisResults.Add(new AnalysisResultItem
+                    {
+                        Title = "Analysis Error",
+                        Description = analysis.Error,
+                        Type = AnalysisResultType.Error
+                    });
+                }
+                else
+                {
+                    AnalysisResults.Add(new AnalysisResultItem
+                    {
+                        Title = "Seed Analysis Complete",
+                        Description = $"Analyzed {analysis.Antes.Count} antes for seed {seed}",
+                        Type = AnalysisResultType.Success
+                    });
+                    
+                    // Add ante-by-ante analysis
+                    foreach (var ante in analysis.Antes)
+                    {
+                        AnalysisResults.Add(new AnalysisResultItem
+                        {
+                            Title = $"Ante {ante.Ante}",
+                            Description = ante.ToString(),
+                            Type = AnalysisResultType.Info
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AnalysisResults.Add(new AnalysisResultItem
+                {
+                    Title = "Analysis Failed",
+                    Description = ex.Message,
+                    Type = AnalysisResultType.Error
+                });
+            }
 
             AnalysisResults.Add(new AnalysisResultItem
             {
