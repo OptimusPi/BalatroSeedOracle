@@ -472,23 +472,79 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Toggles background music on/off
+        /// Opens volume slider popup
         /// </summary>
         private void OnMusicToggleClick(object? sender, RoutedEventArgs e)
         {
             PlayButtonClickSound();
-            _isMusicPlaying = !_isMusicPlaying;
+
+            var popup = this.FindControl<Popup>("VolumePopup");
+            if (popup != null)
+            {
+                popup.IsOpen = !popup.IsOpen;
+            }
+        }
+
+        /// <summary>
+        /// Volume slider changed - updates both music and SFX
+        /// </summary>
+        private void OnVolumeSliderChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            var slider = sender as Slider;
+            if (slider == null) return;
+
+            float volume = (float)(slider.Value / 100.0);
 
             var audioManager = ServiceHelper.GetService<VibeAudioManager>();
             if (audioManager != null)
             {
-                audioManager.SetMasterVolume(_isMusicPlaying ? 1.0f : 0.0f);
+                audioManager.SetMasterVolume(volume);
+                audioManager.SetSfxVolume(volume);
             }
 
-            // Update icon
+            // Update percentage display
+            var percentText = this.FindControl<TextBlock>("VolumePercentText");
+            if (percentText != null)
+            {
+                percentText.Text = $"{(int)slider.Value}%";
+            }
+
+            // Update music button icon
             if (_musicToggleIcon != null)
             {
-                _musicToggleIcon.Text = _isMusicPlaying ? "🔊" : "🔇";
+                _musicToggleIcon.Text = slider.Value > 0 ? "🔊" : "🔇";
+            }
+
+            // Update mute button text
+            var muteButton = this.FindControl<Button>("MuteButton");
+            if (muteButton != null)
+            {
+                muteButton.Content = slider.Value > 0 ? "MUTE" : "UNMUTE";
+            }
+
+            _isMusicPlaying = slider.Value > 0;
+        }
+
+        /// <summary>
+        /// Mute button clicked - toggles between mute and previous volume
+        /// </summary>
+        private void OnMuteButtonClick(object? sender, RoutedEventArgs e)
+        {
+            PlayButtonClickSound();
+
+            var slider = this.FindControl<Slider>("VolumeSlider");
+            if (slider == null) return;
+
+            if (slider.Value > 0)
+            {
+                // Store current volume and mute
+                slider.Tag = slider.Value;
+                slider.Value = 0;
+            }
+            else
+            {
+                // Restore previous volume or default to 70%
+                slider.Value = slider.Tag is double storedValue ? storedValue : 70;
             }
         }
 

@@ -73,9 +73,59 @@
         <!-- Settings Popup (shown when settings button clicked) -->
         <Popup x:Name="SettingsPopup"
                IsOpen="False"
-               PlacementMode="Center"
+               Placement="Center"
                PlacementTarget="{Binding #SettingsButton}">
             <views:SettingsModal x:Name="SettingsModal"/>
+        </Popup>
+
+        <!-- Volume Slider Popup (shown when music button clicked) -->
+        <Popup x:Name="VolumePopup"
+               IsOpen="False"
+               Placement="Top"
+               PlacementTarget="{Binding #MusicToggleButton}"
+               VerticalOffset="-10">
+            <Border Background="#202020"
+                    BorderBrush="#FFD700"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="15,20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="🔊 VOLUME"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="#FFD700"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,5"/>
+
+                    <!-- Vertical Volume Slider -->
+                    <Slider x:Name="VolumeSlider"
+                            Orientation="Vertical"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="70"
+                            Height="120"
+                            Width="40"
+                            ValueChanged="OnVolumeSliderChanged"
+                            ToolTip.Tip="Drag to adjust volume"/>
+
+                    <!-- Volume Percentage Display -->
+                    <TextBlock x:Name="VolumePercentText"
+                               Text="70%"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+
+                    <!-- Mute Button -->
+                    <Button x:Name="MuteButton"
+                            Content="MUTE"
+                            Click="OnMuteButtonClick"
+                            MinWidth="60"
+                            FontSize="12"
+                            Height="30"
+                            HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Popup>
         
         <!-- Desktop widgets layer -->
