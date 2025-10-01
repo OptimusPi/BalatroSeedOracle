@@ -203,42 +203,58 @@ namespace BalatroSeedOracle.Services
             }
             
             // Configure tracks for the new state
+            // NOTE: Bass, Chords, Melody are LAYERED (1+2 play together)
+            // ONLY Drums has variants (Drums1 OR Drums2, not both!)
             switch (newState)
             {
                 case AudioState.MainMenu:
-                    // FULL VOLUME ALL TRACKS!
+                    // Chill mode - Drums1 variant with all layers
                     SetTrackVolume("Drums1", 1.0f);
                     SetTrackVolume("Bass1", 1.0f);
+                    SetTrackVolume("Bass2", 1.0f);
                     SetTrackVolume("Chords1", 1.0f);
+                    SetTrackVolume("Chords2", 1.0f);
                     SetTrackVolume("Melody1", 1.0f);
+                    SetTrackVolume("Melody2", 1.0f);
                     break;
-                    
+
                 case AudioState.ModalOpen:
+                    // Slightly quieter
                     SetTrackVolume("Drums1", 0.7f);
                     SetTrackVolume("Bass1", 0.6f);
+                    SetTrackVolume("Bass2", 0.6f);
                     SetTrackVolume("Chords1", 0.5f);
+                    SetTrackVolume("Chords2", 0.5f);
                     break;
-                    
+
                 case AudioState.VibeLevel1:
+                    // Active search - all layers with Drums1
                     SetTrackVolume("Drums1", 0.8f);
                     SetTrackVolume("Bass1", 0.7f);
+                    SetTrackVolume("Bass2", 0.7f);
                     SetTrackVolume("Chords1", 0.6f);
+                    SetTrackVolume("Chords2", 0.6f);
                     break;
-                    
+
                 case AudioState.VibeLevel2:
-                    // THE DRUMS SWITCH! 🔥
+                    // THE DRUMS SWITCH! 🔥 (Drums1 → Drums2)
                     SetTrackVolume("Drums1", 0f);    // Fade out calm drums
                     SetTrackVolume("Drums2", 0.9f);  // SICK BEATS ACTIVATE!
                     SetTrackVolume("Bass1", 0.8f);
+                    SetTrackVolume("Bass2", 0.8f);
                     SetTrackVolume("Chords1", 0.7f);
+                    SetTrackVolume("Chords2", 0.7f);
                     break;
-                    
+
                 case AudioState.VibeLevel3:
-                    // MAXIMUM OVERDRIVE! 🚀
-                    SetTrackVolume("Drums2", 1.0f);  // FULL BEATS
-                    SetTrackVolume("Bass2", 0.9f);   // THICC BASS
-                    SetTrackVolume("Chords2", 0.8f); // RICH HARMONY
-                    SetTrackVolume("Melody1", 0.7f); // MELODY ENTERS
+                    // MAXIMUM OVERDRIVE! 🚀 All layers at full power
+                    SetTrackVolume("Drums2", 1.0f);  // FULL BEATS (variant 2)
+                    SetTrackVolume("Bass1", 0.9f);   // THICC BASS (layered)
+                    SetTrackVolume("Bass2", 0.9f);
+                    SetTrackVolume("Chords1", 0.8f); // RICH HARMONY (layered)
+                    SetTrackVolume("Chords2", 0.8f);
+                    SetTrackVolume("Melody1", 0.7f); // MELODY ENTERS (layered)
+                    SetTrackVolume("Melody2", 0.7f);
                     break;
             }
             

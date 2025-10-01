@@ -120,7 +120,8 @@
                     <Button x:Name="MuteButton"
                             Content="MUTE"
                             Click="OnMuteButtonClick"
-                            MinWidth="60"
+                            MinWidth="80"
+                            Width="80"
                             FontSize="12"
                             Height="30"
                             HorizontalAlignment="Center"/>
