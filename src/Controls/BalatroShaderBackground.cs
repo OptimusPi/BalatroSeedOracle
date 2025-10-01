@@ -76,6 +76,22 @@ namespace BalatroSeedOracle.Controls
             Theme = themes[nextIndex];
         }
 
+        // Public methods to control shader parameters
+        public void SetContrast(float contrast)
+        {
+            _handler?.SetContrast(contrast);
+        }
+
+        public void SetSpinAmount(float spinAmount)
+        {
+            _handler?.SetSpinAmount(spinAmount);
+        }
+
+        public void SetSpeed(float speed)
+        {
+            _handler?.SetSpeed(speed);
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -123,6 +139,11 @@ namespace BalatroSeedOracle.Controls
         private float _melodyIntensity = 0f;
         private float _chordsIntensity = 0f;
         private float _bassIntensity = 0f;
+
+        // Shader parameters (controllable via settings)
+        private float _contrast = 2.0f;
+        private float _spinAmount = 0.3f;
+        private float _speed = 1.0f;
 
         // Smoothed FFT values to prevent jitter
         private float _smoothedMid = 0f;
@@ -194,6 +215,22 @@ namespace BalatroSeedOracle.Controls
             _bassIntensity = Math.Clamp(bass, 0f, 1f);
         }
 
+        // Public methods to control shader parameters
+        public void SetContrast(float contrast)
+        {
+            _contrast = Math.Clamp(contrast, 0.5f, 5.0f);
+        }
+
+        public void SetSpinAmount(float spinAmount)
+        {
+            _spinAmount = Math.Clamp(spinAmount, 0.0f, 1.0f);
+        }
+
+        public void SetSpeed(float speed)
+        {
+            _speed = Math.Clamp(speed, 0.1f, 3.0f);
+        }
+
         public override void OnRender(ImmediateDrawingContext context)
         {
             if (_isDisposed) return;
@@ -233,7 +270,7 @@ namespace BalatroSeedOracle.Controls
         {
             if (_shaderBuilder != null) return;
 
-            // Music-driven Balatro shader with accumulated rotation
+            // REAL Balatro background shader (converted from external/Balatro/resources/shaders/background.fs)
             var sksl = @"
                 uniform float2 resolution;
                 uniform float time;
@@ -243,59 +280,41 @@ namespace BalatroSeedOracle.Controls
                 uniform float4 colour_3;
                 uniform float contrast;
                 uniform float spin_amount;
-                uniform float vibe_intensity;
-                uniform float beat_pulse;
-                uniform float music_rotation; // Accumulated rotation (forward-only)
-                uniform float melodic_mid;    // Bass/Chords mid frequencies
-                uniform float melodic_treble; // Melody treble
-                uniform float melodic_peak;   // Overall melodic energy
-                uniform float melody_intensity;  // Melody volume
-                uniform float chords_intensity;  // Chords volume
-                uniform float bass_intensity;    // Bass volume
 
-                const float PIXEL_SIZE_FAC = 1080;
-                const float SPIN_EASE = 2.2;
+                const float PIXEL_SIZE_FAC = 700.0;
+                const float SPIN_EASE = 0.5;
 
                 float4 main(float2 screen_coords) {
+                    // Convert to UV coords (0-1) and floor for pixel effect
                     float pixel_size = length(resolution) / PIXEL_SIZE_FAC;
-                    float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution);
+                    float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution) - float2(0.12, 0.0);
                     float uv_len = length(uv);
 
-                    // Music-driven animation: individual tracks drive different effects
-                    float color_intensity = melodic_peak * 0.5; // Overall energy
-                    float white_flash = bass_intensity * 0.25; // Bass creates white flash!
-
-                    // Rotation driven by accumulated music_rotation (from drum beats)
-                    float new_pixel_angle = atan(uv.y, uv.x) + music_rotation - SPIN_EASE * 20.0 * (1.0 * spin_amount * uv_len + (1.0 - 1.0 * spin_amount));
+                    // Center swirl that changes with time
+                    float speed = (spin_time * SPIN_EASE * 0.2) + 302.2;
+                    float new_pixel_angle = atan(uv.y, uv.x) + speed - SPIN_EASE * 20.0 * (1.0 * spin_amount * uv_len + (1.0 - 1.0 * spin_amount));
                     float2 mid = (resolution / length(resolution)) / 2.0;
                     uv = float2((uv_len * cos(new_pixel_angle) + mid.x), (uv_len * sin(new_pixel_angle) + mid.y)) - mid;
 
-                    // Zoom: constant (no breathing)
-                    float bass_zoom = 30.0;
-                    uv *= bass_zoom;
-
-                    // Pattern generation - gentle wiggle + TINY music boost
-                    float wiggle = sin(time * 2.5) * 1.1; // Gentle side-to-side wiggle
-                    float music_boost = (melodic_mid + melodic_treble) * 1; // TINY music boost
-                    float pattern_speed = time * 5.0 + wiggle + music_boost; // Forward + wiggle + subtle music
+                    // Paint effect
+                    uv *= 30.0;
+                    speed = time * 2.0;
                     float2 uv2 = float2(uv.x + uv.y);
 
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i < 5; i++) {
                         uv2 += sin(max(uv.x, uv.y)) + uv;
-                        uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + pattern_speed * 0.131121), sin(uv2.x - 0.113 * pattern_speed));
+                        uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121), sin(uv2.x - 0.113 * speed));
                         uv -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
                     }
 
+                    // Paint amount ranges from 0-2
                     float contrast_mod = (0.25 * contrast + 0.5 * spin_amount + 1.2);
-                    float paint_res = min(8.0, max(0.0, length(uv) * 0.035 * contrast_mod));
+                    float paint_res = min(2.0, max(0.0, length(uv) * 0.035 * contrast_mod));
                     float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));
                     float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));
                     float c3p = 1.0 - min(1.0, c1p + c2p);
 
-                    // Simple colors - just use them as-is, they work fine!
-                    float4 base_col = colour_1 * c1p + colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a);
-
-                    float4 ret_col = (0.3 / contrast) * colour_1 + (1.0 - 0.3 / contrast) * base_col;
+                    float4 ret_col = (0.3 / contrast) * colour_1 + (1.0 - 0.3 / contrast) * (colour_1 * c1p + colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a));
 
                     return ret_col;
                 }";
@@ -313,17 +332,8 @@ namespace BalatroSeedOracle.Controls
             if (_shaderBuilder == null) return;
 
             UpdateThemeColors();
-            _shaderBuilder.Uniforms["contrast"] = 3.5f;
-            _shaderBuilder.Uniforms["spin_amount"] = 0.2f;
-            _shaderBuilder.Uniforms["vibe_intensity"] = 0f;
-            _shaderBuilder.Uniforms["beat_pulse"] = 0f;
-            _shaderBuilder.Uniforms["music_rotation"] = 0f;
-            _shaderBuilder.Uniforms["melodic_mid"] = 0f;
-            _shaderBuilder.Uniforms["melodic_treble"] = 0f;
-            _shaderBuilder.Uniforms["melodic_peak"] = 0f;
-            _shaderBuilder.Uniforms["melody_intensity"] = 0f;
-            _shaderBuilder.Uniforms["chords_intensity"] = 0f;
-            _shaderBuilder.Uniforms["bass_intensity"] = 0f;
+            _shaderBuilder.Uniforms["contrast"] = _contrast;
+            _shaderBuilder.Uniforms["spin_amount"] = _spinAmount;
         }
 
         private void UpdateThemeColors()
@@ -389,20 +399,15 @@ namespace BalatroSeedOracle.Controls
             {
                 var currentSize = new SKSize((float)bounds.Width, (float)bounds.Height);
 
+                // Apply speed multiplier to time for faster/slower animation
+                var adjustedTime = time * _speed;
+
                 // Update uniforms (this is fast, no allocation)
-                _shaderBuilder.Uniforms["time"] = time;
-                _shaderBuilder.Uniforms["spin_time"] = time;
+                _shaderBuilder.Uniforms["time"] = adjustedTime;
+                _shaderBuilder.Uniforms["spin_time"] = adjustedTime;
                 _shaderBuilder.Uniforms["resolution"] = currentSize;
-                _shaderBuilder.Uniforms["vibe_intensity"] = _vibeIntensity;
-                _shaderBuilder.Uniforms["beat_pulse"] = _beatPulse;
-                _shaderBuilder.Uniforms["music_rotation"] = _musicAccumulatedRotation;
-                // Use smoothed values for shader (prevents jitter)
-                _shaderBuilder.Uniforms["melodic_mid"] = _smoothedMid;
-                _shaderBuilder.Uniforms["melodic_treble"] = _smoothedTreble;
-                _shaderBuilder.Uniforms["melodic_peak"] = _smoothedPeak;
-                _shaderBuilder.Uniforms["melody_intensity"] = _melodyIntensity;
-                _shaderBuilder.Uniforms["chords_intensity"] = _chordsIntensity;
-                _shaderBuilder.Uniforms["bass_intensity"] = _bassIntensity;
+                _shaderBuilder.Uniforms["contrast"] = _contrast;
+                _shaderBuilder.Uniforms["spin_amount"] = _spinAmount;
 
 
                 // Build shader (SKRuntimeEffect reuses internal resources)

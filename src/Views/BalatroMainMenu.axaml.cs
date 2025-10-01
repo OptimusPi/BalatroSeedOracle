@@ -214,9 +214,27 @@ namespace BalatroSeedOracle.Views
             audioManager?.TransitionTo(Services.AudioState.MainMenu);
         }
 
+        /// <summary>
+        /// Plays a click sound effect for button presses
+        /// </summary>
+        private void PlayButtonClickSound()
+        {
+            try
+            {
+                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                audioManager?.PlayClickSound();
+            }
+            catch (Exception ex)
+            {
+                // Silently fail - don't let SFX errors crash the app
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to play button click sound: {ex.Message}");
+            }
+        }
+
         // Main menu button event handlers
         private void OnSeedSearchClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             try
             {
                 // Open the search modal
@@ -245,12 +263,14 @@ namespace BalatroSeedOracle.Views
 
         private void OnEditorClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             // Open filters modal with blank/new filter
             this.ShowFiltersModal();
         }
 
         private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             // Show the analyze modal
             var analyzeModal = new AnalyzeModal();
             var modal = new StandardModal("ANALYZE");
@@ -261,6 +281,7 @@ namespace BalatroSeedOracle.Views
 
         private void OnToolClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             // Use the modal helper extension method
             this.ShowToolsModal();
         }
@@ -340,6 +361,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnSettingsClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             var popup = this.FindControl<Popup>("SettingsPopup");
             if (popup != null)
             {
@@ -356,12 +378,18 @@ namespace BalatroSeedOracle.Views
                         modal.ThemeChanged -= OnThemeChanged;
                         modal.MusicVolumeChanged -= OnMusicVolumeChanged;
                         modal.SfxVolumeChanged -= OnSfxVolumeChanged;
+                        modal.ContrastChanged -= OnContrastChanged;
+                        modal.SpinChanged -= OnSpinChanged;
+                        modal.SpeedChanged -= OnSpeedChanged;
 
                         // Wire new events
                         modal.CloseRequested += OnSettingsClose;
                         modal.ThemeChanged += OnThemeChanged;
                         modal.MusicVolumeChanged += OnMusicVolumeChanged;
                         modal.SfxVolumeChanged += OnSfxVolumeChanged;
+                        modal.ContrastChanged += OnContrastChanged;
+                        modal.SpinChanged += OnSpinChanged;
+                        modal.SpeedChanged += OnSpeedChanged;
                     }
                 }
             }
@@ -369,6 +397,7 @@ namespace BalatroSeedOracle.Views
 
         private void OnSettingsClose(object? sender, EventArgs e)
         {
+            PlayButtonClickSound();
             var popup = this.FindControl<Popup>("SettingsPopup");
             if (popup != null) popup.IsOpen = false;
         }
@@ -393,11 +422,36 @@ namespace BalatroSeedOracle.Views
             audioManager?.SetSfxVolume((float)(volume / 100.0));
         }
 
+        private void OnContrastChanged(object? sender, double contrast)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetContrast((float)contrast);
+            }
+        }
+
+        private void OnSpinChanged(object? sender, double spin)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinAmount((float)spin);
+            }
+        }
+
+        private void OnSpeedChanged(object? sender, double speed)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpeed((float)speed);
+            }
+        }
+
         /// <summary>
         /// Toggles the background animation on/off when the animation button is clicked
         /// </summary>
         private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             // Toggle animation state
             _isAnimating = !_isAnimating;
 
@@ -422,6 +476,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnMusicToggleClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             _isMusicPlaying = !_isMusicPlaying;
 
             var audioManager = ServiceHelper.GetService<VibeAudioManager>();
@@ -442,6 +497,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnAuthorClick(object? sender, RoutedEventArgs e)
         {
+            PlayButtonClickSound();
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Avalonia.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -27,10 +28,13 @@ namespace BalatroSeedOracle.Services
     {
         private WaveOutEvent? _waveOut;
         private MixingSampleProvider? _mixer;
-        
+
         // Individual audio tracks with gain control
         private readonly Dictionary<string, AudioTrack> _tracks = new();
         private AudioState _currentState = AudioState.VibeLevel1; // Start as different state to force transition
+
+        // SFX support
+        private float _sfxVolume = 1.0f;
         
         // FFT Analysis for drums (beat detection)
         private readonly float[] _fftBuffer = new float[2048];
@@ -480,7 +484,56 @@ namespace BalatroSeedOracle.Services
         }
 
         public void SetMusicVolume(float volume) => SetMasterVolume(volume);
-        public void SetSfxVolume(float volume) { /* TODO: SFX volume */ }
+        public void SetSfxVolume(float volume)
+        {
+            _sfxVolume = Math.Clamp(volume, 0f, 1f);
+        }
+
+        /// <summary>
+        /// Plays a one-shot sound effect (button click, etc.)
+        /// </summary>
+        public void PlayClickSound()
+        {
+            try
+            {
+                // Play on a background thread to avoid blocking UI
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                        var sfxPath = Path.Combine(baseDir, "Assets", "Audio", "SFX", "button.ogg");
+
+                        if (!File.Exists(sfxPath))
+                        {
+                            DebugLogger.LogError("VibeAudioManager", $"SFX file not found: {sfxPath}");
+                            return;
+                        }
+
+                        // Create a new WaveOut for this SFX (allows overlapping sounds)
+                        using var reader = new VorbisWaveReader(sfxPath);
+                        using var waveOut = new WaveOutEvent();
+                        waveOut.Init(reader);
+                        waveOut.Volume = _sfxVolume;
+                        waveOut.Play();
+
+                        // Wait for the sound to finish playing
+                        while (waveOut.PlaybackState == PlaybackState.Playing)
+                        {
+                            System.Threading.Thread.Sleep(10);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("VibeAudioManager", $"Failed to play click sound: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VibeAudioManager", $"Failed to start click sound playback: {ex.Message}");
+            }
+        }
         
         public void Pause()
         {
