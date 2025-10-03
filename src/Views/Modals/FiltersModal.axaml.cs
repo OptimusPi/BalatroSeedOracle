@@ -13,6 +13,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -29,6 +30,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using TextMateSharp.Grammars;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using IoPath = System.IO.Path;
@@ -99,6 +101,9 @@ namespace BalatroSeedOracle.Views.Modals
         private bool _isDragging = false;
 
         private FavoritesService.JokerSet? _draggingSet = null;
+
+        // Filter list ViewModel
+        private FilterListViewModel? _filterListViewModel;
 
         public FiltersModalContent()
         {
@@ -186,20 +191,6 @@ namespace BalatroSeedOracle.Views.Modals
             // Keep track of current tab for triangle animation
             _currentTabIndex = 0;
 
-            // Setup FilterSelector component
-            var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
-            if (filterSelector != null)
-            {
-                // DISABLE auto-loading - user must explicitly click a button to load a filter
-                filterSelector.AutoLoadEnabled = false;
-                filterSelector.FilterLoaded += OnFilterSelected;
-                
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "FiltersModal",
-                    "FilterSelector component found and setup - auto-load DISABLED"
-                );
-            }
-
             // Setup Save Filter functionality
             var saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             var saveFilterButton = this.FindControl<Button>("SaveFilterButton");
@@ -212,8 +203,217 @@ namespace BalatroSeedOracle.Views.Modals
                     saveFilterButton.IsEnabled = !string.IsNullOrWhiteSpace(saveFilterNameInput.Text);
                 };
             }
+
+            // Initialize FilterListViewModel and set as DataContext for LoadSavePanel
+            _filterListViewModel = new FilterListViewModel();
+            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+            if (loadSavePanel != null)
+            {
+                loadSavePanel.DataContext = _filterListViewModel;
+            }
+
+            // Wire up FilterSelectorControl events
+            var filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
+            if (filterSelector != null)
+            {
+                filterSelector.FilterSelected += OnFilterSelected;
+                filterSelector.FilterCopyRequested += OnFilterCopyRequested;
+                filterSelector.NewFilterRequested += OnNewFilterRequested;
+            }
         }
-        
+
+        private void OnCreateNewFilterClick(object? sender, RoutedEventArgs e)
+        {
+            // Clear current filter and enable tabs to create new
+            ClearFilter();
+            UpdateTabStates(true);
+
+            // Switch to Visual tab
+            var visualTabButton = this.FindControl<Button>("VisualTab");
+            visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+
+        // NOTE: OnFilterListItemClick, OnMustHaveTabClick, OnShouldHaveTabClick, OnMustNotTabClick,
+        // LoadFilterItemsForTab, and CreateCardImage methods have been removed as they are now
+        // handled by FilterSelectorControl component
+
+        private void OnSelectFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _filterListViewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                OnFilterSelected(null, filterPath);
+            }
+        }
+
+        private async void OnCopyFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _filterListViewModel?.GetSelectedFilterPath();
+            if (string.IsNullOrEmpty(filterPath))
+                return;
+
+            try
+            {
+                // Get original filter name
+                var originalName = IoPath.GetFileNameWithoutExtension(filterPath);
+
+                // Show dialog to get new name
+                var newName = await ShowFilterNameDialog($"{originalName} (Copy)");
+                if (string.IsNullOrWhiteSpace(newName))
+                    return; // User cancelled
+
+                // Create new blank filter with the given name
+                var userProfile = ServiceHelper.GetService<UserProfileService>();
+                var authorName = userProfile?.GetAuthorName() ?? "Unknown";
+
+                var newConfig = new Motely.Filters.MotelyJsonConfig
+                {
+                    Name = newName,
+                    Description = $"Copy of {originalName}",
+                    Author = authorName,
+                    DateCreated = DateTime.UtcNow,
+                    Must = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Deck = "Red Deck",
+                    Stake = "White Stake"
+                };
+
+                // Save the new filter
+                var filtersDir = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                Directory.CreateDirectory(filtersDir);
+                var fileName = NormalizeFileName(newName);
+                var newFilePath = IoPath.Combine(filtersDir, $"{fileName}.json");
+
+                // Handle duplicates
+                int counter = 1;
+                while (File.Exists(newFilePath))
+                {
+                    newFilePath = IoPath.Combine(filtersDir, $"{fileName}{counter}.json");
+                    counter++;
+                }
+
+                var json = SerializeOuijaConfig(newConfig);
+                await File.WriteAllTextAsync(newFilePath, json);
+
+                // Refresh filter list
+                _filterListViewModel?.LoadFilters();
+
+                // Load the new filter for editing
+                await LoadConfigAsync(newFilePath);
+                UpdateTabStates(true);
+
+                // Switch to Visual tab
+                var visualTabButton = this.FindControl<Button>("VisualTab");
+                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                UpdateStatus($"Created copy: {newName}", false);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Error copying filter: {ex.Message}");
+                UpdateStatus($"Error copying filter: {ex.Message}", true);
+            }
+        }
+
+        private async Task<string?> ShowFilterNameDialog(string defaultName)
+        {
+            try
+            {
+                var dialog = new Window
+                {
+                    Title = "Name Your Filter",
+                    Width = 400,
+                    Height = 200,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false
+                };
+
+                string? result = null;
+
+                var panel = new StackPanel
+                {
+                    Margin = new Thickness(20),
+                    Spacing = 15
+                };
+
+                var titleBlock = new TextBlock
+                {
+                    Text = "Enter filter name:",
+                    FontFamily = (this.FindResource("BalatroFont") as Avalonia.Media.FontFamily) ?? Avalonia.Media.FontFamily.Default,
+                    FontSize = 16,
+                    Foreground = Brushes.White
+                };
+                panel.Children.Add(titleBlock);
+
+                var textBox = new TextBox
+                {
+                    Text = defaultName,
+                    FontSize = 14,
+                    Padding = new Thickness(8)
+                };
+                panel.Children.Add(textBox);
+
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    Spacing = 10,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                var okButton = new Button
+                {
+                    Content = "CREATE",
+                    Width = 120,
+                    Height = 40,
+                    FontSize = 14
+                };
+                okButton.Click += (s, e) =>
+                {
+                    result = textBox.Text;
+                    dialog.Close();
+                };
+
+                var cancelButton = new Button
+                {
+                    Content = "CANCEL",
+                    Width = 120,
+                    Height = 40,
+                    FontSize = 14
+                };
+                cancelButton.Click += (s, e) => dialog.Close();
+
+                buttonPanel.Children.Add(okButton);
+                buttonPanel.Children.Add(cancelButton);
+                panel.Children.Add(buttonPanel);
+
+                dialog.Content = panel;
+
+                // Focus the textbox when dialog opens and select all text
+                dialog.Opened += (s, e) =>
+                {
+                    textBox.Focus();
+                    textBox.SelectAll();
+                };
+
+                var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Error showing filter name dialog: {ex.Message}");
+                return null;
+            }
+        }
 
         // FilterSelector event handlers
         private async void OnFilterSelected(object? sender, string filterPath)
@@ -240,6 +440,87 @@ namespace BalatroSeedOracle.Views.Modals
                 );
                 UpdateStatus($"Error loading filter: {ex.Message}", true);
             }
+        }
+
+        private async void OnFilterCopyRequested(object? sender, string filterPath)
+        {
+            if (string.IsNullOrEmpty(filterPath))
+                return;
+
+            try
+            {
+                // Get original filter name
+                var originalName = IoPath.GetFileNameWithoutExtension(filterPath);
+
+                // Show dialog to get new name
+                var newName = await ShowFilterNameDialog($"{originalName} (Copy)");
+                if (string.IsNullOrWhiteSpace(newName))
+                    return; // User cancelled
+
+                // Create new blank filter with the given name
+                var userProfile = ServiceHelper.GetService<UserProfileService>();
+                var authorName = userProfile?.GetAuthorName() ?? "Unknown";
+
+                var newConfig = new Motely.Filters.MotelyJsonConfig
+                {
+                    Name = newName,
+                    Description = $"Copy of {originalName}",
+                    Author = authorName,
+                    DateCreated = DateTime.UtcNow,
+                    Must = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Deck = "Red Deck",
+                    Stake = "White Stake"
+                };
+
+                // Save the new filter
+                var filtersDir = IoPath.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                Directory.CreateDirectory(filtersDir);
+                var fileName = NormalizeFileName(newName);
+                var newFilePath = IoPath.Combine(filtersDir, $"{fileName}.json");
+
+                // Handle duplicates
+                int counter = 1;
+                while (File.Exists(newFilePath))
+                {
+                    newFilePath = IoPath.Combine(filtersDir, $"{fileName}{counter}.json");
+                    counter++;
+                }
+
+                var json = SerializeOuijaConfig(newConfig);
+                await File.WriteAllTextAsync(newFilePath, json);
+
+                // Refresh filter list in FilterSelectorControl
+                var filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
+                filterSelector?.RefreshFilters();
+
+                // Load the new filter for editing
+                await LoadConfigAsync(newFilePath);
+                UpdateTabStates(true);
+
+                // Switch to Visual tab
+                var visualTabButton = this.FindControl<Button>("VisualTab");
+                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                UpdateStatus($"Created copy: {newName}", false);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Error copying filter: {ex.Message}");
+                UpdateStatus($"Error copying filter: {ex.Message}", true);
+            }
+        }
+
+        private void OnNewFilterRequested(object? sender, EventArgs e)
+        {
+            // Clear current filter and enable tabs to create new
+            ClearFilter();
+            UpdateTabStates(true);
+
+            // Switch to Visual tab
+            var visualTabButton = this.FindControl<Button>("VisualTab");
+            visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
         private void OnModeToggleChanged(object? sender, bool isChecked)
@@ -672,9 +953,8 @@ namespace BalatroSeedOracle.Views.Modals
                     searchButton.Tag = filePath; // Store the filter path for later use
                 }
 
-                // Refresh the filter selector to show the new filter
-                var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
-                filterSelector?.RefreshFilters();
+                // Refresh the filter list to show the new filter
+                _filterListViewModel?.LoadFilters();
                 
                 // Update the JSON editor with the newly saved content
                 _currentFilePath = filePath; // Store the path so JSON tab can reload it
@@ -2750,6 +3030,20 @@ namespace BalatroSeedOracle.Views.Modals
             _selectedShould.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
+        }
+
+        private void ClearFilter()
+        {
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing filter for new creation");
+            ClearNeeds();
+            ClearWants();
+            ClearMustNot();
+            _currentFilterPath = null;
+            _loadedConfig = null;
+
+            // Clear metadata
+            if (_configNameBox != null) _configNameBox.Text = "";
+            if (_configDescriptionBox != null) _configDescriptionBox.Text = "";
         }
 
         private void ClearMustNot()
@@ -7717,7 +8011,10 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // CRITICAL: Delete all database files for this filter to avoid column conflicts
                 // When editing a filter, the structure may have changed, so old data is invalid
-                DeleteFilterDatabases(config.Name);
+                if (!string.IsNullOrEmpty(config.Name))
+                {
+                    DeleteFilterDatabases(config.Name);
+                }
 
                 UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
 
@@ -7824,9 +8121,9 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var duplicateName = filterNameInput.Text.Trim() + " (Copy)";
                 await SaveFilterAsAsync(duplicateName);
-                
-                var filterSelector = this.FindControl<FilterSelector>("FilterSelectorComponent");
-                filterSelector?.RefreshFilters();
+
+                // Refresh the filter list to show the duplicate
+                _filterListViewModel?.LoadFilters();
             }
         }
         

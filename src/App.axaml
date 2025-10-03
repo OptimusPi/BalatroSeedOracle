@@ -29,6 +29,7 @@
         
         <!-- UI Container colors -->
         <SolidColorBrush x:Key="Grey">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="DockGrey">#3a5055</SolidColorBrush>
         <SolidColorBrush x:Key="DropShadow">#1e2e32</SolidColorBrush>
         <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
         <SolidColorBrush x:Key="ModalShadow">#777e89</SolidColorBrush>
@@ -172,6 +173,21 @@
         
         <!-- Exact color picker precision styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroPreciseColors.axaml" />
+
+        <!-- Balatro Tab Triangle Animation (pulsing opacity) -->
+        <Style Selector="TextBlock.balatro-triangle">
+            <Setter Property="Opacity" Value="0.8"/>
+            <Style.Animations>
+                <Animation Duration="0:0:0.8" IterationCount="Infinite" PlaybackDirection="Alternate">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.8"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
 
     </Application.Styles>
 </Application>

@@ -19,36 +19,39 @@ namespace BalatroSeedOracle.Controls
         public event EventHandler? Cancelled;
         private static readonly bool[] DefaultMustAntes =
         [
+            false,  // Ante 0 unchecked (rare - requires Hieroglyph)
+            true,   // Antes 1-8 all checked by default (common)
             true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
         ];
         private static readonly bool[] DefaultShouldAntes =
         [
+            false,  // Ante 0 unchecked (rare - requires Hieroglyph)
+            true,   // Antes 1-8 all checked by default (common)
             true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
         ];
         private static readonly bool[] DefaultCouldAntes =
         [
+            false,  // Ante 0 unchecked (rare - requires Hieroglyph)
+            true,   // Antes 1-8 all checked by default (common)
             true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
         ];
 
         private string _itemKey = "";
@@ -126,11 +129,11 @@ namespace BalatroSeedOracle.Controls
             // Load antes if configured
             if (config.Antes != null && config.Antes.Count > 0)
             {
-                _selectedAntes = new bool[8];
+                _selectedAntes = new bool[9];
                 foreach (var ante in config.Antes)
                 {
-                    if (ante >= 1 && ante <= 8)
-                        _selectedAntes[ante - 1] = true;
+                    if (ante >= 0 && ante <= 8)
+                        _selectedAntes[ante] = true;
                 }
                 UpdateAnteCheckboxes();
             }
@@ -210,16 +213,16 @@ namespace BalatroSeedOracle.Controls
         private List<int>? GetSelectedAntes()
         {
             var antes = new List<int>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (_selectedAntes[i])
                 {
-                    antes.Add(i + 1);
+                    antes.Add(i);
                 }
             }
 
             // Always return the actual selected antes, never null
-            // This ensures the user's selection is preserved exactly  
+            // This ensures the user's selection is preserved exactly
             return antes.Count > 0 ? antes : new List<int>();
         }
 
@@ -230,9 +233,9 @@ namespace BalatroSeedOracle.Controls
 
         private void UpdateAnteCheckboxes()
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 9; i++)
             {
-                var checkbox = this.FindControl<CheckBox>($"Ante{i + 1}");
+                var checkbox = this.FindControl<CheckBox>($"Ante{i}");
                 if (checkbox != null)
                 {
                     checkbox.IsChecked = _selectedAntes[i];
@@ -371,14 +374,14 @@ namespace BalatroSeedOracle.Controls
                     && int.TryParse(checkBox.Name.Substring(4), out int anteNum)
                 )
                 {
-                    if (anteNum >= 1 && anteNum <= 8)
+                    if (anteNum >= 0 && anteNum <= 8)
                     {
                         // Don't toggle programmatically - the checkbox already toggled itself
                         // Just read the new state
                         bool newState = checkBox.IsChecked == true;
-                        
+
                         // Update internal state
-                        _selectedAntes[anteNum - 1] = newState;
+                        _selectedAntes[anteNum] = newState;
 
                         BalatroSeedOracle.Helpers.DebugLogger.Log(
                             "ItemConfigPopup",
@@ -417,6 +420,40 @@ namespace BalatroSeedOracle.Controls
                     $"Source {checkBox.Name} set to: {checkBox.IsChecked}"
                 );
             }
+        }
+
+        private void OnSelectAllAntesClick(object? sender, RoutedEventArgs e)
+        {
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
+                "ItemConfigPopup",
+                "Select All Antes clicked"
+            );
+
+            // Set all antes to true
+            for (int i = 0; i < 9; i++)
+            {
+                _selectedAntes[i] = true;
+            }
+
+            // Update UI checkboxes
+            UpdateAnteCheckboxes();
+        }
+
+        private void OnClearAllAntesClick(object? sender, RoutedEventArgs e)
+        {
+            BalatroSeedOracle.Helpers.DebugLogger.Log(
+                "ItemConfigPopup",
+                "Clear All Antes clicked"
+            );
+
+            // Set all antes to false
+            for (int i = 0; i < 9; i++)
+            {
+                _selectedAntes[i] = false;
+            }
+
+            // Update UI checkboxes
+            UpdateAnteCheckboxes();
         }
     }
 

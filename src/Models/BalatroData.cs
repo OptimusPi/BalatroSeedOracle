@@ -97,7 +97,9 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeTarotCards()
         {
-            // Add wildcard entry first
+            // Add wildcard entries first
+            TarotCards["any"] = "Any Tarot";
+            TarotCards["*"] = "Any Tarot";
             TarotCards["anytarot"] = "Any Tarot";
 
             foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
@@ -110,7 +112,9 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeSpectralCards()
         {
-            // Add wildcard entry first
+            // Add wildcard entries first
+            SpectralCards["any"] = "Any Spectral";
+            SpectralCards["*"] = "Any Spectral";
             SpectralCards["anyspectral"] = "Any Spectral";
 
             foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
@@ -158,6 +162,11 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializePlanetCards()
         {
+            // Add wildcard entries first
+            PlanetCards["any"] = "Any Planet";
+            PlanetCards["*"] = "Any Planet";
+            PlanetCards["anyplanet"] = "Any Planet";
+
             foreach (var planet in Enum.GetValues<MotelyPlanetCard>())
             {
                 var name = planet.ToString();

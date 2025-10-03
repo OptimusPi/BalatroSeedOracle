@@ -6,7 +6,9 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:modals="using:BalatroSeedOracle.Views.Modals"
              xmlns:views="using:BalatroSeedOracle.Views"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
+             x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
              x:CompileBindings="False">
 
@@ -72,7 +74,7 @@
 
         <!-- Settings Popup (shown when settings button clicked) -->
         <Popup x:Name="SettingsPopup"
-               IsOpen="False"
+               IsOpen="{Binding IsSettingsPopupOpen, Mode=TwoWay}"
                Placement="Center"
                PlacementTarget="{Binding #SettingsButton}">
             <views:SettingsModal x:Name="SettingsModal"/>
@@ -80,7 +82,7 @@
 
         <!-- Volume Slider Popup (shown when music button clicked) -->
         <Popup x:Name="VolumePopup"
-               IsOpen="False"
+               IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
                Placement="Top"
                PlacementTarget="{Binding #MusicToggleButton}"
                VerticalOffset="-10">
@@ -102,15 +104,14 @@
                             Orientation="Vertical"
                             Minimum="0"
                             Maximum="100"
-                            Value="70"
+                            Value="{Binding Volume, Mode=TwoWay}"
                             Height="120"
                             Width="40"
-                            ValueChanged="OnVolumeSliderChanged"
                             ToolTip.Tip="Drag to adjust volume"/>
 
                     <!-- Volume Percentage Display -->
                     <TextBlock x:Name="VolumePercentText"
-                               Text="70%"
+                               Text="{Binding VolumePercentText}"
                                FontSize="16"
                                FontWeight="Bold"
                                Foreground="White"
@@ -118,8 +119,8 @@
 
                     <!-- Mute Button -->
                     <Button x:Name="MuteButton"
-                            Content="MUTE"
-                            Click="OnMuteButtonClick"
+                            Content="{Binding MuteButtonText}"
+                            Command="{Binding MuteCommand}"
                             MinWidth="80"
                             Width="80"
                             FontSize="12"
@@ -139,6 +140,13 @@
                                      VerticalAlignment="Top"
                                      Margin="20,24,20,0"
                                      ClipToBounds="False"/>
+
+            <!-- Audio Visualizer Settings Widget - starts minimized, movable -->
+            <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Top"
+                                                    Margin="20,100,0,0"
+                                                    ClipToBounds="False"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
@@ -148,10 +156,10 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Name="MainTitleText"
-                        Text="Welcome!"
+                        Text="{Binding MainTitle}"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
-                        
+
                         Foreground="{StaticResource TextLight}"
                         HorizontalAlignment="Center"
                         Margin="0,4,4,4"/>
@@ -190,30 +198,28 @@
                             <Button x:Name="AuthorButton"
                                     Width="120"
                                     Height="40"
-                                    Click="OnAuthorClick"
+                                    Command="{Binding AuthorClickCommand}"
                                     Classes="author-button">
                                 <Grid>
                                     <!-- Display mode -->
                                     <TextBlock x:Name="AuthorDisplay"
-                                               Text="Author"
-                                               IsVisible="True"
+                                               Text="{Binding AuthorName}"
+                                               IsVisible="{Binding AuthorDisplayMode}"
                                                IsHitTestVisible="False"/>
-                                    
+
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
-                                             Text=""
+                                             Text="{Binding AuthorName, Mode=TwoWay}"
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
-                                             
+
                                              Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
                                              Foreground="{StaticResource VeryLightGrey}"
-                                             IsVisible="False"
-                                             LostFocus="OnAuthorEditLostFocus"
-                                             KeyDown="OnAuthorEditKeyDown"/>
+                                             IsVisible="{Binding AuthorEditMode}"/>
                                 </Grid>
                             </Button>
                         </StackPanel>
@@ -234,17 +240,17 @@
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <Button Classes="btn-green"
-                            Click="OnSeedSearchClick"
+                            Command="{Binding SeedSearchCommand}"
                             MinHeight="64"
                             MinWidth="158">
-                        <TextBlock Text="SEARCH" 
+                        <TextBlock Text="SEARCH"
                                    FontSize="36"
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
-                    
+
                     <Button Classes="btn-blue"
-                            Click="OnEditorClick"
+                            Command="{Binding EditorCommand}"
                             MinHeight="50"
                             MinWidth="100">
                         <TextBlock Text="DESIGNER"
@@ -252,9 +258,9 @@
                                    FontFamily="{StaticResource BalatroFont}"
                                    IsHitTestVisible="False"/>
                     </Button>
-                    
+
                     <Button Classes="btn-purple"
-                            Click="OnAnalyzeClick"
+                            Command="{Binding AnalyzeCommand}"
                             MinHeight="50"
                             MinWidth="100">
                         <TextBlock Text="ANALYZER"
@@ -265,11 +271,11 @@
 
                     <!-- MODS button equivalent - MORE (orange) -->
                     <Button Classes="btn-orange"
-                            Click="OnToolClick"
+                            Command="{Binding ToolCommand}"
                             MinHeight="64"
                             MinWidth="158">
-                        <TextBlock Text="Settings" 
-                                   FontSize="36" 
+                        <TextBlock Text="SETTINGS"
+                                   FontSize="36"
                                    FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
                         </StackPanel>
@@ -298,7 +304,7 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Click="OnSettingsClick"
+                                    Command="{Binding SettingsCommand}"
                                     ToolTip.Tip="Vibe Theme">
                                 <TextBlock Text="🎨"
                                            FontFamily="Segoe UI Symbol"
@@ -306,7 +312,7 @@
                                            VerticalAlignment="Center"
                                            IsHitTestVisible="False"/>
                             </Button>
-                            
+
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
                                     FontSize="16"
@@ -317,9 +323,9 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Click="OnAnimationToggleClick"
+                                    Command="{Binding AnimationToggleCommand}"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <TextBlock Text="⏸"
+                                <TextBlock Text="{Binding AnimationIconText}"
                                            FontFamily="Segoe UI Symbol, Segoe UI Emoji"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
@@ -336,10 +342,10 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Click="OnMusicToggleClick"
+                                    Command="{Binding MusicToggleCommand}"
                                     ToolTip.Tip="Toggle background music">
                                 <TextBlock x:Name="MusicToggleIcon"
-                                           Text="🔊"
+                                           Text="{Binding MusicIconText}"
                                            FontFamily="Segoe UI Emoji, Noto Color Emoji"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
@@ -362,12 +368,12 @@
 
         <!-- VibeOut Mode Overlay - ESC to Exit button -->
         <Grid x:Name="VibeOutOverlay"
-              IsVisible="False"
+              IsVisible="{Binding IsVibeOutMode}"
               ZIndex="200"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
             <Button x:Name="ExitVibeOutButton"
-                    Click="OnExitVibeOut"
+                    Command="{Binding ExitVibeOutCommand}"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Margin="20"

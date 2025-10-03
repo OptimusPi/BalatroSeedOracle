@@ -85,7 +85,19 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("SearchModal", $"Failed to set search instance: {ex.Message}");
             }
         }
-        
+
+        /// <summary>
+        /// Handle tab button click - switches tabs
+        /// </summary>
+        private void OnTabButtonClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string tagStr && int.TryParse(tagStr, out int tabIndex))
+            {
+                if (ViewModel != null)
+                    ViewModel.SelectedTabIndex = tabIndex;
+            }
+        }
+
         /// <summary>
         /// Handle maximize button click - toggles window maximize state
         /// </summary>

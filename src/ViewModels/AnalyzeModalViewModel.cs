@@ -1,11 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Helpers;
+using Motely;
+using Avalonia.Media;
+using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -16,20 +19,25 @@ namespace BalatroSeedOracle.ViewModels
 
         private string _seedInput = "";
         private bool _isAnalyzing = false;
-        private string _currentActiveTab = "AnalyzerTab";
+        private AnalyzeModalTab _activeTab = AnalyzeModalTab.Settings;
         private bool _showPlaceholder = true;
+        private int _deckIndex = 0;
+        private int _stakeIndex = 0;
+        private SeedAnalysisModel? _currentAnalysis;
 
         public AnalyzeModalViewModel(SpriteService spriteService, UserProfileService userProfileService)
         {
             _spriteService = spriteService;
             _userProfileService = userProfileService;
 
-            AnalysisResults = new ObservableCollection<AnalysisResultItem>();
+            Antes = new ObservableCollection<AnteAnalysisModel>();
 
             // Initialize commands
             AnalyzeSeedCommand = new AsyncRelayCommand(AnalyzeSeedAsync, CanAnalyzeSeed);
             ClearResultsCommand = new RelayCommand(ClearResults);
-            SwitchTabCommand = new RelayCommand<string>(SwitchTab);
+            SwitchToSettingsTabCommand = new RelayCommand(() => ActiveTab = AnalyzeModalTab.Settings);
+            SwitchToAnalyzerTabCommand = new RelayCommand(() => ActiveTab = AnalyzeModalTab.Analyzer);
+            PopOutAnalyzerCommand = new RelayCommand(PopOutAnalyzer);
         }
 
         #region Properties
@@ -42,7 +50,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (SetProperty(ref _seedInput, value))
                 {
                     ((AsyncRelayCommand)AnalyzeSeedCommand).NotifyCanExecuteChanged();
-                    ShowPlaceholder = string.IsNullOrWhiteSpace(value) && AnalysisResults.Count == 0;
+                    UpdatePlaceholderVisibility();
                 }
             }
         }
@@ -50,14 +58,36 @@ namespace BalatroSeedOracle.ViewModels
         public bool IsAnalyzing
         {
             get => _isAnalyzing;
-            set => SetProperty(ref _isAnalyzing, value);
+            set
+            {
+                if (SetProperty(ref _isAnalyzing, value))
+                {
+                    ((AsyncRelayCommand)AnalyzeSeedCommand).NotifyCanExecuteChanged();
+                }
+            }
         }
 
-        public string CurrentActiveTab
+        public AnalyzeModalTab ActiveTab
         {
-            get => _currentActiveTab;
-            set => SetProperty(ref _currentActiveTab, value);
+            get => _activeTab;
+            set
+            {
+                if (SetProperty(ref _activeTab, value))
+                {
+                    OnPropertyChanged(nameof(IsSettingsTabActive));
+                    OnPropertyChanged(nameof(IsAnalyzerTabActive));
+                    OnPropertyChanged(nameof(SettingsTabVisible));
+                    OnPropertyChanged(nameof(AnalyzerTabVisible));
+                    OnPropertyChanged(nameof(TriangleColumn));
+                }
+            }
         }
+
+        public bool IsSettingsTabActive => ActiveTab == AnalyzeModalTab.Settings;
+        public bool IsAnalyzerTabActive => ActiveTab == AnalyzeModalTab.Analyzer;
+        public bool SettingsTabVisible => ActiveTab == AnalyzeModalTab.Settings;
+        public bool AnalyzerTabVisible => ActiveTab == AnalyzeModalTab.Analyzer;
+        public int TriangleColumn => ActiveTab == AnalyzeModalTab.Settings ? 0 : 1;
 
         public bool ShowPlaceholder
         {
@@ -65,7 +95,52 @@ namespace BalatroSeedOracle.ViewModels
             set => SetProperty(ref _showPlaceholder, value);
         }
 
-        public ObservableCollection<AnalysisResultItem> AnalysisResults { get; }
+        public int DeckIndex
+        {
+            get => _deckIndex;
+            set
+            {
+                if (SetProperty(ref _deckIndex, value))
+                {
+                    OnPropertyChanged(nameof(SelectedDeck));
+                }
+            }
+        }
+
+        public int StakeIndex
+        {
+            get => _stakeIndex;
+            set
+            {
+                if (SetProperty(ref _stakeIndex, value))
+                {
+                    OnPropertyChanged(nameof(SelectedStake));
+                }
+            }
+        }
+
+        public MotelyDeck SelectedDeck => (MotelyDeck)DeckIndex;
+        public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
+
+        public SeedAnalysisModel? CurrentAnalysis
+        {
+            get => _currentAnalysis;
+            private set
+            {
+                if (SetProperty(ref _currentAnalysis, value))
+                {
+                    OnPropertyChanged(nameof(HasAnalysisResults));
+                    OnPropertyChanged(nameof(AnalysisHeader));
+                }
+            }
+        }
+
+        public bool HasAnalysisResults => CurrentAnalysis != null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
+        public string AnalysisHeader => CurrentAnalysis != null
+            ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
+            : "";
+
+        public ObservableCollection<AnteAnalysisModel> Antes { get; }
 
         #endregion
 
@@ -73,7 +148,9 @@ namespace BalatroSeedOracle.ViewModels
 
         public ICommand AnalyzeSeedCommand { get; }
         public ICommand ClearResultsCommand { get; }
-        public ICommand SwitchTabCommand { get; }
+        public ICommand SwitchToSettingsTabCommand { get; }
+        public ICommand SwitchToAnalyzerTabCommand { get; }
+        public ICommand PopOutAnalyzerCommand { get; }
 
         #endregion
 
@@ -92,24 +169,100 @@ namespace BalatroSeedOracle.ViewModels
                 DebugLogger.Log("AnalyzeModalViewModel", $"Starting analysis for seed: {SeedInput}");
 
                 // Clear previous results
-                AnalysisResults.Clear();
+                Antes.Clear();
+                CurrentAnalysis = null;
 
                 // Perform seed analysis
-                await AnalyzeSeedInternal(SeedInput.Trim());
+                var seed = SeedInput.Trim();
+                var deck = SelectedDeck;
+                var stake = SelectedStake;
 
-                DebugLogger.Log("AnalyzeModalViewModel", "Seed analysis completed");
+                var analysisData = await Task.Run(() =>
+                {
+                    var config = new Motely.Analysis.MotelySeedAnalysisConfig(seed, deck, stake);
+                    return Motely.Analysis.MotelySeedAnalyzer.Analyze(config);
+                });
+
+                // Map Motely analysis to our models
+                CurrentAnalysis = new SeedAnalysisModel
+                {
+                    Seed = seed,
+                    Deck = deck,
+                    Stake = stake,
+                    Error = analysisData.Error
+                };
+
+                if (!string.IsNullOrEmpty(analysisData.Error))
+                {
+                    DebugLogger.LogError("AnalyzeModalViewModel", $"Analysis error: {analysisData.Error}");
+                }
+                else
+                {
+                    // Convert Motely antes to our model
+                    foreach (var motelyAnte in analysisData.Antes)
+                    {
+                        var anteModel = new AnteAnalysisModel
+                        {
+                            AnteNumber = motelyAnte.Ante,
+                            Voucher = motelyAnte.Voucher,
+                            SmallBlindTag = new TagModel
+                            {
+                                BlindType = "Small Blind",
+                                Tag = motelyAnte.SmallBlindTag
+                            },
+                            BigBlindTag = new TagModel
+                            {
+                                BlindType = "Big Blind",
+                                Tag = motelyAnte.BigBlindTag
+                            }
+                        };
+
+                        // Convert shop items
+                        foreach (var shopItem in motelyAnte.ShopQueue)
+                        {
+                            anteModel.ShopItems.Add(new ShopItemModel
+                            {
+                                TypeCategory = shopItem.TypeCategory,
+                                ItemValue = shopItem.Value,
+                                Edition = shopItem.Edition
+                            });
+                        }
+
+                        // Convert booster packs
+                        foreach (var pack in motelyAnte.Packs)
+                        {
+                            var packModel = new BoosterPackModel
+                            {
+                                PackType = (MotelyBoosterPackType)pack.Type
+                            };
+
+                            foreach (var item in pack.Items)
+                            {
+                                packModel.Items.Add(item.ToString());
+                            }
+
+                            anteModel.BoosterPacks.Add(packModel);
+                        }
+
+                        Antes.Add(anteModel);
+                    }
+
+                    DebugLogger.Log("AnalyzeModalViewModel", $"Analysis completed successfully: {Antes.Count} antes");
+                }
+
+                UpdatePlaceholderVisibility();
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("AnalyzeModalViewModel", $"Error analyzing seed: {ex.Message}");
-                
-                // Add error result
-                AnalysisResults.Add(new AnalysisResultItem
+
+                CurrentAnalysis = new SeedAnalysisModel
                 {
-                    Title = "Analysis Error",
-                    Description = $"Failed to analyze seed: {ex.Message}",
-                    Type = AnalysisResultType.Error
-                });
+                    Seed = SeedInput.Trim(),
+                    Deck = SelectedDeck,
+                    Stake = SelectedStake,
+                    Error = $"Failed to analyze seed: {ex.Message}"
+                };
             }
             finally
             {
@@ -124,105 +277,97 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ClearResults()
         {
-            AnalysisResults.Clear();
+            Antes.Clear();
+            CurrentAnalysis = null;
             SeedInput = "";
-            ShowPlaceholder = true;
+            UpdatePlaceholderVisibility();
             DebugLogger.Log("AnalyzeModalViewModel", "Results cleared");
         }
 
-        private void SwitchTab(string? tabName)
+        private void PopOutAnalyzer()
         {
-            if (!string.IsNullOrEmpty(tabName))
+            try
             {
-                CurrentActiveTab = tabName;
-                DebugLogger.Log("AnalyzeModalViewModel", $"Switched to tab: {tabName}");
+                var seed = SeedInput ?? "";
+                var analyzerWindow = new Windows.AnalyzerWindow(seed);
+                analyzerWindow.Show();
+
+                DebugLogger.Log("AnalyzeModalViewModel", $"Opened pop-out analyzer window for seed: {seed}");
             }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AnalyzeModalViewModel", $"Error opening pop-out analyzer: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Set seed and trigger analysis programmatically
+        /// </summary>
+        public void SetSeedAndAnalyze(string seed)
+        {
+            SeedInput = seed;
+            ActiveTab = AnalyzeModalTab.Analyzer;
+
+            if (AnalyzeSeedCommand.CanExecute(null))
+            {
+                _ = AnalyzeSeedAsync();
+            }
+        }
+
+        /// <summary>
+        /// Called when deck is selected from the DeckAndStakeSelector
+        /// </summary>
+        public void OnDeckSelected()
+        {
+            // Switch to analyzer tab when deck is selected
+            ActiveTab = AnalyzeModalTab.Analyzer;
+            DebugLogger.Log("AnalyzeModalViewModel", "Deck selected, switching to analyzer tab");
+        }
+
+        /// <summary>
+        /// Get sprite for shop item
+        /// </summary>
+        public IImage? GetItemSprite(ShopItemModel item)
+        {
+            return item.TypeCategory switch
+            {
+                MotelyItemTypeCategory.Joker => _spriteService.GetJokerImage(item.ItemName),
+                MotelyItemTypeCategory.TarotCard => _spriteService.GetTarotImage(item.ItemName),
+                MotelyItemTypeCategory.PlanetCard => _spriteService.GetTarotImage(item.ItemName),
+                MotelyItemTypeCategory.SpectralCard => _spriteService.GetTarotImage(item.ItemName),
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// Get sprite for booster pack
+        /// </summary>
+        public IImage? GetBoosterSprite(BoosterPackModel pack)
+        {
+            return _spriteService.GetBoosterImage(pack.PackSpriteKey);
+        }
+
+        /// <summary>
+        /// Get sprite for tag
+        /// </summary>
+        public IImage? GetTagSprite(TagModel tag)
+        {
+            return _spriteService.GetTagImage(tag.TagSpriteKey);
         }
 
         #endregion
 
         #region Helper Methods
 
-        private async Task AnalyzeSeedInternal(string seed)
+        private void UpdatePlaceholderVisibility()
         {
-            try
-            {
-                // USE THE REAL MOTELY ANALYZER 
-                var config = new Motely.Analysis.MotelySeedAnalysisConfig(
-                    seed, 
-                    Motely.MotelyDeck.Red, // TODO: Get from UI selection
-                    Motely.MotelyStake.White // TODO: Get from UI selection
-                );
-                
-                var analysis = await Task.Run(() => 
-                {
-                    return Motely.Analysis.MotelySeedAnalyzer.Analyze(config);
-                });
-                
-                // Display REAL analysis results
-                if (!string.IsNullOrEmpty(analysis.Error))
-                {
-                    AnalysisResults.Add(new AnalysisResultItem
-                    {
-                        Title = "Analysis Error",
-                        Description = analysis.Error,
-                        Type = AnalysisResultType.Error
-                    });
-                }
-                else
-                {
-                    AnalysisResults.Add(new AnalysisResultItem
-                    {
-                        Title = "Seed Analysis Complete",
-                        Description = $"Analyzed {analysis.Antes.Count} antes for seed {seed}",
-                        Type = AnalysisResultType.Success
-                    });
-                    
-                    // Add ante-by-ante analysis
-                    foreach (var ante in analysis.Antes)
-                    {
-                        AnalysisResults.Add(new AnalysisResultItem
-                        {
-                            Title = $"Ante {ante.Ante}",
-                            Description = ante.ToString(),
-                            Type = AnalysisResultType.Info
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AnalysisResults.Add(new AnalysisResultItem
-                {
-                    Title = "Analysis Failed",
-                    Description = ex.Message,
-                    Type = AnalysisResultType.Error
-                });
-            }
-
-            AnalysisResults.Add(new AnalysisResultItem
-            {
-                Title = "Analysis Complete",
-                Description = "Seed analysis functionality will be implemented when analyzer reference is available",
-                Type = AnalysisResultType.Warning
-            });
+            ShowPlaceholder = string.IsNullOrWhiteSpace(SeedInput) && Antes.Count == 0;
         }
 
         #endregion
-    }
-
-    public class AnalysisResultItem
-    {
-        public string Title { get; set; } = "";
-        public string Description { get; set; } = "";
-        public AnalysisResultType Type { get; set; }
-    }
-
-    public enum AnalysisResultType
-    {
-        Info,
-        Warning,
-        Error,
-        Success
     }
 }

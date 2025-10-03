@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components;
 
@@ -9,7 +10,7 @@ public partial class DeckAndStakeSelector : UserControl
 {
     private DeckSpinner? _deckSpinner;
     private SpinnerControl? _stakeSpinner;
-    private Button? _selectButton;
+    private DeckAndStakeSelectorViewModel? _viewModel;
 
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
     public event EventHandler? DeckSelected;
@@ -17,6 +18,17 @@ public partial class DeckAndStakeSelector : UserControl
     public DeckAndStakeSelector()
     {
         InitializeComponent();
+        InitializeViewModel();
+    }
+
+    private void InitializeViewModel()
+    {
+        _viewModel = new DeckAndStakeSelectorViewModel();
+        DataContext = _viewModel;
+
+        // Forward ViewModel events to maintain API compatibility
+        _viewModel.SelectionChanged += (s, e) => SelectionChanged?.Invoke(this, e);
+        _viewModel.DeckSelected += (s, e) => DeckSelected?.Invoke(this, e);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -25,130 +37,85 @@ public partial class DeckAndStakeSelector : UserControl
 
         _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
         _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
-        _selectButton = this.FindControl<Button>("SelectButton");
-        
+
         // Configure stake spinner display values
-        if (_stakeSpinner != null)
+        if (_stakeSpinner != null && _viewModel != null)
         {
-            _stakeSpinner.DisplayValues = new[] 
-            { 
-                "White Stake",
-                "Red Stake",
-                "Green Stake", 
-                "Black Stake",
-                "Blue Stake",
-                "Purple Stake",
-                "Orange Stake",
-                "Gold Stake"
-            };
+            _stakeSpinner.DisplayValues = _viewModel.StakeDisplayValues;
         }
 
-        if (_deckSpinner != null)
+        // Sync spinner changes to ViewModel
+        if (_deckSpinner != null && _viewModel != null)
         {
             _deckSpinner.DeckChanged += (s, deckIndex) =>
             {
-                SelectionChanged?.Invoke(this, (deckIndex, StakeIndex));
+                _viewModel.DeckIndex = deckIndex;
             };
         }
 
-        if (_stakeSpinner != null)
+        if (_stakeSpinner != null && _viewModel != null)
         {
             _stakeSpinner.ValueChanged += (s, e) =>
             {
+                _viewModel.StakeIndex = (int)_stakeSpinner.Value;
                 // Update deck spinner to show new stake
-                _deckSpinner?.SetStakeIndex(StakeIndex);
-                SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
+                _deckSpinner?.SetStakeIndex(_viewModel.StakeIndex);
+            };
+        }
+
+        // Sync ViewModel changes to spinners (for programmatic updates)
+        if (_viewModel != null)
+        {
+            _viewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(DeckAndStakeSelectorViewModel.DeckIndex) && _deckSpinner != null)
+                {
+                    _deckSpinner.SelectedDeckIndex = _viewModel.DeckIndex;
+                }
+                else if (e.PropertyName == nameof(DeckAndStakeSelectorViewModel.StakeIndex) && _stakeSpinner != null)
+                {
+                    _stakeSpinner.Value = _viewModel.StakeIndex;
+                    _deckSpinner?.SetStakeIndex(_viewModel.StakeIndex);
+                }
             };
         }
     }
 
-    private void OnSelectClick(object? sender, RoutedEventArgs e)
-    {
-        // Fire the DeckSelected event to notify the parent modal
-        DeckSelected?.Invoke(this, EventArgs.Empty);
-    }
-
+    // Public API - delegates to ViewModel
     public int DeckIndex
     {
-        get => _deckSpinner?.SelectedDeckIndex ?? 0;
+        get => _viewModel?.DeckIndex ?? 0;
         set
         {
-            if (_deckSpinner != null)
+            if (_viewModel != null)
             {
-                _deckSpinner.SelectedDeckIndex = value;
+                _viewModel.DeckIndex = value;
             }
         }
     }
 
     public int StakeIndex
     {
-        get => (int)(_stakeSpinner?.Value ?? 0);
+        get => _viewModel?.StakeIndex ?? 0;
         set
         {
-            if (_stakeSpinner != null)
+            if (_viewModel != null)
             {
-                _stakeSpinner.Value = value;
+                _viewModel.StakeIndex = value;
             }
         }
     }
 
-    public string SelectedDeckName => _deckSpinner?.SelectedDeckName ?? "Red";
-    public string SelectedStakeName => GetStakeName(StakeIndex);
-
-    private string GetStakeName(int index)
-    {
-        return index switch
-        {
-            0 => "White",
-            1 => "Red",
-            2 => "Green",
-            3 => "Black",
-            4 => "Blue",
-            5 => "Purple",
-            6 => "Orange",
-            7 => "Gold",
-            _ => "White",
-        };
-    }
+    public string SelectedDeckName => _viewModel?.SelectedDeckName ?? "Red";
+    public string SelectedStakeName => _viewModel?.SelectedStakeName ?? "White";
 
     public void SetDeck(string deckName)
     {
-        int index = deckName?.ToLower() switch
-        {
-            "red" => 0,
-            "blue" => 1,
-            "yellow" => 2,
-            "green" => 3,
-            "black" => 4,
-            "magic" => 5,
-            "nebula" => 6,
-            "ghost" => 7,
-            "abandoned" => 8,
-            "checkered" => 9,
-            "zodiac" => 10,
-            "painted" => 11,
-            "anaglyph" => 12,
-            "plasma" => 13,
-            "erratic" => 14,
-            _ => 0, // Default to Red
-        };
-        DeckIndex = index;
+        _viewModel?.SetDeck(deckName);
     }
 
     public void SetStake(string stakeName)
     {
-        int index = stakeName?.ToLower() switch
-        {
-            "white" => 0,
-            "red" => 1,
-            "green" => 2,
-            "black" => 3,
-            "blue" => 4,
-            "purple" => 5,
-            "orange" => 6,
-            "gold" => 7,
-            _ => 0, // Default to White
-        };
-        StakeIndex = index;
+        _viewModel?.SetStake(stakeName);
     }
 }

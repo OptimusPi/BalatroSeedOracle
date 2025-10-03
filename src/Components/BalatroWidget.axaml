@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.BalatroWidget"
+             x:DataType="vm:BaseWidgetViewModel">
+
+    <UserControl.Styles>
+        <!-- Minimized icon styles -->
+        <Style Selector="Button.widget-icon">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.widget-icon:pointerover Border.icon-bg">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <!-- Expanded window styles -->
+        <Style Selector="Border.widget-window">
+            <Setter Property="Background" Value="{StaticResource MainBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="0 8 24 0 #40000000"/>
+        </Style>
+
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="CornerRadius" Value="9,9,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.minimize-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Button.minimize-btn:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <!-- Minimized State - Icon -->
+        <Grid IsVisible="{Binding IsMinimized}"
+              Width="128"
+              Height="128"
+              Margin="{Binding PositionX, Converter={StaticResource PositionConverter}}">
+            <Button Classes="widget-icon"
+                    Command="{Binding ExpandCommand}">
+                <Grid>
+                    <!-- Icon background -->
+                    <Border Classes="icon-bg"
+                            Background="{StaticResource Grey}"
+                            CornerRadius="12"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            Width="128"
+                            Height="128">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding WidgetIcon}"
+                                       FontSize="48"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Button>
+
+            <!-- Notification badge -->
+            <Canvas ZIndex="100" IsVisible="{Binding ShowNotificationBadge}">
+                <Border Classes="notification-badge"
+                        Canvas.Right="-8"
+                        Canvas.Top="-8">
+                    <TextBlock Text="{Binding NotificationText}" />
+                </Border>
+            </Canvas>
+        </Grid>
+
+        <!-- Expanded State - Draggable Window -->
+        <Border IsVisible="{Binding !IsMinimized}"
+                Classes="widget-window"
+                Width="{Binding Width}"
+                Height="{Binding Height}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Draggable Header -->
+                <Border Grid.Row="0"
+                        Classes="widget-header"
+                        PointerPressed="OnHeaderPointerPressed"
+                        PointerMoved="OnHeaderPointerMoved"
+                        PointerReleased="OnHeaderPointerReleased">
+                    <Grid Height="36">
+                        <TextBlock Text="{Binding WidgetTitle}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0"/>
+
+                        <!-- Minimize button (Balatro style triangle) -->
+                        <Button Classes="minimize-btn"
+                                Content="▼"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,8,0"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"/>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area -->
+                <ContentPresenter Grid.Row="1"
+                                  Name="PART_ContentPresenter"
+                                  Content="{Binding}"
+                                  Margin="12"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

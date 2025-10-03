@@ -38,51 +38,53 @@
                        HorizontalAlignment="Center"/>
             
             <!-- Quick Select Options -->
-            <StackPanel Orientation="Horizontal" 
+            <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         Spacing="10"
                         Margin="0,5,0,10">
-                <Button Content="All" 
-                        Click="SelectAll_Click"
+                <Button Content="All"
+                        Command="{Binding SelectAllCommand}"
                         Background="#00FF88"
                         Foreground="Black"
                         Padding="10,5"
                         FontSize="12"/>
-                <Button Content="None" 
-                        Click="SelectNone_Click"
+                <Button Content="None"
+                        Command="{Binding SelectNoneCommand}"
                         Background="#FF4444"
                         Foreground="White"
                         Padding="10,5"
                         FontSize="12"/>
-                <Button Content="Early (1-3)" 
-                        Click="SelectEarly_Click"
+                <Button Content="Early (1-3)"
+                        Command="{Binding SelectEarlyCommand}"
                         Background="#FFD700"
                         Foreground="Black"
                         Padding="10,5"
                         FontSize="12"/>
-                <Button Content="Late (4-8)" 
-                        Click="SelectLate_Click"
+                <Button Content="Late (4-8)"
+                        Command="{Binding SelectLateCommand}"
                         Background="#9966FF"
                         Foreground="White"
                         Padding="10,5"
                         FontSize="12"/>
             </StackPanel>
-            
+
             <!-- Ante Checkboxes Grid -->
-            <UniformGrid Columns="4" Rows="2">
-                <CheckBox Name="Ante1CheckBox" Content="Ante 1" IsChecked="True"/>
-                <CheckBox Name="Ante2CheckBox" Content="Ante 2" IsChecked="True"/>
-                <CheckBox Name="Ante3CheckBox" Content="Ante 3" IsChecked="True"/>
-                <CheckBox Name="Ante4CheckBox" Content="Ante 4" IsChecked="True"/>
-                <CheckBox Name="Ante5CheckBox" Content="Ante 5" IsChecked="False"/>
-                <CheckBox Name="Ante6CheckBox" Content="Ante 6" IsChecked="False"/>
-                <CheckBox Name="Ante7CheckBox" Content="Ante 7" IsChecked="False"/>
-                <CheckBox Name="Ante8CheckBox" Content="Ante 8" IsChecked="False"/>
-            </UniformGrid>
-            
+            <ItemsControl ItemsSource="{Binding Antes}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" Rows="2"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding DisplayText}"
+                                  IsChecked="{Binding IsSelected}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- Selected Summary -->
-            <TextBlock Name="SummaryTextBlock"
-                       Text="Selected: Antes 1, 2, 3, 4"
+            <TextBlock Text="{Binding SelectionSummary}"
                        Foreground="#00FF88"
                        FontSize="12"
                        HorizontalAlignment="Center"

@@ -34,26 +34,19 @@ namespace BalatroSeedOracle.Models
         public SearchResumeState? LastSearchState { get; set; }
 
         /// <summary>
-        /// Feature flags for experimental features
-        /// </summary>
-        public FeatureFlags Features { get; set; } = new();
-
-        /// <summary>
         /// Vibe Out visualizer settings
         /// </summary>
         public VibeOutSettings VibeOutSettings { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Feature flags for enabling experimental features
-    /// </summary>
-    public class FeatureFlags
-    {
 
         /// <summary>
-        /// Use .NET 9 features when available
+        /// Music volume (0.0 to 1.0)
         /// </summary>
-        public bool UseNet9Features { get; set; } = false;
+        public float MusicVolume { get; set; } = 1.0f;
+
+        /// <summary>
+        /// Whether music is muted
+        /// </summary>
+        public bool IsMusicMuted { get; set; } = false;
     }
 
     /// <summary>

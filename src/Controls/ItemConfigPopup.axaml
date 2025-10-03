@@ -161,14 +161,89 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
-                    <TextBlock Grid.Row="0" Text="ANTES" 
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="11" 
-                               Foreground="{StaticResource LightGrey}" 
-                               Margin="0,0,0,6"/>
-                    
-                    <UniformGrid Grid.Row="1" Columns="8" Margin="-2">
+
+                    <!-- Header row with label and quick select buttons -->
+                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="ANTES"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource LightGrey}"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Quick select buttons -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                            <Button Name="SelectAllAntesButton"
+                                    Click="OnSelectAllAntesClick"
+                                    Width="36"
+                                    Height="20"
+                                    Cursor="Hand"
+                                    Padding="0">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <Border Background="{StaticResource ItemConfigMediumBg}"
+                                                BorderBrush="{StaticResource AccentGreen}"
+                                                BorderThickness="1"
+                                                CornerRadius="3">
+                                            <TextBlock Text="All"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="9"
+                                                       Foreground="{StaticResource AccentGreen}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <Button Name="ClearAllAntesButton"
+                                    Click="OnClearAllAntesClick"
+                                    Width="36"
+                                    Height="20"
+                                    Cursor="Hand"
+                                    Padding="0">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <Border Background="{StaticResource ItemConfigMediumBg}"
+                                                BorderBrush="{StaticResource ToggleRed}"
+                                                BorderThickness="1"
+                                                CornerRadius="3">
+                                            <TextBlock Text="None"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="9"
+                                                       Foreground="{StaticResource ToggleRed}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <UniformGrid Grid.Row="1" Columns="9" Margin="-2">
+                        <CheckBox Name="Ante0" IsChecked="False" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
+                            <Border Classes="ante-border"
+                                    Background="{StaticResource ItemConfigMediumBg}"
+                                    BorderBrush="{StaticResource ItemConfigDarkBg}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="4,2"
+                                    MinWidth="24"
+                                    Cursor="Hand">
+                                <TextBlock Text="0"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+
+                                           Foreground="{StaticResource MediumGrey}"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </CheckBox>
                         <CheckBox Name="Ante1" IsChecked="True" Classes="ante-checkbox" Margin="2" Click="OnAnteClick">
                             <Border Classes="ante-border" 
                                     Background="{StaticResource ItemConfigMediumBg}" 

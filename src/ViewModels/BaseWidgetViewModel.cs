@@ -1,0 +1,100 @@
+using System;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+namespace BalatroSeedOracle.ViewModels
+{
+    /// <summary>
+    /// Base ViewModel for all desktop widgets (DayLatro, Search icons, etc.)
+    /// Provides common functionality: minimize/expand, dragging, notifications
+    /// </summary>
+    public partial class BaseWidgetViewModel : ObservableObject
+    {
+        [ObservableProperty]
+        private bool _isMinimized = true;
+
+        [ObservableProperty]
+        private bool _showNotificationBadge = false;
+
+        [ObservableProperty]
+        private string _notificationText = "0";
+
+        [ObservableProperty]
+        private string _widgetTitle = "Widget";
+
+        [ObservableProperty]
+        private string _widgetIcon = "📦";
+
+        [ObservableProperty]
+        private double _positionX = 10;
+
+        [ObservableProperty]
+        private double _positionY = 10;
+
+        [ObservableProperty]
+        private double _width = 350;
+
+        [ObservableProperty]
+        private double _height = 450;
+
+        [RelayCommand]
+        private void Expand()
+        {
+            IsMinimized = false;
+            OnExpanded();
+        }
+
+        [RelayCommand]
+        private void Minimize()
+        {
+            IsMinimized = true;
+            OnMinimized();
+        }
+
+        [RelayCommand]
+        private void Close()
+        {
+            OnClosed();
+        }
+
+        /// <summary>
+        /// Called when widget is expanded - override in derived classes
+        /// </summary>
+        protected virtual void OnExpanded() { }
+
+        /// <summary>
+        /// Called when widget is minimized - override in derived classes
+        /// </summary>
+        protected virtual void OnMinimized() { }
+
+        /// <summary>
+        /// Called when widget is closed - override in derived classes
+        /// </summary>
+        protected virtual void OnClosed() { }
+
+        /// <summary>
+        /// Set notification badge
+        /// </summary>
+        public void SetNotification(int count)
+        {
+            if (count > 0)
+            {
+                ShowNotificationBadge = true;
+                NotificationText = count > 99 ? "99+" : count.ToString();
+            }
+            else
+            {
+                ShowNotificationBadge = false;
+            }
+        }
+
+        /// <summary>
+        /// Clear notification badge
+        /// </summary>
+        public void ClearNotification()
+        {
+            ShowNotificationBadge = false;
+            NotificationText = "0";
+        }
+    }
+}

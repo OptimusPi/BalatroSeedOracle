@@ -19,14 +19,14 @@
                                 HorizontalAlignment="Center" />
         
         <!-- Select Button -->
-        <Button Name="SelectButton" 
-                Content="Select this Deck" 
-                Classes="btn-blue" 
+        <Button Name="SelectButton"
+                Content="Select this Deck"
+                Classes="btn-blue"
                 MinWidth="200"
                 MinHeight="32"
                 HorizontalAlignment="Center"
                 Margin="0,8,0,0"
-                Click="OnSelectClick"/>
+                Command="{Binding SelectCommand}"/>
     </StackPanel>
     
 </UserControl>

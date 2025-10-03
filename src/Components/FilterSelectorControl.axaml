@@ -1,0 +1,318 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
+             x:DataType="vm:FilterListViewModel">
+
+    <!-- Filter Selection UI (Balatro Challenges Style) -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Filter List (Balatro challenges style) -->
+        <Border Grid.Column="0"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,2,0"
+                Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title -->
+                <TextBlock Grid.Row="0"
+                           Text="FILTERS"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="18"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Paginated filter list -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}" Margin="0,0,0,12">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="btn-red"
+                                        Height="32"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Margin="0,2"
+                                        CornerRadius="6"
+                                        Padding="8,0"
+                                        Click="OnFilterListItemClick"
+                                        Tag="{Binding}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Number -->
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Number}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="15"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource Gold}"/>
+
+                                        <!-- Name -->
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Name}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="4,0,0,0"/>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Pagination Controls -->
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
+                    <Button Content="◀"
+                            Classes="btn-red"
+                            Width="34"
+                            Height="26"
+                            FontSize="13"
+                            Padding="0"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoToPreviousPage}"/>
+
+                    <!-- Badge-style page indicator -->
+                    <Border Background="{StaticResource DarkModalGrey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Padding="12,4"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageIndicator}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource White}"
+                                   TextAlignment="Center"/>
+                    </Border>
+
+                    <Button Content="▶"
+                            Classes="btn-red"
+                            Width="34"
+                            Height="26"
+                            FontSize="13"
+                            Padding="0"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoToNextPage}"/>
+                </StackPanel>
+
+                <!-- Create New Filter button -->
+                <Button Grid.Row="6"
+                        Name="NewFilterButton"
+                        Content="+ NEW"
+                        Classes="btn-blue"
+                        Height="38"
+                        FontSize="14"
+                        HorizontalAlignment="Stretch"
+                        Click="OnCreateNewFilterClick"/>
+            </Grid>
+        </Border>
+
+        <!-- Right: Filter Details -->
+        <Border Grid.Column="1"
+                Background="{StaticResource ContainerDark}"
+                Padding="20">
+            <Grid>
+                <!-- Placeholder when no filter selected -->
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Spacing="12"
+                            IsVisible="{Binding !IsFilterSelected}">
+                    <TextBlock Text="Select a Filter"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="24"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.5"/>
+                    <TextBlock Text="or"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.4"/>
+                    <TextBlock Text="CREATE NEW FILTER"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
+                               Foreground="{StaticResource Blue}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.5"/>
+                </StackPanel>
+
+                <!-- Filter details when selected - Balatro Challenges Style -->
+                <Grid IsVisible="{Binding IsFilterSelected}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filter Name -->
+                    <TextBlock Grid.Row="0"
+                               Text="{Binding SelectedFilterName}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,4"/>
+
+                    <!-- Author -->
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding SelectedFilterAuthor}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.6"
+                               Margin="0,0,0,12"/>
+
+                    <!-- Inner Tabs with Triangle Indicator -->
+                    <Grid Grid.Row="2" Margin="0,0,0,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Tab Buttons -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                            <Button Content="Must Have"
+                                    Classes="btn-red"
+                                    Height="26"
+                                    MinWidth="100"
+                                    FontSize="13"
+                                    Command="{Binding SelectTabCommand}"
+                                    CommandParameter="must_have"/>
+                            <Button Content="Should Have"
+                                    Classes="btn-red"
+                                    Height="26"
+                                    MinWidth="105"
+                                    FontSize="13"
+                                    Command="{Binding SelectTabCommand}"
+                                    CommandParameter="should_have"/>
+                            <Button Content="Must Not"
+                                    Classes="btn-red"
+                                    Height="26"
+                                    MinWidth="90"
+                                    FontSize="13"
+                                    Command="{Binding SelectTabCommand}"
+                                    CommandParameter="must_not_have"/>
+                        </StackPanel>
+
+                        <!-- Triangle Indicator -->
+                        <Canvas Grid.Row="1" HorizontalAlignment="Center" Height="8">
+                            <Polygon Points="0,8 8,0 16,8"
+                                     Fill="{StaticResource Red}"
+                                     Canvas.Left="{Binding TriangleOffset}"
+                                     IsVisible="{Binding IsTriangleVisible}"/>
+                        </Canvas>
+                    </Grid>
+
+                    <!-- Content Area with Cards Display -->
+                    <Border Grid.Row="3"
+                            Background="{StaticResource Blue}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="8,0,8,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <!-- Empty state when no tab selected -->
+                                <TextBlock Text="Select a tab to view items"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.6"
+                                           IsVisible="{Binding !IsTriangleVisible}"/>
+
+                                <!-- Empty state when tab has no items -->
+                                <TextBlock Text="No items in this category"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.6"
+                                           IsVisible="{Binding IsTriangleVisible}">
+                                    <TextBlock.IsVisible>
+                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                            <Binding Path="IsTriangleVisible"/>
+                                            <Binding Path="!HasFilterItems"/>
+                                        </MultiBinding>
+                                    </TextBlock.IsVisible>
+                                </TextBlock>
+
+                                <!-- Items displayed as cards -->
+                                <ItemsControl ItemsSource="{Binding FilterItems}"
+                                              IsVisible="{Binding HasFilterItems}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{StaticResource ModalBorder}"
+                                                    BorderThickness="2"
+                                                    CornerRadius="8"
+                                                    Background="{StaticResource DarkModalGrey}"
+                                                    Margin="4">
+                                                <Image Source="{Binding ItemImage}"
+                                                       Width="71"
+                                                       Height="95"
+                                                       Margin="4"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="4" Spacing="8" Margin="0,12,0,8">
+                        <Button Name="EditFilterButton"
+                                Content="EDIT FILTER"
+                                Classes="btn-blue"
+                                Height="36"
+                                HorizontalAlignment="Stretch"
+                                FontSize="15"
+                                Click="OnEditFilterClick"
+                                Margin="8,0,8,0"/>
+
+                        <Button Name="CopyFilterButton"
+                                Content="COPY FILTER"
+                                Classes="btn-red"
+                                Height="30"
+                                HorizontalAlignment="Stretch"
+                                FontSize="13"
+                                Click="OnCopyFilterClick"
+                                Margin="8,0,8,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

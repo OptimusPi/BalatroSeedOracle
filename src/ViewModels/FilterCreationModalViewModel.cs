@@ -1,5 +1,7 @@
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -14,6 +16,9 @@ namespace BalatroSeedOracle.ViewModels
         private string _importStatusIcon = "";
         private bool _importSuccess = false;
         private string? _selectedFilterPath = null;
+        private string _selectedFilterName = "";
+        private string _selectedFilterDescription = "";
+        private int _selectedFilterIndex = -1;
 
         // Properties
         public string ImportPath
@@ -34,30 +39,120 @@ namespace BalatroSeedOracle.ViewModels
             private set => SetProperty(ref _importSuccess, value);
         }
 
+        public bool HasSelectedFilter => !string.IsNullOrEmpty(_selectedFilterPath);
+
+        public string SelectedFilterName
+        {
+            get => _selectedFilterName;
+            private set => SetProperty(ref _selectedFilterName, value);
+        }
+
+        public string SelectedFilterDescription
+        {
+            get => _selectedFilterDescription;
+            private set => SetProperty(ref _selectedFilterDescription, value);
+        }
+
+        public int SelectedFilterIndex
+        {
+            get => _selectedFilterIndex;
+            set => SetProperty(ref _selectedFilterIndex, value);
+        }
+
+        public ObservableCollection<FilterListItem> Filters { get; } = new();
+
         // Commands
-        public ICommand StartDesigningCommand { get; }
+        public ICommand CreateNewFilterCommand { get; }
         public ICommand EditFilterCommand { get; }
         public ICommand CloneFilterCommand { get; }
-        public ICommand BrowseCommand { get; set; } = null!;
+        public ICommand ImportJsonCommand { get; set; } = null!;
+        public ICommand DeleteFilterCommand { get; }
+        public ICommand BackCommand { get; }
 
         // Events
         public event EventHandler<string>? FilterSelectedForEdit;
         public event EventHandler<string>? FilterCloneRequested;
+        public event EventHandler<string>? FilterDeleteRequested;
         public event EventHandler? NewFilterRequested;
         public event EventHandler<string>? FilterImported;
+        public event EventHandler? CloseRequested;
 
         public FilterCreationModalViewModel()
         {
-            StartDesigningCommand = new RelayCommand(OnStartDesigning);
+            CreateNewFilterCommand = new RelayCommand(OnCreateNewFilter);
             EditFilterCommand = new RelayCommand(OnEditFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
             CloneFilterCommand = new RelayCommand(OnCloneFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
-            BrowseCommand = new RelayCommand(() => { }); // Placeholder, View will handle actual browse
+            DeleteFilterCommand = new RelayCommand(OnDeleteFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
+            ImportJsonCommand = new RelayCommand(() => { }); // Placeholder, View will handle actual browse
+            BackCommand = new RelayCommand(OnBack);
+
+            // Load filters
+            LoadFilters();
         }
 
-        private void OnStartDesigning()
+        private void LoadFilters()
         {
-            DebugLogger.Log("FilterCreationModalViewModel", "Start designing new filter requested");
+            try
+            {
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+
+                if (!Directory.Exists(filtersDir))
+                {
+                    DebugLogger.LogError("FilterCreationModalViewModel", $"Filters directory not found: {filtersDir}");
+                    return;
+                }
+
+                var filterFiles = Directory.GetFiles(filtersDir, "*.json")
+                    .OrderBy(f => System.IO.Path.GetFileNameWithoutExtension(f))
+                    .ToList();
+
+                Filters.Clear();
+                for (int i = 0; i < filterFiles.Count; i++)
+                {
+                    var filterPath = filterFiles[i];
+                    var filterName = System.IO.Path.GetFileNameWithoutExtension(filterPath);
+                    var author = GetFilterAuthor(filterPath);
+
+                    Filters.Add(new FilterListItem
+                    {
+                        Number = i + 1,
+                        Name = filterName,
+                        Author = author,
+                        FilePath = filterPath
+                    });
+                }
+
+                DebugLogger.Log("FilterCreationModalViewModel", $"Loaded {Filters.Count} filters");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterCreationModalViewModel", $"Error loading filters: {ex.Message}");
+            }
+        }
+
+        private void OnCreateNewFilter()
+        {
+            DebugLogger.Log("FilterCreationModalViewModel", "Create new filter requested");
             NewFilterRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnBack()
+        {
+            DebugLogger.Log("FilterCreationModalViewModel", "Back button clicked");
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnDeleteFilter()
+        {
+            if (string.IsNullOrEmpty(_selectedFilterPath))
+            {
+                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot delete filter: no filter selected");
+                return;
+            }
+
+            DebugLogger.Log("FilterCreationModalViewModel", $"Delete filter requested: {_selectedFilterPath}");
+            FilterDeleteRequested?.Invoke(this, _selectedFilterPath);
         }
 
         private void OnEditFilter()
@@ -88,11 +183,47 @@ namespace BalatroSeedOracle.ViewModels
         {
             _selectedFilterPath = filterPath;
 
+            // Extract filter name and description from path
+            SelectedFilterName = System.IO.Path.GetFileNameWithoutExtension(filterPath);
+            SelectedFilterDescription = $"by {GetFilterAuthor(filterPath)}";
+
             // Update command states
             ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
             ((RelayCommand)CloneFilterCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)DeleteFilterCommand).NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(HasSelectedFilter));
 
             DebugLogger.Log("FilterCreationModalViewModel", $"Filter selected: {filterPath}");
+        }
+
+        public void SelectFilter(FilterListItem filter)
+        {
+            _selectedFilterPath = filter.FilePath;
+            SelectedFilterName = filter.Name;
+            SelectedFilterDescription = $"by {filter.Author}";
+
+            // Update command states
+            ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)CloneFilterCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)DeleteFilterCommand).NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(HasSelectedFilter));
+
+            DebugLogger.Log("FilterCreationModalViewModel", $"Filter selected: {filter.Name}");
+        }
+
+        private string GetFilterAuthor(string filterPath)
+        {
+            try
+            {
+                if (System.IO.File.Exists(filterPath))
+                {
+                    var json = System.IO.File.ReadAllText(filterPath);
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                    return config?.Author ?? "Unknown";
+                }
+            }
+            catch { }
+            return "Unknown";
         }
 
         public async Task ValidateAndImportJsonFile(string filePath)
@@ -149,4 +280,14 @@ namespace BalatroSeedOracle.ViewModels
         }
     }
 
+    /// <summary>
+    /// Represents a filter in the list
+    /// </summary>
+    public class FilterListItem
+    {
+        public int Number { get; set; }
+        public string Name { get; set; } = "";
+        public string Author { get; set; } = "";
+        public string FilePath { get; set; } = "";
+    }
 }

@@ -6,162 +6,149 @@
              x:Class="BalatroSeedOracle.Views.Modals.SearchModal"
              x:DataType="vm:SearchModalViewModel">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <!-- Tab content templates would go here -->
-        </ResourceDictionary>
-    </UserControl.Resources>
-
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Header with Maximize Button and Title -->
+    <Grid Margin="0">
+        <!-- Main Content Area -->
         <Border Grid.Row="0"
-                Background="{StaticResource ContainerDarkPrecise}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="0,0,0,2"
-                Padding="15,10">
+                Background="{StaticResource DockGrey}"
+                CornerRadius="8"
+                Padding="20">
+
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="250"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
-                <!-- Search Icon -->
-                <TextBlock Grid.Column="0"
-                           Text="🔍"
-                           FontSize="24"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"/>
-                
-                <!-- Title and Status -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="BALATRO SEED ORACLE"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource Gold}"/>
-                    <TextBlock Text="{Binding SearchStatus}"
-                               FontSize="12"
-                               Foreground="#FFD700"
-                               Opacity="0.8"/>
-                </StackPanel>
-                
-                <!-- Controls -->
-                <StackPanel Grid.Column="2" 
-                            Orientation="Horizontal" 
-                            Spacing="10"
-                            VerticalAlignment="Center">
-                    
-                    <!-- VibeOut Button -->
-                    <Button Content="🎵 VIBE OUT"
-                            Command="{Binding EnterVibeOutModeCommand}"
-                            Classes="btn-purple"
-                            Padding="12,6"
-                            FontFamily="{StaticResource BalatroFont}"
-                            FontSize="12"
-                            CornerRadius="5"/>
-                    
-                    <!-- Maximize Button -->
-                    <Button Name="MaximizeButton"
-                            Content="⛶"
-                            Background="Transparent"
-                            Foreground="{StaticResource Gold}"
-                            BorderThickness="0"
-                            Padding="8"
-                            FontSize="16"
-                            Click="MaximizeButton_Click"
-                            ToolTip.Tip="Maximize Window">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
-                    
-                    <!-- Close Button -->
-                    <Button Content="✕"
-                            Background="Transparent"
-                            Foreground="#FF4444"
-                            BorderThickness="0"
-                            Padding="8"
-                            FontSize="16"
-                            Command="{Binding CloseCommand}"
-                            ToolTip.Tip="Close Search Modal">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#22FF4444"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
-                </StackPanel>
+
+                <!-- LEFT SIDEBAR - Tab Selector (Balatro style with triangle indicators) -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource ContainerDarkPrecise}"
+                        CornerRadius="8"
+                        Padding="15,10"
+                        Margin="0,0,15,0">
+                    <StackPanel Spacing="6">
+                        <!-- Tab Buttons (Balatro Challenge style with triangle pointer) -->
+                        <Grid>
+                            <Button Name="FilterTabButton"
+                                    Content="🔍 FILTER"
+                                    Classes="btn-red balatro-tab"
+                                    Click="OnTabButtonClick"
+                                    Tag="0"
+                                    Height="50"
+                                    FontSize="16"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    HorizontalContentAlignment="Center"/>
+                            <!-- Triangle indicator (shows when selected) -->
+                            <TextBlock Text="▶"
+                                       Classes="balatro-triangle"
+                                       FontSize="24"
+                                       Foreground="White"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"
+                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=0}"/>
+                        </Grid>
+
+                        <Grid>
+                            <Button Name="SettingsTabButton"
+                                    Content="⚙️ SETTINGS"
+                                    Classes="btn-red balatro-tab"
+                                    Click="OnTabButtonClick"
+                                    Tag="1"
+                                    Height="50"
+                                    FontSize="16"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    HorizontalContentAlignment="Center"/>
+                            <TextBlock Text="▶"
+                                       Classes="balatro-triangle"
+                                       FontSize="24"
+                                       Foreground="White"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"
+                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=1}"/>
+                        </Grid>
+
+                        <Grid>
+                            <Button Name="SearchTabButton"
+                                    Content="🚀 SEARCH"
+                                    Classes="btn-red balatro-tab"
+                                    Click="OnTabButtonClick"
+                                    Tag="2"
+                                    Height="50"
+                                    FontSize="16"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    HorizontalContentAlignment="Center"/>
+                            <TextBlock Text="▶"
+                                       Classes="balatro-triangle"
+                                       FontSize="24"
+                                       Foreground="White"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"
+                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=2}"/>
+                        </Grid>
+
+                        <Grid>
+                            <Button Name="ResultsTabButton"
+                                    Content="📊 RESULTS"
+                                    Classes="btn-red balatro-tab"
+                                    Click="OnTabButtonClick"
+                                    Tag="3"
+                                    Height="50"
+                                    FontSize="16"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    HorizontalContentAlignment="Center"/>
+                            <TextBlock Text="▶"
+                                       Classes="balatro-triangle"
+                                       FontSize="24"
+                                       Foreground="White"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"
+                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=3}"/>
+                        </Grid>
+
+                        <!-- Vibe Out Button -->
+                        <Button Content="🎵 VIBE OUT"
+                                Command="{Binding EnterVibeOutModeCommand}"
+                                Classes="btn-purple"
+                                Height="50"
+                                FontSize="14"
+                                Margin="0,20,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- RIGHT CONTENT AREA -->
+                <ContentControl Grid.Column="1"
+                                Content="{Binding CurrentTabContent}"/>
             </Grid>
         </Border>
-        
-        <!-- ENHANCED BALATRO TABCONTROL WITH NEW COMPONENTS -->
-        <TabControl Grid.Row="1"
-                    SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
-                    ItemsSource="{Binding TabItems}"
-                    Classes="balatro-tabs">
-            
-            <!-- Tab header template - displays the Header property -->
-            <TabControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Header}" />
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            
-            <!-- Tab content template - displays the Content property -->
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <ContentControl Content="{Binding Content}"/>
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
-        
-        <!-- Search Progress Overlay (when searching) -->
-        <Border Grid.Row="1"
-                Background="#88000000"
+
+        <!-- Search Progress Overlay -->
+        <Border Grid.Row="0"
+                Background="#DD000000"
                 IsVisible="{Binding IsSearching}"
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Stretch"
-                Height="80">
-            <Grid Margin="20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <StackPanel Grid.Column="0" Spacing="8">
-                    <!-- Progress Bar -->
-                    <ProgressBar Value="{Binding SearchProgress}"
-                                 Maximum="100"
-                                 Height="20"
-                                 Background="{StaticResource DarkBackground}"
-                                 Foreground="{StaticResource Green}"/>
-                    
-                    <!-- Progress Text -->
-                    <TextBlock Text="{Binding ProgressText}"
-                               Foreground="#FFD700"
-                               FontSize="14"
-                               HorizontalAlignment="Center"/>
-                </StackPanel>
-                
-                <!-- Stop Button -->
-                <Button Grid.Column="1"
-                        Content="⏹️ STOP"
+                CornerRadius="8">
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="20">
+                <ProgressBar Value="{Binding SearchProgress}"
+                             Maximum="100"
+                             Width="400"
+                             Height="30"
+                             Background="{StaticResource DarkBackground}"
+                             Foreground="{StaticResource Green}"/>
+
+                <TextBlock Text="{Binding ProgressText}"
+                           Foreground="{StaticResource Gold}"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+
+                <Button Content="⏹️ STOP SEARCH"
                         Command="{Binding StopSearchCommand}"
-                        Background="#FF4444"
-                        Foreground="White"
-                        Padding="15,10"
-                        FontSize="14"
-                        VerticalAlignment="Center"
-                        Margin="20,0,0,0"/>
-            </Grid>
+                        Classes="btn-red"
+                        Width="200"/>
+            </StackPanel>
         </Border>
     </Grid>
 

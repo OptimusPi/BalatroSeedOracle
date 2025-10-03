@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
@@ -52,8 +53,8 @@ namespace BalatroSeedOracle.Views.Modals
                 _filterSelector.FilterSelected += (s, path) => ViewModel.OnFilterSelected(path);
             }
             
-            // Handle BrowseCommand since it needs file picker access
-            ViewModel.BrowseCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(async () => await OnBrowse());
+            // Handle ImportJsonCommand since it needs file picker access
+            ViewModel.ImportJsonCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(async () => await OnBrowse());
         }
 
         private void InitializeComponent()
@@ -97,6 +98,14 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("FilterCreationModal", $"Error browsing for file: {ex.Message}");
+            }
+        }
+
+        private void OnFilterButtonClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is FilterListItem filter)
+            {
+                ViewModel.SelectFilter(filter);
             }
         }
     }

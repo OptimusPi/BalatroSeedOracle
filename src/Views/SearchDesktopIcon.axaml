@@ -1,6 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Views.SearchDesktopIcon">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.SearchDesktopIcon"
+             x:DataType="vm:SearchDesktopIconViewModel"
+             x:CompileBindings="True">
     
     <UserControl.Styles>
         <Style Selector="Border.desktop-icon-container">
@@ -38,7 +41,9 @@
         <StackPanel Spacing="4">
             <!-- Icon Button -->
             <Grid>
-                <Button Classes="desktop-icon" Click="OnIconClick" ContextRequested="OnContextRequested">
+                <Button Classes="desktop-icon"
+                        Command="{Binding ViewResultsCommand}"
+                        ContextRequested="OnContextRequested">
                     <Grid Width="128" Height="128">
                         <!-- Icon background -->
                         <Border Name="IconBorder"
@@ -50,32 +55,41 @@
                             <Grid>
                                 <!-- Search state icon (updated dynamically) -->
                                 <Image Name="StateIcon"
+                                       Source="{Binding StateIcon}"
+                                       IsVisible="{Binding ShowStateIcon}"
                                        Width="64"
                                        Height="64"
                                        Stretch="Uniform"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
+
+                                <!-- Filter preview (fanned cards) -->
+                                <ContentPresenter Name="FilterPreviewContainer"
+                                                  Content="{Binding FilterPreview}"
+                                                  IsVisible="{Binding !ShowStateIcon}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                     </Grid>
                 </Button>
-                
+
                 <!-- Notification badge overlay using Canvas -->
                 <Canvas ZIndex="100">
                     <Border Name="NotificationBadge"
                             Classes="notification-badge"
                             Canvas.Right="-8"
                             Canvas.Top="-8"
-                            IsVisible="False">
+                            IsVisible="{Binding ShowNotificationBadge}">
                         <TextBlock Name="BadgeText"
-                                   Text="0" />
+                                   Text="{Binding NotificationText}" />
                     </Border>
                 </Canvas>
             </Grid>
-            
+
             <!-- Filter Name -->
             <TextBlock Name="FilterNameText"
-                       Text="Filter Name"
+                       Text="{Binding FilterName}"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="12"
                        Foreground="{StaticResource White}"
@@ -83,16 +97,16 @@
                        TextAlignment="Center"
                        TextWrapping="Wrap"
                        MaxWidth="100"/>
-            
+
             <!-- Progress Bar with Percentage -->
             <Grid>
                 <ProgressBar Name="SearchProgress"
                              Classes="search-progress"
-                             Value="0"
+                             Value="{Binding SearchProgress}"
                              Maximum="100"
                              IsVisible="True"/>
                 <TextBlock Name="ProgressText"
-                           Text="0%"
+                           Text="{Binding ProgressText}"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="10"
                            Foreground="{StaticResource White}"

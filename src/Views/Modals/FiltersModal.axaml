@@ -3,6 +3,7 @@
              xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.FiltersModalContent">
              
     <UserControl.Styles>
@@ -540,14 +541,13 @@
                         </Grid>
             </Grid>
             
-            <!-- Load/Save Panel -->
+            <!-- Load/Save Panel - Balatro Challenges Style -->
             <Grid Name="LoadSavePanel" IsVisible="True">
-                <!-- Use the FilterSelector component -->
-                <components:FilterSelector x:Name="FilterSelectorComponent" 
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"
-                                         AutoLoadEnabled="False"
-                                         FilterLoaded="OnFilterSelected"/>
+                <!-- Use the new reusable FilterSelectorControl -->
+                <components:FilterSelectorControl Name="FilterSelector"
+                                                  FilterSelected="OnFilterSelected"
+                                                  FilterCopyRequested="OnFilterCopyRequested"
+                                                  NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
 
             <!-- JSON Panel -->

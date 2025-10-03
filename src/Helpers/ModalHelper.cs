@@ -34,78 +34,15 @@ namespace BalatroSeedOracle.Helpers
         }
 
         /// <summary>
-        /// Creates and shows the filter creation modal (entry point for filter workflow)
+        /// Creates and shows the filter designer modal (direct entry - includes filter list)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var filterCreationModal = new Views.Modals.FilterCreationModal();
-
-            // Handle user choosing to create a new filter
-            filterCreationModal.NewFilterRequested += async (sender, e) =>
-            {
-                DebugLogger.Log("ModalHelper", "New filter requested");
-                menu.HideModalContent(); // Close creation modal
-                await Task.Delay(100); // Small delay for transition
-                ShowFiltersDesigner(menu, null, false); // Open designer with empty filter
-            };
-
-            // Handle user choosing to edit an existing filter
-            filterCreationModal.FilterSelectedForEdit += async (sender, filterPath) =>
-            {
-                DebugLogger.Log("ModalHelper", $"Edit filter requested: {filterPath}");
-                menu.HideModalContent(); // Close creation modal
-                await Task.Delay(100); // Small delay for transition
-                ShowFiltersDesigner(menu, filterPath, false); // Open designer in EDIT mode
-            };
-
-            // Handle user choosing to clone an existing filter
-            filterCreationModal.FilterImported += async (sender, filterPath) =>
-            {
-                DebugLogger.Log("ModalHelper", $"Import filter requested: {filterPath}");
-                menu.HideModalContent(); // Close creation modal
-                await Task.Delay(100); // Small delay for transition
-                ShowFiltersDesigner(menu, filterPath, true); // Open designer with imported filter
-            };
-
-            return menu.ShowModal("FILTER CREATOR", filterCreationModal);
-        }
-
-        /// <summary>
-        /// Opens the filter designer modal with an optional filter to load
-        /// </summary>
-        /// <param name="menu">The main menu to show the modal on</param>
-        /// <param name="filterPath">Optional path to a filter to load</param>
-        /// <param name="isClone">Whether this is a clone operation (creates copy instead of editing)</param>
-        private static async void ShowFiltersDesigner(Views.BalatroMainMenu menu, string? filterPath, bool isClone)
-        {
+            // Go directly to FiltersModalContent which now has Balatro-style filter selection built-in
             var filtersContent = new Views.Modals.FiltersModalContent();
-
-            // Load filter if path provided
-            if (!string.IsNullOrEmpty(filterPath))
-            {
-                if (isClone)
-                {
-                    // Clone the filter - create a copy first
-                    var clonedPath = await CreateClonedFilter(filterPath);
-                    if (!string.IsNullOrEmpty(clonedPath))
-                    {
-                        await filtersContent.LoadConfigAsync(clonedPath);
-                    }
-                    else
-                    {
-                        DebugLogger.LogError("ModalHelper", "Failed to clone filter");
-                    }
-                }
-                else
-                {
-                    // Edit mode - load filter directly
-                    await filtersContent.LoadConfigAsync(filterPath);
-                }
-            }
-
-            menu.ShowModal("FILTER DESIGNER", filtersContent);
+            return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
     
         /// <summary>

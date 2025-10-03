@@ -130,12 +130,8 @@ namespace BalatroSeedOracle.Services
             try
             {
                 _waveOut = new WaveOutEvent();
-                _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
-                _mixer.ReadFully = true;
-
-                _waveOut.Init(_mixer);
-                _waveOut.Volume = 1.0f;
-                _waveOut.Play();
+                // NOTE: Mixer format will be set after first track is loaded (auto-detect sample rate)
+                // This fixes macOS compatibility where sample rate mismatches cause crashes
             }
             catch (Exception ex)
             {
@@ -172,6 +168,18 @@ namespace BalatroSeedOracle.Services
                         {
                             var track = new AudioTrack(filePath, trackName);
                             _tracks[trackName] = track;
+
+                            // Initialize mixer with first track's sample rate (auto-detect for macOS compatibility)
+                            if (_mixer == null && _waveOut != null)
+                            {
+                                var waveFormat = track.SampleProvider.WaveFormat;
+                                DebugLogger.Log("VibeAudioManager", $"Auto-detected audio format: {waveFormat.SampleRate}Hz, {waveFormat.Channels} channels");
+                                _mixer = new MixingSampleProvider(waveFormat);
+                                _mixer.ReadFully = true;
+                                _waveOut.Init(_mixer);
+                                _waveOut.Volume = 1.0f;
+                                _waveOut.Play();
+                            }
 
                             // ADD ALL TRACKS TO MIXER IMMEDIATELY (at silent volume)
                             if (_mixer != null)
@@ -710,7 +718,7 @@ namespace BalatroSeedOracle.Services
             
             _loopStream = new LoopStream(_reader);
 
-            // All files are 48kHz stereo - chain volume → lowpass → stereo balance
+            // Auto-detect format from file (usually 48kHz or 44.1kHz stereo) - chain volume → lowpass → stereo balance
             var baseSample = _loopStream.ToSampleProvider();
             _volumeProvider = new VolumeSampleProvider(baseSample) { Volume = 0f };
             _lowpassFilter = new LowpassFilterSampleProvider(_volumeProvider); // Warm filter

@@ -9,6 +9,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Helpers;
 using Motely.Filters;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
@@ -74,8 +75,18 @@ namespace BalatroSeedOracle.ViewModels
         public int SelectedTabIndex
         {
             get => _selectedTabIndex;
-            set => SetProperty(ref _selectedTabIndex, value);
+            set
+            {
+                if (SetProperty(ref _selectedTabIndex, value))
+                {
+                    OnPropertyChanged(nameof(CurrentTabContent));
+                }
+            }
         }
+
+        public object? CurrentTabContent => _selectedTabIndex >= 0 && _selectedTabIndex < TabItems.Count
+            ? TabItems[_selectedTabIndex].Content
+            : null;
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int BatchSize { get; set; } = 3;
@@ -684,20 +695,29 @@ namespace BalatroSeedOracle.ViewModels
 
         private UserControl CreateFilterTabContent()
         {
-            // Create the filter selector and wire up the event
-            var filterSelector = new Components.FilterSelector 
-            { 
-                Title = "Select Search Filter",
-                IsInSearchModal = true,
-                ShowActionButtons = false  // Hide edit/delete buttons in search modal
-            };
-            
-            // CRITICAL FIX: Wire up the FilterLoaded event!
-            filterSelector.FilterLoaded += async (sender, filterPath) =>
+            // Create the new FilterSelectorControl with Balatro challenges style
+            var filterSelectorControl = new Components.FilterSelectorControl();
+
+            // Wire up the FilterSelected event - this fires when EDIT FILTER is clicked
+            filterSelectorControl.FilterSelected += async (sender, filterPath) =>
             {
-                DebugLogger.Log("SearchModalViewModel", $"FilterLoaded event fired with path: {filterPath}");
+                DebugLogger.Log("SearchModalViewModel", $"FilterSelected event fired with path: {filterPath}");
                 _currentFilterPath = filterPath; // Store the path immediately!
                 await LoadFilterAsync(filterPath);
+            };
+
+            // Wire up the FilterCopyRequested event - could create a copy of the filter
+            filterSelectorControl.FilterCopyRequested += (sender, filterPath) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"FilterCopyRequested event fired with path: {filterPath}");
+                // TODO: Implement filter copy functionality if needed
+            };
+
+            // Wire up the NewFilterRequested event - could open filter creation
+            filterSelectorControl.NewFilterRequested += (sender, e) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", "NewFilterRequested event fired");
+                // TODO: Implement new filter creation if needed
             };
             
             // Create the deck and stake selector and wire up events
@@ -737,37 +757,55 @@ namespace BalatroSeedOracle.ViewModels
             // Create wordlist selector
             var wordListSelector = CreateWordListSelector();
 
-            // Create the filter tab content as a UserControl
+            // Create the filter tab content as a UserControl with FilterSelectorControl taking full space
+            var filterGrid = new Grid();
+            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Title
+            filterGrid.RowDefinitions.Add(new RowDefinition(new GridLength(10))); // Spacing
+            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star)); // FilterSelectorControl
+            filterGrid.RowDefinitions.Add(new RowDefinition(new GridLength(15))); // Spacing
+            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Bottom selectors
+
+            var title = new TextBlock
+            {
+                Text = "SELECT FILTER FOR SEARCH",
+                FontSize = 20,
+                FontFamily = Application.Current?.Resources["BalatroFont"] as Avalonia.Media.FontFamily,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Foreground = Avalonia.Media.Brush.Parse("#00FF88")
+            };
+            Grid.SetRow(title, 0);
+            filterGrid.Children.Add(title);
+
+            Grid.SetRow(filterSelectorControl, 2);
+            filterGrid.Children.Add(filterSelectorControl);
+
+            var bottomScrollViewer = new ScrollViewer
+            {
+                MaxHeight = 200,
+                Content = new StackPanel
+                {
+                    Spacing = 10,
+                    Children =
+                    {
+                        deckStakeSelector,
+                        anteSelector,
+                        sourceSelector,
+                        editionSelector,
+                        wordListSelector
+                    }
+                }
+            };
+            Grid.SetRow(bottomScrollViewer, 4);
+            filterGrid.Children.Add(bottomScrollViewer);
+
             return new UserControl
             {
                 Content = new Border
                 {
                     Background = Avalonia.Media.Brush.Parse("#1e2b2d"), // ContainerDarkPrecise
                     CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
-                    Padding = new Avalonia.Thickness(25),
-                    Child = new ScrollViewer
-                    {
-                        Content = new StackPanel
-                        {
-                            Spacing = 15,
-                            Children =
-                            {
-                                new TextBlock
-                                {
-                                    Text = "SEARCH FILTERS",
-                                    FontSize = 24,
-                                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                    Foreground = Avalonia.Media.Brush.Parse("#00FF88")
-                                },
-                                filterSelector,
-                                deckStakeSelector,
-                                anteSelector,
-                                sourceSelector,
-                                editionSelector,
-                                wordListSelector
-                            }
-                        }
-                    }
+                    Padding = new Avalonia.Thickness(15),
+                    Child = filterGrid
                 }
             };
         }

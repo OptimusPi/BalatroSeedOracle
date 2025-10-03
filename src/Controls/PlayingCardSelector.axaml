@@ -2,14 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="BalatroSeedOracle.Controls.PlayingCardSelector">
-  
+             x:Class="BalatroSeedOracle.Controls.PlayingCardSelector"
+             x:DataType="vm:PlayingCardSelectorViewModel">
+
+  <UserControl.Resources>
+    <converters:CardBackgroundConverter x:Key="CardBackgroundConverter"/>
+    <converters:CardBorderBrushConverter x:Key="CardBorderBrushConverter"/>
+    <converters:CardBorderThicknessConverter x:Key="CardBorderThicknessConverter"/>
+    <converters:HexToBrushConverter x:Key="HexToBrushConverter"/>
+  </UserControl.Resources>
+
   <Border Background="{DynamicResource DarkModalGrey}"
           CornerRadius="8"
           Padding="15">
     <Grid RowDefinitions="Auto,*,Auto">
-      
+
       <!-- Header with quick selection buttons -->
       <StackPanel Grid.Row="0" Margin="0,0,0,10">
         <TextBlock Text="SELECT PLAYING CARDS"
@@ -17,52 +27,111 @@
                    FontSize="16"
                    Foreground="{DynamicResource LightGrey}"
                    Margin="0,0,0,10"/>
-        
+
         <WrapPanel>
-          <Button Name="SelectAllButton" Content="Select All" Margin="0,0,5,0"/>
-          <Button Name="ClearAllButton" Content="Clear All" Margin="0,0,15,0"/>
-          
+          <Button Content="Select All"
+                  Command="{Binding SelectAllCommand}"
+                  Margin="0,0,5,0"/>
+          <Button Content="Clear All"
+                  Command="{Binding ClearAllCommand}"
+                  Margin="0,0,15,0"/>
+
           <!-- Suit selection buttons -->
-          <Button Name="SelectSpadesButton" Content="♠ Spades" Margin="0,0,5,0"/>
-          <Button Name="SelectHeartsButton" Content="♥ Hearts" Margin="0,0,5,0" Foreground="Red"/>
-          <Button Name="SelectDiamondsButton" Content="♦ Diamonds" Margin="0,0,5,0" Foreground="Red"/>
-          <Button Name="SelectClubsButton" Content="♣ Clubs" Margin="0,0,15,0"/>
-          
+          <Button Content="♠ Spades"
+                  Command="{Binding SelectSuitCommand}"
+                  CommandParameter="Spades"
+                  Margin="0,0,5,0"/>
+          <Button Content="♥ Hearts"
+                  Command="{Binding SelectSuitCommand}"
+                  CommandParameter="Hearts"
+                  Margin="0,0,5,0"
+                  Foreground="Red"/>
+          <Button Content="♦ Diamonds"
+                  Command="{Binding SelectSuitCommand}"
+                  CommandParameter="Diamonds"
+                  Margin="0,0,5,0"
+                  Foreground="Red"/>
+          <Button Content="♣ Clubs"
+                  Command="{Binding SelectSuitCommand}"
+                  CommandParameter="Clubs"
+                  Margin="0,0,15,0"/>
+
           <!-- Rank selection buttons -->
-          <Button Name="SelectAcesButton" Content="All Aces" Margin="0,0,5,0"/>
-          <Button Name="SelectFaceButton" Content="Face Cards" Margin="0,0,5,0"/>
-          <Button Name="SelectNumberButton" Content="Number Cards" Margin="0,0,5,0"/>
+          <Button Content="All Aces"
+                  Command="{Binding SelectRankCommand}"
+                  CommandParameter="A"
+                  Margin="0,0,5,0"/>
+          <Button Content="Face Cards"
+                  Command="{Binding SelectFaceCardsCommand}"
+                  Margin="0,0,5,0"/>
+          <Button Content="Number Cards"
+                  Command="{Binding SelectNumberCardsCommand}"
+                  Margin="0,0,5,0"/>
         </WrapPanel>
       </StackPanel>
-      
+
       <!-- Card Grid -->
-      <ScrollViewer Grid.Row="1" 
+      <ScrollViewer Grid.Row="1"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Disabled">
-        <Grid Name="CardGrid" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,10">
-          <!-- Spades Row -->
-          <WrapPanel Grid.Row="0" Name="SpadesRow" Margin="0,5"/>
-          
-          <!-- Hearts Row -->
-          <WrapPanel Grid.Row="1" Name="HeartsRow" Margin="0,5"/>
-          
-          <!-- Diamonds Row -->
-          <WrapPanel Grid.Row="2" Name="DiamondsRow" Margin="0,5"/>
-          
-          <!-- Clubs Row -->
-          <WrapPanel Grid.Row="3" Name="ClubsRow" Margin="0,5"/>
-        </Grid>
+        <ItemsControl ItemsSource="{Binding CardSuits}" Margin="0,10">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:CardSuitGroup">
+              <!-- Each suit row -->
+              <ItemsControl ItemsSource="{Binding Cards}" Margin="0,5">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PlayingCardViewModel">
+                    <!-- Individual card tile -->
+                    <Button Width="60"
+                            Height="84"
+                            Margin="3"
+                            Background="{Binding IsSelected, Converter={StaticResource CardBackgroundConverter}}"
+                            BorderBrush="{Binding IsSelected, Converter={StaticResource CardBorderBrushConverter}}"
+                            BorderThickness="{Binding IsSelected, Converter={StaticResource CardBorderThicknessConverter}}"
+                            CornerRadius="4"
+                            Cursor="Hand"
+                            Command="{Binding $parent[UserControl].((vm:PlayingCardSelectorViewModel)DataContext).ToggleCardCommand}"
+                            CommandParameter="{Binding}">
+
+                      <!-- Card content -->
+                      <Grid RowDefinitions="*,*">
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding Rank}"
+                                   FontSize="18"
+                                   Foreground="{Binding SuitColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding SuitSymbol}"
+                                   FontSize="24"
+                                   Foreground="{Binding SuitColorHex, Converter={StaticResource HexToBrushConverter}}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                      </Grid>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
       </ScrollViewer>
-      
+
       <!-- Summary -->
-      <TextBlock Grid.Row="2" 
-                 Name="SelectionSummary"
-                 Text="0 cards selected"
+      <TextBlock Grid.Row="2"
+                 Text="{Binding SelectionSummary}"
                  FontFamily="{DynamicResource BalatroFont}"
                  FontSize="12"
                  Foreground="{DynamicResource MediumGrey}"
                  Margin="0,10,0,0"/>
     </Grid>
   </Border>
-  
+
 </UserControl>

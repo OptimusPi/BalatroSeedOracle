@@ -963,9 +963,14 @@ namespace BalatroSeedOracle.ViewModels
                 // Focus the textbox when dialog opens
                 dialog.Opened += (s, e) => textBox.Focus();
 
-                await dialog.ShowDialog(Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
-                    : null);
+                    : null;
+
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
 
                 return result;
             }

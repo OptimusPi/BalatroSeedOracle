@@ -4,126 +4,208 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.FilterCreationModal"
              x:DataType="vm:FilterCreationModalViewModel">
-             
-    <!-- Two-sided layout for filter creation -->
+
+    <!-- BALATRO CHALLENGE STYLE: List on left, details on right -->
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>   <!-- Left: Edit existing -->
-            <ColumnDefinition Width="20"/>  <!-- Spacer -->
-            <ColumnDefinition Width="*"/>   <!-- Right: Create new -->
+            <ColumnDefinition Width="350"/>  <!-- Left: Filter list -->
+            <ColumnDefinition Width="*"/>    <!-- Right: Details/Actions -->
         </Grid.ColumnDefinitions>
-        
-        <!-- LEFT SIDE: Edit Existing Filter -->
-        <Border Grid.Column="0" 
-                Background="{StaticResource DarkModalGrey}" 
-                BorderThickness="0" 
-                CornerRadius="12" 
+
+        <!-- LEFT PANEL: Filter List (like Balatro challenges) -->
+        <Border Grid.Column="0"
+                Background="{StaticResource ContainerDarkPrecise}"
+                CornerRadius="12,0,0,12"
                 Padding="15">
-            <StackPanel Spacing="15">
-                <!-- Header -->
-                <TextBlock Text="Edit Existing Filter?" 
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="24"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,5"/>
-                
-                <!-- Filter Selector -->
-                <components:FilterSelector x:Name="ExistingFilterSelector" 
-                                         Title="Select Filter to Edit"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"
-                                         AutoLoadEnabled="False"/>
-                
-                <!-- Action Buttons -->
-                <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
-                    <Button Content="EDIT THIS FILTER"
-                            Classes="btn-blue"
-                            Height="50"
-                            MinWidth="160"
-                            FontSize="14"
-                            FontFamily="{StaticResource BalatroFont}"
-                            Command="{Binding EditFilterCommand}"/>
-                    
-                    <Button Content="CLONE AND EDIT A COPY"
-                            Classes="btn-green"
-                            Height="50"
-                            MinWidth="180"
-                            FontSize="14"
-                            FontFamily="{StaticResource BalatroFont}"
-                            Command="{Binding CloneFilterCommand}"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Filter List with numbered items -->
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="6">
+                        <!-- SPECIAL ITEM #1: Create New Filter (always first) -->
+                        <Button Classes="btn-green"
+                                Height="50"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Command="{Binding CreateNewFilterCommand}"
+                                CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="10,0">
+                                <TextBlock Text="✨" FontSize="18" VerticalAlignment="Center"/>
+                                <TextBlock Text="Create New Filter"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="16"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Divider -->
+                        <Border Height="2" Background="{StaticResource Border}" Opacity="0.3" Margin="0,8,0,8"/>
+
+                        <!-- Filter Items (Balatro challenge-style numbered list) -->
+                        <ItemsControl ItemsSource="{Binding Filters}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:FilterListItem">
+                                    <Button Classes="btn-red"
+                                            Height="45"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,2"
+                                            CornerRadius="8"
+                                            Click="OnFilterButtonClick"
+                                            Tag="{Binding}">
+                                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="8,0">
+                                            <!-- Number -->
+                                            <TextBlock Text="{Binding Number}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="16"
+                                                       Width="30"
+                                                       VerticalAlignment="Center"/>
+                                            <!-- Name -->
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="14"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Pagination (if needed in future) -->
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="10"
+                            Margin="0,15,0,0"
+                            IsVisible="False">
+                    <Button Content="◀" Classes="btn-red" Width="50" Height="40"/>
+                    <Border Background="{StaticResource Red}"
+                            CornerRadius="5"
+                            Padding="15,8">
+                        <TextBlock Text="Page 1/1"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="White"/>
+                    </Border>
+                    <Button Content="▶" Classes="btn-red" Width="50" Height="40"/>
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </Border>
-        
-        <!-- RIGHT SIDE: Create New Filter -->
-        <Border Grid.Column="2" 
-                Background="{StaticResource DarkModalGrey}" 
-                BorderThickness="0" 
-                CornerRadius="12" 
-                Padding="30">
-            <StackPanel Spacing="25">
-                <!-- Header -->
-                <TextBlock Text="Create New Filter?" 
+
+        <!-- RIGHT PANEL: Filter Details/Actions -->
+        <Border Grid.Column="1"
+                Background="{StaticResource DockGrey}"
+                CornerRadius="0,12,12,0"
+                Padding="40">
+            <Grid>
+                <!-- PLACEHOLDER: When no filter selected -->
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="20"
+                        IsVisible="{Binding !HasSelectedFilter}">
+                <TextBlock Text="Select a Filter"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="24"
-                           Foreground="{StaticResource Gold}"
+                           FontSize="28"
+                           Foreground="{StaticResource TextLight}"
                            HorizontalAlignment="Center"
-                           Margin="0,0,0,10"/>
-                
-                <!-- Start Designing Button -->
-                <Button Content="START DESIGNING"
-                        Classes="btn-green"
-                        Height="60"
-                        FontSize="18"
-                        FontFamily="{StaticResource BalatroFont}"
-                        HorizontalAlignment="Stretch"
-                        Command="{Binding StartDesigningCommand}"/>
-                
-                <!-- Spacer -->
-                <Border Height="20"/>
-                
-                <!-- Import Section -->
-                <TextBlock Text="Import JSON File?" 
+                           Opacity="0.6"/>
+
+                <TextBlock Text="or"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="18"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"/>
-                
-                <Button Content="BROWSE..."
-                        Classes="btn-blue"
-                        Height="45"
-                        FontSize="14"
+                           Foreground="{StaticResource TextLight}"
+                           HorizontalAlignment="Center"
+                           Opacity="0.4"/>
+
+                <Button Content="✨ CREATE NEW FILTER"
+                        Classes="btn-green"
+                        Height="60"
+                        MinWidth="280"
+                        FontSize="18"
                         FontFamily="{StaticResource BalatroFont}"
-                        HorizontalAlignment="Stretch"
-                        Command="{Binding BrowseCommand}"/>
-                
-                <!-- Import Status -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBox Grid.Column="0"
-                             IsReadOnly="True"
-                             Focusable="False"
-                             Text="{Binding ImportPath}"
-                             Watermark="No file selected..."
-                             FontSize="12"
-                             Height="32"
-                             VerticalContentAlignment="Center"
-                             Background="{StaticResource Grey}"
-                             BorderThickness="0"/>
-                    
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding ImportStatusIcon}"
-                               FontSize="16"
-                               Margin="8,0,0,0"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"/>
-                </Grid>
+                        Command="{Binding CreateNewFilterCommand}"/>
             </StackPanel>
+
+            <!-- FILTER DETAILS: When filter is selected -->
+            <StackPanel Spacing="25"
+                        IsVisible="{Binding HasSelectedFilter}">
+
+                <!-- Filter Preview (from FilterSelector) -->
+                <Border Background="{StaticResource DarkModalGrey}"
+                        CornerRadius="8"
+                        Padding="20"
+                        MinHeight="200">
+                    <StackPanel Spacing="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Filter name, image, description would go here -->
+                        <TextBlock Text="{Binding SelectedFilterName}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="{Binding SelectedFilterDescription}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextLight}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   MaxWidth="400"
+                                   Opacity="0.8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Buttons -->
+                <StackPanel Spacing="12">
+                    <!-- Primary Actions -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="15"
+                                HorizontalAlignment="Center">
+                        <Button Content="✏️ EDIT"
+                                Classes="btn-blue"
+                                Height="55"
+                                MinWidth="180"
+                                FontSize="16"
+                                FontFamily="{StaticResource BalatroFont}"
+                                Command="{Binding EditFilterCommand}"/>
+
+                        <Button Content="📋 COPY"
+                                Classes="btn-green"
+                                Height="55"
+                                MinWidth="180"
+                                FontSize="16"
+                                FontFamily="{StaticResource BalatroFont}"
+                                Command="{Binding CloneFilterCommand}"/>
+                    </StackPanel>
+
+                    <!-- Secondary Actions -->
+                    <StackPanel Spacing="10" HorizontalAlignment="Center">
+                        <Button Content="📁 IMPORT FROM JSON"
+                                Classes="btn-blue"
+                                Height="45"
+                                MinWidth="280"
+                                FontSize="13"
+                                FontFamily="{StaticResource BalatroFont}"
+                                Command="{Binding ImportJsonCommand}"/>
+
+                        <Button Content="🗑️ DELETE"
+                                Classes="btn-red"
+                                Height="40"
+                                MinWidth="200"
+                                FontSize="12"
+                                FontFamily="{StaticResource BalatroFont}"
+                                Command="{Binding DeleteFilterCommand}"
+                                Opacity="0.7"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+            </Grid>
         </Border>
     </Grid>
+
 </UserControl>

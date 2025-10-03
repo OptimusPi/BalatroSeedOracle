@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -12,37 +9,27 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Avalonia.VisualTree;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
 
 namespace BalatroSeedOracle.Views
 {
     public partial class BalatroMainMenu : UserControl
     {
+        // View-only references (no business logic state)
         private Grid? _modalContainer;
         private Control? _background;
-        private Button? _animationToggleButton;
-        private TextBlock? _animationButtonText;
-        private Button? _musicToggleButton;
-        private TextBlock? _musicToggleIcon;
-        private SearchDesktopIcon? _searchDesktopIcon;
-        private bool _isAnimating = true;
-        private bool _isMusicPlaying = true;
-        private int _widgetCounter = 0;
-        private int _minimizedWidgetCount = 0;
-        private UserProfileService? _userProfileService;
-
-        // VibeOut mode
         private Grid? _vibeOutOverlay;
         private Grid? _mainContent;
-        private bool _isVibeOutMode = false;
-
-        // Event handler references for proper cleanup
+        private UserControl? _activeModalContent;
+        private TextBlock? _mainTitleText;
         private Action<float, float, float, float>? _audioAnalysisHandler;
+
+        // ViewModel
+        public BalatroMainMenuViewModel? ViewModel { get; private set; }
 
         /// <summary>
         /// Callback to request main content swap (set by MainWindow)
@@ -53,38 +40,151 @@ namespace BalatroSeedOracle.Views
         {
             InitializeComponent();
 
-            // Defer service initialization to OnLoaded to ensure services are ready
+            // Initialize ViewModel
+            ViewModel = new BalatroMainMenuViewModel();
+            DataContext = ViewModel;
+
+            // Wire up ViewModel events
+            WireViewModelEvents();
+
+            // Defer initialization to OnLoaded
             this.Loaded += OnLoaded;
             this.Loaded += InitializeVibeAudio;
         }
-        
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+
+            // Get view-only control references
+            _modalContainer = this.FindControl<Grid>("ModalContainer");
+            _background = this.FindControl<Control>("BackgroundControl");
+            _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
+            _mainContent = this.FindControl<Grid>("MainContent");
+        }
+
+        /// <summary>
+        /// Wire up ViewModel events to view behaviors
+        /// </summary>
+        private void WireViewModelEvents()
+        {
+            if (ViewModel == null) return;
+
+            // Modal requests
+            ViewModel.ModalRequested += OnModalRequested;
+            ViewModel.HideModalRequested += (s, e) => HideModalContent();
+
+            // Animation state changes
+            ViewModel.OnIsAnimatingChanged += (s, isAnimating) =>
+            {
+                if (_background is BalatroShaderBackground shader)
+                {
+                    shader.IsAnimating = isAnimating;
+                }
+                else if (_background is BalatroStyleBackground bg)
+                {
+                    bg.IsAnimating = isAnimating;
+                }
+            };
+
+            // VibeOut mode changes
+            ViewModel.OnVibeOutModeChanged += (s, isVibeOut) =>
+            {
+                if (isVibeOut)
+                {
+                    EnterVibeOutModeView();
+                }
+                else
+                {
+                    ExitVibeOutModeView();
+                }
+            };
+
+            // Author edit activation (focus request)
+            ViewModel.OnAuthorEditActivated += (s, e) =>
+            {
+                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
+                if (authorEdit != null)
+                {
+                    authorEdit.Focus();
+                    authorEdit.SelectAll();
+                }
+            };
+
+            // Settings popup state change
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ViewModel.IsSettingsPopupOpen))
+                {
+                    if (ViewModel.IsSettingsPopupOpen)
+                    {
+                        OnSettingsPopupOpened(null, EventArgs.Empty);
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Handles modal requests from ViewModel
+        /// </summary>
+        private void OnModalRequested(object? sender, ModalRequestedEventArgs e)
+        {
+            switch (e.ModalType)
+            {
+                case ModalType.Search:
+                    this.ShowSearchModal();
+                    break;
+                case ModalType.Filters:
+                    this.ShowFiltersModal();
+                    break;
+                case ModalType.Analyze:
+                    ShowAnalyzeModal();
+                    break;
+                case ModalType.Tools:
+                    this.ShowToolsModal();
+                    break;
+                case ModalType.Custom:
+                    if (e.CustomContent != null && e.CustomTitle != null)
+                    {
+                        ShowModalContent(e.CustomContent, e.CustomTitle);
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Show analyze modal
+        /// </summary>
+        private void ShowAnalyzeModal()
+        {
+            var analyzeModal = new AnalyzeModal();
+            var modal = new StandardModal("ANALYZE");
+            modal.SetContent(analyzeModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "SEED ANALYZER");
+        }
+
+        /// <summary>
+        /// Initialize vibe audio on load
+        /// </summary>
         private void InitializeVibeAudio(object? sender, RoutedEventArgs e)
         {
-            // Unsubscribe after first run to prevent multiple subscriptions
             this.Loaded -= InitializeVibeAudio;
 
             try
             {
-                // Start subtle background music on main menu
                 var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                if (audioManager == null) return;
 
-                if (audioManager == null)
-                    return;
+                ViewModel?.InitializeAudio();
 
-                audioManager.TransitionTo(AudioState.MainMenu);
-
-                // Store handler references for cleanup
+                // Store handler reference for cleanup
                 _audioAnalysisHandler = (bass, mid, treble, peak) =>
                 {
                     if (_background is BalatroShaderBackground shader)
                     {
-                        // Use overall peak energy as vibe intensity (smooth, not beat-reactive)
                         shader.UpdateVibeIntensity(peak * 0.05f);
-
-                        // Pass melodic FFT values directly to shader
                         shader.UpdateMelodicFFT(mid, treble, peak);
-
-                        // Pass individual track intensities
                         shader.UpdateTrackIntensities(
                             audioManager.MelodyIntensity,
                             audioManager.ChordsIntensity,
@@ -93,7 +193,6 @@ namespace BalatroSeedOracle.Views
                     }
                 };
 
-                // Hook up audio analysis for vibe intensity and melodic FFT
                 audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
             }
             catch (Exception ex)
@@ -102,41 +201,24 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        private void InitializeComponent()
+        /// <summary>
+        /// Loaded event handler
+        /// </summary>
+        private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            AvaloniaXamlLoader.Load(this);
+            if (ViewModel == null) return;
 
-            _modalContainer = this.FindControl<Grid>("ModalContainer");
-            _background = this.FindControl<Control>("BackgroundControl");
-            _animationToggleButton = this.FindControl<Button>("AnimationToggleButton");
-            _musicToggleButton = this.FindControl<Button>("MusicToggleButton");
-            _searchDesktopIcon = this.FindControl<SearchDesktopIcon>("SearchDesktopIcon");
-            _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
-            _mainContent = this.FindControl<Grid>("MainContent");
-
-            if (_animationToggleButton != null)
+            // Load visualizer settings
+            if (_background is BalatroShaderBackground shader)
             {
-                // Find the TextBlock inside the button using logical tree traversal
-                _animationButtonText = LogicalExtensions
-                    .GetLogicalChildren(_animationToggleButton)
-                    .OfType<TextBlock>()
-                    .FirstOrDefault();
+                ViewModel.LoadAndApplyVisualizerSettings(shader);
             }
 
-            if (_musicToggleButton != null)
-            {
-                // Find the music icon TextBlock
-                _musicToggleIcon = LogicalExtensions
-                    .GetLogicalChildren(_musicToggleButton)
-                    .OfType<TextBlock>()
-                    .FirstOrDefault();
-            }
-
-            // Don't initialize service here - wait for OnLoaded
+            // Check for resumable search
+            ViewModel.CheckAndRestoreSearchIcon(ShowSearchDesktopIcon);
         }
 
-        private UserControl? _activeModalContent;
-        private TextBlock? _mainTitleText;
+        #region Modal Management (View-only logic)
 
         /// <summary>
         /// Updates the main title text
@@ -155,28 +237,22 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show a UserControl as a modal overlay in the main menu, styled as a Balatro card
+        /// Show a UserControl as a modal overlay
         /// </summary>
         public void ShowModalContent(UserControl content, string? title = null)
         {
-            if (_modalContainer == null)
-                return;
+            if (_modalContainer == null) return;
 
-            // Remove previous content
             _modalContainer.Children.Clear();
-
-            // Add the modal directly - it already has its own sizing grid
             _modalContainer.Children.Add(content);
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
 
-            // Update title if provided
             if (!string.IsNullOrEmpty(title))
             {
                 SetTitle(title);
             }
-            
-            // Transition audio to modal open state
+
             var audioManager = App.GetService<Services.VibeAudioManager>();
             audioManager?.TransitionTo(Services.AudioState.ModalOpen);
         }
@@ -186,744 +262,277 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void HideModalContent()
         {
-            if (_modalContainer == null)
-                return;
+            if (_modalContainer == null) return;
 
             _modalContainer.Children.Clear();
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
 
-            // Reset title to Welcome!
             SetTitle("Welcome!");
-            
-            // Transition audio back to main menu state
+
             var audioManager = App.GetService<Services.VibeAudioManager>();
             audioManager?.TransitionTo(Services.AudioState.MainMenu);
         }
 
+        #endregion
+
+        #region VibeOut Mode (View-only logic)
+
         /// <summary>
-        /// Plays a click sound effect for button presses
+        /// Enter VibeOut mode - view changes only
         /// </summary>
-        private void PlayButtonClickSound()
+        private void EnterVibeOutModeView()
         {
-            try
-            {
-                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-                audioManager?.PlayClickSound();
-            }
-            catch (Exception ex)
-            {
-                // Silently fail - don't let SFX errors crash the app
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to play button click sound: {ex.Message}");
-            }
-        }
+            if (_mainContent != null) _mainContent.IsVisible = false;
+            if (_modalContainer != null) _modalContainer.IsVisible = false;
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = true;
 
-        // Main menu button event handlers
-        private void OnSeedSearchClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            try
+            if (_background is BalatroShaderBackground shader)
             {
-                // Open the search modal
-                this.ShowSearchModal();
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
             }
-            catch (Exception ex)
+
+            var window = this.VisualRoot as Window;
+            if (window != null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to open search modal: {ex}"
-                );
-                // Show error in UI
-                var errorModal = new StandardModal("ERROR");
-                var errorText = new TextBlock
-                {
-                    Text =
-                        $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.",
-                    Margin = new Avalonia.Thickness(20),
-                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                };
-                errorModal.SetContent(errorText);
-                errorModal.BackClicked += (s, ev) => HideModalContent();
-                ShowModalContent(errorModal, "ERROR");
+                window.WindowState = WindowState.Maximized;
             }
-        }
 
-        private void OnEditorClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            // Open filters modal with blank/new filter
-            this.ShowFiltersModal();
-        }
-
-        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            // Show the analyze modal
-            var analyzeModal = new AnalyzeModal();
-            var modal = new StandardModal("ANALYZE");
-            modal.SetContent(analyzeModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal, "SEED ANALYZER");
-        }
-
-        private void OnToolClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            // Use the modal helper extension method
-            this.ShowToolsModal();
+            DebugLogger.Log("BalatroMainMenu", "🎵 Entered VibeOut mode");
         }
 
         /// <summary>
-        /// Proper cleanup when the view is disposed
+        /// Exit VibeOut mode - view changes only
         /// </summary>
-        public void Dispose()
+        private void ExitVibeOutModeView()
         {
-            try
-            {
-                CleanupEventHandlers();
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"⚠️  Error during disposal: {ex.Message}"
-                );
-            }
-        }
+            if (_mainContent != null) _mainContent.IsVisible = true;
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = false;
 
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            CleanupEventHandlers();
-            base.OnDetachedFromVisualTree(e);
-        }
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.Default;
+            }
 
-        private void CleanupEventHandlers()
-        {
-            try
-            {
-                // Unsubscribe from audio manager events
-                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-                if (audioManager != null)
-                {
-                    if (_audioAnalysisHandler != null)
-                    {
-                        audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
-                        _audioAnalysisHandler = null;
-                    }
-                }
-
-                DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Error cleaning up event handlers: {ex.Message}");
-            }
-        }
-
-        private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
-        {
-            try
-            {
-                // Open the Balatro website in the default browser
-                var url = "https://playbalatro.com/";
-                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error opening Balatro website: {ex.Message}"
-                );
-            }
+            DebugLogger.Log("BalatroMainMenu", "👋 Exited VibeOut mode");
         }
 
         /// <summary>
-        /// Opens settings modal when settings button clicked
+        /// Enter VibeOut mode (public API)
         /// </summary>
-        private void OnSettingsClick(object? sender, RoutedEventArgs e)
+        public void EnterVibeOutMode()
         {
-            PlayButtonClickSound();
-            var popup = this.FindControl<Popup>("SettingsPopup");
-            if (popup != null)
+            ViewModel?.EnterVibeOutMode();
+        }
+
+        /// <summary>
+        /// Exit VibeOut mode (public API)
+        /// </summary>
+        public void ExitVibeOutMode()
+        {
+            ViewModel?.ExitVibeOutMode();
+        }
+
+        #endregion
+
+        #region Settings Modal Wiring (View-only)
+
+        /// <summary>
+        /// Handle settings popup opened - wire up ViewModel events
+        /// </summary>
+        private void OnSettingsPopupOpened(object? sender, EventArgs e)
+        {
+            var modal = this.FindControl<SettingsModal>("SettingsModal");
+            if (modal?.ViewModel != null)
             {
-                popup.IsOpen = !popup.IsOpen;
+                var vm = modal.ViewModel;
 
-                // Wire up ViewModel events if opening
-                if (popup.IsOpen)
-                {
-                    var modal = this.FindControl<SettingsModal>("SettingsModal");
-                    if (modal?.ViewModel != null)
-                    {
-                        var vm = modal.ViewModel;
+                // Unwire old events
+                vm.CloseRequested -= OnSettingsClose;
+                vm.AdvancedSettingsRequested -= OnAdvancedSettingsRequested;
+                vm.OnVisualizerThemeChanged -= OnVisualizerThemeChanged;
 
-                        // Unwire old events to prevent duplicates
-                        vm.CloseRequested -= OnSettingsClose;
-                        vm.AdvancedSettingsRequested -= OnAdvancedSettingsRequested;
-                        vm.OnVisualizerThemeChanged -= OnVisualizerThemeChanged;
-
-                        // Wire ViewModel events
-                        vm.CloseRequested += OnSettingsClose;
-                        vm.AdvancedSettingsRequested += OnAdvancedSettingsRequested;
-                        vm.OnVisualizerThemeChanged += OnVisualizerThemeChanged;
-                    }
-                }
+                // Wire new events
+                vm.CloseRequested += OnSettingsClose;
+                vm.AdvancedSettingsRequested += OnAdvancedSettingsRequested;
+                vm.OnVisualizerThemeChanged += OnVisualizerThemeChanged;
             }
         }
 
         private void OnSettingsClose(object? sender, EventArgs e)
         {
-            PlayButtonClickSound();
             var popup = this.FindControl<Popup>("SettingsPopup");
             if (popup != null) popup.IsOpen = false;
         }
 
         private void OnAdvancedSettingsRequested(object? sender, EventArgs e)
         {
-            // The settings modal already closed itself, now open advanced modal
             this.ShowAudioVisualizerSettingsModal();
         }
 
         private void OnVisualizerThemeChanged(object? sender, int themeIndex)
         {
-            // Apply theme to background shader immediately for live preview
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetTheme(themeIndex);
+                ViewModel.ApplyVisualizerTheme(shader, themeIndex);
             }
-
-            // ViewModel already saved to UserProfile
         }
 
-        /// <summary>
-        /// Apply main color to the background shader
-        /// </summary>
+        #endregion
+
+        #region Shader Management (Delegated to ViewModel)
+
         internal void ApplyMainColor(int colorIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetMainColor(colorIndex);
+                ViewModel.ApplyMainColor(shader, colorIndex);
             }
         }
 
-        /// <summary>
-        /// Apply accent color to the background shader
-        /// </summary>
         internal void ApplyAccentColor(int colorIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetAccentColor(colorIndex);
+                ViewModel.ApplyAccentColor(shader, colorIndex);
             }
         }
 
-        /// <summary>
-        /// Apply audio intensity to the background shader
-        /// </summary>
         internal void ApplyAudioIntensity(float intensity)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetAudioReactivityIntensity(intensity);
+                ViewModel.ApplyAudioIntensity(shader, intensity);
             }
         }
 
-        /// <summary>
-        /// Apply parallax strength to the background shader
-        /// </summary>
         internal void ApplyParallaxStrength(float strength)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetParallaxStrength(strength);
+                ViewModel.ApplyParallaxStrength(shader, strength);
             }
         }
 
-        /// <summary>
-        /// Apply time speed to the background shader
-        /// </summary>
         internal void ApplyTimeSpeed(float speed)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetBaseTimeSpeed(speed);
+                ViewModel.ApplyTimeSpeed(shader, speed);
             }
         }
 
-        /// <summary>
-        /// 🐛 SHADER DEBUG: Apply contrast to the background shader
-        /// </summary>
         internal void ApplyShaderContrast(float contrast)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetContrast(contrast);
+                ViewModel.ApplyShaderContrast(shader, contrast);
             }
         }
 
-        /// <summary>
-        /// 🐛 SHADER DEBUG: Apply spin amount to the background shader
-        /// </summary>
         internal void ApplyShaderSpinAmount(float spinAmount)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetSpinAmount(spinAmount);
+                ViewModel.ApplyShaderSpinAmount(shader, spinAmount);
             }
         }
 
-        /// <summary>
-        /// 🐛 SHADER DEBUG: Apply zoom punch to the background shader
-        /// </summary>
         internal void ApplyShaderZoomPunch(float zoom)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetZoomPunch(zoom);
+                ViewModel.ApplyShaderZoomPunch(shader, zoom);
             }
         }
 
-        /// <summary>
-        /// 🐛 SHADER DEBUG: Apply melody saturation to the background shader
-        /// </summary>
         internal void ApplyShaderMelodySaturation(float saturation)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetMelodySaturation(saturation);
+                ViewModel.ApplyShaderMelodySaturation(shader, saturation);
             }
         }
 
-        /// <summary>
-        /// Apply shadow flicker audio source to the background shader
-        /// </summary>
         internal void ApplyShadowFlickerSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetShadowFlickerSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplyShadowFlickerSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Apply spin audio source to the background shader
-        /// </summary>
         internal void ApplySpinSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetSpinSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplySpinSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Apply twirl audio source to the background shader
-        /// </summary>
         internal void ApplyTwirlSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetTwirlSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplyTwirlSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Apply zoom thump audio source to the background shader
-        /// </summary>
         internal void ApplyZoomThumpSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetZoomThumpSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplyZoomThumpSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Apply color saturation audio source to the background shader
-        /// </summary>
         internal void ApplyColorSaturationSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetColorSaturationSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplyColorSaturationSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Apply beat pulse audio source to the background shader
-        /// </summary>
         internal void ApplyBeatPulseSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader)
+            if (_background is BalatroShaderBackground shader && ViewModel != null)
             {
-                shader.SetBeatPulseSource((Controls.AudioSource)sourceIndex);
+                ViewModel.ApplyBeatPulseSource(shader, sourceIndex);
             }
         }
 
-        /// <summary>
-        /// Loads all visualizer settings from UserProfile and applies them to the background shader
-        /// </summary>
-        private void LoadAndApplyVisualizerSettings()
-        {
-            if (_userProfileService == null || _background is not BalatroShaderBackground shader)
-                return;
+        #endregion
 
-            var profile = _userProfileService.GetProfile();
-            var settings = profile.VibeOutSettings;
-
-            DebugLogger.Log("BalatroMainMenu", "Loading visualizer settings on startup...");
-
-            // Apply theme
-            shader.SetTheme(settings.ThemeIndex);
-
-            // Apply intensity settings
-            shader.UpdateVibeIntensity(settings.AudioIntensity);
-            shader.SetBaseTimeSpeed(settings.TimeSpeed);
-            shader.SetParallaxStrength(settings.ParallaxStrength);
-
-            // Apply custom colors if CUSTOMIZE theme is selected (index 8)
-            if (settings.ThemeIndex == 8)
-            {
-                shader.SetMainColor(settings.MainColor);
-                shader.SetAccentColor(settings.AccentColor);
-            }
-
-            // Apply shader effect audio sources
-            shader.SetShadowFlickerSource((Controls.AudioSource)settings.ShadowFlickerSource);
-            shader.SetSpinSource((Controls.AudioSource)settings.SpinSource);
-            shader.SetTwirlSource((Controls.AudioSource)settings.TwirlSource);
-            shader.SetZoomThumpSource((Controls.AudioSource)settings.ZoomThumpSource);
-            shader.SetColorSaturationSource((Controls.AudioSource)settings.ColorSaturationSource);
-            shader.SetBeatPulseSource((Controls.AudioSource)settings.BeatPulseSource);
-
-            DebugLogger.Log("BalatroMainMenu", $"Visualizer settings loaded - Theme: {settings.ThemeIndex}, Intensity: {settings.AudioIntensity}");
-        }
+        #region Desktop Icon Management
 
         /// <summary>
-        /// Toggles the background animation on/off when the animation button is clicked
-        /// </summary>
-        private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            // Toggle animation state
-            _isAnimating = !_isAnimating;
-
-            if (_background is BalatroShaderBackground bg)
-            {
-                bg.IsAnimating = _isAnimating;
-            }
-            else if (_background is BalatroStyleBackground bg2)
-            {
-                bg2.IsAnimating = _isAnimating;
-            }
-
-            // Update button icon based on animation state
-            if (_animationButtonText != null)
-            {
-                _animationButtonText.Text = _isAnimating ? "⏸" : "▶";
-            }
-        }
-
-        /// <summary>
-        /// Opens volume slider popup
-        /// </summary>
-        private void OnMusicToggleClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-
-            var popup = this.FindControl<Popup>("VolumePopup");
-            if (popup != null)
-            {
-                popup.IsOpen = !popup.IsOpen;
-            }
-        }
-
-        /// <summary>
-        /// Volume slider changed - updates both music and SFX
-        /// </summary>
-        private void OnVolumeSliderChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            var slider = sender as Slider;
-            if (slider == null) return;
-
-            float volume = (float)(slider.Value / 100.0);
-
-            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-            if (audioManager != null)
-            {
-                audioManager.SetMasterVolume(volume);
-                audioManager.SetSfxVolume(volume);
-            }
-
-            // Update percentage display
-            var percentText = this.FindControl<TextBlock>("VolumePercentText");
-            if (percentText != null)
-            {
-                percentText.Text = $"{(int)slider.Value}%";
-            }
-
-            // Update music button icon
-            if (_musicToggleIcon != null)
-            {
-                _musicToggleIcon.Text = slider.Value > 0 ? "🔊" : "🔇";
-            }
-
-            // Update mute button text
-            var muteButton = this.FindControl<Button>("MuteButton");
-            if (muteButton != null)
-            {
-                muteButton.Content = slider.Value > 0 ? "MUTE" : "UNMUTE";
-            }
-
-            _isMusicPlaying = slider.Value > 0;
-        }
-
-        /// <summary>
-        /// Mute button clicked - toggles between mute and previous volume
-        /// </summary>
-        private void OnMuteButtonClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-
-            var slider = this.FindControl<Slider>("VolumeSlider");
-            if (slider == null) return;
-
-            if (slider.Value > 0)
-            {
-                // Store current volume and mute
-                slider.Tag = slider.Value;
-                slider.Value = 0;
-            }
-            else
-            {
-                // Restore previous volume or default to 70%
-                slider.Value = slider.Tag is double storedValue ? storedValue : 70;
-            }
-        }
-
-        /// <summary>
-        /// Switches to edit mode for author name
-        /// </summary>
-        private void OnAuthorClick(object? sender, RoutedEventArgs e)
-        {
-            PlayButtonClickSound();
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-            if (authorDisplay != null && authorEdit != null)
-            {
-                // Switch to edit mode
-                authorDisplay.IsVisible = false;
-                authorEdit.IsVisible = true;
-
-                // Focus and select all text
-                authorEdit.Focus();
-                authorEdit.SelectAll();
-            }
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Save author name when edit loses focus
-        /// </summary>
-        private void OnAuthorEditLostFocus(object? sender, RoutedEventArgs e)
-        {
-            SaveAuthorName();
-        }
-
-        /// <summary>
-        /// Handle Enter/Tab keys in author edit
-        /// </summary>
-        private void OnAuthorEditKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter || e.Key == Key.Tab)
-            {
-                SaveAuthorName();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                // Cancel edit
-                var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-                if (authorDisplay != null && authorEdit != null && _userProfileService != null)
-                {
-                    // Restore original value
-                    authorEdit.Text = _userProfileService.GetAuthorName();
-                    authorDisplay.IsVisible = true;
-                    authorEdit.IsVisible = false;
-                }
-                e.Handled = true;
-            }
-        }
-
-        /// <summary>
-        /// Save the author name and switch back to display mode
-        /// </summary>
-        private void SaveAuthorName()
-        {
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-            if (authorDisplay != null && authorEdit != null && _userProfileService != null)
-            {
-                var newName = authorEdit.Text?.Trim();
-                if (!string.IsNullOrEmpty(newName))
-                {
-                    _userProfileService.SetAuthorName(newName);
-                    authorDisplay.Text = newName;
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Author name updated to: {newName}"
-                    );
-                }
-
-                // Switch back to display mode
-                authorDisplay.IsVisible = true;
-                authorEdit.IsVisible = false;
-            }
-        }
-
-        private void OnLoaded(object? sender, RoutedEventArgs e)
-        {
-            // Initialize user profile service when control is loaded
-            if (_userProfileService == null)
-            {
-                _userProfileService = ServiceHelper.GetService<UserProfileService>();
-                if (_userProfileService == null)
-                {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "UserProfileService is null after initialization attempt"
-                    );
-                    return;
-                }
-            }
-
-            // Load saved visualizer settings and apply to background shader
-            LoadAndApplyVisualizerSettings();
-
-            // Load and display current author name
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-            if (authorDisplay != null && authorEdit != null)
-            {
-                var authorName = _userProfileService.GetAuthorName();
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Setting author display to: '{authorName}'"
-                );
-                authorDisplay.Text = authorName;
-                authorEdit.Text = authorName;
-            }
-            else
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    "Could not find AuthorDisplay or AuthorEdit controls"
-                );
-            }
-
-            // NOTE: Visualizer theme already loaded in LoadVisualizerSettings() above
-            // (profile.VibeOutSettings.ThemeIndex is the source of truth, not the obsolete profile.BackgroundTheme)
-
-            // Check for resumable search and restore desktop icon if needed
-            CheckAndRestoreSearchIcon();
-        }
-
-        /// <summary>
-        /// Check for resumable search state and restore desktop icon if needed
-        /// </summary>
-        private void CheckAndRestoreSearchIcon()
-        {
-            try
-            {
-                if (_userProfileService?.GetSearchState() is { } resumeState)
-                {
-                    // Check if the search is recent (within last 24 hours)
-                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
-                    if (timeSinceSearch.TotalHours > 24)
-                    {
-                        // Too old, clear it
-                        _userProfileService.ClearSearchState();
-                        return;
-                    }
-
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
-                    );
-
-                    // DON'T create a search instance here! Just show the icon
-                    // The search will be created when the user actually clicks the icon
-                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
-                    {
-                        // Create a placeholder search ID for the icon
-                        // The actual search will be created when the icon is clicked
-                        var placeholderSearchId = Guid.NewGuid().ToString();
-                        ShowSearchDesktopIcon(placeholderSearchId, resumeState.ConfigPath);
-                        
-                        BalatroSeedOracle.Helpers.DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Restored desktop icon for search (not started yet): {resumeState.ConfigPath}"
-                        );
-                    }
-                    else
-                    {
-                        BalatroSeedOracle.Helpers.DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}"
-                        );
-                        _userProfileService.ClearSearchState();
-                    }
-                    
-                }
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error checking for resumable search: {ex.Message}"
-                );
-            }
-        }
-
-        /// <summary>
-        /// Shows a search desktop icon on the desktop
-        /// </summary>
-        /// <summary>
-        /// Shows the search modal for an existing search instance (opened from desktop icon)
+        /// Shows the search modal for an existing search instance
         /// </summary>
         public void ShowSearchModalForInstance(string searchId, string? configPath = null)
         {
             try
             {
                 DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
-                
+
                 var searchContent = new SearchModal();
-                
-                // Connect to the existing search instance
                 searchContent.ConnectToExistingSearch(searchId);
-                
-                // If we have a config path, load it
+
                 if (!string.IsNullOrEmpty(configPath))
                 {
                     _ = searchContent.LoadFilterAsync(configPath);
                 }
-                
-                // Handle desktop icon creation when modal closes with active search
-                searchContent.CreateShortcutRequested += (sender, cfgPath) => 
+
+                searchContent.CreateShortcutRequested += (sender, cfgPath) =>
                 {
                     DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
-                    // Get the search ID from the modal
                     var modalSearchId = searchContent.GetCurrentSearchId();
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
                         ShowSearchDesktopIcon(modalSearchId, cfgPath);
                     }
                 };
-                
+
                 this.ShowModal("MOTELY SEARCH", searchContent);
             }
             catch (Exception ex)
@@ -931,102 +540,65 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.LogError("BalatroMainMenu", $"Failed to show search modal for instance: {ex}");
             }
         }
-        
+
         public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
-                "BalatroMainMenu",
-                $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
-            );
+            DebugLogger.Log("BalatroMainMenu", $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}");
 
-            // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
-            // Create a new SearchDesktopIcon instance
-            var searchIcon = new SearchDesktopIcon();
-
-            // Get filter name from config path
             string filterName = "Unknown Filter";
-            if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+            if (!string.IsNullOrEmpty(configPath) && System.IO.File.Exists(configPath))
             {
-                filterName = Path.GetFileNameWithoutExtension(configPath);
+                filterName = System.IO.Path.GetFileNameWithoutExtension(configPath);
             }
             else
             {
-                // Don't create desktop icons for unknown filters
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Skipping desktop icon creation - no valid config path"
-                );
+                DebugLogger.Log("BalatroMainMenu", $"Skipping desktop icon creation - no valid config path");
                 return;
             }
 
+            var searchIcon = new SearchDesktopIcon();
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
 
-            // Calculate position based on existing icons
-            var leftMargin = 20 + (_widgetCounter % 8) * 120; // 8 icons per row, 120px apart
-            var topMargin = 20 + (_widgetCounter / 8) * 140; // Stack rows, 140px apart
+            if (ViewModel == null) return;
+
+            var leftMargin = 20 + (ViewModel.WidgetCounter % 8) * 120;
+            var topMargin = 20 + (ViewModel.WidgetCounter / 8) * 140;
 
             searchIcon.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
             searchIcon.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
             searchIcon.Margin = new Thickness(leftMargin, topMargin, 0, 0);
             searchIcon.IsVisible = true;
 
-            // Add to the desktop canvas
             desktopCanvas.Children.Add(searchIcon);
-            _widgetCounter++;
+            ViewModel.WidgetCounter++;
 
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
-                "BalatroMainMenu",
-                $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})"
-            );
-
-            // DON'T auto-start searches! The user will start them manually
-            // The icon is just a placeholder for resuming later
+            DebugLogger.Log("BalatroMainMenu", $"Created SearchDesktopIcon #{ViewModel.WidgetCounter} at position ({leftMargin}, {topMargin})");
         }
 
-        /// <summary>
-        /// Updates the visibility of the search desktop icon based on minimized widget count
-        /// </summary>
-        private void UpdateSearchDesktopIconVisibility()
-        {
-            if (_searchDesktopIcon != null)
-            {
-                _searchDesktopIcon.IsVisible = _minimizedWidgetCount > 0;
-            }
-        }
-
-        /// <summary>
-        /// Removes a search desktop icon from the desktop
-        /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
-                "BalatroMainMenu",
-                $"RemoveSearchDesktopIcon called for searchId: {searchId}"
-            );
+            DebugLogger.Log("BalatroMainMenu", $"RemoveSearchDesktopIcon called for searchId: {searchId}");
 
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
-            // Find and remove the icon with matching searchId
             SearchDesktopIcon? iconToRemove = null;
             foreach (var child in desktopCanvas.Children)
             {
                 if (child is SearchDesktopIcon icon)
                 {
-                    // Check if this icon matches the searchId
-                    // We'll need to add a property to SearchDesktopIcon to get its searchId
-                    var searchIdProperty = icon.GetType().GetField("_searchId", 
+                    var searchIdProperty = icon.GetType().GetField("_searchId",
                         System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                     if (searchIdProperty != null)
                     {
@@ -1043,47 +615,69 @@ namespace BalatroSeedOracle.Views
             if (iconToRemove != null)
             {
                 desktopCanvas.Children.Remove(iconToRemove);
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Removed SearchDesktopIcon for searchId: {searchId}"
-                );
+                DebugLogger.Log("BalatroMainMenu", $"Removed SearchDesktopIcon for searchId: {searchId}");
             }
             else
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"No SearchDesktopIcon found for searchId: {searchId}"
-                );
+                DebugLogger.Log("BalatroMainMenu", $"No SearchDesktopIcon found for searchId: {searchId}");
             }
         }
 
-        /// <summary>
-        /// Stops all running searches - called during application shutdown
-        /// </summary>
+        #endregion
+
+        #region Cleanup
+
+        public void Dispose()
+        {
+            try
+            {
+                CleanupEventHandlers();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"⚠️  Error during disposal: {ex.Message}");
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            CleanupEventHandlers();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void CleanupEventHandlers()
+        {
+            try
+            {
+                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                if (audioManager != null && _audioAnalysisHandler != null)
+                {
+                    audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
+                    _audioAnalysisHandler = null;
+                }
+
+                DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error cleaning up event handlers: {ex.Message}");
+            }
+        }
+
         public Task StopAllSearchesAsync()
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
 
-            // Search widgets removed - using desktop icons now
-
-            // Check if there's a filters modal open with a search running
             if (_modalContainer != null && _modalContainer.Children.Count > 0)
             {
                 var modal = _modalContainer.Children[0] as StandardModal;
                 if (modal != null)
                 {
-                    // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
                     var filtersModal = modalContent?.Content as Modals.FiltersModalContent;
                     if (filtersModal != null)
                     {
-                        // FiltersModal may have active searches to stop
-                        DebugLogger.LogImportant(
-                            "BalatroMainMenu",
-                            "Checking FiltersModal for active searches..."
-                        );
-                        // Note: FiltersModal doesn't have a StopSearch method
-                        // but we keep this structure in case it's needed later
+                        DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
                     }
                 }
             }
@@ -1092,122 +686,22 @@ namespace BalatroSeedOracle.Views
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Enter VibeOut mode - fullscreen background with ESC overlay
-        /// </summary>
-        public void EnterVibeOutMode()
-        {
-            if (_isVibeOutMode) return;
+        #endregion
 
-            _isVibeOutMode = true;
-
-            // Hide main menu UI
-            if (_mainContent != null) _mainContent.IsVisible = false;
-            if (_modalContainer != null) _modalContainer.IsVisible = false;
-
-            // Show VibeOut overlay
-            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = true;
-
-            // Set background to VibeOut theme
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
-            }
-
-            // Optional: Request window maximize (if we have access to window)
-            var window = this.VisualRoot as Window;
-            if (window != null)
-            {
-                window.WindowState = WindowState.Maximized;
-            }
-
-            DebugLogger.Log("BalatroMainMenu", "🎵 Entered VibeOut mode");
-        }
-
-        /// <summary>
-        /// Exit VibeOut mode
-        /// </summary>
-        public void ExitVibeOutMode()
-        {
-            if (!_isVibeOutMode) return;
-
-            _isVibeOutMode = false;
-
-            // Show main menu UI
-            if (_mainContent != null) _mainContent.IsVisible = true;
-
-            // Hide VibeOut overlay
-            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = false;
-
-            // Restore default theme
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.Theme = BalatroShaderBackground.BackgroundTheme.Default;
-            }
-
-            DebugLogger.Log("BalatroMainMenu", "👋 Exited VibeOut mode");
-        }
-
-        private void OnExitVibeOut(object? sender, RoutedEventArgs e)
-        {
-            ExitVibeOutMode();
-        }
+        #region Keyboard Input
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
             // ESC to exit VibeOut mode
-            if (e.Key == Key.Escape && _isVibeOutMode)
+            if (e.Key == Key.Escape && ViewModel?.IsVibeOutMode == true)
             {
-                ExitVibeOutMode();
+                ViewModel.ExitVibeOutMode();
                 e.Handled = true;
             }
         }
 
-        /// <summary>
-        /// Load Vibe Out settings from user profile into the settings modal
-        /// </summary>
-        private void LoadVibeOutSettings(SettingsModal modal)
-        {
-            if (_userProfileService == null) return;
-
-            var profile = _userProfileService.GetProfile();
-            var settings = profile.VibeOutSettings;
-
-            // Find the combo boxes and sliders in the modal
-            var shadowFlickerComboBox = modal.FindControl<ComboBox>("ShadowFlickerComboBox");
-            var spinComboBox = modal.FindControl<ComboBox>("SpinComboBox");
-            var twirlComboBox = modal.FindControl<ComboBox>("TwirlComboBox");
-            var zoomThumpComboBox = modal.FindControl<ComboBox>("ZoomThumpComboBox");
-            var colorSaturationComboBox = modal.FindControl<ComboBox>("ColorSaturationComboBox");
-            var beatPulseComboBox = modal.FindControl<ComboBox>("BeatPulseComboBox");
-            var audioIntensitySlider = modal.FindControl<Slider>("AudioIntensitySlider");
-            var parallaxStrengthSlider = modal.FindControl<Slider>("ParallaxStrengthSlider");
-            var timeSpeedSlider = modal.FindControl<Slider>("TimeSpeedSlider");
-
-            // Set values from saved settings
-            if (shadowFlickerComboBox != null) shadowFlickerComboBox.SelectedIndex = settings.ShadowFlickerSource;
-            if (spinComboBox != null) spinComboBox.SelectedIndex = settings.SpinSource;
-            if (twirlComboBox != null) twirlComboBox.SelectedIndex = settings.TwirlSource;
-            if (zoomThumpComboBox != null) zoomThumpComboBox.SelectedIndex = settings.ZoomThumpSource;
-            if (colorSaturationComboBox != null) colorSaturationComboBox.SelectedIndex = settings.ColorSaturationSource;
-            if (beatPulseComboBox != null) beatPulseComboBox.SelectedIndex = settings.BeatPulseSource;
-            if (audioIntensitySlider != null) audioIntensitySlider.Value = settings.AudioIntensity;
-            if (parallaxStrengthSlider != null) parallaxStrengthSlider.Value = settings.ParallaxStrength;
-            if (timeSpeedSlider != null) timeSpeedSlider.Value = settings.TimeSpeed;
-        }
-
-        /// <summary>
-        /// Save a single Vibe Out setting to the user profile
-        /// </summary>
-        private void SaveVibeOutSetting(Action<VibeOutSettings> updateAction)
-        {
-            if (_userProfileService == null) return;
-
-            var profile = _userProfileService.GetProfile();
-            updateAction(profile.VibeOutSettings);
-            _userProfileService.SaveProfile(profile);
-        }
+        #endregion
     }
 }

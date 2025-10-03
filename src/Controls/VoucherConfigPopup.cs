@@ -17,8 +17,9 @@ namespace BalatroSeedOracle.Controls
     /// </summary>
     public partial class VoucherConfigPopup : ItemConfigPopupBase
     {
-        private bool[] _selectedAntes = new bool[8]
+        private bool[] _selectedAntes = new bool[9]
         {
+            true,
             true,
             true,
             true,
@@ -31,7 +32,7 @@ namespace BalatroSeedOracle.Controls
         private HashSet<string> _selectedSources = new() { "shop" };
 
         // UI Controls
-        private CheckBox[] _anteCheckBoxes = new CheckBox[8];
+        private CheckBox[] _anteCheckBoxes = new CheckBox[9];
         private CheckBox? _sourceShop;
 
         public VoucherConfigPopup()
@@ -100,9 +101,9 @@ namespace BalatroSeedOracle.Controls
                 Margin = new Thickness(-2),
             };
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 9; i++)
             {
-                var anteNum = i + 1;
+                var anteNum = i;
                 var checkbox = new CheckBox { IsChecked = true, Margin = new Thickness(2) };
 
                 var anteBorder = new Border
@@ -273,7 +274,7 @@ namespace BalatroSeedOracle.Controls
             if (config.Antes != null && config.Antes.Count > 0)
             {
                 // Clear all first
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i < 9; i++)
                 {
                     _selectedAntes[i] = false;
                     _anteCheckBoxes[i].IsChecked = false;
@@ -282,10 +283,10 @@ namespace BalatroSeedOracle.Controls
                 // Set selected antes
                 foreach (var ante in config.Antes)
                 {
-                    if (ante >= 1 && ante <= 8)
+                    if (ante >= 0 && ante <= 8)
                     {
-                        _selectedAntes[ante - 1] = true;
-                        _anteCheckBoxes[ante - 1].IsChecked = true;
+                        _selectedAntes[ante] = true;
+                        _anteCheckBoxes[ante].IsChecked = true;
                     }
                 }
             }
@@ -309,11 +310,11 @@ namespace BalatroSeedOracle.Controls
         private List<int>? GetSelectedAntes()
         {
             var antes = new List<int>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (_selectedAntes[i])
                 {
-                    antes.Add(i + 1);
+                    antes.Add(i);
                 }
             }
 

@@ -46,42 +46,39 @@
                        Classes="source-description"
                        HorizontalAlignment="Center"/>
             
-            <ComboBox Name="SourceComboBox" 
-                      SelectedIndex="0"
-                      HorizontalAlignment="Stretch"
-                      SelectionChanged="SourceComboBox_SelectionChanged">
-                <ComboBoxItem Content="Any Source" Tag=""/>
-                <ComboBoxItem Content="🏷️ Small Blind Tag" Tag="SmallBlindTag"/>
-                <ComboBoxItem Content="🏷️ Big Blind Tag" Tag="BigBlindTag"/>
-                <ComboBoxItem Content="📦 Standard Pack" Tag="StandardPack"/>
-                <ComboBoxItem Content="🃏 Buffoon Pack" Tag="BuffoonPack"/>
-                <ComboBoxItem Content="🛒 Shop" Tag="Shop"/>
-                <ComboBoxItem Content="⭐ Starting Items" Tag="StartingItems"/>
+            <ComboBox Name="SourceComboBox"
+                      ItemsSource="{Binding Sources}"
+                      SelectedItem="{Binding SelectedSource}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
             </ComboBox>
-            
+
             <!-- Source Description -->
-            <Border Background="#11000000" 
-                    CornerRadius="5" 
+            <Border Background="#11000000"
+                    CornerRadius="5"
                     Padding="10"
                     Name="DescriptionBorder">
-                <TextBlock Name="DescriptionTextBlock"
-                           Text="Any source - item can come from anywhere in the run"
+                <TextBlock Text="{Binding Description}"
                            Classes="source-description"
                            HorizontalAlignment="Center"/>
             </Border>
-            
+
             <!-- Visual Preview -->
-            <Border Background="#11001100" 
-                    CornerRadius="8" 
+            <Border Background="#11001100"
+                    CornerRadius="8"
                     Padding="10"
                     Name="PreviewBorder"
-                    IsVisible="False">
-                <StackPanel Orientation="Horizontal" 
+                    IsVisible="{Binding IsPreviewVisible}">
+                <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="10">
                     <TextBlock Text="🎯" FontSize="20"/>
-                    <TextBlock Name="PreviewTextBlock"
-                               Text="Preview of source selection"
+                    <TextBlock Text="{Binding PreviewText}"
+                               Foreground="{Binding PreviewColor}"
                                Classes="source-description"
                                VerticalAlignment="Center"/>
                 </StackPanel>

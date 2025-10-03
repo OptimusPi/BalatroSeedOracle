@@ -1,7 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Components.DayLatroWidget"
-             x:CompileBindings="False">
+             x:DataType="vm:DayLatroWidgetViewModel"
+             x:CompileBindings="True">
     
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
@@ -9,6 +11,17 @@
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="Button.widget-container">
+            <Setter Property="Background" Value="{StaticResource MainBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="Button.widget-container:pointerover">
+            <Setter Property="Background" Value="{StaticResource Background}"/>
         </Style>
         
         <Style Selector="Border.widget-header">
@@ -41,11 +54,14 @@
     
     <Grid>
         <!-- Minimized State - Calendar Icon -->
-        <Grid Name="MinimizedView" IsVisible="True" Margin="10,10,0,0">
-            <Border Classes="widget-container" 
+        <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
+            <Button Classes="widget-container"
                     Width="128" Height="64"
                     Cursor="Hand"
-                    PointerPressed="OnMinimizedClick">
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    Command="{Binding ExpandCommand}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -59,14 +75,14 @@
                                Margin="0,5,0,0"/>
                     <TextBlock Grid.Row="1"
                                Name="MinimizedSeedText"
-                               Text="Loading..." 
+                               Text="{Binding TodaySeed}"
                                FontSize="18"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,0,0,5"/>
                 </Grid>
-            </Border>
+            </Button>
             
             <!-- Notification badge overlay using Canvas -->
             <Canvas ZIndex="100">
@@ -74,17 +90,17 @@
                         Classes="notification-badge small"
                         Canvas.Right="-5"
                         Canvas.Top="-5"
-                        IsVisible="False">
+                        IsVisible="{Binding ShowNewDayBadge}">
                     <TextBlock Text="!" />
                 </Border>
             </Canvas>
         </Grid>
         
         <!-- Expanded State -->
-        <Border Name="ExpandedView" 
+        <Border Name="ExpandedView"
                 Classes="widget-container"
                 Width="350" Height="450"
-                IsVisible="False">
+                IsVisible="{Binding !IsMinimized}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -98,7 +114,7 @@
                                    VerticalAlignment="Center" 
                                    Margin="10,0,0,0"
                                    />
-                        <Button Content="_" 
+                        <Button Content="_"
                                 Width="24" Height="20"
                                 FontSize="14"
                                 Background="Transparent"
@@ -106,7 +122,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Margin="0,0,5,0"
-                                Click="OnMinimizeClick"/>
+                                Command="{Binding MinimizeCommand}"/>
                     </Grid>
                 </Border>
                 
@@ -116,17 +132,15 @@
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="15">
                         <!-- Date and Seed -->
-                        <TextBlock Name="DateText" 
-                                   Text="Daylatro"
+                        <TextBlock Name="DateText"
+                                   Text="{Binding DateText}"
                                    FontSize="18"
-                                   
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,5"/>
-                        
+
                         <TextBlock Name="SeedText"
-                                   Text="LOADING..."
+                                   Text="{Binding TodaySeed}"
                                    FontSize="24"
-                                   
                                    Foreground="{StaticResource ToggleRed}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,15"/>
@@ -148,28 +162,49 @@
                             <TextBox Grid.Column="0"
                                      Name="InitialsInput"
                                      Classes="score-input"
+                                     Text="{Binding InitialsInput}"
                                      Watermark="ABC"
                                      MaxLength="3"
                                      Margin="0,0,5,0"/>
-                            
+
                             <TextBox Grid.Column="1"
                                      Name="AnteInput"
                                      Classes="score-input"
+                                     Text="{Binding AnteInput}"
                                      Watermark="Ante"
                                      Margin="0,0,5,0"/>
-                            
+
                             <TextBox Grid.Column="2"
                                      Name="ScoreInput"
                                      Classes="score-input"
+                                     Text="{Binding ScoreInput}"
                                      Watermark="Best hand..."/>
                         </Grid>
                         
                         <Button Name="SubmitButton"
                                 Content="Submit to Daylatro"
                                 Classes="submit-button"
-                                Click="OnSubmitScore"
+                                Command="{Binding SubmitScoreCommand}"
                                 HorizontalAlignment="Stretch"
-                                Margin="0,0,0,15"/>
+                                Margin="0,0,0,5"/>
+
+                        <!-- Submission Message - Success -->
+                        <TextBlock Text="{Binding SubmissionMessage}"
+                                   FontSize="12"
+                                   Foreground="#51cf66"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding !SubmissionMessageIsError}"/>
+
+                        <!-- Submission Message - Error -->
+                        <TextBlock Text="{Binding SubmissionMessage}"
+                                   FontSize="12"
+                                   Foreground="#ff6b6b"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding SubmissionMessageIsError}"/>
                         
                         <!-- High Scores Table -->
                         <Grid Margin="0,0,0,10">
@@ -191,7 +226,7 @@
                                     Height="24"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Click="OnRefreshClick"
+                                    Command="{Binding RefreshScoresCommand}"
                                     ToolTip.Tip="Refresh scores"/>
                         </Grid>
                         
@@ -200,9 +235,10 @@
                                 Padding="10"
                                 MaxHeight="200">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <ItemsControl Name="HighScoresControl">
+                                <ItemsControl Name="HighScoresControl"
+                                              ItemsSource="{Binding HighScores}">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate DataType="vm:HighScoreDisplayItem">
                                             <Grid Margin="0,2">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="30"/>
@@ -239,13 +275,13 @@
                         <Button Content="Copy Seed"
                                 HorizontalAlignment="Center"
                                 Margin="0,15,0,0"
-                                Click="OnCopyChallengeClick"/>
+                                Command="{Binding CopySeedCommand}"/>
 
-            <!-- Analyze Seed Button -->
-            <Button Content="Analyze This Seed"
-                HorizontalAlignment="Center"
-                Margin="0,10,0,0"
-                Click="OnAnalyzeSeedClick"/>
+                        <!-- Analyze Seed Button -->
+                        <Button Content="Analyze This Seed"
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,0"
+                                Command="{Binding AnalyzeSeedCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
