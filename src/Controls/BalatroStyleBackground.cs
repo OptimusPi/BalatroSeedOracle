@@ -165,11 +165,7 @@ namespace BalatroSeedOracle.Controls
             if (_currentTheme == BackgroundTheme.VibeOut)
             {
                 // Vibe intensity affects spin and contrast
-                SpinAmount = Math.Clamp(0.3f + _vibeIntensity * 0.7f, 0f, 1f);
                 Contrast = Math.Clamp(1f + _vibeIntensity * 1.5f, 0.5f, 3f);
-                
-                // Higher intensity = faster hue shifting
-                _targetHue = (_targetHue + _vibeIntensity * 10f) % 360f;
             }
         }
         
@@ -178,6 +174,7 @@ namespace BalatroSeedOracle.Controls
         /// </summary>
         public void OnBeatDetected(float intensity)
         {
+            Console.WriteLine();
             _beatPulse = Math.Clamp(intensity, 0f, 1f);
             InvalidateVisual();
         }
@@ -218,7 +215,7 @@ namespace BalatroSeedOracle.Controls
             }
             
             // Decay beat pulse
-            _beatPulse *= 0.95f;
+            _beatPulse *= 0.09f;
 
             // YOUR SKIACONTROL PATTERN - Self-invalidating render cycle
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);

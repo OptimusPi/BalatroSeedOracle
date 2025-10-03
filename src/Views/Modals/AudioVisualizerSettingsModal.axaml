@@ -1,0 +1,363 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.AudioVisualizerSettingsModal"
+             x:DataType="vm:AudioVisualizerSettingsModalViewModel">
+
+    <!-- Authentic Balatro Modal: Teal-grey background, light border, drop shadow -->
+    <Border Background="{StaticResource Grey}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="3"
+            CornerRadius="12"
+            Padding="20"
+            BoxShadow="0 4 0 #1a1a1a"
+            MinWidth="700"
+            MaxWidth="850">
+
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <!-- NO TABS - keeping it simple for now, all content in one page -->
+
+            <!-- WHITE CONTENT AREA (Balatro style) - Semi-transparent for visibility over shader background -->
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="550">
+                <Border Background="#F5FFFFFF"
+                        CornerRadius="8"
+                        Padding="20"
+                        BoxShadow="0 2 8 #44000000">
+
+                    <StackPanel Spacing="20">
+
+                        <!-- THEME SELECTION SECTION -->
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Select Theme"
+                                       Foreground="#2e3f42"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+
+                            <ComboBox SelectedIndex="{Binding ThemeIndex}"
+                                      HorizontalAlignment="Stretch"
+                                      FontSize="13">
+                                <ComboBoxItem Content="Default"/>
+                                <ComboBoxItem Content="Wave Rider"/>
+                                <ComboBoxItem Content="Inferno"/>
+                                <ComboBoxItem Content="Frozen"/>
+                                <ComboBoxItem Content="Rainbow Cascade"/>
+                                <ComboBoxItem Content="Electric Storm"/>
+                                <ComboBoxItem Content="Sakura Dream"/>
+                                <ComboBoxItem Content="Lunar Eclipse"/>
+                                <ComboBoxItem Content="CUSTOMIZE..."/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- CUSTOM COLORS (only shown when CUSTOMIZE selected) -->
+                        <StackPanel Spacing="15" IsVisible="{Binding IsCustomTheme}">
+                            <TextBlock Text="Custom Colors"
+                                       Foreground="#ff4c40"
+                                       FontWeight="Bold"
+                                       FontSize="13"/>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                                <StackPanel Grid.Column="0" Spacing="5">
+                                    <TextBlock Text="Main Color" Foreground="#4a4a4a" FontSize="12"/>
+                                    <ComboBox SelectedIndex="{Binding MainColor}" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="Red"/>
+                                        <ComboBoxItem Content="Orange"/>
+                                        <ComboBoxItem Content="Yellow"/>
+                                        <ComboBoxItem Content="Green"/>
+                                        <ComboBoxItem Content="Blue"/>
+                                        <ComboBoxItem Content="Purple"/>
+                                        <ComboBoxItem Content="Brown"/>
+                                        <ComboBoxItem Content="White"/>
+                                        <ComboBoxItem Content="None"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="5">
+                                    <TextBlock Text="Accent Color" Foreground="#4a4a4a" FontSize="12"/>
+                                    <ComboBox SelectedIndex="{Binding AccentColor}" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="Red"/>
+                                        <ComboBoxItem Content="Orange"/>
+                                        <ComboBoxItem Content="Yellow"/>
+                                        <ComboBoxItem Content="Green"/>
+                                        <ComboBoxItem Content="Blue"/>
+                                        <ComboBoxItem Content="Purple"/>
+                                        <ComboBoxItem Content="Brown"/>
+                                        <ComboBoxItem Content="White"/>
+                                        <ComboBoxItem Content="None"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- INTENSITY SETTINGS -->
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Intensity Settings"
+                                       Foreground="#2e3f42"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+
+                            <!-- Music Sensitivity Slider (Balatro style with value badge) -->
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <TextBlock Grid.Column="0" Text="Music Sensitivity" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="12" MinWidth="130"/>
+                                <Slider Grid.Column="1" Value="{Binding AudioIntensity}" Minimum="0" Maximum="2" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="8,4" MinWidth="45">
+                                    <TextBlock Text="{Binding AudioIntensityNumeric}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Parallax Slider -->
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <TextBlock Grid.Column="0" Text="Mouse Parallax" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="12" MinWidth="130"/>
+                                <Slider Grid.Column="1" Value="{Binding ParallaxStrength}" Minimum="0" Maximum="2" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="8,4" MinWidth="45">
+                                    <TextBlock Text="{Binding ParallaxNumeric}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Speed Slider -->
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <TextBlock Grid.Column="0" Text="Animation Speed" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="12" MinWidth="130"/>
+                                <Slider Grid.Column="1" Value="{Binding TimeSpeed}" Minimum="0" Maximum="3" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="8,4" MinWidth="45">
+                                    <TextBlock Text="{Binding TimeSpeedNumeric}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- AUDIO EVENT TRIGGERS -->
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="🔊 Audio Event Triggers"
+                                       Foreground="#2e3f42"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+                            <TextBlock Text="Play sound effect jingles when events happen (you'll add the SFX files later!)"
+                                       Foreground="#888"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Margin="0,-8,0,8"/>
+
+                            <!-- Simple checkboxes - just enable/disable, no dropdown -->
+                            <CheckBox Content="🎵 Seed Found (any seed)"
+                                      IsChecked="{Binding SeedFoundTrigger}"
+                                      Foreground="#4a4a4a"
+                                      FontSize="12"/>
+                            <CheckBox Content="🏆 New High Score Seed"
+                                      IsChecked="{Binding HighScoreSeedTrigger}"
+                                      Foreground="#4a4a4a"
+                                      FontSize="12"/>
+                            <CheckBox Content="✅ Search Complete"
+                                      IsChecked="{Binding SearchCompleteTrigger}"
+                                      Foreground="#4a4a4a"
+                                      FontSize="12"/>
+                        </StackPanel>
+
+                        <!-- PRESETS -->
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Presets"
+                                       Foreground="#2e3f42"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <ComboBox Grid.Column="0" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Grid.Column="1" Content="Load" Command="{Binding LoadPresetCommand}" Classes="btn-blue" Padding="12,6" FontSize="12"/>
+                                <Button Grid.Column="2" Content="Save" Command="{Binding SavePresetCommand}" Classes="btn-red" Padding="12,6" FontSize="12"/>
+                            </Grid>
+
+                            <Button Content="Delete Preset" Command="{Binding DeletePresetCommand}" HorizontalAlignment="Left" Padding="10,5" FontSize="11"/>
+                        </StackPanel>
+
+                        <!-- SHADER EFFECT AUDIO MAPPING -->
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="🎵 Shader Effect Audio Mapping"
+                                       Foreground="#2e3f42"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+
+                            <TextBlock Text="Map audio sources to visual effects. Choose which part of the music controls each shader effect!"
+                                       Foreground="#666"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8"/>
+
+                            <!-- Shadow Flicker Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Shadow Flicker" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding ShadowFlickerSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding ShadowFlickerIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ShadowFlickerIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Spin Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Spin" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding SpinSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding SpinIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding SpinIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Twirl Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Twirl" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding TwirlSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding TwirlIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding TwirlIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Zoom Thump Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Zoom Thump" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding ZoomThumpSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding ZoomThumpIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ZoomThumpIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Color Saturation Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Color Saturation" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding ColorSaturationSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding ColorSaturationIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ColorSaturationIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Beat Pulse Effect -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Beat Pulse" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <ComboBox SelectedIndex="{Binding BeatPulseSource}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="None"/>
+                                    <ComboBoxItem Content="Drums (Beat detect)"/>
+                                    <ComboBoxItem Content="Bass"/>
+                                    <ComboBoxItem Content="Chords (Intensity)"/>
+                                    <ComboBoxItem Content="Melody (Intensity)"/>
+                                </ComboBox>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <TextBlock Grid.Column="0" Text="Intensity:" Foreground="#888" FontSize="10" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding BeatPulseIntensity}" Minimum="0" Maximum="100" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding BeatPulseIntensity, StringFormat='{}{0:F0}%'}" Foreground="#4a4a4a" FontSize="10" VerticalAlignment="Center" MinWidth="35"/>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 🐛 SHADER DEBUG CONTROLS (Advanced Users Only!) -->
+                        <Expander Header="🐛 Advanced Shader Debug" IsExpanded="False">
+                            <Border Background="#f9f9f9" CornerRadius="6" Padding="15" Margin="0,8,0,0">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="⚠️ WARNING: These are LOW-LEVEL shader parameters. Only adjust if you know what you're doing!"
+                                               Foreground="#ff4c40"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               FontWeight="Bold"/>
+
+                                    <!-- Contrast -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <TextBlock Grid.Column="0" Text="Contrast" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="120"/>
+                                        <Slider Grid.Column="1" Value="{Binding ShaderContrast}" Minimum="0.5" Maximum="5.0" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="#ff9800" CornerRadius="4" Padding="6,3" MinWidth="40">
+                                            <TextBlock Text="{Binding ShaderContrastText}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Spin Amount -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <TextBlock Grid.Column="0" Text="Spin Amount" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="120"/>
+                                        <Slider Grid.Column="1" Value="{Binding ShaderSpinAmount}" Minimum="0.0" Maximum="1.0" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="#ff9800" CornerRadius="4" Padding="6,3" MinWidth="40">
+                                            <TextBlock Text="{Binding ShaderSpinAmountText}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Zoom Punch -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <TextBlock Grid.Column="0" Text="Zoom Punch" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="120"/>
+                                        <Slider Grid.Column="1" Value="{Binding ShaderZoomPunch}" Minimum="0.0" Maximum="2.0" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="#ff9800" CornerRadius="4" Padding="6,3" MinWidth="40">
+                                            <TextBlock Text="{Binding ShaderZoomPunchText}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Melody Saturation -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <TextBlock Grid.Column="0" Text="Melody Saturation" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="120"/>
+                                        <Slider Grid.Column="1" Value="{Binding ShaderMelodySaturation}" Minimum="0.0" Maximum="1.0" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="#ff9800" CornerRadius="4" Padding="6,3" MinWidth="40">
+                                            <TextBlock Text="{Binding ShaderMelodySaturationText}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <TextBlock Text="💡 TIP: Start with all values at their defaults. Change ONE at a time to see the effect!"
+                                               Foreground="#888"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               FontStyle="Italic"
+                                               Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Expander>
+
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+
+            <!-- ORANGE BACK BUTTON at bottom (Balatro standard) -->
+            <Button Grid.Row="1"
+                    Content="Back"
+                    Command="{Binding CloseCommand}"
+                    Classes="btn-orange"
+                    HorizontalAlignment="Stretch"
+                    Padding="15,10"
+                    FontSize="14"
+                    Margin="0,15,0,0"/>
+        </Grid>
+    </Border>
+</UserControl>

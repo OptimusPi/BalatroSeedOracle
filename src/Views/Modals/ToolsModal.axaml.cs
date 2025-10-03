@@ -28,38 +28,6 @@ namespace BalatroSeedOracle.Views.Modals
         }
         
 
-        private void OnTestModal1Click(object? sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Find the main menu to show the test modal
-                var parent = this.Parent;
-                while (parent != null && parent is not Views.BalatroMainMenu)
-                {
-                    parent = (parent as Control)?.Parent;
-                }
-
-                if (parent is Views.BalatroMainMenu mainMenu)
-                {
-                    var testModal = new TestModal1();
-                    var modal = new StandardModal("TEST MODAL 1");
-                    modal.SetContent(testModal);
-                    modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
-                    mainMenu.ShowModalContent(modal, "TESTING ENVIRONMENT");
-                    
-                    DebugLogger.Log("ToolsModal", "Opened Test Modal 1 - safe testing environment");
-                }
-                else
-                {
-                    DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu to show test modal");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("ToolsModal", $"Error opening test modal: {ex.Message}");
-            }
-        }
-
         private async void OnImportFilesClick(object? sender, RoutedEventArgs e)
         {
             var topLevel = TopLevel.GetTopLevel(this);
@@ -204,6 +172,25 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Show credits modal using ModalHelper extension
                 mainMenu.ShowCreditsModal();
+            }
+            else
+            {
+                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
+            }
+        }
+
+        private void OnAudioVisualizerSettingsClick(object? sender, RoutedEventArgs e)
+        {
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+
+            if (mainMenu != null)
+            {
+                // Hide current modal
+                mainMenu.HideModalContent();
+
+                // Show audio visualizer settings modal
+                mainMenu.ShowAudioVisualizerSettingsModal();
             }
             else
             {

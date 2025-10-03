@@ -33,6 +33,9 @@ namespace BalatroSeedOracle.Services
         private readonly Dictionary<string, AudioTrack> _tracks = new();
         private AudioState _currentState = AudioState.VibeLevel1; // Start as different state to force transition
 
+        // Volume fade timer
+        private System.Timers.Timer? _volumeFadeTimer;
+
         // SFX support
         private float _sfxVolume = 1.0f;
         
@@ -54,28 +57,43 @@ namespace BalatroSeedOracle.Services
         public float AudioPeak { get; private set; } = 0f;      // Overall volume (melodic)
         public float BeatDetection { get; private set; } = 0f;  // Beat pulse for visual effects
 
-        // Individual track intensities
-        public float MelodyIntensity => GetTrackIntensity("Melody1", "Melody2");
-        public float ChordsIntensity => GetTrackIntensity("Chords1", "Chords2");
-        public float BassTrackIntensity => GetTrackIntensity("Bass1", "Bass2");
+        // Individual track intensities - use FFT analysis weighted by track volume
+        public float DrumsIntensity => GetTrackIntensity("Drums1", "Drums2", AudioBass); // Drums = bass frequencies
+        public float BassIntensity => GetTrackIntensity("Bass1", "Bass2", AudioBass); // Bass = bass frequencies
+        public float ChordsIntensity => GetTrackIntensity("Chords1", "Chords2", AudioMid); // Chords = mid frequencies
+        public float MelodyIntensity => GetTrackIntensity("Melody1", "Melody2", AudioTreble); // Melody = treble frequencies
 
         // Beat detection state
         private float _lastBassLevel = 0f;
         private int _beatCooldown = 0;
         private const int BEAT_COOLDOWN_FRAMES = 20; // ~400ms between beats (prevent doubles)
-        
+
+        // Adaptive peak tracking for normalization (0.0 = quiet, 1.0 = max peak)
+        private float _bassPeak = 10f;    // Track recent peak for bass (start at reasonable value)
+        private float _midPeak = 10f;     // Track recent peak for mid
+        private float _treblePeak = 10f;  // Track recent peak for treble
+        private const float PEAK_DECAY = 0.9995f; // Very slow decay to adapt to quieter/louder sections
+        private const float PEAK_ATTACK = 0.1f; // Fast attack when new peak detected
+        private const float PEAK_FLOOR = 1.0f; // Minimum peak value to prevent division by zero
+
         // Events for UI integration
         public event Action<float, float, float, float>? AudioAnalysisUpdated; // bass, mid, treble, peak
         public event Action<float>? BeatDetected; // beat intensity
 
-        private float GetTrackIntensity(string track1, string track2)
+        private float GetTrackIntensity(string track1, string track2, float fftIntensity)
         {
-            float intensity = 0f;
-            if (_tracks.TryGetValue(track1, out var t1))
-                intensity += t1.CurrentVolume;
-            if (_tracks.TryGetValue(track2, out var t2))
-                intensity += t2.CurrentVolume;
-            return intensity;
+            // Get combined volume of tracks (0-2 range since both can be at 1.0)
+            float volume = 0f;
+            if (_tracks.TryGetValue(track1, out var t1) && t1.CurrentVolume > 0.01f)
+                volume += t1.CurrentVolume;
+            if (_tracks.TryGetValue(track2, out var t2) && t2.CurrentVolume > 0.01f)
+                volume += t2.CurrentVolume;
+
+            // If no tracks playing, return 0
+            if (volume < 0.01f) return 0f;
+
+            // Return FFT intensity weighted by track volume (normalize to 0-1)
+            return Math.Clamp(fftIntensity * (volume / 2f), 0f, 1f);
         }
         
         public VibeAudioManager()
@@ -88,6 +106,13 @@ namespace BalatroSeedOracle.Services
 
                 LoadAllTracks();
                 Console.WriteLine($"✅ LoadAllTracks() completed - Loaded {_tracks.Count} tracks");
+
+                // Start volume fade timer for smooth transitions (60fps)
+                _volumeFadeTimer = new System.Timers.Timer(1000.0 / 60.0); // ~16ms = 60fps
+                _volumeFadeTimer.Elapsed += (s, e) => UpdateAllVolumes();
+                _volumeFadeTimer.AutoReset = true;
+                _volumeFadeTimer.Start();
+                Console.WriteLine("✅ Volume fade timer started (60fps)");
 
                 TransitionTo(AudioState.MainMenu);
                 Console.WriteLine("✅ TransitionTo(MainMenu) completed");
@@ -203,58 +228,90 @@ namespace BalatroSeedOracle.Services
             }
             
             // Configure tracks for the new state
-            // NOTE: Bass, Chords, Melody are LAYERED (1+2 play together)
-            // ONLY Drums has variants (Drums1 OR Drums2, not both!)
+            // YOUR PRODUCTION VALUES with stereo field swaps + velocity shifts!
+            // Pan: -1 = full left, 0 = center, +1 = full right
+            // 15% left = -0.15, 5% right = +0.05, etc.
             switch (newState)
             {
                 case AudioState.MainMenu:
-                    // Chill mode - Drums1 variant with all layers
-                    SetTrackVolume("Drums1", 1.0f);
-                    SetTrackVolume("Bass1", 1.0f);
-                    SetTrackVolume("Bass2", 1.0f);
-                    SetTrackVolume("Chords1", 1.0f);
-                    SetTrackVolume("Chords2", 1.0f);
-                    SetTrackVolume("Melody1", 1.0f);
-                    SetTrackVolume("Melody2", 1.0f);
+                    // 🎵 NORMAL MUSIC (regular tempo) - Full energy, wide stereo, bright sound
+                    SetTrack("Chords1",  0.90f, -0.15f); // 90% velocity, 15% left
+                    SetTrack("Chords2",  1.00f, +0.05f); // 100% velocity, 5% right
+                    SetTrack("Melody1",  0.90f, -0.15f); // 90% velocity, 15% left
+                    SetTrack("Melody2",  1.00f, +0.05f); // 100% velocity, 5% right
+                    SetTrack("Bass1",    0.95f, -0.30f); // 95% velocity, 30% left
+                    SetTrack("Bass2",    1.00f, +0.10f); // 100% velocity, 10% right
+                    SetTrack("Drums1",   0.00f,  0.00f); // MUTED
+                    SetTrack("Drums2",   1.00f,  0.00f); // 100% velocity, centered
+
+                    // Remove lowpass filter - full brightness
+                    foreach (var track in _tracks.Values)
+                        track.SetLowpassCutoff(20000f); // No filtering (full spectrum)
                     break;
 
                 case AudioState.ModalOpen:
-                    // Slightly quieter
-                    SetTrackVolume("Drums1", 0.7f);
-                    SetTrackVolume("Bass1", 0.6f);
-                    SetTrackVolume("Bass2", 0.6f);
-                    SetTrackVolume("Chords1", 0.5f);
-                    SetTrackVolume("Chords2", 0.5f);
+                    // 🌙 CALMER MUSIC - Stereo field SWAPS! Drums1 fades in, Drums2 fades out
+                    // WARM & SOFT with lowpass filter (cuts highs for peaceful vibe)
+                    SetTrack("Chords1",  0.95f, +0.05f); // SWAP: 95% velocity, 5% RIGHT (was left)
+                    SetTrack("Chords2",  0.90f, -0.15f); // SWAP: 90% velocity, 15% LEFT (was right)
+                    SetTrack("Melody1",  0.95f, +0.05f); // SWAP: 95% velocity, 5% RIGHT
+                    SetTrack("Melody2",  0.90f, -0.15f); // SWAP: 90% velocity, 15% LEFT
+                    SetTrack("Bass1",    0.95f, -0.10f); // Slight shift: 10% left (was 30%)
+                    SetTrack("Bass2",    0.75f, +0.10f); // Quieter: 75% velocity, 10% right
+                    SetTrack("Drums1",   1.00f,  0.00f); // FADE IN: 100% velocity (calm pattern)
+                    SetTrack("Drums2",   0.00f,  0.00f); // FADE OUT: muted (intense pattern)
+
+                    // Apply warm lowpass filter - cuts highs, softer/warmer sound
+                    foreach (var track in _tracks.Values)
+                        track.SetLowpassCutoff(3000f); // Cut above 3kHz for warm, peaceful vibe
                     break;
 
                 case AudioState.VibeLevel1:
-                    // Active search - all layers with Drums1
-                    SetTrackVolume("Drums1", 0.8f);
-                    SetTrackVolume("Bass1", 0.7f);
-                    SetTrackVolume("Bass2", 0.7f);
-                    SetTrackVolume("Chords1", 0.6f);
-                    SetTrackVolume("Chords2", 0.6f);
+                    // Active search - similar to MainMenu, full brightness
+                    SetTrack("Chords1",  0.90f, -0.15f);
+                    SetTrack("Chords2",  1.00f, +0.05f);
+                    SetTrack("Melody1",  0.90f, -0.15f);
+                    SetTrack("Melody2",  1.00f, +0.05f);
+                    SetTrack("Bass1",    0.95f, -0.30f);
+                    SetTrack("Bass2",    1.00f, +0.10f);
+                    SetTrack("Drums1",   0.00f,  0.00f);
+                    SetTrack("Drums2",   0.80f,  0.00f); // Slightly quieter
+
+                    // No filter - full spectrum
+                    foreach (var track in _tracks.Values)
+                        track.SetLowpassCutoff(20000f);
                     break;
 
                 case AudioState.VibeLevel2:
-                    // THE DRUMS SWITCH! 🔥 (Drums1 → Drums2)
-                    SetTrackVolume("Drums1", 0f);    // Fade out calm drums
-                    SetTrackVolume("Drums2", 0.9f);  // SICK BEATS ACTIVATE!
-                    SetTrackVolume("Bass1", 0.8f);
-                    SetTrackVolume("Bass2", 0.8f);
-                    SetTrackVolume("Chords1", 0.7f);
-                    SetTrackVolume("Chords2", 0.7f);
+                    // Good seeds - boost intensity, full brightness
+                    SetTrack("Chords1",  0.95f, -0.15f);
+                    SetTrack("Chords2",  1.00f, +0.05f);
+                    SetTrack("Melody1",  0.95f, -0.15f);
+                    SetTrack("Melody2",  1.00f, +0.05f);
+                    SetTrack("Bass1",    1.00f, -0.30f);
+                    SetTrack("Bass2",    1.00f, +0.10f);
+                    SetTrack("Drums1",   0.00f,  0.00f);
+                    SetTrack("Drums2",   0.95f,  0.00f);
+
+                    // No filter - full spectrum
+                    foreach (var track in _tracks.Values)
+                        track.SetLowpassCutoff(20000f);
                     break;
 
                 case AudioState.VibeLevel3:
-                    // MAXIMUM OVERDRIVE! 🚀 All layers at full power
-                    SetTrackVolume("Drums2", 1.0f);  // FULL BEATS (variant 2)
-                    SetTrackVolume("Bass1", 0.9f);   // THICC BASS (layered)
-                    SetTrackVolume("Bass2", 0.9f);
-                    SetTrackVolume("Chords1", 0.8f); // RICH HARMONY (layered)
-                    SetTrackVolume("Chords2", 0.8f);
-                    SetTrackVolume("Melody1", 0.7f); // MELODY ENTERS (layered)
-                    SetTrackVolume("Melody2", 0.7f);
+                    // MAXIMUM VIBE - everything at full power, full brightness
+                    SetTrack("Chords1",  1.00f, -0.15f);
+                    SetTrack("Chords2",  1.00f, +0.05f);
+                    SetTrack("Melody1",  1.00f, -0.15f);
+                    SetTrack("Melody2",  1.00f, +0.05f);
+                    SetTrack("Bass1",    1.00f, -0.30f);
+                    SetTrack("Bass2",    1.00f, +0.10f);
+                    SetTrack("Drums1",   0.00f,  0.00f);
+                    SetTrack("Drums2",   1.00f,  0.00f);
+
+                    // No filter - full spectrum
+                    foreach (var track in _tracks.Values)
+                        track.SetLowpassCutoff(20000f);
                     break;
             }
             
@@ -262,16 +319,24 @@ namespace BalatroSeedOracle.Services
             EnsureActiveTracksInMixer();
         }
         
-        private void SetTrackVolume(string trackName, float targetVolume)
+        private void SetTrack(string trackName, float targetVolume, float targetPan)
         {
             if (_tracks.TryGetValue(trackName, out var track))
             {
-                Console.WriteLine($"SetTrackVolume: {trackName} = {targetVolume}");
-                track.SetImmediateVolume(targetVolume);  // ACTUALLY SET THE VOLUME NOW!
+                Console.WriteLine($"SetTrack: {trackName} vol={targetVolume:F2} pan={targetPan:F2} (will fade smoothly)");
+                track.SetTarget(targetVolume, targetPan);  // Set targets - timer will crossfade smoothly!
             }
             else
             {
                 Console.WriteLine($"⚠️ Track not found: {trackName}");
+            }
+        }
+
+        private void UpdateAllVolumes()
+        {
+            foreach (var track in _tracks.Values)
+            {
+                track.UpdateVolume(); // Smooth fade each track toward target
             }
         }
         
@@ -379,12 +444,28 @@ namespace BalatroSeedOracle.Services
             trebleLevel *= amplification;
             peakLevel *= amplification;
 
+            // Adaptive peak tracking with decay
+            _bassPeak = Math.Max(PEAK_FLOOR, _bassPeak * PEAK_DECAY); // Slow decay with floor
+            _midPeak = Math.Max(PEAK_FLOOR, _midPeak * PEAK_DECAY);
+            _treblePeak = Math.Max(PEAK_FLOOR, _treblePeak * PEAK_DECAY);
+
+            // Fast attack when new peak detected
+            if (bassLevel > _bassPeak) _bassPeak = _bassPeak * (1f - PEAK_ATTACK) + bassLevel * PEAK_ATTACK;
+            if (midLevel > _midPeak) _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
+            if (trebleLevel > _treblePeak) _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
+
+            // Normalize to 0.0-1.0 range using adaptive peaks (safe division with floor)
+            float normalizedBass = Math.Clamp(bassLevel / _bassPeak, 0f, 1f);
+            float normalizedMid = Math.Clamp(midLevel / _midPeak, 0f, 1f);
+            float normalizedTreble = Math.Clamp(trebleLevel / _treblePeak, 0f, 1f);
+            float normalizedPeak = Math.Max(Math.Max(normalizedBass, normalizedMid), normalizedTreble);
+
             // Smooth the values (exponential moving average)
             const float smoothing = 0.8f;
-            AudioBass = AudioBass * smoothing + bassLevel * (1f - smoothing);
-            AudioMid = AudioMid * smoothing + midLevel * (1f - smoothing);
-            AudioTreble = AudioTreble * smoothing + trebleLevel * (1f - smoothing);
-            AudioPeak = AudioPeak * smoothing + peakLevel * (1f - smoothing);
+            AudioBass = AudioBass * smoothing + normalizedBass * (1f - smoothing);
+            AudioMid = AudioMid * smoothing + normalizedMid * (1f - smoothing);
+            AudioTreble = AudioTreble * smoothing + normalizedTreble * (1f - smoothing);
+            AudioPeak = AudioPeak * smoothing + normalizedPeak * (1f - smoothing);
             
             // Beat detection: Look for sudden bass increase
             _beatCooldown = Math.Max(0, _beatCooldown - 1);
@@ -458,11 +539,24 @@ namespace BalatroSeedOracle.Services
             trebleLevel *= amplification;
             peakLevel *= amplification;
 
+            // Adaptive peak tracking with decay (same as drum FFT)
+            _midPeak = Math.Max(PEAK_FLOOR, _midPeak * PEAK_DECAY); // Slow decay with floor
+            _treblePeak = Math.Max(PEAK_FLOOR, _treblePeak * PEAK_DECAY);
+
+            // Fast attack when new peak detected
+            if (midLevel > _midPeak) _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
+            if (trebleLevel > _treblePeak) _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
+
+            // Normalize to 0.0-1.0 range using adaptive peaks (safe division with floor)
+            float normalizedMid = Math.Clamp(midLevel / _midPeak, 0f, 1f);
+            float normalizedTreble = Math.Clamp(trebleLevel / _treblePeak, 0f, 1f);
+            float normalizedPeak = Math.Max(normalizedMid, normalizedTreble);
+
             // Smooth the values
             const float smoothing = 0.8f;
-            AudioMid = AudioMid * smoothing + midLevel * (1f - smoothing);
-            AudioTreble = AudioTreble * smoothing + trebleLevel * (1f - smoothing);
-            AudioPeak = AudioPeak * smoothing + peakLevel * (1f - smoothing);
+            AudioMid = AudioMid * smoothing + normalizedMid * (1f - smoothing);
+            AudioTreble = AudioTreble * smoothing + normalizedTreble * (1f - smoothing);
+            AudioPeak = AudioPeak * smoothing + normalizedPeak * (1f - smoothing);
 
             // Fire events for UI/shader integration on UI thread
             var bass = AudioBass;
@@ -565,9 +659,12 @@ namespace BalatroSeedOracle.Services
         
         public void Dispose()
         {
+            _volumeFadeTimer?.Stop();
+            _volumeFadeTimer?.Dispose();
+
             _waveOut?.Stop();
             _waveOut?.Dispose();
-            
+
             foreach (var track in _tracks.Values)
             {
                 track.Dispose();
@@ -576,18 +673,22 @@ namespace BalatroSeedOracle.Services
         }
     }
     
-    // Helper class for individual audio tracks with smooth volume control
+    // Helper class for individual audio tracks with smooth volume + pan control
     internal class AudioTrack : IDisposable
     {
         public string Name { get; }
         public ISampleProvider SampleProvider { get; }
         public float CurrentVolume { get; private set; }
         public float TargetVolume { get; private set; }
+        public float CurrentPan { get; private set; } // -1 = full left, 0 = center, +1 = full right
+        public float TargetPan { get; private set; }
         public bool IsInMixer { get; set; }
-        
+
         private readonly WaveStream _reader;
         private readonly LoopStream _loopStream;
         private readonly VolumeSampleProvider _volumeProvider;
+        private readonly LowpassFilterSampleProvider _lowpassFilter;
+        private readonly StereoBalanceSampleProvider _panProvider;
         
         public AudioTrack(string filePath, string name)
         {
@@ -608,15 +709,34 @@ namespace BalatroSeedOracle.Services
             }
             
             _loopStream = new LoopStream(_reader);
-            
-            // All files are 48kHz stereo - no resampling needed!
-            _volumeProvider = new VolumeSampleProvider(_loopStream.ToSampleProvider()) { Volume = 0f };
-            SampleProvider = _volumeProvider;
+
+            // All files are 48kHz stereo - chain volume → lowpass → stereo balance
+            var baseSample = _loopStream.ToSampleProvider();
+            _volumeProvider = new VolumeSampleProvider(baseSample) { Volume = 0f };
+            _lowpassFilter = new LowpassFilterSampleProvider(_volumeProvider); // Warm filter
+            _panProvider = new StereoBalanceSampleProvider(_lowpassFilter); // Custom stereo balance
+            SampleProvider = _panProvider;
         }
         
+        public void SetTarget(float volume, float pan)
+        {
+            TargetVolume = Math.Clamp(volume, 0f, 1f);
+            TargetPan = Math.Clamp(pan, -1f, 1f);
+        }
+
         public void SetTargetVolume(float volume)
         {
             TargetVolume = Math.Clamp(volume, 0f, 1f);
+        }
+
+        public void SetTargetPan(float pan)
+        {
+            TargetPan = Math.Clamp(pan, -1f, 1f);
+        }
+
+        public void SetLowpassCutoff(float cutoffHz)
+        {
+            _lowpassFilter.CutoffFrequency = cutoffHz;
         }
 
         public void SetImmediateVolume(float volume)
@@ -629,12 +749,32 @@ namespace BalatroSeedOracle.Services
 
         public void UpdateVolume()
         {
-            // Smooth volume transitions
-            const float speed = 0.05f;
-            if (Math.Abs(CurrentVolume - TargetVolume) > 0.01f)
+            // Smooth volume + pan transitions (DoTween style crossfade)
+            // Speed = 0.1 means ~1 second fade, 0.2 means ~0.5 second fade
+            const float speed = 0.15f; // Faster crossfade - feels snappy but smooth
+
+            // Update volume
+            if (Math.Abs(CurrentVolume - TargetVolume) > 0.001f)
             {
                 CurrentVolume += (TargetVolume - CurrentVolume) * speed;
                 _volumeProvider.Volume = CurrentVolume;
+            }
+            else
+            {
+                CurrentVolume = TargetVolume;
+                _volumeProvider.Volume = CurrentVolume;
+            }
+
+            // Update pan (stereo position)
+            if (Math.Abs(CurrentPan - TargetPan) > 0.001f)
+            {
+                CurrentPan += (TargetPan - CurrentPan) * speed;
+                _panProvider.Pan = CurrentPan;
+            }
+            else
+            {
+                CurrentPan = TargetPan;
+                _panProvider.Pan = CurrentPan;
             }
         }
         
@@ -678,6 +818,157 @@ namespace BalatroSeedOracle.Services
                     else
                         _manager.ProcessMelodicSample(left, right);
                 }
+            }
+
+            return samplesRead;
+        }
+    }
+
+    /// <summary>
+    /// Simple stereo lowpass filter for warm, soft sound
+    /// Uses biquad filter with adjustable cutoff frequency
+    /// </summary>
+    internal class LowpassFilterSampleProvider : ISampleProvider
+    {
+        private readonly ISampleProvider _source;
+        private float _cutoffFrequency = 20000f; // Default: no filtering
+        private float _targetCutoffFrequency = 20000f;
+
+        // Biquad filter coefficients
+        private float _a0, _a1, _a2, _b1, _b2;
+
+        // Filter state for left and right channels
+        private float _x1L, _x2L, _y1L, _y2L; // Left channel history
+        private float _x1R, _x2R, _y1R, _y2R; // Right channel history
+
+        public WaveFormat WaveFormat => _source.WaveFormat;
+
+        public LowpassFilterSampleProvider(ISampleProvider source)
+        {
+            if (source.WaveFormat.Channels != 2)
+                throw new ArgumentException("Source must be stereo");
+            _source = source;
+            UpdateCoefficients();
+        }
+
+        public float CutoffFrequency
+        {
+            get => _targetCutoffFrequency;
+            set
+            {
+                _targetCutoffFrequency = Math.Clamp(value, 200f, 20000f);
+            }
+        }
+
+        private void UpdateCoefficients()
+        {
+            // Smooth transition to target frequency
+            const float smoothing = 0.05f; // Slow smooth transition
+            _cutoffFrequency += (_targetCutoffFrequency - _cutoffFrequency) * smoothing;
+
+            // Biquad lowpass filter design
+            var sampleRate = WaveFormat.SampleRate;
+            var omega = 2.0f * MathF.PI * _cutoffFrequency / sampleRate;
+            var cosOmega = MathF.Cos(omega);
+            var sinOmega = MathF.Sin(omega);
+            var alpha = sinOmega / (2.0f * 0.707f); // Q = 0.707 (Butterworth)
+
+            var b0 = (1.0f - cosOmega) / 2.0f;
+            var b1 = 1.0f - cosOmega;
+            var b2 = (1.0f - cosOmega) / 2.0f;
+            var a0 = 1.0f + alpha;
+            var a1 = -2.0f * cosOmega;
+            var a2 = 1.0f - alpha;
+
+            // Normalize coefficients
+            _a0 = b0 / a0;
+            _a1 = b1 / a0;
+            _a2 = b2 / a0;
+            _b1 = a1 / a0;
+            _b2 = a2 / a0;
+        }
+
+        public int Read(float[] buffer, int offset, int count)
+        {
+            int samplesRead = _source.Read(buffer, offset, count);
+
+            // Update filter coefficients if cutoff changed
+            UpdateCoefficients();
+
+            // Apply lowpass filter to stereo audio
+            for (int i = offset; i < offset + samplesRead; i += 2)
+            {
+                // Left channel
+                float inputL = buffer[i];
+                float outputL = _a0 * inputL + _a1 * _x1L + _a2 * _x2L - _b1 * _y1L - _b2 * _y2L;
+
+                _x2L = _x1L;
+                _x1L = inputL;
+                _y2L = _y1L;
+                _y1L = outputL;
+
+                buffer[i] = outputL;
+
+                // Right channel
+                float inputR = buffer[i + 1];
+                float outputR = _a0 * inputR + _a1 * _x1R + _a2 * _x2R - _b1 * _y1R - _b2 * _y2R;
+
+                _x2R = _x1R;
+                _x1R = inputR;
+                _y2R = _y1R;
+                _y1R = outputR;
+
+                buffer[i + 1] = outputR;
+            }
+
+            return samplesRead;
+        }
+    }
+
+    /// <summary>
+    /// Custom stereo balance provider for STEREO audio (not mono panning)
+    /// Adjusts the balance between left and right channels
+    /// -1 = 100% left, 0 = center (both equal), +1 = 100% right
+    /// </summary>
+    internal class StereoBalanceSampleProvider : ISampleProvider
+    {
+        private readonly ISampleProvider _source;
+        public float Pan { get; set; } = 0f; // -1 to +1
+
+        public WaveFormat WaveFormat => _source.WaveFormat;
+
+        public StereoBalanceSampleProvider(ISampleProvider source)
+        {
+            if (source.WaveFormat.Channels != 2)
+                throw new ArgumentException("Source must be stereo");
+            _source = source;
+        }
+
+        public int Read(float[] buffer, int offset, int count)
+        {
+            int samplesRead = _source.Read(buffer, offset, count);
+
+            // Apply stereo balance
+            for (int i = offset; i < offset + samplesRead; i += 2)
+            {
+                float left = buffer[i];
+                float right = buffer[i + 1];
+
+                if (Pan < 0) // Pan left: reduce right channel
+                {
+                    float leftGain = 1.0f;
+                    float rightGain = 1.0f + Pan; // Pan = -1 means rightGain = 0
+                    buffer[i] = left * leftGain;
+                    buffer[i + 1] = right * rightGain;
+                }
+                else if (Pan > 0) // Pan right: reduce left channel
+                {
+                    float leftGain = 1.0f - Pan; // Pan = +1 means leftGain = 0
+                    float rightGain = 1.0f;
+                    buffer[i] = left * leftGain;
+                    buffer[i + 1] = right * rightGain;
+                }
+                // else Pan == 0: no change (center)
             }
 
             return samplesRead;

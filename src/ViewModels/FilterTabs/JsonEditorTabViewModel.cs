@@ -66,6 +66,84 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Command Implementations
 
+        /// <summary>
+        /// Auto-generates JSON from Visual Builder without showing status messages (silent mode).
+        /// Called automatically when Visual Builder items change.
+        /// </summary>
+        public void AutoGenerateFromVisual()
+        {
+            try
+            {
+                if (_parentViewModel?.VisualBuilderTab == null)
+                    return;
+
+                var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
+                if (visualTab == null)
+                    return;
+
+                var config = new MotelyJsonConfig
+                {
+                    Name = "Generated Filter",
+                    Description = "Auto-generated from visual builder",
+                    Author = "pifreak",
+                    DateCreated = DateTime.UtcNow,
+                    Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
+                    Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
+                    Must = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                };
+
+                // Generate Must clauses from visual builder
+                foreach (var item in visualTab.SelectedMust)
+                {
+                    config.Must.Add(new MotelyJsonConfig.MotleyJsonFilterClause
+                    {
+                        Type = item.Type,
+                        Value = item.Name
+                    });
+                }
+
+                // Generate Should clauses from visual builder
+                foreach (var item in visualTab.SelectedShould)
+                {
+                    config.Should.Add(new MotelyJsonConfig.MotleyJsonFilterClause
+                    {
+                        Type = item.Type,
+                        Value = item.Name
+                    });
+                }
+
+                // Generate MustNot clauses from visual builder
+                foreach (var item in visualTab.SelectedMustNot)
+                {
+                    config.MustNot.Add(new MotelyJsonConfig.MotleyJsonFilterClause
+                    {
+                        Type = item.Type,
+                        Value = item.Name
+                    });
+                }
+
+                // Update JSON content silently
+                JsonContent = JsonSerializer.Serialize(config, new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                });
+
+                // Silent status update (no user-visible message)
+                var totalItems = config.Must.Count + config.Should.Count + config.MustNot.Count;
+                ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
+                ValidationStatusColor = Brushes.Gray;
+
+                DebugLogger.Log("JsonEditorTab", $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("JsonEditorTab", $"Error auto-generating JSON: {ex.Message}");
+            }
+        }
+
         private void GenerateFromVisual()
         {
             try
@@ -136,7 +214,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 ValidationStatus = $"✓ Generated from visual ({config.Must.Count + config.Should.Count + config.MustNot.Count} items)";
                 ValidationStatusColor = Brushes.Green;
-                
+
                 DebugLogger.Log("JsonEditorTab", $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not items");
             }
             catch (Exception ex)

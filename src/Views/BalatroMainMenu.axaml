@@ -84,8 +84,8 @@
                Placement="Top"
                PlacementTarget="{Binding #MusicToggleButton}"
                VerticalOffset="-10">
-            <Border Background="#202020"
-                    BorderBrush="#FFD700"
+            <Border Background="{StaticResource ContainerDarkPrecise}"
+                    BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="8"
                     Padding="15,20">
@@ -93,7 +93,7 @@
                     <TextBlock Text="🔊 VOLUME"
                                FontSize="14"
                                FontWeight="Bold"
-                               Foreground="#FFD700"
+                               Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,5"/>
 
@@ -288,7 +288,7 @@
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <!-- Settings Button -->
+                            <!-- Vibe Theme Button -->
                             <Button x:Name="SettingsButton"
                                     FontSize="24"
                                     Width="48"
@@ -299,8 +299,8 @@
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Click="OnSettingsClick"
-                                    ToolTip.Tip="Settings">
-                                <TextBlock Text="⚙"
+                                    ToolTip.Tip="Vibe Theme">
+                                <TextBlock Text="🎨"
                                            FontFamily="Segoe UI Symbol"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"

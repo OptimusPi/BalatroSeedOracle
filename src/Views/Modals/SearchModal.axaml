@@ -20,8 +20,8 @@
         
         <!-- Header with Maximize Button and Title -->
         <Border Grid.Row="0"
-                Background="#2a2a2a"
-                BorderBrush="#00FF88"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,0,2"
                 Padding="15,10">
             <Grid>
@@ -44,7 +44,7 @@
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="20"
                                FontWeight="Bold"
-                               Foreground="#00FF88"/>
+                               Foreground="{StaticResource Gold}"/>
                     <TextBlock Text="{Binding SearchStatus}"
                                FontSize="12"
                                Foreground="#FFD700"
@@ -60,26 +60,17 @@
                     <!-- VibeOut Button -->
                     <Button Content="🎵 VIBE OUT"
                             Command="{Binding EnterVibeOutModeCommand}"
-                            Background="#9b59b6"
-                            Foreground="#00FF88"
-                            BorderBrush="#00FF88"
-                            BorderThickness="2"
+                            Classes="btn-purple"
                             Padding="12,6"
                             FontFamily="{StaticResource BalatroFont}"
                             FontSize="12"
-                            CornerRadius="5">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#aa6bc7"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
+                            CornerRadius="5"/>
                     
                     <!-- Maximize Button -->
                     <Button Name="MaximizeButton"
                             Content="⛶"
                             Background="Transparent"
-                            Foreground="#00FF88"
+                            Foreground="{StaticResource Gold}"
                             BorderThickness="0"
                             Padding="8"
                             FontSize="16"
@@ -87,7 +78,7 @@
                             ToolTip.Tip="Maximize Window">
                         <Button.Styles>
                             <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#2200FF88"/>
+                                <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
                             </Style>
                         </Button.Styles>
                     </Button>
@@ -150,8 +141,8 @@
                     <ProgressBar Value="{Binding SearchProgress}"
                                  Maximum="100"
                                  Height="20"
-                                 Background="#333333"
-                                 Foreground="#00FF88"/>
+                                 Background="{StaticResource DarkBackground}"
+                                 Foreground="{StaticResource Green}"/>
                     
                     <!-- Progress Text -->
                     <TextBlock Text="{Binding ProgressText}"

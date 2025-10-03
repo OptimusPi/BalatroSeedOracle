@@ -34,14 +34,78 @@ namespace BalatroSeedOracle.Helpers
         }
 
         /// <summary>
-        /// Creates and shows a filters modal
+        /// Creates and shows the filter creation modal (entry point for filter workflow)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var filtersContent = new FiltersModal();
-            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            var filterCreationModal = new Views.Modals.FilterCreationModal();
+
+            // Handle user choosing to create a new filter
+            filterCreationModal.NewFilterRequested += async (sender, e) =>
+            {
+                DebugLogger.Log("ModalHelper", "New filter requested");
+                menu.HideModalContent(); // Close creation modal
+                await Task.Delay(100); // Small delay for transition
+                ShowFiltersDesigner(menu, null, false); // Open designer with empty filter
+            };
+
+            // Handle user choosing to edit an existing filter
+            filterCreationModal.FilterSelectedForEdit += async (sender, filterPath) =>
+            {
+                DebugLogger.Log("ModalHelper", $"Edit filter requested: {filterPath}");
+                menu.HideModalContent(); // Close creation modal
+                await Task.Delay(100); // Small delay for transition
+                ShowFiltersDesigner(menu, filterPath, false); // Open designer in EDIT mode
+            };
+
+            // Handle user choosing to clone an existing filter
+            filterCreationModal.FilterImported += async (sender, filterPath) =>
+            {
+                DebugLogger.Log("ModalHelper", $"Import filter requested: {filterPath}");
+                menu.HideModalContent(); // Close creation modal
+                await Task.Delay(100); // Small delay for transition
+                ShowFiltersDesigner(menu, filterPath, true); // Open designer with imported filter
+            };
+
+            return menu.ShowModal("FILTER CREATOR", filterCreationModal);
+        }
+
+        /// <summary>
+        /// Opens the filter designer modal with an optional filter to load
+        /// </summary>
+        /// <param name="menu">The main menu to show the modal on</param>
+        /// <param name="filterPath">Optional path to a filter to load</param>
+        /// <param name="isClone">Whether this is a clone operation (creates copy instead of editing)</param>
+        private static async void ShowFiltersDesigner(Views.BalatroMainMenu menu, string? filterPath, bool isClone)
+        {
+            var filtersContent = new Views.Modals.FiltersModalContent();
+
+            // Load filter if path provided
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                if (isClone)
+                {
+                    // Clone the filter - create a copy first
+                    var clonedPath = await CreateClonedFilter(filterPath);
+                    if (!string.IsNullOrEmpty(clonedPath))
+                    {
+                        await filtersContent.LoadConfigAsync(clonedPath);
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("ModalHelper", "Failed to clone filter");
+                    }
+                }
+                else
+                {
+                    // Edit mode - load filter directly
+                    await filtersContent.LoadConfigAsync(filterPath);
+                }
+            }
+
+            menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
     
         /// <summary>
@@ -209,6 +273,116 @@ namespace BalatroSeedOracle.Helpers
         {
             var creditsView = new CreditsModal();
             return menu.ShowModal("CREDITS", creditsView);
+        }
+
+        /// <summary>
+        /// Creates and shows the advanced audio visualizer settings modal
+        /// Note: The ViewModel handles settings persistence; MainMenu handles applying to shader
+        /// </summary>
+        public static StandardModal ShowAudioVisualizerSettingsModal(this Views.BalatroMainMenu menu)
+        {
+            var audioVisualizerView = new AudioVisualizerSettingsModal();
+
+            // Wire up ViewModel events to MainMenu so changes apply to the background shader immediately
+            if (audioVisualizerView.ViewModel != null)
+            {
+                var vm = audioVisualizerView.ViewModel;
+
+                // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
+                vm.OnMainColorChanged += (s, colorIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Main color changed to {colorIndex}");
+                    menu.ApplyMainColor(colorIndex);
+                };
+
+                vm.OnAccentColorChanged += (s, colorIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Accent color changed to {colorIndex}");
+                    menu.ApplyAccentColor(colorIndex);
+                };
+
+                vm.OnAudioIntensityChanged += (s, intensity) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Audio intensity changed to {intensity}");
+                    menu.ApplyAudioIntensity(intensity);
+                };
+
+                vm.OnParallaxStrengthChanged += (s, strength) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Parallax changed to {strength}");
+                    menu.ApplyParallaxStrength(strength);
+                };
+
+                vm.OnTimeSpeedChanged += (s, speed) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Time speed changed to {speed}");
+                    menu.ApplyTimeSpeed(speed);
+                };
+
+                // Wire up shader debug controls
+                vm.OnShaderContrastChanged += (s, contrast) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Contrast changed to {contrast}");
+                    menu.ApplyShaderContrast(contrast);
+                };
+
+                vm.OnShaderSpinAmountChanged += (s, spinAmount) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Spin amount changed to {spinAmount}");
+                    menu.ApplyShaderSpinAmount(spinAmount);
+                };
+
+                vm.OnShaderZoomPunchChanged += (s, zoom) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Zoom punch changed to {zoom}");
+                    menu.ApplyShaderZoomPunch(zoom);
+                };
+
+                vm.OnShaderMelodySaturationChanged += (s, saturation) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Melody saturation changed to {saturation}");
+                    menu.ApplyShaderMelodySaturation(saturation);
+                };
+
+                // Wire up shader effect audio source mappings
+                vm.OnShadowFlickerSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Shadow flicker source changed to {sourceIndex}");
+                    menu.ApplyShadowFlickerSource(sourceIndex);
+                };
+
+                vm.OnSpinSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Spin source changed to {sourceIndex}");
+                    menu.ApplySpinSource(sourceIndex);
+                };
+
+                vm.OnTwirlSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Twirl source changed to {sourceIndex}");
+                    menu.ApplyTwirlSource(sourceIndex);
+                };
+
+                vm.OnZoomThumpSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Zoom thump source changed to {sourceIndex}");
+                    menu.ApplyZoomThumpSource(sourceIndex);
+                };
+
+                vm.OnColorSaturationSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Color saturation source changed to {sourceIndex}");
+                    menu.ApplyColorSaturationSource(sourceIndex);
+                };
+
+                vm.OnBeatPulseSourceChanged += (s, sourceIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Beat pulse source changed to {sourceIndex}");
+                    menu.ApplyBeatPulseSource(sourceIndex);
+                };
+            }
+
+            return menu.ShowModal("VIBE MODE SETTINGS", audioVisualizerView);
         }
 
         /// <summary>

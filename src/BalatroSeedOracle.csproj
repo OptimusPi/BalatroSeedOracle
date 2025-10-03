@@ -28,7 +28,7 @@
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
-  
+
   <!-- Copy Audio files to output directory for Vibe Out mode -->
   <ItemGroup>
     <None Update="Assets\Audio\*.ogg">
@@ -36,6 +36,13 @@
     </None>
     <None Update="Assets\Audio\SFX\*.ogg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy syntax highlighting files to output directory -->
+  <ItemGroup>
+    <None Update="Resources\*.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

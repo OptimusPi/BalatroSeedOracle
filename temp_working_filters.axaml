@@ -337,8 +337,8 @@
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>
-            <Button Name="SaveFilterTab"
-                    Content="Finish"
+            <Button Name="SaveFilterTab" 
+                    Content="Filter Info" 
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>

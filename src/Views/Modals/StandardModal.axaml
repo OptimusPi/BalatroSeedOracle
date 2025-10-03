@@ -5,13 +5,15 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <Border Background="{StaticResource SemiTransparentBlack}"
+        <!-- Clickable overlay - click outside modal to close -->
+        <Border x:Name="OverlayBackground"
+                Background="{StaticResource SemiTransparentBlack}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                IsHitTestVisible="False" />
-        
+                IsHitTestVisible="True" />
+
         <!-- Modal positioning grid -->
-        <Grid>
+        <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="*"/>
@@ -24,7 +26,8 @@
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style -->
-            <Border Grid.Column="1" Grid.Row="1"
+            <Border x:Name="ModalBorder"
+                    Grid.Column="1" Grid.Row="1"
                     Background="{StaticResource Grey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"

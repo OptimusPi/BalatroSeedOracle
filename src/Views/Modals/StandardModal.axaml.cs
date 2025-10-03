@@ -22,6 +22,13 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 backButton.Click += OnBackButtonClick;
             }
+
+            // Click-away-to-close: Click on overlay background to close
+            var overlayBackground = this.FindControl<Border>("OverlayBackground");
+            if (overlayBackground != null)
+            {
+                overlayBackground.PointerPressed += OnOverlayClicked;
+            }
         }
 
         private void InitializeComponent()
@@ -83,6 +90,20 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
         {
             BackClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnOverlayClicked(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            // Only close if clicked directly on overlay, not on modal content
+            var clickedElement = e.Source as Control;
+            var overlayBackground = this.FindControl<Border>("OverlayBackground");
+            var modalBorder = this.FindControl<Border>("ModalBorder");
+
+            // Check if click was on the overlay background (not on the modal itself)
+            if (clickedElement == overlayBackground)
+            {
+                BackClicked?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>

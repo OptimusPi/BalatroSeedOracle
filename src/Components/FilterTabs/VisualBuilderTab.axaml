@@ -130,27 +130,29 @@
                                     <DataTemplate>
                                         <Grid Margin="4">
                                             <!-- Card exactly like screenshot -->
-                                            <Border Background="{StaticResource White}" 
-                                                    CornerRadius="4" 
+                                            <Border Background="{StaticResource White}"
+                                                    CornerRadius="4"
                                                     Padding="4"
                                                     Width="60"
-                                                    Height="80">
+                                                    Height="80"
+                                                    Cursor="Hand"
+                                                    DoubleTapped="OnItemDoubleTapped">
                                                 <Grid>
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="*"/>
                                                         <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
-                                                    
-                                                    <Image Grid.Row="0" 
+
+                                                    <Image Grid.Row="0"
                                                            Source="{Binding ItemImage}"
                                                            Width="50"
                                                            Height="50"
                                                            Stretch="Uniform"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
-                                                    
-                                                    <TextBlock Grid.Row="1" 
-                                                               Text="{Binding DisplayName}" 
+
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding DisplayName}"
                                                                Foreground="Black"
                                                                FontFamily="{StaticResource BalatroFont}"
                                                                FontSize="8"
@@ -208,12 +210,81 @@
                             Padding="8"
                             Margin="0,0,0,8"
                             DragDrop.AllowDrop="True">
-                        <TextBlock Text="Drop items you'd LIKE to see"
-                                   Foreground="White"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                            <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="4">
+                                            <!-- Card exactly like screenshot -->
+                                            <Border Background="{StaticResource White}"
+                                                    CornerRadius="4"
+                                                    Padding="4"
+                                                    Width="60"
+                                                    Height="80"
+                                                    Cursor="Hand"
+                                                    DoubleTapped="OnItemDoubleTapped">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding ItemImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="Black"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="8"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Hover-only Remove Button -->
+                                            <Button Content="×"
+                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="{StaticResource Red}"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Width="18"
+                                                    Height="18"
+                                                    CornerRadius="9"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-6,-6,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
                     </Border>
                     
                     <!-- MUST NOT HAVE Zone (self-labeled) -->
@@ -223,12 +294,81 @@
                             MinHeight="120"
                             Padding="8"
                             DragDrop.AllowDrop="True">
-                        <TextBlock Text="Drop Forbidden items here"
-                                   Foreground="White"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                            <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="4">
+                                            <!-- Card exactly like screenshot -->
+                                            <Border Background="{StaticResource White}"
+                                                    CornerRadius="4"
+                                                    Padding="4"
+                                                    Width="60"
+                                                    Height="80"
+                                                    Cursor="Hand"
+                                                    DoubleTapped="OnItemDoubleTapped">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding ItemImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="Black"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="8"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Hover-only Remove Button -->
+                                            <Button Content="×"
+                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="{StaticResource Red}"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Width="18"
+                                                    Height="18"
+                                                    CornerRadius="9"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-6,-6,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
                     </Border>
                 </StackPanel>
             </ScrollViewer>

@@ -643,9 +643,18 @@ namespace BalatroSeedOracle.ViewModels
                 DataContext = jsonEditorViewModel
             };
             JsonEditorTab = jsonEditorViewModel; // Store reference
-            
-            var saveFilterTab = new Components.FilterTabs.SaveFilterTab();
-            
+
+            // Create SaveFilterTab with parent reference so it can access selected items
+            var configService = ServiceHelper.GetService<IConfigurationService>() ?? new ConfigurationService();
+            var filterService = ServiceHelper.GetService<IFilterService>() ?? new FilterService(configService);
+            var userProfileService = ServiceHelper.GetService<UserProfileService>() ?? throw new InvalidOperationException("UserProfileService not available");
+            var filterConfigService = ServiceHelper.GetService<IFilterConfigurationService>() ?? new FilterConfigurationService(userProfileService);
+            var saveFilterViewModel = new FilterTabs.SaveFilterTabViewModel(this, configService, filterService, filterConfigService);
+            var saveFilterTab = new Components.FilterTabs.SaveFilterTab
+            {
+                DataContext = saveFilterViewModel
+            };
+
             TabItems.Add(new TabItemViewModel("VISUAL BUILDER", visualBuilderTab));
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
             TabItems.Add(new TabItemViewModel("SAVE & TEST", saveFilterTab));

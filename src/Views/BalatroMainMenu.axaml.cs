@@ -42,7 +42,6 @@ namespace BalatroSeedOracle.Views
         private bool _isVibeOutMode = false;
 
         // Event handler references for proper cleanup
-        private Action<float>? _beatDetectedHandler;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         /// <summary>
@@ -75,15 +74,6 @@ namespace BalatroSeedOracle.Views
                 audioManager.TransitionTo(AudioState.MainMenu);
 
                 // Store handler references for cleanup
-                _beatDetectedHandler = (beatIntensity) =>
-                {
-                    if (_background is BalatroShaderBackground shader)
-                    {
-                        // Amplify beat intensity for dramatic effect
-                        shader.OnBeatDetected(beatIntensity * 3.0f);
-                    }
-                };
-
                 _audioAnalysisHandler = (bass, mid, treble, peak) =>
                 {
                     if (_background is BalatroShaderBackground shader)
@@ -98,13 +88,10 @@ namespace BalatroSeedOracle.Views
                         shader.UpdateTrackIntensities(
                             audioManager.MelodyIntensity,
                             audioManager.ChordsIntensity,
-                            audioManager.BassTrackIntensity
+                            audioManager.BassIntensity
                         );
                     }
                 };
-
-                // Hook up beat detection to background shader
-                audioManager.BeatDetected += _beatDetectedHandler;
 
                 // Hook up audio analysis for vibe intensity and melodic FFT
                 audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
@@ -318,12 +305,6 @@ namespace BalatroSeedOracle.Views
                 var audioManager = ServiceHelper.GetService<VibeAudioManager>();
                 if (audioManager != null)
                 {
-                    if (_beatDetectedHandler != null)
-                    {
-                        audioManager.BeatDetected -= _beatDetectedHandler;
-                        _beatDetectedHandler = null;
-                    }
-
                     if (_audioAnalysisHandler != null)
                     {
                         audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
@@ -367,29 +348,23 @@ namespace BalatroSeedOracle.Views
             {
                 popup.IsOpen = !popup.IsOpen;
 
-                // Wire up settings modal events if opening
+                // Wire up ViewModel events if opening
                 if (popup.IsOpen)
                 {
                     var modal = this.FindControl<SettingsModal>("SettingsModal");
-                    if (modal != null)
+                    if (modal?.ViewModel != null)
                     {
-                        // Unwire old events to prevent duplicates
-                        modal.CloseRequested -= OnSettingsClose;
-                        modal.ThemeChanged -= OnThemeChanged;
-                        modal.MusicVolumeChanged -= OnMusicVolumeChanged;
-                        modal.SfxVolumeChanged -= OnSfxVolumeChanged;
-                        modal.ContrastChanged -= OnContrastChanged;
-                        modal.SpinChanged -= OnSpinChanged;
-                        modal.SpeedChanged -= OnSpeedChanged;
+                        var vm = modal.ViewModel;
 
-                        // Wire new events
-                        modal.CloseRequested += OnSettingsClose;
-                        modal.ThemeChanged += OnThemeChanged;
-                        modal.MusicVolumeChanged += OnMusicVolumeChanged;
-                        modal.SfxVolumeChanged += OnSfxVolumeChanged;
-                        modal.ContrastChanged += OnContrastChanged;
-                        modal.SpinChanged += OnSpinChanged;
-                        modal.SpeedChanged += OnSpeedChanged;
+                        // Unwire old events to prevent duplicates
+                        vm.CloseRequested -= OnSettingsClose;
+                        vm.AdvancedSettingsRequested -= OnAdvancedSettingsRequested;
+                        vm.OnVisualizerThemeChanged -= OnVisualizerThemeChanged;
+
+                        // Wire ViewModel events
+                        vm.CloseRequested += OnSettingsClose;
+                        vm.AdvancedSettingsRequested += OnAdvancedSettingsRequested;
+                        vm.OnVisualizerThemeChanged += OnVisualizerThemeChanged;
                     }
                 }
             }
@@ -402,48 +377,225 @@ namespace BalatroSeedOracle.Views
             if (popup != null) popup.IsOpen = false;
         }
 
-        private void OnThemeChanged(object? sender, int themeIndex)
+        private void OnAdvancedSettingsRequested(object? sender, EventArgs e)
         {
+            // The settings modal already closed itself, now open advanced modal
+            this.ShowAudioVisualizerSettingsModal();
+        }
+
+        private void OnVisualizerThemeChanged(object? sender, int themeIndex)
+        {
+            // Apply theme to background shader immediately for live preview
             if (_background is BalatroShaderBackground shader)
             {
                 shader.SetTheme(themeIndex);
             }
+
+            // ViewModel already saved to UserProfile
         }
 
-        private void OnMusicVolumeChanged(object? sender, double volume)
-        {
-            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-            audioManager?.SetMusicVolume((float)(volume / 100.0));
-        }
-
-        private void OnSfxVolumeChanged(object? sender, double volume)
-        {
-            var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-            audioManager?.SetSfxVolume((float)(volume / 100.0));
-        }
-
-        private void OnContrastChanged(object? sender, double contrast)
+        /// <summary>
+        /// Apply main color to the background shader
+        /// </summary>
+        internal void ApplyMainColor(int colorIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
-                shader.SetContrast((float)contrast);
+                shader.SetMainColor(colorIndex);
             }
         }
 
-        private void OnSpinChanged(object? sender, double spin)
+        /// <summary>
+        /// Apply accent color to the background shader
+        /// </summary>
+        internal void ApplyAccentColor(int colorIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
-                shader.SetSpinAmount((float)spin);
+                shader.SetAccentColor(colorIndex);
             }
         }
 
-        private void OnSpeedChanged(object? sender, double speed)
+        /// <summary>
+        /// Apply audio intensity to the background shader
+        /// </summary>
+        internal void ApplyAudioIntensity(float intensity)
         {
             if (_background is BalatroShaderBackground shader)
             {
-                shader.SetSpeed((float)speed);
+                shader.SetAudioReactivityIntensity(intensity);
             }
+        }
+
+        /// <summary>
+        /// Apply parallax strength to the background shader
+        /// </summary>
+        internal void ApplyParallaxStrength(float strength)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetParallaxStrength(strength);
+            }
+        }
+
+        /// <summary>
+        /// Apply time speed to the background shader
+        /// </summary>
+        internal void ApplyTimeSpeed(float speed)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetBaseTimeSpeed(speed);
+            }
+        }
+
+        /// <summary>
+        /// 🐛 SHADER DEBUG: Apply contrast to the background shader
+        /// </summary>
+        internal void ApplyShaderContrast(float contrast)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetContrast(contrast);
+            }
+        }
+
+        /// <summary>
+        /// 🐛 SHADER DEBUG: Apply spin amount to the background shader
+        /// </summary>
+        internal void ApplyShaderSpinAmount(float spinAmount)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinAmount(spinAmount);
+            }
+        }
+
+        /// <summary>
+        /// 🐛 SHADER DEBUG: Apply zoom punch to the background shader
+        /// </summary>
+        internal void ApplyShaderZoomPunch(float zoom)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetZoomPunch(zoom);
+            }
+        }
+
+        /// <summary>
+        /// 🐛 SHADER DEBUG: Apply melody saturation to the background shader
+        /// </summary>
+        internal void ApplyShaderMelodySaturation(float saturation)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetMelodySaturation(saturation);
+            }
+        }
+
+        /// <summary>
+        /// Apply shadow flicker audio source to the background shader
+        /// </summary>
+        internal void ApplyShadowFlickerSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetShadowFlickerSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Apply spin audio source to the background shader
+        /// </summary>
+        internal void ApplySpinSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Apply twirl audio source to the background shader
+        /// </summary>
+        internal void ApplyTwirlSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTwirlSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Apply zoom thump audio source to the background shader
+        /// </summary>
+        internal void ApplyZoomThumpSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetZoomThumpSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Apply color saturation audio source to the background shader
+        /// </summary>
+        internal void ApplyColorSaturationSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetColorSaturationSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Apply beat pulse audio source to the background shader
+        /// </summary>
+        internal void ApplyBeatPulseSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetBeatPulseSource((Controls.AudioSource)sourceIndex);
+            }
+        }
+
+        /// <summary>
+        /// Loads all visualizer settings from UserProfile and applies them to the background shader
+        /// </summary>
+        private void LoadAndApplyVisualizerSettings()
+        {
+            if (_userProfileService == null || _background is not BalatroShaderBackground shader)
+                return;
+
+            var profile = _userProfileService.GetProfile();
+            var settings = profile.VibeOutSettings;
+
+            DebugLogger.Log("BalatroMainMenu", "Loading visualizer settings on startup...");
+
+            // Apply theme
+            shader.SetTheme(settings.ThemeIndex);
+
+            // Apply intensity settings
+            shader.UpdateVibeIntensity(settings.AudioIntensity);
+            shader.SetBaseTimeSpeed(settings.TimeSpeed);
+            shader.SetParallaxStrength(settings.ParallaxStrength);
+
+            // Apply custom colors if CUSTOMIZE theme is selected (index 8)
+            if (settings.ThemeIndex == 8)
+            {
+                shader.SetMainColor(settings.MainColor);
+                shader.SetAccentColor(settings.AccentColor);
+            }
+
+            // Apply shader effect audio sources
+            shader.SetShadowFlickerSource((Controls.AudioSource)settings.ShadowFlickerSource);
+            shader.SetSpinSource((Controls.AudioSource)settings.SpinSource);
+            shader.SetTwirlSource((Controls.AudioSource)settings.TwirlSource);
+            shader.SetZoomThumpSource((Controls.AudioSource)settings.ZoomThumpSource);
+            shader.SetColorSaturationSource((Controls.AudioSource)settings.ColorSaturationSource);
+            shader.SetBeatPulseSource((Controls.AudioSource)settings.BeatPulseSource);
+
+            DebugLogger.Log("BalatroMainMenu", $"Visualizer settings loaded - Theme: {settings.ThemeIndex}, Intensity: {settings.AudioIntensity}");
         }
 
         /// <summary>
@@ -649,6 +801,9 @@ namespace BalatroSeedOracle.Views
                 }
             }
 
+            // Load saved visualizer settings and apply to background shader
+            LoadAndApplyVisualizerSettings();
+
             // Load and display current author name
             var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
             var authorEdit = this.FindControl<TextBox>("AuthorEdit");
@@ -669,7 +824,10 @@ namespace BalatroSeedOracle.Views
                     "Could not find AuthorDisplay or AuthorEdit controls"
                 );
             }
-            
+
+            // NOTE: Visualizer theme already loaded in LoadVisualizerSettings() above
+            // (profile.VibeOutSettings.ThemeIndex is the source of truth, not the obsolete profile.BackgroundTheme)
+
             // Check for resumable search and restore desktop icon if needed
             CheckAndRestoreSearchIcon();
         }
@@ -916,7 +1074,7 @@ namespace BalatroSeedOracle.Views
                 {
                     // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as FiltersModal;
+                    var filtersModal = modalContent?.Content as Modals.FiltersModalContent;
                     if (filtersModal != null)
                     {
                         // FiltersModal may have active searches to stop
@@ -1005,6 +1163,51 @@ namespace BalatroSeedOracle.Views
                 ExitVibeOutMode();
                 e.Handled = true;
             }
+        }
+
+        /// <summary>
+        /// Load Vibe Out settings from user profile into the settings modal
+        /// </summary>
+        private void LoadVibeOutSettings(SettingsModal modal)
+        {
+            if (_userProfileService == null) return;
+
+            var profile = _userProfileService.GetProfile();
+            var settings = profile.VibeOutSettings;
+
+            // Find the combo boxes and sliders in the modal
+            var shadowFlickerComboBox = modal.FindControl<ComboBox>("ShadowFlickerComboBox");
+            var spinComboBox = modal.FindControl<ComboBox>("SpinComboBox");
+            var twirlComboBox = modal.FindControl<ComboBox>("TwirlComboBox");
+            var zoomThumpComboBox = modal.FindControl<ComboBox>("ZoomThumpComboBox");
+            var colorSaturationComboBox = modal.FindControl<ComboBox>("ColorSaturationComboBox");
+            var beatPulseComboBox = modal.FindControl<ComboBox>("BeatPulseComboBox");
+            var audioIntensitySlider = modal.FindControl<Slider>("AudioIntensitySlider");
+            var parallaxStrengthSlider = modal.FindControl<Slider>("ParallaxStrengthSlider");
+            var timeSpeedSlider = modal.FindControl<Slider>("TimeSpeedSlider");
+
+            // Set values from saved settings
+            if (shadowFlickerComboBox != null) shadowFlickerComboBox.SelectedIndex = settings.ShadowFlickerSource;
+            if (spinComboBox != null) spinComboBox.SelectedIndex = settings.SpinSource;
+            if (twirlComboBox != null) twirlComboBox.SelectedIndex = settings.TwirlSource;
+            if (zoomThumpComboBox != null) zoomThumpComboBox.SelectedIndex = settings.ZoomThumpSource;
+            if (colorSaturationComboBox != null) colorSaturationComboBox.SelectedIndex = settings.ColorSaturationSource;
+            if (beatPulseComboBox != null) beatPulseComboBox.SelectedIndex = settings.BeatPulseSource;
+            if (audioIntensitySlider != null) audioIntensitySlider.Value = settings.AudioIntensity;
+            if (parallaxStrengthSlider != null) parallaxStrengthSlider.Value = settings.ParallaxStrength;
+            if (timeSpeedSlider != null) timeSpeedSlider.Value = settings.TimeSpeed;
+        }
+
+        /// <summary>
+        /// Save a single Vibe Out setting to the user profile
+        /// </summary>
+        private void SaveVibeOutSetting(Action<VibeOutSettings> updateAction)
+        {
+            if (_userProfileService == null) return;
+
+            var profile = _userProfileService.GetProfile();
+            updateAction(profile.VibeOutSettings);
+            _userProfileService.SaveProfile(profile);
         }
     }
 }

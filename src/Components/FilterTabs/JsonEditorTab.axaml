@@ -38,9 +38,9 @@
                             CornerRadius="12"
                             Padding="8,4"
                             VerticalAlignment="Center">
-                        <TextBlock Text="LIVE EDITING"
+                        <TextBlock Text="AUTO-SYNC"
                                    FontSize="10"
-                                   Foreground="#cccccc"
+                                   Foreground="#27ca3f"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontWeight="Bold"/>
                     </Border>

@@ -56,7 +56,7 @@ namespace BalatroSeedOracle.Views.Modals
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0; // For making each dropped item unique
         private string? _currentFilterPath; // Path to the currently loaded filter
-        private Motely.Filters.MotelyJsonConfig? _loadedConfig; // Currently loaded filter configuration
+        private Motely.Filters.OuijaConfig? _loadedConfig; // Currently loaded filter configuration
         
         private string MakeUniqueKey(string itemKey)
         {
@@ -364,7 +364,7 @@ namespace BalatroSeedOracle.Views.Modals
                     // Copy other config properties - preserve exact antes selection
                     if (itemConfig.Antes != null)
                     {
-                        filterItem.Antes = itemConfig.Antes.ToArray();
+                        filterItem.Antes = itemConfig.Antes;
                     }
                     filterItem.Edition = itemConfig.Edition != "none" ? itemConfig.Edition : null;
 
@@ -1957,7 +1957,8 @@ namespace BalatroSeedOracle.Views.Modals
                 var content = await File.ReadAllTextAsync(configPath);
 
                 // Parse the config
-                if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var config, out var error))
+                var config = Motely.Filters.OuijaConfig.LoadFromJson(configPath);
+                if (config != null)
                 {
                     // Load into UI (this populates the visual drop zones)
                     LoadConfigIntoUI(config);
@@ -1972,11 +1973,6 @@ namespace BalatroSeedOracle.Views.Modals
                         textEditor.Text = content;
                         textEditor.IsVisible = true;
                     }
-                }
-                else
-                {
-                    UpdateStatus($"❌ Error parsing config: {error}", isError: true);
-                    return;
                 }
 
                 _currentFilePath = configPath;
@@ -5882,7 +5878,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private string SerializeOuijaConfig(Motely.Filters.MotelyJsonConfig config)
+        private string SerializeOuijaConfig(Motely.Filters.OuijaConfig config)
         {
             // Manually build the JSON to ensure we get the exact nested format
             using var stream = new MemoryStream();
@@ -5948,7 +5944,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void WriteFilterItem(
             Utf8JsonWriter writer,
-            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause item,
+            Motely.Filters.OuijaConfig.FilterItem item,
             bool includeScore = false
         )
         {
@@ -6027,9 +6023,9 @@ namespace BalatroSeedOracle.Views.Modals
             writer.WriteEndObject();
         }
 
-        private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
+        private Motely.Filters.OuijaConfig BuildOuijaConfigFromSelections()
         {
-            var config = new Motely.Filters.MotelyJsonConfig
+            var config = new Motely.Filters.OuijaConfig
             {
                 Deck = "Red", // Default deck
                 Stake = "White", // Default stake
@@ -6073,7 +6069,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void FixUniqueKeyParsing(
             List<string> items,
-            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> targetList,
+            List<Motely.Filters.OuijaConfig.FilterItem> targetList,
             int defaultScore = 0
         )
         {
@@ -6105,13 +6101,13 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterItemFromSelection(
+        private Motely.Filters.OuijaConfig.FilterItem? CreateFilterItemFromSelection(
             string category,
             string itemName,
             ItemConfig config
         )
         {
-            var filterItem = new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
+            var filterItem = new Motely.Filters.OuijaConfig.FilterItem
             {
                 // If Antes is null, it means either all antes or no antes were selected
                 // The JokerConfigPopup returns null for both cases
@@ -6134,7 +6130,7 @@ namespace BalatroSeedOracle.Views.Modals
             if (canHaveSources)
             {
                 // Create Sources config only for items that can have sources
-                filterItem.Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig();
+                filterItem.Sources = new Motely.Filters.OuijaConfig.SourcesConfig();
                 
                 if (config.Sources != null)
                 {
@@ -6359,18 +6355,18 @@ namespace BalatroSeedOracle.Views.Modals
         private string GetDefaultOuijaConfigJson()
         {
             // Return a default OuijaConfig format example
-            var defaultConfig = new Motely.Filters.MotelyJsonConfig
+            var defaultConfig = new Motely.Filters.OuijaConfig
             {
                 Deck = "Red",
                 Stake = "White",
-                Must = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+                Must = new List<Motely.Filters.OuijaConfig.FilterItem>
                 {
-                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
+                    new Motely.Filters.OuijaConfig.FilterItem
                     {
                         Type = "Joker",
                         Value = "Perkeo",
                         Antes = new[] { 1, 2 },
-                        Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig
+                        Sources = new Motely.Filters.OuijaConfig.SourcesConfig
                         {
                             ShopSlots = new[] { 0, 1, 2, 3 },
                             PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
@@ -6378,9 +6374,9 @@ namespace BalatroSeedOracle.Views.Modals
                         },
                     },
                 },
-                Should = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+                Should = new List<Motely.Filters.OuijaConfig.FilterItem>
                 {
-                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
+                    new Motely.Filters.OuijaConfig.FilterItem
                     {
                         Type = "tag",
                         Value = "NegativeTag",
@@ -6388,13 +6384,13 @@ namespace BalatroSeedOracle.Views.Modals
                         Antes = new[] { 1, 2, 3 },
                         // NO SOURCES for tags!
                     },
-                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
+                    new Motely.Filters.OuijaConfig.FilterItem
                     {
                         Type = "Joker",
                         Value = "Blueprint",
                         Score = 30,
                         Antes = new[] { 1, 2, 3, 4 },
-                        Sources = new Motely.Filters.MotelyJsonConfig.SourcesConfig
+                        Sources = new Motely.Filters.OuijaConfig.SourcesConfig
                         {
                             ShopSlots = new[] { 0, 1, 2, 3 },
                             PackSlots = new[] { 0, 1, 2, 3, 4, 5 },
@@ -6402,9 +6398,9 @@ namespace BalatroSeedOracle.Views.Modals
                         },
                     },
                 },
-                MustNot = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+                MustNot = new List<Motely.Filters.OuijaConfig.FilterItem>
                 {
-                    new Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause
+                    new Motely.Filters.OuijaConfig.FilterItem
                     {
                         Type = "voucher",
                         Value = "CreditCard",
@@ -6588,7 +6584,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var json = await System.IO.File.ReadAllTextAsync(file.Path.LocalPath);
 
                     // Parse the JSON to load into UI
-                    var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    var config = JsonSerializer.Deserialize<Motely.Filters.OuijaConfig>(
                         json,
                         new JsonSerializerOptions
                         {
@@ -6640,7 +6636,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void LoadConfigIntoUI(Motely.Filters.MotelyJsonConfig config)
+        private void LoadConfigIntoUI(Motely.Filters.OuijaConfig config)
         {
             // Clear existing selections
             ClearNeeds();
@@ -7702,25 +7698,21 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var config = BuildOuijaConfigFromSelections();
-
+                
                 // Update name and description from inputs
                 var nameInput = this.FindControl<TextBox>("SaveFilterNameInput");
                 var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
-
+                
                 if (nameInput != null)
                     config.Name = nameInput.Text?.Trim() ?? "";
                 if (descriptionInput != null)
                     config.Description = descriptionInput.Text?.Trim() ?? "";
-
+                
                 var json = SerializeOuijaConfig(config);
                 await File.WriteAllTextAsync(_currentFilterPath, json);
-
-                // CRITICAL: Delete all database files for this filter to avoid column conflicts
-                // When editing a filter, the structure may have changed, so old data is invalid
-                DeleteFilterDatabases(config.Name);
-
+                
                 UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
-
+                
                 // Update modified date display
                 var modifiedDateDisplay = this.FindControl<TextBlock>("ModifiedDateDisplay");
                 if (modifiedDateDisplay != null)
@@ -7864,64 +7856,13 @@ namespace BalatroSeedOracle.Views.Modals
                 UpdateStatus("Please save the filter first", true);
                 return;
             }
-
+            
             var content = await File.ReadAllTextAsync(_currentFilterPath);
             var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
             if (clipboard != null)
             {
                 await clipboard.SetTextAsync(content);
                 UpdateStatus("Filter JSON copied to clipboard!", false);
-            }
-        }
-
-        /// <summary>
-        /// Deletes all database files associated with a filter name
-        /// This prevents column conflicts when editing filter structure
-        /// </summary>
-        private void DeleteFilterDatabases(string filterName)
-        {
-            try
-            {
-                var searchResultsPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
-                if (!Directory.Exists(searchResultsPath))
-                {
-                    DebugLogger.Log("FiltersModal", "SearchResults directory does not exist");
-                    return;
-                }
-
-                // Normalize filter name for filename matching (same as NormalizeFileName)
-                var normalizedName = NormalizeFileName(filterName);
-
-                // Find all .db files that start with this filter name
-                // Pattern: {FilterName}_{Deck}_{Stake}.db or {FilterName}.db
-                var dbFiles = Directory.GetFiles(searchResultsPath, "*.db")
-                    .Where(f => {
-                        var fileName = System.IO.Path.GetFileNameWithoutExtension(f);
-                        return fileName.StartsWith(normalizedName, StringComparison.OrdinalIgnoreCase);
-                    })
-                    .ToList();
-
-                foreach (var dbFile in dbFiles)
-                {
-                    try
-                    {
-                        File.Delete(dbFile);
-                        DebugLogger.Log("FiltersModal", $"Deleted database file: {System.IO.Path.GetFileName(dbFile)}");
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError("FiltersModal", $"Failed to delete {System.IO.Path.GetFileName(dbFile)}: {ex.Message}");
-                    }
-                }
-
-                if (dbFiles.Count > 0)
-                {
-                    DebugLogger.Log("FiltersModal", $"Deleted {dbFiles.Count} database file(s) for filter '{filterName}'");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModal", $"Error while cleaning up databases: {ex.Message}");
             }
         }
     }

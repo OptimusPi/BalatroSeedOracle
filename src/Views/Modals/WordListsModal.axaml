@@ -21,19 +21,22 @@
                            FontSize="16"
                            Foreground="{StaticResource White}"/>
                 
-                <ComboBox Grid.Column="1" 
+                <ComboBox Grid.Column="1"
                           Name="FileSelector"
                           HorizontalAlignment="Stretch"
                           SelectedIndex="0">
-                    <ComboBoxItem>keywords.txt</ComboBoxItem>
-                    <ComboBoxItem>banned_words.txt</ComboBoxItem>
-                    <ComboBoxItem>custom_list.txt</ComboBoxItem>
+                    <!-- Files loaded dynamically from WordLists/ folder -->
                 </ComboBox>
                 
-                <StackPanel Grid.Column="2" 
-                            Orientation="Horizontal" 
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
                             Spacing="8"
                             Margin="12,0,0,0">
+                    <Button Name="PasteButton"
+                            Content="📋 Paste"
+                            Classes="small-button"
+                            Background="{StaticResource Blue}"
+                            Click="OnPasteClick"/>
                     <Button Name="NewButton"
                             Content="New List"
                             Classes="small-button"

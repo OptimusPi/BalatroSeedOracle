@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _saveButton;
 
         private string _wordListsPath = System.IO.Path.Combine(
-            AppContext.BaseDirectory,
+            Directory.GetCurrentDirectory(),
             "WordLists"
         );
         private string? _currentFile;
@@ -200,6 +200,36 @@ tag"
             catch (Exception ex)
             {
                 UpdateStatus($"Error creating file: {ex.Message}");
+            }
+        }
+
+        private async void OnPasteClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard == null)
+                {
+                    UpdateStatus("Clipboard not available");
+                    return;
+                }
+
+                var clipboardText = await topLevel.Clipboard.GetTextAsync();
+                if (!string.IsNullOrEmpty(clipboardText) && _textEditor != null)
+                {
+                    // Replace entire content with clipboard text
+                    _textEditor.Text = clipboardText;
+                    _hasUnsavedChanges = true;
+                    UpdateStatus("Pasted from clipboard - click Save to persist");
+                }
+                else
+                {
+                    UpdateStatus("Clipboard is empty");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error pasting: {ex.Message}");
             }
         }
 

@@ -121,6 +121,15 @@ namespace BalatroSeedOracle.Models
         
         public string ItemType => _type;
 
+        // Additional properties for filter configuration
+        public string? Value { get; set; }
+        public string? Label { get; set; }
+        public int[]? Antes { get; set; }
+        public string? Edition { get; set; }
+        public bool IncludeBoosterPacks { get; set; }
+        public bool IncludeShopStream { get; set; }
+        public bool IncludeSkipTags { get; set; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.IO;
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -7,6 +9,8 @@ using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
+using AvaloniaEdit.Highlighting;
+using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.ViewModels.FilterTabs;
 using BalatroSeedOracle.Helpers;
 
@@ -37,25 +41,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             // Get reference to the TextEditor
             _jsonEditor = this.FindControl<TextEditor>("JsonEditor");
-            
+
             // Set up two-way binding for TextEditor
             if (_jsonEditor != null)
             {
+                // Load custom dark mode syntax highlighting
+                LoadCustomJsonSyntaxHighlighting();
+
                 // When ViewModel changes, update editor
                 DataContextChanged += (s, e) =>
                 {
                     if (ViewModel != null)
                     {
                         _jsonEditor.Text = ViewModel.JsonContent;
-                        
+
                         // Subscribe to ViewModel property changes
                         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
                     }
                 };
-                
+
                 // When editor text changes, update ViewModel
                 _jsonEditor.TextChanged += (s, e) =>
                 {
@@ -64,6 +71,36 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         ViewModel.JsonContent = _jsonEditor.Text ?? "";
                     }
                 };
+            }
+        }
+
+        private void LoadCustomJsonSyntaxHighlighting()
+        {
+            if (_jsonEditor == null) return;
+
+            try
+            {
+                // Load custom JSON dark mode syntax highlighting
+                var xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "JsonDark.xshd");
+
+                if (File.Exists(xshdPath))
+                {
+                    using (var reader = new XmlTextReader(xshdPath))
+                    {
+                        var definition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                        _jsonEditor.SyntaxHighlighting = definition;
+                    }
+                    DebugLogger.Log("JsonEditorTab", "Custom JSON dark mode syntax highlighting loaded");
+                }
+                else
+                {
+                    // Fallback to default JSON highlighting with custom colors
+                    DebugLogger.LogError("JsonEditorTab", $"JsonDark.xshd not found at {xshdPath}, using default");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("JsonEditorTab", $"Failed to load custom syntax highlighting: {ex.Message}");
             }
         }
         

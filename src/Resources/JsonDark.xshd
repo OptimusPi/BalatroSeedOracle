@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<SyntaxDefinition name="JSON" extensions=".json" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Digits" foreground="#B5CEA8" />
+  <Color name="String" foreground="#CE9178" />
+  <Color name="Keywords" foreground="#569CD6" fontWeight="bold" />
+  <Color name="PropertyName" foreground="#9CDCFE" />
+  <Color name="Comment" foreground="#6A9955" fontStyle="italic" />
+
+  <RuleSet ignoreCase="false">
+    <!-- Property Names (keys in JSON) -->
+    <Rule color="PropertyName">
+      "[\w\s\-_]+"(?=\s*:)
+    </Rule>
+
+    <!-- Strings -->
+    <Rule color="String">
+      "([^"\\]|\\.)*"
+    </Rule>
+
+    <!-- Numbers -->
+    <Rule color="Digits">
+      \b-?\d+\.?\d*([eE][+-]?\d+)?\b
+    </Rule>
+
+    <!-- Keywords (true, false, null) -->
+    <Keywords color="Keywords">
+      <Word>true</Word>
+      <Word>false</Word>
+      <Word>null</Word>
+    </Keywords>
+
+    <!-- Single-line comments -->
+    <Span color="Comment" begin="//" />
+
+    <!-- Multi-line comments -->
+    <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+  </RuleSet>
+</SyntaxDefinition>

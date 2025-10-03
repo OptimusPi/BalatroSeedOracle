@@ -42,7 +42,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private string _selectedCategory = "Legendary";
-        
+
+        // Display name for current category
+        public string CurrentCategoryDisplay => SelectedCategory switch
+        {
+            "Favorites" => "🔥 Favorites",
+            "Legendary" => "🏆 Legendary",
+            "Rare" => "💎 Rare",
+            "Uncommon" => "🔸 Uncommon",
+            "Common" => "⚪ Common",
+            "Voucher" => "🎟️ Voucher",
+            "Tarot" => "🔮 Tarot",
+            "Planet" => "🪐 Planet",
+            "Spectral" => "👻 Spectral",
+            "PlayingCards" => "🃏 Playing Cards",
+            "Tag" => "🏷️ Tag",
+            "Boss" => "👹 Boss",
+            _ => SelectedCategory
+        };
+
         // Category view models for proper data template binding
         public ObservableCollection<CategoryViewModel> Categories { get; }
         
@@ -134,7 +152,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Auto-clear search when switching tabs for clean navigation
             SearchFilter = "";
             SelectedCategory = category;
-            
+            OnPropertyChanged(nameof(CurrentCategoryDisplay));
+
             // Ensure collections are populated when switching categories
             if (FilteredJokers.Count == 0)
             {
@@ -210,7 +229,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null && !SelectedMust.Any(x => x.Name == item.Name))
             {
                 SelectedMust.Add(item);
-                
+
                 // Sync with parent ViewModel if available
                 if (_parentViewModel != null)
                 {
@@ -224,8 +243,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
                     _parentViewModel.SelectedMust.Add(itemKey);
                 }
-                
+
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
             }
         }
 
@@ -235,6 +257,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 SelectedShould.Add(item);
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
             }
         }
 
@@ -244,6 +269,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 SelectedMustNot.Add(item);
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
             }
         }
 
@@ -253,6 +281,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 SelectedMust.Remove(item);
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
             }
         }
 
@@ -262,6 +293,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 SelectedShould.Remove(item);
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
             }
         }
 
@@ -271,6 +305,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 SelectedMustNot.Remove(item);
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
+            }
+        }
+
+        /// <summary>
+        /// Notifies the JSON Editor tab to auto-update when Visual Builder changes
+        /// </summary>
+        private void NotifyJsonEditorOfChanges()
+        {
+            if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
+            {
+                // Trigger the JSON generation automatically
+                jsonEditorVm.AutoGenerateFromVisual();
             }
         }
 
@@ -328,15 +377,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var legendaryJokers = new[] { "Triboulet", "Yorick", "Chicot", "Perkeo", "Canio" };
                 foreach (var legendaryName in legendaryJokers)
                 {
-                    var item = new FilterItem 
-                    { 
-                        Name = legendaryName, 
+                    var item = new FilterItem
+                    {
+                        Name = legendaryName,
                         Type = "SoulJoker",
                         Category = "Legendary",
                         DisplayName = FormatDisplayName(legendaryName),
                         ItemImage = spriteService.GetJokerImage(legendaryName)
                     };
                     AllJokers.Add(item);
+                    DebugLogger.Log("VisualBuilderTab", $"Loaded legendary {legendaryName}: Image={item.ItemImage != null}, ItemKey={item.ItemKey}");
                 }
 
                 // Load Regular Jokers from BalatroData

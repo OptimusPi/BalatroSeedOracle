@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -37,6 +38,8 @@ namespace BalatroSeedOracle.ViewModels
         private int _timeoutSeconds = 300;
         private string _deckSelection = "All Decks";
         private string _stakeSelection = "All Stakes";
+        private string _selectedWordList = "None";
+        private ObservableCollection<string> _availableWordLists = new();
 
         public SearchModalViewModel(SearchManager searchManager)
         {
@@ -59,6 +62,9 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize dynamic tabs
             InitializeSearchTabs();
+
+            // Load available wordlists
+            LoadAvailableWordLists();
 
             // Events will be subscribed to individual SearchInstance when created
         }
@@ -126,6 +132,18 @@ namespace BalatroSeedOracle.ViewModels
         {
             get => _stakeSelection;
             set => SetProperty(ref _stakeSelection, value);
+        }
+
+        public string SelectedWordList
+        {
+            get => _selectedWordList;
+            set => SetProperty(ref _selectedWordList, value);
+        }
+
+        public ObservableCollection<string> AvailableWordLists
+        {
+            get => _availableWordLists;
+            set => SetProperty(ref _availableWordLists, value);
         }
 
         public SearchProgress? LatestProgress
@@ -344,7 +362,8 @@ namespace BalatroSeedOracle.ViewModels
                 ConfigPath = _currentFilterPath, // CRITICAL: Pass the filter path!
                 ThreadCount = Environment.ProcessorCount,
                 Deck = DeckSelection == "All Decks" ? null : DeckSelection,
-                Stake = StakeSelection == "All Stakes" ? null : StakeSelection
+                Stake = StakeSelection == "All Stakes" ? null : StakeSelection,
+                WordList = SelectedWordList == "None" ? null : SelectedWordList // Pass wordlist if selected
             };
         }
 
@@ -714,7 +733,10 @@ namespace BalatroSeedOracle.ViewModels
             
             // Create simple edition selector
             var editionSelector = CreateEditionSelector();
-            
+
+            // Create wordlist selector
+            var wordListSelector = CreateWordListSelector();
+
             // Create the filter tab content as a UserControl
             return new UserControl
             {
@@ -730,10 +752,10 @@ namespace BalatroSeedOracle.ViewModels
                             Spacing = 15,
                             Children =
                             {
-                                new TextBlock 
-                                { 
-                                    Text = "SEARCH FILTERS", 
-                                    FontSize = 24, 
+                                new TextBlock
+                                {
+                                    Text = "SEARCH FILTERS",
+                                    FontSize = 24,
                                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                                     Foreground = Avalonia.Media.Brush.Parse("#00FF88")
                                 },
@@ -741,7 +763,8 @@ namespace BalatroSeedOracle.ViewModels
                                 deckStakeSelector,
                                 anteSelector,
                                 sourceSelector,
-                                editionSelector
+                                editionSelector,
+                                wordListSelector
                             }
                         }
                     }
@@ -1119,6 +1142,90 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
             };
+        }
+
+        private Control CreateWordListSelector()
+        {
+            var wordListCombo = new ComboBox
+            {
+                ItemsSource = AvailableWordLists,
+                SelectedItem = SelectedWordList,
+                MinWidth = 200,
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                Foreground = Avalonia.Media.Brush.Parse("#FFD700")
+            };
+
+            wordListCombo.SelectionChanged += (s, e) =>
+            {
+                if (wordListCombo.SelectedItem is string selected)
+                {
+                    SelectedWordList = selected;
+                    DebugLogger.Log("SearchModalViewModel", $"Word list changed to: {selected}");
+                }
+            };
+
+            return new Border
+            {
+                Background = Avalonia.Media.Brush.Parse("#22000000"),
+                BorderBrush = Avalonia.Media.Brush.Parse("#FFD700"),
+                BorderThickness = new Avalonia.Thickness(1),
+                CornerRadius = new Avalonia.CornerRadius(5),
+                Padding = new Avalonia.Thickness(10),
+                Child = new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = "🗂️ Word List (--wordlist)",
+                            Foreground = Avalonia.Media.Brush.Parse("#FFD700"),
+                            FontWeight = Avalonia.Media.FontWeight.Bold
+                        },
+                        wordListCombo,
+                        new TextBlock
+                        {
+                            Text = "Filter seeds by custom word lists (e.g., sick.txt → WordLists/sick.txt)",
+                            Foreground = Avalonia.Media.Brush.Parse("#888888"),
+                            FontSize = 11,
+                            TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                        }
+                    }
+                }
+            };
+        }
+
+        private void LoadAvailableWordLists()
+        {
+            try
+            {
+                var wordListsPath = System.IO.Path.Combine(
+                    System.IO.Directory.GetCurrentDirectory(),
+                    "WordLists"
+                );
+
+                AvailableWordLists.Clear();
+                AvailableWordLists.Add("None"); // Default option
+
+                if (System.IO.Directory.Exists(wordListsPath))
+                {
+                    var files = System.IO.Directory.GetFiles(wordListsPath, "*.txt")
+                        .Select(f => System.IO.Path.GetFileNameWithoutExtension(f))
+                        .OrderBy(f => f);
+
+                    foreach (var file in files)
+                    {
+                        AvailableWordLists.Add(file);
+                    }
+                }
+
+                SelectedWordList = "None";
+                DebugLogger.Log("SearchModalViewModel", $"Loaded {AvailableWordLists.Count - 1} word lists");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to load word lists: {ex.Message}");
+            }
         }
 
         #endregion

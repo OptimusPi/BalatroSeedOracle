@@ -65,8 +65,7 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
                             <Border Background="{StaticResource ContainerDarkPrecise}"
-                                    BorderThickness="2"
-                                    BorderBrush="{StaticResource Green}"
+                                    BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
                                     Padding="10">
@@ -110,8 +109,7 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
                             <Border Background="{StaticResource ContainerDarkPrecise}"
-                                    BorderThickness="2"
-                                    BorderBrush="{StaticResource Blue}"
+                                    BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
                                     Padding="10">
@@ -257,8 +255,7 @@
                     <!-- Status/Results Area -->
                     <Border Grid.Row="4"
                             Background="{StaticResource ContainerDarkPrecise}"
-                            BorderThickness="2"
-                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="0"
                             CornerRadius="8"
                             Padding="15">
                         <Grid>

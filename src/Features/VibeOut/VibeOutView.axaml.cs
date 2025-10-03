@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Views;
 using System;
 
 namespace BalatroSeedOracle.Features.VibeOut
@@ -18,6 +19,9 @@ namespace BalatroSeedOracle.Features.VibeOut
             {
                 if (DataContext is VibeOutViewModel vm)
                 {
+                    // Load and apply saved settings
+                    ApplySavedSettings();
+
                     // Connect vibe system to background
                     vm.PropertyChanged += (_, args) =>
                     {
@@ -32,27 +36,36 @@ namespace BalatroSeedOracle.Features.VibeOut
                         }
                         else if (args.PropertyName == nameof(VibeOutViewModel.AudioState))
                         {
-                            var intensity = vm.AudioState switch
-                            {
-                                "VibeLevel2" => 0.8f, // DRUMS2 ACTIVATED!
-                                "VibeLevel3" => 1.0f, // MAX VIBE!
-                                _ => 0.5f
-                            };
-                            _vibeBackground?.UpdateVibeIntensity(intensity);
+                            // Audio intensity is now controlled by user settings slider, not hardcoded!
+                            // The slider value (0.0 - 2.0) is applied in ApplySavedSettings
+                            // We don't need to update intensity here anymore
                         }
                     };
-
-                    // Hook up REAL beat detection from VibeAudioManager! 🔥
-                    var audioManager = BalatroSeedOracle.App.GetService<Services.VibeAudioManager>();
-                    if (audioManager != null)
-                    {
-                        audioManager.BeatDetected += (beatIntensity) =>
-                        {
-                            _vibeBackground?.OnBeatDetected(beatIntensity);
-                        };
-                    }
                 }
             };
+        }
+
+        private void ApplySavedSettings()
+        {
+            var profileService = BalatroSeedOracle.App.GetService<Services.UserProfileService>();
+            if (profileService == null || _vibeBackground == null) return;
+
+            var settings = profileService.GetProfile().VibeOutSettings;
+
+            // Apply theme from user settings
+            _vibeBackground.SetTheme(settings.ThemeIndex);
+
+            // Apply user-controlled intensity settings
+            _vibeBackground.UpdateVibeIntensity(settings.AudioIntensity);
+            _vibeBackground.SetBaseTimeSpeed(settings.TimeSpeed);
+            _vibeBackground.SetParallaxStrength(settings.ParallaxStrength);
+
+            // Apply custom colors if CUSTOMIZE theme selected
+            if (settings.ThemeIndex == 8)
+            {
+                _vibeBackground.SetMainColor(settings.MainColor);
+                _vibeBackground.SetAccentColor(settings.AccentColor);
+            }
         }
         
         private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

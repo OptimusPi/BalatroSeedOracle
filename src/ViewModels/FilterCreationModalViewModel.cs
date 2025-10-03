@@ -13,6 +13,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _importPath = "";
         private string _importStatusIcon = "";
         private bool _importSuccess = false;
+        private string? _selectedFilterPath = null;
 
         // Properties
         public string ImportPath
@@ -48,8 +49,8 @@ namespace BalatroSeedOracle.ViewModels
         public FilterCreationModalViewModel()
         {
             StartDesigningCommand = new RelayCommand(OnStartDesigning);
-            EditFilterCommand = new RelayCommand(OnEditFilter);
-            CloneFilterCommand = new RelayCommand(OnCloneFilter);
+            EditFilterCommand = new RelayCommand(OnEditFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
+            CloneFilterCommand = new RelayCommand(OnCloneFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
             BrowseCommand = new RelayCommand(() => { }); // Placeholder, View will handle actual browse
         }
 
@@ -61,21 +62,37 @@ namespace BalatroSeedOracle.ViewModels
 
         private void OnEditFilter()
         {
-            DebugLogger.Log("FilterCreationModalViewModel", "Edit filter requested");
-            // Will be handled by FilterSelected event when user picks a filter
+            if (string.IsNullOrEmpty(_selectedFilterPath))
+            {
+                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot edit filter: no filter selected");
+                return;
+            }
+
+            DebugLogger.Log("FilterCreationModalViewModel", $"Edit filter requested: {_selectedFilterPath}");
+            FilterSelectedForEdit?.Invoke(this, _selectedFilterPath);
         }
 
         private void OnCloneFilter()
         {
-            DebugLogger.Log("FilterCreationModalViewModel", "Clone filter requested");
-            // Trigger clone event - View will need to get selected filter path
-            FilterCloneRequested?.Invoke(this, string.Empty); // View will provide actual path
+            if (string.IsNullOrEmpty(_selectedFilterPath))
+            {
+                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot clone filter: no filter selected");
+                return;
+            }
+
+            DebugLogger.Log("FilterCreationModalViewModel", $"Clone filter requested: {_selectedFilterPath}");
+            FilterCloneRequested?.Invoke(this, _selectedFilterPath);
         }
 
         public void OnFilterSelected(string filterPath)
         {
-            DebugLogger.Log("FilterCreationModalViewModel", $"Existing filter selected: {filterPath}");
-            FilterSelectedForEdit?.Invoke(this, filterPath);
+            _selectedFilterPath = filterPath;
+
+            // Update command states
+            ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)CloneFilterCommand).NotifyCanExecuteChanged();
+
+            DebugLogger.Log("FilterCreationModalViewModel", $"Filter selected: {filterPath}");
         }
 
         public async Task ValidateAndImportJsonFile(string filePath)

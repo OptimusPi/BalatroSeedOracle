@@ -15,6 +15,7 @@ public class SearchCriteria
     public ulong EndBatch { get; set; } = ulong.MaxValue;
     public string? Deck { get; set; } = "Red";
     public string? Stake { get; set; } = "White";
+    public string? WordList { get; set; } // --wordlist parameter (e.g., "sick" -> WordLists/sick.txt)
     public bool EnableDebugOutput { get; set; } = false;
     public string? DebugSeed { get; set; }
 }

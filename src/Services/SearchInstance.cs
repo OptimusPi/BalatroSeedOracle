@@ -1045,7 +1045,7 @@ namespace BalatroSeedOracle.Services
                 };
 
                 Action<MotelySeedScoreTally> dummyCallback = _ => { }; // Empty callback for interface
-                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, dummyCallback, false);
+                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, dummyCallback);
 
                 // Use interface approach for specialized filter compatibility
                 var searchSettings = Motely.Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)

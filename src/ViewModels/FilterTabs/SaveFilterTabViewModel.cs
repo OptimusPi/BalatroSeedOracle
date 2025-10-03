@@ -18,6 +18,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
         private readonly IFilterConfigurationService _filterConfigurationService;
+        private readonly FiltersModalViewModel _parentViewModel;
 
         private string _filterName = "";
         private string _filterDescription = "";
@@ -26,8 +27,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _statusMessage = "Ready to save filter";
         private IBrush _statusColor = Brushes.Gray;
 
-        public SaveFilterTabViewModel(IConfigurationService configurationService, IFilterService filterService, IFilterConfigurationService filterConfigurationService)
+        public SaveFilterTabViewModel(FiltersModalViewModel parentViewModel, IConfigurationService configurationService, IFilterService filterService, IFilterConfigurationService filterConfigurationService)
         {
+            _parentViewModel = parentViewModel;
             _configurationService = configurationService;
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
@@ -195,19 +197,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Uses shared FilterConfigurationService instead of duplicating massive logic
         private MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            // TODO: Get actual selections from VisualBuilderTab component
-            // For now, create empty lists
-            var selectedMust = new List<string>();
-            var selectedShould = new List<string>(); 
-            var selectedMustNot = new List<string>();
-            var itemConfigs = new Dictionary<string, ItemConfig>();
-            
+            // Get actual selections from parent ViewModel
+            var selectedMust = _parentViewModel.SelectedMust.ToList();
+            var selectedShould = _parentViewModel.SelectedShould.ToList();
+            var selectedMustNot = _parentViewModel.SelectedMustNot.ToList();
+            var itemConfigs = _parentViewModel.ItemConfigs;
+
             return _filterConfigurationService.BuildConfigFromSelections(
-                selectedMust, 
-                selectedShould, 
-                selectedMustNot, 
+                selectedMust,
+                selectedShould,
+                selectedMustNot,
                 itemConfigs,
-                FilterName, 
+                FilterName,
                 FilterDescription);
         }
 
