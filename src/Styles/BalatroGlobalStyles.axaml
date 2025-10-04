@@ -294,15 +294,15 @@
         <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
     
-    <!-- Category navigation buttons - 20% less wide, 25% taller -->
+    <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="30" />
-        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="MaxWidth" Value="160" />
     </Style>

@@ -4,11 +4,48 @@
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterListViewModel">
 
+    <UserControl.Styles>
+        <!-- Balatro-styled scrollbars - subtle and elegant -->
+        <Style Selector="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ScrollBar:vertical">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Margin" Value="2,0,0,0"/>
+        </Style>
+        <Style Selector="ScrollBar:horizontal">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb">
+            <Setter Property="Background" Value="{StaticResource MediumGrey}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Opacity" Value="0.5"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pointerover">
+            <Setter Property="Background" Value="{StaticResource Border}"/>
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pressed">
+            <Setter Property="Background" Value="{StaticResource Gold}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <!-- Hide scroll buttons -->
+        <Style Selector="ScrollBar /template/ RepeatButton">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </UserControl.Styles>
+
     <!-- Filter Selection UI (Balatro Challenges Style) -->
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="240" MinWidth="200"/>
+            <ColumnDefinition Width="*" MinWidth="400"/>
         </Grid.ColumnDefinitions>
 
         <!-- Left: Filter List (Balatro challenges style) -->
@@ -16,7 +53,7 @@
                 Background="{StaticResource ContainerDarkPrecise}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,2,0"
-                Padding="12">
+                Padding="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -129,7 +166,8 @@
         <!-- Right: Filter Details -->
         <Border Grid.Column="1"
                 Background="{StaticResource ContainerDark}"
-                Padding="20">
+                CornerRadius="8"
+                Padding="16">
             <Grid>
                 <!-- Placeholder when no filter selected -->
                 <StackPanel VerticalAlignment="Center"
@@ -229,12 +267,13 @@
 
                     <!-- Content Area with Cards Display -->
                     <Border Grid.Row="3"
-                            Background="{StaticResource Blue}"
-                            BorderBrush="{StaticResource ModalBorder}"
+                            Background="{StaticResource ContainerDarkPrecise}"
+                            BorderBrush="{StaticResource Blue}"
                             BorderThickness="2"
                             CornerRadius="8"
                             Padding="12"
-                            Margin="8,0,8,0">
+                            Margin="8,0,8,0"
+                            BoxShadow="inset 0 2 4 #00000040">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <Grid>
                                 <!-- Empty state when no tab selected -->

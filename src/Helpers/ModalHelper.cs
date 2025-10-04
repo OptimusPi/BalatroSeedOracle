@@ -89,7 +89,7 @@ namespace BalatroSeedOracle.Helpers
                     // No filter to load, go to search tab immediately
                     searchContent.GoToSearchTab();
                 }
-                return menu.ShowModal("MOTELY SEARCH", searchContent);
+                return menu.ShowModal("🎰 SEED SEARCH", searchContent);
             }
             catch (Exception ex)
             {

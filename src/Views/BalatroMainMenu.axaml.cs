@@ -533,7 +533,7 @@ namespace BalatroSeedOracle.Views
                     }
                 };
 
-                this.ShowModal("MOTELY SEARCH", searchContent);
+                this.ShowModal("🎰 SEED SEARCH", searchContent);
             }
             catch (Exception ex)
             {

@@ -278,30 +278,31 @@
         <!-- Triangle pointer above tabs -->
         <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="148"/> <!-- Select Filter -->
-                <ColumnDefinition Width="148"/> <!-- Visual -->
-                <ColumnDefinition Width="148"/> <!-- JSON -->
-                <ColumnDefinition Width="148"/> <!-- Save Filter -->
+                <ColumnDefinition Width="130"/> <!-- Select Filter -->
+                <ColumnDefinition Width="130"/> <!-- Visual -->
+                <ColumnDefinition Width="130"/> <!-- JSON -->
+                <ColumnDefinition Width="130"/> <!-- TEST -->
+                <ColumnDefinition Width="130"/> <!-- Save Filter -->
             </Grid.ColumnDefinitions>
-            
+
             <!-- Triangle container -->
             <Grid Grid.Column="0"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Bottom">
-                
+
                 <!-- Drop shadow triangle -->
-                <Polygon Points="10,20 20,5 0,5" 
+                <Polygon Points="10,20 20,5 0,5"
                          Fill="{StaticResource SemiTransparentShadow}"
                          Margin="2,2,0,0"/>
-                
+
                 <!-- Main triangle that bounces -->
                 <Polygon Name="TabTriangle"
-                         Points="10,20 20,5 0,5" 
+                         Points="10,20 20,5 0,5"
                          Fill="{StaticResource Red}">
                     <Polygon.Styles>
                         <Style Selector="Polygon">
                             <Style.Animations>
-                                <Animation Duration="0:0:1.2" 
+                                <Animation Duration="0:0:1.2"
                                            IterationCount="Infinite"
                                            PlaybackDirection="Alternate"
                                            Easing="SineEaseInOut">
@@ -318,23 +319,28 @@
                 </Polygon>
             </Grid>
         </Grid>
-        
+
         <!-- Tab buttons -->
-        <StackPanel Grid.Row="1" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0,0,0,2">
-            <Button Name="LoadSaveTab" 
-                    Content="Select Filter" 
+            <Button Name="LoadSaveTab"
+                    Content="Select"
                     Classes="tab-button active"
                     Click="OnTabClick"/>
-            <Button Name="VisualTab" 
-                    Content="Visual" 
+            <Button Name="VisualTab"
+                    Content="Visual"
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>
-            <Button Name="JsonTab" 
-                    Content="JSON" 
+            <Button Name="JsonTab"
+                    Content="JSON"
+                    Classes="tab-button"
+                    IsEnabled="False"
+                    Click="OnTabClick"/>
+            <Button Name="TestTab"
+                    Content="🔥 TEST"
                     Classes="tab-button"
                     IsEnabled="False"
                     Click="OnTabClick"/>
@@ -358,7 +364,7 @@
                         
                         <!-- Left Sidebar - Dark panel with NO border -->
                         <Border Grid.Column="0" Name="LeftSidebar" Background="{StaticResource ContainerDarkPrecise}" BorderThickness="0" CornerRadius="8" Padding="6">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel>
                                     <!-- Category Tabs - GRADIENT BUTTONS like Balatro -->
                                     <Button Name="FavoritesTab" Content="⭐Faves" Classes="nav-button" />
@@ -550,11 +556,11 @@
                                                   NewFilterRequested="OnNewFilterRequested"/>
             </Grid>
 
-            <!-- JSON Panel -->
+            <!-- JSON Panel - ENHANCED -->
             <Grid Name="JsonPanel" IsVisible="False">
-                <Border Background="{StaticResource ContainerDarkPrecise}" 
-                        BorderThickness="0" 
-                        CornerRadius="8" 
+                <Border Background="{StaticResource ContainerDarkPrecise}"
+                        BorderThickness="0"
+                        CornerRadius="8"
                         Padding="16"
                         ClipToBounds="True">
                     <Grid>
@@ -562,58 +568,326 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="12"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        
-                        <TextBlock Grid.Row="0" 
-                                   Text="JSON EDITOR" 
-                                   FontSize="20" 
-                                    
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"/>
-                        
-                        <avalonedit:TextEditor Grid.Row="2"
-                                               Name="JsonEditor"
-                                               SyntaxHighlighting="Json"
-                                               ShowLineNumbers="True"
-                                               FontFamily="Cascadia Code, Consolas, monospace"
-                                               FontSize="14"/>
-                        
-                        <!-- JSON Validation Status Bar with SAVE button -->
-                        <Border Grid.Row="3"
+
+                        <!-- Enhanced Header with Icons -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="⚡ JSON EDITOR ⚡"
+                                       FontSize="22"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource Gold}"
+                                       HorizontalAlignment="Center"/>
+
+                            <!-- Quick Format Button -->
+                            <Button Grid.Column="2"
+                                    Name="FormatJsonButton"
+                                    Content="✨ FORMAT"
+                                    Classes="btn-blue"
+                                    Height="26"
+                                    FontSize="11"
+                                    Padding="8,2"
+                                    HorizontalAlignment="Right"
+                                    Click="OnFormatJsonClick"
+                                    ToolTip.Tip="Auto-format JSON (Ctrl+Shift+F)"/>
+                        </Grid>
+
+                        <!-- Editor with enhanced border -->
+                        <Border Grid.Row="2"
+                                Background="#FFF5F5DC"
+                                BorderBrush="{StaticResource Gold}"
+                                BorderThickness="3"
+                                CornerRadius="6"
+                                BoxShadow="0 3 0 #b8a363">
+                            <avalonedit:TextEditor Name="JsonEditor"
+                                                   SyntaxHighlighting="Json"
+                                                   ShowLineNumbers="True"
+                                                   FontFamily="Cascadia Code, Consolas, monospace"
+                                                   FontSize="14"
+                                                   Padding="8"/>
+                        </Border>
+
+                        <!-- JSON Validation Status Bar with Enhanced Styling -->
+                        <Border Grid.Row="4"
                                 Background="{StaticResource DockGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="0,1,0,0"
-                                Padding="8,4"
-                                Margin="0,4,0,0">
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="10,6"
+                                BoxShadow="0 2 0 #2a3538">
                             <Grid>
-                                <TextBlock Name="JsonValidationStatus"
-                                           Text="JSON: Valid ✓"
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Validation Status -->
+                                <TextBlock Grid.Column="0"
+                                           Name="JsonValidationStatus"
+                                           Text="✓ Valid JSON"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
+                                           FontSize="13"
                                            Foreground="{StaticResource Green}"
-                                           HorizontalAlignment="Left"
                                            VerticalAlignment="Center"/>
-                                <Button Name="SaveJsonButton"
-                                        Content="SAVE"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Padding="12,4"
-                                        Height="28"
-                                        Background="{StaticResource GreenAccentVeryDark}"
-                                        BorderBrush="{StaticResource AccentGreen}"
-                                        BorderThickness="2"
-                                        FontFamily="{StaticResource BalatroFont}"
-                                        FontSize="12"
-                                        Foreground="{StaticResource AccentGreen}"
-                                        Cursor="Hand"
-                                        Click="OnSaveJsonClick"/>
+
+                                <!-- Character/Line Count -->
+                                <TextBlock Grid.Column="1"
+                                           Name="JsonStatsDisplay"
+                                           Text="Lines: 0 | Chars: 0"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MediumGrey}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.7"/>
+
+                                <!-- Action Buttons -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                    <Button Name="ValidateJsonButton"
+                                            Content="🔍 VALIDATE"
+                                            Classes="btn-blue"
+                                            Height="28"
+                                            FontSize="11"
+                                            Padding="10,4"
+                                            Click="OnValidateJsonClick"
+                                            ToolTip.Tip="Validate JSON syntax"/>
+
+                                    <Button Name="SaveJsonButton"
+                                            Content="💾 SAVE"
+                                            Classes="btn-green"
+                                            Height="28"
+                                            FontSize="12"
+                                            Padding="12,4"
+                                            Click="OnSaveJsonClick"
+                                            ToolTip.Tip="Save changes to filter"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
                     </Grid>
                 </Border>
             </Grid>
-            
+
+            <!-- TEST Panel - INSTANT FILTER TESTING! -->
+            <Grid Name="TestPanel" IsVisible="False">
+                <Border Background="{StaticResource ContainerDarkPrecise}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="20"
+                        ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="16"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Grid.Row="0"
+                                   Text="🔥 INSTANT FILTER TEST 🔥"
+                                   FontSize="24"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource Orange}"
+                                   HorizontalAlignment="Center"/>
+
+                        <!-- Test Controls -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource DockGrey}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Padding="16"
+                                BoxShadow="0 3 0 #2a3538">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="12"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Quick Test Settings -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Seeds to Test -->
+                                    <StackPanel Grid.Column="0" Spacing="6">
+                                        <TextBlock Text="Seeds to Test"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Gold}"/>
+                                        <TextBox Name="TestSeedsInput"
+                                                 Watermark="e.g., 100, 500, 1000"
+                                                 Height="32"
+                                                 VerticalContentAlignment="Center"
+                                                 Text="100"/>
+                                    </StackPanel>
+
+                                    <!-- Deck Selection -->
+                                    <StackPanel Grid.Column="2" Spacing="6">
+                                        <TextBlock Text="Deck"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Blue}"/>
+                                        <ComboBox Name="TestDeckCombo"
+                                                  SelectedIndex="0"
+                                                  Height="32">
+                                            <ComboBoxItem Content="Red Deck"/>
+                                            <ComboBoxItem Content="Blue Deck"/>
+                                            <ComboBoxItem Content="Yellow Deck"/>
+                                            <ComboBoxItem Content="Green Deck"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <!-- Stake Selection -->
+                                    <StackPanel Grid.Column="4" Spacing="6">
+                                        <TextBlock Text="Stake"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Purple}"/>
+                                        <ComboBox Name="TestStakeCombo"
+                                                  SelectedIndex="0"
+                                                  Height="32">
+                                            <ComboBoxItem Content="White Stake"/>
+                                            <ComboBoxItem Content="Red Stake"/>
+                                            <ComboBoxItem Content="Green Stake"/>
+                                            <ComboBoxItem Content="Gold Stake"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Test Action Buttons -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0"
+                                            Name="QuickTestButton"
+                                            Content="⚡ QUICK TEST (100 seeds)"
+                                            Classes="btn-green"
+                                            Height="44"
+                                            FontSize="14"
+                                            Click="OnQuickTestClick"/>
+
+                                    <Button Grid.Column="2"
+                                            Name="FullSearchButton"
+                                            Content="🚀 OPEN FULL SEARCH"
+                                            Classes="btn-blue"
+                                            Height="44"
+                                            FontSize="14"
+                                            Click="OnOpenFullSearchClick"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Test Results Preview -->
+                        <Border Grid.Row="4"
+                                Background="{StaticResource PureBlack}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="8">
+                                    <!-- Results Header -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="⚡ TEST RESULTS"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="16"
+                                                   Foreground="{StaticResource Green}"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Name="TestResultCount"
+                                                   Text="0 matches found"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource Gold}"/>
+                                    </Grid>
+
+                                    <!-- Results List -->
+                                    <ItemsControl Name="TestResultsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{StaticResource DarkModalGrey}"
+                                                        BorderBrush="{StaticResource Blue}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Padding="10,6"
+                                                        Margin="0,2">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding Seed}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource Gold}"
+                                                                   Width="100"/>
+
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Details}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="12"
+                                                                   Foreground="{StaticResource White}"
+                                                                   Margin="12,0,0,0"/>
+
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Score}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource Green}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Empty State -->
+                                    <TextBlock Name="TestEmptyState"
+                                               Text="Run a quick test to preview filter results! 🎯"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Margin="0,40,0,0"
+                                               Opacity="0.6"
+                                               IsVisible="True"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
             <!-- Filter Info/Metadata Panel -->
             <Grid Name="SaveFilterPanel" IsVisible="False">
                 <Border Background="{StaticResource ContainerDarkPrecise}" 

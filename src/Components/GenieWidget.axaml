@@ -1,0 +1,236 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.GenieWidget"
+             x:DataType="vm:GenieWidgetViewModel"
+             x:CompileBindings="True">
+
+    <UserControl.Styles>
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="{StaticResource Grey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        </Style>
+
+        <Style Selector="Border.genie-header">
+            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+            <Setter Property="CornerRadius" Value="8,8,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Border.genie-content">
+            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <Style Selector="TextBox.prompt-input">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="MinHeight" Value="60"/>
+            <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        </Style>
+
+        <Style Selector="TextBox.prompt-input:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <Style Selector="Button.genie-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.genie-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <!-- Minimized State - Magic Lamp Icon -->
+        <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
+            <Button Background="{StaticResource Grey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Width="100" Height="48"
+                    Cursor="Hand"
+                    Command="{Binding ToggleMinimizeCommand}"
+                    PointerPressed="OnWidgetPointerPressed"
+                    PointerMoved="OnWidgetPointerMoved"
+                    PointerReleased="OnWidgetPointerReleased">
+                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                    <TextBlock Text="🧞" FontSize="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="Genie" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Expanded State - Full Genie Interface -->
+        <Border Name="ExpandedView"
+                Classes="widget-container"
+                IsVisible="{Binding !IsMinimized}"
+                Width="420"
+                Margin="10,10,0,0"
+                PointerPressed="OnWidgetPointerPressed"
+                PointerMoved="OnWidgetPointerMoved"
+                PointerReleased="OnWidgetPointerReleased">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header with Title and Minimize Button -->
+                <Border Grid.Row="0" Classes="genie-header" Padding="12,8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🧞" FontSize="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Filter Genie"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="_"
+                                Command="{Binding ToggleMinimizeCommand}"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="White"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="8,0"
+                                Cursor="Hand"/>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
+                    <Border Classes="genie-content">
+                        <StackPanel Spacing="12">
+
+                            <!-- Prompt Input -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="✨ Describe your dream seed:"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           Foreground="{StaticResource InfoTextPrecise}"/>
+                                <TextBox Classes="prompt-input"
+                                         Text="{Binding UserPrompt}"
+                                         Watermark="e.g. 'Find me a Perkeo with Blueprint and Negative tags'"
+                                         MaxHeight="120"/>
+                            </StackPanel>
+
+                            <!-- Generate Button -->
+                            <Button Classes="genie-button"
+                                    Command="{Binding GenerateFilterCommand}"
+                                    IsEnabled="{Binding !IsGenerating}"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding GenerateButtonText}" FontSize="13"/>
+                                    <TextBlock Text="{Binding GeneratingSpinner}" FontSize="13" IsVisible="{Binding IsGenerating}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Status Message -->
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       Foreground="{Binding StatusColor}"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       IsVisible="{Binding HasStatusMessage}"/>
+
+                            <!-- Generated Config Preview -->
+                            <Border IsVisible="{Binding HasGeneratedConfig}"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderBrush="{StaticResource Blue}"
+                                    BorderThickness="2"
+                                    CornerRadius="6"
+                                    Padding="10">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="✅ Generated Filter:"
+                                               FontWeight="Bold"
+                                               FontSize="11"
+                                               Foreground="{StaticResource Blue}"/>
+
+                                    <TextBlock Text="{Binding GeneratedFilterName}"
+                                               FontWeight="Bold"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextLight}"/>
+
+                                    <TextBlock Text="{Binding GeneratedFilterSummary}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource InfoTextPrecise}"
+                                               TextWrapping="Wrap"/>
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                        <Button Grid.Column="0"
+                                                Content="💾 Save"
+                                                Command="{Binding SaveFilterCommand}"
+                                                Classes="btn-green"
+                                                FontSize="11"
+                                                Padding="8,4"/>
+                                        <Button Grid.Column="1"
+                                                Content="🔍 Search"
+                                                Command="{Binding SearchFilterCommand}"
+                                                Classes="btn-blue"
+                                                FontSize="11"
+                                                Padding="8,4"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Quick Examples -->
+                            <Expander Header="💡 Example Prompts" FontSize="11">
+                                <StackPanel Spacing="6" Margin="0,8,0,0">
+                                    <Button Content="🎴 Perkeo with Blueprint and Brainstorm"
+                                            Command="{Binding UseExampleCommand}"
+                                            CommandParameter="Find me a Ghost Deck seed with Perkeo soul joker, Blueprint, and Brainstorm in antes 1-3"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent"
+                                            FontSize="10"
+                                            Padding="6,4"/>
+                                    <Button Content="🏷️ Negative tags in early game"
+                                            Command="{Binding UseExampleCommand}"
+                                            CommandParameter="Get me seeds with Negative tags on antes 2 and 3"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent"
+                                            FontSize="10"
+                                            Padding="6,4"/>
+                                    <Button Content="💰 Economy build with vouchers"
+                                            Command="{Binding UseExampleCommand}"
+                                            CommandParameter="Green deck with Egg, Bull, and Observatory voucher"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent"
+                                            FontSize="10"
+                                            Padding="6,4"/>
+                                    <Button Content="❌ Avoid specific jokers"
+                                            Command="{Binding UseExampleCommand}"
+                                            CommandParameter="Any seed without Chicot or The Idol"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent"
+                                            FontSize="10"
+                                            Padding="6,4"/>
+                                </StackPanel>
+                            </Expander>
+
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

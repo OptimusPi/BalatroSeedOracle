@@ -53,9 +53,12 @@
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
     <PackageReference Include="DuckDB.NET.Data" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
+    <PackageReference Include="Egorozh.ColorPicker.Avalonia" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" />
     <PackageReference Include="MessageBox.Avalonia" />
     <PackageReference Include="NAudio.Vorbis" />
     <PackageReference Include="NVorbis" />

@@ -769,7 +769,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Text = "SELECT FILTER FOR SEARCH",
                 FontSize = 20,
-                FontFamily = Application.Current?.Resources["BalatroFont"] as Avalonia.Media.FontFamily,
+                FontFamily = (Application.Current?.Resources["BalatroFont"] as Avalonia.Media.FontFamily) ?? Avalonia.Media.FontFamily.Default,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Foreground = Avalonia.Media.Brush.Parse("#00FF88")
             };

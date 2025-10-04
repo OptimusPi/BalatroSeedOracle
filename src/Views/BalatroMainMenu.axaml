@@ -141,12 +141,19 @@
                                      Margin="20,24,20,0"
                                      ClipToBounds="False"/>
 
-            <!-- Audio Visualizer Settings Widget - starts minimized, movable -->
-            <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
+            <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
+            <components:GenieWidget x:Name="GenieWidget"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="20,24,0,0"
+                                   ClipToBounds="False"/>
+
+            <!-- Audio Visualizer Settings Widget - DISABLED (causes double music playback) -->
+            <!-- <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Top"
                                                     Margin="20,100,0,0"
-                                                    ClipToBounds="False"/>
+                                                    ClipToBounds="False"/> -->
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->

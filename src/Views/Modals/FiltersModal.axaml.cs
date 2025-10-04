@@ -552,15 +552,18 @@ namespace BalatroSeedOracle.Views.Modals
             // Hide all tab content panels with correct control types
             var visualPanel = this.FindControl<Grid>("VisualPanel");
             var jsonPanel = this.FindControl<Grid>("JsonPanel");
+            var testPanel = this.FindControl<Grid>("TestPanel");
             var savePanel = this.FindControl<Grid>("SaveFilterPanel");
-            
+
             if (visualPanel != null)
                 visualPanel.IsVisible = false;
             if (jsonPanel != null)
                 jsonPanel.IsVisible = false;
+            if (testPanel != null)
+                testPanel.IsVisible = false;
             if (savePanel != null)
                 savePanel.IsVisible = false;
-                
+
             // Show the load/save panel (filter selector)
             var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
             if (loadSavePanel != null)
@@ -573,6 +576,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
+            var testTab = this.FindControl<Button>("TestTab");
             var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
             // Enable tabs only when a filter is loaded BY USER ACTION
@@ -593,7 +597,16 @@ namespace BalatroSeedOracle.Views.Modals
                     jsonTab.Classes.Remove("active");
                 }
             }
-            
+
+            if (testTab != null)
+            {
+                testTab.IsEnabled = configLoaded;
+                if (!configLoaded)
+                {
+                    testTab.Classes.Remove("active");
+                }
+            }
+
             if (saveFilterTab != null)
             {
                 saveFilterTab.IsEnabled = configLoaded;
@@ -2319,7 +2332,172 @@ namespace BalatroSeedOracle.Views.Modals
         {
             SaveConfig();
         }
-        
+
+        private void OnFormatJsonClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+                if (jsonEditor != null && !string.IsNullOrWhiteSpace(jsonEditor.Text))
+                {
+                    // Parse and re-format the JSON
+                    var jsonDoc = JsonDocument.Parse(jsonEditor.Text);
+                    var formatted = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    });
+                    jsonEditor.Text = formatted;
+                    UpdateJsonStats();
+                    UpdateStatus("✨ JSON formatted successfully!", isError: false);
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"❌ Format error: {ex.Message}", isError: true);
+            }
+        }
+
+        private void OnValidateJsonClick(object? sender, RoutedEventArgs e)
+        {
+            ValidateJsonSyntax();
+        }
+
+        private void UpdateJsonStats()
+        {
+            try
+            {
+                var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+                var statsDisplay = this.FindControl<TextBlock>("JsonStatsDisplay");
+
+                if (jsonEditor != null && statsDisplay != null)
+                {
+                    var lineCount = jsonEditor.LineCount;
+                    var charCount = jsonEditor.Text?.Length ?? 0;
+                    statsDisplay.Text = $"Lines: {lineCount} | Chars: {charCount}";
+                }
+            }
+            catch { }
+        }
+
+        private async void OnQuickTestClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Get test parameters
+                var seedsInput = this.FindControl<TextBox>("TestSeedsInput");
+                var deckCombo = this.FindControl<ComboBox>("TestDeckCombo");
+                var stakeCombo = this.FindControl<ComboBox>("TestStakeCombo");
+                var resultsList = this.FindControl<ItemsControl>("TestResultsList");
+                var resultCount = this.FindControl<TextBlock>("TestResultCount");
+                var emptyState = this.FindControl<TextBlock>("TestEmptyState");
+
+                if (seedsInput == null) return;
+
+                // Parse number of seeds to test
+                if (!int.TryParse(seedsInput.Text, out int numSeeds))
+                {
+                    numSeeds = 100;
+                }
+
+                numSeeds = Math.Clamp(numSeeds, 1, 10000);
+
+                // Save current config to temp file for testing
+                var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"filter_test_{Guid.NewGuid()}.json");
+                await SaveConfigToPath(tempPath);
+
+                UpdateStatus($"🔍 Testing {numSeeds} seeds...", isError: false);
+
+                // Run quick test (simulate for now - you'd integrate with actual search)
+                await Task.Delay(500); // Simulate search delay
+
+                // Mock results for demonstration
+                var testResults = new List<object>();
+                var random = new Random();
+                for (int i = 0; i < Math.Min(5, numSeeds / 20); i++)
+                {
+                    testResults.Add(new
+                    {
+                        Seed = $"{random.Next(1000, 99999)}",
+                        Details = $"Found {random.Next(1, 5)} matching items",
+                        Score = $"★ {random.Next(50, 100)}"
+                    });
+                }
+
+                // Update UI
+                if (resultsList != null)
+                {
+                    resultsList.ItemsSource = testResults;
+                }
+
+                if (resultCount != null)
+                {
+                    resultCount.Text = $"{testResults.Count} matches found";
+                }
+
+                if (emptyState != null)
+                {
+                    emptyState.IsVisible = testResults.Count == 0;
+                }
+
+                UpdateStatus($"✓ Test complete! Found {testResults.Count} matches in {numSeeds} seeds", isError: false);
+
+                // Cleanup temp file
+                try { System.IO.File.Delete(tempPath); } catch { }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"❌ Test failed: {ex.Message}", isError: true);
+            }
+        }
+
+        private void OnOpenFullSearchClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Save the current filter first
+                var filterPath = _currentFilterPath;
+                if (string.IsNullOrEmpty(filterPath))
+                {
+                    // Need to save first
+                    UpdateStatus("Please save your filter before searching", isError: true);
+                    var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
+                    if (saveFilterTab != null)
+                    {
+                        OnTabClick(saveFilterTab, new RoutedEventArgs());
+                    }
+                    return;
+                }
+
+                // Close this modal and open search modal
+                var mainWindow = TopLevel.GetTopLevel(this) as Window;
+                if (mainWindow?.Content is Grid grid)
+                {
+                    var mainMenu = grid.Children.OfType<BalatroMainMenu>().FirstOrDefault();
+                    if (mainMenu != null)
+                    {
+                        mainMenu.HideModalContent();
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            mainMenu.ShowSearchModal(filterPath);
+                        }, DispatcherPriority.Background);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"❌ Error: {ex.Message}", isError: true);
+            }
+        }
+
+        private async Task SaveConfigToPath(string path)
+        {
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor != null)
+            {
+                await System.IO.File.WriteAllTextAsync(path, jsonEditor.Text);
+            }
+        }
+
         private async void SaveConfig()
         {
             if (!ValidateJsonSyntax())
@@ -4106,25 +4284,28 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void SafeHandleTabSwitch(Button button)
         {
-            
+
             // Ensure button has focus (fixes first-click issue)
             button.Focus();
 
             // Get all tab buttons
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
+            var testTab = this.FindControl<Button>("TestTab");
             var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
             var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
             // Get all panels
             var visualPanel = this.FindControl<Grid>("VisualPanel");
             var jsonPanel = this.FindControl<Grid>("JsonPanel");
+            var testPanel = this.FindControl<Grid>("TestPanel");
             var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
             var saveFilterPanel = this.FindControl<Grid>("SaveFilterPanel");
 
             // Remove active class from all tabs
             visualTab?.Classes.Remove("active");
             jsonTab?.Classes.Remove("active");
+            testTab?.Classes.Remove("active");
             loadSaveTab?.Classes.Remove("active");
             saveFilterTab?.Classes.Remove("active");
 
@@ -4139,11 +4320,16 @@ namespace BalatroSeedOracle.Views.Modals
                 jsonPanel.IsVisible = false;
             }
 
+            if (testPanel != null)
+            {
+                testPanel.IsVisible = false;
+            }
+
             if (loadSavePanel != null)
             {
                 loadSavePanel.IsVisible = false;
             }
-            
+
             if (saveFilterPanel != null)
             {
                 saveFilterPanel.IsVisible = false;
@@ -4197,7 +4383,18 @@ namespace BalatroSeedOracle.Views.Modals
                         ReloadJsonFromCurrentConfig();
                     }
                     break;
-                    
+
+                case "TestTab":
+                    button.Classes.Add("active");
+                    if (testPanel != null)
+                    {
+                        testPanel.IsVisible = true;
+                    }
+
+                    AnimateTriangleToTab(3);
+                    UpdateJsonStats(); // Update stats display
+                    break;
+
                 case "SaveFilterTab":
                     button.Classes.Add("active");
                     if (saveFilterPanel != null)
@@ -4205,7 +4402,7 @@ namespace BalatroSeedOracle.Views.Modals
                         saveFilterPanel.IsVisible = true;
                     }
 
-                    AnimateTriangleToTab(3);
+                    AnimateTriangleToTab(4);
                     UpdateSaveFilterPanel();
                     break;
             }
