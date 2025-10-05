@@ -14,15 +14,21 @@
         <KeyBinding Gesture="Space" Command="{Binding TogglePauseCommand}"/>
         <KeyBinding Gesture="Up" Command="{Binding IncreaseVolumeCommand}"/>
         <KeyBinding Gesture="Down" Command="{Binding DecreaseVolumeCommand}"/>
-
         <KeyBinding Gesture="C" Command="{Binding ClearHistoryCommand}"/>
+        <KeyBinding Gesture="S" Command="{Binding ToggleShaderCommand}"/>
     </Window.KeyBindings>
-    
+
     <Grid>
         <!-- 🎵 MUSIC-REACTIVE BALATRO BACKGROUND 🔥 -->
-        <controls:BalatroShaderBackground x:Name="VibeBackground"
+        <controls:BalatroShaderBackground x:Name="BalatroBackground"
                                          Theme="VibeOut"
-                                         IsAnimating="True"/>
+                                         IsAnimating="True"
+                                         IsVisible="{Binding ShaderType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=0}"/>
+
+        <!-- 🌀 PSYCHEDELIC FRACTAL BACKGROUND (MilkDrop vibes) 💫 -->
+        <controls:PsychedelicShaderBackground x:Name="PsychedelicBackground"
+                                             IsAnimating="True"
+                                             IsVisible="{Binding ShaderType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=1}"/>
         
         <!-- Matrix rain overlay -->
         <ItemsControl ItemsSource="{Binding MatrixSeeds}">
@@ -104,19 +110,32 @@
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="20"
                            VerticalAlignment="Center"/>
-                
+
                 <TextBlock Text="{Binding AudioState}"
                            Foreground="#FFD700"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="16"
                            VerticalAlignment="Center"
                            Opacity="0.8"/>
-                
+
                 <TextBlock Text="{Binding CurrentSeed}"
                            Foreground="#FFD700"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="20"
                            VerticalAlignment="Center"/>
+
+                <!-- Shader indicator -->
+                <Border Background="#22FF00FF"
+                        BorderBrush="#FF00FF"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="10,5">
+                    <TextBlock Text="{Binding ShaderName, StringFormat='🌀 {0}'}"
+                               Foreground="#FF00FF"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                </Border>
             </StackPanel>
         </Border>
         
@@ -164,31 +183,170 @@
             </StackPanel>
         </Border>
         
-        <!-- Volume Controls -->
+        <!-- Keybindings Help -->
         <Border VerticalAlignment="Top"
-                HorizontalAlignment="Center"
-                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                Margin="0,20,20,0"
                 Background="#33000000"
-                BorderBrush="#00FF88"
+                BorderBrush="#FF00FF"
                 BorderThickness="1"
                 CornerRadius="10"
-                Padding="20,10">
-            <StackPanel Orientation="Horizontal" Spacing="15">
-                <TextBlock Text="🔊 VOLUME:"
+                Padding="15">
+            <StackPanel Spacing="5">
+                <TextBlock Text="⌨️ CONTROLS"
+                           Foreground="#FF00FF"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           Margin="0,0,0,5"/>
+                <TextBlock Text="[S] Switch Shader"
                            Foreground="#00FF88"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+                <TextBlock Text="[C] Clear History"
+                           Foreground="#00FF88"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+                <TextBlock Text="[Space] Pause/Resume"
+                           Foreground="#00FF88"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+                <TextBlock Text="[↑/↓] Volume"
+                           Foreground="#00FF88"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+                <TextBlock Text="[Esc] Exit"
+                           Foreground="#00FF88"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 8-Track Mixer Panel (Left Side) -->
+        <Border VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                Margin="20,0,0,20"
+                Background="#22000000"
+                BorderBrush="#FF00FF"
+                BorderThickness="2"
+                CornerRadius="10"
+                Padding="15">
+            <StackPanel Spacing="8">
+                <TextBlock Text="🎛️ MIXER"
+                           Foreground="#FF00FF"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="14"
-                           VerticalAlignment="Center"/>
-                <Slider Value="{Binding MasterVolume}"
-                        Minimum="0"
-                        Maximum="1"
-                        Width="200"
-                        VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}"
-                           Foreground="#FFD700"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="14"
-                           VerticalAlignment="Center"/>
+                           FontSize="16"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,5"/>
+
+                <!-- Drums 1 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Drums 1" Foreground="#FF4444" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Drums1Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Drums1Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Drums 2 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Drums 2" Foreground="#FF4444" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Drums2Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Drums2Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Bass 1 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Bass 1" Foreground="#4444FF" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Bass1Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Bass1Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Bass 2 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Bass 2" Foreground="#4444FF" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Bass2Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Bass2Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Chords 1 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Chords 1" Foreground="#44FF44" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Chords1Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Chords1Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Chords 2 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Chords 2" Foreground="#44FF44" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Chords2Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Chords2Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Melody 1 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Melody 1" Foreground="#FF44FF" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Melody1Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Melody1Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Melody 2 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Melody 2" Foreground="#FF44FF" FontSize="12" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Value="{Binding Melody2Volume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Melody2Volume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Master Volume -->
+                <Border BorderBrush="#00FF88" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,5,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="🔊 Master" Foreground="#00FF88" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Value="{Binding MasterVolume}" Minimum="0" Maximum="1" SmallChange="0.01"/>
+                        <TextBlock Grid.Column="2" Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}" Foreground="#FFD700" FontSize="11" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
             </StackPanel>
         </Border>
         

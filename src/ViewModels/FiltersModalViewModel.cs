@@ -380,19 +380,36 @@ namespace BalatroSeedOracle.ViewModels
 
         private Dictionary<string, List<string>> InitializeItemCategories()
         {
-            // Initialize from BalatroData like the original implementation
+            // Initialize from BalatroData
             return new Dictionary<string, List<string>>
             {
                 ["Favorites"] = new List<string>(), // TODO: Load from FavoritesService
-                ["Jokers"] = new List<string>(), // TODO: Load from BalatroData.Jokers.Keys
-                ["Tarots"] = new List<string>(), // TODO: Load from BalatroData.TarotCards.Keys
-                ["Planets"] = new List<string>(), // TODO: Load from BalatroData.PlanetCards.Keys
-                ["Spectrals"] = new List<string>(), // TODO: Load from BalatroData.SpectralCards.Keys
-                ["PlayingCards"] = new List<string>(), // TODO: Generate playing cards list
-                ["Vouchers"] = new List<string>(), // TODO: Load from BalatroData.Vouchers.Keys
-                ["Tags"] = new List<string>(), // TODO: Load from BalatroData.Tags.Keys
-                ["Bosses"] = new List<string>() // TODO: Load from BalatroData.BossBlinds.Keys
+                ["Jokers"] = new List<string>(BalatroData.Jokers.Keys),
+                ["Tarots"] = new List<string>(BalatroData.TarotCards.Keys),
+                ["Planets"] = new List<string>(BalatroData.PlanetCards.Keys),
+                ["Spectrals"] = new List<string>(BalatroData.SpectralCards.Keys),
+                ["PlayingCards"] = GeneratePlayingCardsList(),
+                ["Vouchers"] = new List<string>(BalatroData.Vouchers.Keys),
+                ["Tags"] = new List<string>(BalatroData.Tags.Keys),
+                ["Bosses"] = new List<string>(BalatroData.BossBlinds.Keys)
             };
+        }
+
+        private List<string> GeneratePlayingCardsList()
+        {
+            var cards = new List<string>();
+            var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+            var suits = new[] { "♠", "♥", "♦", "♣" };
+
+            foreach (var suit in suits)
+            {
+                foreach (var rank in ranks)
+                {
+                    cards.Add($"{rank}{suit}");
+                }
+            }
+
+            return cards;
         }
 
         private Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()

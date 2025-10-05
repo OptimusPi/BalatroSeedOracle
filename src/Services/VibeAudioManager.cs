@@ -15,14 +15,6 @@ using NAudio.Vorbis;
 
 namespace BalatroSeedOracle.Services
 {
-    public enum AudioState
-    {
-        MainMenu,      // Drums1 + Bass1 (low volume)
-        ModalOpen,     // + Chords1  
-        VibeLevel1,    // Active search - Drums1 + Bass1 + Chords1
-        VibeLevel2,    // Good seeds found - DRUMS2 + Bass1 + Chords1 (BEATS KICK IN!)
-        VibeLevel3     // Maximum vibe - Drums2 + Bass2 + Chords2 + Melody1
-    }
 
     public class VibeAudioManager : IDisposable
     {
@@ -31,7 +23,6 @@ namespace BalatroSeedOracle.Services
 
         // Individual audio tracks with gain control
         private readonly Dictionary<string, AudioTrack> _tracks = new();
-        private AudioState _currentState = AudioState.VibeLevel1; // Start as different state to force transition
 
         // Volume fade timer
         private System.Timers.Timer? _volumeFadeTimer;
@@ -96,6 +87,7 @@ namespace BalatroSeedOracle.Services
             return Math.Clamp(fftIntensity * (volume / 2f), 0f, 1f);
         }
         
+
         public VibeAudioManager()
         {
             Console.WriteLine("🎵🎵🎵 VIBE AUDIO MANAGER CONSTRUCTOR CALLED! 🎵🎵🎵");
@@ -114,8 +106,9 @@ namespace BalatroSeedOracle.Services
                 _volumeFadeTimer.Start();
                 Console.WriteLine("✅ Volume fade timer started (60fps)");
 
-                TransitionTo(AudioState.MainMenu);
-                Console.WriteLine("✅ TransitionTo(MainMenu) completed");
+                // Start all tracks playing at default volumes (user can adjust with sliders)
+                InitializeAllTracks();
+                Console.WriteLine("✅ All tracks initialized");
 
                 Console.WriteLine($"🎵 VIBE AUDIO MANAGER READY! {_tracks.Count} tracks loaded");
             }
@@ -124,14 +117,15 @@ namespace BalatroSeedOracle.Services
                 Console.WriteLine($"❌ VIBE AUDIO MANAGER FAILED: {ex.Message}\n{ex.StackTrace}");
             }
         }
-        
+
         private void InitializeAudio()
         {
             try
             {
-                _waveOut = new WaveOutEvent();
-                // NOTE: Mixer format will be set after first track is loaded (auto-detect sample rate)
-                // This fixes macOS compatibility where sample rate mismatches cause crashes
+                _waveOut = new WaveOutEvent
+                {
+                    DesiredLatency = 100  // 100ms buffer (prevents crackle/pops)
+                };
             }
             catch (Exception ex)
             {
@@ -150,12 +144,11 @@ namespace BalatroSeedOracle.Services
                 return;
             }
 
-            // Load all your custom tracks
             var trackNames = new[] { "Drums1", "Drums2", "Bass1", "Bass2", "Chords1", "Chords2", "Melody1", "Melody2" };
 
+            // STEP 1: Load all track files (DON'T add to mixer yet!)
             foreach (var trackName in trackNames)
             {
-                // Try OGG first (preferred), then WAV, then MP3
                 var extensions = new[] { ".ogg", ".wav", ".mp3" };
                 bool loaded = false;
 
@@ -169,7 +162,7 @@ namespace BalatroSeedOracle.Services
                             var track = new AudioTrack(filePath, trackName);
                             _tracks[trackName] = track;
 
-                            // Initialize mixer with first track's sample rate (auto-detect for macOS compatibility)
+                            // Initialize mixer with first track's sample rate
                             if (_mixer == null && _waveOut != null)
                             {
                                 var waveFormat = track.SampleProvider.WaveFormat;
@@ -178,31 +171,7 @@ namespace BalatroSeedOracle.Services
                                 _mixer.ReadFully = true;
                                 _waveOut.Init(_mixer);
                                 _waveOut.Volume = 1.0f;
-                                _waveOut.Play();
-                            }
-
-                            // ADD ALL TRACKS TO MIXER IMMEDIATELY (at silent volume)
-                            if (_mixer != null)
-                            {
-                                ISampleProvider provider;
-
-                                // Drums -> beat detection, Others -> color intensity
-                                if (trackName == "Drums1" || trackName == "Drums2")
-                                {
-                                    provider = new AudioAnalyzerProvider(track.SampleProvider, this, true); // Drums for beats
-                                }
-                                else if (trackName.StartsWith("Bass") || trackName.StartsWith("Chords") || trackName.StartsWith("Melody"))
-                                {
-                                    provider = new AudioAnalyzerProvider(track.SampleProvider, this, false); // Melodic for colors
-                                }
-                                else
-                                {
-                                    provider = track.SampleProvider; // No analysis
-                                }
-
-                                _mixer.AddMixerInput(provider);
-                                track.IsInMixer = true;
-                                track.SetImmediateVolume(0.01f);  // Nearly silent but still playing for sync
+                                // DON'T PLAY YET!
                             }
 
                             loaded = true;
@@ -220,119 +189,95 @@ namespace BalatroSeedOracle.Services
                     DebugLogger.Log("VibeAudioManager", $"⚠️ No compatible audio file found for {trackName}.");
                 }
             }
+
+            // STEP 2: Add ALL tracks to mixer BEFORE starting playback
+            foreach (var trackName in trackNames)
+            {
+                if (_tracks.TryGetValue(trackName, out var track))
+                {
+                    ISampleProvider provider;
+
+                    if (trackName == "Drums1" || trackName == "Drums2")
+                    {
+                        provider = new AudioAnalyzerProvider(track.SampleProvider, this, true);
+                    }
+                    else if (trackName.StartsWith("Bass") || trackName.StartsWith("Chords") || trackName.StartsWith("Melody"))
+                    {
+                        provider = new AudioAnalyzerProvider(track.SampleProvider, this, false);
+                    }
+                    else
+                    {
+                        provider = track.SampleProvider;
+                    }
+
+                    _mixer!.AddMixerInput(provider);
+                    track.IsInMixer = true;
+                    track.SetImmediateVolume(0.0f);
+                }
+            }
+
+            // STEP 3: NOW start playback (all tracks at sample 0!)
+            if (_waveOut != null && _tracks.Count > 0)
+            {
+                _waveOut.Play();
+                Console.WriteLine($"✅ Started playback with {_tracks.Count} synchronized tracks");
+            }
         }
         
-        public void TransitionTo(AudioState newState)
+        /// <summary>
+        /// Initialize all 8 tracks to play simultaneously at user-defined volumes
+        /// No more state machine bullshit - user controls everything!
+        /// </summary>
+        private void InitializeAllTracks()
         {
-            if (_currentState == newState) return;
-            
-            DebugLogger.Log("VibeAudioManager", $"🎵 Audio transition: {_currentState} → {newState}");
-            _currentState = newState;
-            
-            // First, set all tracks to target volumes
-            foreach (var track in _tracks.Values)
+            // Load user volume settings from profile
+            var profile = App.GetService<UserProfileService>()?.GetProfile();
+            var settings = profile?.VibeOutSettings;
+
+            if (settings == null)
             {
-                track.SetTargetVolume(0f); // Default to off
+                // Default volumes if no settings
+                SetTrackVolume("Drums1", 1.0f, 0.0f);
+                SetTrackVolume("Drums2", 1.0f, 0.0f);
+                SetTrackVolume("Bass1", 1.0f, -0.3f);
+                SetTrackVolume("Bass2", 1.0f, 0.1f);
+                SetTrackVolume("Chords1", 1.0f, -0.15f);
+                SetTrackVolume("Chords2", 1.0f, 0.05f);
+                SetTrackVolume("Melody1", 1.0f, -0.15f);
+                SetTrackVolume("Melody2", 1.0f, 0.05f);
             }
-            
-            // Configure tracks for the new state
-            // YOUR PRODUCTION VALUES with stereo field swaps + velocity shifts!
-            // Pan: -1 = full left, 0 = center, +1 = full right
-            // 15% left = -0.15, 5% right = +0.05, etc.
-            switch (newState)
+            else
             {
-                case AudioState.MainMenu:
-                    // 🎵 NORMAL MUSIC (regular tempo) - Full energy, wide stereo, bright sound
-                    SetTrack("Chords1",  0.90f, -0.15f); // 90% velocity, 15% left
-                    SetTrack("Chords2",  1.00f, +0.05f); // 100% velocity, 5% right
-                    SetTrack("Melody1",  0.90f, -0.15f); // 90% velocity, 15% left
-                    SetTrack("Melody2",  1.00f, +0.05f); // 100% velocity, 5% right
-                    SetTrack("Bass1",    0.95f, -0.30f); // 95% velocity, 30% left
-                    SetTrack("Bass2",    1.00f, +0.10f); // 100% velocity, 10% right
-                    SetTrack("Drums1",   0.00f,  0.00f); // MUTED
-                    SetTrack("Drums2",   1.00f,  0.00f); // 100% velocity, centered
-
-                    // Remove lowpass filter - full brightness
-                    foreach (var track in _tracks.Values)
-                        track.SetLowpassCutoff(20000f); // No filtering (full spectrum)
-                    break;
-
-                case AudioState.ModalOpen:
-                    // 🌙 CALMER MUSIC - Stereo field SWAPS! Drums1 fades in, Drums2 fades out
-                    // WARM & SOFT with lowpass filter (cuts highs for peaceful vibe)
-                    SetTrack("Chords1",  0.95f, +0.05f); // SWAP: 95% velocity, 5% RIGHT (was left)
-                    SetTrack("Chords2",  0.90f, -0.15f); // SWAP: 90% velocity, 15% LEFT (was right)
-                    SetTrack("Melody1",  0.95f, +0.05f); // SWAP: 95% velocity, 5% RIGHT
-                    SetTrack("Melody2",  0.90f, -0.15f); // SWAP: 90% velocity, 15% LEFT
-                    SetTrack("Bass1",    0.95f, -0.10f); // Slight shift: 10% left (was 30%)
-                    SetTrack("Bass2",    0.75f, +0.10f); // Quieter: 75% velocity, 10% right
-                    SetTrack("Drums1",   1.00f,  0.00f); // FADE IN: 100% velocity (calm pattern)
-                    SetTrack("Drums2",   0.00f,  0.00f); // FADE OUT: muted (intense pattern)
-
-                    // Apply warm lowpass filter - cuts highs, softer/warmer sound
-                    foreach (var track in _tracks.Values)
-                        track.SetLowpassCutoff(3000f); // Cut above 3kHz for warm, peaceful vibe
-                    break;
-
-                case AudioState.VibeLevel1:
-                    // Active search - similar to MainMenu, full brightness
-                    SetTrack("Chords1",  0.90f, -0.15f);
-                    SetTrack("Chords2",  1.00f, +0.05f);
-                    SetTrack("Melody1",  0.90f, -0.15f);
-                    SetTrack("Melody2",  1.00f, +0.05f);
-                    SetTrack("Bass1",    0.95f, -0.30f);
-                    SetTrack("Bass2",    1.00f, +0.10f);
-                    SetTrack("Drums1",   0.00f,  0.00f);
-                    SetTrack("Drums2",   0.80f,  0.00f); // Slightly quieter
-
-                    // No filter - full spectrum
-                    foreach (var track in _tracks.Values)
-                        track.SetLowpassCutoff(20000f);
-                    break;
-
-                case AudioState.VibeLevel2:
-                    // Good seeds - boost intensity, full brightness
-                    SetTrack("Chords1",  0.95f, -0.15f);
-                    SetTrack("Chords2",  1.00f, +0.05f);
-                    SetTrack("Melody1",  0.95f, -0.15f);
-                    SetTrack("Melody2",  1.00f, +0.05f);
-                    SetTrack("Bass1",    1.00f, -0.30f);
-                    SetTrack("Bass2",    1.00f, +0.10f);
-                    SetTrack("Drums1",   0.00f,  0.00f);
-                    SetTrack("Drums2",   0.95f,  0.00f);
-
-                    // No filter - full spectrum
-                    foreach (var track in _tracks.Values)
-                        track.SetLowpassCutoff(20000f);
-                    break;
-
-                case AudioState.VibeLevel3:
-                    // MAXIMUM VIBE - everything at full power, full brightness
-                    SetTrack("Chords1",  1.00f, -0.15f);
-                    SetTrack("Chords2",  1.00f, +0.05f);
-                    SetTrack("Melody1",  1.00f, -0.15f);
-                    SetTrack("Melody2",  1.00f, +0.05f);
-                    SetTrack("Bass1",    1.00f, -0.30f);
-                    SetTrack("Bass2",    1.00f, +0.10f);
-                    SetTrack("Drums1",   0.00f,  0.00f);
-                    SetTrack("Drums2",   1.00f,  0.00f);
-
-                    // No filter - full spectrum
-                    foreach (var track in _tracks.Values)
-                        track.SetLowpassCutoff(20000f);
-                    break;
+                // Use user's saved volumes
+                SetTrackVolume("Drums1", settings.Drums1Volume, 0.0f);
+                SetTrackVolume("Drums2", settings.Drums2Volume, 0.0f);
+                SetTrackVolume("Bass1", settings.Bass1Volume, -0.3f);
+                SetTrackVolume("Bass2", settings.Bass2Volume, 0.1f);
+                SetTrackVolume("Chords1", settings.Chords1Volume, -0.15f);
+                SetTrackVolume("Chords2", settings.Chords2Volume, 0.05f);
+                SetTrackVolume("Melody1", settings.Melody1Volume, -0.15f);
+                SetTrackVolume("Melody2", settings.Melody2Volume, 0.05f);
             }
-            
-            // Add active tracks to mixer if not already present
-            EnsureActiveTracksInMixer();
         }
-        
+
+        /// <summary>
+        /// Set track volume directly (bypasses state machine)
+        /// </summary>
+        public void SetTrackVolume(string trackName, float volume, float pan = 0.0f)
+        {
+            if (_tracks.TryGetValue(trackName, out var track))
+            {
+                track.SetTarget(Math.Clamp(volume, 0f, 1f), pan);
+                Console.WriteLine($"SetTrackVolume: {trackName} vol={volume:F2} pan={pan:F2}");
+            }
+        }
+
         private void SetTrack(string trackName, float targetVolume, float targetPan)
         {
             if (_tracks.TryGetValue(trackName, out var track))
             {
-                Console.WriteLine($"SetTrack: {trackName} vol={targetVolume:F2} pan={targetPan:F2} (will fade smoothly)");
-                track.SetTarget(targetVolume, targetPan);  // Set targets - timer will crossfade smoothly!
+                Console.WriteLine($"SetTrack: {trackName} vol={targetVolume:F2} pan={targetPan:F2}");
+                track.SetTarget(targetVolume, targetPan);
             }
             else
             {
@@ -344,30 +289,7 @@ namespace BalatroSeedOracle.Services
         {
             foreach (var track in _tracks.Values)
             {
-                track.UpdateVolume(); // Smooth fade each track toward target
-            }
-        }
-        
-        private void EnsureActiveTracksInMixer()
-        {
-            if (_mixer == null) return;
-
-            Console.WriteLine($"EnsureActiveTracksInMixer called - checking {_tracks.Count} tracks");
-
-            foreach (var track in _tracks.Values)
-            {
-                Console.WriteLine($"  Track: {track.Name}, TargetVolume: {track.TargetVolume}, IsInMixer: {track.IsInMixer}");
-
-                if (track.TargetVolume > 0f && !track.IsInMixer)
-                {
-                    Console.WriteLine($"    Adding {track.Name} to mixer...");
-                    // Determine if this is a drum track or melodic
-                    bool isDrums = track.Name == "Drums1" || track.Name == "Drums2";
-                    var analyzerProvider = new AudioAnalyzerProvider(track.SampleProvider, this, isDrums);
-                    _mixer.AddMixerInput(analyzerProvider);
-                    track.IsInMixer = true;
-                    Console.WriteLine($"    ✅ {track.Name} added to mixer");
-                }
+                track.UpdateVolume(0.15f);
             }
         }
         
@@ -444,13 +366,6 @@ namespace BalatroSeedOracle.Services
             var midLevel = midCount > 0 ? midSum / midCount : 0f;
             var trebleLevel = trebleCount > 0 ? trebleSum / trebleCount : 0f;
             var peakLevel = Math.Max(Math.Max(bassLevel, midLevel), trebleLevel);
-
-            // AMPLIFY: Tracks are at low volume for sync, so amplify FFT values significantly
-            const float amplification = 100f;
-            bassLevel *= amplification;
-            midLevel *= amplification;
-            trebleLevel *= amplification;
-            peakLevel *= amplification;
 
             // Adaptive peak tracking with decay
             _bassPeak = Math.Max(PEAK_FLOOR, _bassPeak * PEAK_DECAY); // Slow decay with floor
@@ -541,12 +456,6 @@ namespace BalatroSeedOracle.Services
             var trebleLevel = trebleCount > 0 ? trebleSum / trebleCount : 0f;
             var peakLevel = Math.Max(midLevel, trebleLevel);
 
-            // Amplify melodic content (HUGE amplification since tracks at 0.01 volume)
-            const float amplification = 10000f; // 100x more since tracks are at 1% volume
-            midLevel *= amplification;
-            trebleLevel *= amplification;
-            peakLevel *= amplification;
-
             // Adaptive peak tracking with decay (same as drum FFT)
             _midPeak = Math.Max(PEAK_FLOOR, _midPeak * PEAK_DECAY); // Slow decay with floor
             _treblePeak = Math.Max(PEAK_FLOOR, _treblePeak * PEAK_DECAY);
@@ -575,22 +484,6 @@ namespace BalatroSeedOracle.Services
             {
                 AudioAnalysisUpdated?.Invoke(bass, mid, treble, peak);
             }, DispatcherPriority.Normal);
-        }
-        
-        // Public interface for game events
-        public void OnModalOpened() => TransitionTo(AudioState.ModalOpen);
-        public void OnModalClosed() => TransitionTo(AudioState.MainMenu);
-        public void OnSearchStarted() => TransitionTo(AudioState.VibeLevel1);
-        public void OnGoodSeedFound(int score)
-        {
-            if (score > 50)
-            {
-                TransitionTo(AudioState.VibeLevel2); // DRUMS2 KICKS IN!
-            }
-            if (score > 100)
-            {
-                TransitionTo(AudioState.VibeLevel3); // MAXIMUM VIBE!
-            }
         }
         
         public void SetMasterVolume(float volume)
@@ -742,6 +635,19 @@ namespace BalatroSeedOracle.Services
             TargetPan = Math.Clamp(pan, -1f, 1f);
         }
 
+        public void SyncToPosition(long position)
+        {
+            if (_loopStream != null)
+            {
+                _loopStream.Position = position;
+            }
+        }
+
+        public long GetPosition()
+        {
+            return _loopStream?.Position ?? 0;
+        }
+
         public void SetLowpassCutoff(float cutoffHz)
         {
             _lowpassFilter.CutoffFrequency = cutoffHz;
@@ -755,11 +661,10 @@ namespace BalatroSeedOracle.Services
             Console.WriteLine($"  → {Name} volume NOW: {_volumeProvider.Volume}");
         }
 
-        public void UpdateVolume()
+        public void UpdateVolume(float speed)
         {
             // Smooth volume + pan transitions (DoTween style crossfade)
-            // Speed = 0.1 means ~1 second fade, 0.2 means ~0.5 second fade
-            const float speed = 0.15f; // Faster crossfade - feels snappy but smooth
+            // Speed is now configurable from VibeAudioManager!
 
             // Update volume
             if (Math.Abs(CurrentVolume - TargetVolume) > 0.001f)

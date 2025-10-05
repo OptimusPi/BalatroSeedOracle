@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.Extensions
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
+            services.AddTransient<BalatroMainMenuViewModel>();
             services.AddTransient<FiltersModalViewModel>();
             services.AddTransient<SearchModalViewModel>();
             services.AddTransient<AnalyzeModalViewModel>();

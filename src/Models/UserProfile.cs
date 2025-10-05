@@ -47,6 +47,58 @@ namespace BalatroSeedOracle.Models
         /// Whether music is muted
         /// </summary>
         public bool IsMusicMuted { get; set; } = false;
+
+        /// <summary>
+        /// Advanced music settings
+        /// </summary>
+        public AdvancedMusicSettings AdvancedMusicSettings { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Advanced music settings for fine-tuning transitions and mixing
+    /// </summary>
+    public class AdvancedMusicSettings
+    {
+        /// <summary>
+        /// Crossfade speed (0.01 = very slow/smooth, 0.5 = instant)
+        /// Default: 0.15 (feels snappy but smooth)
+        /// </summary>
+        public float CrossfadeSpeed { get; set; } = 0.15f;
+
+        /// <summary>
+        /// Volume of MainMenu state (0-1)
+        /// </summary>
+        public float MainMenuVolume { get; set; } = 0.7f;
+
+        /// <summary>
+        /// Volume of ModalOpen state (0-1)
+        /// </summary>
+        public float ModalOpenVolume { get; set; } = 0.8f;
+
+        /// <summary>
+        /// Volume of VibeLevel1 state (0-1)
+        /// </summary>
+        public float VibeLevel1Volume { get; set; } = 0.9f;
+
+        /// <summary>
+        /// Volume of VibeLevel2 state (0-1)
+        /// </summary>
+        public float VibeLevel2Volume { get; set; } = 1.0f;
+
+        /// <summary>
+        /// Volume of VibeLevel3 state (0-1)
+        /// </summary>
+        public float VibeLevel3Volume { get; set; } = 1.0f;
+
+        /// <summary>
+        /// Disable music transitions completely (instant switching)
+        /// </summary>
+        public bool InstantTransitions { get; set; } = false;
+
+        /// <summary>
+        /// Disable auto-transitions to higher vibe levels
+        /// </summary>
+        public bool LockVibeLevel { get; set; } = false;
     }
 
     /// <summary>
@@ -112,6 +164,23 @@ namespace BalatroSeedOracle.Models
     /// </summary>
     public class VibeOutSettings
     {
+        /// <summary>
+        /// Shader type: 0=Balatro (default), 1=Psychedelic
+        /// </summary>
+        public int ShaderType { get; set; } = 0;
+
+        // ============================================
+        // PER-TRACK VOLUME CONTROLS (SIMPLE & CLEAN)
+        // ============================================
+        public float Drums1Volume { get; set; } = 1.0f;
+        public float Drums2Volume { get; set; } = 1.0f;
+        public float Bass1Volume { get; set; } = 1.0f;
+        public float Bass2Volume { get; set; } = 1.0f;
+        public float Chords1Volume { get; set; } = 1.0f;
+        public float Chords2Volume { get; set; } = 1.0f;
+        public float Melody1Volume { get; set; } = 1.0f;
+        public float Melody2Volume { get; set; } = 1.0f;
+
         /// <summary>
         /// Audio source for ShadowFlicker effect (0=None, 1=Drums, 2=Bass, 3=Chords, 4=Melody)
         /// </summary>

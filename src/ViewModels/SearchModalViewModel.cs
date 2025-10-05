@@ -662,6 +662,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsSearching = true;
             DebugLogger.Log("SearchModalViewModel", "Search started");
+            // TODO AFTER pifreak configures the visualizer THEN we can make the search mode audio!
         }
 
         private void OnProgressUpdated(object? sender, SearchProgress e)
@@ -677,20 +678,25 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Initialize dynamic tabs for consistent Balatro styling
         /// </summary>
+        public object? FilterTabContent { get; private set; }
+        public object? SettingsTabContent { get; private set; }
+        public object? SearchTabContent { get; private set; }
+        public object? ResultsTabContent { get; private set; }
+
         private void InitializeSearchTabs()
         {
             TabItems.Clear();
-            
-            // Create tab content as UserControls
-            var filterTab = CreateFilterTabContent();
-            var settingsTab = CreateSettingsTabContent();
-            var searchTab = CreateSearchTabContent();
-            var resultsTab = CreateResultsTabContent();
-            
-            TabItems.Add(new TabItemViewModel("🔍 FILTER", filterTab));
-            TabItems.Add(new TabItemViewModel("⚙️ SETTINGS", settingsTab));
-            TabItems.Add(new TabItemViewModel("🚀 SEARCH", searchTab));
-            TabItems.Add(new TabItemViewModel("📊 RESULTS", resultsTab));
+
+            // Create tab content as UserControls and expose as properties
+            FilterTabContent = CreateFilterTabContent();
+            SettingsTabContent = CreateSettingsTabContent();
+            SearchTabContent = CreateSearchTabContent();
+            ResultsTabContent = CreateResultsTabContent();
+
+            TabItems.Add(new TabItemViewModel("🔍 FILTER", FilterTabContent));
+            TabItems.Add(new TabItemViewModel("⚙️ SETTINGS", SettingsTabContent));
+            TabItems.Add(new TabItemViewModel("🚀 SEARCH", SearchTabContent));
+            TabItems.Add(new TabItemViewModel("📊 RESULTS", ResultsTabContent));
         }
 
         private UserControl CreateFilterTabContent()
@@ -706,11 +712,50 @@ namespace BalatroSeedOracle.ViewModels
                 await LoadFilterAsync(filterPath);
             };
 
-            // Wire up the FilterCopyRequested event - could create a copy of the filter
-            filterSelectorControl.FilterCopyRequested += (sender, filterPath) =>
+            // Wire up the FilterCopyRequested event - create a copy of the filter
+            filterSelectorControl.FilterCopyRequested += async (sender, filterPath) =>
             {
-                DebugLogger.Log("SearchModalViewModel", $"FilterCopyRequested event fired with path: {filterPath}");
-                // TODO: Implement filter copy functionality if needed
+                try
+                {
+                    DebugLogger.Log("SearchModalViewModel", $"FilterCopyRequested event fired with path: {filterPath}");
+
+                    // Read the original filter
+                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+
+                    if (config != null)
+                    {
+                        // Create a copy with a new name
+                        config.Name = $"{config.Name}_Copy";
+                        config.DateCreated = DateTime.Now;
+
+                        // Save the copy
+                        var filterDir = System.IO.Path.GetDirectoryName(filterPath);
+                        var copyFileName = $"{config.Name.Replace(" ", "_")}.json";
+                        var copyPath = System.IO.Path.Combine(filterDir!, copyFileName);
+
+                        // Ensure unique filename
+                        int counter = 1;
+                        while (System.IO.File.Exists(copyPath))
+                        {
+                            copyFileName = $"{config.Name.Replace(" ", "_")}_{counter}.json";
+                            copyPath = System.IO.Path.Combine(filterDir!, copyFileName);
+                            counter++;
+                        }
+
+                        var copyJson = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                        await System.IO.File.WriteAllTextAsync(copyPath, copyJson);
+
+                        DebugLogger.Log("SearchModalViewModel", $"Filter copied to: {copyPath}");
+
+                        // Refresh the filter selector
+                        filterSelectorControl.RefreshFilters();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SearchModalViewModel", $"Error copying filter: {ex.Message}");
+                }
             };
 
             // Wire up the NewFilterRequested event - could open filter creation

@@ -28,8 +28,8 @@ namespace BalatroSeedOracle.Views
         private TextBlock? _mainTitleText;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
-        // ViewModel
-        public BalatroMainMenuViewModel? ViewModel { get; private set; }
+        // ViewModel (injected via DI - never null after construction)
+        public BalatroMainMenuViewModel ViewModel { get; }
 
         /// <summary>
         /// Callback to request main content swap (set by MainWindow)
@@ -38,11 +38,11 @@ namespace BalatroSeedOracle.Views
 
         public BalatroMainMenu()
         {
-            InitializeComponent();
-
-            // Initialize ViewModel
-            ViewModel = new BalatroMainMenuViewModel();
+            // Get ViewModel from DI (proper way!)
+            ViewModel = ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>();
             DataContext = ViewModel;
+
+            InitializeComponent();
 
             // Wire up ViewModel events
             WireViewModelEvents();
@@ -68,8 +68,6 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void WireViewModelEvents()
         {
-            if (ViewModel == null) return;
-
             // Modal requests
             ViewModel.ModalRequested += OnModalRequested;
             ViewModel.HideModalRequested += (s, e) => HideModalContent();
@@ -176,8 +174,6 @@ namespace BalatroSeedOracle.Views
                 var audioManager = ServiceHelper.GetService<VibeAudioManager>();
                 if (audioManager == null) return;
 
-                ViewModel?.InitializeAudio();
-
                 // Store handler reference for cleanup
                 _audioAnalysisHandler = (bass, mid, treble, peak) =>
                 {
@@ -206,8 +202,6 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            if (ViewModel == null) return;
-
             // Load visualizer settings
             if (_background is BalatroShaderBackground shader)
             {
@@ -252,9 +246,6 @@ namespace BalatroSeedOracle.Views
             {
                 SetTitle(title);
             }
-
-            var audioManager = App.GetService<Services.VibeAudioManager>();
-            audioManager?.TransitionTo(Services.AudioState.ModalOpen);
         }
 
         /// <summary>
@@ -271,7 +262,6 @@ namespace BalatroSeedOracle.Views
             SetTitle("Welcome!");
 
             var audioManager = App.GetService<Services.VibeAudioManager>();
-            audioManager?.TransitionTo(Services.AudioState.MainMenu);
         }
 
         #endregion
@@ -322,7 +312,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void EnterVibeOutMode()
         {
-            ViewModel?.EnterVibeOutMode();
+            ViewModel.EnterVibeOutMode();
         }
 
         /// <summary>
@@ -330,7 +320,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void ExitVibeOutMode()
         {
-            ViewModel?.ExitVibeOutMode();
+            ViewModel.ExitVibeOutMode();
         }
 
         #endregion
@@ -372,7 +362,7 @@ namespace BalatroSeedOracle.Views
 
         private void OnVisualizerThemeChanged(object? sender, int themeIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyVisualizerTheme(shader, themeIndex);
             }
@@ -384,7 +374,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyMainColor(int colorIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyMainColor(shader, colorIndex);
             }
@@ -392,7 +382,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyAccentColor(int colorIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyAccentColor(shader, colorIndex);
             }
@@ -400,7 +390,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyAudioIntensity(float intensity)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyAudioIntensity(shader, intensity);
             }
@@ -408,7 +398,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyParallaxStrength(float strength)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyParallaxStrength(shader, strength);
             }
@@ -416,7 +406,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyTimeSpeed(float speed)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyTimeSpeed(shader, speed);
             }
@@ -424,7 +414,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyShaderContrast(float contrast)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyShaderContrast(shader, contrast);
             }
@@ -432,7 +422,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyShaderSpinAmount(float spinAmount)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyShaderSpinAmount(shader, spinAmount);
             }
@@ -440,7 +430,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyShaderZoomPunch(float zoom)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyShaderZoomPunch(shader, zoom);
             }
@@ -448,7 +438,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyShaderMelodySaturation(float saturation)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyShaderMelodySaturation(shader, saturation);
             }
@@ -456,7 +446,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyShadowFlickerSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyShadowFlickerSource(shader, sourceIndex);
             }
@@ -464,7 +454,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplySpinSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplySpinSource(shader, sourceIndex);
             }
@@ -472,7 +462,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyTwirlSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyTwirlSource(shader, sourceIndex);
             }
@@ -480,7 +470,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyZoomThumpSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyZoomThumpSource(shader, sourceIndex);
             }
@@ -488,7 +478,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyColorSaturationSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyColorSaturationSource(shader, sourceIndex);
             }
@@ -496,7 +486,7 @@ namespace BalatroSeedOracle.Views
 
         internal void ApplyBeatPulseSource(int sourceIndex)
         {
-            if (_background is BalatroShaderBackground shader && ViewModel != null)
+            if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyBeatPulseSource(shader, sourceIndex);
             }
@@ -565,8 +555,6 @@ namespace BalatroSeedOracle.Views
 
             var searchIcon = new SearchDesktopIcon();
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
-
-            if (ViewModel == null) return;
 
             var leftMargin = 20 + (ViewModel.WidgetCounter % 8) * 120;
             var topMargin = 20 + (ViewModel.WidgetCounter / 8) * 140;

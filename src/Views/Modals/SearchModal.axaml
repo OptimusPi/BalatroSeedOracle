@@ -14,113 +14,39 @@
                 Padding="20">
 
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="180"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <!-- LEFT SIDEBAR - Tab Selector (Balatro style with triangle indicators) -->
-                <Border Grid.Column="0"
-                        Background="{StaticResource ContainerDarkPrecise}"
-                        CornerRadius="8"
-                        Padding="10,10"
-                        Margin="0,0,10,0">
-                    <StackPanel Spacing="6">
-                        <!-- Tab Buttons (Balatro Challenge style with triangle pointer) -->
-                        <Grid>
-                            <Button Name="FilterTabButton"
-                                    Content="🔍 FILTER"
-                                    Classes="btn-red balatro-tab"
-                                    Click="OnTabButtonClick"
-                                    Tag="0"
-                                    Height="42"
-                                    FontSize="14"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    HorizontalContentAlignment="Center"/>
-                            <!-- Triangle indicator (shows when selected) -->
-                            <TextBlock Text="▶"
-                                       Classes="balatro-triangle"
-                                       FontSize="24"
-                                       Foreground="White"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       Margin="10,0,0,0"
-                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=0}"/>
-                        </Grid>
+                <!-- VIBE OUT BUTTON (above tabs) -->
+                <Button Grid.Row="0"
+                        Content="🎵 VIBE OUT"
+                        Command="{Binding EnterVibeOutModeCommand}"
+                        Classes="btn-purple"
+                        Height="44"
+                        FontSize="14"
+                        HorizontalAlignment="Center"
+                        Width="200"
+                        Margin="0,0,0,12"/>
 
-                        <Grid>
-                            <Button Name="SettingsTabButton"
-                                    Content="⚙️ SETTINGS"
-                                    Classes="btn-red balatro-tab"
-                                    Click="OnTabButtonClick"
-                                    Tag="1"
-                                    Height="42"
-                                    FontSize="14"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    HorizontalContentAlignment="Center"/>
-                            <TextBlock Text="▶"
-                                       Classes="balatro-triangle"
-                                       FontSize="24"
-                                       Foreground="White"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       Margin="10,0,0,0"
-                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=1}"/>
-                        </Grid>
-
-                        <Grid>
-                            <Button Name="SearchTabButton"
-                                    Content="🚀 SEARCH"
-                                    Classes="btn-red balatro-tab"
-                                    Click="OnTabButtonClick"
-                                    Tag="2"
-                                    Height="42"
-                                    FontSize="14"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    HorizontalContentAlignment="Center"/>
-                            <TextBlock Text="▶"
-                                       Classes="balatro-triangle"
-                                       FontSize="24"
-                                       Foreground="White"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       Margin="10,0,0,0"
-                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=2}"/>
-                        </Grid>
-
-                        <Grid>
-                            <Button Name="ResultsTabButton"
-                                    Content="📊 RESULTS"
-                                    Classes="btn-red balatro-tab"
-                                    Click="OnTabButtonClick"
-                                    Tag="3"
-                                    Height="42"
-                                    FontSize="14"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    HorizontalContentAlignment="Center"/>
-                            <TextBlock Text="▶"
-                                       Classes="balatro-triangle"
-                                       FontSize="24"
-                                       Foreground="White"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       Margin="10,0,0,0"
-                                       IsVisible="{Binding SelectedTabIndex, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=3}"/>
-                        </Grid>
-
-                        <!-- Vibe Out Button -->
-                        <Button Content="🎵 VIBE OUT"
-                                Command="{Binding EnterVibeOutModeCommand}"
-                                Classes="btn-purple"
-                                Height="50"
-                                FontSize="14"
-                                Margin="0,20,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- RIGHT CONTENT AREA -->
-                <ContentControl Grid.Column="1"
-                                Content="{Binding CurrentTabContent}"/>
+                <!-- PROPER TABCONTROL with Balatro styling -->
+                <TabControl Grid.Row="1"
+                            Classes="balatro-tabs"
+                            SelectedIndex="{Binding SelectedTabIndex}">
+                    <TabItem Header="🔍 FILTER">
+                        <ContentControl Content="{Binding FilterTabContent}"/>
+                    </TabItem>
+                    <TabItem Header="⚙️ SETTINGS">
+                        <ContentControl Content="{Binding SettingsTabContent}"/>
+                    </TabItem>
+                    <TabItem Header="🚀 SEARCH">
+                        <ContentControl Content="{Binding SearchTabContent}"/>
+                    </TabItem>
+                    <TabItem Header="📊 RESULTS">
+                        <ContentControl Content="{Binding ResultsTabContent}"/>
+                    </TabItem>
+                </TabControl>
             </Grid>
         </Border>
 

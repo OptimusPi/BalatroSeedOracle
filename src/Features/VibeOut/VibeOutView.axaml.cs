@@ -8,12 +8,14 @@ namespace BalatroSeedOracle.Features.VibeOut
 {
     public partial class VibeOutView : Window
     {
-        private BalatroShaderBackground? _vibeBackground;
+        private BalatroShaderBackground? _balatroBackground;
+        private PsychedelicShaderBackground? _psychedelicBackground;
 
         public VibeOutView()
         {
             InitializeComponent();
-            _vibeBackground = this.FindControl<BalatroShaderBackground>("VibeBackground");
+            _balatroBackground = this.FindControl<BalatroShaderBackground>("BalatroBackground");
+            _psychedelicBackground = this.FindControl<PsychedelicShaderBackground>("PsychedelicBackground");
 
             DataContextChanged += (s, e) =>
             {
@@ -28,10 +30,14 @@ namespace BalatroSeedOracle.Features.VibeOut
                         if (args.PropertyName == nameof(VibeOutViewModel.IsVibing) && vm.IsVibing)
                         {
                             // Set to VibeOut theme when starting
-                            if (_vibeBackground != null)
+                            if (_balatroBackground != null)
                             {
-                                _vibeBackground.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
-                                _vibeBackground.UpdateVibeIntensity(0.5f);
+                                _balatroBackground.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
+                                _balatroBackground.UpdateVibeIntensity(0.5f);
+                            }
+                            if (_psychedelicBackground != null)
+                            {
+                                _psychedelicBackground.UpdateVibeIntensity(0.5f);
                             }
                         }
                         else if (args.PropertyName == nameof(VibeOutViewModel.AudioState))
@@ -48,23 +54,30 @@ namespace BalatroSeedOracle.Features.VibeOut
         private void ApplySavedSettings()
         {
             var profileService = BalatroSeedOracle.App.GetService<Services.UserProfileService>();
-            if (profileService == null || _vibeBackground == null) return;
+            if (profileService == null) return;
 
             var settings = profileService.GetProfile().VibeOutSettings;
 
-            // Apply theme from user settings
-            _vibeBackground.SetTheme(settings.ThemeIndex);
-
-            // Apply user-controlled intensity settings
-            _vibeBackground.UpdateVibeIntensity(settings.AudioIntensity);
-            _vibeBackground.SetBaseTimeSpeed(settings.TimeSpeed);
-            _vibeBackground.SetParallaxStrength(settings.ParallaxStrength);
-
-            // Apply custom colors if CUSTOMIZE theme selected
-            if (settings.ThemeIndex == 8)
+            // Apply settings to Balatro shader
+            if (_balatroBackground != null)
             {
-                _vibeBackground.SetMainColor(settings.MainColor);
-                _vibeBackground.SetAccentColor(settings.AccentColor);
+                _balatroBackground.SetTheme(settings.ThemeIndex);
+                _balatroBackground.UpdateVibeIntensity(settings.AudioIntensity);
+                _balatroBackground.SetBaseTimeSpeed(settings.TimeSpeed);
+                _balatroBackground.SetParallaxStrength(settings.ParallaxStrength);
+
+                if (settings.ThemeIndex == 8)
+                {
+                    _balatroBackground.SetMainColor(settings.MainColor);
+                    _balatroBackground.SetAccentColor(settings.AccentColor);
+                }
+            }
+
+            // Apply settings to Psychedelic shader
+            if (_psychedelicBackground != null)
+            {
+                _psychedelicBackground.UpdateVibeIntensity(settings.AudioIntensity);
+                _psychedelicBackground.SetSpeed(settings.TimeSpeed);
             }
         }
         

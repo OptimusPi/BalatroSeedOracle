@@ -174,9 +174,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                // TODO: Implement export dialog (CSV, Excel, etc.)
-                UpdateStatus("Export functionality coming soon", false);
-                await Task.Delay(100); // Placeholder
+                var config = BuildConfigFromCurrentState();
+                if (config == null || string.IsNullOrWhiteSpace(config.Name))
+                {
+                    UpdateStatus("Please enter a filter name before exporting", true);
+                    return;
+                }
+
+                // Export to desktop as JSON
+                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                var exportPath = Path.Combine(desktopPath, exportFileName);
+
+                var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(exportPath, json);
+
+                UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
+                DebugLogger.Log("SaveFilterTab", $"Filter exported to: {exportPath}");
             }
             catch (Exception ex)
             {

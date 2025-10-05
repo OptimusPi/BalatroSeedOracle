@@ -452,9 +452,6 @@ namespace BalatroSeedOracle.ViewModels
             MainTitle = "Welcome!";
             IsModalVisible = false;
             HideModalRequested?.Invoke(this, EventArgs.Empty);
-
-            // Transition audio back to main menu
-            _audioManager?.TransitionTo(AudioState.MainMenu);
         }
 
         /// <summary>
@@ -640,22 +637,6 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to apply volume: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initializes audio with transition to main menu
-        /// </summary>
-        public void InitializeAudio()
-        {
-            try
-            {
-                _audioManager?.TransitionTo(AudioState.MainMenu);
-                DebugLogger.Log("BalatroMainMenuViewModel", "Audio initialized");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to initialize audio: {ex.Message}");
             }
         }
 

@@ -62,9 +62,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             _visualizerTheme = profile.VibeOutSettings.ThemeIndex;
-
             OnPropertyChanged(nameof(VisualizerTheme));
-
             DebugLogger.Log("SettingsModalViewModel", $"Settings loaded - Visualizer theme: {_visualizerTheme}");
         }
 

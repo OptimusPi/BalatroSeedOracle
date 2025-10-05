@@ -57,6 +57,39 @@ namespace BalatroSeedOracle.Features.VibeOut
         [ObservableProperty]
         private float _audioPeak = 0f;
 
+        [ObservableProperty]
+        private int _shaderType = 0; // 0=Balatro, 1=Psychedelic
+
+        [ObservableProperty]
+        private string _shaderName = "Balatro";
+
+        // ============================================
+        // 8-TRACK VOLUME CONTROLS (PROPER MVVM WAY)
+        // ============================================
+        [ObservableProperty]
+        private float _drums1Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _drums2Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _bass1Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _bass2Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _chords1Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _chords2Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _melody1Volume = 1.0f;
+
+        [ObservableProperty]
+        private float _melody2Volume = 1.0f;
+
         public VibeOutViewModel()
         {
             // Animation timer for visual effects
@@ -80,36 +113,111 @@ namespace BalatroSeedOracle.Features.VibeOut
                 {
                     _audioManager.SetMasterVolume(MasterVolume);
                 }
+                else if (e.PropertyName == nameof(Drums1Volume)) OnVolumeChanged("Drums1", Drums1Volume, 0.0f);
+                else if (e.PropertyName == nameof(Drums2Volume)) OnVolumeChanged("Drums2", Drums2Volume, 0.0f);
+                else if (e.PropertyName == nameof(Bass1Volume)) OnVolumeChanged("Bass1", Bass1Volume, -0.3f);
+                else if (e.PropertyName == nameof(Bass2Volume)) OnVolumeChanged("Bass2", Bass2Volume, 0.1f);
+                else if (e.PropertyName == nameof(Chords1Volume)) OnVolumeChanged("Chords1", Chords1Volume, -0.15f);
+                else if (e.PropertyName == nameof(Chords2Volume)) OnVolumeChanged("Chords2", Chords2Volume, 0.05f);
+                else if (e.PropertyName == nameof(Melody1Volume)) OnVolumeChanged("Melody1", Melody1Volume, -0.15f);
+                else if (e.PropertyName == nameof(Melody2Volume)) OnVolumeChanged("Melody2", Melody2Volume, 0.05f);
             };
         }
         
+        /// <summary>
+        /// Load saved volume settings from UserProfile
+        /// </summary>
+        public void LoadVolumeSettings()
+        {
+            try
+            {
+                var profileService = ServiceHelper.GetRequiredService<UserProfileService>();
+                var settings = profileService.GetProfile().VibeOutSettings;
+
+                Drums1Volume = settings.Drums1Volume;
+                Drums2Volume = settings.Drums2Volume;
+                Bass1Volume = settings.Bass1Volume;
+                Bass2Volume = settings.Bass2Volume;
+                Chords1Volume = settings.Chords1Volume;
+                Chords2Volume = settings.Chords2Volume;
+                Melody1Volume = settings.Melody1Volume;
+                Melody2Volume = settings.Melody2Volume;
+
+                DebugLogger.Log("VibeOut", "Loaded volume settings from profile");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VibeOut", $"Failed to load volume settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Save current volume settings to UserProfile
+        /// </summary>
+        private void SaveVolumeSettings()
+        {
+            try
+            {
+                var profileService = ServiceHelper.GetRequiredService<UserProfileService>();
+                var profile = profileService.GetProfile();
+
+                profile.VibeOutSettings.Drums1Volume = Drums1Volume;
+                profile.VibeOutSettings.Drums2Volume = Drums2Volume;
+                profile.VibeOutSettings.Bass1Volume = Bass1Volume;
+                profile.VibeOutSettings.Bass2Volume = Bass2Volume;
+                profile.VibeOutSettings.Chords1Volume = Chords1Volume;
+                profile.VibeOutSettings.Chords2Volume = Chords2Volume;
+                profile.VibeOutSettings.Melody1Volume = Melody1Volume;
+                profile.VibeOutSettings.Melody2Volume = Melody2Volume;
+
+                profileService.SaveProfile();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VibeOut", $"Failed to save volume settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Called when any track volume changes (from slider)
+        /// </summary>
+        private void OnVolumeChanged(string trackName, float volume, float pan)
+        {
+            if (_audioManager != null)
+            {
+                _audioManager.SetTrackVolume(trackName, volume, pan);
+            }
+            SaveVolumeSettings();
+        }
+
         [RelayCommand]
         public void StartVibing()
         {
             if (IsVibing) return;
-            
+
             try
             {
                 IsVibing = true;
                 VibeStatus = "🎵 VIBING INITIATED 🎵";
                 _searchStartTime = DateTime.UtcNow;
-                
-                // Initialize the epic audio system
-                _audioManager = new VibeAudioManager();
+
+                // Get the singleton audio manager from DI (DON'T create a new one!)
+                _audioManager = ServiceHelper.GetRequiredService<VibeAudioManager>();
                 _audioManager.SetMasterVolume(MasterVolume);
-                
+
+                // Load saved volume settings and apply to audio manager
+                LoadVolumeSettings();
+
                 // Subscribe to audio events
                 _audioManager.AudioAnalysisUpdated += OnAudioAnalysisUpdated;
                 _audioManager.BeatDetected += OnBeatDetected;
-                
-                // Start in search mode
-                _audioManager.OnSearchStarted();
-                AudioState = "VibeLevel1";
-                
+
+                AudioState = "Manual Mix";
+
                 // Start animation timers
                 _animationTimer.Start();
                 _vibeUpdateTimer.Start();
-                
+
                 DebugLogger.Log("VibeOut", "🎵 VIBE OUT MODE ACTIVATED! 🎵");
             }
             catch (Exception ex)
@@ -210,21 +318,10 @@ namespace BalatroSeedOracle.Features.VibeOut
         
         private void TransitionAudioState()
         {
-            if (_audioManager == null) return;
-            
-            var newState = _vibeIntensity switch
-            {
-                0 => Services.AudioState.VibeLevel1,
-                1 => Services.AudioState.VibeLevel1, 
-                2 => Services.AudioState.VibeLevel2, // DRUMS2 KICKS IN! 🔥
-                3 => Services.AudioState.VibeLevel3, // MAXIMUM VIBE! 🚀
-                _ => Services.AudioState.VibeLevel1
-            };
-            
-            _audioManager.TransitionTo(newState);
-            AudioState = newState.ToString();
-            
-            DebugLogger.Log("VibeOut", $"🎵 Audio transition to {newState} (vibe intensity: {_vibeIntensity})");
+            // Audio transitions removed - user controls volumes manually via sliders!
+            // Vibe intensity still affects visual status only
+            AudioState = $"Manual Mix (Intensity: {_vibeIntensity})";
+            DebugLogger.Log("VibeOut", $"🎵 Vibe intensity changed to {_vibeIntensity} (audio controlled by sliders)");
         }
         
         private void UpdateVibeStatus()
@@ -269,11 +366,10 @@ namespace BalatroSeedOracle.Features.VibeOut
                     MatrixSeeds.RemoveAt(0);
                 }
                 
-                // Check for good seed (triggers audio progression)
+                // Track last good seed for vibe intensity
                 if (score > 30)
                 {
                     _lastGoodSeed = DateTime.UtcNow;
-                    AwardVibeBonus(score);
                 }
                 
                 // Every 16 seeds, spawn interactive pill
@@ -290,16 +386,6 @@ namespace BalatroSeedOracle.Features.VibeOut
                 
                 CurrentSeed = seed;
             });
-        }
-        
-        private void AwardVibeBonus(int score)
-        {
-            // Award bonus based on score
-            if (score > 50 && _audioManager != null)
-            {
-                _audioManager.OnGoodSeedFound(score);
-                DebugLogger.Log("VibeOut", $"🎵 Good seed bonus! Score: {score}");
-            }
         }
         
         private void SpawnSeedPill(string seed, int score)
@@ -437,6 +523,14 @@ namespace BalatroSeedOracle.Features.VibeOut
             MatrixSeeds.Clear();
             Pills.Clear();
             DebugLogger.Log("VibeOut", "🧹 History cleared");
+        }
+
+        [RelayCommand]
+        public void ToggleShader()
+        {
+            ShaderType = (ShaderType + 1) % 2; // Toggle between 0 (Balatro) and 1 (Psychedelic)
+            ShaderName = ShaderType == 0 ? "Balatro" : "Psychedelic";
+            VibeStatus = $"Shader: {ShaderName}";
         }
         
         /// <summary>

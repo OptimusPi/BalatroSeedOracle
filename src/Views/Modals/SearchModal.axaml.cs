@@ -20,11 +20,11 @@ namespace BalatroSeedOracle.Views.Modals
         public SearchModal()
         {
             InitializeComponent();
-            
+
             // PROPER MVVM: Inject ViewModel via DI, no manual control finding
             var viewModel = ServiceHelper.GetRequiredService<SearchModalViewModel>();
             DataContext = viewModel;
-            
+
             // Wire up close event
             viewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -83,18 +83,6 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("SearchModal", $"Failed to set search instance: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Handle tab button click - switches tabs
-        /// </summary>
-        private void OnTabButtonClick(object? sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is string tagStr && int.TryParse(tagStr, out int tabIndex))
-            {
-                if (ViewModel != null)
-                    ViewModel.SelectedTabIndex = tabIndex;
             }
         }
 

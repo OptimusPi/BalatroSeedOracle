@@ -173,11 +173,50 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private void SearchFilter()
+        private async Task SearchFilter()
         {
-            // TODO: Trigger search with generated filter
-            // This would need to integrate with your existing search modal
-            SetStatus("🔍 Search integration coming soon!", "#3B82F6");
+            if (string.IsNullOrWhiteSpace(GeneratedJson))
+            {
+                SetStatus("❌ No filter to search!", "#EF4444");
+                return;
+            }
+
+            try
+            {
+                // Parse the generated JSON into a MotelyJsonConfig
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(GeneratedJson);
+
+                if (config == null)
+                {
+                    SetStatus("❌ Failed to parse filter config", "#EF4444");
+                    return;
+                }
+
+                // Get the SearchManager service
+                var searchManager = ServiceHelper.GetRequiredService<Services.SearchManager>();
+
+                // Create search criteria with defaults
+                var criteria = new Models.SearchCriteria
+                {
+                    Deck = config.Deck ?? "Red",
+                    Stake = config.Stake ?? "White",
+                    ThreadCount = Environment.ProcessorCount,
+                    BatchSize = 3
+                };
+
+                // Start the search
+                var searchInstance = await searchManager.StartSearchAsync(criteria, config);
+
+                SetStatus($"🔍 Search started: {GeneratedFilterName}", "#22C55E");
+
+                // TODO: Show search modal/widget to track progress
+                // For now, the search runs in background
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("GenieWidget", $"Search failed: {ex.Message}");
+                SetStatus($"❌ Search failed: {ex.Message}", "#EF4444");
+            }
         }
 
         [RelayCommand]
