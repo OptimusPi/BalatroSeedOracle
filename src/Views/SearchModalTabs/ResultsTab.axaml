@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
+             x:DataType="vm:SearchModalViewModel">
+
+    <Border Background="{StaticResource ContainerDarkPrecise}"
+            CornerRadius="8"
+            Padding="15">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,15">
+                <TextBlock Text="{Binding ResultsCount, StringFormat='📊 RESULTS: {0} Seeds Found'}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="22"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Results Grid -->
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding SearchResults}"
+                      AutoGenerateColumns="False"
+                      CanUserSortColumns="True"
+                      CanUserResizeColumns="True"
+                      GridLinesVisibility="Horizontal"
+                      Background="{StaticResource DarkModalGrey}"
+                      RowBackground="{StaticResource ContainerDark}"
+                      AlternatingRowBackground="{StaticResource DarkModalGrey}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Seed"
+                                        Binding="{Binding Seed}"
+                                        Width="120"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="14"/>
+                    <DataGridTextColumn Header="Score"
+                                        Binding="{Binding Score}"
+                                        Width="80"
+                                        FontFamily="{StaticResource BalatroFont}"
+                                        FontSize="14"/>
+                    <DataGridTextColumn Header="Details"
+                                        Binding="{Binding Details}"
+                                        Width="*"
+                                        FontSize="12"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="10"
+                        Margin="0,15,0,0">
+                <Button Content="📋 EXPORT RESULTS"
+                        Command="{Binding ExportResultsCommand}"
+                        Classes="btn-blue"
+                        Height="40"
+                        MinWidth="180"/>
+                <Button Content="🗑️ CLEAR RESULTS"
+                        Command="{Binding ClearResultsCommand}"
+                        Classes="btn-red"
+                        Height="40"
+                        MinWidth="180"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

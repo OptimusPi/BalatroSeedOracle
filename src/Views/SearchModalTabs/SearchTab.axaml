@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab"
+             x:DataType="vm:SearchModalViewModel">
+
+    <Border Background="{StaticResource ContainerDarkPrecise}"
+            CornerRadius="8"
+            Padding="25">
+        <StackPanel Spacing="25" VerticalAlignment="Center">
+            <!-- Title -->
+            <TextBlock Text="🔥 READY TO SEARCH"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="28"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"/>
+
+            <!-- Filter Info -->
+            <Border Background="{StaticResource DarkModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="15"
+                    MaxWidth="500">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No Filter Loaded'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding DeckSelection, StringFormat='Deck: {0}'}"
+                               FontSize="14"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding StakeSelection, StringFormat='Stake: {0}'}"
+                               FontSize="14"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Search Button -->
+            <Button Content="▶️ START SEARCH"
+                    Command="{Binding StartSearchCommand}"
+                    Classes="btn-green"
+                    Height="80"
+                    MinWidth="400"
+                    FontSize="24"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"/>
+
+            <!-- Stop Button -->
+            <Button Content="⏹️ STOP SEARCH"
+                    Command="{Binding StopSearchCommand}"
+                    Classes="btn-red"
+                    Height="60"
+                    MinWidth="300"
+                    FontSize="18"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsSearching}"/>
+
+            <!-- Progress Bar -->
+            <Border Background="{StaticResource DarkModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="15"
+                    IsVisible="{Binding IsSearching}">
+                <StackPanel Spacing="12">
+                    <ProgressBar Value="{Binding SearchProgress}"
+                                 Maximum="100"
+                                 Height="30"
+                                 Foreground="{StaticResource Green}"/>
+                    <TextBlock Text="{Binding ProgressText}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

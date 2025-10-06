@@ -701,16 +701,16 @@ namespace BalatroSeedOracle.ViewModels
         {
             TabItems.Clear();
 
-            // Create tab content as UserControls and expose as properties
-            FilterTabContent = CreateFilterTabContent();
-            SettingsTabContent = CreateSettingsTabContent();
-            SearchTabContent = CreateSearchTabContent();
-            ResultsTabContent = CreateResultsTabContent();
+            // PROPER MVVM: Use XAML UserControls, not UI-in-code garbage
+            FilterTabContent = CreateFilterTabContent(); // Still needs programmatic setup for FilterSelector events
+            SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
+            SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
+            ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 
-            TabItems.Add(new TabItemViewModel("🔍 FILTER", FilterTabContent));
-            TabItems.Add(new TabItemViewModel("⚙️ SETTINGS", SettingsTabContent));
-            TabItems.Add(new TabItemViewModel("🚀 SEARCH", SearchTabContent));
-            TabItems.Add(new TabItemViewModel("📊 RESULTS", ResultsTabContent));
+            TabItems.Add(new TabItemViewModel("🔍 SELECT", FilterTabContent));
+            TabItems.Add(new TabItemViewModel("⚙️ VISUAL", SettingsTabContent));
+            TabItems.Add(new TabItemViewModel("🚀 TEST", SearchTabContent));
+            TabItems.Add(new TabItemViewModel("📊 FINISH", ResultsTabContent));
         }
 
         private UserControl CreateFilterTabContent()
@@ -778,242 +778,10 @@ namespace BalatroSeedOracle.ViewModels
             };
         }
 
-        private UserControl CreateSettingsTabContent()
-        {
-            return new UserControl
-            {
-                Content = new Border
-                {
-                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
-                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
-                    Padding = new Avalonia.Thickness(25),
-                    Child = new StackPanel
-                    {
-                        Spacing = 15,
-                        Children =
-                        {
-                            new TextBlock { Text = "SEARCH SETTINGS", FontSize = 24, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center, Margin = new Avalonia.Thickness(0, 0, 0, 20) },
-                            new StackPanel
-                            {
-                                Spacing = 15,
-                                Children =
-                                {
-                                    new TextBlock { Text = "Number of Threads:", FontSize = 14 },
-                                    new Slider
-                                    {
-                                        Minimum = 1,
-                                        Maximum = Environment.ProcessorCount,
-                                        Value = Math.Min(4, Environment.ProcessorCount),
-                                        Width = 300,
-                                        TickFrequency = 1,
-                                        IsSnapToTickEnabled = true
-                                    },
-                                    new TextBlock { Text = "Batch Size:", FontSize = 14, Margin = new Avalonia.Thickness(0, 10, 0, 0) },
-                                    new Slider
-                                    {
-                                        Minimum = 100,
-                                        Maximum = 10000,
-                                        Value = 1000,
-                                        Width = 300,
-                                        TickFrequency = 100,
-                                        IsSnapToTickEnabled = true
-                                    },
-                                    new CheckBox
-                                    {
-                                        Content = "Enable progress notifications",
-                                        IsChecked = true,
-                                        Margin = new Avalonia.Thickness(0, 10, 0, 0)
-                                    },
-                                    new CheckBox
-                                    {
-                                        Content = "Auto-save results",
-                                        IsChecked = false
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-        }
-
-        private UserControl CreateSearchTabContent()
-        {
-            var searchButton = new Button
-            {
-                Content = "START SEARCH",
-                Command = StartSearchCommand,
-                Background = Avalonia.Media.Brush.Parse("#00b300"),
-                Padding = new Avalonia.Thickness(30, 15),
-                FontSize = 18,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            
-            var stopButton = new Button
-            {
-                Content = "STOP SEARCH",
-                Command = StopSearchCommand,
-                Background = Avalonia.Media.Brush.Parse("#d9534f"),
-                Padding = new Avalonia.Thickness(30, 15),
-                FontSize = 18,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            
-            var vibeButton = new Button
-            {
-                Content = "🎵 VIBE OUT MODE 🎵",
-                Command = EnterVibeOutModeCommand,
-                Background = Avalonia.Media.Brush.Parse("#9b59b6"),
-                Foreground = Avalonia.Media.Brush.Parse("#00FF88"),
-                Padding = new Avalonia.Thickness(30, 15),
-                FontSize = 20,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            vibeButton.Classes.Add("vibe-button");
-            
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
-                Spacing = 20,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Children = { searchButton, stopButton, vibeButton }
-            };
-            
-            var progressBar = new ProgressBar
-            {
-                [!ProgressBar.ValueProperty] = new Avalonia.Data.Binding("SearchProgress"),
-                Maximum = 100,
-                Height = 30,
-                Margin = new Avalonia.Thickness(0, 20, 0, 10)
-            };
-            
-            var statusText = new TextBlock
-            {
-                [!TextBlock.TextProperty] = new Avalonia.Data.Binding("ProgressText"),
-                FontSize = 14,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            
-            return new UserControl
-            {
-                Content = new Border
-                {
-                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
-                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
-                    Padding = new Avalonia.Thickness(25),
-                    Child = new StackPanel
-                    {
-                        Spacing = 20,
-                        Children =
-                        {
-                            new TextBlock 
-                            { 
-                                Text = "SEARCH CONTROLS", 
-                                FontSize = 24, 
-                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-                            },
-                            buttonPanel,
-                            progressBar,
-                            statusText
-                        }
-                    }
-                }
-            };
-        }
-
-        private UserControl CreateResultsTabContent()
-        {
-            // Simple results DataGrid with sorting
-            var dataGrid = new DataGrid
-            {
-                AutoGenerateColumns = false,
-                CanUserSortColumns = true,
-                CanUserReorderColumns = true,
-                CanUserResizeColumns = true,
-                Background = Avalonia.Media.Brush.Parse("#1a1a1a"),
-                Foreground = Avalonia.Media.Brush.Parse("#FFD700"),
-                GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
-                HeadersVisibility = DataGridHeadersVisibility.Column
-            };
-            
-            // Bind to SearchResults
-            dataGrid.Bind(DataGrid.ItemsSourceProperty, new Avalonia.Data.Binding("SearchResults"));
-            
-            // Add columns
-            dataGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Seed",
-                Binding = new Avalonia.Data.Binding("Seed"),
-                Width = new DataGridLength(120),
-                CanUserSort = true
-            });
-            
-            dataGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Score",
-                Binding = new Avalonia.Data.Binding("TotalScore"),
-                Width = new DataGridLength(80),
-                CanUserSort = true
-            });
-            
-            dataGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Scores",
-                Binding = new Avalonia.Data.Binding("ScoresDisplay"),
-                Width = new DataGridLength(200),
-                CanUserSort = false
-            });
-            
-            // Double-click to copy seed
-            dataGrid.DoubleTapped += async (s, e) =>
-            {
-                if (dataGrid.SelectedItem is Models.SearchResult result)
-                {
-                    try
-                    {
-                        await ClipboardService.CopyToClipboardAsync(result.Seed);
-                        DebugLogger.Log("SearchModalViewModel", $"Copied seed: {result.Seed}");
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError("SearchModalViewModel", $"Copy failed: {ex.Message}");
-                    }
-                }
-            };
-            
-            return new UserControl
-            {
-                Content = new Border
-                {
-                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
-                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
-                    Padding = new Avalonia.Thickness(15),
-                    Child = new StackPanel
-                    {
-                        Spacing = 10,
-                        Children =
-                        {
-                            new TextBlock 
-                            {
-                                Text = "SEARCH RESULTS",
-                                FontSize = 18,
-                                FontWeight = Avalonia.Media.FontWeight.Bold,
-                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                Foreground = Avalonia.Media.Brush.Parse("#00FF88")
-                            },
-                            new TextBlock
-                            {
-                                Text = "Double-click seed to copy to clipboard",
-                                FontSize = 12,
-                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                Foreground = Avalonia.Media.Brush.Parse("#CCCCCC")
-                            },
-                            dataGrid
-                        }
-                    }
-                }
-            };
-        }
+        // DELETED: CreateSettingsTabContent() - replaced with XAML UserControl (SettingsTab.axaml)
+        // DELETED: CreateSearchTabContent() - replaced with XAML UserControl (SearchTab.axaml)
+        // DELETED: CreateResultsTabContent() - replaced with XAML UserControl (ResultsTab.axaml)
+        // These methods were 235 lines of anti-MVVM UI-in-code garbage!
 
         // CreateShortcutRequested already exists - removed duplicate
         

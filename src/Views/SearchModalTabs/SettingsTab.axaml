@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
+             x:DataType="vm:SearchModalViewModel">
+
+    <Border Background="{StaticResource ContainerDarkPrecise}"
+            CornerRadius="8"
+            Padding="25">
+        <StackPanel Spacing="20">
+            <!-- Title -->
+            <TextBlock Text="SEARCH SETTINGS"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="24"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+            <!-- Thread Count -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding ThreadCount, StringFormat='Threads: {0}'}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"/>
+                <Slider Value="{Binding ThreadCount}"
+                        Minimum="1"
+                        Maximum="32"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="True"
+                        Width="400"
+                        HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <!-- Batch Size -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding BatchSize, StringFormat='Batch Size: {0} digits'}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"/>
+                <Slider Value="{Binding BatchSize}"
+                        Minimum="1"
+                        Maximum="5"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="True"
+                        Width="400"
+                        HorizontalAlignment="Left"/>
+                <TextBlock Text="Higher = more memory usage, faster searches"
+                           FontSize="12"
+                           Foreground="{StaticResource MediumGrey}"
+                           Opacity="0.7"/>
+            </StackPanel>
+
+            <!-- Max Results -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding MaxResults, StringFormat='Max Results: {0}'}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"/>
+                <Slider Value="{Binding MaxResults}"
+                        Minimum="10"
+                        Maximum="10000"
+                        TickFrequency="10"
+                        Width="400"
+                        HorizontalAlignment="Left"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
