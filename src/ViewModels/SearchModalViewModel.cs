@@ -60,6 +60,7 @@ namespace BalatroSeedOracle.ViewModels
             CreateShortcutCommand = new RelayCommand<string>(CreateShortcut);
             EnterVibeOutModeCommand = new RelayCommand(EnterVibeOutMode);
             CloseCommand = new RelayCommand(CloseModal);
+            SelectTabCommand = new RelayCommand<object>(SelectTab);
 
             // Initialize dynamic tabs
             InitializeSearchTabs();
@@ -185,6 +186,7 @@ namespace BalatroSeedOracle.ViewModels
         public ICommand CreateShortcutCommand { get; }
         public ICommand EnterVibeOutModeCommand { get; }
         public ICommand CloseCommand { get; }
+        public ICommand SelectTabCommand { get; }
 
         #endregion
 
@@ -323,6 +325,18 @@ namespace BalatroSeedOracle.ViewModels
         {
             DebugLogger.Log("SearchModalViewModel", "Closing modal");
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SelectTab(object? parameter)
+        {
+            if (parameter is int tabIndex)
+            {
+                SelectedTabIndex = tabIndex;
+            }
+            else if (parameter is string tabIndexStr && int.TryParse(tabIndexStr, out int parsedIndex))
+            {
+                SelectedTabIndex = parsedIndex;
+            }
         }
         
         private void EnterVibeOutMode()

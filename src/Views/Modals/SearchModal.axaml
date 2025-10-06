@@ -6,52 +6,108 @@
              x:Class="BalatroSeedOracle.Views.Modals.SearchModal"
              x:DataType="vm:SearchModalViewModel">
 
+    <UserControl.Styles>
+        <!-- Match Filter Designer tab button styling -->
+        <Style Selector="Button.search-tab">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinWidth" Value="144"/>
+            <Setter Property="Margin" Value="4,0,4,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Name="DropShadow"
+                                Background="{StaticResource DropShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Name="PART_Border"
+                                Background="{StaticResource Red}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.search-tab:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+
+        <Style Selector="Button.search-tab.active /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+
+        <Style Selector="Button.search-tab:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+        </Style>
+    </UserControl.Styles>
+
     <Grid Margin="0">
-        <!-- Main Content Area -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Tab Navigation (Filter Designer style) -->
         <Border Grid.Row="0"
                 Background="{StaticResource DockGrey}"
-                CornerRadius="8"
+                CornerRadius="8,8,0,0"
+                Padding="8,8,8,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="0">
+                <Button Content="Select" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="0"/>
+                <Button Content="Visual" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="1"/>
+                <Button Content="JSON" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="2"/>
+                <Button Content="🔥 TEST" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="3"/>
+                <Button Content="Finish" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="4"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Tab Content Area -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DockGrey}"
+                CornerRadius="0,0,8,8"
                 Padding="20">
-
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <!-- Tab 0: Select Filter -->
+                <ContentControl Content="{Binding FilterTabContent}"
+                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=0}"/>
 
-                <!-- VIBE OUT BUTTON (above tabs) -->
-                <Button Grid.Row="0"
-                        Content="🎵 VIBE OUT"
-                        Command="{Binding EnterVibeOutModeCommand}"
-                        Classes="btn-purple"
-                        Height="44"
-                        FontSize="14"
-                        HorizontalAlignment="Center"
-                        Width="200"
-                        Margin="0,0,0,12"/>
+                <!-- Tab 1: Visual (Settings) -->
+                <ContentControl Content="{Binding SettingsTabContent}"
+                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=1}"/>
 
-                <!-- PROPER TABCONTROL with Balatro styling -->
-                <TabControl Grid.Row="1"
-                            Classes="balatro-tabs"
-                            SelectedIndex="{Binding SelectedTabIndex}">
-                    <TabItem Header="🔍 FILTER">
-                        <ContentControl Content="{Binding FilterTabContent}"/>
-                    </TabItem>
-                    <TabItem Header="⚙️ SETTINGS">
-                        <ContentControl Content="{Binding SettingsTabContent}"/>
-                    </TabItem>
-                    <TabItem Header="🚀 SEARCH">
-                        <ContentControl Content="{Binding SearchTabContent}"/>
-                    </TabItem>
-                    <TabItem Header="📊 RESULTS">
-                        <ContentControl Content="{Binding ResultsTabContent}"/>
-                    </TabItem>
-                </TabControl>
+                <!-- Tab 2: JSON -->
+                <TextBlock Text="JSON Editor - Coming Soon"
+                           FontSize="24"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource Gold}"
+                           IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=2}"/>
+
+                <!-- Tab 3: TEST (Search) -->
+                <ContentControl Content="{Binding SearchTabContent}"
+                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=3}"/>
+
+                <!-- Tab 4: Finish (Results) -->
+                <ContentControl Content="{Binding ResultsTabContent}"
+                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=4}"/>
             </Grid>
         </Border>
 
         <!-- Search Progress Overlay -->
-        <Border Grid.Row="0"
+        <Border Grid.Row="0" Grid.RowSpan="2"
                 Background="#DD000000"
                 IsVisible="{Binding IsSearching}"
                 CornerRadius="8">
