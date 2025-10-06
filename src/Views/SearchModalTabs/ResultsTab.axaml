@@ -31,8 +31,7 @@
                       CanUserResizeColumns="True"
                       GridLinesVisibility="Horizontal"
                       Background="{StaticResource DarkModalGrey}"
-                      RowBackground="{StaticResource ContainerDark}"
-                      AlternatingRowBackground="{StaticResource DarkModalGrey}">
+                      RowBackground="{StaticResource ContainerDark}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Seed"
                                         Binding="{Binding Seed}"
