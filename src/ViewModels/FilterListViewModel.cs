@@ -75,10 +75,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                // FIXED: Use the actual Motely filter directory
+                var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "external", "Motely", "Motely", "JsonItemFilters");
                 if (!Directory.Exists(filtersDir))
                 {
-                    Directory.CreateDirectory(filtersDir);
+                    DebugLogger.LogError("FilterListViewModel", $"Filters directory not found: {filtersDir}");
                     return;
                 }
 
