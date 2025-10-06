@@ -701,156 +701,65 @@ namespace BalatroSeedOracle.ViewModels
 
         private UserControl CreateFilterTabContent()
         {
-            // Create the new FilterSelectorControl with Balatro challenges style
-            var filterSelectorControl = new Components.FilterSelectorControl();
-
-            // Wire up the FilterSelected event - this fires when EDIT FILTER is clicked
-            filterSelectorControl.FilterSelected += async (sender, filterPath) =>
+            // FIXED: Use the clean FilterSelector component with PanelSpinner (card-based UI)
+            var filterSelector = new Components.FilterSelector
             {
-                DebugLogger.Log("SearchModalViewModel", $"FilterSelected event fired with path: {filterPath}");
-                _currentFilterPath = filterPath; // Store the path immediately!
+                ShowSelectButton = true,
+                ShowActionButtons = false, // Hide edit/copy/delete for now (just select to search)
+                AutoLoadEnabled = true,
+                Title = "SELECT FILTER FOR SEARCH"
+            };
+
+            // Wire up the FilterLoaded event - fires when user selects a filter
+            filterSelector.FilterLoaded += async (sender, filterPath) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"Filter selected: {filterPath}");
+                _currentFilterPath = filterPath;
                 await LoadFilterAsync(filterPath);
+
+                // Auto-switch to SEARCH tab after loading filter
+                SelectedTabIndex = 2;
             };
 
-            // Wire up the FilterCopyRequested event - create a copy of the filter
-            filterSelectorControl.FilterCopyRequested += async (sender, filterPath) =>
-            {
-                try
-                {
-                    DebugLogger.Log("SearchModalViewModel", $"FilterCopyRequested event fired with path: {filterPath}");
-
-                    // Read the original filter
-                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-
-                    if (config != null)
-                    {
-                        // Create a copy with a new name
-                        config.Name = $"{config.Name}_Copy";
-                        config.DateCreated = DateTime.Now;
-
-                        // Save the copy
-                        var filterDir = System.IO.Path.GetDirectoryName(filterPath);
-                        var copyFileName = $"{config.Name.Replace(" ", "_")}.json";
-                        var copyPath = System.IO.Path.Combine(filterDir!, copyFileName);
-
-                        // Ensure unique filename
-                        int counter = 1;
-                        while (System.IO.File.Exists(copyPath))
-                        {
-                            copyFileName = $"{config.Name.Replace(" ", "_")}_{counter}.json";
-                            copyPath = System.IO.Path.Combine(filterDir!, copyFileName);
-                            counter++;
-                        }
-
-                        var copyJson = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                        await System.IO.File.WriteAllTextAsync(copyPath, copyJson);
-
-                        DebugLogger.Log("SearchModalViewModel", $"Filter copied to: {copyPath}");
-
-                        // Refresh the filter selector
-                        filterSelectorControl.RefreshFilters();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("SearchModalViewModel", $"Error copying filter: {ex.Message}");
-                }
-            };
-
-            // Wire up the NewFilterRequested event - could open filter creation
-            filterSelectorControl.NewFilterRequested += (sender, e) =>
-            {
-                DebugLogger.Log("SearchModalViewModel", "NewFilterRequested event fired");
-                // TODO: Implement new filter creation if needed
-            };
-            
-            // Create the deck and stake selector and wire up events
+            // Create the deck and stake selector
             var deckStakeSelector = new Components.DeckAndStakeSelector();
-            
+
             // Wire up the deck/stake selection events
             deckStakeSelector.SelectionChanged += (sender, selection) =>
             {
-                var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", 
+                var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
                                         "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
                 var stakeNames = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
-                
+
                 if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
                     DeckSelection = deckNames[selection.deckIndex];
-                    
+
                 if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeNames.Length)
                     StakeSelection = stakeNames[selection.stakeIndex];
-                    
+
                 DebugLogger.Log("SearchModalViewModel", $"Deck/Stake changed to {DeckSelection}/{StakeSelection}");
             };
-            
-            deckStakeSelector.DeckSelected += (sender, e) =>
-            {
-                DebugLogger.Log("SearchModalViewModel", $"Deck selected: {DeckSelection}/{StakeSelection}");
-                // Could switch to search tab or perform other action here
-            };
-            
-            // Create simple ante selector
-            var anteSelector = CreateAnteSelector();
-            
-            // Create simple source selector
-            var sourceSelector = CreateSourceSelector();
-            
-            // Create simple edition selector
-            var editionSelector = CreateEditionSelector();
 
-            // Create wordlist selector
-            var wordListSelector = CreateWordListSelector();
+            // KISS: Simple, clean layout
+            var mainGrid = new Grid();
+            mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star)); // FilterSelector
+            mainGrid.RowDefinitions.Add(new RowDefinition(new GridLength(15))); // Spacing
+            mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Deck/Stake selector
 
-            // Create the filter tab content as a UserControl with FilterSelectorControl taking full space
-            var filterGrid = new Grid();
-            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Title
-            filterGrid.RowDefinitions.Add(new RowDefinition(new GridLength(10))); // Spacing
-            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star)); // FilterSelectorControl
-            filterGrid.RowDefinitions.Add(new RowDefinition(new GridLength(15))); // Spacing
-            filterGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Bottom selectors
+            Grid.SetRow(filterSelector, 0);
+            mainGrid.Children.Add(filterSelector);
 
-            var title = new TextBlock
-            {
-                Text = "SELECT FILTER FOR SEARCH",
-                FontSize = 20,
-                FontFamily = (Application.Current?.Resources["BalatroFont"] as Avalonia.Media.FontFamily) ?? Avalonia.Media.FontFamily.Default,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Foreground = Avalonia.Media.Brush.Parse("#00FF88")
-            };
-            Grid.SetRow(title, 0);
-            filterGrid.Children.Add(title);
-
-            Grid.SetRow(filterSelectorControl, 2);
-            filterGrid.Children.Add(filterSelectorControl);
-
-            var bottomScrollViewer = new ScrollViewer
-            {
-                MaxHeight = 200,
-                Content = new StackPanel
-                {
-                    Spacing = 10,
-                    Children =
-                    {
-                        deckStakeSelector,
-                        anteSelector,
-                        sourceSelector,
-                        editionSelector,
-                        wordListSelector
-                    }
-                }
-            };
-            Grid.SetRow(bottomScrollViewer, 4);
-            filterGrid.Children.Add(bottomScrollViewer);
+            Grid.SetRow(deckStakeSelector, 2);
+            mainGrid.Children.Add(deckStakeSelector);
 
             return new UserControl
             {
                 Content = new Border
                 {
-                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"), // ContainerDarkPrecise
+                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
                     CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
                     Padding = new Avalonia.Thickness(15),
-                    Child = filterGrid
+                    Child = mainGrid
                 }
             };
         }
