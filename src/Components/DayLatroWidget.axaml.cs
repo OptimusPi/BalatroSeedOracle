@@ -96,8 +96,11 @@ namespace BalatroSeedOracle.Components
         /// </summary>
         private void OnDetachedFromVisualTree(object? sender, EventArgs e)
         {
-            ViewModel.AnalyzeSeedRequested -= OnAnalyzeSeedRequested;
-            ViewModel.Dispose();
+            if (ViewModel != null)
+            {
+                ViewModel.AnalyzeSeedRequested -= OnAnalyzeSeedRequested;
+                ViewModel.Dispose();
+            }
         }
     }
 }

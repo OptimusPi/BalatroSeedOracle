@@ -84,7 +84,10 @@ namespace BalatroSeedOracle.Components
             if (!_isDragging)
                 return;
 
-            var currentPoint = e.GetPosition(this.Parent as Control);
+            var parent = this.Parent as Control;
+            if (parent == null) return;
+
+            var currentPoint = e.GetPosition(parent);
             var delta = currentPoint - _dragStartPoint;
 
             ViewModel.PositionX = delta.X;

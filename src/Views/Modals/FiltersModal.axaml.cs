@@ -421,7 +421,7 @@ namespace BalatroSeedOracle.Views.Modals
         }
 
         // FilterSelector event handlers
-        private async void OnFilterSelected(object? sender, string filterPath)
+        private void OnFilterSelected(object? sender, string filterPath)
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter selected for preview: {filterPath}");
 
