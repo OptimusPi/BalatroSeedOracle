@@ -343,7 +343,7 @@ namespace BalatroSeedOracle.ViewModels
         private void OnTool()
         {
             PlayButtonClickSound();
-            ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Tools));
+            ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Settings));
         }
 
         private void OnSettings()
@@ -808,6 +808,7 @@ namespace BalatroSeedOracle.ViewModels
         Filters,
         Analyze,
         Tools,
+        Settings,
         Custom
     }
 

@@ -141,6 +141,9 @@ namespace BalatroSeedOracle.Views
                 case ModalType.Tools:
                     this.ShowToolsModal();
                     break;
+                case ModalType.Settings:
+                    this.ShowSettingsModal();
+                    break;
                 case ModalType.Custom:
                     if (e.CustomContent != null && e.CustomTitle != null)
                     {
@@ -148,6 +151,30 @@ namespace BalatroSeedOracle.Views
                     }
                     break;
             }
+        }
+
+        /// <summary>
+        /// Show settings modal
+        /// </summary>
+        private void ShowSettingsModal()
+        {
+            var settingsModal = new SettingsModal();
+            // settingsModal.CloseRequested += (s, e) => HideModalContent(); // TODO: Fix event binding
+
+            var modal = new StandardModal("SETTINGS");
+            modal.SetContent(settingsModal);
+            modal.BackClicked += (s, e) => HideModalContent();
+
+            ShowModalContent(modal, "SETTINGS");
+        }
+
+        /// <summary>
+        /// Show tools modal (placeholder)
+        /// </summary>
+        private void ShowToolsModal()
+        {
+            // For now, show settings modal until Tools modal is implemented
+            ShowSettingsModal();
         }
 
         /// <summary>

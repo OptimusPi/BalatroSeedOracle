@@ -16,10 +16,17 @@ namespace BalatroSeedOracle.Components
     /// </summary>
     public partial class DayLatroWidget : UserControl
     {
-        public DayLatroWidgetViewModel ViewModel { get; }
+        public DayLatroWidgetViewModel? ViewModel { get; }
 
         public DayLatroWidget()
         {
+            // Check feature flag - hide widget if disabled
+            if (!FeatureFlagsService.Instance.IsEnabled(FeatureFlagsService.DAYLATRO_ENABLED))
+            {
+                IsVisible = false;
+                return;
+            }
+
             // Initialize ViewModel with dependency injection
             ViewModel = new DayLatroWidgetViewModel(
                 DaylatroHighScoreService.Instance,

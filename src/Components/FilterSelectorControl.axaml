@@ -61,8 +61,6 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Title -->
@@ -150,16 +148,6 @@
                             Command="{Binding NextPageCommand}"
                             IsEnabled="{Binding CanGoToNextPage}"/>
                 </StackPanel>
-
-                <!-- Create New Filter button -->
-                <Button Grid.Row="6"
-                        Name="NewFilterButton"
-                        Content="+ NEW"
-                        Classes="btn-blue"
-                        Height="38"
-                        FontSize="14"
-                        HorizontalAlignment="Stretch"
-                        Click="OnCreateNewFilterClick"/>
             </Grid>
         </Border>
 
@@ -172,7 +160,7 @@
                 <!-- Placeholder when no filter selected -->
                 <StackPanel VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            Spacing="12"
+                            Spacing="16"
                             IsVisible="{Binding !IsFilterSelected}">
                     <TextBlock Text="Select a Filter"
                                FontFamily="{StaticResource BalatroFont}"
@@ -180,18 +168,20 @@
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                Opacity="0.5"/>
-                    <TextBlock Text="or"
+                    <TextBlock Text="— or —"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="16"
+                               FontSize="14"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                Opacity="0.4"/>
-                    <TextBlock Text="CREATE NEW FILTER"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
-                               Foreground="{StaticResource Blue}"
-                               HorizontalAlignment="Center"
-                               Opacity="0.5"/>
+                    <Button Name="NewFilterButton"
+                            Content="+ CREATE NEW FILTER"
+                            Classes="btn-blue"
+                            Height="42"
+                            FontSize="16"
+                            Padding="24,8"
+                            HorizontalAlignment="Center"
+                            Click="OnCreateNewFilterClick"/>
                 </StackPanel>
 
                 <!-- Filter details when selected - Balatro Challenges Style -->

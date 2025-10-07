@@ -1,0 +1,223 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
+             MinWidth="600"
+             MinHeight="500">
+
+    <Border Background="{StaticResource DarkModalGrey}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Padding="20">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0">
+                <TextBlock Text="SETTINGS"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="24"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Close button -->
+                <Button Name="CloseButton"
+                        Content="✕"
+                        Classes="btn-red"
+                        Width="32"
+                        Height="32"
+                        HorizontalAlignment="Right"
+                        Click="OnCloseClick"/>
+            </Grid>
+
+            <!-- Settings Content -->
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="24">
+
+                    <!-- Experimental Features Section -->
+                    <Border Background="{StaticResource ContainerDarkPrecise}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="🧪 EXPERIMENTAL FEATURES"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Gold}"/>
+
+                            <TextBlock Text="Toggle experimental and beta features"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       Opacity="0.8"/>
+
+                            <Rectangle Height="1"
+                                       Fill="{StaticResource ModalBorder}"
+                                       Opacity="0.3"
+                                       Margin="0,4"/>
+
+                            <!-- Feature Toggles -->
+                            <ItemsControl Name="FeatureToggles">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,4"
+                                                Padding="8"
+                                                Background="{StaticResource DockGrey}"
+                                                CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="14"
+                                                               Foreground="{StaticResource White}"/>
+
+                                                    <TextBlock Text="{Binding Description}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource VeryLightGrey}"
+                                                               Opacity="0.7"
+                                                               Margin="0,2,0,0"/>
+                                                </StackPanel>
+
+                                                <CheckBox Grid.Column="1"
+                                                          IsChecked="{Binding IsEnabled}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="8,0,0,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- General Settings Section -->
+                    <Border Background="{StaticResource ContainerDarkPrecise}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="⚙️ GENERAL SETTINGS"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Gold}"/>
+
+                            <Rectangle Height="1"
+                                       Fill="{StaticResource ModalBorder}"
+                                       Opacity="0.3"
+                                       Margin="0,4"/>
+
+                            <!-- Author Name -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="Author Name:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           VerticalAlignment="Center"/>
+
+                                <TextBox Grid.Column="1"
+                                         Name="AuthorNameBox"
+                                         FontFamily="{StaticResource BalatroFont}"
+                                         FontSize="14"
+                                         Watermark="Enter your name..."/>
+                            </Grid>
+
+                            <!-- Default Thread Count -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="Search Threads:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource White}"
+                                           VerticalAlignment="Center"/>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <NumericUpDown Name="ThreadCountBox"
+                                                   Minimum="1"
+                                                   Maximum="64"
+                                                   Value="8"
+                                                   Width="100"/>
+                                    <TextBlock Text="(CPU cores recommended)"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource MediumGrey}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Info Box -->
+                    <Border Background="#1a2528"
+                            BorderBrush="{StaticResource StatusBlue}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="ℹ️ About Experimental Features"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource StatusBlue}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="Experimental features may be unstable or incomplete. The AI Genie assistant requires significant resources and may impact performance."
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource VeryLightGrey}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer Buttons -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Name="ResetButton"
+                        Content="Reset to Defaults"
+                        Classes="btn-orange"
+                        HorizontalAlignment="Stretch"
+                        Click="OnResetClick"/>
+
+                <Button Grid.Column="2"
+                        Name="SaveButton"
+                        Content="Save Settings"
+                        Classes="btn-blue"
+                        HorizontalAlignment="Stretch"
+                        Click="OnSaveClick"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

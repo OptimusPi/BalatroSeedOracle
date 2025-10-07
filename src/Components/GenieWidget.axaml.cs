@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components
@@ -13,7 +14,7 @@ namespace BalatroSeedOracle.Components
     /// </summary>
     public partial class GenieWidget : UserControl
     {
-        public GenieWidgetViewModel ViewModel { get; }
+        public GenieWidgetViewModel? ViewModel { get; }
 
         // Drag state
         private bool _isDragging = false;
@@ -21,6 +22,13 @@ namespace BalatroSeedOracle.Components
 
         public GenieWidget()
         {
+            // Check feature flag - hide widget if disabled
+            if (!FeatureFlagsService.Instance.IsEnabled(FeatureFlagsService.GENIE_ENABLED))
+            {
+                IsVisible = false;
+                return;
+            }
+
             ViewModel = new GenieWidgetViewModel();
             DataContext = ViewModel;
 
