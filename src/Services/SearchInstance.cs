@@ -993,6 +993,26 @@ namespace BalatroSeedOracle.Services
 
             try
             {
+                // Pre-flight validation
+                if (config == null)
+                {
+                    throw new ArgumentNullException(nameof(config), "Search configuration cannot be null");
+                }
+
+                var validationErrors = MotelyJsonConfigValidator.Validate(config);
+                if (validationErrors.Any())
+                {
+                    var errorMessage = $"Filter validation failed:\n{string.Join("\n", validationErrors.Take(5))}";
+                    progress?.Report(new SearchProgress
+                    {
+                        Message = errorMessage,
+                        HasError = true,
+                        IsComplete = true
+                    });
+                    AddToConsole($"❌ {errorMessage}");
+                    return;
+                }
+
                 // Cancellation is fully implemented via CancellationToken
 
                 // Enable Motely's DebugLogger if in debug mode
@@ -1126,10 +1146,58 @@ namespace BalatroSeedOracle.Services
 
                 DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Search completed with status: {_currentSearch.Status}");
             }
+            catch (OperationCanceledException)
+            {
+                // User cancelled the search
+                var cancelMessage = "Search cancelled by user";
+                DebugLogger.Log($"SearchInstance[{_searchId}]", cancelMessage);
+                AddToConsole($"⚠️ {cancelMessage}");
+                progress?.Report(new SearchProgress
+                {
+                    Message = cancelMessage,
+                    HasError = false,
+                    IsComplete = true
+                });
+            }
+            catch (OutOfMemoryException oom)
+            {
+                // Critical memory error
+                var memoryError = "Search failed: Out of memory. Try reducing batch size or thread count.";
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Out of memory: {oom.Message}");
+                AddToConsole($"❌ {memoryError}");
+                progress?.Report(new SearchProgress
+                {
+                    Message = memoryError,
+                    HasError = true,
+                    IsComplete = true
+                });
+            }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"RunSearchInProcess exception: {ex.Message}");
-                progress?.Report(new SearchProgress { Message = $"Search error: {ex.Message}", HasError = true, IsComplete = true });
+                // General error with detailed logging
+                var userMessage = ex switch
+                {
+                    ArgumentException => $"Invalid search parameters: {ex.Message}",
+                    InvalidOperationException => $"Search configuration error: {ex.Message}",
+                    System.IO.IOException => $"File system error: {ex.Message}",
+                    _ => $"Unexpected error: {ex.Message}"
+                };
+
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"RunSearchInProcess exception: {ex}");
+                AddToConsole($"❌ {userMessage}");
+
+                // Log stack trace for debugging
+                if (criteria?.EnableDebugOutput == true)
+                {
+                    AddToConsole($"Stack trace:\n{ex.StackTrace}");
+                }
+
+                progress?.Report(new SearchProgress
+                {
+                    Message = userMessage,
+                    HasError = true,
+                    IsComplete = true
+                });
             }
             finally
             {
