@@ -875,7 +875,7 @@ namespace BalatroSeedOracle.Views.Modals
                             if (searchModal?.Content is SearchModal searchContent)
                             {
                                 // Go directly to the Search tab
-                                searchContent.GoToSearchTab();
+                                searchContent.ViewModel.SelectedTabIndex = 2; // Search tab
                             }
                         }, DispatcherPriority.Background);
                     }, DispatcherPriority.Background);
@@ -916,7 +916,7 @@ namespace BalatroSeedOracle.Views.Modals
                             if (searchModal?.Content is SearchModal searchContent)
                             {
                                 // Go directly to the Search tab
-                                searchContent.GoToSearchTab();
+                                searchContent.ViewModel.SelectedTabIndex = 2; // Search tab
                             }
                         }, DispatcherPriority.Background);
                     }, DispatcherPriority.Background);

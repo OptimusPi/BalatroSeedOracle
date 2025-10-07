@@ -60,6 +60,7 @@ namespace BalatroSeedOracle.ViewModels
             CreateShortcutCommand = new RelayCommand<string>(CreateShortcut);
             EnterVibeOutModeCommand = new RelayCommand(EnterVibeOutMode);
             CloseCommand = new RelayCommand(CloseModal);
+            MaximizeCommand = new RelayCommand(ToggleMaximize);
             SelectTabCommand = new RelayCommand<object>(SelectTab);
 
             // Initialize dynamic tabs
@@ -186,6 +187,7 @@ namespace BalatroSeedOracle.ViewModels
         public ICommand CreateShortcutCommand { get; }
         public ICommand EnterVibeOutModeCommand { get; }
         public ICommand CloseCommand { get; }
+        public ICommand MaximizeCommand { get; }
         public ICommand SelectTabCommand { get; }
 
         #endregion
@@ -194,6 +196,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public event EventHandler<string>? CreateShortcutRequested;
         public event EventHandler? CloseRequested;
+        public event EventHandler? MaximizeToggleRequested;
 
         #endregion
 
@@ -325,6 +328,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             DebugLogger.Log("SearchModalViewModel", "Closing modal");
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ToggleMaximize()
+        {
+            // Request maximize toggle - the View will handle finding the window
+            MaximizeToggleRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void SelectTab(object? parameter)

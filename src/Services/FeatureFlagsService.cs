@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.Services
         public const string DAYLATRO_ENABLED = "DaylatroEnabled";
         public const string SHADER_BACKGROUNDS = "ShaderBackgrounds";
         public const string VIBE_AUDIO = "VibeAudioEnabled";
+        public const string VISUALIZER_WIDGET = "VisualizerWidget";
         public const string EXPERIMENTAL_SEARCH = "ExperimentalSearch";
         public const string DEBUG_MODE = "DebugMode";
 

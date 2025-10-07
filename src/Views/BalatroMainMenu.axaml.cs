@@ -533,17 +533,17 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
 
                 var searchContent = new SearchModal();
-                searchContent.ConnectToExistingSearch(searchId);
+                _ = searchContent.ViewModel.ConnectToExistingSearch(searchId);
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    _ = searchContent.LoadFilterAsync(configPath);
+                    _ = searchContent.ViewModel.LoadFilterAsync(configPath);
                 }
 
-                searchContent.CreateShortcutRequested += (sender, cfgPath) =>
+                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
                     DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
-                    var modalSearchId = searchContent.GetCurrentSearchId();
+                    var modalSearchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
                         ShowSearchDesktopIcon(modalSearchId, cfgPath);

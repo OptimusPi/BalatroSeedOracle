@@ -61,33 +61,31 @@ namespace BalatroSeedOracle.Helpers
                 searchContent.CloseRequested += (sender, e) => menu.HideModalContent();
                 
                 // Handle desktop icon creation when modal closes with active search
-                searchContent.CreateShortcutRequested += (sender, cfgPath) => 
+                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
                     BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
                     // Get the search ID from the modal
-                    var searchId = searchContent.GetCurrentSearchId();
+                    var searchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(searchId))
                     {
                         menu.ShowSearchDesktopIcon(searchId, cfgPath);
                     }
                 };
-            
+
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    // Just set the filter path immediately so it's ready when user clicks Cook
-                    searchContent.SetCurrentFilterPath(configPath);
                     // Load filter async and THEN navigate to search tab
                     _ = Task.Run(async () =>
                     {
-                        await searchContent.LoadFilterAsync(configPath);
+                        await searchContent.ViewModel.LoadFilterAsync(configPath);
                         // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                        Dispatcher.UIThread.Post(() => searchContent.GoToSearchTab());
+                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 2);
                     });
                 }
                 else
                 {
                     // No filter to load, go to search tab immediately
-                    searchContent.GoToSearchTab();
+                    searchContent.ViewModel.SelectedTabIndex = 2; // Search tab
                 }
                 return menu.ShowModal("🎰 SEED SEARCH", searchContent);
             }
@@ -140,11 +138,11 @@ namespace BalatroSeedOracle.Helpers
             // DON'T auto-navigate for fresh launches - let user select filter first
 
             // Handle desktop icon creation when modal closes with active search
-            searchModal.CreateShortcutRequested += (sender, configPath) =>
+            searchModal.ViewModel.CreateShortcutRequested += (sender, configPath) =>
             {
                 BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
                 // Get the search ID from the modal
-                var searchId = searchModal.GetCurrentSearchId();
+                var searchId = searchModal.ViewModel.CurrentSearchId;
                 if (!string.IsNullOrEmpty(searchId))
                 {
                     menu.ShowSearchDesktopIcon(searchId, configPath);
@@ -175,13 +173,13 @@ namespace BalatroSeedOracle.Helpers
             menu.RemoveSearchDesktopIcon(searchId);
 
             // Set the search ID so the modal can reconnect
-            searchModal.SetSearchInstance(searchId);
+            _ = searchModal.ViewModel.ConnectToExistingSearch(searchId);
 
             // AUTO-NAVIGATE: Take user directly to search tab after connection!
-            Dispatcher.UIThread.Post(() => searchModal.GoToSearchTab());
+            Dispatcher.UIThread.Post(() => searchModal.ViewModel.SelectedTabIndex = 2);
 
             // Handle desktop icon creation when modal closes with active search
-            searchModal.CreateShortcutRequested += (sender, cfgPath) =>
+            searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
             {
                 BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for search: {searchId}");
                 menu.ShowSearchDesktopIcon(searchId, cfgPath);
