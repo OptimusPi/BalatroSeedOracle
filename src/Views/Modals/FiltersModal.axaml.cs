@@ -21,6 +21,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaEdit;
+using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.TextMate;
 using Motely;
 using Motely.Filters;
@@ -190,6 +191,9 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Keep track of current tab for triangle animation
             _currentTabIndex = 0;
+
+            // Setup JSON Editor with autocomplete
+            SetupJsonEditorAutocomplete();
 
             // Setup Save Filter functionality
             var saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
@@ -1720,6 +1724,80 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        private void SetupJsonEditorAutocomplete()
+        {
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor != null)
+            {
+                // Setup autocomplete triggers
+                jsonEditor.TextArea.TextEntering += OnJsonTextEntering;
+                jsonEditor.TextArea.TextEntered += OnJsonTextEntered;
+                jsonEditor.TextArea.KeyDown += OnJsonKeyDown;
+
+                DebugLogger.Log("FiltersModal", "JSON editor autocomplete configured");
+            }
+        }
+
+        private void OnJsonKeyDown(object? sender, KeyEventArgs e)
+        {
+            // Ctrl+Space triggers autocomplete
+            if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                ShowJsonCompletions();
+                e.Handled = true;
+            }
+        }
+
+        private void OnJsonTextEntering(object? sender, TextInputEventArgs e)
+        {
+            // Can be used to handle text before it's entered
+        }
+
+        private void OnJsonTextEntered(object? sender, TextInputEventArgs e)
+        {
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor?.TextArea == null) return;
+
+            // Show autocomplete on quote or after colon
+            if (e.Text == "\"" || e.Text == ":")
+            {
+                ShowJsonCompletions();
+            }
+        }
+
+        private void ShowJsonCompletions()
+        {
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor?.TextArea == null) return;
+
+            try
+            {
+                // Get text before cursor for context-aware completions
+                var caretOffset = jsonEditor.TextArea.Caret.Offset;
+                var textBeforeCursor = caretOffset > 0
+                    ? jsonEditor.Document.GetText(0, Math.Min(caretOffset, jsonEditor.Document.TextLength))
+                    : "";
+
+                // Get completions from helper
+                var completions = JsonAutocompletionHelper.GetCompletionsForContext(textBeforeCursor);
+
+                if (completions.Any())
+                {
+                    // Create and show completion window
+                    var completionWindow = new CompletionWindow(jsonEditor.TextArea);
+                    foreach (var item in completions)
+                    {
+                        completionWindow.CompletionList.CompletionData.Add(item);
+                    }
+                    completionWindow.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Error showing JSON completions: {ex.Message}");
+            }
+        }
+
         private void UpdateJsonEditor()
         {
             try
@@ -2383,10 +2461,11 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
+                // SIMPLE: Just save the filter and show a quick status
+                // The real search happens when they click "Open Full Search"
+
                 // Get test parameters
                 var seedsInput = this.FindControl<TextBox>("TestSeedsInput");
-                var deckCombo = this.FindControl<ComboBox>("TestDeckCombo");
-                var stakeCombo = this.FindControl<ComboBox>("TestStakeCombo");
                 var resultsList = this.FindControl<ItemsControl>("TestResultsList");
                 var resultCount = this.FindControl<TextBlock>("TestResultCount");
                 var emptyState = this.FindControl<TextBlock>("TestEmptyState");
@@ -2405,23 +2484,17 @@ namespace BalatroSeedOracle.Views.Modals
                 var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"filter_test_{Guid.NewGuid()}.json");
                 await SaveConfigToPath(tempPath);
 
-                UpdateStatus($"🔍 Testing {numSeeds} seeds...", isError: false);
+                UpdateStatus($"🔍 Filter saved for testing. Click 'Open Full Search' to run!", isError: false);
 
-                // Run quick test (simulate for now - you'd integrate with actual search)
-                await Task.Delay(500); // Simulate search delay
-
-                // Mock results for demonstration
-                var testResults = new List<object>();
-                var random = new Random();
-                for (int i = 0; i < Math.Min(5, numSeeds / 20); i++)
+                // Show a preview message instead of actual results
+                var testResults = new List<object>
                 {
-                    testResults.Add(new
-                    {
-                        Seed = $"{random.Next(1000, 99999)}",
-                        Details = $"Found {random.Next(1, 5)} matching items",
-                        Score = $"★ {random.Next(50, 100)}"
-                    });
-                }
+                    new {
+                        Seed = "Ready!",
+                        Details = $"Filter configured for {numSeeds} seeds",
+                        Score = "✓"
+                    }
+                };
 
                 // Update UI
                 if (resultsList != null)
@@ -2431,15 +2504,15 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (resultCount != null)
                 {
-                    resultCount.Text = $"{testResults.Count} matches found";
+                    resultCount.Text = "Click 'Open Full Search' to start";
                 }
 
                 if (emptyState != null)
                 {
-                    emptyState.IsVisible = testResults.Count == 0;
+                    emptyState.IsVisible = false;
                 }
 
-                UpdateStatus($"✓ Test complete! Found {testResults.Count} matches in {numSeeds} seeds", isError: false);
+                UpdateStatus($"✓ Filter ready for testing with {numSeeds} seeds", isError: false);
 
                 // Cleanup temp file
                 try { System.IO.File.Delete(tempPath); } catch { }
@@ -6520,12 +6593,45 @@ namespace BalatroSeedOracle.Views.Modals
 
         private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
         {
+            // Get deck/stake preferences from the selector
+            string deckName = "Red";   // Default
+            string stakeName = "White"; // Default
+
+            var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("PreferredDeckStakeSelector");
+            if (deckStakeSelector != null)
+            {
+                // Get the deck spinner control
+                var deckSpinner = deckStakeSelector.FindControl<DeckSpinner>("DeckSpinnerControl");
+                if (deckSpinner != null)
+                {
+                    int deckIndex = deckSpinner.SelectedDeckIndex;
+                    string[] deckNames = { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
+                                           "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+                    if (deckIndex >= 0 && deckIndex < deckNames.Length)
+                    {
+                        deckName = deckNames[deckIndex];
+                    }
+                }
+
+                // Get the stake spinner control
+                var stakeSpinner = deckStakeSelector.FindControl<SpinnerControl>("StakeSpinner");
+                if (stakeSpinner != null)
+                {
+                    int stakeIndex = (int)stakeSpinner.Value;
+                    string[] stakeNames = { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                    if (stakeIndex >= 0 && stakeIndex < stakeNames.Length)
+                    {
+                        stakeName = stakeNames[stakeIndex];
+                    }
+                }
+            }
+
             var config = new Motely.Filters.MotelyJsonConfig
             {
-                Deck = "Red", // Default deck
-                Stake = "White", // Default stake
+                Deck = deckName,
+                Stake = stakeName,
             };
-            
+
             // Get name from the ConfigNameBox
             var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
             if (configNameBox != null && !string.IsNullOrWhiteSpace(configNameBox.Text))
@@ -7137,18 +7243,47 @@ namespace BalatroSeedOracle.Views.Modals
             ClearNeeds();
             ClearWants();
             ClearMustNot();
-            
+
             // Load metadata
             var configNameBox = this.FindControl<TextBox>("ConfigNameBox");
             if (configNameBox != null && !string.IsNullOrEmpty(config.Name))
             {
                 configNameBox.Text = config.Name;
             }
-            
+
             var configDescriptionBox = this.FindControl<TextBox>("ConfigDescriptionBox");
             if (configDescriptionBox != null && !string.IsNullOrEmpty(config.Description))
             {
                 configDescriptionBox.Text = config.Description;
+            }
+
+            // Load deck/stake preferences
+            var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("PreferredDeckStakeSelector");
+            if (deckStakeSelector != null && !string.IsNullOrEmpty(config.Deck) && !string.IsNullOrEmpty(config.Stake))
+            {
+                // Map deck name to index
+                string[] deckNames = { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
+                                       "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+                int deckIndex = Array.IndexOf(deckNames, config.Deck);
+                if (deckIndex == -1) deckIndex = 0; // Default to Red
+
+                // Map stake name to index
+                string[] stakeNames = { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                int stakeIndex = Array.IndexOf(stakeNames, config.Stake);
+                if (stakeIndex == -1) stakeIndex = 0; // Default to White
+
+                // Set the values in the spinners
+                var deckSpinner = deckStakeSelector.FindControl<DeckSpinner>("DeckSpinnerControl");
+                if (deckSpinner != null)
+                {
+                    deckSpinner.SelectedDeckIndex = deckIndex;
+                }
+
+                var stakeSpinner = deckStakeSelector.FindControl<SpinnerControl>("StakeSpinner");
+                if (stakeSpinner != null)
+                {
+                    stakeSpinner.Value = stakeIndex;
+                }
             }
 
             // Load MUST items (needs)

@@ -28,6 +28,7 @@ namespace BalatroSeedOracle.Models
 
             // Initialize compatibility collections
             InitializeCompatibilityCollections();
+
         }
 
         public static readonly Dictionary<string, string> Jokers = new Dictionary<string, string>();
@@ -43,6 +44,7 @@ namespace BalatroSeedOracle.Models
             new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Decks = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Stakes = new Dictionary<string, string>();
+
 
         public static readonly Dictionary<string, string> Editions = new()
         {

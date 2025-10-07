@@ -908,6 +908,8 @@
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="150"/> <!-- Description TextBox -->
                                 <RowDefinition Height="20"/>
+                                <RowDefinition Height="Auto"/> <!-- Preferred Deck/Stake -->
+                                <RowDefinition Height="20"/>
                                 <RowDefinition Height="Auto"/> <!-- Action Buttons -->
                             </Grid.RowDefinitions>
                             
@@ -1004,7 +1006,7 @@
                                 <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <Border Grid.Column="0"
                                     Background="{StaticResource LightGrey}"
                                     CornerRadius="4"
@@ -1015,7 +1017,7 @@
                                            FontSize="14"
                                            Foreground="{StaticResource Black}"/>
                             </Border>
-                            
+
                             <TextBox Grid.Column="2"
                                      Name="SaveFilterNameInput"
                                      Watermark="Enter filter name..."
@@ -1040,9 +1042,35 @@
                                  FontSize="14"
                                  VerticalContentAlignment="Top"
                                  Padding="8"/>
-                        
+
+                        <!-- Preferred Deck/Stake Selector -->
+                        <Border Grid.Row="10"
+                                Background="{StaticResource ContainerDarkPrecise}"
+                                BorderThickness="2"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="PREFERRED DECK &amp; STAKE"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="16"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="(Optional - sets default for search)"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource MediumGrey}"
+                                           HorizontalAlignment="Center"
+                                           Opacity="0.8"/>
+
+                                <components:DeckAndStakeSelector Name="PreferredDeckStakeSelector"
+                                                                  HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
                             <!-- Action Buttons -->
-                            <Grid Grid.Row="10">
+                            <Grid Grid.Row="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
