@@ -8,7 +8,8 @@ namespace BalatroSeedOracle.Components
     public partial class FilterSelectorControl : UserControl
     {
         // Events that parent controls can subscribe to
-        public event EventHandler<string>? FilterSelected;
+        public event EventHandler<string>? FilterSelected;       // When a filter is clicked (for preview)
+        public event EventHandler<string>? FilterEditRequested;   // When Edit button is clicked
         public event EventHandler<string>? FilterCopyRequested;
         public event EventHandler? NewFilterRequested;
 
@@ -60,15 +61,16 @@ namespace BalatroSeedOracle.Components
         }
 
         // Event handler for "Edit Filter" button
-        // Note: This also fires FilterSelected event, which in SearchModal context means
-        // "use this filter for search". The event name is generic to support different use cases.
         private void OnEditFilterClick(object? sender, RoutedEventArgs e)
         {
             var filterPath = _viewModel?.GetSelectedFilterPath();
             if (!string.IsNullOrEmpty(filterPath))
             {
-                // In SearchModal, this will load the filter for searching
-                // In FiltersModal, this would open the filter editor
+                // Fire edit event for FiltersModal
+                FilterEditRequested?.Invoke(this, filterPath);
+
+                // Also fire FilterSelected for backwards compatibility with SearchModal
+                // (SearchModal uses this to load the filter for searching)
                 FilterSelected?.Invoke(this, filterPath);
             }
         }

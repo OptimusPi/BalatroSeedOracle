@@ -221,6 +221,7 @@ namespace BalatroSeedOracle.Views.Modals
             if (filterSelector != null)
             {
                 filterSelector.FilterSelected += OnFilterSelected;
+                filterSelector.FilterEditRequested += OnFilterEditRequested;
                 filterSelector.FilterCopyRequested += OnFilterCopyRequested;
                 filterSelector.NewFilterRequested += OnNewFilterRequested;
             }
@@ -422,17 +423,31 @@ namespace BalatroSeedOracle.Views.Modals
         // FilterSelector event handlers
         private async void OnFilterSelected(object? sender, string filterPath)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter loaded: {filterPath}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter selected for preview: {filterPath}");
+
+            // When a filter is selected, just show its details
+            // DON'T load it for editing - that's what the Edit button is for
+            // This matches Balatro's challenges screen behavior
+
+            _currentFilterPath = filterPath;
+
+            // Stay on the Select tab to show filter details
+            // User must click "Edit Filter" button to actually edit
+        }
+
+        private async void OnFilterEditRequested(object? sender, string filterPath)
+        {
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Filter edit requested: {filterPath}");
 
             try
             {
-                // Load the selected filter
+                // Load the selected filter for editing
                 await LoadConfigAsync(filterPath);
 
                 // Enable tabs
                 UpdateTabStates(true);
 
-                // Always switch to Visual tab when selecting a filter
+                // Switch to Visual tab for editing
                 var visualTabButton = this.FindControl<Button>("VisualTab");
                 visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
@@ -440,7 +455,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 BalatroSeedOracle.Helpers.DebugLogger.LogError(
                     "FiltersModal",
-                    $"Error loading filter: {ex.Message}"
+                    $"Error loading filter for edit: {ex.Message}"
                 );
                 UpdateStatus($"Error loading filter: {ex.Message}", true);
             }
