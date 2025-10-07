@@ -35,6 +35,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 _jsonEditor.TextArea.TextEntering += OnTextEntering;
                 _jsonEditor.TextArea.TextEntered += OnTextEntered;
+                _jsonEditor.TextArea.KeyDown += OnKeyDown;
             }
         }
 
@@ -116,15 +117,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
         
+        private void OnKeyDown(object? sender, KeyEventArgs e)
+        {
+            // Ctrl+Space triggers autocomplete
+            if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                ShowJsonCompletions();
+                e.Handled = true;
+            }
+        }
+
         private void OnTextEntering(object? sender, TextInputEventArgs e)
         {
             // Simple autocomplete trigger - no complex window management
         }
-        
+
         private void OnTextEntered(object? sender, TextInputEventArgs e)
         {
             if (_jsonEditor?.TextArea == null) return;
-            
+
             // Show autocomplete on quote or after colon
             if (e.Text == "\"" || e.Text == ":")
             {
@@ -135,50 +146,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void ShowJsonCompletions()
         {
             if (_jsonEditor?.TextArea == null) return;
-            
+
+            // Get text before cursor for context-aware completions
+            var offset = _jsonEditor.CaretOffset;
+            var textBeforeCursor = _jsonEditor.Text.Substring(0, Math.Min(offset, _jsonEditor.Text.Length));
+
+            // Get SMART context-aware completions
+            var smartCompletions = JsonAutocompletionHelper.GetCompletionsForContext(textBeforeCursor);
+
+            if (smartCompletions.Count == 0)
+                return; // No completions available
+
             var completionWindow = new CompletionWindow(_jsonEditor.TextArea);
             var data = completionWindow.CompletionList.CompletionData;
-            
-            // Add JSON property completions
-            data.Add(new JsonCompletionData("type", "\"type\": \"Joker\""));
-            data.Add(new JsonCompletionData("Value", "\"Value\": \"Blueprint\""));
-            data.Add(new JsonCompletionData("Edition", "\"Edition\": \"Negative\""));
-            data.Add(new JsonCompletionData("antes", "\"antes\": [1, 2, 3, 4, 5]"));
-            data.Add(new JsonCompletionData("must", "\"must\": []"));
-            data.Add(new JsonCompletionData("should", "\"should\": []"));
-            data.Add(new JsonCompletionData("mustNot", "\"mustNot\": []"));
-            data.Add(new JsonCompletionData("deck", "\"deck\": \"Red\""));
-            data.Add(new JsonCompletionData("stake", "\"stake\": \"White\""));
-            
-            // Add common types
-            data.Add(new JsonCompletionData("Joker", "\"Joker\""));
-            data.Add(new JsonCompletionData("SoulJoker", "\"SoulJoker\""));
-            data.Add(new JsonCompletionData("StandardCard", "\"StandardCard\""));
-            data.Add(new JsonCompletionData("Voucher", "\"Voucher\""));
-            data.Add(new JsonCompletionData("TarotCard", "\"TarotCard\""));
-            
+
+            // Add all smart completions
+            foreach (var completion in smartCompletions)
+            {
+                data.Add(completion);
+            }
+
             completionWindow.Show();
             completionWindow.Closed += (o, args) => completionWindow = null;
-        }
-    }
-    
-    public class JsonCompletionData : ICompletionData
-    {
-        public JsonCompletionData(string text, string content)
-        {
-            Text = text;
-            Content = content;
-        }
-        
-        public string Text { get; }
-        public object Content { get; }
-        public object Description => $"Insert {Text}";
-        public double Priority => 1.0;
-        public Avalonia.Media.IImage? Image => null;
-        
-        public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
-        {
-            textArea.Document.Replace(completionSegment, Content.ToString());
         }
     }
 }
