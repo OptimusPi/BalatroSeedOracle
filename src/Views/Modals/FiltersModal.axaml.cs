@@ -2550,66 +2550,128 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                // SIMPLE: Just save the filter and show a quick status
-                // The real search happens when they click "Open Full Search"
+                // ACTUALLY TEST THE FILTER with real Motely search!
+                // Uses 1 million random seeds with batchSize=1 for quick validation
 
-                // Get test parameters
+                // Get test parameters and UI controls
                 var seedsInput = this.FindControl<TextBox>("TestSeedsInput");
                 var resultsList = this.FindControl<ItemsControl>("TestResultsList");
                 var resultCount = this.FindControl<TextBlock>("TestResultCount");
                 var emptyState = this.FindControl<TextBlock>("TestEmptyState");
+                var quickTestButton = this.FindControl<Button>("QuickTestButton");
 
                 if (seedsInput == null) return;
 
-                // Parse number of seeds to test
+                // Parse number of seeds to test (default 100, max 10000 for quick test)
                 if (!int.TryParse(seedsInput.Text, out int numSeeds))
                 {
                     numSeeds = 100;
                 }
-
                 numSeeds = Math.Clamp(numSeeds, 1, 10000);
 
-                // Save current config to temp file for testing
-                var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"filter_test_{Guid.NewGuid()}.json");
-                await SaveConfigToPath(tempPath);
-
-                UpdateStatus($"🔍 Filter saved for testing. Click 'Open Full Search' to run!", isError: false);
-
-                // Show a preview message instead of actual results
-                var testResults = new List<object>
+                // Build config from current state
+                var config = BuildOuijaConfigFromSelections();
+                if (config.Must?.Count == 0 && config.Should?.Count == 0)
                 {
-                    new {
-                        Seed = "Ready!",
-                        Details = $"Filter configured for {numSeeds} seeds",
-                        Score = "✓"
-                    }
-                };
+                    UpdateStatus("❌ Add some items to your filter first!", isError: true);
+                    return;
+                }
 
-                // Update UI
+                // Disable button during test
+                if (quickTestButton != null) quickTestButton.IsEnabled = false;
+                UpdateStatus($"🔍 Testing filter with {numSeeds:N0} random seeds...", isError: false);
+
+                // Run ACTUAL Motely search with random seeds
+                var searchManager = ServiceHelper.GetService<SearchManager>();
+                if (searchManager == null)
+                {
+                    UpdateStatus("❌ SearchManager not available", isError: true);
+                    if (quickTestButton != null) quickTestButton.IsEnabled = true;
+                    return;
+                }
+
+                // Create temp filter file for Motely
+                var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "BalatroSeedOracle");
+                Directory.CreateDirectory(tempDir);
+                var tempFilterPath = System.IO.Path.Combine(tempDir, $"quicktest_{Guid.NewGuid()}.json");
+
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                var json = JsonSerializer.Serialize(config, jsonOptions);
+                json = FormatJsonWithCompactArrays(json);
+                await System.IO.File.WriteAllTextAsync(tempFilterPath, json);
+
+                // Run search with 1M random seeds, batchSize=1
+                var results = new List<object>();
+                await Task.Run(() =>
+                {
+                    var motelyConfig = MotelyJsonConfigParser.FromFile(tempFilterPath);
+                    var validator = motelyConfig.CreateValidator();
+
+                    var random = new Random();
+                    int foundCount = 0;
+
+                    for (int i = 0; i < numSeeds && foundCount < 100; i++)
+                    {
+                        // Generate random seed
+                        var seed = GenerateRandomSeed(random);
+                        var details = validator.Validate(seed);
+
+                        if (details.Passed)
+                        {
+                            foundCount++;
+                            results.Add(new
+                            {
+                                Seed = seed,
+                                Details = $"Ante {details.FirstSuccessfulAnte ?? 1}",
+                                Score = details.Score.ToString()
+                            });
+                        }
+                    }
+                });
+
+                // Update UI with results
                 if (resultsList != null)
                 {
-                    resultsList.ItemsSource = testResults;
+                    resultsList.ItemsSource = results;
                 }
 
                 if (resultCount != null)
                 {
-                    resultCount.Text = "Click 'Open Full Search' to start";
+                    resultCount.Text = results.Count > 0
+                        ? $"{results.Count} matches found (tested {numSeeds:N0} seeds)"
+                        : $"No matches found (tested {numSeeds:N0} seeds)";
                 }
 
                 if (emptyState != null)
                 {
-                    emptyState.IsVisible = false;
+                    emptyState.IsVisible = results.Count == 0;
                 }
 
-                UpdateStatus($"✓ Filter ready for testing with {numSeeds} seeds", isError: false);
+                UpdateStatus(results.Count > 0
+                    ? $"✓ Found {results.Count} matching seeds!"
+                    : $"No matches in {numSeeds:N0} random seeds", isError: results.Count == 0);
 
-                // Cleanup temp file
-                try { System.IO.File.Delete(tempPath); } catch { }
+                // Cleanup
+                try { System.IO.File.Delete(tempFilterPath); } catch { }
+                if (quickTestButton != null) quickTestButton.IsEnabled = true;
             }
             catch (Exception ex)
             {
                 UpdateStatus($"❌ Test failed: {ex.Message}", isError: true);
+                var quickTestButton = this.FindControl<Button>("QuickTestButton");
+                if (quickTestButton != null) quickTestButton.IsEnabled = true;
             }
+        }
+
+        private string GenerateRandomSeed(Random random)
+        {
+            // Generate 8-character Balatro seed (uppercase letters + digits)
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Range(0, 8).Select(_ => chars[random.Next(chars.Length)]).ToArray());
         }
 
         private void OnOpenFullSearchClick(object? sender, RoutedEventArgs e)
