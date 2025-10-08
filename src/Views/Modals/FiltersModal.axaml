@@ -16,7 +16,7 @@
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
             <!-- Allow height to expand with font; keep min for layout -->
-            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinHeight" Value="46"/>
             <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Margin" Value="4,0,4,4"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -587,12 +587,13 @@
                         </Border>
 
                         <!-- JSON Validation Status Bar with Enhanced Styling -->
+                        <!-- Status and Actions Bar (COMPACT - more space for JSON!) -->
                         <Border Grid.Row="2"
                                 Background="{StaticResource DockGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="2"
                                 CornerRadius="6"
-                                Padding="10,6"
+                                Padding="6,3"
                                 BoxShadow="0 2 0 #2a3538">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -601,52 +602,52 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Validation Status -->
+                                <!-- Validation Status (smaller) -->
                                 <TextBlock Grid.Column="0"
                                            Name="JsonValidationStatus"
-                                           Text="✓ Valid JSON"
+                                           Text="✓ Valid"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="13"
+                                           FontSize="11"
                                            Foreground="{StaticResource Green}"
                                            VerticalAlignment="Center"/>
 
-                                <!-- Character/Line Count -->
+                                <!-- Character/Line Count (smaller) -->
                                 <TextBlock Grid.Column="1"
                                            Name="JsonStatsDisplay"
                                            Text="Lines: 0 | Chars: 0"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="11"
+                                           FontSize="9"
                                            Foreground="{StaticResource MediumGrey}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           Opacity="0.7"/>
+                                           Opacity="0.6"/>
 
-                                <!-- Action Buttons -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                <!-- Action Buttons (more compact!) -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
                                     <Button Name="FormatJsonButton"
                                             Content="✨ FORMAT"
                                             Classes="btn-blue"
-                                            Height="28"
-                                            FontSize="11"
-                                            Padding="10,4"
+                                            Height="24"
+                                            FontSize="10"
+                                            Padding="8,2"
                                             Click="OnFormatJsonClick"
                                             ToolTip.Tip="Auto-format JSON (Ctrl+Shift+F)"/>
 
                                     <Button Name="ValidateJsonButton"
                                             Content="🔍 VALIDATE"
                                             Classes="btn-blue"
-                                            Height="28"
-                                            FontSize="11"
-                                            Padding="10,4"
+                                            Height="24"
+                                            FontSize="10"
+                                            Padding="8,2"
                                             Click="OnValidateJsonClick"
                                             ToolTip.Tip="Validate JSON syntax"/>
 
                                     <Button Name="SaveJsonButton"
                                             Content="💾 SAVE"
                                             Classes="btn-green"
-                                            Height="28"
-                                            FontSize="12"
-                                            Padding="12,4"
+                                            Height="24"
+                                            FontSize="11"
+                                            Padding="10,2"
                                             Click="OnSaveJsonClick"
                                             ToolTip.Tip="Save changes to filter"/>
                                 </StackPanel>

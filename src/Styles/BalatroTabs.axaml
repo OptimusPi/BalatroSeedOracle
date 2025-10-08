@@ -20,7 +20,7 @@
         <Setter Property="CornerRadius" Value="12,12,0,0"/>
         <Setter Property="Margin" Value="2,0"/>
         <Setter Property="MinWidth" Value="120"/>
-        <Setter Property="Height" Value="42"/>
+        <Setter Property="Height" Value="38"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Cursor" Value="Hand"/>
