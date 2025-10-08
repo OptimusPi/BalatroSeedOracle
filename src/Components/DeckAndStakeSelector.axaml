@@ -4,30 +4,83 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
 
-    <StackPanel Spacing="14">
-        <!-- Deck Selection - Scaled down to 60% size -->
-        <Viewbox MaxWidth="192" MaxHeight="165" Stretch="Uniform" HorizontalAlignment="Center">
-            <components:DeckSpinner Name="DeckSpinnerControl" />
-        </Viewbox>
+    <!-- COMPACT HORIZONTAL LAYOUT (Balatro style) - 60% smaller than original! -->
+    <StackPanel Spacing="12" HorizontalAlignment="Center">
+        <!-- Deck and Stake Row (horizontal layout) -->
+        <Grid ColumnDefinitions="Auto,16,Auto" HorizontalAlignment="Center">
+            <!-- Deck Selector (compact) -->
+            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                <TextBlock Text="Yellow Deck"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
 
-        <!-- Stake Selection using regular spinner -->
-        <controls:SpinnerControl Name="StakeSpinner"
-                                Label=""
-                                SpinnerType="stake"
-                                Minimum="0"
-                                Maximum="7"
-                                Value="0"
-                                Width="157"
-                                HorizontalAlignment="Center" />
+                <Grid ColumnDefinitions="Auto,8,Auto,8,Auto" HorizontalAlignment="Center">
+                    <!-- Left Arrow -->
+                    <Button Grid.Column="0"
+                            Content="◀"
+                            Classes="btn-red"
+                            Width="44" Height="44"
+                            FontSize="18"
+                            Padding="0"/>
 
-        <!-- Select Button -->
+                    <!-- Deck Card (small) -->
+                    <Viewbox Grid.Column="2" Width="71" Height="95" Stretch="Uniform">
+                        <components:DeckSpinner Name="DeckSpinnerControl" />
+                    </Viewbox>
+
+                    <!-- Right Arrow -->
+                    <Button Grid.Column="4"
+                            Content="▶"
+                            Classes="btn-red"
+                            Width="44" Height="44"
+                            FontSize="18"
+                            Padding="0"/>
+                </Grid>
+
+                <TextBlock Text="Start with extra $10"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"
+                           Opacity="0.7"/>
+            </StackPanel>
+
+            <!-- Stake Selector (compact) -->
+            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                <TextBlock Text="White Stake"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Use existing SpinnerControl (already compact) -->
+                <controls:SpinnerControl Name="StakeSpinner"
+                                        Label=""
+                                        SpinnerType="stake"
+                                        Minimum="0"
+                                        Maximum="7"
+                                        Value="0"
+                                        Width="157"
+                                        HorizontalAlignment="Center" />
+
+                <TextBlock Text="Base Difficulty"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"
+                           Opacity="0.7"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Select Button (bottom) -->
         <Button Name="SelectButton"
                 Content="Select this Deck"
                 Classes="btn-blue"
                 MinWidth="200"
                 MinHeight="32"
                 HorizontalAlignment="Center"
-                Margin="0,8,0,0"
                 Command="{Binding SelectCommand}"/>
     </StackPanel>
 
