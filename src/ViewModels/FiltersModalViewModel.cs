@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -16,32 +17,58 @@ using Avalonia.Layout;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class FiltersModalViewModel : BaseViewModel
+    /// <summary>
+    /// Main ViewModel for FiltersModal - proper MVVM pattern
+    /// Replaces 8,583-line god class in FiltersModal.axaml.cs
+    /// </summary>
+    public partial class FiltersModalViewModel : ObservableObject
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
 
-        // Core properties  
+        // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
+        [ObservableProperty]
         private string _currentCategory = "Jokers";
+
+        [ObservableProperty]
         private string _searchFilter = "";
+
+        [ObservableProperty]
         private int _selectedTabIndex = 0;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasLoadedFilter))]
+        [NotifyCanExecuteChangedFor(nameof(DeleteFilterCommand))]
         private string? _currentFilterPath;
-        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
+
+        [ObservableProperty]
+        private MotelyJsonConfig? _loadedConfig;
+
+        [ObservableProperty]
         private string _filterName = "";
+
+        [ObservableProperty]
         private string _filterDescription = "";
+
+        [ObservableProperty]
         private string _selectedDeck = "Red";
+
+        [ObservableProperty]
         private int _selectedStake = 0;
 
         // Collections - Observable for data binding
         private readonly Dictionary<string, List<string>> _itemCategories;
-        private readonly ObservableCollection<string> _selectedMust = new();
-        private readonly ObservableCollection<string> _selectedShould = new();
-        private readonly ObservableCollection<string> _selectedMustNot = new();
-        private readonly Dictionary<string, ItemConfig> _itemConfigs = new();
+        public ObservableCollection<string> SelectedMust { get; } = new();
+        public ObservableCollection<string> SelectedShould { get; } = new();
+        public ObservableCollection<string> SelectedMustNot { get; } = new();
+        public Dictionary<string, ItemConfig> ItemConfigs { get; } = new();
 
         // Counters
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0;
+
+        // Computed properties
+        public bool HasLoadedFilter => !string.IsNullOrEmpty(CurrentFilterPath);
 
         public FiltersModalViewModel(IConfigurationService configurationService, IFilterService filterService)
         {
@@ -50,132 +77,44 @@ namespace BalatroSeedOracle.ViewModels
             
             _itemCategories = InitializeItemCategories();
             // DON'T call InitializeTabs() here - it creates UI controls on a background thread!
-            
-            // Initialize commands
-            SaveCommand = new AsyncRelayCommand(SaveCurrentFilterAsync);
-            LoadCommand = new AsyncRelayCommand(LoadFilterAsync);
-            NewCommand = new AsyncRelayCommand(CreateNewFilterAsync);
-            DeleteCommand = new AsyncRelayCommand(DeleteCurrentFilterAsync);
-            RefreshCommand = new RelayCommand(RefreshFromConfig);
-            ReloadVisualCommand = new AsyncRelayCommand(ReloadVisualFromSavedFileAsync);
-        }
-
-        #region Properties
-
-        public string CurrentCategory
-        {
-            get => _currentCategory;
-            set => SetProperty(ref _currentCategory, value);
-        }
-
-        public string SearchFilter
-        {
-            get => _searchFilter;
-            set => SetProperty(ref _searchFilter, value);
-        }
-
-
-        public string? CurrentFilterPath
-        {
-            get => _currentFilterPath;
-            set => SetProperty(ref _currentFilterPath, value);
-        }
-
-        public Motely.Filters.MotelyJsonConfig? LoadedConfig
-        {
-            get => _loadedConfig;
-            set => SetProperty(ref _loadedConfig, value);
-        }
-
-        public string FilterName
-        {
-            get => _filterName;
-            set => SetProperty(ref _filterName, value);
-        }
-
-        public string FilterDescription
-        {
-            get => _filterDescription;
-            set => SetProperty(ref _filterDescription, value);
-        }
-
-        public string SelectedDeck
-        {
-            get => _selectedDeck;
-            set => SetProperty(ref _selectedDeck, value);
-        }
-
-        public int SelectedStake
-        {
-            get => _selectedStake;
-            set => SetProperty(ref _selectedStake, value);
         }
         
+        // Deck/Stake index helpers
         public int SelectedDeckIndex
         {
             get
             {
-                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", 
+                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
                                    "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                return Array.IndexOf(decks, _selectedDeck);
+                return Array.IndexOf(decks, SelectedDeck);
             }
             set
             {
-                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", 
+                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
                                    "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
                 if (value >= 0 && value < decks.Length)
                 {
                     SelectedDeck = decks[value];
-                    OnPropertyChanged();
                 }
             }
         }
-        
+
         public int SelectedStakeIndex
         {
-            get => _selectedStake;
-            set
-            {
-                SelectedStake = value;
-                OnPropertyChanged();
-            }
+            get => SelectedStake;
+            set => SelectedStake = value;
         }
 
         public Dictionary<string, List<string>> ItemCategories => _itemCategories;
-        public ObservableCollection<string> SelectedMust => _selectedMust;
-        public ObservableCollection<string> SelectedShould => _selectedShould;
-        public ObservableCollection<string> SelectedMustNot => _selectedMustNot;
-        public Dictionary<string, ItemConfig> ItemConfigs => _itemConfigs;
-
-        // Tab visibility properties
-        public int SelectedTabIndex
-        {
-            get => _selectedTabIndex;
-            set => SetProperty(ref _selectedTabIndex, value);
-        }
-
         public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
-        
+
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
         public object? JsonEditorTab { get; set; }
 
-        #endregion
-
-        #region Commands
-
-        public ICommand SaveCommand { get; }
-        public ICommand LoadCommand { get; }
-        public ICommand NewCommand { get; }
-        public ICommand DeleteCommand { get; }
-        public ICommand RefreshCommand { get; }
-        public ICommand ReloadVisualCommand { get; }
-
-        #endregion
-
-        #region Command Implementations
-
-        private async Task SaveCurrentFilterAsync()
+        // ===== COMMANDS (using [RelayCommand] source generator) =====
+        [RelayCommand]
+        private async Task SaveCurrentFilter()
         {
             try
             {
@@ -279,7 +218,8 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        public async Task LoadFilterAsync()
+        [RelayCommand]
+        public async Task LoadFilter()
         {
             try
             {
@@ -294,24 +234,26 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private Task CreateNewFilterAsync()
+        [RelayCommand]
+        private async Task CreateNewFilter()
         {
             try
             {
                 ClearAllSelections();
                 CurrentFilterPath = null;
                 LoadedConfig = null;
+                FilterName = "";
+                FilterDescription = "";
                 DebugLogger.Log("FiltersModalViewModel", "Created new filter");
-                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("FiltersModalViewModel", $"Error creating new filter: {ex.Message}");
-                return Task.CompletedTask;
             }
         }
 
-        private async Task DeleteCurrentFilterAsync()
+        [RelayCommand(CanExecute = nameof(HasLoadedFilter))]
+        private async Task DeleteFilter()
         {
             try
             {
@@ -320,7 +262,7 @@ namespace BalatroSeedOracle.ViewModels
                     var success = await _filterService.DeleteFilterAsync(CurrentFilterPath);
                     if (success)
                     {
-                        await CreateNewFilterAsync();
+                        await CreateNewFilter();
                         DebugLogger.Log("FiltersModalViewModel", $"Deleted filter: {CurrentFilterPath}");
                     }
                 }
@@ -331,6 +273,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void RefreshFromConfig()
         {
             try
@@ -347,7 +290,8 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private async Task ReloadVisualFromSavedFileAsync()
+        [RelayCommand]
+        private async Task ReloadVisualFromSavedFile()
         {
             try
             {
@@ -373,10 +317,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-
-        #endregion
-
-        #region Helper Methods
+        // ===== HELPER METHODS =====
 
         private Dictionary<string, List<string>> InitializeItemCategories()
         {
@@ -816,7 +757,5 @@ namespace BalatroSeedOracle.ViewModels
             var stakeNames = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
             return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
         }
-
-        #endregion
     }
 }

@@ -50,6 +50,11 @@ namespace BalatroSeedOracle.Views.Modals
 
     public partial class FiltersModalContent : UserControl
     {
+        // ===== VIEWMODEL (The source of truth!) =====
+        public FiltersModalViewModel ViewModel { get; }
+
+        // ===== TEMPORARY: Keep old state for gradual migration =====
+        // TODO: Remove these once all code uses ViewModel.SelectedMust/Should/MustNot
         private readonly Dictionary<string, List<string>> _itemCategories;
         private readonly List<string> _selectedMust = new();
         private readonly List<string> _selectedShould = new();
@@ -65,7 +70,7 @@ namespace BalatroSeedOracle.Views.Modals
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0; // For making each dropped item unique
         private string? _currentFilterPath; // Path to the currently loaded filter
-        private Motely.Filters.MotelyJsonConfig? _loadedConfig; // Currently loaded filter configuration
+        private MotelyJsonConfig? _loadedConfig; // Currently loaded filter configuration
         
         private string MakeUniqueKey(string itemKey)
         {
@@ -145,10 +150,16 @@ namespace BalatroSeedOracle.Views.Modals
 
         public FiltersModalContent()
         {
+            // Initialize ViewModel (follows SearchModal pattern!)
+            var configService = ServiceHelper.GetRequiredService<IConfigurationService>();
+            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+            ViewModel = new FiltersModalViewModel(configService, filterService);
+            DataContext = ViewModel;
+
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
-            
+
             // Setup auto-save timer
             SetupAutoSave();
 
@@ -171,7 +182,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Start with tabs disabled until a filter is selected by clicking a button
             UpdateTabStates(false);
-            
+
             // Hide all tab panels initially - only show filter selector
             HideAllTabPanels();
         }

@@ -4,7 +4,7 @@
     <!-- Base BalatroSeedOracle Button Style -->
     <Style Selector="Button.BalatroSeedOracle-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        
+
         <Setter Property="FontSize" Value="24" /> <!-- Default size, can be overridden -->
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
         <Setter Property="Padding" Value="10,8" />
