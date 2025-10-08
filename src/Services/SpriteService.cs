@@ -502,6 +502,13 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
+            // Strip unique key suffix (#1, #2, etc.) from duplicate items
+            var hashIndex = name.LastIndexOf('#');
+            if (hashIndex > 0)
+            {
+                name = name.Substring(0, hashIndex);
+            }
+
             // If type is specified, use it directly
             if (!string.IsNullOrEmpty(type))
             {
@@ -801,7 +808,14 @@ namespace BalatroSeedOracle.Services
         public IImage? GetBossImage(string name, int frameIndex = 0)
         {
             ArgumentNullException.ThrowIfNull(name);
-            
+
+            // Strip unique key suffix (#1, #2, etc.) if present
+            var hashIndex = name.LastIndexOf('#');
+            if (hashIndex > 0)
+            {
+                name = name.Substring(0, hashIndex);
+            }
+
             // SmallBlind and BigBlind are not actual bosses - they're tags
             var normalizedName = name.Trim()
                 .Replace(" ", string.Empty, StringComparison.Ordinal)
