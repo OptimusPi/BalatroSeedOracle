@@ -114,10 +114,7 @@ namespace BalatroSeedOracle.Views
             {
                 if (e.PropertyName == nameof(ViewModel.IsSettingsPopupOpen))
                 {
-                    if (ViewModel.IsSettingsPopupOpen)
-                    {
-                        OnSettingsPopupOpened(null, EventArgs.Empty);
-                    }
+                    // Old settings popup removed
                 }
             };
         }
@@ -158,8 +155,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void ShowSettingsModal()
         {
-            var settingsModal = new SettingsModal();
-            // settingsModal.CloseRequested += (s, e) => HideModalContent(); // TODO: Fix event binding
+            var settingsModal = new Modals.SettingsModal();
 
             var modal = new StandardModal("SETTINGS");
             modal.SetContent(settingsModal);
@@ -353,39 +349,6 @@ namespace BalatroSeedOracle.Views
         #endregion
 
         #region Settings Modal Wiring (View-only)
-
-        /// <summary>
-        /// Handle settings popup opened - wire up ViewModel events
-        /// </summary>
-        private void OnSettingsPopupOpened(object? sender, EventArgs e)
-        {
-            var modal = this.FindControl<SettingsModal>("SettingsModal");
-            if (modal?.ViewModel != null)
-            {
-                var vm = modal.ViewModel;
-
-                // Unwire old events
-                vm.CloseRequested -= OnSettingsClose;
-                vm.AdvancedSettingsRequested -= OnAdvancedSettingsRequested;
-                vm.OnVisualizerThemeChanged -= OnVisualizerThemeChanged;
-
-                // Wire new events
-                vm.CloseRequested += OnSettingsClose;
-                vm.AdvancedSettingsRequested += OnAdvancedSettingsRequested;
-                vm.OnVisualizerThemeChanged += OnVisualizerThemeChanged;
-            }
-        }
-
-        private void OnSettingsClose(object? sender, EventArgs e)
-        {
-            var popup = this.FindControl<Popup>("SettingsPopup");
-            if (popup != null) popup.IsOpen = false;
-        }
-
-        private void OnAdvancedSettingsRequested(object? sender, EventArgs e)
-        {
-            this.ShowAudioVisualizerSettingsModal();
-        }
 
         private void OnVisualizerThemeChanged(object? sender, int themeIndex)
         {

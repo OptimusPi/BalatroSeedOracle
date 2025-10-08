@@ -3,13 +3,15 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
-    
+
     <StackPanel Spacing="14">
-        <!-- Deck Selection using DeckSpinner (restored for API compatibility) -->
-        <components:DeckSpinner Name="DeckSpinnerControl" />
-        
+        <!-- Deck Selection - Scaled down to 60% size -->
+        <Viewbox MaxWidth="192" MaxHeight="165" Stretch="Uniform" HorizontalAlignment="Center">
+            <components:DeckSpinner Name="DeckSpinnerControl" />
+        </Viewbox>
+
         <!-- Stake Selection using regular spinner -->
-        <controls:SpinnerControl Name="StakeSpinner" 
+        <controls:SpinnerControl Name="StakeSpinner"
                                 Label=""
                                 SpinnerType="stake"
                                 Minimum="0"
@@ -17,7 +19,7 @@
                                 Value="0"
                                 Width="157"
                                 HorizontalAlignment="Center" />
-        
+
         <!-- Select Button -->
         <Button Name="SelectButton"
                 Content="Select this Deck"
@@ -28,5 +30,5 @@
                 Margin="0,8,0,0"
                 Command="{Binding SelectCommand}"/>
     </StackPanel>
-    
+
 </UserControl>

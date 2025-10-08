@@ -999,19 +999,21 @@ namespace BalatroSeedOracle.Services
                     throw new ArgumentNullException(nameof(config), "Search configuration cannot be null");
                 }
 
-                var validationErrors = MotelyJsonConfigValidator.Validate(config);
-                if (validationErrors.Any())
+                try
                 {
-                    var errorMessage = $"Filter validation failed:\n{string.Join("\n", validationErrors.Take(5))}";
+                    MotelyJsonConfigValidator.ValidateConfig(config);
+                }
+                catch (ArgumentException ex)
+                {
                     progress?.Report(new SearchProgress
                     {
-                        Message = errorMessage,
+                        Message = $"Filter validation failed:\n{ex.Message}",
                         HasError = true,
                         IsComplete = true
                     });
-                    AddToConsole($"❌ {errorMessage}");
-                    return;
+                    throw;
                 }
+
 
                 // Cancellation is fully implemented via CancellationToken
 

@@ -7,131 +7,378 @@
              x:DataType="vm:SearchModalViewModel">
 
     <UserControl.Styles>
-        <!-- Match Filter Designer tab button styling -->
-        <Style Selector="Button.search-tab">
+        <!-- Balatro Tab Button Style (matching FiltersModal) -->
+        <Style Selector="Button.tab-button">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="18"/>
-            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinHeight" Value="42"/>
             <Setter Property="MinWidth" Value="144"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="CornerRadius" Value="12,12,0,0"/>
+            <Setter Property="BorderThickness" Value="3,3,3,0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Name="PART_Border"
-                                Background="{StaticResource Red}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
         </Style>
 
-        <Style Selector="Button.search-tab:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        <Style Selector="Button.tab-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
         </Style>
 
-        <Style Selector="Button.search-tab.active /template/ Border#PART_Border">
+        <Style Selector="Button.tab-button.active">
             <Setter Property="Background" Value="{StaticResource Red}"/>
-        </Style>
-
-        <Style Selector="Button.search-tab:disabled /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
+            <Setter Property="ZIndex" Value="10"/>
         </Style>
     </UserControl.Styles>
 
-    <Grid Margin="0">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Tab Navigation (Filter Designer style) -->
-        <Border Grid.Row="0"
-                Background="{StaticResource DockGrey}"
-                CornerRadius="8,8,0,0"
-                Padding="8,8,8,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="0">
-                <Button Content="Select" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="0"/>
-                <Button Content="Visual" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="1"/>
-                <Button Content="JSON" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="2"/>
-                <Button Content="🔥 TEST" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="3"/>
-                <Button Content="Finish" Classes="search-tab" Command="{Binding SelectTabCommand}" CommandParameter="4"/>
-            </StackPanel>
-        </Border>
+        <!-- Tab Buttons Row -->
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,-3">
+            <Button Name="SelectFilterTab"
+                    Content="Select Filter"
+                    Classes="tab-button active"
+                    Click="OnTabClick"/>
+            <Button Name="SettingsTab"
+                    Content="Settings"
+                    Classes="tab-button"
+                    Click="OnTabClick"/>
+            <Button Name="SearchTab"
+                    Content="Search"
+                    Classes="tab-button"
+                    Click="OnTabClick"/>
+            <Button Name="ResultsTab"
+                    Content="Results"
+                    Classes="tab-button"
+                    Click="OnTabClick"/>
+        </StackPanel>
 
-        <!-- Tab Content Area -->
+        <!-- Bouncing Triangle Indicator -->
+        <Path Name="TabIndicator"
+              Grid.Row="0"
+              Data="M 0,10 L 10,0 L 20,10"
+              Fill="{StaticResource Gold}"
+              Width="20"
+              Height="10"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Margin="82,-15,0,0">
+            <Path.RenderTransform>
+                <TranslateTransform/>
+            </Path.RenderTransform>
+            <Path.Styles>
+                <Style Selector="Path">
+                    <Style.Animations>
+                        <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate">
+                            <KeyFrame Cue="0%">
+                                <Setter Property="Margin" Value="82,-15,0,0"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="100%">
+                                <Setter Property="Margin" Value="82,-18,0,0"/>
+                            </KeyFrame>
+                        </Animation>
+                    </Style.Animations>
+                </Style>
+            </Path.Styles>
+        </Path>
+
+        <!-- Content Area with Tab Panels -->
         <Border Grid.Row="1"
-                Background="{StaticResource DockGrey}"
-                CornerRadius="0,0,8,8"
+                Background="{StaticResource DarkModalGrey}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="3"
+                CornerRadius="0,0,12,12"
                 Padding="20">
+
+            <!-- Container for all tab panels (Border can only have ONE child) -->
             <Grid>
-                <!-- Tab 0: Select Filter -->
-                <ContentControl Content="{Binding FilterTabContent}"
-                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=0}"/>
+                <!-- Select Filter Panel -->
+                <Grid Name="SelectFilterPanel" IsVisible="True">
+                    <components:FilterSelectorControl Name="FilterSelector"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
+                </Grid>
 
-                <!-- Tab 1: Visual (Settings) -->
-                <ContentControl Content="{Binding SettingsTabContent}"
-                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=1}"/>
-
-                <!-- Tab 2: JSON -->
-                <TextBlock Text="JSON Editor - Coming Soon"
-                           FontSize="24"
-                           HorizontalAlignment="Center"
+                <!-- Settings Panel -->
+                <Grid Name="SettingsPanel" IsVisible="False">
+                <StackPanel HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource Gold}"
-                           IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=2}"/>
+                           Spacing="20">
 
-                <!-- Tab 3: TEST (Search) -->
-                <ContentControl Content="{Binding SearchTabContent}"
-                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=3}"/>
+                    <!-- Deck and Stake Selector -->
+                    <components:DeckAndStakeSelector Name="DeckStakeSelector"/>
 
-                <!-- Tab 4: Finish (Results) -->
-                <ContentControl Content="{Binding ResultsTabContent}"
-                                IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:Converters.EqualsConverter}, ConverterParameter=4}"/>
+                    <!-- Search Parameters -->
+                    <Border Background="{StaticResource ContainerDarkPrecise}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Padding="16"
+                            MaxWidth="500">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="SEARCH PARAMETERS"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="16"
+                                      Foreground="{StaticResource Gold}"
+                                      HorizontalAlignment="Center"/>
+
+                            <!-- Thread Count -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                          Text="Threads:"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          VerticalAlignment="Center"/>
+
+                                <controls:SpinnerControl Grid.Column="1"
+                                                       Value="{Binding ThreadCount}"
+                                                       Minimum="1"
+                                                       Maximum="64"
+                                                       Width="120"/>
+                            </Grid>
+
+                            <!-- Batch Size -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                          Text="Batch Size:"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          VerticalAlignment="Center"/>
+
+                                <controls:SpinnerControl Grid.Column="1"
+                                                       Value="{Binding BatchSize}"
+                                                       Minimum="0"
+                                                       Maximum="3"
+                                                       Width="120"/>
+                            </Grid>
+
+                            <!-- Min Score -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                          Text="Min Score:"
+                                          FontFamily="{StaticResource BalatroFont}"
+                                          VerticalAlignment="Center"/>
+
+                                <controls:SpinnerControl Grid.Column="1"
+                                                       Value="{Binding MinScore}"
+                                                       Minimum="0"
+                                                       Maximum="100"
+                                                       Width="120"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Debug Mode (Developer Feature) - Collapsed by default -->
+                    <Border Background="{StaticResource ContainerDarkPrecise}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Padding="12"
+                            MaxWidth="500"
+                            IsVisible="{Binding DebugMode}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="DEBUG MODE"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="14"
+                                      Foreground="{StaticResource Orange}"
+                                      HorizontalAlignment="Center"/>
+                            <TextBox Text="{Binding DebugSeed}"
+                                    Watermark="Enter seed to analyze..."
+                                    FontFamily="{StaticResource BalatroFont}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Grid>
-        </Border>
 
-        <!-- Search Progress Overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="2"
-                Background="#DD000000"
-                IsVisible="{Binding IsSearching}"
-                CornerRadius="8">
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Spacing="20">
-                <ProgressBar Value="{Binding SearchProgress}"
-                             Maximum="100"
-                             Width="400"
-                             Height="30"
-                             Background="{StaticResource DarkBackground}"
-                             Foreground="{StaticResource Green}"/>
+            <!-- Search Panel -->
+            <Grid Name="SearchPanel" IsVisible="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <TextBlock Text="{Binding ProgressText}"
-                           Foreground="{StaticResource Gold}"
-                           FontSize="18"
-                           HorizontalAlignment="Center"/>
+                <!-- Search Status Header -->
+                <Border Grid.Row="0"
+                       Background="{StaticResource ContainerDarkPrecise}"
+                       BorderBrush="{StaticResource ModalBorder}"
+                       BorderThickness="2"
+                       CornerRadius="8"
+                       Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                <Button Content="⏹️ STOP SEARCH"
-                        Command="{Binding StopSearchCommand}"
-                        Classes="btn-red"
-                        Width="200"/>
-            </StackPanel>
+                        <TextBlock Grid.Row="0"
+                                  Text="{Binding FilterName}"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="20"
+                                  Foreground="{StaticResource Gold}"
+                                  HorizontalAlignment="Center"/>
+
+                        <ProgressBar Grid.Row="2"
+                                    Value="{Binding ProgressPercent}"
+                                    Maximum="100"
+                                    Height="30"
+                                    Background="{StaticResource DarkBackground}"
+                                    Foreground="{StaticResource Green}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Stats Grid -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Stats -->
+                    <Border Grid.Column="0"
+                           Background="{StaticResource ContainerDarkPrecise}"
+                           BorderBrush="{StaticResource ModalBorder}"
+                           BorderThickness="2"
+                           CornerRadius="8"
+                           Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="PROGRESS"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="16"
+                                      Foreground="{StaticResource Gold}"
+                                      HorizontalAlignment="Center"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Seeds Processed:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SeedsProcessed}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Results Found:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ResultsFound}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource Green}"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Time Elapsed:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding TimeElapsed, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="ETA:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right Stats -->
+                    <Border Grid.Column="2"
+                           Background="{StaticResource ContainerDarkPrecise}"
+                           BorderBrush="{StaticResource ModalBorder}"
+                           BorderThickness="2"
+                           CornerRadius="8"
+                           Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="PERFORMANCE"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="16"
+                                      Foreground="{StaticResource Gold}"
+                                      HorizontalAlignment="Center"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Current Speed:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SeedsPerSecond, StringFormat='{}{0:N0} seeds/sec'}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Avg Speed:" FontFamily="{StaticResource BalatroFont}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AverageSpeed, StringFormat='{}{0:N0} seeds/sec'}" FontFamily="{StaticResource BalatroFont}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Search Control Buttons -->
+                <StackPanel Grid.Row="4"
+                           Orientation="Horizontal"
+                           HorizontalAlignment="Center"
+                           Spacing="12">
+                    <Button Content="Start Search"
+                           Command="{Binding StartSearchCommand}"
+                           Classes="btn-green"
+                           MinWidth="150"
+                           MinHeight="40"/>
+                    <Button Content="Pause"
+                           Command="{Binding PauseSearchCommand}"
+                           Classes="btn-orange"
+                           MinWidth="150"
+                           MinHeight="40"/>
+                    <Button Content="Stop"
+                           Command="{Binding StopSearchCommand}"
+                           Classes="btn-red"
+                           MinWidth="150"
+                           MinHeight="40"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Results Panel -->
+            <Grid Name="ResultsPanel" IsVisible="False">
+                <ScrollViewer>
+                    <DataGrid ItemsSource="{Binding SearchResults}"
+                             AutoGenerateColumns="False"
+                             IsReadOnly="True"
+                             GridLinesVisibility="All"
+                             BorderThickness="1"
+                             BorderBrush="{StaticResource ModalBorder}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Seed" Binding="{Binding Seed}" Width="150"/>
+                            <DataGridTextColumn Header="Score" Binding="{Binding Score}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </ScrollViewer>
+            </Grid>
+
+            </Grid><!-- Close container Grid for all tab panels -->
         </Border>
     </Grid>
-
 </UserControl>

@@ -565,43 +565,13 @@
                         ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="12"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Enhanced Header with Icons -->
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Grid.Column="1"
-                                       Text="⚡ JSON EDITOR ⚡"
-                                       FontSize="22"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       Foreground="{StaticResource Gold}"
-                                       HorizontalAlignment="Center"/>
-
-                            <!-- Quick Format Button -->
-                            <Button Grid.Column="2"
-                                    Name="FormatJsonButton"
-                                    Content="✨ FORMAT"
-                                    Classes="btn-blue"
-                                    Height="26"
-                                    FontSize="11"
-                                    Padding="8,2"
-                                    HorizontalAlignment="Right"
-                                    Click="OnFormatJsonClick"
-                                    ToolTip.Tip="Auto-format JSON (Ctrl+Shift+F)"/>
-                        </Grid>
-
                         <!-- Editor with enhanced border -->
-                        <Border Grid.Row="2"
+                        <Border Grid.Row="0"
                                 Background="#FFF5F5DC"
                                 BorderBrush="{StaticResource Gold}"
                                 BorderThickness="3"
@@ -616,7 +586,7 @@
                         </Border>
 
                         <!-- JSON Validation Status Bar with Enhanced Styling -->
-                        <Border Grid.Row="4"
+                        <Border Grid.Row="2"
                                 Background="{StaticResource DockGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="2"
@@ -652,6 +622,15 @@
 
                                 <!-- Action Buttons -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                    <Button Name="FormatJsonButton"
+                                            Content="✨ FORMAT"
+                                            Classes="btn-blue"
+                                            Height="28"
+                                            FontSize="11"
+                                            Padding="10,4"
+                                            Click="OnFormatJsonClick"
+                                            ToolTip.Tip="Auto-format JSON (Ctrl+Shift+F)"/>
+
                                     <Button Name="ValidateJsonButton"
                                             Content="🔍 VALIDATE"
                                             Classes="btn-blue"

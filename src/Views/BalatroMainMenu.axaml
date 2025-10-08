@@ -72,13 +72,7 @@
         <!-- Animated balatro-style background - behind everything -->
         <controls:BalatroShaderBackground x:Name="BackgroundControl" />
 
-        <!-- Settings Popup (shown when settings button clicked) -->
-        <Popup x:Name="SettingsPopup"
-               IsOpen="{Binding IsSettingsPopupOpen, Mode=TwoWay}"
-               Placement="Center"
-               PlacementTarget="{Binding #SettingsButton}">
-            <views:SettingsModal x:Name="SettingsModal"/>
-        </Popup>
+        <!-- Settings Popup removed - now using modal system -->
 
         <!-- Volume Slider Popup (shown when music button clicked) -->
         <Popup x:Name="VolumePopup"

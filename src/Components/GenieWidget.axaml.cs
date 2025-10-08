@@ -90,8 +90,11 @@ namespace BalatroSeedOracle.Components
             var currentPoint = e.GetPosition(parent);
             var delta = currentPoint - _dragStartPoint;
 
-            ViewModel.PositionX = delta.X;
-            ViewModel.PositionY = delta.Y;
+            if (ViewModel != null)
+            {
+                ViewModel.PositionX = delta.X;
+                ViewModel.PositionY = delta.Y;
+            }
 
             var minimizedView = this.FindControl<Grid>("MinimizedView");
             var expandedView = this.FindControl<Border>("ExpandedView");

@@ -5,7 +5,7 @@ using BalatroSeedOracle.Controls;
 namespace BalatroSeedOracle.Components
 {
     /// <summary>
-    /// Simple wrapper around PanelSpinner for deck selection compatibility
+    /// Deck selection component using PanelSpinner with deck images from SpriteService
     /// </summary>
     public partial class DeckSpinner : UserControl
     {
@@ -22,10 +22,13 @@ namespace BalatroSeedOracle.Components
         private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             _innerSpinner = this.FindControl<PanelSpinner>("InnerPanelSpinner");
-            
-            // Wire up the selection changed event to DeckChanged
+
             if (_innerSpinner != null)
             {
+                // Populate with deck items using factory (includes deck images via SpriteService)
+                _innerSpinner.Items = PanelItemFactory.CreateDeckItems();
+
+                // Wire up the selection changed event to DeckChanged
                 _innerSpinner.SelectionChanged += (s, item) =>
                 {
                     if (item != null)
@@ -39,11 +42,22 @@ namespace BalatroSeedOracle.Components
 
         // Compatibility properties for existing code
         public int SelectedDeckIndex { get; set; } = 0;
-        public string SelectedDeckName => "Red"; // Default for now
-        
+
+        public string SelectedDeckName
+        {
+            get
+            {
+                if (_innerSpinner?.SelectedItem != null)
+                {
+                    return _innerSpinner.SelectedItem.Title;
+                }
+                return "Red Deck"; // Default
+            }
+        }
+
         public void SetStakeIndex(int stakeIndex)
         {
-            // TODO: Implement when PanelSpinner API is understood
+            // Stakes are handled separately by DeckAndStakeSelector's StakeSpinner
         }
     }
 }
