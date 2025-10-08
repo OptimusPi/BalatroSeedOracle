@@ -90,11 +90,10 @@
             </Path.Styles>
         </Path>
 
-        <!-- Content Area with Tab Panels -->
+        <!-- Content Area with Tab Panels (no border - StandardModal already has one!) -->
         <Border Grid.Row="1"
                 Background="{StaticResource DarkModalGrey}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="3"
+                BorderThickness="0"
                 CornerRadius="0,0,12,12"
                 Padding="20">
 
