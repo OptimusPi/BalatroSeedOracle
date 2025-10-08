@@ -156,6 +156,12 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel = new FiltersModalViewModel(configService, filterService);
             DataContext = ViewModel;
 
+            // SYNC: Keep old code-behind state synchronized with ViewModel during migration
+            // This allows gradual refactoring without breaking existing functionality
+            ViewModel.SelectedMust.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedMust, _selectedMust, _selectedMustSet);
+            ViewModel.SelectedShould.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedShould, _selectedShould, _selectedShouldSet);
+            ViewModel.SelectedMustNot.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedMustNot, _selectedMustNot, _selectedMustNotSet);
+
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
@@ -8665,6 +8671,21 @@ namespace BalatroSeedOracle.Views.Modals
         {
             _selectedMustNot.Clear();
             _selectedMustNotSet.Clear();
+        }
+
+        /// <summary>
+        /// SYNC: Keeps code-behind List in sync with ViewModel ObservableCollection
+        /// This is temporary during migration - once all code uses ViewModel, we delete the Lists
+        /// </summary>
+        private void SyncListWithObservableCollection(ObservableCollection<string> source, List<string> target, HashSet<string> targetSet)
+        {
+            target.Clear();
+            targetSet.Clear();
+            foreach (var item in source)
+            {
+                target.Add(item);
+                targetSet.Add(item);
+            }
         }
 
         private async void OnShareClick(object? sender, RoutedEventArgs e)
