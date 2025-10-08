@@ -4135,6 +4135,9 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                 );
 
+                // Format arrays compactly for better readability
+                formattedJson = FormatJsonWithCompactArrays(formattedJson);
+
                 textBox.Text = formattedJson;
                 UpdateStatus("✨ JSON formatted successfully");
             }
@@ -6030,6 +6033,9 @@ namespace BalatroSeedOracle.Views.Modals
                         .WhenWritingNull,
                 }
             );
+
+            // Format arrays compactly: [1,2,3,4,5,6] instead of vertical format
+            json = FormatJsonWithCompactArrays(json);
 
             // Get the MainWindow to access storage
             var mainWindow = this.GetVisualRoot() as Window;
@@ -8570,6 +8576,30 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
         
+        /// <summary>
+        /// Formats JSON to use compact arrays [1,2,3] instead of vertical arrays
+        /// This makes the JSON editor MUCH more readable for "antes" arrays!
+        /// </summary>
+        private string FormatJsonWithCompactArrays(string json)
+        {
+            // Simple regex replacement: collapse arrays that span multiple lines
+            // Matches: [\n    1,\n    2,\n    3\n  ] → [1, 2, 3]
+            var compactJson = System.Text.RegularExpressions.Regex.Replace(
+                json,
+                @"\[\s*\n\s*((?:[^\[\]]+?,\s*\n\s*)*[^\[\]]+?)\s*\n\s*\]",
+                match =>
+                {
+                    // Extract array content, remove newlines and extra spaces
+                    var content = match.Groups[1].Value;
+                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\s*\n\s*", " ");
+                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\s+", " ");
+                    return $"[{content.Trim()}]";
+                },
+                System.Text.RegularExpressions.RegexOptions.Multiline
+            );
+            return compactJson;
+        }
+
         // PERFORMANCE FIX (QW-5): Helper methods to keep List and HashSet in sync
         // Ensures O(1) lookups while maintaining backward compatibility with List-based code
         private void AddToMust(string key)

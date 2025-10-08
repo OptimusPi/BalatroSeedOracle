@@ -25,17 +25,19 @@
                 <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container - Balatro style -->
+            <!-- Main modal container - Balatro style (RESPONSIVE!) -->
             <Border x:Name="ModalBorder"
                     Grid.Column="1" Grid.Row="1"
                     Background="{StaticResource Grey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="4"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="1100"
-                    Height="620"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    MinWidth="600"
+                    MinHeight="400"
+                    MaxWidth="1400"
+                    MaxHeight="900"
                     BoxShadow="{StaticResource StandardModalShadow}"
                     ClipToBounds="False">
                 
