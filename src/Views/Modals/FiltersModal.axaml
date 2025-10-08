@@ -4,7 +4,8 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             x:Class="BalatroSeedOracle.Views.Modals.FiltersModalContent">
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModalContent"
+             x:DataType="vm:FiltersModalViewModel">
              
     <UserControl.Styles>
         <!-- Modal-specific styles ONLY. Global button/input/tab/nav styles removed to prevent drift. -->

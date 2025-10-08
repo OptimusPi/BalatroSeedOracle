@@ -565,10 +565,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ClearAllSelections()
         {
-            _selectedMust.Clear();
-            _selectedShould.Clear();
-            _selectedMustNot.Clear();
-            _itemConfigs.Clear();
+            SelectedMust.Clear();
+            SelectedShould.Clear();
+            SelectedMustNot.Clear();
+            ItemConfigs.Clear();
             _itemKeyCounter = 0;
             _instanceCounter = 0;
         }
