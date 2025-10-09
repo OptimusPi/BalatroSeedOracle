@@ -235,7 +235,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private async Task CreateNewFilter()
+        private void CreateNewFilter()
         {
             try
             {
