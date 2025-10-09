@@ -262,7 +262,7 @@ namespace BalatroSeedOracle.ViewModels
                     var success = await _filterService.DeleteFilterAsync(CurrentFilterPath);
                     if (success)
                     {
-                        await CreateNewFilter();
+                        CreateNewFilter();
                         DebugLogger.Log("FiltersModalViewModel", $"Deleted filter: {CurrentFilterPath}");
                     }
                 }
