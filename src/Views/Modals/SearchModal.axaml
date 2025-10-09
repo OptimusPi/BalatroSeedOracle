@@ -106,109 +106,129 @@
                                                     VerticalAlignment="Center"/>
                 </Grid>
 
-                <!-- Settings Panel -->
+                <!-- Settings Panel (Horizontal Split Layout) -->
                 <Grid Name="SettingsPanel" IsVisible="False">
-                <StackPanel HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Spacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Deck and Stake Selector -->
-                    <components:DeckAndStakeSelector Name="DeckStakeSelector"/>
+                    <!-- LEFT SIDE: Preferred Deck & Stake -->
+                    <StackPanel Grid.Column="0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Spacing="16">
+                        <TextBlock Text="SET PREFERRED DECK &amp; STAKE:"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="18"
+                                  Foreground="{StaticResource Gold}"
+                                  HorizontalAlignment="Center"/>
 
-                    <!-- Search Parameters -->
-                    <Border Background="{StaticResource ContainerDarkPrecise}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            Padding="16"
-                            MaxWidth="500">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="SEARCH PARAMETERS"
-                                      FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="16"
-                                      Foreground="{StaticResource Gold}"
-                                      HorizontalAlignment="Center"/>
+                        <components:DeckAndStakeSelector Name="DeckStakeSelector"/>
+                    </StackPanel>
 
-                            <!-- Thread Count -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                    <!-- RIGHT SIDE: Search Engine Options -->
+                    <StackPanel Grid.Column="2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Spacing="16">
+                        <TextBlock Text="SEARCH ENGINE OPTIONS"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="18"
+                                  Foreground="{StaticResource Gold}"
+                                  HorizontalAlignment="Center"/>
 
-                                <TextBlock Grid.Column="0"
-                                          Text="Threads:"
-                                          FontFamily="{StaticResource BalatroFont}"
-                                          VerticalAlignment="Center"/>
+                        <Border Background="{StaticResource ContainerDarkPrecise}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Padding="16"
+                                MinWidth="320">
+                            <StackPanel Spacing="16">
+                                <!-- Thread Count -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <controls:SpinnerControl Grid.Column="1"
-                                                       Value="{Binding ThreadCount}"
-                                                       Minimum="1"
-                                                       Maximum="64"
-                                                       Width="120"/>
-                            </Grid>
+                                    <TextBlock Grid.Column="0"
+                                              Text="Threads:"
+                                              FontFamily="{StaticResource BalatroFont}"
+                                              FontSize="14"
+                                              VerticalAlignment="Center"/>
 
-                            <!-- Batch Size -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                                    <controls:SpinnerControl Grid.Column="1"
+                                                           Value="{Binding ThreadCount}"
+                                                           Minimum="1"
+                                                           Maximum="64"
+                                                           Width="120"/>
+                                </Grid>
 
-                                <TextBlock Grid.Column="0"
-                                          Text="Batch Size:"
-                                          FontFamily="{StaticResource BalatroFont}"
-                                          VerticalAlignment="Center"/>
+                                <!-- Batch Size -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <controls:SpinnerControl Grid.Column="1"
-                                                       Value="{Binding BatchSize}"
-                                                       Minimum="0"
-                                                       Maximum="3"
-                                                       Width="120"/>
-                            </Grid>
+                                    <TextBlock Grid.Column="0"
+                                              Text="Batch Size:"
+                                              FontFamily="{StaticResource BalatroFont}"
+                                              FontSize="14"
+                                              VerticalAlignment="Center"/>
 
-                            <!-- Min Score -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                                    <controls:SpinnerControl Grid.Column="1"
+                                                           Value="{Binding BatchSize}"
+                                                           Minimum="0"
+                                                           Maximum="3"
+                                                           Width="120"/>
+                                </Grid>
 
-                                <TextBlock Grid.Column="0"
-                                          Text="Min Score:"
-                                          FontFamily="{StaticResource BalatroFont}"
-                                          VerticalAlignment="Center"/>
+                                <!-- Min Score -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <controls:SpinnerControl Grid.Column="1"
-                                                       Value="{Binding MinScore}"
-                                                       Minimum="0"
-                                                       Maximum="100"
-                                                       Width="120"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                                    <TextBlock Grid.Column="0"
+                                              Text="Min Score:"
+                                              FontFamily="{StaticResource BalatroFont}"
+                                              FontSize="14"
+                                              VerticalAlignment="Center"/>
 
-                    <!-- Debug Mode (Developer Feature) - Collapsed by default -->
-                    <Border Background="{StaticResource ContainerDarkPrecise}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            Padding="12"
-                            MaxWidth="500"
-                            IsVisible="{Binding DebugMode}">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="DEBUG MODE"
-                                      FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="14"
-                                      Foreground="{StaticResource Orange}"
-                                      HorizontalAlignment="Center"/>
-                            <TextBox Text="{Binding DebugSeed}"
-                                    Watermark="Enter seed to analyze..."
-                                    FontFamily="{StaticResource BalatroFont}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
+                                    <controls:SpinnerControl Grid.Column="1"
+                                                           Value="{Binding MinScore}"
+                                                           Minimum="0"
+                                                           Maximum="100"
+                                                           Width="120"/>
+                                </Grid>
+
+                                <!-- Debug Mode (Developer Feature) -->
+                                <Border Background="{StaticResource DarkBackground}"
+                                        BorderBrush="{StaticResource Orange}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="8"
+                                        IsVisible="{Binding DebugMode}">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="DEBUG MODE"
+                                                  FontFamily="{StaticResource BalatroFont}"
+                                                  FontSize="12"
+                                                  Foreground="{StaticResource Orange}"
+                                                  HorizontalAlignment="Center"/>
+                                        <TextBox Text="{Binding DebugSeed}"
+                                                Watermark="Enter seed..."
+                                                FontFamily="{StaticResource BalatroFont}"
+                                                FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
 
             <!-- Search Panel -->
             <Grid Name="SearchPanel" IsVisible="False">
