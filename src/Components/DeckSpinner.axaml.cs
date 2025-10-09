@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using BalatroSeedOracle.Controls;
 
@@ -13,6 +14,16 @@ namespace BalatroSeedOracle.Components
 
         public event EventHandler<int>? DeckChanged;
 
+        // Expose ShowArrows property to forward to inner PanelSpinner
+        public static readonly StyledProperty<bool> ShowArrowsProperty =
+            Avalonia.AvaloniaProperty.Register<DeckSpinner, bool>(nameof(ShowArrows), defaultValue: true);
+
+        public bool ShowArrows
+        {
+            get => GetValue(ShowArrowsProperty);
+            set => SetValue(ShowArrowsProperty, value);
+        }
+
         public DeckSpinner()
         {
             InitializeComponent();
@@ -25,6 +36,9 @@ namespace BalatroSeedOracle.Components
 
             if (_innerSpinner != null)
             {
+                // Forward ShowArrows property to inner PanelSpinner
+                _innerSpinner.ShowArrows = ShowArrows;
+
                 // Populate with deck items using factory (includes deck images via SpriteService)
                 _innerSpinner.Items = PanelItemFactory.CreateDeckItems();
 
@@ -38,6 +52,15 @@ namespace BalatroSeedOracle.Components
                     }
                 };
             }
+
+            // Watch for ShowArrows property changes
+            this.GetObservable(ShowArrowsProperty).Subscribe(value =>
+            {
+                if (_innerSpinner != null)
+                {
+                    _innerSpinner.ShowArrows = value;
+                }
+            });
         }
 
         // Compatibility properties for existing code
