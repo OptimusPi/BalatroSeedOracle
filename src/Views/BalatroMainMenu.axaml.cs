@@ -278,11 +278,18 @@ namespace BalatroSeedOracle.Views
         {
             if (_modalContainer == null) return;
 
-            _modalContainer.Children.Clear();
+            // PERFORMANCE FIX: Defer Children.Clear() to prevent audio crackling
+            // FiltersModal has thousands of controls - clearing synchronously blocks UI thread
+            // which causes audio buffer underruns
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
-
             SetTitle("Welcome!");
+
+            // Clear on background thread to avoid blocking audio
+            Dispatcher.UIThread.Post(() =>
+            {
+                _modalContainer.Children.Clear();
+            }, DispatcherPriority.Background);
 
             var audioManager = App.GetService<Services.VibeAudioManager>();
         }
