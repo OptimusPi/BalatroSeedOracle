@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -8,12 +9,21 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the SourceSelector control.
     /// Manages item source selection with descriptions and previews.
     /// </summary>
-    public class SourceSelectorViewModel : BaseViewModel
+    public partial class SourceSelectorViewModel : ObservableObject
     {
+        [ObservableProperty]
         private SourceOptionViewModel? _selectedSource;
+
+        [ObservableProperty]
         private string _description = string.Empty;
+
+        [ObservableProperty]
         private bool _isPreviewVisible;
+
+        [ObservableProperty]
         private string _previewText = string.Empty;
+
+        [ObservableProperty]
         private string _previewColor = string.Empty;
 
         public SourceSelectorViewModel()
@@ -31,48 +41,21 @@ namespace BalatroSeedOracle.ViewModels
 
         public ObservableCollection<SourceOptionViewModel> Sources { get; } = new();
 
-        public SourceOptionViewModel? SelectedSource
-        {
-            get => _selectedSource;
-            set
-            {
-                if (SetProperty(ref _selectedSource, value))
-                {
-                    UpdateDisplay();
-                    RaiseSourceChanged();
-                }
-            }
-        }
-
-        public string Description
-        {
-            get => _description;
-            private set => SetProperty(ref _description, value);
-        }
-
-        public bool IsPreviewVisible
-        {
-            get => _isPreviewVisible;
-            private set => SetProperty(ref _isPreviewVisible, value);
-        }
-
-        public string PreviewText
-        {
-            get => _previewText;
-            private set => SetProperty(ref _previewText, value);
-        }
-
-        public string PreviewColor
-        {
-            get => _previewColor;
-            private set => SetProperty(ref _previewColor, value);
-        }
-
         #endregion
 
         #region Events
 
         public event EventHandler<string>? SourceChanged;
+
+        #endregion
+
+        #region Property Changed Handlers
+
+        partial void OnSelectedSourceChanged(SourceOptionViewModel? value)
+        {
+            UpdateDisplay();
+            RaiseSourceChanged();
+        }
 
         #endregion
 
@@ -95,16 +78,16 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateDisplay()
         {
-            if (_selectedSource == null)
+            if (SelectedSource == null)
             {
                 Description = "Unknown source";
                 IsPreviewVisible = false;
                 return;
             }
 
-            Description = _selectedSource.Description;
+            Description = SelectedSource.Description;
 
-            if (string.IsNullOrEmpty(_selectedSource.Tag))
+            if (string.IsNullOrEmpty(SelectedSource.Tag))
             {
                 IsPreviewVisible = false;
             }
@@ -112,7 +95,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsPreviewVisible = true;
 
-                var sourceName = _selectedSource.Tag switch
+                var sourceName = SelectedSource.Tag switch
                 {
                     "SmallBlindTag" => "Small Blind Tag",
                     "BigBlindTag" => "Big Blind Tag",
@@ -123,10 +106,10 @@ namespace BalatroSeedOracle.ViewModels
                     _ => "Unknown Source"
                 };
 
-                PreviewText = $"{_selectedSource.Emoji} Searching for items from: {sourceName}";
+                PreviewText = $"{SelectedSource.Emoji} Searching for items from: {sourceName}";
 
                 // Set color based on source type
-                PreviewColor = _selectedSource.Tag switch
+                PreviewColor = SelectedSource.Tag switch
                 {
                     "SmallBlindTag" or "BigBlindTag" => "#FFD700", // Gold for tags
                     "StandardPack" or "BuffoonPack" => "#00BFFF",  // Blue for packs
@@ -139,7 +122,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void RaiseSourceChanged()
         {
-            SourceChanged?.Invoke(this, _selectedSource?.Tag ?? "");
+            SourceChanged?.Invoke(this, SelectedSource?.Tag ?? "");
         }
 
         #endregion
@@ -148,7 +131,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public string GetSelectedSource()
         {
-            return _selectedSource?.Tag ?? "";
+            return SelectedSource?.Tag ?? "";
         }
 
         public void SetSelectedSource(string source)

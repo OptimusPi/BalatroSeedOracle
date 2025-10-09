@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -9,10 +9,15 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the DeckAndStakeSelector control.
     /// Manages deck and stake selection state with proper MVVM pattern.
     /// </summary>
-    public class DeckAndStakeSelectorViewModel : BaseViewModel
+    public partial class DeckAndStakeSelectorViewModel : ObservableObject
     {
+        [ObservableProperty]
         private int _deckIndex;
+
+        [ObservableProperty]
         private int _stakeIndex;
+
+        [ObservableProperty]
         private string[] _stakeDisplayValues;
 
         public DeckAndStakeSelectorViewModel()
@@ -28,68 +33,19 @@ namespace BalatroSeedOracle.ViewModels
                 "Orange Stake",
                 "Gold Stake"
             };
-
-            SelectCommand = new RelayCommand(OnSelect);
         }
 
         #region Properties
 
         /// <summary>
-        /// The selected deck index (0-14)
-        /// </summary>
-        public int DeckIndex
-        {
-            get => _deckIndex;
-            set
-            {
-                if (SetProperty(ref _deckIndex, value))
-                {
-                    OnPropertyChanged(nameof(SelectedDeckName));
-                    RaiseSelectionChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// The selected stake index (0-7)
-        /// </summary>
-        public int StakeIndex
-        {
-            get => _stakeIndex;
-            set
-            {
-                if (SetProperty(ref _stakeIndex, value))
-                {
-                    OnPropertyChanged(nameof(SelectedStakeName));
-                    RaiseSelectionChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Display values for stake spinner
-        /// </summary>
-        public string[] StakeDisplayValues
-        {
-            get => _stakeDisplayValues;
-            set => SetProperty(ref _stakeDisplayValues, value);
-        }
-
-        /// <summary>
         /// The name of the selected deck
         /// </summary>
-        public string SelectedDeckName => GetDeckName(_deckIndex);
+        public string SelectedDeckName => GetDeckName(DeckIndex);
 
         /// <summary>
         /// The name of the selected stake
         /// </summary>
-        public string SelectedStakeName => GetStakeName(_stakeIndex);
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SelectCommand { get; }
+        public string SelectedStakeName => GetStakeName(StakeIndex);
 
         #endregion
 
@@ -107,16 +63,37 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-        #region Private Methods
+        #region Property Changed Handlers
 
-        private void OnSelect()
+        partial void OnDeckIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(SelectedDeckName));
+            RaiseSelectionChanged();
+        }
+
+        partial void OnStakeIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(SelectedStakeName));
+            RaiseSelectionChanged();
+        }
+
+        #endregion
+
+        #region Command Implementations
+
+        [RelayCommand]
+        private void Select()
         {
             DeckSelected?.Invoke(this, EventArgs.Empty);
         }
 
+        #endregion
+
+        #region Private Methods
+
         private void RaiseSelectionChanged()
         {
-            SelectionChanged?.Invoke(this, (_deckIndex, _stakeIndex));
+            SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
         }
 
         private string GetDeckName(int index)

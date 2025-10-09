@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -10,8 +10,9 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the AnteSelector control.
     /// Manages ante selection state with quick selection commands.
     /// </summary>
-    public class AnteSelectorViewModel : BaseViewModel
+    public partial class AnteSelectorViewModel : ObservableObject
     {
+        [ObservableProperty]
         private string _selectionSummary = string.Empty;
 
         public AnteSelectorViewModel()
@@ -28,28 +29,12 @@ namespace BalatroSeedOracle.ViewModels
                 Antes.Add(ante);
             }
 
-            InitializeCommands();
             UpdateSelectionSummary();
         }
 
         #region Properties
 
         public ObservableCollection<AnteItemViewModel> Antes { get; } = new();
-
-        public string SelectionSummary
-        {
-            get => _selectionSummary;
-            private set => SetProperty(ref _selectionSummary, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SelectAllCommand { get; private set; } = null!;
-        public ICommand SelectNoneCommand { get; private set; } = null!;
-        public ICommand SelectEarlyCommand { get; private set; } = null!;
-        public ICommand SelectLateCommand { get; private set; } = null!;
 
         #endregion
 
@@ -59,20 +44,9 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-        #region Initialization
-
-        private void InitializeCommands()
-        {
-            SelectAllCommand = new RelayCommand(SelectAll);
-            SelectNoneCommand = new RelayCommand(SelectNone);
-            SelectEarlyCommand = new RelayCommand(SelectEarly);
-            SelectLateCommand = new RelayCommand(SelectLate);
-        }
-
-        #endregion
-
         #region Command Implementations
 
+        [RelayCommand]
         private void SelectAll()
         {
             foreach (var ante in Antes)
@@ -81,6 +55,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectNone()
         {
             foreach (var ante in Antes)
@@ -89,6 +64,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectEarly()
         {
             // Clear all first
@@ -104,6 +80,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectLate()
         {
             // Clear all first
@@ -194,8 +171,9 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for an individual ante checkbox
     /// </summary>
-    public class AnteItemViewModel : BaseViewModel
+    public partial class AnteItemViewModel : ObservableObject
     {
+        [ObservableProperty]
         private bool _isSelected;
 
         public AnteItemViewModel(int anteNumber)
@@ -207,16 +185,9 @@ namespace BalatroSeedOracle.ViewModels
 
         public string DisplayText => $"Ante {AnteNumber}";
 
-        public bool IsSelected
+        partial void OnIsSelectedChanged(bool value)
         {
-            get => _isSelected;
-            set
-            {
-                if (SetProperty(ref _isSelected, value))
-                {
-                    IsSelectedChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
+            IsSelectedChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public event EventHandler? IsSelectedChanged;

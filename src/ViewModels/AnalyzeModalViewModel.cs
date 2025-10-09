@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -12,17 +12,30 @@ using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class AnalyzeModalViewModel : BaseViewModel
+    public partial class AnalyzeModalViewModel : ObservableObject
     {
         private readonly SpriteService _spriteService;
         private readonly UserProfileService _userProfileService;
 
+        [ObservableProperty]
         private string _seedInput = "";
+
+        [ObservableProperty]
         private bool _isAnalyzing = false;
+
+        [ObservableProperty]
         private AnalyzeModalTab _activeTab = AnalyzeModalTab.Settings;
+
+        [ObservableProperty]
         private bool _showPlaceholder = true;
+
+        [ObservableProperty]
         private int _deckIndex = 0;
+
+        [ObservableProperty]
         private int _stakeIndex = 0;
+
+        [ObservableProperty]
         private SeedAnalysisModel? _currentAnalysis;
 
         public AnalyzeModalViewModel(SpriteService spriteService, UserProfileService userProfileService)
@@ -31,57 +44,9 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService = userProfileService;
 
             Antes = new ObservableCollection<AnteAnalysisModel>();
-
-            // Initialize commands
-            AnalyzeSeedCommand = new AsyncRelayCommand(AnalyzeSeedAsync, CanAnalyzeSeed);
-            ClearResultsCommand = new RelayCommand(ClearResults);
-            SwitchToSettingsTabCommand = new RelayCommand(() => ActiveTab = AnalyzeModalTab.Settings);
-            SwitchToAnalyzerTabCommand = new RelayCommand(() => ActiveTab = AnalyzeModalTab.Analyzer);
-            PopOutAnalyzerCommand = new RelayCommand(PopOutAnalyzer);
         }
 
         #region Properties
-
-        public string SeedInput
-        {
-            get => _seedInput;
-            set
-            {
-                if (SetProperty(ref _seedInput, value))
-                {
-                    ((AsyncRelayCommand)AnalyzeSeedCommand).NotifyCanExecuteChanged();
-                    UpdatePlaceholderVisibility();
-                }
-            }
-        }
-
-        public bool IsAnalyzing
-        {
-            get => _isAnalyzing;
-            set
-            {
-                if (SetProperty(ref _isAnalyzing, value))
-                {
-                    ((AsyncRelayCommand)AnalyzeSeedCommand).NotifyCanExecuteChanged();
-                }
-            }
-        }
-
-        public AnalyzeModalTab ActiveTab
-        {
-            get => _activeTab;
-            set
-            {
-                if (SetProperty(ref _activeTab, value))
-                {
-                    OnPropertyChanged(nameof(IsSettingsTabActive));
-                    OnPropertyChanged(nameof(IsAnalyzerTabActive));
-                    OnPropertyChanged(nameof(SettingsTabVisible));
-                    OnPropertyChanged(nameof(AnalyzerTabVisible));
-                    OnPropertyChanged(nameof(TriangleColumn));
-                }
-            }
-        }
 
         public bool IsSettingsTabActive => ActiveTab == AnalyzeModalTab.Settings;
         public bool IsAnalyzerTabActive => ActiveTab == AnalyzeModalTab.Analyzer;
@@ -89,51 +54,8 @@ namespace BalatroSeedOracle.ViewModels
         public bool AnalyzerTabVisible => ActiveTab == AnalyzeModalTab.Analyzer;
         public int TriangleColumn => ActiveTab == AnalyzeModalTab.Settings ? 0 : 1;
 
-        public bool ShowPlaceholder
-        {
-            get => _showPlaceholder;
-            set => SetProperty(ref _showPlaceholder, value);
-        }
-
-        public int DeckIndex
-        {
-            get => _deckIndex;
-            set
-            {
-                if (SetProperty(ref _deckIndex, value))
-                {
-                    OnPropertyChanged(nameof(SelectedDeck));
-                }
-            }
-        }
-
-        public int StakeIndex
-        {
-            get => _stakeIndex;
-            set
-            {
-                if (SetProperty(ref _stakeIndex, value))
-                {
-                    OnPropertyChanged(nameof(SelectedStake));
-                }
-            }
-        }
-
         public MotelyDeck SelectedDeck => (MotelyDeck)DeckIndex;
         public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
-
-        public SeedAnalysisModel? CurrentAnalysis
-        {
-            get => _currentAnalysis;
-            private set
-            {
-                if (SetProperty(ref _currentAnalysis, value))
-                {
-                    OnPropertyChanged(nameof(HasAnalysisResults));
-                    OnPropertyChanged(nameof(AnalysisHeader));
-                }
-            }
-        }
 
         public bool HasAnalysisResults => CurrentAnalysis != null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
         public string AnalysisHeader => CurrentAnalysis != null
@@ -144,18 +66,49 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-        #region Commands
+        #region Generated Property Changed Methods
 
-        public ICommand AnalyzeSeedCommand { get; }
-        public ICommand ClearResultsCommand { get; }
-        public ICommand SwitchToSettingsTabCommand { get; }
-        public ICommand SwitchToAnalyzerTabCommand { get; }
-        public ICommand PopOutAnalyzerCommand { get; }
+        partial void OnSeedInputChanged(string value)
+        {
+            AnalyzeSeedCommand.NotifyCanExecuteChanged();
+            UpdatePlaceholderVisibility();
+        }
+
+        partial void OnIsAnalyzingChanged(bool value)
+        {
+            AnalyzeSeedCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnActiveTabChanged(AnalyzeModalTab value)
+        {
+            OnPropertyChanged(nameof(IsSettingsTabActive));
+            OnPropertyChanged(nameof(IsAnalyzerTabActive));
+            OnPropertyChanged(nameof(SettingsTabVisible));
+            OnPropertyChanged(nameof(AnalyzerTabVisible));
+            OnPropertyChanged(nameof(TriangleColumn));
+        }
+
+        partial void OnDeckIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(SelectedDeck));
+        }
+
+        partial void OnStakeIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(SelectedStake));
+        }
+
+        partial void OnCurrentAnalysisChanged(SeedAnalysisModel? value)
+        {
+            OnPropertyChanged(nameof(HasAnalysisResults));
+            OnPropertyChanged(nameof(AnalysisHeader));
+        }
 
         #endregion
 
-        #region Command Implementations
+        #region Commands
 
+        [RelayCommand(CanExecute = nameof(CanAnalyzeSeed))]
         private async Task AnalyzeSeedAsync()
         {
             if (string.IsNullOrWhiteSpace(SeedInput))
@@ -275,6 +228,7 @@ namespace BalatroSeedOracle.ViewModels
             return !string.IsNullOrWhiteSpace(SeedInput) && !IsAnalyzing;
         }
 
+        [RelayCommand]
         private void ClearResults()
         {
             Antes.Clear();
@@ -284,6 +238,19 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("AnalyzeModalViewModel", "Results cleared");
         }
 
+        [RelayCommand]
+        private void SwitchToSettingsTab()
+        {
+            ActiveTab = AnalyzeModalTab.Settings;
+        }
+
+        [RelayCommand]
+        private void SwitchToAnalyzerTab()
+        {
+            ActiveTab = AnalyzeModalTab.Analyzer;
+        }
+
+        [RelayCommand]
         private void PopOutAnalyzer()
         {
             try
@@ -314,7 +281,7 @@ namespace BalatroSeedOracle.ViewModels
 
             if (AnalyzeSeedCommand.CanExecute(null))
             {
-                _ = AnalyzeSeedAsync();
+                _ = AnalyzeSeedCommand.ExecuteAsync(null);
             }
         }
 

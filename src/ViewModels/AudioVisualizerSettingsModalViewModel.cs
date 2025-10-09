@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -10,7 +10,7 @@ using Avalonia.Controls;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class AudioVisualizerSettingsModalViewModel : BaseViewModel
+    public partial class AudioVisualizerSettingsModalViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
 
@@ -19,56 +19,123 @@ namespace BalatroSeedOracle.ViewModels
         private const int CustomizeThemeIndex = 8;
 
         // Backing fields
+        [ObservableProperty]
         private int _themeIndex;
+
+        [ObservableProperty]
         private int _mainColor;
+
+        [ObservableProperty]
         private int _accentColor;
+
+        [ObservableProperty]
         private float _audioIntensity;
+
+        [ObservableProperty]
         private float _parallaxStrength;
+
+        [ObservableProperty]
         private float _timeSpeed;
+
+        [ObservableProperty]
         private bool _seedFoundTrigger;
+
+        [ObservableProperty]
         private bool _highScoreSeedTrigger;
+
+        [ObservableProperty]
         private bool _searchCompleteTrigger;
+
+        [ObservableProperty]
         private int _seedFoundAudioSource;
+
+        [ObservableProperty]
         private int _highScoreAudioSource;
+
+        [ObservableProperty]
         private int _searchCompleteAudioSource;
 
         // Audio source mappings for shader effects
+        [ObservableProperty]
         private int _shadowFlickerSource;
+
+        [ObservableProperty]
         private int _spinSource;
+
+        [ObservableProperty]
         private int _twirlSource;
+
+        [ObservableProperty]
         private int _zoomThumpSource;
+
+        [ObservableProperty]
         private int _colorSaturationSource;
+
+        [ObservableProperty]
         private int _beatPulseSource;
 
         // Intensity sliders for shader effects (0-100%)
+        [ObservableProperty]
         private float _shadowFlickerIntensity = 50f;
+
+        [ObservableProperty]
         private float _spinIntensity = 50f;
+
+        [ObservableProperty]
         private float _twirlIntensity = 50f;
+
+        [ObservableProperty]
         private float _zoomThumpIntensity = 50f;
+
+        [ObservableProperty]
         private float _colorSaturationIntensity = 50f;
+
+        [ObservableProperty]
         private float _beatPulseIntensity = 50f;
 
         // Display text fields
+        [ObservableProperty]
         private string _audioIntensityLabel = "Off";
+
+        [ObservableProperty]
         private string _audioIntensityNumeric = "0.0x";
+
+        [ObservableProperty]
         private string _parallaxLabel = "Subtle";
+
+        [ObservableProperty]
         private string _parallaxNumeric = "0.29x";
+
+        [ObservableProperty]
         private string _timeSpeedLabel = "Normal";
+
+        [ObservableProperty]
         private string _timeSpeedNumeric = "1.0x";
 
         // Preset management
+        [ObservableProperty]
         private ObservableCollection<VisualizerPreset> _presets = new();
+
+        [ObservableProperty]
         private VisualizerPreset? _selectedPreset;
+
+        // Shader debug properties
+        [ObservableProperty]
+        private float _shaderContrast = 2.0f;
+
+        [ObservableProperty]
+        private float _shaderSpinAmount = 0.3f;
+
+        [ObservableProperty]
+        private float _shaderZoomPunch = 0.0f;
+
+        [ObservableProperty]
+        private float _shaderMelodySaturation = 0.0f;
 
         public AudioVisualizerSettingsModalViewModel()
         {
             _userProfileService = App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-
-            // Initialize commands
-            SavePresetCommand = new RelayCommand(SavePreset);
-            LoadPresetCommand = new RelayCommand<VisualizerPreset>(LoadPreset);
-            DeletePresetCommand = new RelayCommand<VisualizerPreset>(DeletePreset);
 
             // Load settings from profile
             LoadSettings();
@@ -79,486 +146,218 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Properties
 
-        public int ThemeIndex
-        {
-            get => _themeIndex;
-            set
-            {
-                if (SetProperty(ref _themeIndex, value))
-                {
-                    SaveTheme();
-                    OnThemeChanged?.Invoke(this, value);
-                    // Notify IsCustomTheme changed when theme changes
-                    OnPropertyChanged(nameof(IsCustomTheme));
-                }
-            }
-        }
-
         /// <summary>
         /// Returns true if the CUSTOMIZE theme is selected
         /// </summary>
         public bool IsCustomTheme => ThemeIndex == CustomizeThemeIndex;
 
-        public int MainColor
-        {
-            get => _mainColor;
-            set
-            {
-                if (SetProperty(ref _mainColor, value))
-                {
-                    SaveSettings();
-                    OnMainColorChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int AccentColor
-        {
-            get => _accentColor;
-            set
-            {
-                if (SetProperty(ref _accentColor, value))
-                {
-                    SaveSettings();
-                    OnAccentColorChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public float AudioIntensity
-        {
-            get => _audioIntensity;
-            set
-            {
-                if (SetProperty(ref _audioIntensity, value))
-                {
-                    UpdateAudioIntensityLabels(value);
-                    SaveSettings();
-                    OnAudioIntensityChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public float ParallaxStrength
-        {
-            get => _parallaxStrength;
-            set
-            {
-                if (SetProperty(ref _parallaxStrength, value))
-                {
-                    UpdateParallaxLabels(value);
-                    SaveSettings();
-                    OnParallaxStrengthChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public float TimeSpeed
-        {
-            get => _timeSpeed;
-            set
-            {
-                if (SetProperty(ref _timeSpeed, value))
-                {
-                    UpdateTimeSpeedLabels(value);
-                    SaveSettings();
-                    OnTimeSpeedChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        // CheckBox properties
-        public bool SeedFoundTrigger
-        {
-            get => _seedFoundTrigger;
-            set
-            {
-                if (SetProperty(ref _seedFoundTrigger, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        public bool HighScoreSeedTrigger
-        {
-            get => _highScoreSeedTrigger;
-            set
-            {
-                if (SetProperty(ref _highScoreSeedTrigger, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        public bool SearchCompleteTrigger
-        {
-            get => _searchCompleteTrigger;
-            set
-            {
-                if (SetProperty(ref _searchCompleteTrigger, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        // Audio source properties
-        public int SeedFoundAudioSource
-        {
-            get => _seedFoundAudioSource;
-            set
-            {
-                if (SetProperty(ref _seedFoundAudioSource, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        public int HighScoreAudioSource
-        {
-            get => _highScoreAudioSource;
-            set
-            {
-                if (SetProperty(ref _highScoreAudioSource, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        public int SearchCompleteAudioSource
-        {
-            get => _searchCompleteAudioSource;
-            set
-            {
-                if (SetProperty(ref _searchCompleteAudioSource, value))
-                {
-                    SaveSettings();
-                }
-            }
-        }
-
-        public int ShadowFlickerSource
-        {
-            get => _shadowFlickerSource;
-            set
-            {
-                if (SetProperty(ref _shadowFlickerSource, value))
-                {
-                    SaveSettings();
-                    OnShadowFlickerSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int SpinSource
-        {
-            get => _spinSource;
-            set
-            {
-                if (SetProperty(ref _spinSource, value))
-                {
-                    SaveSettings();
-                    OnSpinSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int TwirlSource
-        {
-            get => _twirlSource;
-            set
-            {
-                if (SetProperty(ref _twirlSource, value))
-                {
-                    SaveSettings();
-                    OnTwirlSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int ZoomThumpSource
-        {
-            get => _zoomThumpSource;
-            set
-            {
-                if (SetProperty(ref _zoomThumpSource, value))
-                {
-                    SaveSettings();
-                    OnZoomThumpSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int ColorSaturationSource
-        {
-            get => _colorSaturationSource;
-            set
-            {
-                if (SetProperty(ref _colorSaturationSource, value))
-                {
-                    SaveSettings();
-                    OnColorSaturationSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public int BeatPulseSource
-        {
-            get => _beatPulseSource;
-            set
-            {
-                if (SetProperty(ref _beatPulseSource, value))
-                {
-                    SaveSettings();
-                    OnBeatPulseSourceChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        // Intensity properties for shader effects
-        public float ShadowFlickerIntensity
-        {
-            get => _shadowFlickerIntensity;
-            set
-            {
-                if (SetProperty(ref _shadowFlickerIntensity, value))
-                {
-                    SaveSettings();
-                    OnShadowFlickerIntensityChanged?.Invoke(this, value / 100f); // Convert to 0-1 range
-                }
-            }
-        }
-
-        public float SpinIntensity
-        {
-            get => _spinIntensity;
-            set
-            {
-                if (SetProperty(ref _spinIntensity, value))
-                {
-                    SaveSettings();
-                    OnSpinIntensityChanged?.Invoke(this, value / 100f);
-                }
-            }
-        }
-
-        public float TwirlIntensity
-        {
-            get => _twirlIntensity;
-            set
-            {
-                if (SetProperty(ref _twirlIntensity, value))
-                {
-                    SaveSettings();
-                    OnTwirlIntensityChanged?.Invoke(this, value / 100f);
-                }
-            }
-        }
-
-        public float ZoomThumpIntensity
-        {
-            get => _zoomThumpIntensity;
-            set
-            {
-                if (SetProperty(ref _zoomThumpIntensity, value))
-                {
-                    SaveSettings();
-                    OnZoomThumpIntensityChanged?.Invoke(this, value / 100f);
-                }
-            }
-        }
-
-        public float ColorSaturationIntensity
-        {
-            get => _colorSaturationIntensity;
-            set
-            {
-                if (SetProperty(ref _colorSaturationIntensity, value))
-                {
-                    SaveSettings();
-                    OnColorSaturationIntensityChanged?.Invoke(this, value / 100f);
-                }
-            }
-        }
-
-        public float BeatPulseIntensity
-        {
-            get => _beatPulseIntensity;
-            set
-            {
-                if (SetProperty(ref _beatPulseIntensity, value))
-                {
-                    SaveSettings();
-                    OnBeatPulseIntensityChanged?.Invoke(this, value / 100f);
-                }
-            }
-        }
-
-        // Display label properties
-        public string AudioIntensityLabel
-        {
-            get => _audioIntensityLabel;
-            set => SetProperty(ref _audioIntensityLabel, value);
-        }
-
-        public string AudioIntensityNumeric
-        {
-            get => _audioIntensityNumeric;
-            set => SetProperty(ref _audioIntensityNumeric, value);
-        }
-
-        public string ParallaxLabel
-        {
-            get => _parallaxLabel;
-            set => SetProperty(ref _parallaxLabel, value);
-        }
-
-        public string ParallaxNumeric
-        {
-            get => _parallaxNumeric;
-            set => SetProperty(ref _parallaxNumeric, value);
-        }
-
-        public string TimeSpeedLabel
-        {
-            get => _timeSpeedLabel;
-            set => SetProperty(ref _timeSpeedLabel, value);
-        }
-
-        public string TimeSpeedNumeric
-        {
-            get => _timeSpeedNumeric;
-            set => SetProperty(ref _timeSpeedNumeric, value);
-        }
-
-        /// <summary>
-        /// Collection of saved presets
-        /// </summary>
-        public ObservableCollection<VisualizerPreset> Presets
-        {
-            get => _presets;
-            set => SetProperty(ref _presets, value);
-        }
-
-        /// <summary>
-        /// Currently selected preset (for loading)
-        /// </summary>
-        public VisualizerPreset? SelectedPreset
-        {
-            get => _selectedPreset;
-            set => SetProperty(ref _selectedPreset, value);
-        }
-
-        // 🐛 SHADER DEBUG PROPERTIES (Advanced users only!)
-        private float _shaderContrast = 2.0f;
-        private float _shaderSpinAmount = 0.3f;
-        private float _shaderZoomPunch = 0.0f;
-        private float _shaderMelodySaturation = 0.0f;
-
-        public float ShaderContrast
-        {
-            get => _shaderContrast;
-            set
-            {
-                if (SetProperty(ref _shaderContrast, value))
-                {
-                    OnPropertyChanged(nameof(ShaderContrastText));
-                    OnShaderContrastChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public string ShaderContrastText => $"{_shaderContrast:F1}";
-
-        public float ShaderSpinAmount
-        {
-            get => _shaderSpinAmount;
-            set
-            {
-                if (SetProperty(ref _shaderSpinAmount, value))
-                {
-                    OnPropertyChanged(nameof(ShaderSpinAmountText));
-                    OnShaderSpinAmountChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public string ShaderSpinAmountText => $"{_shaderSpinAmount:F2}";
-
-        public float ShaderZoomPunch
-        {
-            get => _shaderZoomPunch;
-            set
-            {
-                if (SetProperty(ref _shaderZoomPunch, value))
-                {
-                    OnPropertyChanged(nameof(ShaderZoomPunchText));
-                    OnShaderZoomPunchChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public string ShaderZoomPunchText => $"{_shaderZoomPunch:F2}";
-
-        public float ShaderMelodySaturation
-        {
-            get => _shaderMelodySaturation;
-            set
-            {
-                if (SetProperty(ref _shaderMelodySaturation, value))
-                {
-                    OnPropertyChanged(nameof(ShaderMelodySaturationText));
-                    OnShaderMelodySaturationChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        public string ShaderMelodySaturationText => $"{_shaderMelodySaturation:F2}";
+        public string ShaderContrastText => $"{ShaderContrast:F1}";
+        public string ShaderSpinAmountText => $"{ShaderSpinAmount:F2}";
+        public string ShaderZoomPunchText => $"{ShaderZoomPunch:F2}";
+        public string ShaderMelodySaturationText => $"{ShaderMelodySaturation:F2}";
 
         #endregion
 
-        #region Commands
+        #region Generated Property Changed Methods
 
-        public ICommand SavePresetCommand { get; }
-        public ICommand LoadPresetCommand { get; }
-        public ICommand DeletePresetCommand { get; }
+        partial void OnThemeIndexChanged(int value)
+        {
+            SaveTheme();
+            ThemeChangedEvent?.Invoke(this, value);
+            OnPropertyChanged(nameof(IsCustomTheme));
+        }
+
+        partial void OnMainColorChanged(int value)
+        {
+            SaveSettings();
+            MainColorChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnAccentColorChanged(int value)
+        {
+            SaveSettings();
+            AccentColorChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnAudioIntensityChanged(float value)
+        {
+            UpdateAudioIntensityLabels(value);
+            SaveSettings();
+            AudioIntensityChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnParallaxStrengthChanged(float value)
+        {
+            UpdateParallaxLabels(value);
+            SaveSettings();
+            ParallaxStrengthChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnTimeSpeedChanged(float value)
+        {
+            UpdateTimeSpeedLabels(value);
+            SaveSettings();
+            TimeSpeedChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnSeedFoundTriggerChanged(bool value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnHighScoreSeedTriggerChanged(bool value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnSearchCompleteTriggerChanged(bool value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnSeedFoundAudioSourceChanged(int value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnHighScoreAudioSourceChanged(int value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnSearchCompleteAudioSourceChanged(int value)
+        {
+            SaveSettings();
+        }
+
+        partial void OnShadowFlickerSourceChanged(int value)
+        {
+            SaveSettings();
+            ShadowFlickerSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnSpinSourceChanged(int value)
+        {
+            SaveSettings();
+            SpinSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnTwirlSourceChanged(int value)
+        {
+            SaveSettings();
+            TwirlSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnZoomThumpSourceChanged(int value)
+        {
+            SaveSettings();
+            ZoomThumpSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnColorSaturationSourceChanged(int value)
+        {
+            SaveSettings();
+            ColorSaturationSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnBeatPulseSourceChanged(int value)
+        {
+            SaveSettings();
+            BeatPulseSourceChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnShadowFlickerIntensityChanged(float value)
+        {
+            SaveSettings();
+            ShadowFlickerIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnSpinIntensityChanged(float value)
+        {
+            SaveSettings();
+            SpinIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnTwirlIntensityChanged(float value)
+        {
+            SaveSettings();
+            TwirlIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnZoomThumpIntensityChanged(float value)
+        {
+            SaveSettings();
+            ZoomThumpIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnColorSaturationIntensityChanged(float value)
+        {
+            SaveSettings();
+            ColorSaturationIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnBeatPulseIntensityChanged(float value)
+        {
+            SaveSettings();
+            BeatPulseIntensityChangedEvent?.Invoke(this, value / 100f);
+        }
+
+        partial void OnShaderContrastChanged(float value)
+        {
+            OnPropertyChanged(nameof(ShaderContrastText));
+            ShaderContrastChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnShaderSpinAmountChanged(float value)
+        {
+            OnPropertyChanged(nameof(ShaderSpinAmountText));
+            ShaderSpinAmountChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnShaderZoomPunchChanged(float value)
+        {
+            OnPropertyChanged(nameof(ShaderZoomPunchText));
+            ShaderZoomPunchChangedEvent?.Invoke(this, value);
+        }
+
+        partial void OnShaderMelodySaturationChanged(float value)
+        {
+            OnPropertyChanged(nameof(ShaderMelodySaturationText));
+            ShaderMelodySaturationChangedEvent?.Invoke(this, value);
+        }
 
         #endregion
 
         #region Events
 
-        public event EventHandler<int>? OnThemeChanged;
-        public event EventHandler<int>? OnMainColorChanged;
-        public event EventHandler<int>? OnAccentColorChanged;
-        public event EventHandler<float>? OnAudioIntensityChanged;
-        public event EventHandler<float>? OnParallaxStrengthChanged;
-        public event EventHandler<float>? OnTimeSpeedChanged;
+        public event EventHandler<int>? ThemeChangedEvent;
+        public event EventHandler<int>? MainColorChangedEvent;
+        public event EventHandler<int>? AccentColorChangedEvent;
+        public event EventHandler<float>? AudioIntensityChangedEvent;
+        public event EventHandler<float>? ParallaxStrengthChangedEvent;
+        public event EventHandler<float>? TimeSpeedChangedEvent;
 
         // Shader effect audio source events
-        public event EventHandler<int>? OnShadowFlickerSourceChanged;
-        public event EventHandler<int>? OnSpinSourceChanged;
-        public event EventHandler<int>? OnTwirlSourceChanged;
-        public event EventHandler<int>? OnZoomThumpSourceChanged;
-        public event EventHandler<int>? OnColorSaturationSourceChanged;
-        public event EventHandler<int>? OnBeatPulseSourceChanged;
+        public event EventHandler<int>? ShadowFlickerSourceChangedEvent;
+        public event EventHandler<int>? SpinSourceChangedEvent;
+        public event EventHandler<int>? TwirlSourceChangedEvent;
+        public event EventHandler<int>? ZoomThumpSourceChangedEvent;
+        public event EventHandler<int>? ColorSaturationSourceChangedEvent;
+        public event EventHandler<int>? BeatPulseSourceChangedEvent;
 
         // Shader effect intensity events (0-1 range)
-        public event EventHandler<float>? OnShadowFlickerIntensityChanged;
-        public event EventHandler<float>? OnSpinIntensityChanged;
-        public event EventHandler<float>? OnTwirlIntensityChanged;
-        public event EventHandler<float>? OnZoomThumpIntensityChanged;
-        public event EventHandler<float>? OnColorSaturationIntensityChanged;
-        public event EventHandler<float>? OnBeatPulseIntensityChanged;
+        public event EventHandler<float>? ShadowFlickerIntensityChangedEvent;
+        public event EventHandler<float>? SpinIntensityChangedEvent;
+        public event EventHandler<float>? TwirlIntensityChangedEvent;
+        public event EventHandler<float>? ZoomThumpIntensityChangedEvent;
+        public event EventHandler<float>? ColorSaturationIntensityChangedEvent;
+        public event EventHandler<float>? BeatPulseIntensityChangedEvent;
 
         // Shader debug events
-        public event EventHandler<float>? OnShaderContrastChanged;
-        public event EventHandler<float>? OnShaderSpinAmountChanged;
-        public event EventHandler<float>? OnShaderZoomPunchChanged;
-        public event EventHandler<float>? OnShaderMelodySaturationChanged;
+        public event EventHandler<float>? ShaderContrastChangedEvent;
+        public event EventHandler<float>? ShaderSpinAmountChangedEvent;
+        public event EventHandler<float>? ShaderZoomPunchChangedEvent;
+        public event EventHandler<float>? ShaderMelodySaturationChangedEvent;
 
         #endregion
 
@@ -569,71 +368,39 @@ namespace BalatroSeedOracle.ViewModels
             var profile = _userProfileService.GetProfile();
             var vibeSettings = profile.VibeOutSettings;
 
-            // Load values from profile
-            _themeIndex = vibeSettings.ThemeIndex;
-            _mainColor = vibeSettings.MainColor;
-            _accentColor = vibeSettings.AccentColor;
-            _audioIntensity = vibeSettings.AudioIntensity;
-            _parallaxStrength = vibeSettings.ParallaxStrength;
-            _timeSpeed = vibeSettings.TimeSpeed;
+            // Load values from profile - use generated properties
+            ThemeIndex = vibeSettings.ThemeIndex;
+            MainColor = vibeSettings.MainColor;
+            AccentColor = vibeSettings.AccentColor;
+            AudioIntensity = vibeSettings.AudioIntensity;
+            ParallaxStrength = vibeSettings.ParallaxStrength;
+            TimeSpeed = vibeSettings.TimeSpeed;
 
             // Load trigger settings
-            _seedFoundTrigger = vibeSettings.SeedFoundTrigger;
-            _highScoreSeedTrigger = vibeSettings.HighScoreSeedTrigger;
-            _searchCompleteTrigger = vibeSettings.SearchCompleteTrigger;
-            _seedFoundAudioSource = vibeSettings.SeedFoundAudioSource;
-            _highScoreAudioSource = vibeSettings.HighScoreAudioSource;
-            _searchCompleteAudioSource = vibeSettings.SearchCompleteAudioSource;
+            SeedFoundTrigger = vibeSettings.SeedFoundTrigger;
+            HighScoreSeedTrigger = vibeSettings.HighScoreSeedTrigger;
+            SearchCompleteTrigger = vibeSettings.SearchCompleteTrigger;
+            SeedFoundAudioSource = vibeSettings.SeedFoundAudioSource;
+            HighScoreAudioSource = vibeSettings.HighScoreAudioSource;
+            SearchCompleteAudioSource = vibeSettings.SearchCompleteAudioSource;
 
             // Load shader effect audio sources
-            _shadowFlickerSource = vibeSettings.ShadowFlickerSource;
-            _spinSource = vibeSettings.SpinSource;
-            _twirlSource = vibeSettings.TwirlSource;
-            _zoomThumpSource = vibeSettings.ZoomThumpSource;
-            _colorSaturationSource = vibeSettings.ColorSaturationSource;
-            _beatPulseSource = vibeSettings.BeatPulseSource;
+            ShadowFlickerSource = vibeSettings.ShadowFlickerSource;
+            SpinSource = vibeSettings.SpinSource;
+            TwirlSource = vibeSettings.TwirlSource;
+            ZoomThumpSource = vibeSettings.ZoomThumpSource;
+            ColorSaturationSource = vibeSettings.ColorSaturationSource;
+            BeatPulseSource = vibeSettings.BeatPulseSource;
 
             // Load shader effect intensities
-            _shadowFlickerIntensity = vibeSettings.ShadowFlickerIntensity;
-            _spinIntensity = vibeSettings.SpinIntensity;
-            _twirlIntensity = vibeSettings.TwirlIntensity;
-            _zoomThumpIntensity = vibeSettings.ZoomThumpIntensity;
-            _colorSaturationIntensity = vibeSettings.ColorSaturationIntensity;
-            _beatPulseIntensity = vibeSettings.BeatPulseIntensity;
+            ShadowFlickerIntensity = vibeSettings.ShadowFlickerIntensity;
+            SpinIntensity = vibeSettings.SpinIntensity;
+            TwirlIntensity = vibeSettings.TwirlIntensity;
+            ZoomThumpIntensity = vibeSettings.ZoomThumpIntensity;
+            ColorSaturationIntensity = vibeSettings.ColorSaturationIntensity;
+            BeatPulseIntensity = vibeSettings.BeatPulseIntensity;
 
-            // Update display labels
-            UpdateAudioIntensityLabels(_audioIntensity);
-            UpdateParallaxLabels(_parallaxStrength);
-            UpdateTimeSpeedLabels(_timeSpeed);
-
-            // Notify all properties changed
-            OnPropertyChanged(nameof(ThemeIndex));
-            OnPropertyChanged(nameof(MainColor));
-            OnPropertyChanged(nameof(AccentColor));
-            OnPropertyChanged(nameof(AudioIntensity));
-            OnPropertyChanged(nameof(ParallaxStrength));
-            OnPropertyChanged(nameof(TimeSpeed));
-            OnPropertyChanged(nameof(SeedFoundTrigger));
-            OnPropertyChanged(nameof(HighScoreSeedTrigger));
-            OnPropertyChanged(nameof(SearchCompleteTrigger));
-            OnPropertyChanged(nameof(SeedFoundAudioSource));
-            OnPropertyChanged(nameof(HighScoreAudioSource));
-            OnPropertyChanged(nameof(SearchCompleteAudioSource));
-            OnPropertyChanged(nameof(ShadowFlickerSource));
-            OnPropertyChanged(nameof(SpinSource));
-            OnPropertyChanged(nameof(TwirlSource));
-            OnPropertyChanged(nameof(ZoomThumpSource));
-            OnPropertyChanged(nameof(ColorSaturationSource));
-            OnPropertyChanged(nameof(BeatPulseSource));
-            OnPropertyChanged(nameof(ShadowFlickerIntensity));
-            OnPropertyChanged(nameof(SpinIntensity));
-            OnPropertyChanged(nameof(TwirlIntensity));
-            OnPropertyChanged(nameof(ZoomThumpIntensity));
-            OnPropertyChanged(nameof(ColorSaturationIntensity));
-            OnPropertyChanged(nameof(BeatPulseIntensity));
-            OnPropertyChanged(nameof(IsCustomTheme));
-
-            DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Settings loaded - Theme: {_themeIndex}, Audio: {_audioIntensity}");
+            DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Settings loaded - Theme: {ThemeIndex}, Audio: {AudioIntensity}");
         }
 
         private void SaveSettings()
@@ -641,30 +408,30 @@ namespace BalatroSeedOracle.ViewModels
             var profile = _userProfileService.GetProfile();
             var vibeSettings = profile.VibeOutSettings;
 
-            vibeSettings.ThemeIndex = _themeIndex;
-            vibeSettings.MainColor = _mainColor;
-            vibeSettings.AccentColor = _accentColor;
-            vibeSettings.AudioIntensity = _audioIntensity;
-            vibeSettings.ParallaxStrength = _parallaxStrength;
-            vibeSettings.TimeSpeed = _timeSpeed;
-            vibeSettings.SeedFoundTrigger = _seedFoundTrigger;
-            vibeSettings.HighScoreSeedTrigger = _highScoreSeedTrigger;
-            vibeSettings.SearchCompleteTrigger = _searchCompleteTrigger;
-            vibeSettings.SeedFoundAudioSource = _seedFoundAudioSource;
-            vibeSettings.HighScoreAudioSource = _highScoreAudioSource;
-            vibeSettings.SearchCompleteAudioSource = _searchCompleteAudioSource;
-            vibeSettings.ShadowFlickerSource = _shadowFlickerSource;
-            vibeSettings.SpinSource = _spinSource;
-            vibeSettings.TwirlSource = _twirlSource;
-            vibeSettings.ZoomThumpSource = _zoomThumpSource;
-            vibeSettings.ColorSaturationSource = _colorSaturationSource;
-            vibeSettings.BeatPulseSource = _beatPulseSource;
-            vibeSettings.ShadowFlickerIntensity = _shadowFlickerIntensity;
-            vibeSettings.SpinIntensity = _spinIntensity;
-            vibeSettings.TwirlIntensity = _twirlIntensity;
-            vibeSettings.ZoomThumpIntensity = _zoomThumpIntensity;
-            vibeSettings.ColorSaturationIntensity = _colorSaturationIntensity;
-            vibeSettings.BeatPulseIntensity = _beatPulseIntensity;
+            vibeSettings.ThemeIndex = ThemeIndex;
+            vibeSettings.MainColor = MainColor;
+            vibeSettings.AccentColor = AccentColor;
+            vibeSettings.AudioIntensity = AudioIntensity;
+            vibeSettings.ParallaxStrength = ParallaxStrength;
+            vibeSettings.TimeSpeed = TimeSpeed;
+            vibeSettings.SeedFoundTrigger = SeedFoundTrigger;
+            vibeSettings.HighScoreSeedTrigger = HighScoreSeedTrigger;
+            vibeSettings.SearchCompleteTrigger = SearchCompleteTrigger;
+            vibeSettings.SeedFoundAudioSource = SeedFoundAudioSource;
+            vibeSettings.HighScoreAudioSource = HighScoreAudioSource;
+            vibeSettings.SearchCompleteAudioSource = SearchCompleteAudioSource;
+            vibeSettings.ShadowFlickerSource = ShadowFlickerSource;
+            vibeSettings.SpinSource = SpinSource;
+            vibeSettings.TwirlSource = TwirlSource;
+            vibeSettings.ZoomThumpSource = ZoomThumpSource;
+            vibeSettings.ColorSaturationSource = ColorSaturationSource;
+            vibeSettings.BeatPulseSource = BeatPulseSource;
+            vibeSettings.ShadowFlickerIntensity = ShadowFlickerIntensity;
+            vibeSettings.SpinIntensity = SpinIntensity;
+            vibeSettings.TwirlIntensity = TwirlIntensity;
+            vibeSettings.ZoomThumpIntensity = ZoomThumpIntensity;
+            vibeSettings.ColorSaturationIntensity = ColorSaturationIntensity;
+            vibeSettings.BeatPulseIntensity = BeatPulseIntensity;
 
             _userProfileService.SaveProfile(profile);
         }
@@ -672,9 +439,9 @@ namespace BalatroSeedOracle.ViewModels
         private void SaveTheme()
         {
             var profile = _userProfileService.GetProfile();
-            profile.VibeOutSettings.ThemeIndex = _themeIndex;
+            profile.VibeOutSettings.ThemeIndex = ThemeIndex;
             _userProfileService.SaveProfile(profile);
-            DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Theme saved: {_themeIndex}");
+            DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Theme saved: {ThemeIndex}");
         }
 
         private void UpdateAudioIntensityLabels(float value)
@@ -743,6 +510,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Saves the current settings as a new preset
         /// </summary>
+        [RelayCommand]
         private async void SavePreset()
         {
             try
@@ -801,6 +569,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Loads a preset and applies its settings
         /// </summary>
+        [RelayCommand]
         private void LoadPreset(VisualizerPreset? preset)
         {
             if (preset == null)
@@ -838,6 +607,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Deletes a preset from disk and the collection
         /// </summary>
+        [RelayCommand]
         private void DeletePreset(VisualizerPreset? preset)
         {
             if (preset == null)

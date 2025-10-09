@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -8,17 +9,36 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the EditionSelector control.
     /// Manages card edition selection with visual effects and descriptions.
     /// </summary>
-    public class EditionSelectorViewModel : BaseViewModel
+    public partial class EditionSelectorViewModel : ObservableObject
     {
+        [ObservableProperty]
         private EditionOptionViewModel? _selectedEdition;
+
+        [ObservableProperty]
         private string _description = string.Empty;
+
+        [ObservableProperty]
         private bool _isPreviewVisible;
+
+        [ObservableProperty]
         private string _previewEmoji = string.Empty;
+
+        [ObservableProperty]
         private string _previewName = string.Empty;
+
+        [ObservableProperty]
         private string _previewEffect = string.Empty;
+
+        [ObservableProperty]
         private string _previewColor = string.Empty;
+
+        [ObservableProperty]
         private string _borderColor = string.Empty;
+
+        [ObservableProperty]
         private double _borderThickness;
+
+        [ObservableProperty]
         private string _backgroundColor = string.Empty;
 
         public EditionSelectorViewModel()
@@ -36,78 +56,21 @@ namespace BalatroSeedOracle.ViewModels
 
         public ObservableCollection<EditionOptionViewModel> Editions { get; } = new();
 
-        public EditionOptionViewModel? SelectedEdition
-        {
-            get => _selectedEdition;
-            set
-            {
-                if (SetProperty(ref _selectedEdition, value))
-                {
-                    UpdateDisplay();
-                    RaiseEditionChanged();
-                }
-            }
-        }
-
-        public string Description
-        {
-            get => _description;
-            private set => SetProperty(ref _description, value);
-        }
-
-        public bool IsPreviewVisible
-        {
-            get => _isPreviewVisible;
-            private set => SetProperty(ref _isPreviewVisible, value);
-        }
-
-        public string PreviewEmoji
-        {
-            get => _previewEmoji;
-            private set => SetProperty(ref _previewEmoji, value);
-        }
-
-        public string PreviewName
-        {
-            get => _previewName;
-            private set => SetProperty(ref _previewName, value);
-        }
-
-        public string PreviewEffect
-        {
-            get => _previewEffect;
-            private set => SetProperty(ref _previewEffect, value);
-        }
-
-        public string PreviewColor
-        {
-            get => _previewColor;
-            private set => SetProperty(ref _previewColor, value);
-        }
-
-        public string BorderColor
-        {
-            get => _borderColor;
-            private set => SetProperty(ref _borderColor, value);
-        }
-
-        public double BorderThickness
-        {
-            get => _borderThickness;
-            private set => SetProperty(ref _borderThickness, value);
-        }
-
-        public string BackgroundColor
-        {
-            get => _backgroundColor;
-            private set => SetProperty(ref _backgroundColor, value);
-        }
-
         #endregion
 
         #region Events
 
         public event EventHandler<string>? EditionChanged;
+
+        #endregion
+
+        #region Property Changed Handlers
+
+        partial void OnSelectedEditionChanged(EditionOptionViewModel? value)
+        {
+            UpdateDisplay();
+            RaiseEditionChanged();
+        }
 
         #endregion
 
@@ -129,16 +92,16 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateDisplay()
         {
-            if (_selectedEdition == null)
+            if (SelectedEdition == null)
             {
                 Description = "Unknown edition";
                 IsPreviewVisible = false;
                 return;
             }
 
-            Description = _selectedEdition.Description;
+            Description = SelectedEdition.Description;
 
-            if (string.IsNullOrEmpty(_selectedEdition.Tag))
+            if (string.IsNullOrEmpty(SelectedEdition.Tag))
             {
                 IsPreviewVisible = false;
                 ResetBorderEffects();
@@ -146,12 +109,12 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 IsPreviewVisible = true;
-                PreviewEmoji = _selectedEdition.Emoji;
-                PreviewName = _selectedEdition.Name;
-                PreviewEffect = _selectedEdition.Effect;
-                PreviewColor = _selectedEdition.Color;
+                PreviewEmoji = SelectedEdition.Emoji;
+                PreviewName = SelectedEdition.Name;
+                PreviewEffect = SelectedEdition.Effect;
+                PreviewColor = SelectedEdition.Color;
 
-                ApplyEditionEffects(_selectedEdition.Tag);
+                ApplyEditionEffects(SelectedEdition.Tag);
             }
         }
 
@@ -198,7 +161,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void RaiseEditionChanged()
         {
-            EditionChanged?.Invoke(this, _selectedEdition?.Tag ?? "");
+            EditionChanged?.Invoke(this, SelectedEdition?.Tag ?? "");
         }
 
         #endregion
@@ -207,7 +170,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public string GetSelectedEdition()
         {
-            return _selectedEdition?.Tag ?? "";
+            return SelectedEdition?.Tag ?? "";
         }
 
         public void SetSelectedEdition(string edition)

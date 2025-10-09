@@ -5,70 +5,44 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class PaginatedFilterBrowserViewModel : BaseViewModel
+    public partial class PaginatedFilterBrowserViewModel : ObservableObject
     {
         private const int ITEMS_PER_PAGE = 10;
-        
+
         private List<FilterBrowserItem> _allFilters = new();
+
+        [ObservableProperty]
         private FilterBrowserItem? _selectedFilter;
+
         private int _currentPage = 0;
+
+        [ObservableProperty]
         private string _mainButtonText = "Select";
+
+        [ObservableProperty]
         private string _secondaryButtonText = "View";
+
+        [ObservableProperty]
         private bool _showSecondaryButton = true;
+
+        [ObservableProperty]
         private bool _showDeleteButton = true;
 
         // Properties
         public ObservableCollection<FilterBrowserItemViewModel> CurrentPageFilters { get; } = new();
-        
-        public FilterBrowserItem? SelectedFilter
-        {
-            get => _selectedFilter;
-            set
-            {
-                if (SetProperty(ref _selectedFilter, value))
-                {
-                    OnPropertyChanged(nameof(HasSelectedFilter));
-                    OnPropertyChanged(nameof(SelectedItemTriangleY));
-                    UpdateCurrentPageSelection();
-                }
-            }
-        }
 
         public bool HasSelectedFilter => SelectedFilter != null;
 
-        public string MainButtonText
-        {
-            get => _mainButtonText;
-            set => SetProperty(ref _mainButtonText, value);
-        }
-
-        public string SecondaryButtonText
-        {
-            get => _secondaryButtonText;
-            set => SetProperty(ref _secondaryButtonText, value);
-        }
-
-        public bool ShowSecondaryButton
-        {
-            get => _showSecondaryButton;
-            set => SetProperty(ref _showSecondaryButton, value);
-        }
-
-        public bool ShowDeleteButton
-        {
-            get => _showDeleteButton;
-            set => SetProperty(ref _showDeleteButton, value);
-        }
-
         public string PageIndicatorText => $"Page {_currentPage + 1}/{TotalPages}";
         public string StatusText => $"Total {_allFilters.Count} filters";
-        
+
         public double SelectedItemTriangleY
         {
             get
@@ -82,12 +56,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private int TotalPages => (int)Math.Ceiling((double)_allFilters.Count / ITEMS_PER_PAGE);
 
-        // Commands
-        public ICommand SelectFilterCommand { get; }
-        public ICommand PreviousPageCommand { get; }
-        public ICommand NextPageCommand { get; }
-        
-        // Commands that parent ViewModels will set
+        // Commands that parent ViewModels will set (using ICommand for Avalonia property compatibility)
         public ICommand MainButtonCommand { get; set; } = null!;
         public ICommand SecondaryButtonCommand { get; set; } = null!;
         public ICommand DeleteCommand { get; set; } = null!;
@@ -97,14 +66,18 @@ namespace BalatroSeedOracle.ViewModels
 
         public PaginatedFilterBrowserViewModel()
         {
-            SelectFilterCommand = new RelayCommand<FilterBrowserItemViewModel>(OnFilterSelected);
-            PreviousPageCommand = new RelayCommand(PreviousPage, () => _currentPage > 0);
-            NextPageCommand = new RelayCommand(NextPage, () => _currentPage < TotalPages - 1);
-            
             LoadFilters();
         }
 
-        private async void OnFilterSelected(FilterBrowserItemViewModel? filterViewModel)
+        partial void OnSelectedFilterChanged(FilterBrowserItem? value)
+        {
+            OnPropertyChanged(nameof(HasSelectedFilter));
+            OnPropertyChanged(nameof(SelectedItemTriangleY));
+            UpdateCurrentPageSelection();
+        }
+
+        [RelayCommand]
+        private async void SelectFilter(FilterBrowserItemViewModel? filterViewModel)
         {
             if (filterViewModel?.FilterBrowserItem != null)
             {
@@ -160,6 +133,7 @@ namespace BalatroSeedOracle.ViewModels
             return tempPath;
         }
 
+        [RelayCommand(CanExecute = nameof(CanPreviousPage))]
         private void PreviousPage()
         {
             if (_currentPage > 0)
@@ -169,6 +143,9 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        private bool CanPreviousPage() => _currentPage > 0;
+
+        [RelayCommand(CanExecute = nameof(CanNextPage))]
         private void NextPage()
         {
             if (_currentPage < TotalPages - 1)
@@ -177,6 +154,8 @@ namespace BalatroSeedOracle.ViewModels
                 UpdateCurrentPage();
             }
         }
+
+        private bool CanNextPage() => _currentPage < TotalPages - 1;
 
         private void LoadFilters()
         {
@@ -305,10 +284,10 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(PageIndicatorText));
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(SelectedItemTriangleY));
-            
+
             // Update command states
-            ((RelayCommand)PreviousPageCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)NextPageCommand).NotifyCanExecuteChanged();
+            PreviousPageCommand.NotifyCanExecuteChanged();
+            NextPageCommand.NotifyCanExecuteChanged();
         }
 
         private void UpdateCurrentPageSelection()
@@ -343,19 +322,14 @@ namespace BalatroSeedOracle.ViewModels
         public string StatsText => IsCreateNew ? "Start with a blank filter" : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
     }
 
-    public class FilterBrowserItemViewModel : BaseViewModel
+    public partial class FilterBrowserItemViewModel : ObservableObject
     {
+        [ObservableProperty]
         private bool _isSelected;
-        
+
         public FilterBrowserItem FilterBrowserItem { get; set; } = null!;
         public string DisplayText { get; set; } = "";
-        
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
-        
+
         public string ItemClasses => FilterBrowserItem.IsCreateNew ? "filter-list-item create-new-item" : "filter-list-item";
     }
 }

@@ -4,70 +4,41 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class FilterCreationModalViewModel : BaseViewModel
+    public partial class FilterCreationModalViewModel : ObservableObject
     {
+        [ObservableProperty]
         private string _importPath = "";
+
+        [ObservableProperty]
         private string _importStatusIcon = "";
+
+        [ObservableProperty]
         private bool _importSuccess = false;
+
         private string? _selectedFilterPath = null;
+
+        [ObservableProperty]
         private string _selectedFilterName = "";
+
+        [ObservableProperty]
         private string _selectedFilterDescription = "";
+
+        [ObservableProperty]
         private int _selectedFilterIndex = -1;
 
         // Properties
-        public string ImportPath
-        {
-            get => _importPath;
-            private set => SetProperty(ref _importPath, value);
-        }
-
-        public string ImportStatusIcon
-        {
-            get => _importStatusIcon;
-            private set => SetProperty(ref _importStatusIcon, value);
-        }
-
-        public bool ImportSuccess
-        {
-            get => _importSuccess;
-            private set => SetProperty(ref _importSuccess, value);
-        }
-
         public bool HasSelectedFilter => !string.IsNullOrEmpty(_selectedFilterPath);
-
-        public string SelectedFilterName
-        {
-            get => _selectedFilterName;
-            private set => SetProperty(ref _selectedFilterName, value);
-        }
-
-        public string SelectedFilterDescription
-        {
-            get => _selectedFilterDescription;
-            private set => SetProperty(ref _selectedFilterDescription, value);
-        }
-
-        public int SelectedFilterIndex
-        {
-            get => _selectedFilterIndex;
-            set => SetProperty(ref _selectedFilterIndex, value);
-        }
 
         public ObservableCollection<FilterListItem> Filters { get; } = new();
 
-        // Commands
-        public ICommand CreateNewFilterCommand { get; }
-        public ICommand EditFilterCommand { get; }
-        public ICommand CloneFilterCommand { get; }
-        public ICommand ImportJsonCommand { get; set; } = null!;
-        public ICommand DeleteFilterCommand { get; }
-        public ICommand BackCommand { get; }
+        // Commands - ImportJsonCommand is set by View
+        public RelayCommand ImportJsonCommand { get; set; } = null!;
 
         // Events
         public event EventHandler<string>? FilterSelectedForEdit;
@@ -79,13 +50,6 @@ namespace BalatroSeedOracle.ViewModels
 
         public FilterCreationModalViewModel()
         {
-            CreateNewFilterCommand = new RelayCommand(OnCreateNewFilter);
-            EditFilterCommand = new RelayCommand(OnEditFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
-            CloneFilterCommand = new RelayCommand(OnCloneFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
-            DeleteFilterCommand = new RelayCommand(OnDeleteFilter, () => !string.IsNullOrEmpty(_selectedFilterPath));
-            ImportJsonCommand = new RelayCommand(() => { }); // Placeholder, View will handle actual browse
-            BackCommand = new RelayCommand(OnBack);
-
             // Load filters
             LoadFilters();
         }
@@ -131,19 +95,22 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnCreateNewFilter()
+        [RelayCommand]
+        private void CreateNewFilter()
         {
             DebugLogger.Log("FilterCreationModalViewModel", "Create new filter requested");
             NewFilterRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnBack()
+        [RelayCommand]
+        private void Back()
         {
             DebugLogger.Log("FilterCreationModalViewModel", "Back button clicked");
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnDeleteFilter()
+        [RelayCommand(CanExecute = nameof(HasSelectedFilter))]
+        private void DeleteFilter()
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
@@ -155,7 +122,8 @@ namespace BalatroSeedOracle.ViewModels
             FilterDeleteRequested?.Invoke(this, _selectedFilterPath);
         }
 
-        private void OnEditFilter()
+        [RelayCommand(CanExecute = nameof(HasSelectedFilter))]
+        private void EditFilter()
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
@@ -167,7 +135,8 @@ namespace BalatroSeedOracle.ViewModels
             FilterSelectedForEdit?.Invoke(this, _selectedFilterPath);
         }
 
-        private void OnCloneFilter()
+        [RelayCommand(CanExecute = nameof(HasSelectedFilter))]
+        private void CloneFilter()
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
@@ -188,9 +157,9 @@ namespace BalatroSeedOracle.ViewModels
             SelectedFilterDescription = $"by {GetFilterAuthor(filterPath)}";
 
             // Update command states
-            ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)CloneFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)DeleteFilterCommand).NotifyCanExecuteChanged();
+            EditFilterCommand.NotifyCanExecuteChanged();
+            CloneFilterCommand.NotifyCanExecuteChanged();
+            DeleteFilterCommand.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(HasSelectedFilter));
 
             DebugLogger.Log("FilterCreationModalViewModel", $"Filter selected: {filterPath}");
@@ -203,9 +172,9 @@ namespace BalatroSeedOracle.ViewModels
             SelectedFilterDescription = $"by {filter.Author}";
 
             // Update command states
-            ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)CloneFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)DeleteFilterCommand).NotifyCanExecuteChanged();
+            EditFilterCommand.NotifyCanExecuteChanged();
+            CloneFilterCommand.NotifyCanExecuteChanged();
+            DeleteFilterCommand.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(HasSelectedFilter));
 
             DebugLogger.Log("FilterCreationModalViewModel", $"Filter selected: {filter.Name}");

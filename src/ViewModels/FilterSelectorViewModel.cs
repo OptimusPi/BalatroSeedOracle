@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -15,6 +14,7 @@ using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -22,113 +22,48 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for FilterSelector component - handles filter loading, selection, and management
     /// </summary>
-    public class FilterSelectorViewModel : BaseViewModel
+    public partial class FilterSelectorViewModel : ObservableObject
     {
         private readonly SpriteService _spriteService;
+
+        [ObservableProperty]
         private bool _autoLoadEnabled = true;
+
+        [ObservableProperty]
         private bool _showCreateButton = true;
+
+        [ObservableProperty]
         private bool _shouldSwitchToVisualTab = false;
+
+        [ObservableProperty]
         private bool _isInSearchModal = false;
+
+        [ObservableProperty]
         private bool _showSelectButton = true;
+
+        [ObservableProperty]
         private bool _showActionButtons = true;
+
+        [ObservableProperty]
         private string _title = "Select Filter";
+
+        [ObservableProperty]
         private string _selectButtonText = "LOAD THIS FILTER";
+
+        [ObservableProperty]
         private bool _selectButtonEnabled = true;
+
+        [ObservableProperty]
         private bool _hasFilters = false;
+
+        [ObservableProperty]
         private List<PanelItem> _filterItems = new();
+
+        [ObservableProperty]
         private PanelItem? _selectedFilter;
+
+        [ObservableProperty]
         private int _selectedFilterIndex = 0;
-
-        // Properties
-        public bool AutoLoadEnabled
-        {
-            get => _autoLoadEnabled;
-            set => SetProperty(ref _autoLoadEnabled, value);
-        }
-
-        public bool ShowCreateButton
-        {
-            get => _showCreateButton;
-            set => SetProperty(ref _showCreateButton, value);
-        }
-
-        public bool ShouldSwitchToVisualTab
-        {
-            get => _shouldSwitchToVisualTab;
-            set => SetProperty(ref _shouldSwitchToVisualTab, value);
-        }
-
-        public bool IsInSearchModal
-        {
-            get => _isInSearchModal;
-            set
-            {
-                if (SetProperty(ref _isInSearchModal, value))
-                {
-                    UpdateSelectButtonText();
-                }
-            }
-        }
-
-        public bool ShowSelectButton
-        {
-            get => _showSelectButton;
-            set => SetProperty(ref _showSelectButton, value);
-        }
-
-        public bool ShowActionButtons
-        {
-            get => _showActionButtons;
-            set => SetProperty(ref _showActionButtons, value);
-        }
-
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        public string SelectButtonText
-        {
-            get => _selectButtonText;
-            private set => SetProperty(ref _selectButtonText, value);
-        }
-
-        public bool SelectButtonEnabled
-        {
-            get => _selectButtonEnabled;
-            private set => SetProperty(ref _selectButtonEnabled, value);
-        }
-
-        public bool HasFilters
-        {
-            get => _hasFilters;
-            private set => SetProperty(ref _hasFilters, value);
-        }
-
-        public List<PanelItem> FilterItems
-        {
-            get => _filterItems;
-            private set => SetProperty(ref _filterItems, value);
-        }
-
-        public PanelItem? SelectedFilter
-        {
-            get => _selectedFilter;
-            set
-            {
-                if (SetProperty(ref _selectedFilter, value))
-                {
-                    OnFilterSelectionChanged();
-                }
-            }
-        }
-
-        public int SelectedFilterIndex
-        {
-            get => _selectedFilterIndex;
-            set => SetProperty(ref _selectedFilterIndex, value);
-        }
 
         // Events
         public event EventHandler<string>? FilterSelected;
@@ -138,26 +73,24 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? FilterDeleteRequested;
         public event EventHandler? NewFilterRequested;
 
-        // Commands
-        public ICommand SelectFilterCommand { get; }
-        public ICommand CopyFilterCommand { get; }
-        public ICommand EditFilterCommand { get; }
-        public ICommand DeleteFilterCommand { get; }
-        public ICommand CreateNewFilterCommand { get; }
-        public ICommand RefreshFiltersCommand { get; }
-
         public FilterSelectorViewModel(SpriteService spriteService)
         {
             _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
-
-            // Initialize commands
-            SelectFilterCommand = new RelayCommand(OnSelectFilter, CanSelectFilter);
-            CopyFilterCommand = new RelayCommand(OnCopyFilter, CanExecuteFilterAction);
-            EditFilterCommand = new RelayCommand(OnEditFilter, CanExecuteFilterAction);
-            DeleteFilterCommand = new RelayCommand(OnDeleteFilter, CanExecuteFilterAction);
-            CreateNewFilterCommand = new RelayCommand(OnCreateNewFilter);
-            RefreshFiltersCommand = new RelayCommand(async () => await LoadAvailableFiltersAsync());
         }
+
+        #region Property Changed Handlers
+
+        partial void OnIsInSearchModalChanged(bool value)
+        {
+            UpdateSelectButtonText();
+        }
+
+        partial void OnSelectedFilterChanged(PanelItem? value)
+        {
+            OnFilterSelectionChanged();
+        }
+
+        #endregion
 
         /// <summary>
         /// Initialize the ViewModel - loads available filters
@@ -534,10 +467,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void UpdateCommandStates()
         {
-            ((RelayCommand)SelectFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)CopyFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)EditFilterCommand).NotifyCanExecuteChanged();
-            ((RelayCommand)DeleteFilterCommand).NotifyCanExecuteChanged();
+            SelectFilterCommand.NotifyCanExecuteChanged();
+            CopyFilterCommand.NotifyCanExecuteChanged();
+            EditFilterCommand.NotifyCanExecuteChanged();
+            DeleteFilterCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>
@@ -569,12 +502,14 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        // Command implementations
+        #region Command Implementations
+
         private bool CanSelectFilter() => SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
 
         private bool CanExecuteFilterAction() => SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
 
-        private void OnSelectFilter()
+        [RelayCommand(CanExecute = nameof(CanSelectFilter))]
+        private void SelectFilter()
         {
             if (SelectedFilter?.Value != null && !string.IsNullOrEmpty(SelectedFilter.Value))
             {
@@ -583,7 +518,8 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnCopyFilter()
+        [RelayCommand(CanExecute = nameof(CanExecuteFilterAction))]
+        private void CopyFilter()
         {
             if (SelectedFilter?.Value != null)
             {
@@ -592,7 +528,8 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnEditFilter()
+        [RelayCommand(CanExecute = nameof(CanExecuteFilterAction))]
+        private void EditFilter()
         {
             if (SelectedFilter?.Value != null)
             {
@@ -601,7 +538,8 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnDeleteFilter()
+        [RelayCommand(CanExecute = nameof(CanExecuteFilterAction))]
+        private void DeleteFilter()
         {
             if (SelectedFilter?.Value != null)
             {
@@ -610,11 +548,22 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnCreateNewFilter()
+        [RelayCommand]
+        private void CreateNewFilter()
         {
             DebugLogger.Log("FilterSelectorViewModel", "Create new filter requested");
             NewFilterRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        [RelayCommand]
+        private async Task RefreshFilters()
+        {
+            await LoadAvailableFiltersAsync();
+        }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Public method to refresh the filter list
@@ -623,5 +572,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             await LoadAvailableFiltersAsync();
         }
+
+        #endregion
     }
 }

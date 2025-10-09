@@ -230,93 +230,93 @@ namespace BalatroSeedOracle.Helpers
                 var vm = audioVisualizerView.ViewModel;
 
                 // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
-                vm.OnMainColorChanged += (s, colorIndex) =>
+                vm.MainColorChangedEvent += (s, colorIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Main color changed to {colorIndex}");
                     menu.ApplyMainColor(colorIndex);
                 };
 
-                vm.OnAccentColorChanged += (s, colorIndex) =>
+                vm.AccentColorChangedEvent += (s, colorIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Accent color changed to {colorIndex}");
                     menu.ApplyAccentColor(colorIndex);
                 };
 
-                vm.OnAudioIntensityChanged += (s, intensity) =>
+                vm.AudioIntensityChangedEvent += (s, intensity) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Audio intensity changed to {intensity}");
                     menu.ApplyAudioIntensity(intensity);
                 };
 
-                vm.OnParallaxStrengthChanged += (s, strength) =>
+                vm.ParallaxStrengthChangedEvent += (s, strength) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Parallax changed to {strength}");
                     menu.ApplyParallaxStrength(strength);
                 };
 
-                vm.OnTimeSpeedChanged += (s, speed) =>
+                vm.TimeSpeedChangedEvent += (s, speed) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Time speed changed to {speed}");
                     menu.ApplyTimeSpeed(speed);
                 };
 
                 // Wire up shader debug controls
-                vm.OnShaderContrastChanged += (s, contrast) =>
+                vm.ShaderContrastChangedEvent += (s, contrast) =>
                 {
                     DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Contrast changed to {contrast}");
                     menu.ApplyShaderContrast(contrast);
                 };
 
-                vm.OnShaderSpinAmountChanged += (s, spinAmount) =>
+                vm.ShaderSpinAmountChangedEvent += (s, spinAmount) =>
                 {
                     DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Spin amount changed to {spinAmount}");
                     menu.ApplyShaderSpinAmount(spinAmount);
                 };
 
-                vm.OnShaderZoomPunchChanged += (s, zoom) =>
+                vm.ShaderZoomPunchChangedEvent += (s, zoom) =>
                 {
                     DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Zoom punch changed to {zoom}");
                     menu.ApplyShaderZoomPunch(zoom);
                 };
 
-                vm.OnShaderMelodySaturationChanged += (s, saturation) =>
+                vm.ShaderMelodySaturationChangedEvent += (s, saturation) =>
                 {
                     DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Melody saturation changed to {saturation}");
                     menu.ApplyShaderMelodySaturation(saturation);
                 };
 
                 // Wire up shader effect audio source mappings
-                vm.OnShadowFlickerSourceChanged += (s, sourceIndex) =>
+                vm.ShadowFlickerSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Shadow flicker source changed to {sourceIndex}");
                     menu.ApplyShadowFlickerSource(sourceIndex);
                 };
 
-                vm.OnSpinSourceChanged += (s, sourceIndex) =>
+                vm.SpinSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Spin source changed to {sourceIndex}");
                     menu.ApplySpinSource(sourceIndex);
                 };
 
-                vm.OnTwirlSourceChanged += (s, sourceIndex) =>
+                vm.TwirlSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Twirl source changed to {sourceIndex}");
                     menu.ApplyTwirlSource(sourceIndex);
                 };
 
-                vm.OnZoomThumpSourceChanged += (s, sourceIndex) =>
+                vm.ZoomThumpSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Zoom thump source changed to {sourceIndex}");
                     menu.ApplyZoomThumpSource(sourceIndex);
                 };
 
-                vm.OnColorSaturationSourceChanged += (s, sourceIndex) =>
+                vm.ColorSaturationSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Color saturation source changed to {sourceIndex}");
                     menu.ApplyColorSaturationSource(sourceIndex);
                 };
 
-                vm.OnBeatPulseSourceChanged += (s, sourceIndex) =>
+                vm.BeatPulseSourceChangedEvent += (s, sourceIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Beat pulse source changed to {sourceIndex}");
                     menu.ApplyBeatPulseSource(sourceIndex);
