@@ -45,6 +45,15 @@ public partial class PanelSpinner : UserControl
             o => o.SelectedItem
         );
 
+    public static readonly StyledProperty<bool> ShowArrowsProperty =
+        AvaloniaProperty.Register<PanelSpinner, bool>(nameof(ShowArrows), defaultValue: true);
+
+    public bool ShowArrows
+    {
+        get => GetValue(ShowArrowsProperty);
+        set => SetValue(ShowArrowsProperty, value);
+    }
+
     public List<PanelItem> Items
     {
         get => _items;
@@ -91,6 +100,20 @@ public partial class PanelSpinner : UserControl
         _descriptionText = this.FindControl<TextBlock>("DescriptionText");
         _spriteImage = this.FindControl<Image>("SpriteImage");
         _dotsPanel = this.FindControl<StackPanel>("DotsPanel");
+
+        // Wire up ShowArrows property to button visibility
+        this.PropertyChanged += (s, e) =>
+        {
+            if (e.Property == ShowArrowsProperty)
+            {
+                if (_prevButton != null) _prevButton.IsVisible = ShowArrows;
+                if (_nextButton != null) _nextButton.IsVisible = ShowArrows;
+            }
+        };
+
+        // Set initial visibility
+        if (_prevButton != null) _prevButton.IsVisible = ShowArrows;
+        if (_nextButton != null) _nextButton.IsVisible = ShowArrows;
     }
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)

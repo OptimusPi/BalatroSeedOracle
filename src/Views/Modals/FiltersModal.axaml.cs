@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,24 +54,10 @@ namespace BalatroSeedOracle.Views.Modals
         // ===== VIEWMODEL (The source of truth!) =====
         public FiltersModalViewModel ViewModel { get; }
 
-        // ===== TEMPORARY: Keep old state for gradual migration =====
-        // TODO: Remove these once all code uses ViewModel.SelectedMust/Should/MustNot
         private readonly Dictionary<string, List<string>> _itemCategories;
-        private readonly List<string> _selectedMust = new();
-        private readonly List<string> _selectedShould = new();
-        private readonly List<string> _selectedMustNot = new();
-
-        // PERFORMANCE FIX (QW-5): HashSet for O(1) lookups instead of O(n) LINQ.Any()
-        // Reduces selection state updates by 90% (was O(150 × 20) = O(3000) per update)
-        private readonly HashSet<string> _selectedMustSet = new();
-        private readonly HashSet<string> _selectedShouldSet = new();
-        private readonly HashSet<string> _selectedMustNotSet = new();
-        private readonly Dictionary<string, ItemConfig> _itemConfigs = new(); // stores config per item instance
         private string _currentCategory = "Jokers";
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0; // For making each dropped item unique
-        private string? _currentFilterPath; // Path to the currently loaded filter
-        private MotelyJsonConfig? _loadedConfig; // Currently loaded filter configuration
         
         private string MakeUniqueKey(string itemKey)
         {
@@ -155,12 +142,6 @@ namespace BalatroSeedOracle.Views.Modals
             var filterService = ServiceHelper.GetRequiredService<IFilterService>();
             ViewModel = new FiltersModalViewModel(configService, filterService);
             DataContext = ViewModel;
-
-            // SYNC: Keep old code-behind state synchronized with ViewModel during migration
-            // This allows gradual refactoring without breaking existing functionality
-            ViewModel.SelectedMust.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedMust, _selectedMust, _selectedMustSet);
-            ViewModel.SelectedShould.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedShould, _selectedShould, _selectedShouldSet);
-            ViewModel.SelectedMustNot.CollectionChanged += (s, e) => SyncListWithObservableCollection(ViewModel.SelectedMustNot, _selectedMustNot, _selectedMustNotSet);
 
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
@@ -491,7 +472,7 @@ namespace BalatroSeedOracle.Views.Modals
             // When a filter is selected, load and display its details (read-only preview)
             // User must click "Edit Filter" button to actually edit
 
-            _currentFilterPath = filterPath;
+            ViewModel.CurrentFilterPath = filterPath;
 
             try
             {
@@ -726,7 +707,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var itemName = parts[1].Split('#')[0]; // Remove any unique suffix
 
                 // Get item configuration if exists
-                var itemConfig = _itemConfigs.ContainsKey(key) ? _itemConfigs[key] : null;
+                var itemConfig = ViewModel.ItemConfigs.ContainsKey(key) ? ViewModel.ItemConfigs[key] : null;
 
                 var filterItem = new BalatroSeedOracle.Models.FilterItem
                 {
@@ -861,9 +842,9 @@ namespace BalatroSeedOracle.Views.Modals
             var fileNameDisplay = this.FindControl<TextBlock>("FileNameDisplay");
             if (fileNameDisplay != null)
             {
-                if (!string.IsNullOrEmpty(_currentFilterPath))
+                if (!string.IsNullOrEmpty(ViewModel.CurrentFilterPath))
                 {
-                    fileNameDisplay.Text = System.IO.Path.GetFileName(_currentFilterPath);
+                    fileNameDisplay.Text = System.IO.Path.GetFileName(ViewModel.CurrentFilterPath);
                 }
                 else
                 {
@@ -873,11 +854,11 @@ namespace BalatroSeedOracle.Views.Modals
             
             // Update created date
             var createdDateDisplay = this.FindControl<TextBlock>("CreatedDateDisplay");
-            if (createdDateDisplay != null && _loadedConfig != null)
+            if (createdDateDisplay != null && ViewModel.LoadedConfig != null)
             {
-                if (_loadedConfig.DateCreated.HasValue)
+                if (ViewModel.LoadedConfig.DateCreated.HasValue)
                 {
-                    createdDateDisplay.Text = _loadedConfig.DateCreated.Value.ToString("yyyy-MM-dd HH:mm:ss");
+                    createdDateDisplay.Text = ViewModel.LoadedConfig.DateCreated.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 }
                 else
                 {
@@ -889,14 +870,14 @@ namespace BalatroSeedOracle.Views.Modals
             var filterNameInput = this.FindControl<TextBox>("FilterNameInput");
             if (filterNameInput != null)
             {
-                if (_loadedConfig != null && !string.IsNullOrWhiteSpace(_loadedConfig.Name))
+                if (ViewModel.LoadedConfig != null && !string.IsNullOrWhiteSpace(ViewModel.LoadedConfig.Name))
                 {
-                    filterNameInput.Text = _loadedConfig.Name;
+                    filterNameInput.Text = ViewModel.LoadedConfig.Name;
                 }
-                else if (!string.IsNullOrEmpty(_currentFilterPath))
+                else if (!string.IsNullOrEmpty(ViewModel.CurrentFilterPath))
                 {
                     // Use filename without extension as default name
-                    filterNameInput.Text = System.IO.Path.GetFileNameWithoutExtension(_currentFilterPath);
+                    filterNameInput.Text = System.IO.Path.GetFileNameWithoutExtension(ViewModel.CurrentFilterPath);
                 }
             }
             
@@ -904,9 +885,9 @@ namespace BalatroSeedOracle.Views.Modals
             var descriptionInput = this.FindControl<TextBox>("FilterDescriptionInput");
             if (descriptionInput != null)
             {
-                if (_loadedConfig != null && !string.IsNullOrWhiteSpace(_loadedConfig.Description))
+                if (ViewModel.LoadedConfig != null && !string.IsNullOrWhiteSpace(ViewModel.LoadedConfig.Description))
                 {
-                    descriptionInput.Text = _loadedConfig.Description;
+                    descriptionInput.Text = ViewModel.LoadedConfig.Description;
                 }
                 else if (string.IsNullOrWhiteSpace(descriptionInput.Text))
                 {
@@ -960,7 +941,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnSearchClick(object? sender, RoutedEventArgs e)
         {
             // Use the current filter path
-            var filterPath = _currentFilterPath;
+            var filterPath = ViewModel.CurrentFilterPath;
             
             if (string.IsNullOrEmpty(filterPath))
             {
@@ -1465,7 +1446,7 @@ namespace BalatroSeedOracle.Views.Modals
                         if (itemCategory != null)
                         {
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
-                            _selectedMust.Add(uniqueKey);
+                            ViewModel.SelectedMust.Add(uniqueKey);
                             MarkAsChanged();
                         }
                     }
@@ -1526,7 +1507,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     {
                                         var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to needs (allow item in multiple lists)
-                                        _selectedMust.Add(uniqueKey);
+                                        ViewModel.SelectedMust.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1543,7 +1524,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to needs (allow item in multiple lists)
-                            _selectedMust.Add(key);
+                            ViewModel.SelectedMust.Add(key);
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -1604,7 +1585,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to wants (allow item in multiple lists)
-                            _selectedShould.Add(uniqueKey);
+                            ViewModel.SelectedShould.Add(uniqueKey);
                             MarkAsChanged();
                         }
                     }
@@ -1666,7 +1647,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     {
                                         var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to wants (allow item in multiple lists)
-                                        _selectedShould.Add(uniqueKey);
+                                        ViewModel.SelectedShould.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -1683,7 +1664,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to wants (allow item in multiple lists)
-                            _selectedShould.Add(key);
+                            ViewModel.SelectedShould.Add(key);
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -1941,7 +1922,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Get the current JSON content - either from selections or default
                 string jsonContent;
-                if (_selectedMust.Any() || _selectedShould.Any() || _selectedMustNot.Any())
+                if (ViewModel.SelectedMust.Any() || ViewModel.SelectedShould.Any() || ViewModel.SelectedMustNot.Any())
                 {
                     // Build JSON from current selections
                     var config = BuildOuijaConfigFromSelections();
@@ -2608,29 +2589,25 @@ namespace BalatroSeedOracle.Views.Modals
                 var results = new List<object>();
                 await Task.Run(() =>
                 {
-                    var motelyConfig = MotelyJsonConfigParser.FromFile(tempFilterPath);
-                    var validator = motelyConfig.CreateValidator();
+                    // TODO: Implement filter validation/testing here
+                    // var json = System.IO.File.ReadAllText(tempFilterPath);
+                    // var motelyConfig = JsonSerializer.Deserialize<MotelyJsonConfig>(json);
+                    // if (motelyConfig == null) return;
+                    // var validator = ...; // Need to create validator instance
 
-                    var random = new Random();
-                    int foundCount = 0;
-
-                    for (int i = 0; i < numSeeds && foundCount < 100; i++)
-                    {
-                        // Generate random seed
-                        var seed = GenerateRandomSeed(random);
-                        var details = validator.Validate(seed);
-
-                        if (details.Passed)
-                        {
-                            foundCount++;
-                            results.Add(new
-                            {
-                                Seed = seed,
-                                Details = $"Ante {details.FirstSuccessfulAnte ?? 1}",
-                                Score = details.Score.ToString()
-                            });
-                        }
-                    }
+                    // TODO: Implement filter testing
+                    // var random = new Random();
+                    // int foundCount = 0;
+                    // for (int i = 0; i < numSeeds && foundCount < 100; i++)
+                    // {
+                    //     var seed = GenerateRandomSeed(random);
+                    //     var details = validator.Validate(seed);
+                    //     if (details.Passed)
+                    //     {
+                    //         foundCount++;
+                    //         results.Add(new { Seed = seed, Details = $"Ante {details.FirstSuccessfulAnte ?? 1}", Score = details.Score.ToString() });
+                    //     }
+                    // }
                 });
 
                 // Update UI with results
@@ -2679,7 +2656,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Save the current filter first
-                var filterPath = _currentFilterPath;
+                var filterPath = ViewModel.CurrentFilterPath;
                 if (string.IsNullOrEmpty(filterPath))
                 {
                     // Need to save first
@@ -3433,7 +3410,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void ClearNeeds()
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all needs items");
-            _selectedMust.Clear();
+            ViewModel.SelectedMust.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
         }
@@ -3441,7 +3418,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void ClearWants()
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all wants items");
-            _selectedShould.Clear();
+            ViewModel.SelectedShould.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
         }
@@ -3452,8 +3429,8 @@ namespace BalatroSeedOracle.Views.Modals
             ClearNeeds();
             ClearWants();
             ClearMustNot();
-            _currentFilterPath = null;
-            _loadedConfig = null;
+            ViewModel.CurrentFilterPath = null;
+            ViewModel.LoadedConfig = null;
 
             // Clear metadata
             if (_configNameBox != null) _configNameBox.Text = "";
@@ -3463,7 +3440,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void ClearMustNot()
         {
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Clearing all must-not items");
-            _selectedMustNot.Clear();
+            ViewModel.SelectedMustNot.Clear();
             UpdateDropZoneVisibility();
             RefreshItemPalette();
         }
@@ -3511,9 +3488,9 @@ namespace BalatroSeedOracle.Views.Modals
                 var itemKey = $"{storageCategory}:{itemName}";
 
                 // Check if this item is in any of the selection lists
-                bool isInNeeds = _selectedMust.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
-                bool isInWants = _selectedShould.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
-                bool isInMustNot = _selectedMustNot.Any(k =>
+                bool isInNeeds = ViewModel.SelectedMust.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+                bool isInWants = ViewModel.SelectedShould.Any(k => k.StartsWith($"{storageCategory}:{itemName}"));
+                bool isInMustNot = ViewModel.SelectedMustNot.Any(k =>
                     k.StartsWith($"{storageCategory}:{itemName}")
                 );
 
@@ -3683,9 +3660,9 @@ namespace BalatroSeedOracle.Views.Modals
                         if (category != null)
                         {
                             var itemKey = $"{category}:{item}";
-                            if (!_selectedShould.Contains(itemKey))
+                            if (!ViewModel.SelectedShould.Contains(itemKey))
                             {
-                                _selectedShould.Add(itemKey);
+                                ViewModel.SelectedShould.Add(itemKey);
                             }
                         }
                     }
@@ -3743,7 +3720,7 @@ namespace BalatroSeedOracle.Views.Modals
             itemsPanel.Children.Add(headerPanel);
 
             // Group selected items by their actual category
-            var selectedItems = _selectedMust.Union(_selectedShould).ToList();
+            var selectedItems = ViewModel.SelectedMust.Union(ViewModel.SelectedShould).ToList();
             if (!selectedItems.Any())
             {
                 itemsPanel.Children.Add(
@@ -3816,7 +3793,7 @@ namespace BalatroSeedOracle.Views.Modals
             if (category == "Favorites")
             {
                 // For favorites, show all selected items grouped by category
-                var allSelected = _selectedMust.Union(_selectedShould).ToList();
+                var allSelected = ViewModel.SelectedMust.Union(ViewModel.SelectedShould).ToList();
 
                 if (allSelected.Any())
                 {
@@ -3954,11 +3931,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Check if selected (use actual category for key)
             var key = $"{actualCategory}:{itemName}";
-            card.IsSelectedNeed = _selectedMust.Contains(key);
-            card.IsSelectedWant = _selectedShould.Contains(key);
+            card.IsSelectedNeed = ViewModel.SelectedMust.Contains(key);
+            card.IsSelectedWant = ViewModel.SelectedShould.Contains(key);
 
             // Apply edition if configured for this item
-            if (_itemConfigs.TryGetValue(key, out var config) && !string.IsNullOrEmpty(config.Edition))
+            if (ViewModel.ItemConfigs.TryGetValue(key, out var config) && !string.IsNullOrEmpty(config.Edition))
             {
                 card.Edition = config.Edition;
             }
@@ -4045,8 +4022,8 @@ namespace BalatroSeedOracle.Views.Modals
         private void UpdateCardSelection(ResponsiveCard card)
         {
             var key = $"{card.Category}:{card.ItemName}";
-            card.IsSelectedNeed = _selectedMust.Contains(key);
-            card.IsSelectedWant = _selectedShould.Contains(key);
+            card.IsSelectedNeed = ViewModel.SelectedMust.Contains(key);
+            card.IsSelectedWant = ViewModel.SelectedShould.Contains(key);
         }
 
         private List<string> GetItemsForCategory(string category, string? subCategory)
@@ -4101,14 +4078,14 @@ namespace BalatroSeedOracle.Views.Modals
             var countText = this.FindControl<TextBlock>("SelectionCountText");
             if (countText != null)
             {
-                var total = _selectedMust.Count + _selectedShould.Count + _selectedMustNot.Count;
+                var total = ViewModel.SelectedMust.Count + ViewModel.SelectedShould.Count + ViewModel.SelectedMustNot.Count;
                 countText.Text = $"{total} selected";
             }
 
             // Update needs/wants/mustnot panels
-            UpdateSelectedItemsPanel("NeedsPanel", _selectedMust);
-            UpdateSelectedItemsPanel("WantsPanel", _selectedShould);
-            UpdateSelectedItemsPanel("MustNotPanel", _selectedMustNot);
+            UpdateSelectedItemsPanel("NeedsPanel", ViewModel.SelectedMust);
+            UpdateSelectedItemsPanel("WantsPanel", ViewModel.SelectedShould);
+            UpdateSelectedItemsPanel("MustNotPanel", ViewModel.SelectedMustNot);
         }
 
         private bool ValidateJsonSyntaxForTextBox(TextBox textBox)
@@ -4366,7 +4343,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void UpdateSelectedItemsPanel(string panelName, List<string> items)
+        private void UpdateSelectedItemsPanel(string panelName, ObservableCollection<string> items)
         {
             var panel = this.FindControl<WrapPanel>(panelName);
             if (panel == null)
@@ -4617,7 +4594,7 @@ namespace BalatroSeedOracle.Views.Modals
                     UpdateJsonEditor();
                     // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
                     // Only reload from selections if we're building a filter from scratch in Visual mode
-                    if (_loadedConfig == null)
+                    if (ViewModel.LoadedConfig == null)
                     {
                         ReloadJsonFromCurrentConfig();
                     }
@@ -4668,8 +4645,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnClearClick(object? sender, RoutedEventArgs e)
         {
-            _selectedMust.Clear();
-            _selectedShould.Clear();
+            ViewModel.SelectedMust.Clear();
+            ViewModel.SelectedShould.Clear();
             LoadCategory(_currentCategory);
             UpdateSelectionDisplay();
         }
@@ -4689,11 +4666,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (needsPlaceholder != null && needsScrollViewer != null && needsPanel != null)
             {
-                if (_selectedMust.Any())
+                if (ViewModel.SelectedMust.Any())
                 {
                     needsPlaceholder.IsVisible = false;
                     needsScrollViewer.IsVisible = true;
-                    PopulateDropZonePanel(needsPanel, _selectedMust, "needs");
+                    PopulateDropZonePanel(needsPanel, ViewModel.SelectedMust, "needs");
                     if (clearNeedsButton != null)
                     {
                         clearNeedsButton.IsVisible = true;
@@ -4722,11 +4699,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (wantsPlaceholder != null && wantsScrollViewer != null && wantsPanel != null)
             {
-                if (_selectedShould.Any())
+                if (ViewModel.SelectedShould.Any())
                 {
                     wantsPlaceholder.IsVisible = false;
                     wantsScrollViewer.IsVisible = true;
-                    PopulateDropZonePanel(wantsPanel, _selectedShould, "wants");
+                    PopulateDropZonePanel(wantsPanel, ViewModel.SelectedShould, "wants");
                     if (clearWantsButton != null)
                     {
                         clearWantsButton.IsVisible = true;
@@ -4755,11 +4732,11 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (mustNotPlaceholder != null && mustNotScrollViewer != null && mustNotPanel != null)
             {
-                if (_selectedMustNot.Any())
+                if (ViewModel.SelectedMustNot.Any())
                 {
                     mustNotPlaceholder.IsVisible = false;
                     mustNotScrollViewer.IsVisible = true;
-                    PopulateDropZonePanel(mustNotPanel, _selectedMustNot, "mustnot");
+                    PopulateDropZonePanel(mustNotPanel, ViewModel.SelectedMustNot, "mustnot");
                     if (clearMustNotButton != null)
                     {
                         clearMustNotButton.IsVisible = true;
@@ -4778,7 +4755,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             BalatroSeedOracle.Helpers.DebugLogger.Log(
-                $"📈 Updated drop zones: {_selectedMust.Count} needs, {_selectedShould.Count} wants, {_selectedMustNot.Count} must not"
+                $"📈 Updated drop zones: {ViewModel.SelectedMust.Count} needs, {ViewModel.SelectedShould.Count} wants, {ViewModel.SelectedMustNot.Count} must not"
             );
         }
 
@@ -4803,9 +4780,9 @@ namespace BalatroSeedOracle.Views.Modals
                 var root = jsonDoc.RootElement;
 
                 // Clear current selections
-                _selectedMust.Clear();
-                _selectedShould.Clear();
-                _selectedMustNot.Clear();
+                ViewModel.SelectedMust.Clear();
+                ViewModel.SelectedShould.Clear();
+                ViewModel.SelectedMustNot.Clear();
 
                 // Parse must items
                 if (
@@ -4815,7 +4792,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     foreach (var item in mustArray.EnumerateArray())
                     {
-                        AddItemFromJson(item, _selectedMust);
+                        AddItemFromJson(item, ViewModel.SelectedMust);
                     }
                 }
 
@@ -4827,7 +4804,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     foreach (var item in shouldArray.EnumerateArray())
                     {
-                        AddItemFromJson(item, _selectedShould);
+                        AddItemFromJson(item, ViewModel.SelectedShould);
                     }
                 }
 
@@ -4839,7 +4816,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     foreach (var item in mustNotArray.EnumerateArray())
                     {
-                        AddItemFromJson(item, _selectedMustNot);
+                        AddItemFromJson(item, ViewModel.SelectedMustNot);
                     }
                 }
 
@@ -4857,7 +4834,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void AddItemFromJson(JsonElement item, List<string> targetSet)
+        private void AddItemFromJson(JsonElement item, ObservableCollection<string> targetSet)
         {
             if (
                 item.TryGetProperty("type", out var typeElement)
@@ -4888,7 +4865,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void PopulateDropZonePanel(WrapPanel panel, List<string> items, string zoneName)
+        private void PopulateDropZonePanel(WrapPanel panel, ObservableCollection<string> items, string zoneName)
         {
             panel.Children.Clear();
 
@@ -5015,7 +4992,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string key, string name, string category)> jokers,
             ref double startX,
             string zoneName,
-            List<string> items
+            ObservableCollection<string> items
         )
         {
             const double fanAngle = 8; // degrees per card (increased from 7)
@@ -5041,9 +5018,9 @@ namespace BalatroSeedOracle.Views.Modals
                 };
                 
                 // Get or create config for this item
-                if (!_itemConfigs.ContainsKey(itemKey))
+                if (!ViewModel.ItemConfigs.ContainsKey(itemKey))
                 {
-                    _itemConfigs[itemKey] = new ItemConfig 
+                    ViewModel.ItemConfigs[itemKey] = new ItemConfig 
                     { 
                         ItemKey = itemKey,
                         Edition = "none"
@@ -5258,7 +5235,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string key, string name, string category)> items,
             ref double startX,
             string zoneName,
-            List<string> allItems,
+            ObservableCollection<string> allItems,
             string itemType
         )
         {
@@ -5464,7 +5441,7 @@ namespace BalatroSeedOracle.Views.Modals
             List<(string key, string name, string category)> stackItems,
             double x,
             string stackType,
-            List<string> allItems,
+            ObservableCollection<string> allItems,
             string zoneName
         )
         {
@@ -5500,7 +5477,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             // Check if item has an edition configured
             string? edition = null;
-            if (_itemConfigs.TryGetValue(itemKey, out var config) && !string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+            if (ViewModel.ItemConfigs.TryGetValue(itemKey, out var config) && !string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
             {
                 edition = config.Edition;
             }
@@ -5517,7 +5494,7 @@ namespace BalatroSeedOracle.Views.Modals
                 { 
                     Key = itemKey, 
                     Zone = zoneName,
-                    Config = _itemConfigs.GetValueOrDefault(itemKey, new ItemConfig { ItemKey = itemKey })
+                    Config = ViewModel.ItemConfigs.GetValueOrDefault(itemKey, new ItemConfig { ItemKey = itemKey })
                 }, // Store config directly!
                 RenderTransform = new ScaleTransform(1, 1),
                 RenderTransformOrigin = RelativePoint.Center,
@@ -5911,7 +5888,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Set popup target and data with zone-specific defaults
             _configPopup.PlacementTarget = itemBorder;
-            var existingConfig = _itemConfigs.GetValueOrDefault(key);
+            var existingConfig = ViewModel.ItemConfigs.GetValueOrDefault(key);
 
             // Set default ante selections based on zone if no existing config
             if (existingConfig == null)
@@ -6015,7 +5992,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnItemConfigApplied(object? sender, ItemConfigEventArgs e)
         {
-            _itemConfigs[e.Config.ItemKey] = e.Config;
+            ViewModel.ItemConfigs[e.Config.ItemKey] = e.Config;
             _configPopup!.IsOpen = false;
             BalatroSeedOracle.Helpers.DebugLogger.Log(
                 "FiltersModal",
@@ -6038,7 +6015,7 @@ namespace BalatroSeedOracle.Views.Modals
                 switch (zoneName)
                 {
                     case "needs":
-                        if (_selectedMust.Remove(key))
+                        if (ViewModel.SelectedMust.Remove(key))
                         {
                             MarkAsChanged();
                             removed = true;
@@ -6046,7 +6023,7 @@ namespace BalatroSeedOracle.Views.Modals
                         }
                         break;
                     case "wants":
-                        if (_selectedShould.Remove(key))
+                        if (ViewModel.SelectedShould.Remove(key))
                         {
                             MarkAsChanged();
                             removed = true;
@@ -6054,7 +6031,7 @@ namespace BalatroSeedOracle.Views.Modals
                         }
                         break;
                     case "mustnot":
-                        if (_selectedMustNot.Remove(key))
+                        if (ViewModel.SelectedMustNot.Remove(key))
                         {
                             MarkAsChanged();
                             removed = true;
@@ -6066,7 +6043,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // Remove the config if item was removed
                 if (removed)
                 {
-                    _itemConfigs.Remove(key);
+                    ViewModel.ItemConfigs.Remove(key);
                 }
 
                 UpdateDropZoneVisibility();
@@ -6297,22 +6274,22 @@ namespace BalatroSeedOracle.Views.Modals
                     // Toggle between Need/Want/None states
                     if (card.IsSelectedNeed)
                     {
-                        _selectedMust.Remove(key);
-                        _selectedShould.Add(key);
+                        ViewModel.SelectedMust.Remove(key);
+                        ViewModel.SelectedShould.Add(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = true;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"🟠 {itemName} moved to WANTS");
                     }
                     else if (card.IsSelectedWant)
                     {
-                        _selectedShould.Remove(key);
+                        ViewModel.SelectedShould.Remove(key);
                         card.IsSelectedNeed = false;
                         card.IsSelectedWant = false;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"⚪ {itemName} deselected");
                     }
                     else
                     {
-                        _selectedMust.Add(key);
+                        ViewModel.SelectedMust.Add(key);
                         card.IsSelectedNeed = true;
                         card.IsSelectedWant = false;
                         BalatroSeedOracle.Helpers.DebugLogger.Log($"🟢 {itemName} moved to NEEDS");
@@ -6830,15 +6807,15 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             // Convert all items using the helper method that handles unique keys
-            FixUniqueKeyParsing(_selectedMust, config.Must, 0);
-            FixUniqueKeyParsing(_selectedShould, config.Should, 1);
-            FixUniqueKeyParsing(_selectedMustNot, config.MustNot, 0);
+            FixUniqueKeyParsing(ViewModel.SelectedMust, config.Must, 0);
+            FixUniqueKeyParsing(ViewModel.SelectedShould, config.Should, 1);
+            FixUniqueKeyParsing(ViewModel.SelectedMustNot, config.MustNot, 0);
 
             return config;
         }
 
         private void FixUniqueKeyParsing(
-            List<string> items,
+            ObservableCollection<string> items,
             List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> targetList,
             int defaultScore = 0
         )
@@ -6857,8 +6834,8 @@ namespace BalatroSeedOracle.Views.Modals
                     var itemName =
                         hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
 
-                    var itemConfig = _itemConfigs.ContainsKey(item)
-                        ? _itemConfigs[item]
+                    var itemConfig = ViewModel.ItemConfigs.ContainsKey(item)
+                        ? ViewModel.ItemConfigs[item]
                         : new ItemConfig();
 
                     var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
@@ -7107,13 +7084,13 @@ namespace BalatroSeedOracle.Views.Modals
                 ClearMustNot();
                 
                 // Rebuild from current selections
-                UpdateSelectedItemsPanel("NeedsPanel", _selectedMust);
-                UpdateSelectedItemsPanel("WantsPanel", _selectedShould);
-                UpdateSelectedItemsPanel("MustNotPanel", _selectedMustNot);
+                UpdateSelectedItemsPanel("NeedsPanel", ViewModel.SelectedMust);
+                UpdateSelectedItemsPanel("WantsPanel", ViewModel.SelectedShould);
+                UpdateSelectedItemsPanel("MustNotPanel", ViewModel.SelectedMustNot);
                 
                 BalatroSeedOracle.Helpers.DebugLogger.Log(
                     "FiltersModal", 
-                    $"Refreshed drop zones - Must: {_selectedMust.Count}, Should: {_selectedShould.Count}, MustNot: {_selectedMustNot.Count}"
+                    $"Refreshed drop zones - Must: {ViewModel.SelectedMust.Count}, Should: {ViewModel.SelectedShould.Count}, MustNot: {ViewModel.SelectedMustNot.Count}"
                 );
             }
             catch (Exception ex)
@@ -7467,10 +7444,10 @@ namespace BalatroSeedOracle.Views.Modals
                     if (itemName != null)
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
-                        _selectedMust.Add(uniqueKey);
+                        ViewModel.SelectedMust.Add(uniqueKey);
                         
                         // Store the full item config including edition, stickers, antes, etc.
-                        _itemConfigs[uniqueKey] = new ItemConfig
+                        ViewModel.ItemConfigs[uniqueKey] = new ItemConfig
                         {
                             ItemKey = uniqueKey,
                             Edition = item.Edition ?? "none",
@@ -7495,10 +7472,10 @@ namespace BalatroSeedOracle.Views.Modals
                     if (itemName != null)
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
-                        _selectedShould.Add(uniqueKey);
+                        ViewModel.SelectedShould.Add(uniqueKey);
                         
                         // Store the full item config
-                        _itemConfigs[uniqueKey] = new ItemConfig
+                        ViewModel.ItemConfigs[uniqueKey] = new ItemConfig
                         {
                             ItemKey = uniqueKey,
                             Edition = item.Edition ?? "none",
@@ -7522,10 +7499,10 @@ namespace BalatroSeedOracle.Views.Modals
                     if (itemName != null)
                     {
                         var uniqueKey = CreateUniqueKey(category, itemName);
-                        _selectedMustNot.Add(uniqueKey);
+                        ViewModel.SelectedMustNot.Add(uniqueKey);
                         
                         // Store the full item config
-                        _itemConfigs[uniqueKey] = new ItemConfig
+                        ViewModel.ItemConfigs[uniqueKey] = new ItemConfig
                         {
                             ItemKey = uniqueKey,
                             Edition = item.Edition ?? "none",
@@ -7541,7 +7518,7 @@ namespace BalatroSeedOracle.Views.Modals
             // All items are directly in Must/Should/MustNot lists
 
             // Store the loaded config
-            _loadedConfig = config;
+            ViewModel.LoadedConfig = config;
             
             // Update the UI to show the loaded items
             UpdateDropZoneVisibility();
@@ -7549,7 +7526,7 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateSaveFilterPanel();
 
             BalatroSeedOracle.Helpers.DebugLogger.Log(
-                $"LoadConfigIntoUI: Loaded {_selectedMust.Count} needs, {_selectedShould.Count} wants, {_selectedMustNot.Count} must not"
+                $"LoadConfigIntoUI: Loaded {ViewModel.SelectedMust.Count} needs, {ViewModel.SelectedShould.Count} wants, {ViewModel.SelectedMustNot.Count} must not"
             );
         }
 
@@ -7571,7 +7548,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void UpdatePersistentFavorites()
         {
             // Update favorites in the service
-            var allSelected = _selectedMust.Union(_selectedShould).ToList();
+            var allSelected = ViewModel.SelectedMust.Union(ViewModel.SelectedShould).ToList();
             FavoritesService.Instance.SetFavoriteItems(allSelected);
 
             // Update the favorites category
@@ -7656,7 +7633,7 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             var uniqueKey = CreateUniqueKey(itemCategory, item);
                             // Add to must not (allow item in multiple lists)
-                            _selectedMustNot.Add(uniqueKey);
+                            ViewModel.SelectedMustNot.Add(uniqueKey);
                             MarkAsChanged();
                         }
                     }
@@ -7718,7 +7695,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     {
                                         var uniqueKey = CreateUniqueKey(itemCategory, item);
                                         // Add to must not (allow item in multiple lists)
-                                        _selectedMustNot.Add(uniqueKey);
+                                        ViewModel.SelectedMustNot.Add(uniqueKey);
                                     }
                                 }
                                 BalatroSeedOracle.Helpers.DebugLogger.Log(
@@ -7735,7 +7712,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var key = CreateUniqueKey(storageCategory, itemName);
 
                             // Add to must not (allow item in multiple lists)
-                            _selectedMustNot.Add(key);
+                            ViewModel.SelectedMustNot.Add(key);
 
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
@@ -7761,7 +7738,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnSaveAsFavoriteClick(object? sender, RoutedEventArgs e)
         {
             // Get all selected items
-            var selectedItems = _selectedMust.Union(_selectedShould).Union(_selectedMustNot).ToList();
+            var selectedItems = ViewModel.SelectedMust.Union(ViewModel.SelectedShould).Union(ViewModel.SelectedMustNot).ToList();
             
             if (!selectedItems.Any())
             {
@@ -7887,9 +7864,9 @@ namespace BalatroSeedOracle.Views.Modals
                             Items = itemNames, // Keep for backward compatibility
                             Tags = tags,
                             // Store items by their original zones
-                            MustItems = _selectedMust.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
-                            ShouldItems = _selectedShould.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
-                            MustNotItems = _selectedMustNot.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            MustItems = ViewModel.SelectedMust.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            ShouldItems = ViewModel.SelectedShould.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
+                            MustNotItems = ViewModel.SelectedMustNot.Select(k => k.Split(':').LastOrDefault() ?? "").ToList(),
                         };
                         
                         // Save it
@@ -8123,7 +8100,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var itemKey = $"{itemCategory}:{itemName}";
                 
                 // Create ItemConfig with zone-appropriate ante defaults if it doesn't exist
-                if (!_itemConfigs.ContainsKey(itemKey))
+                if (!ViewModel.ItemConfigs.ContainsKey(itemKey))
                 {
                     var config = new ItemConfig
                     {
@@ -8145,22 +8122,22 @@ namespace BalatroSeedOracle.Views.Modals
                             break;
                     }
                     
-                    _itemConfigs[itemKey] = config;
+                    ViewModel.ItemConfigs[itemKey] = config;
                 }
                 
                 switch (zone)
                 {
                     case "needs":
-                        if (!_selectedMust.Contains(itemKey))
-                            _selectedMust.Add(itemKey);
+                        if (!ViewModel.SelectedMust.Contains(itemKey))
+                            ViewModel.SelectedMust.Add(itemKey);
                         break;
                     case "wants":
-                        if (!_selectedShould.Contains(itemKey))
-                            _selectedShould.Add(itemKey);
+                        if (!ViewModel.SelectedShould.Contains(itemKey))
+                            ViewModel.SelectedShould.Add(itemKey);
                         break;
                     case "mustnot":
-                        if (!_selectedMustNot.Contains(itemKey))
-                            _selectedMustNot.Add(itemKey);
+                        if (!ViewModel.SelectedMustNot.Contains(itemKey))
+                            ViewModel.SelectedMustNot.Add(itemKey);
                         break;
                 }
             }
@@ -8182,9 +8159,9 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Get all selected items
             var allItems = new List<string>();
-            allItems.AddRange(_selectedMust);
-            allItems.AddRange(_selectedShould);
-            allItems.AddRange(_selectedMustNot);
+            allItems.AddRange(ViewModel.SelectedMust);
+            allItems.AddRange(ViewModel.SelectedShould);
+            allItems.AddRange(ViewModel.SelectedMustNot);
 
             if (allItems.Count == 0)
             {
@@ -8389,21 +8366,21 @@ namespace BalatroSeedOracle.Views.Modals
                     switch (dropZoneType)
                     {
                         case "needs":
-                            _selectedMust.Add(key);
+                            ViewModel.SelectedMust.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to NEEDS via popup"
                             );
                             break;
                         case "wants":
-                            _selectedShould.Add(key);
+                            ViewModel.SelectedShould.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to WANTS via popup"
                             );
                             break;
                         case "mustnot":
-                            _selectedMustNot.Add(key);
+                            ViewModel.SelectedMustNot.Add(key);
                             BalatroSeedOracle.Helpers.DebugLogger.Log(
                                 "FiltersModal",
                                 $"✅ Added {itemName} to MUST NOT via popup"
@@ -8468,7 +8445,7 @@ namespace BalatroSeedOracle.Views.Modals
         private async void MarkAsChanged()
         {
             // Save immediately if we have a filter path
-            if (!string.IsNullOrEmpty(_currentFilterPath))
+            if (!string.IsNullOrEmpty(ViewModel.CurrentFilterPath))
             {
                 await SaveCurrentFilterAsync();
                 UpdateStatus("Saved", false);
@@ -8478,7 +8455,7 @@ namespace BalatroSeedOracle.Views.Modals
         // New helper methods for Filter Info tab
         private async Task SaveCurrentFilterAsync()
         {
-            if (string.IsNullOrEmpty(_currentFilterPath))
+            if (string.IsNullOrEmpty(ViewModel.CurrentFilterPath))
             {
                 // No current path, save as new
                 var filterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
@@ -8508,7 +8485,7 @@ namespace BalatroSeedOracle.Views.Modals
                     config.Description = descriptionInput.Text?.Trim() ?? "";
 
                 var json = SerializeOuijaConfig(config);
-                await File.WriteAllTextAsync(_currentFilterPath, json);
+                await File.WriteAllTextAsync(ViewModel.CurrentFilterPath, json);
 
                 // CRITICAL: Delete all database files for this filter to avoid column conflicts
                 // When editing a filter, the structure may have changed, so old data is invalid
@@ -8517,7 +8494,7 @@ namespace BalatroSeedOracle.Views.Modals
                     DeleteFilterDatabases(config.Name);
                 }
 
-                UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(_currentFilterPath)}", false);
+                UpdateStatus($"Filter saved to {System.IO.Path.GetFileName(ViewModel.CurrentFilterPath)}", false);
 
                 // Update modified date display
                 var modifiedDateDisplay = this.FindControl<TextBlock>("ModifiedDateDisplay");
@@ -8560,8 +8537,8 @@ namespace BalatroSeedOracle.Views.Modals
                 var json = SerializeOuijaConfig(config);
                 await File.WriteAllTextAsync(filePath, json);
                 
-                _currentFilterPath = filePath;
-                _loadedConfig = config;
+                ViewModel.CurrentFilterPath = filePath;
+                ViewModel.LoadedConfig = config;
                 
                 UpdateStatus($"Filter saved as {System.IO.Path.GetFileName(filePath)}", false);
                 UpdateSaveFilterPanel();
@@ -8630,7 +8607,7 @@ namespace BalatroSeedOracle.Views.Modals
         
         private async void OnExportClick(object? sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentFilterPath))
+            if (string.IsNullOrEmpty(ViewModel.CurrentFilterPath))
             {
                 UpdateStatus("Please save the filter first", true);
                 return;
@@ -8644,12 +8621,12 @@ namespace BalatroSeedOracle.Views.Modals
                 Title = "Export Filter",
                 DefaultExtension = "json",
                 FileTypeChoices = new[] { new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } } },
-                SuggestedFileName = System.IO.Path.GetFileName(_currentFilterPath)
+                SuggestedFileName = System.IO.Path.GetFileName(ViewModel.CurrentFilterPath)
             });
             
-            if (file != null && File.Exists(_currentFilterPath))
+            if (file != null && File.Exists(ViewModel.CurrentFilterPath))
             {
-                var content = await File.ReadAllTextAsync(_currentFilterPath);
+                var content = await File.ReadAllTextAsync(ViewModel.CurrentFilterPath);
                 await File.WriteAllTextAsync(file.Path.LocalPath, content);
                 UpdateStatus($"Filter exported to {file.Name}", false);
             }
@@ -8679,86 +8656,15 @@ namespace BalatroSeedOracle.Views.Modals
             return compactJson;
         }
 
-        // PERFORMANCE FIX (QW-5): Helper methods to keep List and HashSet in sync
-        // Ensures O(1) lookups while maintaining backward compatibility with List-based code
-        private void AddToMust(string key)
-        {
-            _selectedMust.Add(key);
-            _selectedMustSet.Add(key);
-        }
-
-        private void AddToShould(string key)
-        {
-            _selectedShould.Add(key);
-            _selectedShouldSet.Add(key);
-        }
-
-        private void AddToMustNot(string key)
-        {
-            _selectedMustNot.Add(key);
-            _selectedMustNotSet.Add(key);
-        }
-
-        private bool RemoveFromMust(string key)
-        {
-            _selectedMustSet.Remove(key);
-            return _selectedMust.Remove(key);
-        }
-
-        private bool RemoveFromShould(string key)
-        {
-            _selectedShouldSet.Remove(key);
-            return _selectedShould.Remove(key);
-        }
-
-        private bool RemoveFromMustNot(string key)
-        {
-            _selectedMustNotSet.Remove(key);
-            return _selectedMustNot.Remove(key);
-        }
-
-        private void ClearMust()
-        {
-            _selectedMust.Clear();
-            _selectedMustSet.Clear();
-        }
-
-        private void ClearShould()
-        {
-            _selectedShould.Clear();
-            _selectedShouldSet.Clear();
-        }
-
-        private void ClearMustNotItems()
-        {
-            _selectedMustNot.Clear();
-            _selectedMustNotSet.Clear();
-        }
-
-        /// <summary>
-        /// SYNC: Keeps code-behind List in sync with ViewModel ObservableCollection
-        /// This is temporary during migration - once all code uses ViewModel, we delete the Lists
-        /// </summary>
-        private void SyncListWithObservableCollection(ObservableCollection<string> source, List<string> target, HashSet<string> targetSet)
-        {
-            target.Clear();
-            targetSet.Clear();
-            foreach (var item in source)
-            {
-                target.Add(item);
-                targetSet.Add(item);
-            }
-        }
-
         private async void OnShareClick(object? sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentFilterPath) || !File.Exists(_currentFilterPath))
+            if (string.IsNullOrEmpty(ViewModel.CurrentFilterPath) || !File.Exists(ViewModel.CurrentFilterPath))
             {
                 UpdateStatus("Please save the filter first", true);
                 return;
             }
 
-            var content = await File.ReadAllTextAsync(_currentFilterPath);
+            var content = await File.ReadAllTextAsync(ViewModel.CurrentFilterPath);
             var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
             if (clipboard != null)
             {

@@ -25,9 +25,9 @@
                             FontSize="18"
                             Padding="0"/>
 
-                    <!-- Deck Card (small) -->
+                    <!-- Deck Card (small) - hide inner arrows since we have outer ones -->
                     <Viewbox Grid.Column="2" Width="71" Height="95" Stretch="Uniform">
-                        <components:DeckSpinner Name="DeckSpinnerControl" />
+                        <components:DeckSpinner Name="DeckSpinnerControl" ShowArrows="False" />
                     </Viewbox>
 
                     <!-- Right Arrow -->
