@@ -164,10 +164,20 @@
                                                         Padding="10"
                                                         CornerRadius="4"
                                                         MinHeight="60">
-                                                    <TextBlock Text="{Binding CurrentBossDisplay}"
-                                                               FontSize="16"
-                                                               Foreground="White"
+                                                    <Grid>
+                                                        <Image x:Name="BossImage"
+                                                               Width="68"
+                                                               Height="68"
+                                                               Stretch="Uniform"
+                                                               HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="BossText"
+                                                                   Text="{Binding CurrentBossDisplay}"
+                                                                   FontSize="16"
+                                                                   Foreground="White"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Grid>
                                                 </Border>
                                             </StackPanel>
 
@@ -180,10 +190,20 @@
                                                         Padding="10"
                                                         CornerRadius="4"
                                                         MinHeight="60">
-                                                    <TextBlock Text="{Binding CurrentVoucherDisplay}"
-                                                               FontSize="16"
-                                                               Foreground="White"
+                                                    <Grid>
+                                                        <Image x:Name="VoucherImage"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"
+                                                               HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="VoucherText"
+                                                                   Text="{Binding CurrentVoucherDisplay}"
+                                                                   FontSize="16"
+                                                                   Foreground="White"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Grid>
                                                 </Border>
                                             </StackPanel>
                                         </Grid>
@@ -223,15 +243,7 @@
                                             <Border Background="#252525"
                                                     Padding="15"
                                                     CornerRadius="4">
-                                                <ItemsControl ItemsSource="{Binding CurrentShopItems}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding}"
-                                                                       Foreground="White"
-                                                                       Margin="0,2"/>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
+                                                <ItemsControl x:Name="ShopItemsContainer"/>
                                             </Border>
                                         </StackPanel>
 
@@ -241,36 +253,12 @@
                                                        FontSize="14"
                                                        FontWeight="Bold"
                                                        Foreground="#888"/>
-                                            <ItemsControl ItemsSource="{Binding CurrentPacks}">
+                                            <ItemsControl x:Name="PacksContainer">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <WrapPanel/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border Background="#252525"
-                                                                Padding="15"
-                                                                CornerRadius="4"
-                                                                Margin="0,0,10,10"
-                                                                MinWidth="200">
-                                                            <StackPanel Spacing="8">
-                                                                <TextBlock Text="{Binding Name}"
-                                                                           FontWeight="Bold"
-                                                                           Foreground="{Binding PackColor}"/>
-                                                                <ItemsControl ItemsSource="{Binding Items}">
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <TextBlock Text="{Binding StringFormat='• {0}'}"
-                                                                                       Foreground="White"
-                                                                                       FontSize="12"/>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
                                             </ItemsControl>
                                         </StackPanel>
 

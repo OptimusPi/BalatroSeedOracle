@@ -206,7 +206,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
     public string CurrentBossDisplay => GetCurrentAnte()?.Boss.ToString() ?? "";
 
+    public MotelyBossBlind? CurrentBoss => GetCurrentAnte()?.Boss;
+
     public string CurrentVoucherDisplay => GetCurrentAnte()?.Voucher.ToString() ?? "None";
+
+    public MotelyVoucher? CurrentVoucher => GetCurrentAnte()?.Voucher;
 
     public string CurrentSmallTagDisplay => GetCurrentAnte()?.SmallBlindTag.ToString() ?? "";
 
@@ -225,6 +229,16 @@ public partial class AnalyzerViewModel : ObservableObject
         }
     }
 
+    public List<MotelyItem> CurrentShopItemsRaw
+    {
+        get
+        {
+            var ante = GetCurrentAnte();
+            if (ante == null) return [];
+            return ante.ShopQueue.ToList();
+        }
+    }
+
     public List<PackDisplayInfo> CurrentPacks
     {
         get
@@ -236,6 +250,7 @@ public partial class AnalyzerViewModel : ObservableObject
             {
                 Name = FormatUtils.FormatPackName(pack.Type),
                 Items = pack.Items.Select(item => FormatUtils.FormatItem(item)).ToList(),
+                RawItems = pack.Items.ToList(),
                 PackType = pack.Type.GetPackType()
             }).ToList();
         }
@@ -250,10 +265,13 @@ public partial class AnalyzerViewModel : ObservableObject
         // Notify UI of all ante-related property changes
         OnPropertyChanged(nameof(CurrentAnteDisplay));
         OnPropertyChanged(nameof(CurrentBossDisplay));
+        OnPropertyChanged(nameof(CurrentBoss));
         OnPropertyChanged(nameof(CurrentVoucherDisplay));
+        OnPropertyChanged(nameof(CurrentVoucher));
         OnPropertyChanged(nameof(CurrentSmallTagDisplay));
         OnPropertyChanged(nameof(CurrentBigTagDisplay));
         OnPropertyChanged(nameof(CurrentShopItems));
+        OnPropertyChanged(nameof(CurrentShopItemsRaw));
         OnPropertyChanged(nameof(CurrentPacks));
         OnPropertyChanged(nameof(AnteNavigationDisplay));
     }
@@ -263,10 +281,13 @@ public partial class AnalyzerViewModel : ObservableObject
         // Notify UI of all ante-related property changes when analysis updates
         OnPropertyChanged(nameof(CurrentAnteDisplay));
         OnPropertyChanged(nameof(CurrentBossDisplay));
+        OnPropertyChanged(nameof(CurrentBoss));
         OnPropertyChanged(nameof(CurrentVoucherDisplay));
+        OnPropertyChanged(nameof(CurrentVoucher));
         OnPropertyChanged(nameof(CurrentSmallTagDisplay));
         OnPropertyChanged(nameof(CurrentBigTagDisplay));
         OnPropertyChanged(nameof(CurrentShopItems));
+        OnPropertyChanged(nameof(CurrentShopItemsRaw));
         OnPropertyChanged(nameof(CurrentPacks));
         OnPropertyChanged(nameof(AnteNavigationDisplay));
     }
@@ -276,6 +297,7 @@ public class PackDisplayInfo
 {
     public required string Name { get; init; }
     public required List<string> Items { get; init; }
+    public required List<MotelyItem> RawItems { get; init; }
     public required MotelyBoosterPackType PackType { get; init; }
 
     public string PackColor => PackType switch

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -11,15 +11,16 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the PlayingCardSelector control.
     /// Manages card selection state and provides commands for bulk selection operations.
     /// </summary>
-    public class PlayingCardSelectorViewModel : BaseViewModel
+    public partial class PlayingCardSelectorViewModel : ObservableObject
     {
         private readonly HashSet<string> _selectedCardKeys = new();
+
+        [ObservableProperty]
         private string _selectionSummary = "0 cards selected";
 
         public PlayingCardSelectorViewModel()
         {
             InitializeCards();
-            InitializeCommands();
         }
 
         #region Properties
@@ -28,27 +29,6 @@ namespace BalatroSeedOracle.ViewModels
         /// Collection of all playing cards organized by suit
         /// </summary>
         public ObservableCollection<CardSuitGroup> CardSuits { get; } = new();
-
-        /// <summary>
-        /// Text summary of current selection (e.g., "5 cards selected")
-        /// </summary>
-        public string SelectionSummary
-        {
-            get => _selectionSummary;
-            private set => SetProperty(ref _selectionSummary, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SelectAllCommand { get; private set; } = null!;
-        public ICommand ClearAllCommand { get; private set; } = null!;
-        public ICommand SelectSuitCommand { get; private set; } = null!;
-        public ICommand SelectRankCommand { get; private set; } = null!;
-        public ICommand SelectFaceCardsCommand { get; private set; } = null!;
-        public ICommand SelectNumberCardsCommand { get; private set; } = null!;
-        public ICommand ToggleCardCommand { get; private set; } = null!;
 
         #endregion
 
@@ -88,21 +68,11 @@ namespace BalatroSeedOracle.ViewModels
             return new CardSuitGroup(suit, suitSymbol, cards);
         }
 
-        private void InitializeCommands()
-        {
-            SelectAllCommand = new RelayCommand(SelectAll);
-            ClearAllCommand = new RelayCommand(ClearAll);
-            SelectSuitCommand = new RelayCommand<string>(SelectSuit);
-            SelectRankCommand = new RelayCommand<string>(SelectRank);
-            SelectFaceCardsCommand = new RelayCommand(SelectFaceCards);
-            SelectNumberCardsCommand = new RelayCommand(SelectNumberCards);
-            ToggleCardCommand = new RelayCommand<PlayingCardViewModel>(ToggleCard);
-        }
-
         #endregion
 
         #region Command Implementations
 
+        [RelayCommand]
         private void SelectAll()
         {
             foreach (var suitGroup in CardSuits)
@@ -114,6 +84,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void ClearAll()
         {
             foreach (var suitGroup in CardSuits)
@@ -125,6 +96,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectSuit(string? suit)
         {
             if (string.IsNullOrEmpty(suit))
@@ -140,6 +112,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectRank(string? rank)
         {
             if (string.IsNullOrEmpty(rank))
@@ -155,6 +128,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectFaceCards()
         {
             string[] faceRanks = { "J", "Q", "K" };
@@ -168,6 +142,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void SelectNumberCards()
         {
             string[] numberRanks = { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
@@ -181,6 +156,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void ToggleCard(PlayingCardViewModel? card)
         {
             if (card != null)

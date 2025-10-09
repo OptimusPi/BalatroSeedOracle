@@ -3,6 +3,9 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using Motely;
 
@@ -36,6 +39,218 @@ public partial class AnalyzerView : UserControl
         // Make control focusable for hotkeys
         this.Focusable = true;
         this.Loaded += (s, e) => this.Focus();
+
+        // Wire up data context change to render images
+        this.DataContextChanged += OnDataContextChanged;
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Re-render images when ante changes or analysis updates
+        if (e.PropertyName == nameof(AnalyzerViewModel.CurrentBoss) ||
+            e.PropertyName == nameof(AnalyzerViewModel.CurrentVoucher) ||
+            e.PropertyName == nameof(AnalyzerViewModel.CurrentShopItemsRaw) ||
+            e.PropertyName == nameof(AnalyzerViewModel.CurrentPacks))
+        {
+            RenderImages();
+        }
+    }
+
+    private void RenderImages()
+    {
+        RenderBossImage();
+        RenderVoucherImage();
+        RenderShopImages();
+        RenderPackImages();
+    }
+
+    private void RenderBossImage()
+    {
+        var bossImage = this.FindControl<Image>("BossImage");
+        var bossText = this.FindControl<TextBlock>("BossText");
+
+        if (bossImage == null || bossText == null || ViewModel?.CurrentBoss == null)
+            return;
+
+        var bossName = ViewModel.CurrentBoss.Value.ToString();
+        var sprite = SpriteService.Instance.GetBossImage(bossName);
+        if (sprite != null)
+        {
+            bossImage.Source = sprite;
+            bossImage.IsVisible = true;
+            bossText.IsVisible = false;
+        }
+        else
+        {
+            bossImage.IsVisible = false;
+            bossText.IsVisible = true;
+        }
+    }
+
+    private void RenderVoucherImage()
+    {
+        var voucherImage = this.FindControl<Image>("VoucherImage");
+        var voucherText = this.FindControl<TextBlock>("VoucherText");
+
+        if (voucherImage == null || voucherText == null || ViewModel?.CurrentVoucher == null)
+            return;
+
+        var voucherStr = ViewModel.CurrentVoucher.Value.ToString();
+        if (voucherStr != "None")
+        {
+            var sprite = SpriteService.Instance.GetVoucherImage(voucherStr);
+            if (sprite != null)
+            {
+                voucherImage.Source = sprite;
+                voucherImage.IsVisible = true;
+                voucherText.IsVisible = false;
+            }
+            else
+            {
+                voucherImage.IsVisible = false;
+                voucherText.IsVisible = true;
+            }
+        }
+        else
+        {
+            voucherImage.IsVisible = false;
+            voucherText.IsVisible = true;
+        }
+    }
+
+    private void RenderShopImages()
+    {
+        var shopContainer = this.FindControl<ItemsControl>("ShopItemsContainer");
+        if (shopContainer == null || ViewModel == null)
+            return;
+
+        var items = ViewModel.CurrentShopItemsRaw;
+        var itemElements = new System.Collections.Generic.List<StackPanel>();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            var itemPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 10,
+                Margin = new Avalonia.Thickness(0, 2)
+            };
+
+            // Add index number
+            itemPanel.Children.Add(new TextBlock
+            {
+                Text = $"{i + 1})",
+                Foreground = Brushes.White,
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 30
+            });
+
+            // Add item image
+            var sprite = SpriteService.Instance.GetItemImage(item.Type.ToString());
+            if (sprite != null)
+            {
+                itemPanel.Children.Add(new Image
+                {
+                    Source = sprite,
+                    Width = 35.5,
+                    Height = 47.5,
+                    Stretch = Stretch.Uniform,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+            }
+
+            // Add item name
+            itemPanel.Children.Add(new TextBlock
+            {
+                Text = FormatUtils.FormatItem(item),
+                Foreground = Brushes.White,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            itemElements.Add(itemPanel);
+        }
+
+        shopContainer.ItemsSource = itemElements;
+    }
+
+    private void RenderPackImages()
+    {
+        var packsContainer = this.FindControl<ItemsControl>("PacksContainer");
+        if (packsContainer == null || ViewModel == null)
+            return;
+
+        var packs = ViewModel.CurrentPacks;
+        var packElements = new System.Collections.Generic.List<Border>();
+
+        foreach (var pack in packs)
+        {
+            var packBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.Parse("#252525")),
+                Padding = new Avalonia.Thickness(15),
+                CornerRadius = new Avalonia.CornerRadius(4),
+                Margin = new Avalonia.Thickness(0, 0, 10, 10),
+                MinWidth = 200
+            };
+
+            var packStack = new StackPanel { Spacing = 8 };
+
+            // Pack name
+            packStack.Children.Add(new TextBlock
+            {
+                Text = pack.Name,
+                FontWeight = FontWeight.Bold,
+                Foreground = new SolidColorBrush(Color.Parse(pack.PackColor))
+            });
+
+            // Pack items with images
+            for (int i = 0; i < pack.RawItems.Count; i++)
+            {
+                var item = pack.RawItems[i];
+                var itemPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8
+                };
+
+                var sprite = SpriteService.Instance.GetItemImage(item.Type.ToString());
+                if (sprite != null)
+                {
+                    itemPanel.Children.Add(new Image
+                    {
+                        Source = sprite,
+                        Width = 28.4,
+                        Height = 38,
+                        Stretch = Stretch.Uniform,
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+
+                itemPanel.Children.Add(new TextBlock
+                {
+                    Text = FormatUtils.FormatItem(item),
+                    Foreground = Brushes.White,
+                    FontSize = 12,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                packStack.Children.Add(itemPanel);
+            }
+
+            packBorder.Child = packStack;
+            packElements.Add(packBorder);
+        }
+
+        packsContainer.ItemsSource = packElements;
     }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)

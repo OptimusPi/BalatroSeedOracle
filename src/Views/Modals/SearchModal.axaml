@@ -244,43 +244,41 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Stats (Balatro style - NO BORDER!) -->
-                    <StackPanel Grid.Column="0" Spacing="8">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="PROGRESS"
-                                      FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="16"
-                                      Foreground="{StaticResource Gold}"
-                                      HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Column="0" Spacing="12">
+                        <TextBlock Text="PROGRESS"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="16"
+                                  Foreground="{StaticResource Gold}"
+                                  HorizontalAlignment="Center"/>
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="8"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="8"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="8"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Seeds Processed:" FontFamily="{StaticResource BalatroFont}"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SeedsProcessed}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Seeds Processed:" FontFamily="{StaticResource BalatroFont}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SeedsProcessed}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}"/>
 
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Results Found:" FontFamily="{StaticResource BalatroFont}"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ResultsFound}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource Green}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Results Found:" FontFamily="{StaticResource BalatroFont}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ResultsFound}" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource Green}"/>
 
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Time Elapsed:" FontFamily="{StaticResource BalatroFont}"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding TimeElapsed, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Time Elapsed:" FontFamily="{StaticResource BalatroFont}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding TimeElapsed, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
 
-                                <TextBlock Grid.Row="6" Grid.Column="0" Text="ETA:" FontFamily="{StaticResource BalatroFont}"/>
-                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="ETA:" FontFamily="{StaticResource BalatroFont}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, StringFormat='{}{0:hh\\:mm\\:ss}'}" FontFamily="{StaticResource BalatroFont}"/>
+                        </Grid>
+                    </StackPanel>
 
                     <!-- Right Stats -->
                     <Border Grid.Column="2"

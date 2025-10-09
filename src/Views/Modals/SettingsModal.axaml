@@ -41,45 +41,44 @@
                                Opacity="0.7"
                                Margin="0,0,0,6"/>
 
-                            <!-- Feature Toggles -->
-                            <ItemsControl Name="FeatureToggles">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Margin="0,4"
-                                                Padding="8"
-                                                Background="{StaticResource DockGrey}"
-                                                CornerRadius="4">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                    <!-- Feature Toggles -->
+                    <ItemsControl Name="FeatureToggles">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,4"
+                                        Padding="8"
+                                        Background="{StaticResource DockGrey}"
+                                        CornerRadius="4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="{Binding Name}"
-                                                               FontFamily="{StaticResource BalatroFont}"
-                                                               FontSize="14"
-                                                               Foreground="{StaticResource White}"/>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="14"
+                                                       Foreground="{StaticResource White}"/>
 
-                                                    <TextBlock Text="{Binding Description}"
-                                                               FontFamily="{StaticResource BalatroFont}"
-                                                               FontSize="11"
-                                                               Foreground="{StaticResource VeryLightGrey}"
-                                                               Opacity="0.7"
-                                                               Margin="0,2,0,0"/>
-                                                </StackPanel>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource VeryLightGrey}"
+                                                       Opacity="0.7"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
 
-                                                <CheckBox Grid.Column="1"
-                                                          IsChecked="{Binding IsEnabled}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="8,0,0,0"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
+                                        <CheckBox Grid.Column="1"
+                                                  IsChecked="{Binding IsEnabled}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="8,0,0,0"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
                     <!-- General Settings Section -->
                     <Border Background="{StaticResource ContainerDarkPrecise}"
@@ -172,28 +171,27 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Footer Buttons -->
-            <Grid Grid.Row="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <!-- Footer Buttons -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0"
-                        Name="ResetButton"
-                        Content="Reset to Defaults"
-                        Classes="btn-orange"
-                        HorizontalAlignment="Stretch"
-                        Click="OnResetClick"/>
+            <Button Grid.Column="0"
+                    Name="ResetButton"
+                    Content="Reset to Defaults"
+                    Classes="btn-orange"
+                    HorizontalAlignment="Stretch"
+                    Click="OnResetClick"/>
 
-                <Button Grid.Column="2"
-                        Name="SaveButton"
-                        Content="Save Settings"
-                        Classes="btn-blue"
-                        HorizontalAlignment="Stretch"
-                        Click="OnSaveClick"/>
-            </Grid>
+            <Button Grid.Column="2"
+                    Name="SaveButton"
+                    Content="Save Settings"
+                    Classes="btn-blue"
+                    HorizontalAlignment="Stretch"
+                    Click="OnSaveClick"/>
         </Grid>
-    </Border>
+    </Grid>
 </UserControl>

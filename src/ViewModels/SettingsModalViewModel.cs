@@ -1,5 +1,5 @@
 using System;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
@@ -9,50 +9,31 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for the simplified dock settings modal (theme picker only)
     /// </summary>
-    public class SettingsModalViewModel : BaseViewModel
+    public partial class SettingsModalViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
+
+        [ObservableProperty]
         private int _visualizerTheme;
+
+        partial void OnVisualizerThemeChanged(int value)
+        {
+            SaveVisualizerTheme();
+        }
 
         public SettingsModalViewModel()
         {
             _userProfileService = App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
 
-            CloseCommand = new RelayCommand(Close);
-            AdvancedSettingsCommand = new RelayCommand(OpenAdvancedSettings);
-
             LoadSettings();
         }
-
-        #region Properties
-
-        public int VisualizerTheme
-        {
-            get => _visualizerTheme;
-            set
-            {
-                if (SetProperty(ref _visualizerTheme, value))
-                {
-                    SaveVisualizerTheme();
-                }
-            }
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand CloseCommand { get; }
-        public ICommand AdvancedSettingsCommand { get; }
-
-        #endregion
 
         #region Events
 
         public event EventHandler? CloseRequested;
         public event EventHandler? AdvancedSettingsRequested;
-        public event EventHandler<int>? OnVisualizerThemeChanged;
+        public event EventHandler<int>? VisualizerThemeChanged;
 
         #endregion
 
@@ -61,26 +42,27 @@ namespace BalatroSeedOracle.ViewModels
         private void LoadSettings()
         {
             var profile = _userProfileService.GetProfile();
-            _visualizerTheme = profile.VibeOutSettings.ThemeIndex;
-            OnPropertyChanged(nameof(VisualizerTheme));
-            DebugLogger.Log("SettingsModalViewModel", $"Settings loaded - Visualizer theme: {_visualizerTheme}");
+            VisualizerTheme = profile.VibeOutSettings.ThemeIndex;
+            DebugLogger.Log("SettingsModalViewModel", $"Settings loaded - Visualizer theme: {VisualizerTheme}");
         }
 
         private void SaveVisualizerTheme()
         {
             var profile = _userProfileService.GetProfile();
-            profile.VibeOutSettings.ThemeIndex = _visualizerTheme;
+            profile.VibeOutSettings.ThemeIndex = VisualizerTheme;
             _userProfileService.SaveProfile(profile);
-            OnVisualizerThemeChanged?.Invoke(this, _visualizerTheme);
-            DebugLogger.Log("SettingsModalViewModel", $"Visualizer theme saved: {_visualizerTheme}");
+            VisualizerThemeChanged?.Invoke(this, VisualizerTheme);
+            DebugLogger.Log("SettingsModalViewModel", $"Visualizer theme saved: {VisualizerTheme}");
         }
 
+        [RelayCommand]
         private void Close()
         {
             DebugLogger.Log("SettingsModalViewModel", "Close requested");
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        [RelayCommand]
         private void OpenAdvancedSettings()
         {
             DebugLogger.Log("SettingsModalViewModel", "Advanced settings requested");
