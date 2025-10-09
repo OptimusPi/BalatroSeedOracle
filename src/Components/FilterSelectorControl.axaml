@@ -80,9 +80,9 @@
                                         Height="28"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Left"
-                                        Margin="0,2"
+                                        Margin="0,1"
                                         CornerRadius="6"
-                                        Padding="8,0"
+                                        Padding="4,0"
                                         Click="OnFilterListItemClick"
                                         Tag="{Binding}">
                                     <Grid>
