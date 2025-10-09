@@ -118,12 +118,23 @@
                     <StackPanel Grid.Column="0"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Spacing="16">
+                               Spacing="16"
+                               MaxWidth="450">
                         <TextBlock Text="SET PREFERRED DECK &amp; STAKE:"
                                   FontFamily="{StaticResource BalatroFont}"
                                   FontSize="18"
                                   Foreground="{StaticResource Gold}"
                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Choose your starting deck and difficulty. This helps the search engine find seeds that work best with your playstyle!"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="13"
+                                  Foreground="{StaticResource VeryLightGrey}"
+                                  TextWrapping="Wrap"
+                                  HorizontalAlignment="Center"
+                                  TextAlignment="Center"
+                                  Opacity="0.8"
+                                  Margin="0,0,0,8"/>
 
                         <components:DeckAndStakeSelector Name="DeckStakeSelector"/>
                     </StackPanel>
