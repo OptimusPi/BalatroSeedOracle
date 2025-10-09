@@ -74,7 +74,7 @@ namespace BalatroSeedOracle.Views
             ViewModel.HideModalRequested += (s, e) => HideModalContent();
 
             // Animation state changes
-            ViewModel.OnIsAnimatingChanged += (s, isAnimating) =>
+            ViewModel.OnIsAnimatingChangedEvent += (s, isAnimating) =>
             {
                 if (_background is BalatroShaderBackground shader)
                 {
@@ -87,7 +87,7 @@ namespace BalatroSeedOracle.Views
             };
 
             // VibeOut mode changes
-            ViewModel.OnVibeOutModeChanged += (s, isVibeOut) =>
+            ViewModel.OnVibeOutModeChangedEvent += (s, isVibeOut) =>
             {
                 if (isVibeOut)
                 {

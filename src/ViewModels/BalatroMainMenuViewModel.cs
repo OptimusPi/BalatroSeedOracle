@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -16,27 +16,60 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the BalatroMainMenu view
     /// Handles all state management, commands, and business logic
     /// </summary>
-    public class BalatroMainMenuViewModel : BaseViewModel
+    public partial class BalatroMainMenuViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
         private readonly VibeAudioManager? _audioManager;
 
-        // State fields
-        private bool _isAnimating = true;
-        private bool _isMusicPlaying = true;
-        private int _widgetCounter = 0;
-        private bool _isVibeOutMode = false;
+        [ObservableProperty]
         private string _mainTitle = "Welcome!";
-        private string _authorName = "Author";
-        private bool _authorEditMode = false;
-        private double _volume = 70;
-        private string _volumePercentText = "70%";
-        private string _musicIconText = "🔊";
-        private string _muteButtonText = "MUTE";
+
+        [ObservableProperty]
+        private bool _isAnimating = true;
+
+        [ObservableProperty]
         private string _animationIconText = "⏸";
+
+        [ObservableProperty]
+        private bool _isMusicPlaying = true;
+
+        [ObservableProperty]
+        private double _volume = 70;
+
+        [ObservableProperty]
+        private string _volumePercentText = "70%";
+
+        [ObservableProperty]
+        private string _musicIconText = "🔊";
+
+        [ObservableProperty]
+        private string _muteButtonText = "MUTE";
+
+        [ObservableProperty]
+        private string _authorName = "Author";
+
+        [ObservableProperty]
+        private bool _authorEditMode = false;
+
+        [ObservableProperty]
+        private bool _authorDisplayMode = true;
+
+        [ObservableProperty]
+        private bool _isVibeOutMode = false;
+
+        [ObservableProperty]
         private bool _isSettingsPopupOpen = false;
+
+        [ObservableProperty]
         private bool _isVolumePopupOpen = false;
+
+        [ObservableProperty]
         private bool _isModalVisible = false;
+
+        [ObservableProperty]
+        private int _widgetCounter = 0;
+
+        private double _previousVolume = 70;
 
         public BalatroMainMenuViewModel()
         {
@@ -45,233 +78,46 @@ namespace BalatroSeedOracle.ViewModels
                 ?? throw new InvalidOperationException("UserProfileService not available");
             _audioManager = ServiceHelper.GetService<VibeAudioManager>();
 
-            // Initialize commands
-            SeedSearchCommand = new RelayCommand(OnSeedSearch);
-            EditorCommand = new RelayCommand(OnEditor);
-            AnalyzeCommand = new RelayCommand(OnAnalyze);
-            ToolCommand = new RelayCommand(OnTool);
-            SettingsCommand = new RelayCommand(OnSettings);
-            AnimationToggleCommand = new RelayCommand(OnAnimationToggle);
-            MusicToggleCommand = new RelayCommand(OnMusicToggle);
-            MuteCommand = new RelayCommand(OnMute);
-            AuthorClickCommand = new RelayCommand(OnAuthorClick);
-            SaveAuthorCommand = new RelayCommand(SaveAuthor);
-            CancelAuthorEditCommand = new RelayCommand(CancelAuthorEdit);
-            ExitVibeOutCommand = new RelayCommand(ExitVibeOutMode);
-            BuyBalatroCommand = new RelayCommand(OnBuyBalatro);
-
             // Load settings
             LoadSettings();
         }
 
-        #region Properties
-
-        /// <summary>
-        /// Main title text displayed at the top
-        /// </summary>
-        public string MainTitle
+        partial void OnIsAnimatingChanged(bool value)
         {
-            get => _mainTitle;
-            set => SetProperty(ref _mainTitle, value);
+            AnimationIconText = value ? "⏸" : "▶";
+            OnIsAnimatingChangedEvent?.Invoke(this, value);
         }
 
-        /// <summary>
-        /// Whether background animation is enabled
-        /// </summary>
-        public bool IsAnimating
+        partial void OnVolumeChanged(double value)
         {
-            get => _isAnimating;
-            set
+            VolumePercentText = $"{(int)value}%";
+            MusicIconText = value > 0 ? "🔊" : "🔇";
+            MuteButtonText = value > 0 ? "MUTE" : "UNMUTE";
+            IsMusicPlaying = value > 0;
+            ApplyVolumeChange(value);
+
+            // Save volume to user profile
+            SaveVolumeToProfile();
+        }
+
+        partial void OnAuthorNameChanged(string value)
+        {
+            // Auto-save when changed
+            if (!AuthorEditMode && !string.IsNullOrWhiteSpace(value))
             {
-                if (SetProperty(ref _isAnimating, value))
-                {
-                    AnimationIconText = value ? "⏸" : "▶";
-                    OnIsAnimatingChanged?.Invoke(this, value);
-                }
+                _userProfileService.SetAuthorName(value.Trim());
             }
         }
 
-        /// <summary>
-        /// Animation button icon text
-        /// </summary>
-        public string AnimationIconText
+        partial void OnAuthorEditModeChanged(bool value)
         {
-            get => _animationIconText;
-            set => SetProperty(ref _animationIconText, value);
+            AuthorDisplayMode = !value;
         }
 
-        /// <summary>
-        /// Whether music is playing
-        /// </summary>
-        public bool IsMusicPlaying
+        partial void OnIsVibeOutModeChanged(bool value)
         {
-            get => _isMusicPlaying;
-            set => SetProperty(ref _isMusicPlaying, value);
+            OnVibeOutModeChangedEvent?.Invoke(this, value);
         }
-
-        /// <summary>
-        /// Volume level (0-100)
-        /// </summary>
-        public double Volume
-        {
-            get => _volume;
-            set
-            {
-                if (SetProperty(ref _volume, value))
-                {
-                    VolumePercentText = $"{(int)value}%";
-                    MusicIconText = value > 0 ? "🔊" : "🔇";
-                    MuteButtonText = value > 0 ? "MUTE" : "UNMUTE";
-                    IsMusicPlaying = value > 0;
-                    ApplyVolumeChange(value);
-
-                    // Save volume to user profile
-                    SaveVolumeToProfile();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Volume percentage display text
-        /// </summary>
-        public string VolumePercentText
-        {
-            get => _volumePercentText;
-            set => SetProperty(ref _volumePercentText, value);
-        }
-
-        /// <summary>
-        /// Music icon text
-        /// </summary>
-        public string MusicIconText
-        {
-            get => _musicIconText;
-            set => SetProperty(ref _musicIconText, value);
-        }
-
-        /// <summary>
-        /// Mute button text
-        /// </summary>
-        public string MuteButtonText
-        {
-            get => _muteButtonText;
-            set => SetProperty(ref _muteButtonText, value);
-        }
-
-        /// <summary>
-        /// Author name
-        /// </summary>
-        public string AuthorName
-        {
-            get => _authorName;
-            set
-            {
-                if (SetProperty(ref _authorName, value))
-                {
-                    // Auto-save when changed
-                    if (!AuthorEditMode && !string.IsNullOrWhiteSpace(value))
-                    {
-                        _userProfileService.SetAuthorName(value.Trim());
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Whether author edit mode is active
-        /// </summary>
-        public bool AuthorEditMode
-        {
-            get => _authorEditMode;
-            set
-            {
-                if (SetProperty(ref _authorEditMode, value))
-                {
-                    AuthorDisplayMode = !value;
-                }
-            }
-        }
-
-        private bool _authorDisplayMode = true;
-        /// <summary>
-        /// Whether author display mode is active (inverse of edit mode)
-        /// </summary>
-        public bool AuthorDisplayMode
-        {
-            get => _authorDisplayMode;
-            set => SetProperty(ref _authorDisplayMode, value);
-        }
-
-        /// <summary>
-        /// Whether VibeOut mode is active
-        /// </summary>
-        public bool IsVibeOutMode
-        {
-            get => _isVibeOutMode;
-            set
-            {
-                if (SetProperty(ref _isVibeOutMode, value))
-                {
-                    OnVibeOutModeChanged?.Invoke(this, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Whether settings popup is open
-        /// </summary>
-        public bool IsSettingsPopupOpen
-        {
-            get => _isSettingsPopupOpen;
-            set => SetProperty(ref _isSettingsPopupOpen, value);
-        }
-
-        /// <summary>
-        /// Whether volume popup is open
-        /// </summary>
-        public bool IsVolumePopupOpen
-        {
-            get => _isVolumePopupOpen;
-            set => SetProperty(ref _isVolumePopupOpen, value);
-        }
-
-        /// <summary>
-        /// Whether modal is visible
-        /// </summary>
-        public bool IsModalVisible
-        {
-            get => _isModalVisible;
-            set => SetProperty(ref _isModalVisible, value);
-        }
-
-        /// <summary>
-        /// Widget counter for positioning desktop icons
-        /// </summary>
-        public int WidgetCounter
-        {
-            get => _widgetCounter;
-            set => SetProperty(ref _widgetCounter, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SeedSearchCommand { get; }
-        public ICommand EditorCommand { get; }
-        public ICommand AnalyzeCommand { get; }
-        public ICommand ToolCommand { get; }
-        public ICommand SettingsCommand { get; }
-        public ICommand AnimationToggleCommand { get; }
-        public ICommand MusicToggleCommand { get; }
-        public ICommand MuteCommand { get; }
-        public ICommand AuthorClickCommand { get; }
-        public ICommand SaveAuthorCommand { get; }
-        public ICommand CancelAuthorEditCommand { get; }
-        public ICommand ExitVibeOutCommand { get; }
-        public ICommand BuyBalatroCommand { get; }
-
-        #endregion
 
         #region Events
 
@@ -288,12 +134,12 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Raised when animation state changes (for background control)
         /// </summary>
-        public event EventHandler<bool>? OnIsAnimatingChanged;
+        public event EventHandler<bool>? OnIsAnimatingChangedEvent;
 
         /// <summary>
         /// Raised when VibeOut mode changes
         /// </summary>
-        public event EventHandler<bool>? OnVibeOutModeChanged;
+        public event EventHandler<bool>? OnVibeOutModeChangedEvent;
 
         /// <summary>
         /// Raised when settings popup visibility should change
@@ -314,7 +160,8 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Command Implementations
 
-        private void OnSeedSearch()
+        [RelayCommand]
+        private void SeedSearch()
         {
             PlayButtonClickSound();
             try
@@ -328,46 +175,52 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnEditor()
+        [RelayCommand]
+        private void Editor()
         {
             PlayButtonClickSound();
             ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Filters));
         }
 
-        private void OnAnalyze()
+        [RelayCommand]
+        private void Analyze()
         {
             PlayButtonClickSound();
             ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Analyze));
         }
 
-        private void OnTool()
+        [RelayCommand]
+        private void Tool()
         {
             PlayButtonClickSound();
             ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Settings));
         }
 
-        private void OnSettings()
+        [RelayCommand]
+        private void Settings()
         {
             PlayButtonClickSound();
             IsSettingsPopupOpen = !IsSettingsPopupOpen;
             OnSettingsPopupToggle?.Invoke(this, IsSettingsPopupOpen);
         }
 
-        private void OnAnimationToggle()
+        [RelayCommand]
+        private void AnimationToggle()
         {
             PlayButtonClickSound();
             IsAnimating = !IsAnimating;
         }
 
-        private void OnMusicToggle()
+        [RelayCommand]
+        private void MusicToggle()
         {
             PlayButtonClickSound();
             IsVolumePopupOpen = !IsVolumePopupOpen;
             OnVolumePopupToggle?.Invoke(this, IsVolumePopupOpen);
         }
 
-        private double _previousVolume = 70;
-        private void OnMute()
+        [RelayCommand]
+        private void Mute()
         {
             PlayButtonClickSound();
             if (Volume > 0)
@@ -381,13 +234,15 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void OnAuthorClick()
+        [RelayCommand]
+        private void AuthorClick()
         {
             PlayButtonClickSound();
             AuthorEditMode = true;
             OnAuthorEditActivated?.Invoke(this, EventArgs.Empty);
         }
 
+        [RelayCommand]
         private void SaveAuthor()
         {
             var newName = AuthorName?.Trim();
@@ -400,6 +255,7 @@ namespace BalatroSeedOracle.ViewModels
             AuthorEditMode = false;
         }
 
+        [RelayCommand]
         private void CancelAuthorEdit()
         {
             // Restore original value
@@ -417,7 +273,8 @@ namespace BalatroSeedOracle.ViewModels
             IsVibeOutMode = true;
         }
 
-        private void OnBuyBalatro()
+        [RelayCommand]
+        private void BuyBalatro()
         {
             try
             {

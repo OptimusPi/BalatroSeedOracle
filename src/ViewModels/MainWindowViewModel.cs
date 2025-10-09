@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -9,13 +9,18 @@ using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class MainWindowViewModel : BaseViewModel
+    public partial class MainWindowViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
         private readonly SearchManager _searchManager;
-        
+
+        [ObservableProperty]
         private string _windowTitle = "Balatro Seed Oracle";
+
+        [ObservableProperty]
         private bool _isModalOpen = false;
+
+        [ObservableProperty]
         private string? _currentModalType;
 
         public MainWindowViewModel(UserProfileService userProfileService, SearchManager searchManager)
@@ -23,52 +28,12 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService = userProfileService;
             _searchManager = searchManager;
 
-            // Initialize commands
-            OpenFiltersModalCommand = new RelayCommand(OpenFiltersModal);
-            OpenSearchModalCommand = new RelayCommand(OpenSearchModal);
-            OpenAnalyzeModalCommand = new RelayCommand(OpenAnalyzeModal);
-            OpenCreditsModalCommand = new RelayCommand(OpenCreditsModal);
-            OpenToolsModalCommand = new RelayCommand(OpenToolsModal);
-            CloseModalCommand = new RelayCommand(CloseModal);
-
             InitializeAsync();
         }
 
-        #region Properties
-
-        public string WindowTitle
-        {
-            get => _windowTitle;
-            set => SetProperty(ref _windowTitle, value);
-        }
-
-        public bool IsModalOpen
-        {
-            get => _isModalOpen;
-            set => SetProperty(ref _isModalOpen, value);
-        }
-
-        public string? CurrentModalType
-        {
-            get => _currentModalType;
-            set => SetProperty(ref _currentModalType, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand OpenFiltersModalCommand { get; }
-        public ICommand OpenSearchModalCommand { get; }
-        public ICommand OpenAnalyzeModalCommand { get; }
-        public ICommand OpenCreditsModalCommand { get; }
-        public ICommand OpenToolsModalCommand { get; }
-        public ICommand CloseModalCommand { get; }
-
-        #endregion
-
         #region Command Implementations
 
+        [RelayCommand]
         private void OpenFiltersModal()
         {
             CurrentModalType = "Filters";
@@ -76,6 +41,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("MainWindowViewModel", "Opened Filters modal");
         }
 
+        [RelayCommand]
         private void OpenSearchModal()
         {
             CurrentModalType = "Search";
@@ -83,6 +49,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("MainWindowViewModel", "Opened Search modal");
         }
 
+        [RelayCommand]
         private void OpenAnalyzeModal()
         {
             CurrentModalType = "Analyze";
@@ -90,6 +57,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("MainWindowViewModel", "Opened Analyze modal");
         }
 
+        [RelayCommand]
         private void OpenCreditsModal()
         {
             CurrentModalType = "Credits";
@@ -97,6 +65,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("MainWindowViewModel", "Opened Credits modal");
         }
 
+        [RelayCommand]
         private void OpenToolsModal()
         {
             CurrentModalType = "Tools";
@@ -104,6 +73,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("MainWindowViewModel", "Opened Tools modal");
         }
 
+        [RelayCommand]
         private void CloseModal()
         {
             IsModalOpen = false;

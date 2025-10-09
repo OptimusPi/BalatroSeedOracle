@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -17,29 +17,52 @@ using Avalonia.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class SearchModalViewModel : BaseViewModel, IDisposable
+    public partial class SearchModalViewModel : ObservableObject, IDisposable
     {
         private readonly SearchManager _searchManager;
         private readonly CircularConsoleBuffer _consoleBuffer;
 
         private SearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
-        private bool _isSearching = false;
 
         // Reference to main menu for VibeOut mode
         public Views.BalatroMainMenu? MainMenu { get; set; }
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
+        private bool _isSearching = false;
+
+        [ObservableProperty]
         private Motely.Filters.MotelyJsonConfig? _loadedConfig;
+
+        [ObservableProperty]
         private int _selectedTabIndex = 0;
+
+        [ObservableProperty]
         private SearchProgress? _latestProgress;
+
+        [ObservableProperty]
         private int _lastKnownResultCount = 0;
+
+        [ObservableProperty]
         private string? _currentFilterPath; // CRITICAL: Store the path to the loaded filter!
 
-        // Search parameters
+        [ObservableProperty]
         private int _maxResults = 1000;
+
+        [ObservableProperty]
         private int _timeoutSeconds = 300;
+
+        [ObservableProperty]
         private string _deckSelection = "All Decks";
+
+        [ObservableProperty]
         private string _stakeSelection = "All Stakes";
+
+        [ObservableProperty]
         private string _selectedWordList = "None";
+
+        [ObservableProperty]
         private ObservableCollection<string> _availableWordLists = new();
 
         public SearchModalViewModel(SearchManager searchManager)
@@ -50,19 +73,6 @@ namespace BalatroSeedOracle.ViewModels
             SearchResults = new ObservableCollection<Models.SearchResult>();
             ConsoleOutput = new ObservableCollection<string>();
 
-            // Initialize commands
-            StartSearchCommand = new AsyncRelayCommand(StartSearchAsync, CanStartSearch);
-            StopSearchCommand = new RelayCommand(StopSearch, CanStopSearch);
-            PauseSearchCommand = new RelayCommand(PauseSearch, CanPauseSearch);
-            ExportResultsCommand = new RelayCommand(ExportResults, CanExportResults);
-            ClearResultsCommand = new RelayCommand(ClearResults);
-            LoadFilterCommand = new AsyncRelayCommand(LoadFilterAsync);
-            CreateShortcutCommand = new RelayCommand<string>(CreateShortcut);
-            EnterVibeOutModeCommand = new RelayCommand(EnterVibeOutMode);
-            CloseCommand = new RelayCommand(CloseModal);
-            MaximizeCommand = new RelayCommand(ToggleMaximize);
-            SelectTabCommand = new RelayCommand<object>(SelectTab);
-
             // Initialize dynamic tabs
             InitializeSearchTabs();
 
@@ -72,123 +82,35 @@ namespace BalatroSeedOracle.ViewModels
             // Events will be subscribed to individual SearchInstance when created
         }
 
-        #region Properties
-
-        public int SelectedTabIndex
+        partial void OnSelectedTabIndexChanged(int value)
         {
-            get => _selectedTabIndex;
-            set
-            {
-                if (SetProperty(ref _selectedTabIndex, value))
-                {
-                    OnPropertyChanged(nameof(CurrentTabContent));
-                }
-            }
+            OnPropertyChanged(nameof(CurrentTabContent));
         }
 
-        public object? CurrentTabContent => _selectedTabIndex >= 0 && _selectedTabIndex < TabItems.Count
-            ? TabItems[_selectedTabIndex].Content
+        partial void OnIsSearchingChanged(bool value)
+        {
+            StopSearchCommand.NotifyCanExecuteChanged();
+        }
+
+        #region Properties
+
+        public object? CurrentTabContent => SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count
+            ? TabItems[SelectedTabIndex].Content
             : null;
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int BatchSize { get; set; } = 3;
-        
-        public string SearchStatus => _isSearching ? "Searching..." : "Ready";
-        public double SearchProgress => _latestProgress?.PercentComplete ?? 0.0;
-        public string ProgressText => _latestProgress?.ToString() ?? "No search active";
+
+        public string SearchStatus => IsSearching ? "Searching..." : "Ready";
+        public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
+        public string ProgressText => LatestProgress?.ToString() ?? "No search active";
         public int ResultsCount => _searchInstance?.ResultCount ?? SearchResults.Count;
-        
+
         public string CurrentSearchId => _currentSearchId;
-        
+
         public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
-
-        public bool IsSearching
-        {
-            get => _isSearching;
-            set
-            {
-                if (SetProperty(ref _isSearching, value))
-                {
-                    ((AsyncRelayCommand)StartSearchCommand).NotifyCanExecuteChanged();
-                    ((RelayCommand)StopSearchCommand).NotifyCanExecuteChanged();
-                }
-            }
-        }
-
-        public Motely.Filters.MotelyJsonConfig? LoadedConfig
-        {
-            get => _loadedConfig;
-            set => SetProperty(ref _loadedConfig, value);
-        }
-
-        // CurrentActiveTab removed - using proper TabControl SelectedIndex binding
-
-        public int MaxResults
-        {
-            get => _maxResults;
-            set => SetProperty(ref _maxResults, value);
-        }
-
-        public int TimeoutSeconds
-        {
-            get => _timeoutSeconds;
-            set => SetProperty(ref _timeoutSeconds, value);
-        }
-
-        public string DeckSelection
-        {
-            get => _deckSelection;
-            set => SetProperty(ref _deckSelection, value);
-        }
-
-        public string StakeSelection
-        {
-            get => _stakeSelection;
-            set => SetProperty(ref _stakeSelection, value);
-        }
-
-        public string SelectedWordList
-        {
-            get => _selectedWordList;
-            set => SetProperty(ref _selectedWordList, value);
-        }
-
-        public ObservableCollection<string> AvailableWordLists
-        {
-            get => _availableWordLists;
-            set => SetProperty(ref _availableWordLists, value);
-        }
-
-        public SearchProgress? LatestProgress
-        {
-            get => _latestProgress;
-            set => SetProperty(ref _latestProgress, value);
-        }
-
-        public int LastKnownResultCount
-        {
-            get => _lastKnownResultCount;
-            set => SetProperty(ref _lastKnownResultCount, value);
-        }
-
         public ObservableCollection<Models.SearchResult> SearchResults { get; }
         public ObservableCollection<string> ConsoleOutput { get; }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand StartSearchCommand { get; }
-        public ICommand StopSearchCommand { get; }
-        public ICommand PauseSearchCommand { get; }
-        public ICommand ExportResultsCommand { get; }
-        public ICommand ClearResultsCommand { get; }
-        public ICommand LoadFilterCommand { get; }
-        public ICommand CreateShortcutCommand { get; }
-        public ICommand EnterVibeOutModeCommand { get; }
-        public ICommand CloseCommand { get; }
-        public ICommand MaximizeCommand { get; }
-        public ICommand SelectTabCommand { get; }
 
         #endregion
 
@@ -202,6 +124,7 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Command Implementations
 
+        [RelayCommand(CanExecute = nameof(CanStartSearch))]
         private async Task StartSearchAsync()
         {
             try
@@ -240,6 +163,7 @@ namespace BalatroSeedOracle.ViewModels
             return !IsSearching && LoadedConfig != null;
         }
 
+        [RelayCommand(CanExecute = nameof(CanStopSearch))]
         private void StopSearch()
         {
             try
@@ -265,6 +189,7 @@ namespace BalatroSeedOracle.ViewModels
             return IsSearching;
         }
 
+        [RelayCommand]
         private void ClearResults()
         {
             SearchResults.Clear();
@@ -275,7 +200,8 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("SearchModalViewModel", "Results cleared");
         }
 
-        public Task LoadFilterAsync()
+        [RelayCommand]
+        private Task LoadFilterAsync()
         {
             try
             {
@@ -315,6 +241,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void CreateShortcut(string? searchId)
         {
             if (!string.IsNullOrEmpty(searchId))
@@ -323,19 +250,21 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        
-        private void CloseModal()
+        [RelayCommand]
+        private void Close()
         {
             DebugLogger.Log("SearchModalViewModel", "Closing modal");
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ToggleMaximize()
+        [RelayCommand]
+        private void Maximize()
         {
             // Request maximize toggle - the View will handle finding the window
             MaximizeToggleRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        [RelayCommand]
         private void SelectTab(object? parameter)
         {
             if (parameter is int tabIndex)
@@ -347,7 +276,8 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedTabIndex = parsedIndex;
             }
         }
-        
+
+        [RelayCommand]
         private void EnterVibeOutMode()
         {
             try
@@ -386,14 +316,14 @@ namespace BalatroSeedOracle.ViewModels
 
         private SearchCriteria BuildSearchCriteria()
         {
-            if (string.IsNullOrEmpty(_currentFilterPath))
+            if (string.IsNullOrEmpty(CurrentFilterPath))
             {
                 throw new InvalidOperationException("No filter path available - filter must be loaded first!");
             }
-            
+
             return new SearchCriteria
             {
-                ConfigPath = _currentFilterPath, // CRITICAL: Pass the filter path!
+                ConfigPath = CurrentFilterPath, // CRITICAL: Pass the filter path!
                 ThreadCount = Environment.ProcessorCount,
                 Deck = DeckSelection == "All Decks" ? null : DeckSelection,
                 Stake = StakeSelection == "All Stakes" ? null : StakeSelection,
@@ -432,16 +362,18 @@ namespace BalatroSeedOracle.ViewModels
             // CircularConsoleBuffer doesn't need disposal
         }
 
+        [RelayCommand(CanExecute = nameof(CanPauseSearch))]
         private void PauseSearch()
         {
-            if (_searchInstance != null && _isSearching)
+            if (_searchInstance != null && IsSearching)
             {
                 _searchInstance.PauseSearch();
             }
         }
 
-        private bool CanPauseSearch() => _isSearching;
+        private bool CanPauseSearch() => IsSearching;
 
+        [RelayCommand(CanExecute = nameof(CanExportResults))]
         private async void ExportResults()
         {
             try
@@ -455,7 +387,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Create export text
                 var exportText = $"Balatro Seed Search Results\n";
                 exportText += $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n";
-                exportText += $"Filter: {_loadedConfig?.Name ?? "Unknown"}\n";
+                exportText += $"Filter: {LoadedConfig?.Name ?? "Unknown"}\n";
                 exportText += $"Total Results: {SearchResults.Count}\n";
                 exportText += new string('=', 50) + "\n\n";
                 
@@ -571,19 +503,18 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Get LIVE stats from the running SearchInstance
-                _lastKnownResultCount = _searchInstance.ResultCount;
-                
+                LastKnownResultCount = _searchInstance.ResultCount;
+
                 // Update search state
-                _isSearching = _searchInstance.IsRunning;
-                
+                IsSearching = _searchInstance.IsRunning;
+
                 // Trigger ALL UI property updates for live stats
                 OnPropertyChanged(nameof(SearchStatus));
                 OnPropertyChanged(nameof(SearchProgress));
                 OnPropertyChanged(nameof(ProgressText));
                 OnPropertyChanged(nameof(ResultsCount));
-                OnPropertyChanged(nameof(IsSearching));
-                
-                DebugLogger.Log("SearchModalViewModel", $"🔄 RECONNECTED to search - Running: {_isSearching}, Results: {_lastKnownResultCount}");
+
+                DebugLogger.Log("SearchModalViewModel", $"🔄 RECONNECTED to search - Running: {IsSearching}, Results: {LastKnownResultCount}");
                 
                 // Start a timer to periodically refresh stats for live updates
                 StartStatsRefreshTimer();
@@ -599,20 +530,20 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void StartStatsRefreshTimer()
         {
-            if (_searchInstance == null || !_isSearching) return;
-            
+            if (_searchInstance == null || !IsSearching) return;
+
             // Use a simple timer to refresh stats every 500ms while search is active
             Task.Run(async () =>
             {
-                while (_searchInstance?.IsRunning == true && _isSearching)
+                while (_searchInstance?.IsRunning == true && IsSearching)
                 {
                     try
                     {
                         // Update result count from live search
                         var liveResultCount = _searchInstance.ResultCount;
-                        if (liveResultCount != _lastKnownResultCount)
+                        if (liveResultCount != LastKnownResultCount)
                         {
-                            _lastKnownResultCount = liveResultCount;
+                            LastKnownResultCount = liveResultCount;
                             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                             {
                                 OnPropertyChanged(nameof(ResultsCount));
@@ -647,11 +578,11 @@ namespace BalatroSeedOracle.ViewModels
                 // Read and parse the filter configuration
                 var json = System.IO.File.ReadAllText(configPath);
                 var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-                
+
                 if (config != null)
                 {
                     LoadedConfig = config;
-                    _currentFilterPath = configPath; // CRITICAL: Store the path for the search!
+                    CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
                     
                     // Update deck and stake from the loaded config
                     if (!string.IsNullOrEmpty(config.Deck))
@@ -691,7 +622,7 @@ namespace BalatroSeedOracle.ViewModels
         private void OnProgressUpdated(object? sender, SearchProgress e)
         {
             LatestProgress = e;
-            _lastKnownResultCount = e.ResultsFound;
+            LastKnownResultCount = e.ResultsFound;
             OnPropertyChanged(nameof(SearchProgress));
             OnPropertyChanged(nameof(ProgressText));
             OnPropertyChanged(nameof(ResultsCount));
@@ -737,7 +668,7 @@ namespace BalatroSeedOracle.ViewModels
             filterSelector.FilterLoaded += async (sender, filterPath) =>
             {
                 DebugLogger.Log("SearchModalViewModel", $"Filter selected: {filterPath}");
-                _currentFilterPath = filterPath;
+                CurrentFilterPath = filterPath;
                 await LoadFilterAsync(filterPath);
 
                 // Auto-switch to SEARCH tab after loading filter

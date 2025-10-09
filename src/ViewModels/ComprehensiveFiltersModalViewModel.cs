@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
@@ -13,21 +13,35 @@ using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public class ComprehensiveFiltersModalViewModel : BaseViewModel
+    public partial class ComprehensiveFiltersModalViewModel : ObservableObject
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
 
-        // Filter properties
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SaveFilterCommand))]
         private string _filterName = "";
+
+        [ObservableProperty]
         private string _filterDescription = "";
+
+        [ObservableProperty]
         private string _currentFilterPath = "";
-        
-        // UI state
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SaveFilterCommand), nameof(TestFilterCommand))]
         private bool _isTestRunning = false;
+
+        [ObservableProperty]
         private string _testStatus = "Ready to test filter...";
+
+        [ObservableProperty]
         private bool _showTestSpinner = false;
+
+        [ObservableProperty]
         private bool _showTestSuccess = false;
+
+        [ObservableProperty]
         private bool _showTestError = false;
 
         // Filter collections
@@ -51,107 +65,13 @@ namespace BalatroSeedOracle.ViewModels
             SelectedShould = new ObservableCollection<FilterItem>();
             SelectedMustNot = new ObservableCollection<FilterItem>();
 
-            // Initialize commands
-            NewFilterCommand = new RelayCommand(CreateNewFilter);
-            SaveFilterCommand = new AsyncRelayCommand(SaveFilterAsync, CanSaveFilter);
-            LoadFilterCommand = new AsyncRelayCommand(LoadFilterAsync);
-            TestFilterCommand = new AsyncRelayCommand(TestFilterAsync, CanTestFilter);
-            
-            AddToMustCommand = new RelayCommand<FilterItem>(AddToMust);
-            AddToShouldCommand = new RelayCommand<FilterItem>(AddToShould);
-            AddToMustNotCommand = new RelayCommand<FilterItem>(AddToMustNot);
-            
-            RemoveFromMustCommand = new RelayCommand<FilterItem>(RemoveFromMust);
-            RemoveFromShouldCommand = new RelayCommand<FilterItem>(RemoveFromShould);
-            RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
-
             // Load initial data
             LoadAvailableItems();
         }
 
-        #region Properties
-
-        public string FilterName
-        {
-            get => _filterName;
-            set
-            {
-                if (SetProperty(ref _filterName, value))
-                {
-                    ((AsyncRelayCommand)SaveFilterCommand).NotifyCanExecuteChanged();
-                }
-            }
-        }
-
-        public string FilterDescription
-        {
-            get => _filterDescription;
-            set => SetProperty(ref _filterDescription, value);
-        }
-
-        public string CurrentFilterPath
-        {
-            get => _currentFilterPath;
-            set => SetProperty(ref _currentFilterPath, value);
-        }
-
-        public bool IsTestRunning
-        {
-            get => _isTestRunning;
-            set
-            {
-                if (SetProperty(ref _isTestRunning, value))
-                {
-                    ((AsyncRelayCommand)TestFilterCommand).NotifyCanExecuteChanged();
-                }
-            }
-        }
-
-        public string TestStatus
-        {
-            get => _testStatus;
-            set => SetProperty(ref _testStatus, value);
-        }
-
-        public bool ShowTestSpinner
-        {
-            get => _showTestSpinner;
-            set => SetProperty(ref _showTestSpinner, value);
-        }
-
-        public bool ShowTestSuccess
-        {
-            get => _showTestSuccess;
-            set => SetProperty(ref _showTestSuccess, value);
-        }
-
-        public bool ShowTestError
-        {
-            get => _showTestError;
-            set => SetProperty(ref _showTestError, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand NewFilterCommand { get; }
-        public ICommand SaveFilterCommand { get; }
-        public ICommand LoadFilterCommand { get; }
-        public ICommand TestFilterCommand { get; }
-        
-        public ICommand AddToMustCommand { get; }
-        public ICommand AddToShouldCommand { get; }
-        public ICommand AddToMustNotCommand { get; }
-        
-        public ICommand RemoveFromMustCommand { get; }
-        public ICommand RemoveFromShouldCommand { get; }
-        public ICommand RemoveFromMustNotCommand { get; }
-
-        #endregion
-
         #region Command Implementations
 
+        [RelayCommand]
         private void CreateNewFilter()
         {
             FilterName = "";
@@ -167,6 +87,7 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("FiltersModalViewModel", "New filter created");
         }
 
+        [RelayCommand(CanExecute = nameof(CanSaveFilter))]
         private async Task SaveFilterAsync()
         {
             try
@@ -214,6 +135,7 @@ namespace BalatroSeedOracle.ViewModels
             return !string.IsNullOrWhiteSpace(FilterName) && !IsTestRunning;
         }
 
+        [RelayCommand]
         private async Task LoadFilterAsync()
         {
             try
@@ -229,6 +151,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand(CanExecute = nameof(CanTestFilter))]
         private async Task TestFilterAsync()
         {
             try
@@ -285,6 +208,7 @@ namespace BalatroSeedOracle.ViewModels
             return !IsTestRunning;
         }
 
+        [RelayCommand]
         private void AddToMust(FilterItem? item)
         {
             if (item != null && !SelectedMust.Contains(item))
@@ -294,6 +218,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void AddToShould(FilterItem? item)
         {
             if (item != null && !SelectedShould.Contains(item))
@@ -303,6 +228,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void AddToMustNot(FilterItem? item)
         {
             if (item != null && !SelectedMustNot.Contains(item))
@@ -312,6 +238,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void RemoveFromMust(FilterItem? item)
         {
             if (item != null)
@@ -321,6 +248,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void RemoveFromShould(FilterItem? item)
         {
             if (item != null)
@@ -330,6 +258,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void RemoveFromMustNot(FilterItem? item)
         {
             if (item != null)
