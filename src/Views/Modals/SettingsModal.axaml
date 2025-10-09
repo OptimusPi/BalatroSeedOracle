@@ -4,66 +4,42 @@
              MinWidth="600"
              MinHeight="500">
 
-    <Border Background="{StaticResource DarkModalGrey}"
-            BorderBrush="{StaticResource ModalBorder}"
-            BorderThickness="2"
-            CornerRadius="12"
-            Padding="20">
+    <!-- NO BORDER! StandardModal already provides the border! -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- Header (Balatro style - simple centered text) -->
+        <TextBlock Grid.Row="0"
+                   Text="SETTINGS"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="24"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"/>
 
-            <!-- Header -->
-            <Grid Grid.Row="0">
-                <TextBlock Text="SETTINGS"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="24"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"/>
+        <!-- Settings Content (CLEAN - no border boxes!) -->
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20">
 
-                <!-- Close button -->
-                <Button Name="CloseButton"
-                        Content="✕"
-                        Classes="btn-red"
-                        Width="32"
-                        Height="32"
-                        HorizontalAlignment="Right"
-                        Click="OnCloseClick"/>
-            </Grid>
+                <!-- Experimental Features Section (NO BORDER!) -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="🧪 EXPERIMENTAL FEATURES"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource Gold}"/>
 
-            <!-- Settings Content -->
-            <ScrollViewer Grid.Row="2"
-                          VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="24">
-
-                    <!-- Experimental Features Section -->
-                    <Border Background="{StaticResource ContainerDarkPrecise}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="16">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="🧪 EXPERIMENTAL FEATURES"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
-                                       Foreground="{StaticResource Gold}"/>
-
-                            <TextBlock Text="Toggle experimental and beta features"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"
-                                       Opacity="0.8"/>
-
-                            <Rectangle Height="1"
-                                       Fill="{StaticResource ModalBorder}"
-                                       Opacity="0.3"
-                                       Margin="0,4"/>
+                    <TextBlock Text="Toggle experimental and beta features"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               Foreground="{StaticResource MediumGrey}"
+                               Opacity="0.7"
+                               Margin="0,0,0,6"/>
 
                             <!-- Feature Toggles -->
                             <ItemsControl Name="FeatureToggles">
