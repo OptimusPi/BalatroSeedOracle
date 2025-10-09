@@ -353,14 +353,22 @@ namespace BalatroSeedOracle.ViewModels
             return cards;
         }
 
-        private Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()
+        /// <summary>
+        /// Builds MotelyJsonConfig from current ViewModel state
+        /// Called by code-behind and ViewModel methods
+        /// </summary>
+        public Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()
         {
+            // Get author from UserProfileService
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            var author = userProfileService?.GetAuthorName() ?? "Unknown";
+
             var config = new Motely.Filters.MotelyJsonConfig
             {
-                Name = FilterName,
+                Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
                 DateCreated = DateTime.Now,
-                Author = "BalatroSeedOracle",
+                Author = author,
                 Deck = GetDeckName(SelectedDeckIndex),
                 Stake = GetStakeName(SelectedStakeIndex),
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),

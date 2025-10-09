@@ -191,6 +191,16 @@ namespace BalatroSeedOracle.Views.Modals
             // This eliminates 160+ O(n) visual tree walks, providing 50% performance improvement
             _configNameBox = this.FindControl<TextBox>("ConfigNameBox");
             _configDescriptionBox = this.FindControl<TextBox>("ConfigDescriptionBox");
+
+            // Sync TextBox changes to ViewModel properties
+            if (_configNameBox != null)
+            {
+                _configNameBox.TextChanged += (s, e) => ViewModel.FilterName = _configNameBox.Text ?? "";
+            }
+            if (_configDescriptionBox != null)
+            {
+                _configDescriptionBox.TextChanged += (s, e) => ViewModel.FilterDescription = _configDescriptionBox.Text ?? "";
+            }
             _clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
             _clearWantsButton = this.FindControl<Button>("ClearWantsButton");
             _clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
