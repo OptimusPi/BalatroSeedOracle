@@ -220,35 +220,20 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Search Status Header -->
-                <Border Grid.Row="0"
-                       Background="{StaticResource ContainerDarkPrecise}"
-                       BorderBrush="{StaticResource ModalBorder}"
-                       BorderThickness="2"
-                       CornerRadius="8"
-                       Padding="16">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                <!-- Search Status Header (Balatro style - NO BORDER!) -->
+                <StackPanel Grid.Row="0" Spacing="8">
+                    <TextBlock Text="{Binding FilterName}"
+                              FontFamily="{StaticResource BalatroFont}"
+                              FontSize="20"
+                              Foreground="{StaticResource Gold}"
+                              HorizontalAlignment="Center"/>
 
-                        <TextBlock Grid.Row="0"
-                                  Text="{Binding FilterName}"
-                                  FontFamily="{StaticResource BalatroFont}"
-                                  FontSize="20"
-                                  Foreground="{StaticResource Gold}"
-                                  HorizontalAlignment="Center"/>
-
-                        <ProgressBar Grid.Row="2"
-                                    Value="{Binding ProgressPercent}"
-                                    Maximum="100"
-                                    Height="30"
-                                    Background="{StaticResource DarkBackground}"
-                                    Foreground="{StaticResource Green}"/>
-                    </Grid>
-                </Border>
+                    <ProgressBar Value="{Binding ProgressPercent}"
+                                Maximum="100"
+                                Height="24"
+                                Background="{StaticResource DarkBackground}"
+                                Foreground="{StaticResource Green}"/>
+                </StackPanel>
 
                 <!-- Stats Grid -->
                 <Grid Grid.Row="2">
@@ -258,13 +243,8 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left Stats -->
-                    <Border Grid.Column="0"
-                           Background="{StaticResource ContainerDarkPrecise}"
-                           BorderBrush="{StaticResource ModalBorder}"
-                           BorderThickness="2"
-                           CornerRadius="8"
-                           Padding="16">
+                    <!-- Left Stats (Balatro style - NO BORDER!) -->
+                    <StackPanel Grid.Column="0" Spacing="8">
                         <StackPanel Spacing="12">
                             <TextBlock Text="PROGRESS"
                                       FontFamily="{StaticResource BalatroFont}"
