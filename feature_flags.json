@@ -1,7 +1,7 @@
 {
   "GenieEnabled": false,
   "DaylatroEnabled": true,
-  "ShaderBackgrounds": true,
+  "ShaderBackgrounds": false,
   "VibeAudioEnabled": true,
   "ExperimentalSearch": false,
   "DebugMode": false
