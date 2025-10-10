@@ -73,7 +73,7 @@ namespace BalatroSeedOracle.Components
             if (isHeader)
             {
                 _isDragging = true;
-                _dragStartPoint = e.GetPosition(this);
+                _dragStartPoint = e.GetPosition(this.Parent as Visual);
                 e.Pointer.Capture(this);
                 e.Handled = true;
             }

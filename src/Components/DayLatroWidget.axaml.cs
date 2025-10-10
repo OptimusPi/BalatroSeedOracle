@@ -1,5 +1,7 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
@@ -17,6 +19,10 @@ namespace BalatroSeedOracle.Components
     public partial class DayLatroWidget : UserControl
     {
         public DayLatroWidgetViewModel? ViewModel { get; }
+
+        // Drag state
+        private bool _isDragging = false;
+        private Point _dragStartPoint;
 
         public DayLatroWidget()
         {
@@ -102,5 +108,88 @@ namespace BalatroSeedOracle.Components
                 ViewModel.Dispose();
             }
         }
+
+        #region Drag Functionality
+
+        public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var props = e.GetCurrentPoint(this).Properties;
+            if (!props.IsLeftButtonPressed)
+                return;
+
+            var clickedElement = e.Source as Control;
+            var isHeader = false;
+
+            // Walk up visual tree to see if we clicked on the header or minimized view
+            while (clickedElement != null)
+            {
+                if (clickedElement.Name == "MinimizedView" || clickedElement.Classes.Contains("widget-header"))
+                {
+                    isHeader = true;
+                    break;
+                }
+
+                // Don't drag if clicking on interactive controls (buttons, textboxes, etc.)
+                if (clickedElement is Button button && button.Command != null)
+                {
+                    return;
+                }
+                if (clickedElement is TextBox || clickedElement is ScrollViewer)
+                {
+                    return;
+                }
+
+                clickedElement = clickedElement.Parent as Control;
+            }
+
+            if (isHeader)
+            {
+                _isDragging = true;
+                _dragStartPoint = e.GetPosition(this.Parent as Visual);
+                e.Pointer.Capture(this);
+                e.Handled = true;
+            }
+        }
+
+        public void OnWidgetPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (!_isDragging)
+                return;
+
+            var parent = this.Parent as Control;
+            if (parent == null) return;
+
+            var currentPoint = e.GetPosition(parent);
+            var delta = currentPoint - _dragStartPoint;
+
+            if (ViewModel != null)
+            {
+                ViewModel.PositionX = delta.X;
+                ViewModel.PositionY = delta.Y;
+            }
+
+            var minimizedView = this.FindControl<Grid>("MinimizedView");
+            var expandedView = this.FindControl<Border>("ExpandedView");
+
+            var newMargin = new Thickness(delta.X, delta.Y, 0, 0);
+            if (minimizedView != null)
+                minimizedView.Margin = newMargin;
+            if (expandedView != null)
+                expandedView.Margin = newMargin;
+
+            e.Handled = true;
+        }
+
+        public void OnWidgetPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            if (!_isDragging)
+                return;
+
+            _isDragging = false;
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+
+        #endregion
     }
 }
