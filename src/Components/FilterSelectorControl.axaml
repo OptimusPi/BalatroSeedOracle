@@ -71,8 +71,8 @@
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
 
-                <!-- Paginated filter list (NO scrolling - pagination handles overflow) -->
-                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="0,2,0,2">
+                <!-- Paginated filter list (NO scrolling - 10 items fit perfectly!) -->
+                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="0">
                     <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -80,7 +80,7 @@
                                         Height="28"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Left"
-                                        Margin="0,2"
+                                        Margin="0,1"
                                         CornerRadius="6"
                                         Padding="4,0"
                                         Click="OnFilterListItemClick"
