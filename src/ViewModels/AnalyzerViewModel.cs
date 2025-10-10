@@ -229,6 +229,28 @@ public partial class AnalyzerViewModel : ObservableObject
         }
     }
 
+    public ObservableCollection<ShopItemViewModel> ShopItems
+    {
+        get
+        {
+            var ante = GetCurrentAnte();
+            if (ante == null) return [];
+
+            var items = new ObservableCollection<ShopItemViewModel>();
+            for (int i = 0; i < ante.ShopQueue.Count; i++)
+            {
+                var item = ante.ShopQueue[i];
+                items.Add(new ShopItemViewModel
+                {
+                    Index = i + 1,
+                    ItemType = item.Type.ToString(),
+                    DisplayName = FormatUtils.FormatItem(item)
+                });
+            }
+            return items;
+        }
+    }
+
     public List<MotelyItem> CurrentShopItemsRaw
     {
         get
@@ -236,6 +258,47 @@ public partial class AnalyzerViewModel : ObservableObject
             var ante = GetCurrentAnte();
             if (ante == null) return [];
             return ante.ShopQueue.ToList();
+        }
+    }
+
+    public ObservableCollection<PackViewModel> BoosterPacks
+    {
+        get
+        {
+            var ante = GetCurrentAnte();
+            if (ante == null) return [];
+
+            var packs = new ObservableCollection<PackViewModel>();
+            foreach (var pack in ante.Packs)
+            {
+                var packItems = new ObservableCollection<ShopItemViewModel>();
+                for (int i = 0; i < pack.Items.Count; i++)
+                {
+                    var item = pack.Items[i];
+                    packItems.Add(new ShopItemViewModel
+                    {
+                        Index = i + 1,
+                        ItemType = item.Type.ToString(),
+                        DisplayName = FormatUtils.FormatItem(item)
+                    });
+                }
+
+                packs.Add(new PackViewModel
+                {
+                    Name = FormatUtils.FormatPackName(pack.Type),
+                    PackColor = pack.Type.GetPackType() switch
+                    {
+                        MotelyBoosterPackType.Arcana => "#9370DB",
+                        MotelyBoosterPackType.Celestial => "#4169E1",
+                        MotelyBoosterPackType.Spectral => "#20B2AA",
+                        MotelyBoosterPackType.Buffoon => "#FF6347",
+                        MotelyBoosterPackType.Standard => "#4682B4",
+                        _ => "#FFFFFF"
+                    },
+                    Items = packItems
+                });
+            }
+            return packs;
         }
     }
 
@@ -273,6 +336,8 @@ public partial class AnalyzerViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentShopItems));
         OnPropertyChanged(nameof(CurrentShopItemsRaw));
         OnPropertyChanged(nameof(CurrentPacks));
+        OnPropertyChanged(nameof(ShopItems));
+        OnPropertyChanged(nameof(BoosterPacks));
         OnPropertyChanged(nameof(AnteNavigationDisplay));
     }
 
@@ -289,8 +354,25 @@ public partial class AnalyzerViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentShopItems));
         OnPropertyChanged(nameof(CurrentShopItemsRaw));
         OnPropertyChanged(nameof(CurrentPacks));
+        OnPropertyChanged(nameof(ShopItems));
+        OnPropertyChanged(nameof(BoosterPacks));
         OnPropertyChanged(nameof(AnteNavigationDisplay));
     }
+}
+
+// ViewModels for MVVM data binding
+public class ShopItemViewModel
+{
+    public int Index { get; set; }
+    public string ItemType { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+}
+
+public class PackViewModel
+{
+    public string Name { get; set; } = string.Empty;
+    public string PackColor { get; set; } = "#FFFFFF";
+    public ObservableCollection<ShopItemViewModel> Items { get; set; } = [];
 }
 
 public class PackDisplayInfo

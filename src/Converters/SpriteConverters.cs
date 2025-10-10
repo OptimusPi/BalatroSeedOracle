@@ -95,4 +95,31 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts an item type string to its sprite image
+    /// </summary>
+    public class ItemTypeToSpriteConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is not string itemType || string.IsNullOrEmpty(itemType))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetItemImage(itemType);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

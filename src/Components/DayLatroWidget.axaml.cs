@@ -116,7 +116,6 @@ namespace BalatroSeedOracle.Components
         public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             Helpers.DebugLogger.Log("DayLatroWidget", "PointerPressed");
-        {
             var props = e.GetCurrentPoint(this).Properties;
             if (!props.IsLeftButtonPressed)
                 return;
