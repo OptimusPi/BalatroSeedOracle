@@ -15,7 +15,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class FilterListViewModel : ObservableObject
     {
         private const int DEFAULT_FILTERS_PER_PAGE = 10;
-        private const double ITEM_HEIGHT = 30.0; // 28px button height + 2px margin
+        private const double ITEM_HEIGHT = 32.0; // 28px button height + 4px margin (2px top + 2px bottom)
 
         [ObservableProperty]
         private int _filtersPerPage = DEFAULT_FILTERS_PER_PAGE;
@@ -243,11 +243,15 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
+            // Account for Border padding (4px total: 2px top + 2px bottom)
+            const double borderPadding = 4.0;
+            var usableHeight = availableHeight - borderPadding;
+
             // Calculate how many items can fit (minimum 3, maximum 20)
-            var calculatedItems = Math.Floor(availableHeight / ITEM_HEIGHT);
+            var calculatedItems = Math.Floor(usableHeight / ITEM_HEIGHT);
             FiltersPerPage = Math.Clamp((int)calculatedItems, 3, 20);
 
-            DebugLogger.Log("FilterListViewModel", $"Updated FiltersPerPage to {FiltersPerPage} (available height: {availableHeight:F0}px)");
+            DebugLogger.Log("FilterListViewModel", $"Updated FiltersPerPage to {FiltersPerPage} (container: {availableHeight:F0}px, usable: {usableHeight:F0}px)");
 
             // Refresh the current page with new page size
             UpdatePage();

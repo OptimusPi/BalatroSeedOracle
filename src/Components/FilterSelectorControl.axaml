@@ -72,15 +72,15 @@
                            HorizontalAlignment="Center"/>
 
                 <!-- Paginated filter list (NO scrolling - pagination handles overflow) -->
-                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="True">
-                    <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}" Margin="0,0,0,12">
+                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="0,2,0,2">
+                    <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Classes="btn-red"
                                         Height="28"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Left"
-                                        Margin="0,1"
+                                        Margin="0,2"
                                         CornerRadius="6"
                                         Padding="4,0"
                                         Click="OnFilterListItemClick"
