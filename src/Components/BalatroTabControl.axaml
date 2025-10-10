@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.BalatroTabControl"
+             x:DataType="vm:BalatroTabControlViewModel">
+
+    <!-- Reusable Balatro-style tab switcher with bouncing triangle -->
+    <!-- MVVM: ViewModel controls active tab, triangle follows automatically -->
+
+    <Grid HorizontalAlignment="Center" Margin="0,0,0,-3">
+        <!-- Tab Buttons (triangle built into each button via global .tab-button style) -->
+        <ItemsControl ItemsSource="{Binding Tabs}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Content="{Binding Title}"
+                            Classes="tab-button"
+                            Classes.active="{Binding IsActive}"
+                            IsEnabled="{Binding IsEnabled}"
+                            Command="{Binding $parent[UserControl].((vm:BalatroTabControlViewModel)DataContext).SwitchTabCommand}"
+                            CommandParameter="{Binding Index}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+
+</UserControl>
