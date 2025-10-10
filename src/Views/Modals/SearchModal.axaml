@@ -6,44 +6,6 @@
              x:Class="BalatroSeedOracle.Views.Modals.SearchModal"
              x:DataType="vm:SearchModalViewModel">
 
-    <UserControl.Styles>
-        <!-- Balatro Tab Button Style (matching FiltersModal) - MUST override global styles! -->
-        <Style Selector="Button.tab-button">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="MinWidth" Value="144"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="CornerRadius" Value="12,12,0,0"/>
-            <Setter Property="BorderThickness" Value="3,3,3,0"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="12,8">
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                        HorizontalContentAlignment="Center"
-                                        VerticalContentAlignment="Center"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-
-        <Style Selector="Button.tab-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource Orange}"/>
-        </Style>
-
-        <Style Selector="Button.tab-button.active">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="ZIndex" Value="10"/>
-        </Style>
-    </UserControl.Styles>
 
     <Grid>
         <Grid.RowDefinitions>
