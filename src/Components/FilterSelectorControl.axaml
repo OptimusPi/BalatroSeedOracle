@@ -320,8 +320,20 @@
                         </ScrollViewer>
                     </Border>
 
-                    <!-- Action Buttons -->
+                    <!-- Action Buttons (context-aware) -->
                     <StackPanel Grid.Row="4" Spacing="8" Margin="0,12,0,8">
+                        <!-- SELECT button (SearchModal) -->
+                        <Button Name="SelectFilterButton"
+                                Content="SELECT THIS FILTER"
+                                Classes="btn-green"
+                                Height="40"
+                                HorizontalAlignment="Stretch"
+                                FontSize="16"
+                                Click="OnSelectFilterClick"
+                                Margin="8,0,8,0"
+                                IsVisible="{Binding ShowSelectButton}"/>
+
+                        <!-- EDIT button (FiltersModal) -->
                         <Button Name="EditFilterButton"
                                 Content="EDIT FILTER"
                                 Classes="btn-blue"
@@ -329,8 +341,10 @@
                                 HorizontalAlignment="Stretch"
                                 FontSize="15"
                                 Click="OnEditFilterClick"
-                                Margin="8,0,8,0"/>
+                                Margin="8,0,8,0"
+                                IsVisible="{Binding ShowActionButtons}"/>
 
+                        <!-- COPY button (FiltersModal) -->
                         <Button Name="CopyFilterButton"
                                 Content="COPY FILTER"
                                 Classes="btn-red"
@@ -338,7 +352,8 @@
                                 HorizontalAlignment="Stretch"
                                 FontSize="13"
                                 Click="OnCopyFilterClick"
-                                Margin="8,0,8,0"/>
+                                Margin="8,0,8,0"
+                                IsVisible="{Binding ShowActionButtons}"/>
                     </StackPanel>
                 </Grid>
             </Grid>

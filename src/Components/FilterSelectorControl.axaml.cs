@@ -8,6 +8,16 @@ namespace BalatroSeedOracle.Components
 {
     public partial class FilterSelectorControl : UserControl
     {
+        // IsInSearchModal Dependency Property
+        public static readonly StyledProperty<bool> IsInSearchModalProperty =
+            AvaloniaProperty.Register<FilterSelectorControl, bool>(nameof(IsInSearchModal), defaultValue: false);
+
+        public bool IsInSearchModal
+        {
+            get => GetValue(IsInSearchModalProperty);
+            set => SetValue(IsInSearchModalProperty, value);
+        }
+
         // Events that parent controls can subscribe to
         public event EventHandler<string>? FilterSelected;       // When a filter is clicked (for preview)
         public event EventHandler<string>? FilterEditRequested;   // When Edit button is clicked
@@ -21,6 +31,17 @@ namespace BalatroSeedOracle.Components
         {
             InitializeComponent();
             InitializeViewModel();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsInSearchModalProperty)
+            {
+                // Update ViewModel when IsInSearchModal changes
+                _viewModel?.SetSearchModalMode((bool)change.NewValue!);
+            }
         }
 
         private void InitializeComponent()
@@ -108,6 +129,17 @@ namespace BalatroSeedOracle.Components
             if (!string.IsNullOrEmpty(filterPath))
             {
                 FilterCopyRequested?.Invoke(this, filterPath);
+            }
+        }
+
+        // Event handler for "Select This Filter" button (SearchModal context)
+        private void OnSelectFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                // Fire FilterSelected event for SearchModal to handle
+                FilterSelected?.Invoke(this, filterPath);
             }
         }
 

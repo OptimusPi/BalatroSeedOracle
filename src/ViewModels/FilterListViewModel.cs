@@ -68,11 +68,27 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _hasFilterItems = false;
 
+        [ObservableProperty]
+        private bool _showSelectButton = false;
+
+        [ObservableProperty]
+        private bool _showActionButtons = true;
+
         private List<FilterListItem> _allFilters = new();
 
         public FilterListViewModel()
         {
             LoadFilters();
+        }
+
+        /// <summary>
+        /// Sets the context mode for the control (SearchModal vs FiltersModal)
+        /// </summary>
+        public void SetSearchModalMode(bool isInSearchModal)
+        {
+            ShowSelectButton = isInSearchModal;
+            ShowActionButtons = !isInSearchModal;
+            DebugLogger.Log("FilterListViewModel", $"Mode changed: ShowSelectButton={ShowSelectButton}, ShowActionButtons={ShowActionButtons}");
         }
 
         public void LoadFilters()
