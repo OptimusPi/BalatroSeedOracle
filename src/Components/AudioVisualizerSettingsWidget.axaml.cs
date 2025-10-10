@@ -18,7 +18,6 @@ namespace BalatroSeedOracle.Components
 
         // Drag state
         private bool _isDragging = false;
-        private Point _dragStartPoint;
 
         public AudioVisualizerSettingsWidget()
         {
@@ -41,6 +40,9 @@ namespace BalatroSeedOracle.Components
         }
 
         #region Drag Functionality
+
+        private Point _dragStartScreenPoint;
+        private Thickness _originalMargin;
 
         public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -75,7 +77,15 @@ namespace BalatroSeedOracle.Components
             if (isHeader)
             {
                 _isDragging = true;
-                _dragStartPoint = e.GetPosition(this.Parent as Visual);
+
+                // Store screen coordinates (null = screen space)
+                _dragStartScreenPoint = e.GetPosition(null);
+
+                // Store original margin before drag starts
+                var minimizedView = this.FindControl<Grid>("MinimizedView");
+                var expandedView = this.FindControl<Border>("ExpandedView");
+                _originalMargin = (minimizedView?.Margin ?? expandedView?.Margin) ?? new Thickness(0);
+
                 e.Pointer.Capture(this);
                 e.Handled = true;
             }
@@ -86,18 +96,28 @@ namespace BalatroSeedOracle.Components
             if (!_isDragging)
                 return;
 
-            var currentPoint = e.GetPosition(this.Parent as Control);
-            var delta = currentPoint - _dragStartPoint;
+            // Get current screen position
+            var currentScreenPoint = e.GetPosition(null);
+
+            // Calculate delta from original position
+            var delta = currentScreenPoint - _dragStartScreenPoint;
+
+            // Apply delta to original margin
+            var newMargin = new Thickness(
+                _originalMargin.Left + delta.X,
+                _originalMargin.Top + delta.Y,
+                0,
+                0
+            );
 
             // Update position through ViewModel
-            ViewModel.PositionX = delta.X;
-            ViewModel.PositionY = delta.Y;
+            ViewModel.PositionX = newMargin.Left;
+            ViewModel.PositionY = newMargin.Top;
 
             // Update actual margin for visual feedback
             var minimizedView = this.FindControl<Grid>("MinimizedView");
             var expandedView = this.FindControl<Border>("ExpandedView");
 
-            var newMargin = new Thickness(delta.X, delta.Y, 0, 0);
             if (minimizedView != null)
                 minimizedView.Margin = newMargin;
             if (expandedView != null)
@@ -108,12 +128,12 @@ namespace BalatroSeedOracle.Components
 
         public void OnWidgetPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            if (!_isDragging)
-                return;
-
-            _isDragging = false;
-            e.Pointer.Capture(null);
-            e.Handled = true;
+            if (_isDragging)
+            {
+                _isDragging = false;
+                e.Pointer.Capture(null);
+                e.Handled = true;
+            }
         }
 
         #endregion

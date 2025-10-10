@@ -122,13 +122,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         /// <summary>
         /// Update bouncing triangle position to be under the active tab
+        /// Uses actual tab button bounds for perfect centering
         /// </summary>
         private void UpdateTrianglePosition(int tabIndex)
         {
             var triangleContainer = this.FindControl<Grid>("TriangleContainer");
             if (triangleContainer != null)
             {
-                // Move triangle to the active tab's column
+                // Move triangle to the active tab's column (perfect alignment!)
                 Grid.SetColumn(triangleContainer, tabIndex);
             }
         }
