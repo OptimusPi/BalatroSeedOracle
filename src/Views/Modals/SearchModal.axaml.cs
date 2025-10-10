@@ -24,7 +24,18 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
 
             InitializeComponent();
+            InitializeTabs();
             WireUpComponentEvents();
+        }
+
+        private void InitializeTabs()
+        {
+            var tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
+            if (tabControl != null)
+            {
+                tabControl.SetTabs("Select Filter", "Settings", "Search", "Results");
+                tabControl.TabChanged += (s, tabIndex) => ViewModel.UpdateTabVisibility(tabIndex);
+            }
         }
 
         private void InitializeComponent()
