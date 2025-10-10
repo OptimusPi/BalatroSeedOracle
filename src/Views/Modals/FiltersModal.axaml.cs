@@ -511,7 +511,9 @@ namespace BalatroSeedOracle.Views.Modals
                     Width = 400,
                     Height = 200,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    CanResize = false
+                    CanResize = false,
+                    Background = new SolidColorBrush(Color.Parse("#2b4143")), // Balatro dark grey
+                    Foreground = Brushes.White
                 };
 
                 string? result = null;
@@ -552,7 +554,8 @@ namespace BalatroSeedOracle.Views.Modals
                     Content = "CREATE",
                     Width = 120,
                     Height = 40,
-                    FontSize = 14
+                    FontSize = 14,
+                    Classes = { "btn-green" }
                 };
                 okButton.Click += (s, e) =>
                 {
@@ -565,7 +568,8 @@ namespace BalatroSeedOracle.Views.Modals
                     Content = "CANCEL",
                     Width = 120,
                     Height = 40,
-                    FontSize = 14
+                    FontSize = 14,
+                    Classes = { "btn-red" }
                 };
                 cancelButton.Click += (s, e) => dialog.Close();
 
