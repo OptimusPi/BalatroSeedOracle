@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using Motely;
@@ -66,7 +67,7 @@ public partial class AnalyzerView : UserControl
 
     private void RenderImages()
     {
-        DebugLogger.Log("AnalyzerView", "RenderImages() called");
+        Helpers.DebugLogger.Log("AnalyzerView", "RenderImages() called");
         RenderBossImage();
         RenderVoucherImage();
         RenderShopImages();
@@ -132,18 +133,18 @@ public partial class AnalyzerView : UserControl
         var shopContainer = this.FindControl<ItemsControl>("ShopItemsContainer");
         if (shopContainer == null)
         {
-            DebugLogger.LogError("AnalyzerView", "ShopItemsContainer control not found!");
+            Helpers.DebugLogger.LogError("AnalyzerView", "ShopItemsContainer control not found!");
             return;
         }
 
         if (ViewModel == null)
         {
-            DebugLogger.LogError("AnalyzerView", "ViewModel is null!");
+            Helpers.DebugLogger.LogError("AnalyzerView", "ViewModel is null!");
             return;
         }
 
         var items = ViewModel.CurrentShopItemsRaw;
-        DebugLogger.Log("AnalyzerView", $"RenderShopImages: {items?.Count ?? 0} items");
+        Helpers.DebugLogger.Log("AnalyzerView", $"RenderShopImages: {items?.Count ?? 0} items");
         var itemElements = new System.Collections.Generic.List<StackPanel>();
 
         for (int i = 0; i < items.Count; i++)
