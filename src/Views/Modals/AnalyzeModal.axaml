@@ -338,6 +338,17 @@
         <Grid Grid.Row="2">
             <!-- Settings Panel (Deck/Stake) -->
             <StackPanel IsVisible="{Binding SettingsTabVisible}" Spacing="24">
+                <!-- Explanatory Text -->
+                <TextBlock Text="Peek inside any seed to see what the shops, packs, and skip tags look like for each ante!"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="13"
+                          Foreground="{StaticResource VeryLightGrey}"
+                          TextWrapping="Wrap"
+                          HorizontalAlignment="Center"
+                          TextAlignment="Center"
+                          Opacity="0.8"
+                          Margin="0,8,0,0"/>
+
                 <Border Background="{StaticResource DarkModalGrey}"
                         CornerRadius="12"
                         Padding="40"

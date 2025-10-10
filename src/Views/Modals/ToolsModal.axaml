@@ -5,13 +5,24 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel HorizontalAlignment="Center" Margin="20" Spacing="20">
             <!-- Title -->
-            <TextBlock Text="TOOLS" 
-                       FontSize="24" 
-                        
+            <TextBlock Text="TOOLS"
+                       FontSize="24"
+
                        Foreground="{StaticResource Gold}"
                        FontFamily="{StaticResource BalatroFont}"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,20"/>
+                       Margin="0,0,0,10"/>
+
+            <!-- Explanatory Text -->
+            <TextBlock Text="Import filters, manage wordlists, and tweak your audio visualizer settings here."
+                      FontFamily="{StaticResource BalatroFont}"
+                      FontSize="13"
+                      Foreground="{StaticResource VeryLightGrey}"
+                      TextWrapping="Wrap"
+                      HorizontalAlignment="Center"
+                      TextAlignment="Center"
+                      Opacity="0.8"
+                      Margin="0,0,0,12"/>
             
             <!-- Import Files Button -->
             <Button Name="ImportFilesButton"

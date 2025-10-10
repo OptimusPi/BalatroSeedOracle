@@ -56,6 +56,22 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _selectedStake = 0;
 
+        // Tab visibility properties - proper MVVM pattern
+        [ObservableProperty]
+        private bool _isLoadSaveTabVisible = true;
+
+        [ObservableProperty]
+        private bool _isVisualTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isJsonTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isTestTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isSaveTabVisible = false;
+
         // Collections - Observable for data binding
         private readonly Dictionary<string, List<string>> _itemCategories;
         public ObservableCollection<string> SelectedMust { get; } = new();
@@ -315,6 +331,45 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DebugLogger.LogError("FiltersModalViewModel", $"Error reloading visual: {ex.Message}");
             }
+        }
+
+        // ===== TAB VISIBILITY MANAGEMENT (MVVM) =====
+
+        /// <summary>
+        /// Updates tab visibility based on the selected tab index
+        /// Follows proper MVVM pattern - no direct UI manipulation
+        /// </summary>
+        /// <param name="tabIndex">0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save</param>
+        public void UpdateTabVisibility(int tabIndex)
+        {
+            // Hide all tabs first
+            IsLoadSaveTabVisible = false;
+            IsVisualTabVisible = false;
+            IsJsonTabVisible = false;
+            IsTestTabVisible = false;
+            IsSaveTabVisible = false;
+
+            // Show the selected tab
+            switch (tabIndex)
+            {
+                case 0:
+                    IsLoadSaveTabVisible = true;
+                    break;
+                case 1:
+                    IsVisualTabVisible = true;
+                    break;
+                case 2:
+                    IsJsonTabVisible = true;
+                    break;
+                case 3:
+                    IsTestTabVisible = true;
+                    break;
+                case 4:
+                    IsSaveTabVisible = true;
+                    break;
+            }
+
+            DebugLogger.Log("FiltersModalViewModel", $"Tab visibility updated: tabIndex={tabIndex}");
         }
 
         // ===== HELPER METHODS =====

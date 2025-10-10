@@ -356,7 +356,7 @@
         <Grid Grid.Row="2" Margin="12,6,12,12" DragDrop.AllowDrop="True">
             
             <!-- Visual Panel -->
-            <Grid Name="VisualPanel" IsVisible="False" DragDrop.AllowDrop="True">
+            <Grid Name="VisualPanel" IsVisible="{Binding IsVisualTabVisible}" DragDrop.AllowDrop="True">
                     <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="124" />
                     <ColumnDefinition Width="6" />
@@ -549,8 +549,8 @@
             </Grid>
             
             <!-- Load/Save Panel - Balatro Challenges Style -->
-            <Grid Name="LoadSavePanel" IsVisible="True">
-                <!-- Use the new reusable FilterSelectorControl -->
+            <Grid Name="LoadSavePanel" IsVisible="{Binding IsLoadSaveTabVisible}">
+                <!-- Use the new reusable FilterSelectorControl (fills available space) -->
                 <components:FilterSelectorControl Name="FilterSelector"
                                                   FilterSelected="OnFilterSelected"
                                                   FilterCopyRequested="OnFilterCopyRequested"
@@ -558,7 +558,7 @@
             </Grid>
 
             <!-- JSON Panel - ENHANCED -->
-            <Grid Name="JsonPanel" IsVisible="False">
+            <Grid Name="JsonPanel" IsVisible="{Binding IsJsonTabVisible}">
                 <Border Background="{StaticResource ContainerDarkPrecise}"
                         BorderThickness="0"
                         CornerRadius="8"
@@ -658,7 +658,7 @@
             </Grid>
 
             <!-- TEST Panel - INSTANT FILTER TESTING! -->
-            <Grid Name="TestPanel" IsVisible="False">
+            <Grid Name="TestPanel" IsVisible="{Binding IsTestTabVisible}">
                 <Border Background="{StaticResource ContainerDarkPrecise}"
                         BorderThickness="0"
                         CornerRadius="8"
@@ -870,7 +870,7 @@
             </Grid>
 
             <!-- Filter Info/Metadata Panel -->
-            <Grid Name="SaveFilterPanel" IsVisible="False">
+            <Grid Name="SaveFilterPanel" IsVisible="{Binding IsSaveTabVisible}">
                 <Border Background="{StaticResource ContainerDarkPrecise}" 
                         BorderThickness="0" 
                         CornerRadius="8" 

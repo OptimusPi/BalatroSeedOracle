@@ -3,6 +3,17 @@
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
     <StackPanel Spacing="20" Margin="20">
+        <!-- Explanatory Text -->
+        <TextBlock Text="Create lists of seed keywords to search for (like memorable words or phrases). Your filters can reference these lists!"
+                  FontFamily="{StaticResource BalatroFont}"
+                  FontSize="13"
+                  Foreground="{StaticResource VeryLightGrey}"
+                  TextWrapping="Wrap"
+                  HorizontalAlignment="Center"
+                  TextAlignment="Center"
+                  Opacity="0.8"
+                  Margin="0,0,0,8"/>
+
         <!-- Simple file list at the top -->
         <Border Background="{StaticResource ContainerDarkPrecise}" 
                 CornerRadius="12" 
