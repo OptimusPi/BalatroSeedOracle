@@ -115,6 +115,8 @@ namespace BalatroSeedOracle.Components
 
         public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
         {
+            Helpers.DebugLogger.Log("DayLatroWidget", "PointerPressed");
+        {
             var props = e.GetCurrentPoint(this).Properties;
             if (!props.IsLeftButtonPressed)
                 return;
@@ -201,11 +203,13 @@ namespace BalatroSeedOracle.Components
 
         public void OnWidgetPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
+            Helpers.DebugLogger.Log("DayLatroWidget", $"PointerReleased - isDragging: {_isDragging}");
             if (_isDragging)
             {
                 _isDragging = false;
                 e.Pointer.Capture(null);
                 e.Handled = true;
+                Helpers.DebugLogger.Log("DayLatroWidget", "Pointer capture released");
             }
         }
 
