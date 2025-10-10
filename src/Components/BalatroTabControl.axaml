@@ -21,7 +21,7 @@
                             Classes="tab-button"
                             Classes.active="{Binding IsActive}"
                             IsEnabled="{Binding IsEnabled}"
-                            Command="{Binding $parent[UserControl].((vm:BalatroTabControlViewModel)DataContext).SwitchTabCommand}"
+                            Command="{Binding $parent[UserControl].DataContext.SwitchTabCommand}"
                             CommandParameter="{Binding Index}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
