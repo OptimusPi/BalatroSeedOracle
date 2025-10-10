@@ -152,7 +152,7 @@ public partial class AnalyzerView : UserControl
         Helpers.DebugLogger.Log("AnalyzerView", $"RenderShopImages: {items?.Count ?? 0} items");
         var itemElements = new System.Collections.Generic.List<StackPanel>();
 
-        for (int i = 0; i < items.Count; i++)
+        for (int i = 0; i < items?.Count; i++)
         {
             var item = items[i];
             var itemPanel = new StackPanel

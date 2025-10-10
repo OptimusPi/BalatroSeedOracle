@@ -168,8 +168,6 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _vouchersTab;
         private CheckBox? _modeToggle;
         private DeckAndStakeSelector? _preferredDeckStakeSelector;
-        private DeckSpinner? _deckSpinnerControl;
-        private Grid? _desktopCanvas;
         private Grid? _dropZonesContainer;
         private Grid? _jsonPanel;
         private Grid? _mainContentGrid;
@@ -179,7 +177,6 @@ namespace BalatroSeedOracle.Views.Modals
         private Grid? _visualModeContainer;
         private Grid? _visualPanel;
         private ItemsControl? _testResultsList;
-        private SpinnerControl? _stakeSpinner;
         private TextBlock? _authorDisplay;
         private TextBlock? _createdDateDisplay;
         private TextBlock? _fileNameDisplay;
