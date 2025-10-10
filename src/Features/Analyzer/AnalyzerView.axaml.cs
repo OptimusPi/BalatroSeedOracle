@@ -66,6 +66,7 @@ public partial class AnalyzerView : UserControl
 
     private void RenderImages()
     {
+        DebugLogger.Log("AnalyzerView", "RenderImages() called");
         RenderBossImage();
         RenderVoucherImage();
         RenderShopImages();
