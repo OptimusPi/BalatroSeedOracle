@@ -252,11 +252,14 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// Represents a filter in the list
     /// </summary>
-    public class FilterListItem
+    public partial class FilterListItem : ObservableObject
     {
         public int Number { get; set; }
         public string Name { get; set; } = "";
         public string Author { get; set; } = "";
         public string FilePath { get; set; } = "";
+
+        [ObservableProperty]
+        private bool _isSelected = false;
     }
 }

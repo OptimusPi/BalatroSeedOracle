@@ -137,7 +137,15 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         public void SelectFilter(FilterListItem filter)
         {
+            // Clear previous selection
+            if (SelectedFilter != null)
+            {
+                SelectedFilter.IsSelected = false;
+            }
+
+            // Set new selection
             SelectedFilter = filter;
+            filter.IsSelected = true;
             SelectedFilterName = filter.Name;
             SelectedFilterAuthor = $"by {filter.Author}";
             IsFilterSelected = true;

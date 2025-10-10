@@ -44,8 +44,8 @@
     <!-- Filter Selection UI (Balatro Challenges Style) -->
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" MinWidth="200"/>
-            <ColumnDefinition Width="*" MinWidth="400"/>
+            <ColumnDefinition Width="280" MinWidth="240"/>
+            <ColumnDefinition Width="*" MinWidth="450"/>
         </Grid.ColumnDefinitions>
 
         <!-- Left: Filter List (Balatro challenges style) -->
@@ -53,7 +53,7 @@
                 Background="{StaticResource ContainerDarkPrecise}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,2,0"
-                Padding="10">
+                Padding="12,10,8,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -71,44 +71,54 @@
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
 
-                <!-- Paginated filter list (NO scrolling - 10 items fit perfectly!) -->
+                <!-- Paginated filter list with numbers OUTSIDE buttons -->
                 <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="0">
                     <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Classes="btn-red"
-                                        Height="28"
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Left"
-                                        Margin="0,1"
-                                        CornerRadius="6"
-                                        Padding="4,0"
-                                        Click="OnFilterListItemClick"
-                                        Tag="{Binding}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                <!-- Number + Button layout (Balatro Challenges style) -->
+                                <Grid Margin="0,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="24"/>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                        <!-- Number -->
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Number}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="15"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="{StaticResource Gold}"/>
+                                    <!-- Selection Indicator (red triangle, Balatro style) -->
+                                    <Viewbox Grid.Column="0"
+                                             Width="16"
+                                             Height="16"
+                                             VerticalAlignment="Center"
+                                             HorizontalAlignment="Center"
+                                             IsVisible="{Binding IsSelected}">
+                                        <Polygon Points="0,0 0,16 16,8"
+                                                 Fill="{StaticResource Red}"/>
+                                    </Viewbox>
 
-                                        <!-- Name -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding Name}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   Margin="4,0,0,0"/>
-                                    </Grid>
-                                </Button>
+                                    <!-- Number OUTSIDE button (white text on dark background) -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Number}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="16"
+                                               Foreground="White"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Right"
+                                               Margin="0,0,8,0"/>
+
+                                    <!-- Button with just the name -->
+                                    <Button Grid.Column="2"
+                                            Classes="btn-red"
+                                            Content="{Binding Name}"
+                                            Height="28"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"
+                                            CornerRadius="6"
+                                            Padding="8,0"
+                                            FontFamily="{StaticResource BalatroFont}"
+                                            FontSize="14"
+                                            Click="OnFilterListItemClick"
+                                            Tag="{Binding}"/>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
