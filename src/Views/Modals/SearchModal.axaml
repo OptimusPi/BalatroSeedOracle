@@ -7,7 +7,7 @@
              x:DataType="vm:SearchModalViewModel">
 
     <UserControl.Styles>
-        <!-- Balatro Tab Button Style (matching FiltersModal) -->
+        <!-- Balatro Tab Button Style (matching FiltersModal) - MUST override global styles! -->
         <Style Selector="Button.tab-button">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
@@ -20,6 +20,19 @@
             <Setter Property="BorderThickness" Value="3,3,3,0"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="12,8">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalContentAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
         </Style>
 
         <Style Selector="Button.tab-button:pointerover">
