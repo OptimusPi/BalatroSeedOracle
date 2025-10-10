@@ -511,7 +511,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Saves the current settings as a new preset
         /// </summary>
         [RelayCommand]
-        private async void SavePreset()
+        private async Task SavePreset()
         {
             try
             {
