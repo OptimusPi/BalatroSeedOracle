@@ -18,6 +18,7 @@ public partial class AnalyzerView : UserControl
 
     public AnalyzerView()
     {
+        Helpers.DebugLogger.Log("AnalyzerView", "Constructor called!");
         InitializeComponent();
 
         // Set up hotkeys
@@ -47,20 +48,24 @@ public partial class AnalyzerView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
+        Helpers.DebugLogger.Log("AnalyzerView", $"DataContext changed, ViewModel is {(ViewModel == null ? "NULL" : "SET")}");
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            Helpers.DebugLogger.Log("AnalyzerView", "Subscribed to ViewModel.PropertyChanged");
         }
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        Helpers.DebugLogger.Log("AnalyzerView", $"Property changed: {e.PropertyName}");
         // Re-render images when ante changes or analysis updates
         if (e.PropertyName == nameof(AnalyzerViewModel.CurrentBoss) ||
             e.PropertyName == nameof(AnalyzerViewModel.CurrentVoucher) ||
             e.PropertyName == nameof(AnalyzerViewModel.CurrentShopItemsRaw) ||
             e.PropertyName == nameof(AnalyzerViewModel.CurrentPacks))
         {
+            Helpers.DebugLogger.Log("AnalyzerView", "Triggering RenderImages()");
             RenderImages();
         }
     }
