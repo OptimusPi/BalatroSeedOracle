@@ -74,7 +74,7 @@ namespace BalatroSeedOracle.Views.Modals
         }
 
         /// <summary>
-        /// Tab click handler - switches between panels and updates button styling
+        /// Tab click handler - PROPER MVVM: Updates ViewModel instead of directly manipulating UI
         /// </summary>
         private void OnTabClick(object? sender, RoutedEventArgs e)
         {
@@ -86,49 +86,38 @@ namespace BalatroSeedOracle.Views.Modals
             var searchTab = this.FindControl<Button>("SearchTab");
             var resultsTab = this.FindControl<Button>("ResultsTab");
 
-            // Find all panels
-            var selectFilterPanel = this.FindControl<Grid>("SelectFilterPanel");
-            var settingsPanel = this.FindControl<Grid>("SettingsPanel");
-            var searchPanel = this.FindControl<Grid>("SearchPanel");
-            var resultsPanel = this.FindControl<Grid>("ResultsPanel");
-
             // Remove 'active' class from all tabs
             selectFilterTab?.Classes.Remove("active");
             settingsTab?.Classes.Remove("active");
             searchTab?.Classes.Remove("active");
             resultsTab?.Classes.Remove("active");
 
-            // Hide all panels
-            if (selectFilterPanel != null) selectFilterPanel.IsVisible = false;
-            if (settingsPanel != null) settingsPanel.IsVisible = false;
-            if (searchPanel != null) searchPanel.IsVisible = false;
-            if (resultsPanel != null) resultsPanel.IsVisible = false;
-
-            // Show the clicked tab's panel and mark button as active
+            // Determine which tab was clicked and update ViewModel
+            int tabIndex = 0;
             if (clickedButton.Name == "SelectFilterTab")
             {
                 clickedButton.Classes.Add("active");
-                if (selectFilterPanel != null) selectFilterPanel.IsVisible = true;
-                UpdateTrianglePosition(0);
+                tabIndex = 0;
             }
             else if (clickedButton.Name == "SettingsTab")
             {
                 clickedButton.Classes.Add("active");
-                if (settingsPanel != null) settingsPanel.IsVisible = true;
-                UpdateTrianglePosition(1);
+                tabIndex = 1;
             }
             else if (clickedButton.Name == "SearchTab")
             {
                 clickedButton.Classes.Add("active");
-                if (searchPanel != null) searchPanel.IsVisible = true;
-                UpdateTrianglePosition(2);
+                tabIndex = 2;
             }
             else if (clickedButton.Name == "ResultsTab")
             {
                 clickedButton.Classes.Add("active");
-                if (resultsPanel != null) resultsPanel.IsVisible = true;
-                UpdateTrianglePosition(3);
+                tabIndex = 3;
             }
+
+            // PROPER MVVM: Let ViewModel control visibility
+            ViewModel.UpdateTabVisibility(tabIndex);
+            UpdateTrianglePosition(tabIndex);
         }
 
         /// <summary>

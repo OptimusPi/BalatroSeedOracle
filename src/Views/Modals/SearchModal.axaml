@@ -100,14 +100,14 @@
             <!-- Container for all tab panels (Border can only have ONE child) -->
             <Grid>
                 <!-- Select Filter Panel -->
-                <Grid Name="SelectFilterPanel" IsVisible="True">
+                <Grid Name="SelectFilterPanel" IsVisible="{Binding IsSelectFilterTabVisible}">
                     <components:FilterSelectorControl Name="FilterSelector"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"/>
                 </Grid>
 
                 <!-- Settings Panel (Horizontal Split Layout) -->
-                <Grid Name="SettingsPanel" IsVisible="False">
+                <Grid Name="SettingsPanel" IsVisible="{Binding IsSettingsTabVisible}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -242,7 +242,7 @@
                 </Grid>
 
             <!-- Search Panel -->
-            <Grid Name="SearchPanel" IsVisible="False">
+            <Grid Name="SearchPanel" IsVisible="{Binding IsSearchTabVisible}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
@@ -370,7 +370,7 @@
             </Grid>
 
             <!-- Results Panel -->
-            <Grid Name="ResultsPanel" IsVisible="False">
+            <Grid Name="ResultsPanel" IsVisible="{Binding IsResultsTabVisible}">
                 <ScrollViewer>
                     <DataGrid ItemsSource="{Binding SearchResults}"
                              AutoGenerateColumns="False"

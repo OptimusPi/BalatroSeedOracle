@@ -41,6 +41,19 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private SearchProgress? _latestProgress;
 
+        // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
+        [ObservableProperty]
+        private bool _isSelectFilterTabVisible = true;
+
+        [ObservableProperty]
+        private bool _isSettingsTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isSearchTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isResultsTabVisible = false;
+
         [ObservableProperty]
         private int _lastKnownResultCount = 0;
 
@@ -270,11 +283,45 @@ namespace BalatroSeedOracle.ViewModels
             if (parameter is int tabIndex)
             {
                 SelectedTabIndex = tabIndex;
+                UpdateTabVisibility(tabIndex);
             }
             else if (parameter is string tabIndexStr && int.TryParse(tabIndexStr, out int parsedIndex))
             {
                 SelectedTabIndex = parsedIndex;
+                UpdateTabVisibility(parsedIndex);
             }
+        }
+
+        /// <summary>
+        /// PROPER MVVM: Update tab visibility when tab selection changes
+        /// Ensures only ONE tab is visible at a time
+        /// </summary>
+        public void UpdateTabVisibility(int tabIndex)
+        {
+            // Hide ALL tabs first
+            IsSelectFilterTabVisible = false;
+            IsSettingsTabVisible = false;
+            IsSearchTabVisible = false;
+            IsResultsTabVisible = false;
+
+            // Show only the selected tab
+            switch (tabIndex)
+            {
+                case 0:
+                    IsSelectFilterTabVisible = true;
+                    break;
+                case 1:
+                    IsSettingsTabVisible = true;
+                    break;
+                case 2:
+                    IsSearchTabVisible = true;
+                    break;
+                case 3:
+                    IsResultsTabVisible = true;
+                    break;
+            }
+
+            DebugLogger.Log("SearchModalViewModel", $"Switched to tab {tabIndex}");
         }
 
         [RelayCommand]

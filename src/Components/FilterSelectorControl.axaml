@@ -71,8 +71,8 @@
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
 
-                <!-- Paginated filter list -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <!-- Paginated filter list (NO scrolling - pagination handles overflow) -->
+                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="True">
                     <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}" Margin="0,0,0,12">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -112,7 +112,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
+                </Border>
 
                 <!-- Pagination Controls -->
                 <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">

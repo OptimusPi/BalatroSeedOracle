@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using BalatroSeedOracle.ViewModels;
@@ -14,6 +15,7 @@ namespace BalatroSeedOracle.Components
         public event EventHandler? NewFilterRequested;
 
         private FilterListViewModel? _viewModel;
+        private Border? _filterListContainer;
 
         public FilterSelectorControl()
         {
@@ -30,6 +32,30 @@ namespace BalatroSeedOracle.Components
         {
             _viewModel = new FilterListViewModel();
             DataContext = _viewModel;
+
+            // Wire up SizeChanged event for dynamic pagination
+            this.Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Find the filter list container
+            _filterListContainer = this.FindControl<Border>("FilterListContainer");
+
+            if (_filterListContainer != null)
+            {
+                // Subscribe to size changes
+                _filterListContainer.GetObservable(BoundsProperty)
+                    .Subscribe(bounds => UpdateItemsPerPage(bounds.Height));
+            }
+        }
+
+        private void UpdateItemsPerPage(double containerHeight)
+        {
+            if (_viewModel != null && containerHeight > 0)
+            {
+                _viewModel.UpdateItemsPerPage(containerHeight);
+            }
         }
 
         // Public method to refresh the filter list

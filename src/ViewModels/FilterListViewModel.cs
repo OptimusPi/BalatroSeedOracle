@@ -14,7 +14,11 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterListViewModel : ObservableObject
     {
-        private const int FILTERS_PER_PAGE = 10;
+        private const int DEFAULT_FILTERS_PER_PAGE = 10;
+        private const double ITEM_HEIGHT = 30.0; // 28px button height + 2px margin
+
+        [ObservableProperty]
+        private int _filtersPerPage = DEFAULT_FILTERS_PER_PAGE;
 
         [ObservableProperty]
         private ObservableCollection<FilterListItem> _displayedFilters = new();
@@ -147,11 +151,11 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdatePage()
         {
-            TotalPages = Math.Max(1, (int)Math.Ceiling(_allFilters.Count / (double)FILTERS_PER_PAGE));
+            TotalPages = Math.Max(1, (int)Math.Ceiling(_allFilters.Count / (double)FiltersPerPage));
             CurrentPage = Math.Clamp(CurrentPage, 0, TotalPages - 1);
 
-            var startIndex = CurrentPage * FILTERS_PER_PAGE;
-            var pageItems = _allFilters.Skip(startIndex).Take(FILTERS_PER_PAGE).ToList();
+            var startIndex = CurrentPage * FiltersPerPage;
+            var pageItems = _allFilters.Skip(startIndex).Take(FiltersPerPage).ToList();
 
             DisplayedFilters.Clear();
             foreach (var item in pageItems)
@@ -211,6 +215,27 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         public string? GetSelectedFilterPath() => SelectedFilter?.FilePath;
+
+        /// <summary>
+        /// Recalculates the number of items per page based on available container height
+        /// </summary>
+        public void UpdateItemsPerPage(double availableHeight)
+        {
+            if (availableHeight <= 0)
+            {
+                FiltersPerPage = DEFAULT_FILTERS_PER_PAGE;
+                return;
+            }
+
+            // Calculate how many items can fit (minimum 3, maximum 20)
+            var calculatedItems = Math.Floor(availableHeight / ITEM_HEIGHT);
+            FiltersPerPage = Math.Clamp((int)calculatedItems, 3, 20);
+
+            DebugLogger.Log("FilterListViewModel", $"Updated FiltersPerPage to {FiltersPerPage} (available height: {availableHeight:F0}px)");
+
+            // Refresh the current page with new page size
+            UpdatePage();
+        }
 
         [RelayCommand]
         public void SelectTab(string tabType)
