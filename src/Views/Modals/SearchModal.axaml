@@ -50,7 +50,8 @@
                 Background="{StaticResource DarkModalGrey}"
                 BorderThickness="0"
                 CornerRadius="0,0,12,12"
-                Padding="20">
+                Padding="20"
+                Margin="0,8,0,0">
 
             <!-- Container for all tab panels (Border can only have ONE child) -->
             <Grid>
