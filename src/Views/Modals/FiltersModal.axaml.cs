@@ -3645,6 +3645,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Keep the click handler as a fallback
                 setDisplay.Click += (s, e) =>
                 {
+                    DebugLogger.Log("FiltersModal", $"Clicked set '{set.Name}' with {set.Items.Count} items: {string.Join(", ", set.Items)}");
+
                     // Add all items from the set to wants
                     foreach (var item in set.Items)
                     {
@@ -3670,10 +3672,19 @@ namespace BalatroSeedOracle.Views.Modals
                         if (category != null)
                         {
                             var itemKey = $"{category}:{item}";
+                            DebugLogger.Log("FiltersModal", $"Adding item '{item}' as '{itemKey}' to Should");
                             if (!ViewModel.SelectedShould.Contains(itemKey))
                             {
                                 ViewModel.SelectedShould.Add(itemKey);
                             }
+                            else
+                            {
+                                DebugLogger.Log("FiltersModal", $"Item '{itemKey}' already in Should - skipping");
+                            }
+                        }
+                        else
+                        {
+                            DebugLogger.LogError("FiltersModal", $"Could not find category for item '{item}'");
                         }
                     }
                     UpdateDropZoneVisibility();  // Update the visual!
