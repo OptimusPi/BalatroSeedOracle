@@ -511,21 +511,59 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        Padding="12,8">
-                    <ContentPresenter Content="{TemplateBinding Content}"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"/>
-                </Border>
+                <Grid>
+                    <!-- Tab button -->
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="12,8">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalContentAlignment="Center"/>
+                    </Border>
+
+                    <!-- Bouncing triangle indicator (adorner-style, only visible when active!) -->
+                    <Grid Name="TriangleIndicator"
+                          VerticalAlignment="Bottom"
+                          HorizontalAlignment="Center"
+                          Margin="0,0,0,-20"
+                          IsVisible="False">
+                        <Polygon Points="10,20 20,5 0,5"
+                                 Fill="{StaticResource SemiTransparentShadow}"
+                                 Margin="2,2,0,0"/>
+                        <Polygon Points="10,20 20,5 0,5"
+                                 Fill="{StaticResource Red}">
+                            <Polygon.Styles>
+                                <Style Selector="Polygon">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1.2"
+                                                   IterationCount="Infinite"
+                                                   PlaybackDirection="Alternate"
+                                                   Easing="SineEaseInOut">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="Margin" Value="0,0,0,0"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="Margin" Value="0,-8,0,8"/>
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Polygon.Styles>
+                        </Polygon>
+                    </Grid>
+                </Grid>
             </ControlTemplate>
         </Setter>
     </Style>
 
     <Style Selector="Button.tab-button:pointerover">
         <Setter Property="Background" Value="{StaticResource Orange}"/>
+    </Style>
+
+    <Style Selector="Button.tab-button.active /template/ Grid#TriangleIndicator">
+        <Setter Property="IsVisible" Value="True"/>
     </Style>
 
     <Style Selector="Button.tab-button.active">
