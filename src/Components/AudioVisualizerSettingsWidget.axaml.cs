@@ -22,11 +22,11 @@ namespace BalatroSeedOracle.Components
 
         public AudioVisualizerSettingsWidget()
         {
-            // Initialize ViewModel
+            InitializeComponent();
+
+            // Initialize ViewModel (creates it lazily - only when widget is actually used)
             ViewModel = new AudioVisualizerSettingsWidgetViewModel();
             DataContext = ViewModel;
-
-            InitializeComponent();
 
             // Initialize ViewModel after XAML is loaded
             ViewModel.Initialize();

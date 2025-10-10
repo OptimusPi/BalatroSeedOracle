@@ -69,6 +69,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _widgetCounter = 0;
 
+        [ObservableProperty]
+        private bool _isVisualizerWidgetVisible = false;
+
         private double _previousVolume = 70;
 
         public BalatroMainMenuViewModel()
@@ -202,6 +205,13 @@ namespace BalatroSeedOracle.ViewModels
             PlayButtonClickSound();
             IsSettingsPopupOpen = !IsSettingsPopupOpen;
             OnSettingsPopupToggle?.Invoke(this, IsSettingsPopupOpen);
+        }
+
+        [RelayCommand]
+        private void ToggleVisualizerWidget()
+        {
+            PlayButtonClickSound();
+            IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
         }
 
         [RelayCommand]

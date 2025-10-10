@@ -125,11 +125,11 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void UpdateTrianglePosition(int tabIndex)
         {
-            var indicator = this.FindControl<Avalonia.Controls.Shapes.Path>("TabIndicator");
-            if (indicator?.RenderTransform is TranslateTransform transform)
+            var triangleContainer = this.FindControl<Grid>("TriangleContainer");
+            if (triangleContainer != null)
             {
-                // Each tab is ~148px wide (144px MinWidth + 4px margin), triangle moves 148px per tab
-                transform.X = tabIndex * 148;
+                // Move triangle to the active tab's column
+                Grid.SetColumn(triangleContainer, tabIndex);
             }
         }
     }

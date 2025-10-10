@@ -13,57 +13,72 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Tab Buttons Row -->
-        <StackPanel Grid.Row="0"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,0,0,-3">
+        <!-- Tab Navigation (Balatro style with bouncing triangle) -->
+        <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,-3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Tab Buttons -->
             <Button Name="SelectFilterTab"
+                    Grid.Column="0"
                     Content="Select Filter"
                     Classes="tab-button active"
                     Click="OnTabClick"/>
             <Button Name="SettingsTab"
+                    Grid.Column="1"
                     Content="Settings"
                     Classes="tab-button"
                     Click="OnTabClick"/>
             <Button Name="SearchTab"
+                    Grid.Column="2"
                     Content="Search"
                     Classes="tab-button"
                     Click="OnTabClick"/>
             <Button Name="ResultsTab"
+                    Grid.Column="3"
                     Content="Results"
                     Classes="tab-button"
                     Click="OnTabClick"/>
-        </StackPanel>
 
-        <!-- Bouncing Triangle Indicator -->
-        <Path Name="TabIndicator"
-              Grid.Row="0"
-              Data="M 0,10 L 10,0 L 20,10"
-              Fill="{StaticResource Gold}"
-              Width="20"
-              Height="10"
-              HorizontalAlignment="Left"
-              VerticalAlignment="Top"
-              Margin="82,-15,0,0">
-            <Path.RenderTransform>
-                <TranslateTransform/>
-            </Path.RenderTransform>
-            <Path.Styles>
-                <Style Selector="Path">
-                    <Style.Animations>
-                        <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate">
-                            <KeyFrame Cue="0%">
-                                <Setter Property="Margin" Value="82,-15,0,0"/>
-                            </KeyFrame>
-                            <KeyFrame Cue="100%">
-                                <Setter Property="Margin" Value="82,-18,0,0"/>
-                            </KeyFrame>
-                        </Animation>
-                    </Style.Animations>
-                </Style>
-            </Path.Styles>
-        </Path>
+            <!-- Bouncing Triangle Indicator (positioned under active tab) -->
+            <Grid Name="TriangleContainer"
+                  Grid.Column="0"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Center"
+                  Margin="0,0,0,-20">
+                <!-- Shadow triangle -->
+                <Polygon Points="10,20 20,5 0,5"
+                         Fill="{StaticResource SemiTransparentShadow}"
+                         Margin="2,2,0,0"/>
+
+                <!-- Main bouncing triangle -->
+                <Polygon Name="TabTriangle"
+                         Points="10,20 20,5 0,5"
+                         Fill="{StaticResource Red}">
+                    <Polygon.Styles>
+                        <Style Selector="Polygon">
+                            <Style.Animations>
+                                <Animation Duration="0:0:1.2"
+                                           IterationCount="Infinite"
+                                           PlaybackDirection="Alternate"
+                                           Easing="SineEaseInOut">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Margin" Value="0,0,0,0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Margin" Value="0,-8,0,8"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Polygon.Styles>
+                </Polygon>
+            </Grid>
+        </Grid>
 
         <!-- Content Area with Tab Panels (no border - StandardModal already has one!) -->
         <Border Grid.Row="1"

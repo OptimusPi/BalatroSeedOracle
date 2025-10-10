@@ -142,12 +142,13 @@
                                    Margin="20,24,0,0"
                                    ClipToBounds="False"/>
 
-            <!-- Audio Visualizer Settings Widget - DISABLED (causes double music playback) -->
-            <!-- <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
+            <!-- 🎨 AUDIO VISUALIZER WIDGET - Show/hide on paint palette button click -->
+            <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Top"
                                                     Margin="20,100,0,0"
-                                                    ClipToBounds="False"/> -->
+                                                    IsVisible="{Binding IsVisualizerWidgetVisible}"
+                                                    ClipToBounds="False"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
@@ -295,7 +296,7 @@
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <!-- Vibe Theme Button -->
+                            <!-- Audio Visualizer Settings Button -->
                             <Button x:Name="SettingsButton"
                                     FontSize="24"
                                     Width="48"
@@ -305,8 +306,8 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Command="{Binding SettingsCommand}"
-                                    ToolTip.Tip="Vibe Theme">
+                                    Command="{Binding ToggleVisualizerWidgetCommand}"
+                                    ToolTip.Tip="Audio Visualizer Settings">
                                 <TextBlock Text="🎨"
                                            FontFamily="Segoe UI Symbol"
                                            HorizontalAlignment="Center"
