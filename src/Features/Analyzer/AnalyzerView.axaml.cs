@@ -130,10 +130,20 @@ public partial class AnalyzerView : UserControl
     private void RenderShopImages()
     {
         var shopContainer = this.FindControl<ItemsControl>("ShopItemsContainer");
-        if (shopContainer == null || ViewModel == null)
+        if (shopContainer == null)
+        {
+            DebugLogger.LogError("AnalyzerView", "ShopItemsContainer control not found!");
             return;
+        }
+
+        if (ViewModel == null)
+        {
+            DebugLogger.LogError("AnalyzerView", "ViewModel is null!");
+            return;
+        }
 
         var items = ViewModel.CurrentShopItemsRaw;
+        DebugLogger.Log("AnalyzerView", $"RenderShopImages: {items?.Count ?? 0} items");
         var itemElements = new System.Collections.Generic.List<StackPanel>();
 
         for (int i = 0; i < items.Count; i++)
