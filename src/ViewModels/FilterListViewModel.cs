@@ -249,8 +249,13 @@ namespace BalatroSeedOracle.ViewModels
 
             // Calculate how many items can fit (minimum 3, maximum 20)
             var calculatedItems = Math.Floor(usableHeight / ITEM_HEIGHT);
-            FiltersPerPage = Math.Clamp((int)calculatedItems, 3, 20);
+            var newPageSize = Math.Clamp((int)calculatedItems, 3, 20);
 
+            // PREVENT INFINITE LOOP: Only update if page size actually changed!
+            if (newPageSize == FiltersPerPage)
+                return;
+
+            FiltersPerPage = newPageSize;
             DebugLogger.Log("FilterListViewModel", $"Updated FiltersPerPage to {FiltersPerPage} (container: {availableHeight:F0}px, usable: {usableHeight:F0}px)");
 
             // Refresh the current page with new page size
