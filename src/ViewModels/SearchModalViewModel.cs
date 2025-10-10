@@ -421,7 +421,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanPauseSearch() => IsSearching;
 
         [RelayCommand(CanExecute = nameof(CanExportResults))]
-        private async void ExportResults()
+        private async Task ExportResults()
         {
             try
             {

@@ -77,7 +77,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private async void SelectFilter(FilterBrowserItemViewModel? filterViewModel)
+        private async Task SelectFilter(FilterBrowserItemViewModel? filterViewModel)
         {
             if (filterViewModel?.FilterBrowserItem != null)
             {
