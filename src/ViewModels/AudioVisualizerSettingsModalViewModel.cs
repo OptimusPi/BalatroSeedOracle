@@ -94,6 +94,35 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private float _beatPulseIntensity = 50f;
 
+        // Beat detection threshold (NEW!)
+        [ObservableProperty]
+        private float _beatThreshold = 0.5f;
+
+        // Per-track sensitivity for visualization (NEW!)
+        [ObservableProperty]
+        private float _drums1Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _drums2Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _bass1Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _bass2Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _chords1Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _chords2Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _melody1Sensitivity = 1.0f;
+
+        [ObservableProperty]
+        private float _melody2Sensitivity = 1.0f;
+
         // Display text fields
         [ObservableProperty]
         private string _audioIntensityLabel = "Off";
