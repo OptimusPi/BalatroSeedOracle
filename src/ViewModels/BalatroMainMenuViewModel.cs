@@ -57,8 +57,6 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVibeOutMode = false;
 
-        [ObservableProperty]
-        private bool _isSettingsPopupOpen = false;
 
         [ObservableProperty]
         private bool _isVolumePopupOpen = false;
@@ -203,8 +201,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Settings()
         {
             PlayButtonClickSound();
-            IsSettingsPopupOpen = !IsSettingsPopupOpen;
-            OnSettingsPopupToggle?.Invoke(this, IsSettingsPopupOpen);
+            // Settings now opens SettingsModal via ModalRequested event
         }
 
         [RelayCommand]

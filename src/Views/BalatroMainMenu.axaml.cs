@@ -106,14 +106,6 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Settings popup state change
-            ViewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(ViewModel.IsSettingsPopupOpen))
-                {
-                    // Old settings popup removed
-                }
-            };
         }
 
         /// <summary>
