@@ -59,7 +59,7 @@
                 <Grid>
                     <!-- Icon background -->
                     <Border Classes="icon-bg"
-                            Background="{StaticResource Grey}"
+                            Background="{StaticResource Red}"
                             CornerRadius="12"
                             BorderBrush="{StaticResource ModalBorder}"
                             BorderThickness="2"
