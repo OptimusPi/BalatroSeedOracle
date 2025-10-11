@@ -54,17 +54,19 @@
     
     <Grid>
         <!-- Minimized State - Calendar Icon -->
-        <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}"
+              Margin="10,10,0,0"
+              PointerPressed="OnWidgetPointerPressed"
+              PointerMoved="OnWidgetPointerMoved"
+              PointerReleased="OnWidgetPointerReleased">
             <Button Classes="widget-container"
                     Width="64" Height="64"
                     Cursor="Hand"
                     Background="Transparent"
                     BorderThickness="0"
                     Padding="0"
-                    Command="{Binding ExpandCommand}"
-                    PointerPressed="OnWidgetPointerPressed"
-                    PointerMoved="OnWidgetPointerMoved"
-                    PointerReleased="OnWidgetPointerReleased">
+                    Command="{Binding ExpandCommand}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
