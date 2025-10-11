@@ -34,7 +34,7 @@
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="3"
                     CornerRadius="12"
-                    Width="120" Height="48"
+                    Width="64" Height="64"
                     Cursor="Hand"
                     Command="{Binding ToggleMinimizeCommand}"
                     PointerPressed="OnWidgetPointerPressed"
