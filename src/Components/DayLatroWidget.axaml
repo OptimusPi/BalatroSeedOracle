@@ -61,7 +61,7 @@
               PointerMoved="OnWidgetPointerMoved"
               PointerReleased="OnWidgetPointerReleased">
             <Button Classes="widget-container"
-                    Width="64" Height="64"
+                    Width="128" Height="128"
                     Cursor="Hand"
                     Background="Transparent"
                     BorderThickness="0"
