@@ -60,17 +60,19 @@
 
     <Grid>
         <!-- Minimized State - Magic Lamp Icon -->
-        <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}"
+              Margin="10,10,0,0"
+              PointerPressed="OnWidgetPointerPressed"
+              PointerMoved="OnWidgetPointerMoved"
+              PointerReleased="OnWidgetPointerReleased">
             <Button Background="{StaticResource Grey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="12"
                     Width="128" Height="128"
                     Cursor="Hand"
-                    Command="{Binding ToggleMinimizeCommand}"
-                    PointerPressed="OnWidgetPointerPressed"
-                    PointerMoved="OnWidgetPointerMoved"
-                    PointerReleased="OnWidgetPointerReleased">
+                    Command="{Binding ToggleMinimizeCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
                     <TextBlock Text="🧞" FontSize="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Genie" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>

@@ -29,17 +29,19 @@
 
     <Grid>
         <!-- Minimized State - Compact Music Icon -->
-        <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}"
+              Margin="10,10,0,0"
+              PointerPressed="OnWidgetPointerPressed"
+              PointerMoved="OnWidgetPointerMoved"
+              PointerReleased="OnWidgetPointerReleased">
             <Button Background="#CC2e3f42"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="3"
                     CornerRadius="12"
                     Width="128" Height="128"
                     Cursor="Hand"
-                    Command="{Binding ToggleMinimizeCommand}"
-                    PointerPressed="OnWidgetPointerPressed"
-                    PointerMoved="OnWidgetPointerMoved"
-                    PointerReleased="OnWidgetPointerReleased">
+                    Command="{Binding ToggleMinimizeCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                     <TextBlock Text="🎵" FontSize="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Audio" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
