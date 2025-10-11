@@ -61,7 +61,7 @@
               PointerMoved="OnWidgetPointerMoved"
               PointerReleased="OnWidgetPointerReleased">
             <Button Classes="widget-container"
-                    Width="128" Height="128"
+                    Width="100" Height="100"
                     Cursor="Hand"
                     Background="Transparent"
                     BorderThickness="0"
@@ -69,23 +69,23 @@
                     Command="{Binding ExpandCommand}">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <!-- BIG calendar icon centered -->
                     <TextBlock Grid.Row="0"
-                               Text="📅 Daylatro" 
-                               FontSize="22"
+                               Text="📅"
+                               FontSize="40"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,5,0,0"/>
+                               VerticalAlignment="Center"/>
+                    <!-- "Daylatro" text at bottom with notification badge -->
                     <TextBlock Grid.Row="1"
-                               Name="MinimizedSeedText"
-                               Text="{Binding TodaySeed}"
-                               FontSize="18"
-                               Foreground="{StaticResource White}"
+                               Text="Daylatro"
+                               FontSize="12"
+                               FontWeight="Bold"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,0,0,5"/>
+                               Foreground="{StaticResource Gold}"
+                               Margin="0,0,0,6"/>
                 </Grid>
             </Button>
             

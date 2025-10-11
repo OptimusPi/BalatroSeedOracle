@@ -39,7 +39,7 @@
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="3"
                     CornerRadius="12"
-                    Width="128" Height="128"
+                    Width="100" Height="100"
                     Cursor="Hand"
                     Command="{Binding ToggleMinimizeCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
