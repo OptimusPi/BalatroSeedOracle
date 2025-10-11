@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.Views
         // View-only references (no business logic state)
         private Grid? _modalContainer;
         private Control? _background;
+        private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
         private Grid? _vibeOutOverlay;
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
@@ -60,6 +61,7 @@ namespace BalatroSeedOracle.Views
             // Get view-only control references
             _modalContainer = this.FindControl<Grid>("ModalContainer");
             _background = this.FindControl<Control>("BackgroundControl");
+            _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
             _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
             _mainContent = this.FindControl<Grid>("MainContent");
         }
@@ -76,10 +78,8 @@ namespace BalatroSeedOracle.Views
             // Animation state changes
             ViewModel.OnIsAnimatingChangedEvent += (s, isAnimating) =>
             {
-                if (_background is BalatroShaderBackground shader)
-                {
-                    shader.IsAnimating = isAnimating;
-                }
+                if (_shaderBackground != null)
+                    _shaderBackground.IsAnimating = isAnimating;
             };
 
             // VibeOut mode changes
