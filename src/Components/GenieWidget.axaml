@@ -66,7 +66,7 @@
               PointerPressed="OnWidgetPointerPressed"
               PointerMoved="OnWidgetPointerMoved"
               PointerReleased="OnWidgetPointerReleased">
-            <Button Background="{StaticResource Grey}"
+            <Button Background="{StaticResource Red}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="12"
