@@ -146,12 +146,21 @@
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,5"/>
 
-                        <TextBlock Name="SeedText"
-                                   Text="{Binding TodaySeed}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource ToggleRed}"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,0,0,15"/>
+                        <!-- Seed text with Copy button inline -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,0,0,15">
+                            <TextBlock Name="SeedText"
+                                       Text="{Binding TodaySeed}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource ToggleRed}"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="📋"
+                                    FontSize="16"
+                                    Width="32" Height="32"
+                                    Classes="btn-blue"
+                                    Padding="0"
+                                    Command="{Binding CopySeedCommand}"
+                                    ToolTip.Tip="Copy Seed"/>
+                        </StackPanel>
                         
                         <!-- My Score Section -->
                         <TextBlock Text="Submit Score"
