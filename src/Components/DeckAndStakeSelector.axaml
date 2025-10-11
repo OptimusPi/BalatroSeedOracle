@@ -17,26 +17,28 @@
                            HorizontalAlignment="Center"/>
 
                 <Grid ColumnDefinitions="Auto,8,Auto,8,Auto" HorizontalAlignment="Center">
-                    <!-- Left Arrow -->
+                    <!-- Left Arrow (TALL RED BAR like Balatro!) -->
                     <Button Grid.Column="0"
                             Content="◀"
                             Classes="btn-red"
-                            Width="44" Height="44"
-                            FontSize="18"
-                            Padding="0"/>
+                            Width="50" Height="110"
+                            FontSize="24"
+                            Padding="0"
+                            VerticalContentAlignment="Center"/>
 
-                    <!-- Deck Card (small) - hide inner arrows since we have outer ones -->
+                    <!-- Deck Card -->
                     <Viewbox Grid.Column="2" Width="71" Height="95" Stretch="Uniform">
                         <components:DeckSpinner Name="DeckSpinnerControl" ShowArrows="False" />
                     </Viewbox>
 
-                    <!-- Right Arrow -->
+                    <!-- Right Arrow (TALL RED BAR like Balatro!) -->
                     <Button Grid.Column="4"
                             Content="▶"
                             Classes="btn-red"
-                            Width="44" Height="44"
-                            FontSize="18"
-                            Padding="0"/>
+                            Width="50" Height="110"
+                            FontSize="24"
+                            Padding="0"
+                            VerticalContentAlignment="Center"/>
                 </Grid>
 
                 <TextBlock Text="Start with extra $10"
