@@ -123,6 +123,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private float _melody2Sensitivity = 1.0f;
 
+        // Vibe intensity multiplier (replaces magic 0.05f!)
+        [ObservableProperty]
+        private float _vibeIntensityMultiplier = 0.05f;
+
         // Display text fields
         [ObservableProperty]
         private string _audioIntensityLabel = "Off";
