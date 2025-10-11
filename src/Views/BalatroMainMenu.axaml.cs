@@ -80,10 +80,6 @@ namespace BalatroSeedOracle.Views
                 {
                     shader.IsAnimating = isAnimating;
                 }
-                else if (_background is BalatroStyleBackground bg)
-                {
-                    bg.IsAnimating = isAnimating;
-                }
             };
 
             // VibeOut mode changes

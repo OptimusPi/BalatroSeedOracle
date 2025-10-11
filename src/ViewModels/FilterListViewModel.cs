@@ -197,7 +197,8 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var json = File.ReadAllText(filterPath);
-                using var doc = JsonDocument.Parse(json);
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
                 SelectedFilterStats.Clear();
@@ -307,7 +308,8 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var json = File.ReadAllText(filterPath);
-                using var doc = JsonDocument.Parse(json);
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
                 FilterItems.Clear();
