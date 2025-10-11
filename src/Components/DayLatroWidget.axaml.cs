@@ -112,6 +112,8 @@ namespace BalatroSeedOracle.Components
 
         private Point _dragStartScreenPoint;
         private Thickness _originalMargin;
+        private Grid? _cachedMinimizedView;
+        private Border? _cachedExpandedView;
 
         public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -188,14 +190,11 @@ namespace BalatroSeedOracle.Components
                 ViewModel.PositionY = newMargin.Top;
             }
 
-            // Update visual margin
-            var minimizedView = this.FindControl<Grid>("MinimizedView");
-            var expandedView = this.FindControl<Border>("ExpandedView");
-
-            if (minimizedView != null)
-                minimizedView.Margin = newMargin;
-            if (expandedView != null)
-                expandedView.Margin = newMargin;
+            // Update visual margin (using cached controls - FAST!)
+            if (_cachedMinimizedView != null)
+                _cachedMinimizedView.Margin = newMargin;
+            if (_cachedExpandedView != null)
+                _cachedExpandedView.Margin = newMargin;
 
             e.Handled = true;
         }
