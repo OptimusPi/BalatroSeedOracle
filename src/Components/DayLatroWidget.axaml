@@ -56,7 +56,7 @@
         <!-- Minimized State - Calendar Icon -->
         <Grid Name="MinimizedView" IsVisible="{Binding IsMinimized}" Margin="10,10,0,0">
             <Button Classes="widget-container"
-                    Width="128" Height="64"
+                    Width="64" Height="64"
                     Cursor="Hand"
                     Background="Transparent"
                     BorderThickness="0"
