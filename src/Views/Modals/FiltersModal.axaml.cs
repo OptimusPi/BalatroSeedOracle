@@ -675,21 +675,32 @@ namespace BalatroSeedOracle.Views.Modals
                 if (string.IsNullOrWhiteSpace(newName))
                     return; // User cancelled
 
-                // Create new blank filter with the given name
+                // LOAD THE ORIGINAL FILTER TO COPY ITS CONTENT!
+                var originalJson = await File.ReadAllTextAsync(filterPath);
+                var originalConfig = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(originalJson);
+                if (originalConfig == null)
+                {
+                    UpdateStatus("Failed to load original filter", true);
+                    return;
+                }
+
+                // Create a copy with the new name but KEEP ALL THE ORIGINAL DATA
                 var userProfile = ServiceHelper.GetService<UserProfileService>();
                 var authorName = userProfile?.GetAuthorName() ?? "Unknown";
 
                 var newConfig = new Motely.Filters.MotelyJsonConfig
                 {
                     Name = newName,
-                    Description = $"Copy of {originalName}",
+                    Description = string.IsNullOrWhiteSpace(originalConfig.Description)
+                        ? $"Copy of {originalName}"
+                        : originalConfig.Description,
                     Author = authorName,
                     DateCreated = DateTime.UtcNow,
-                    Must = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Should = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Deck = "Red Deck",
-                    Stake = "White Stake"
+                    Must = originalConfig.Must ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = originalConfig.Should ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = originalConfig.MustNot ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Deck = originalConfig.Deck ?? "Red Deck",
+                    Stake = originalConfig.Stake ?? "White Stake"
                 };
 
                 // Save the new filter
