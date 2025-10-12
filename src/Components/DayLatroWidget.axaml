@@ -21,12 +21,11 @@
 
     <Grid>
         <!-- Minimized State - Calendar Icon -->
-        <StackPanel Name="MinimizedView"
-                    IsVisible="{Binding IsMinimized}"
-                    ZIndex="1"
-                    Spacing="4"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top">
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}"
+              ZIndex="1"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top">
             <i:Interaction.Behaviors>
                 <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                    Y="{Binding PositionY, Mode=TwoWay}" />
@@ -34,31 +33,46 @@
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
 
-            <Button Background="{StaticResource Grey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Width="64" Height="64"
-                    Cursor="Hand"
-                    Command="{Binding ExpandCommand}">
-                <TextBlock Text="📅" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Button>
-            <TextBlock Text="Daylatro"
-                       FontSize="10"
-                       FontWeight="Bold"
-                       Foreground="White"
-                       HorizontalAlignment="Center"/>
+            <StackPanel Spacing="4">
+                <Grid>
+                    <!-- Button -->
+                    <Button Background="{StaticResource Grey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Width="64" Height="64"
+                            Cursor="Hand"
+                            Command="{Binding ExpandCommand}">
+                        <TextBlock Text="📅" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
 
-            <!-- Notification badge overlay using Canvas -->
-            <Canvas ZIndex="100" IsHitTestVisible="False">
-                <Border Classes="notification-badge small"
-                        Canvas.Right="-5"
-                        Canvas.Top="-5"
-                        IsVisible="{Binding ShowNewDayBadge}">
-                    <TextBlock Text="!" />
-                </Border>
-            </Canvas>
-        </StackPanel>
+                    <!-- Notification badge overlay -->
+                    <Border Classes="notification-badge small"
+                            Background="{StaticResource Red}"
+                            BorderBrush="{StaticResource White}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            Width="20" Height="20"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="{Binding ShowNewDayBadge}">
+                        <TextBlock Text="!"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <TextBlock Text="Daylatro"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Expanded State -->
         <Border Name="ExpandedView"
