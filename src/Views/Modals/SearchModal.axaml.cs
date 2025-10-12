@@ -62,9 +62,9 @@ namespace BalatroSeedOracle.Views.Modals
                 // CRITICAL: Set SearchModal mode to show SELECT button
                 filterSelector.IsInSearchModal = true;
 
-                filterSelector.FilterSelected += (s, path) =>
+                filterSelector.FilterSelected += async (s, path) =>
                 {
-                    ViewModel.LoadFilterCommand.Execute(path);
+                    await ViewModel.LoadFilterAsync(path);
                     // STAY on Select Filter tab - don't auto-switch
                     // User can manually click Settings tab when ready
                 };
