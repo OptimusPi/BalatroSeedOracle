@@ -22,7 +22,7 @@
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
 
-            <Button Background="{StaticResource Red}"
+            <Button Background="{StaticResource Grey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="8"

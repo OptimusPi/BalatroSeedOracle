@@ -124,8 +124,8 @@
             </Border>
         </Popup>
         
-        <!-- Desktop widgets layer - ABOVE modals so they're always accessible! -->
-        <Grid x:Name="DesktopCanvas" ZIndex="500" ClipToBounds="False">
+        <!-- Desktop widgets layer - BELOW modals (ZIndex 50) -->
+        <Grid x:Name="DesktopCanvas" ZIndex="50" ClipToBounds="False">
             <!-- Search Widgets will be added dynamically here -->
 
             <!-- DayLatro Widget - starts minimized in top right -->

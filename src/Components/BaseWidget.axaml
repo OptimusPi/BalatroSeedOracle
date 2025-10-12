@@ -11,7 +11,7 @@
               IsVisible="{Binding IsMinimized}">
             <Button Classes="widget-icon"
                     Width="100" Height="100"
-                    Background="{StaticResource Red}"
+                    Background="{StaticResource Grey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="3"
                     CornerRadius="12"
