@@ -19,16 +19,18 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid>
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}" />
+        </i:Interaction.Behaviors>
+
         <!-- Minimized State - Calendar Icon -->
         <Grid Name="MinimizedView"
               IsVisible="{Binding IsMinimized}"
-              ZIndex="1"
-              HorizontalAlignment="Left"
-              VerticalAlignment="Top">
+              ZIndex="1">
             <i:Interaction.Behaviors>
-                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
-                                                   Y="{Binding PositionY, Mode=TwoWay}" />
                 <!-- BALATRO SWAY ANIMATION! -->
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
@@ -81,10 +83,6 @@
                 Width="350"
                 MaxHeight="550"
                 IsVisible="{Binding !IsMinimized}">
-            <i:Interaction.Behaviors>
-                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
-                                                   Y="{Binding PositionY, Mode=TwoWay}" />
-            </i:Interaction.Behaviors>
 
             <Grid RowDefinitions="Auto,*">
                 <!-- Header -->

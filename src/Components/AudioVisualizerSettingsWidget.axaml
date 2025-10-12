@@ -7,17 +7,19 @@
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True">
 
-    <Grid>
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}" />
+        </i:Interaction.Behaviors>
+
         <!-- Minimized State - Compact Music Icon -->
         <StackPanel Name="MinimizedView"
                     IsVisible="{Binding IsMinimized}"
                     ZIndex="1"
-                    Spacing="4"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top">
+                    Spacing="4">
             <i:Interaction.Behaviors>
-                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
-                                                   Y="{Binding PositionY, Mode=TwoWay}" />
                 <!-- BALATRO SWAY ANIMATION! -->
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
@@ -46,10 +48,6 @@
                 MinWidth="420"
                 MaxWidth="520"
                 MaxHeight="650">
-            <i:Interaction.Behaviors>
-                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
-                                                   Y="{Binding PositionY, Mode=TwoWay}" />
-            </i:Interaction.Behaviors>
 
             <Grid RowDefinitions="Auto,*">
                 <!-- Header with Title and Minimize Button -->

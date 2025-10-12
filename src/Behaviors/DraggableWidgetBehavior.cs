@@ -110,14 +110,20 @@ namespace BalatroSeedOracle.Behaviors
 
             _isDragging = true;
 
-            // Use the top-level window for consistent coordinate system
-            var topLevel = AssociatedObject.GetVisualRoot();
-            if (topLevel != null)
+            // Get position relative to parent for consistent coordinate system
+            var parent = AssociatedObject.Parent as Visual;
+            if (parent != null)
             {
-                _dragStartPoint = e.GetPosition(topLevel);
-                _originalLeft = X;
-                _originalTop = Y;
+                _dragStartPoint = e.GetPosition(parent);
             }
+            else
+            {
+                // Fallback to screen coordinates
+                _dragStartPoint = e.GetPosition(null);
+            }
+
+            _originalLeft = X;
+            _originalTop = Y;
 
             e.Pointer.Capture(AssociatedObject);
             e.Handled = true;
@@ -127,17 +133,25 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (!_isDragging || AssociatedObject == null) return;
 
-            // Use the top-level window for consistent coordinate system
-            var topLevel = AssociatedObject.GetVisualRoot();
-            if (topLevel == null) return;
+            // Get current position relative to the parent canvas/grid
+            var parent = AssociatedObject.Parent as Visual;
+            Point currentPoint;
 
-            var currentPoint = e.GetPosition(topLevel);
+            if (parent != null)
+            {
+                currentPoint = e.GetPosition(parent);
+            }
+            else
+            {
+                // Fallback to screen coordinates if no parent
+                currentPoint = e.GetPosition(null);
+            }
 
-            // Calculate delta from where we started dragging
+            // Calculate delta from the drag start position
             var deltaX = currentPoint.X - _dragStartPoint.X;
             var deltaY = currentPoint.Y - _dragStartPoint.Y;
 
-            // Apply the delta to the original position
+            // Apply delta to original position for proper dragging
             X = _originalLeft + deltaX;
             Y = _originalTop + deltaY;
 
