@@ -720,14 +720,15 @@ namespace BalatroSeedOracle.ViewModels
                         
                         if (!string.IsNullOrEmpty(config.Stake))
                         {
-                            var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" }, 
+                            var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" },
                                 config.Stake.ToLower());
                             if (stakeIndex >= 0) SelectedStakeIndex = stakeIndex;
                         }
-                        
-                        // Switch to Visual Builder tab to show loaded filter
-                        SelectedTabIndex = 0;
-                        
+
+                        // CRITICAL FIX: Switch to Visual Builder tab to show loaded filter (index 1, NOT 0!)
+                        // Tab indices: 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
+                        UpdateTabVisibility(1); // Visual tab
+
                         DebugLogger.Log("FiltersModalViewModel", $"Filter loaded successfully: {config.Name}");
                     }
                 }
@@ -764,14 +765,15 @@ namespace BalatroSeedOracle.ViewModels
                         
                         if (!string.IsNullOrEmpty(config.Stake))
                         {
-                            var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" }, 
+                            var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" },
                                 config.Stake.ToLower());
                             if (stakeIndex >= 0) SelectedStakeIndex = stakeIndex;
                         }
-                        
-                        // Switch to Visual Builder tab for editing
-                        SelectedTabIndex = 0;
-                        
+
+                        // CRITICAL FIX: Switch to Visual Builder tab for editing (index 1, NOT 0!)
+                        // Tab indices: 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
+                        UpdateTabVisibility(1); // Visual tab
+
                         DebugLogger.Log("FiltersModalViewModel", $"Filter loaded for editing: {config.Name}");
                     }
                 }

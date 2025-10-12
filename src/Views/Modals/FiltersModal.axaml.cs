@@ -642,7 +642,11 @@ namespace BalatroSeedOracle.Views.Modals
                 // Enable tabs
                 UpdateTabStates(true);
 
-                // Switch to Visual tab for editing
+                // CRITICAL FIX: Hide LoadSaveTab BEFORE switching to Visual tab
+                // This prevents both tabs from being visible simultaneously
+                ViewModel.UpdateTabVisibility(1); // Visual tab index = 1
+
+                // Switch to Visual tab for editing (this will also call UpdateTabVisibility again, but that's OK)
                 var visualTabButton = this.FindControl<Button>("VisualTab");
                 visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
