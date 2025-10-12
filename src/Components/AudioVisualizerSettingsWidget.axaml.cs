@@ -21,6 +21,20 @@ namespace BalatroSeedOracle.Components
             ViewModel = new AudioVisualizerSettingsWidgetViewModel();
             DataContext = ViewModel;
 
+            // Update ZIndex when IsMinimized changes
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ViewModel.IsMinimized))
+                {
+                    // Set ZIndex on this UserControl itself
+                    // Expanded = 100, Minimized = 1
+                    this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
+                }
+            };
+
+            // Set initial ZIndex
+            this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
+
             // Initialize ViewModel after XAML is loaded
             ViewModel.Initialize();
 
