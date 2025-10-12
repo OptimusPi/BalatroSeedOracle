@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Xaml.Interactivity;
+using Avalonia.VisualTree;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -107,14 +108,16 @@ namespace BalatroSeedOracle.Behaviors
                 clickedElement = clickedElement.Parent as Control;
             }
 
-            // Get parent for consistent coordinate system
-            var parent = AssociatedObject.Parent as Visual;
-            if (parent == null) return;
-
             _isDragging = true;
-            _dragStartPoint = e.GetPosition(parent); // Parent coordinates instead of screen
-            _originalLeft = X;
-            _originalTop = Y;
+
+            // Use the top-level window for consistent coordinate system
+            var topLevel = AssociatedObject.GetVisualRoot();
+            if (topLevel != null)
+            {
+                _dragStartPoint = e.GetPosition(topLevel);
+                _originalLeft = X;
+                _originalTop = Y;
+            }
 
             e.Pointer.Capture(AssociatedObject);
             e.Handled = true;
@@ -124,16 +127,19 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (!_isDragging || AssociatedObject == null) return;
 
-            // Get the parent visual to calculate relative position
-            var parent = AssociatedObject.Parent as Visual;
-            if (parent == null) return;
+            // Use the top-level window for consistent coordinate system
+            var topLevel = AssociatedObject.GetVisualRoot();
+            if (topLevel == null) return;
 
-            var currentPoint = e.GetPosition(parent);
+            var currentPoint = e.GetPosition(topLevel);
 
-            // Direct positioning - no delta calculation needed
-            // This fixes the 0.5x speed issue caused by coordinate system mismatch
-            X = currentPoint.X - (_dragStartPoint.X - _originalLeft);
-            Y = currentPoint.Y - (_dragStartPoint.Y - _originalTop);
+            // Calculate delta from where we started dragging
+            var deltaX = currentPoint.X - _dragStartPoint.X;
+            var deltaY = currentPoint.Y - _dragStartPoint.Y;
+
+            // Apply the delta to the original position
+            X = _originalLeft + deltaX;
+            Y = _originalTop + deltaY;
 
             e.Handled = true;
         }
