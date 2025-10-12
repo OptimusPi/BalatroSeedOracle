@@ -107,8 +107,12 @@ namespace BalatroSeedOracle.Behaviors
                 clickedElement = clickedElement.Parent as Control;
             }
 
+            // Get parent for consistent coordinate system
+            var parent = AssociatedObject.Parent as Visual;
+            if (parent == null) return;
+
             _isDragging = true;
-            _dragStartPoint = e.GetPosition(null); // Screen coordinates
+            _dragStartPoint = e.GetPosition(parent); // Parent coordinates instead of screen
             _originalLeft = X;
             _originalTop = Y;
 
@@ -120,13 +124,16 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (!_isDragging || AssociatedObject == null) return;
 
-            var currentPoint = e.GetPosition(null);
-            var deltaX = currentPoint.X - _dragStartPoint.X;
-            var deltaY = currentPoint.Y - _dragStartPoint.Y;
+            // Get the parent visual to calculate relative position
+            var parent = AssociatedObject.Parent as Visual;
+            if (parent == null) return;
 
-            // Update position properties - UpdatePosition() will be called automatically via property change
-            X = _originalLeft + deltaX;
-            Y = _originalTop + deltaY;
+            var currentPoint = e.GetPosition(parent);
+
+            // Direct positioning - no delta calculation needed
+            // This fixes the 0.5x speed issue caused by coordinate system mismatch
+            X = currentPoint.X - (_dragStartPoint.X - _originalLeft);
+            Y = currentPoint.Y - (_dragStartPoint.Y - _originalTop);
 
             e.Handled = true;
         }
