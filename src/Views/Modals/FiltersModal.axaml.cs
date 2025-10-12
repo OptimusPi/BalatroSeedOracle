@@ -54,6 +54,9 @@ namespace BalatroSeedOracle.Views.Modals
         // ===== VIEWMODEL (The source of truth!) =====
         public FiltersModalViewModel ViewModel { get; }
 
+        // ===== SERVICES =====
+        private readonly FilterSerializationService _serializationService;
+
         private readonly Dictionary<string, List<string>> _itemCategories;
         private string _currentCategory = "Jokers";
         private int _itemKeyCounter = 0;
@@ -198,6 +201,9 @@ namespace BalatroSeedOracle.Views.Modals
             var filterService = ServiceHelper.GetRequiredService<IFilterService>();
             ViewModel = new FiltersModalViewModel(configService, filterService);
             DataContext = ViewModel;
+
+            // Initialize services
+            _serializationService = ServiceHelper.GetRequiredService<FilterSerializationService>();
 
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
@@ -6704,7 +6710,14 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        // Delegate to FilterSerializationService
         private string SerializeOuijaConfig(Motely.Filters.MotelyJsonConfig config)
+        {
+            return _serializationService.SerializeConfig(config);
+        }
+
+        // OLD METHOD - replaced by service but kept for compatibility
+        private string SerializeOuijaConfig_OLD(Motely.Filters.MotelyJsonConfig config)
         {
             // Manually build the JSON to ensure we get the exact nested format
             using var stream = new MemoryStream();
@@ -6849,6 +6862,7 @@ namespace BalatroSeedOracle.Views.Modals
             writer.WriteEndObject();
         }
 
+        // Build config using existing UI state and delegate conversion to service
         private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
         {
             // Get deck/stake preferences from the selector
@@ -6918,10 +6932,13 @@ namespace BalatroSeedOracle.Views.Modals
                 config.DateCreated = DateTime.UtcNow;
             }
 
-            // Convert all items using the helper method that handles unique keys
-            FixUniqueKeyParsing(ViewModel.SelectedMust, config.Must, 0);
-            FixUniqueKeyParsing(ViewModel.SelectedShould, config.Should, 1);
-            FixUniqueKeyParsing(ViewModel.SelectedMustNot, config.MustNot, 0);
+            // Convert all items using the service
+            _serializationService.ConvertSelectionsToFilterClauses(
+                ViewModel.SelectedMust, ViewModel.ItemConfigs, config.Must, 0);
+            _serializationService.ConvertSelectionsToFilterClauses(
+                ViewModel.SelectedShould, ViewModel.ItemConfigs, config.Should, 1);
+            _serializationService.ConvertSelectionsToFilterClauses(
+                ViewModel.SelectedMustNot, ViewModel.ItemConfigs, config.MustNot, 0);
 
             return config;
         }

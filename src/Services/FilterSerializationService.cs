@@ -1,0 +1,364 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using Motely.Filters;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.ViewModels;
+using ItemConfig = BalatroSeedOracle.Controls.ItemConfig;
+
+namespace BalatroSeedOracle.Services
+{
+    /// <summary>
+    /// Service responsible for serializing and deserializing MotelyJsonConfig filters.
+    /// Extracted from FiltersModal to reduce god class complexity.
+    /// </summary>
+    public class FilterSerializationService
+    {
+        private readonly UserProfileService _userProfileService;
+
+        public FilterSerializationService(UserProfileService userProfileService)
+        {
+            _userProfileService = userProfileService;
+        }
+
+        /// <summary>
+        /// Serializes a MotelyJsonConfig to JSON string with proper formatting
+        /// </summary>
+        public string SerializeConfig(MotelyJsonConfig config)
+        {
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+
+            writer.WriteStartObject();
+
+            // Metadata
+            writer.WriteString("name", !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter");
+            writer.WriteString("description", config.Description ?? string.Empty);
+
+            var authorName = !string.IsNullOrWhiteSpace(config.Author)
+                ? config.Author
+                : (_userProfileService?.GetAuthorName() ?? "Jimbo");
+            writer.WriteString("author", authorName);
+
+            var created = config.DateCreated ?? DateTime.UtcNow;
+            writer.WriteString("dateCreated", created.ToString("o"));
+
+            // Must array
+            writer.WriteStartArray("must");
+            foreach (var item in config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            {
+                WriteFilterItem(writer, item);
+            }
+            writer.WriteEndArray();
+
+            // Should array
+            writer.WriteStartArray("should");
+            foreach (var item in config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            {
+                WriteFilterItem(writer, item, includeScore: true);
+            }
+            writer.WriteEndArray();
+
+            // MustNot array
+            writer.WriteStartArray("mustNot");
+            foreach (var item in config.MustNot ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            {
+                WriteFilterItem(writer, item);
+            }
+            writer.WriteEndArray();
+
+            // Deck and Stake
+            writer.WriteString("deck", config.Deck ?? "Red");
+            writer.WriteString("stake", config.Stake ?? "White");
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            return Encoding.UTF8.GetString(stream.ToArray());
+        }
+
+        /// <summary>
+        /// Deserializes JSON string to MotelyJsonConfig
+        /// </summary>
+        public MotelyJsonConfig? DeserializeConfig(string json)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<MotelyJsonConfig>(json);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSerializationService", $"Failed to deserialize config: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Creates a filter clause from selection data
+        /// </summary>
+        public MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterClause(
+            string category,
+            string itemName,
+            ItemConfig config)
+        {
+            var filterItem = new MotelyJsonConfig.MotleyJsonFilterClause
+            {
+                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                Min = config.Min
+            };
+
+            var normalizedCategory = category.ToLower();
+
+            // Determine if this item type can have sources
+            bool canHaveSources = IsSourceCapableCategory(normalizedCategory);
+
+            if (canHaveSources && HasValidSources(config))
+            {
+                filterItem.Sources = new MotelyJsonConfig.SourcesConfig
+                {
+                    ShopSlots = config.ShopSlots?.ToArray(),
+                    PackSlots = config.PackSlots?.ToArray(),
+                    Tags = config.SkipBlindTags ? true : null,
+                    RequireMega = config.IsMegaArcana ? true : null
+                };
+            }
+
+            // Map category to type
+            filterItem.Type = MapCategoryToType(normalizedCategory, itemName);
+            filterItem.Value = itemName;
+
+            // Handle edition for applicable items
+            if (config.Edition != null && config.Edition != "none")
+            {
+                filterItem.Edition = config.Edition;
+            }
+
+            // Handle stickers if configured
+            if (config.Stickers?.Count > 0)
+            {
+                filterItem.Stickers = config.Stickers;
+            }
+
+            // Handle playing card specific properties
+            if (normalizedCategory == "playingcards")
+            {
+                if (config.Seal != "None")
+                    filterItem.Seal = config.Seal;
+                if (config.Enhancement != "None")
+                    filterItem.Enhancement = config.Enhancement;
+            }
+
+            return filterItem;
+        }
+
+        /// <summary>
+        /// Converts a collection of item selections to filter clauses
+        /// </summary>
+        public void ConvertSelectionsToFilterClauses(
+            ObservableCollection<string> items,
+            Dictionary<string, ItemConfig> itemConfigs,
+            List<MotelyJsonConfig.MotleyJsonFilterClause> targetList,
+            int defaultScore = 0)
+        {
+            foreach (var item in items)
+            {
+                // Handle both formats: "Category:Item" and "Category:Item#123"
+                var colonIndex = item.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    var category = item.Substring(0, colonIndex);
+                    var itemNameWithSuffix = item.Substring(colonIndex + 1);
+
+                    // Remove the unique key suffix if present
+                    var hashIndex = itemNameWithSuffix.IndexOf('#');
+                    var itemName = hashIndex > 0
+                        ? itemNameWithSuffix.Substring(0, hashIndex)
+                        : itemNameWithSuffix;
+
+                    var itemConfig = itemConfigs.ContainsKey(item)
+                        ? itemConfigs[item]
+                        : new ItemConfig();
+
+                    var filterItem = CreateFilterClause(category, itemName, itemConfig);
+                    if (filterItem != null)
+                    {
+                        filterItem.Score = defaultScore;
+                        targetList.Add(filterItem);
+                    }
+                }
+            }
+        }
+
+        #region Private Helper Methods
+
+        private void WriteFilterItem(
+            Utf8JsonWriter writer,
+            MotelyJsonConfig.MotleyJsonFilterClause item,
+            bool includeScore = false)
+        {
+            writer.WriteStartObject();
+
+            // Type and value
+            writer.WriteString("type", item.Type);
+            if (!string.IsNullOrEmpty(item.Value))
+            {
+                writer.WriteString("value", item.Value);
+            }
+            else if (item.Values?.Length > 0)
+            {
+                writer.WriteStartArray("values");
+                foreach (var val in item.Values)
+                {
+                    writer.WriteStringValue(val);
+                }
+                writer.WriteEndArray();
+            }
+
+            // Edition
+            if (!string.IsNullOrEmpty(item.Edition))
+            {
+                writer.WriteString("edition", item.Edition);
+            }
+
+            // Antes
+            if (item.Antes != null && item.Antes.Length > 0)
+            {
+                writer.WriteStartArray("antes");
+                foreach (var ante in item.Antes)
+                {
+                    writer.WriteNumberValue(ante);
+                }
+                writer.WriteEndArray();
+            }
+
+            // Sources (only for applicable item types)
+            bool canHaveSources = item.Type != null &&
+                !item.Type.Equals("tag", StringComparison.OrdinalIgnoreCase) &&
+                !item.Type.Equals("voucher", StringComparison.OrdinalIgnoreCase) &&
+                !item.Type.Equals("boss", StringComparison.OrdinalIgnoreCase);
+
+            if (canHaveSources && item.Sources != null)
+            {
+                writer.WriteStartObject("sources");
+
+                if (item.Sources.ShopSlots != null && item.Sources.ShopSlots.Length > 0)
+                {
+                    writer.WriteStartArray("shopSlots");
+                    foreach (var slot in item.Sources.ShopSlots)
+                    {
+                        writer.WriteNumberValue(slot);
+                    }
+                    writer.WriteEndArray();
+                }
+
+                if (item.Sources.PackSlots != null && item.Sources.PackSlots.Length > 0)
+                {
+                    writer.WriteStartArray("packSlots");
+                    foreach (var slot in item.Sources.PackSlots)
+                    {
+                        writer.WriteNumberValue(slot);
+                    }
+                    writer.WriteEndArray();
+                }
+
+                if (item.Sources.Tags.HasValue)
+                {
+                    writer.WriteBoolean("tags", item.Sources.Tags.Value);
+                }
+
+                if (item.Sources.RequireMega.HasValue)
+                {
+                    writer.WriteBoolean("requireMega", item.Sources.RequireMega.Value);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            // Stickers
+            if (item.Stickers?.Count > 0)
+            {
+                writer.WriteStartArray("stickers");
+                foreach (var sticker in item.Stickers)
+                {
+                    writer.WriteStringValue(sticker);
+                }
+                writer.WriteEndArray();
+            }
+
+            // Playing card properties
+            if (!string.IsNullOrEmpty(item.Seal))
+            {
+                writer.WriteString("seal", item.Seal);
+            }
+            if (!string.IsNullOrEmpty(item.Enhancement))
+            {
+                writer.WriteString("enhancement", item.Enhancement);
+            }
+
+            // Min count
+            if (item.Min.HasValue && item.Min.Value > 0)
+            {
+                writer.WriteNumber("min", (decimal)item.Min.Value);
+            }
+
+            // Score (for should clauses)
+            if (includeScore && item.Score > 0)
+            {
+                writer.WriteNumber("score", item.Score);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private bool IsSourceCapableCategory(string category)
+        {
+            return category == "jokers" ||
+                   category == "souljokers" ||
+                   category == "tarots" ||
+                   category == "spectrals" ||
+                   category == "planets" ||
+                   category == "playingcards";
+        }
+
+        private bool HasValidSources(ItemConfig config)
+        {
+            return (config.ShopSlots?.Count > 0) ||
+                   (config.PackSlots?.Count > 0) ||
+                   config.SkipBlindTags ||
+                   config.IsMegaArcana;
+        }
+
+        private string MapCategoryToType(string category, string itemName)
+        {
+            switch (category)
+            {
+                case "souljokers":
+                    return "SoulJoker";
+                case "jokers":
+                    return itemName.StartsWith("j_") ? "Joker" : itemName;
+                case "tarots":
+                    return "Tarot";
+                case "planets":
+                    return "Planet";
+                case "spectrals":
+                    return "Spectral";
+                case "playingcards":
+                    return "PlayingCard";
+                case "vouchers":
+                    return "Voucher";
+                case "tags":
+                    return "Tag";
+                case "bosses":
+                    return "Boss";
+                default:
+                    return category;
+            }
+        }
+
+        #endregion
+    }
+}
