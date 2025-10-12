@@ -1,103 +1,63 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.GenieWidget"
              x:DataType="vm:GenieWidgetViewModel"
              x:CompileBindings="True">
 
-    <UserControl.Styles>
-        <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="{StaticResource Grey}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
-        </Style>
-
-        <Style Selector="Border.genie-header">
-            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
-            <Setter Property="CornerRadius" Value="8,8,0,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <Style Selector="Border.genie-content">
-            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12"/>
-        </Style>
-
-        <Style Selector="TextBox.prompt-input">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="AcceptsReturn" Value="True"/>
-            <Setter Property="MinHeight" Value="60"/>
-            <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
-        </Style>
-
-        <Style Selector="TextBox.prompt-input:focus">
-            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
-        </Style>
-
-        <Style Selector="Button.genie-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <Style Selector="Button.genie-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-    </UserControl.Styles>
-
     <Grid>
         <!-- Minimized State - Magic Lamp Icon -->
-        <Grid Name="MinimizedView"
-              IsVisible="{Binding IsMinimized}"
-              Margin="10,10,0,0"
-              PointerPressed="OnWidgetPointerPressed"
-              PointerMoved="OnWidgetPointerMoved"
-              PointerReleased="OnWidgetPointerReleased">
+        <StackPanel Name="MinimizedView"
+                    IsVisible="{Binding IsMinimized}"
+                    ZIndex="1"
+                    Spacing="4"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+            <i:Interaction.Behaviors>
+                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                                   Y="{Binding PositionY, Mode=TwoWay}" />
+                <!-- BALATRO SWAY ANIMATION! -->
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
             <Button Background="{StaticResource Red}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
-                    CornerRadius="12"
-                    Width="100" Height="100"
+                    CornerRadius="8"
+                    Width="64" Height="64"
                     Cursor="Hand"
-                    Command="{Binding ToggleMinimizeCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                    <TextBlock Text="🧞" FontSize="20" VerticalAlignment="Center"/>
-                    <TextBlock Text="Genie" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                </StackPanel>
+                    Command="{Binding ExpandCommand}">
+                <TextBlock Text="🧞" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
-        </Grid>
+            <TextBlock Text="Genie"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <!-- Expanded State - Full Genie Interface -->
         <Border Name="ExpandedView"
-                Classes="widget-container"
+                Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
+                ZIndex="100"
                 Width="420"
-                Margin="10,10,0,0"
-                PointerPressed="OnWidgetPointerPressed"
-                PointerMoved="OnWidgetPointerMoved"
-                PointerReleased="OnWidgetPointerReleased">
+                MaxHeight="600">
+            <i:Interaction.Behaviors>
+                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                                   Y="{Binding PositionY, Mode=TwoWay}" />
+            </i:Interaction.Behaviors>
 
             <Grid RowDefinitions="Auto,*">
                 <!-- Header with Title and Minimize Button -->
-                <Border Grid.Row="0" Classes="genie-header" Padding="12,8">
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🧞" FontSize="18" VerticalAlignment="Center"/>
-                            <TextBlock Text="Filter Genie"
-                                       FontSize="14"
+                            <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontSize="13"
                                        FontWeight="Bold"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
@@ -105,21 +65,17 @@
 
                         <Button Grid.Column="1"
                                 Content="_"
-                                Command="{Binding ToggleMinimizeCommand}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="White"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="8,0"
-                                Cursor="Hand"/>
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"/>
                     </Grid>
                 </Border>
 
                 <!-- Content Area -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
-                    <Border Classes="genie-content">
-                        <StackPanel Spacing="12">
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15" Spacing="12">
 
                             <!-- Prompt Input -->
                             <StackPanel Spacing="6">
@@ -127,14 +83,14 @@
                                            FontWeight="Bold"
                                            FontSize="12"
                                            Foreground="{StaticResource InfoTextPrecise}"/>
-                                <TextBox Classes="prompt-input"
+                                <TextBox Classes="widget-prompt-input"
                                          Text="{Binding UserPrompt}"
                                          Watermark="e.g. 'Find me a Perkeo with Blueprint and Negative tags'"
                                          MaxHeight="120"/>
                             </StackPanel>
 
                             <!-- Generate Button -->
-                            <Button Classes="genie-button"
+                            <Button Classes="widget-secondary-btn"
                                     Command="{Binding GenerateFilterCommand}"
                                     IsEnabled="{Binding !IsGenerating}"
                                     HorizontalAlignment="Stretch">
@@ -230,7 +186,6 @@
                             </Expander>
 
                         </StackPanel>
-                    </Border>
                 </ScrollViewer>
             </Grid>
         </Border>

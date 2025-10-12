@@ -22,6 +22,10 @@ namespace BalatroSeedOracle.ViewModels
             WidgetTitle = "Audio Visualizer";
             WidgetIcon = "🎵";
             IsMinimized = true; // Start minimized
+
+            // Position below Genie widget
+            PositionX = 20;
+            PositionY = 130;
         }
 
         #region Delegate Properties to Underlying ViewModel
@@ -108,6 +112,86 @@ namespace BalatroSeedOracle.ViewModels
         {
             get => _settingsViewModel.BeatPulseSource;
             set => _settingsViewModel.BeatPulseSource = value;
+        }
+
+        // Beat Detection & Sensitivity
+        public float BeatThreshold
+        {
+            get => _settingsViewModel.BeatThreshold;
+            set => _settingsViewModel.BeatThreshold = value;
+        }
+
+        public float VibeIntensityMultiplier
+        {
+            get => _settingsViewModel.VibeIntensityMultiplier;
+            set => _settingsViewModel.VibeIntensityMultiplier = value;
+        }
+
+        public float Drums1Sensitivity
+        {
+            get => _settingsViewModel.Drums1Sensitivity;
+            set => _settingsViewModel.Drums1Sensitivity = value;
+        }
+
+        public float Drums2Sensitivity
+        {
+            get => _settingsViewModel.Drums2Sensitivity;
+            set => _settingsViewModel.Drums2Sensitivity = value;
+        }
+
+        public float Bass1Sensitivity
+        {
+            get => _settingsViewModel.Bass1Sensitivity;
+            set => _settingsViewModel.Bass1Sensitivity = value;
+        }
+
+        public float Bass2Sensitivity
+        {
+            get => _settingsViewModel.Bass2Sensitivity;
+            set => _settingsViewModel.Bass2Sensitivity = value;
+        }
+
+        public float Chords1Sensitivity
+        {
+            get => _settingsViewModel.Chords1Sensitivity;
+            set => _settingsViewModel.Chords1Sensitivity = value;
+        }
+
+        public float Chords2Sensitivity
+        {
+            get => _settingsViewModel.Chords2Sensitivity;
+            set => _settingsViewModel.Chords2Sensitivity = value;
+        }
+
+        public float Melody1Sensitivity
+        {
+            get => _settingsViewModel.Melody1Sensitivity;
+            set => _settingsViewModel.Melody1Sensitivity = value;
+        }
+
+        public float Melody2Sensitivity
+        {
+            get => _settingsViewModel.Melody2Sensitivity;
+            set => _settingsViewModel.Melody2Sensitivity = value;
+        }
+
+        // Shader Effect Intensities
+        public float ShadowFlickerIntensity
+        {
+            get => _settingsViewModel.ShadowFlickerIntensity;
+            set => _settingsViewModel.ShadowFlickerIntensity = value;
+        }
+
+        public float SpinIntensity
+        {
+            get => _settingsViewModel.SpinIntensity;
+            set => _settingsViewModel.SpinIntensity = value;
+        }
+
+        public float BeatPulseIntensity
+        {
+            get => _settingsViewModel.BeatPulseIntensity;
+            set => _settingsViewModel.BeatPulseIntensity = value;
         }
 
         // Presets

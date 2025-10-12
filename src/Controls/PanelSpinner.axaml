@@ -144,16 +144,24 @@
                            Name="TitleText"
                            Classes="panel-title"/>
                 
-                <!-- Sprite Image Container -->
+                <!-- Sprite Image Container with optional overlay -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
                          MaxHeight="140"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
                          Margin="0,4">
-                    <Image Name="SpriteImage"
-                           Width="400"
-                           Height="200"/>
+                    <Grid Width="400" Height="200">
+                        <!-- Base deck image -->
+                        <Image Name="SpriteImage"
+                               Width="400"
+                               Height="200"/>
+                        <!-- Stake chip overlay (top-right corner) -->
+                        <Image Name="OverlayImage"
+                               Width="400"
+                               Height="200"
+                               IsVisible="False"/>
+                    </Grid>
                 </Viewbox>
                 
                 <!-- Description -->

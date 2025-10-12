@@ -20,6 +20,7 @@ public partial class PanelSpinner : UserControl
     private TextBlock? _titleText;
     private TextBlock? _descriptionText;
     private Image? _spriteImage;
+    private Image? _overlayImage;
     private StackPanel? _dotsPanel;
 
     private int _currentIndex = 0;
@@ -99,6 +100,7 @@ public partial class PanelSpinner : UserControl
         _titleText = this.FindControl<TextBlock>("TitleText");
         _descriptionText = this.FindControl<TextBlock>("DescriptionText");
         _spriteImage = this.FindControl<Image>("SpriteImage");
+        _overlayImage = this.FindControl<Image>("OverlayImage");
         _dotsPanel = this.FindControl<StackPanel>("DotsPanel");
 
         // Wire up ShowArrows property to button visibility

@@ -192,6 +192,10 @@ namespace BalatroSeedOracle.ViewModels
             WidgetTitle = "Daylatro";
             WidgetIcon = "📅";
 
+            // Position in top-right corner
+            PositionX = 1300; // Adjusted for right side
+            PositionY = 20;
+
             // Initialize commands
             SubmitScoreCommand = new RelayCommand(OnSubmitScore, CanSubmitScore);
             CopySeedCommand = new AsyncRelayCommand(OnCopySeedAsync);

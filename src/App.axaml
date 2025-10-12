@@ -162,11 +162,12 @@
         
         <!-- 🎯 GLOBAL BALATRO STYLES - Applied to ALL controls automatically -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
-        
+
         <!-- Component-specific styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroModal.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/ButtonStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
         
         <!-- Popup and Flyout styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />

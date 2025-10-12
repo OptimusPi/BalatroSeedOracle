@@ -54,6 +54,10 @@ namespace BalatroSeedOracle.ViewModels
             WidgetTitle = "Filter Genie";
             WidgetIcon = "🧞";
             IsMinimized = true;
+
+            // Position in top-left corner
+            PositionX = 20;
+            PositionY = 20;
         }
 
         [RelayCommand]

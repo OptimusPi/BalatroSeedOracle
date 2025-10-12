@@ -4,84 +4,83 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
 
-    <!-- COMPACT HORIZONTAL LAYOUT (Balatro style) - 60% smaller than original! -->
-    <StackPanel Spacing="12" HorizontalAlignment="Center">
-        <!-- Deck and Stake Row (horizontal layout) -->
-        <Grid ColumnDefinitions="Auto,16,Auto" HorizontalAlignment="Center">
-            <!-- Deck Selector (compact) -->
-            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
-                <TextBlock Text="Yellow Deck"
+    <!-- VERTICAL LAYOUT (Balatro style - Deck on top, Stake below) -->
+    <!-- Scaled up 2.5x so it's actually visible! -->
+    <StackPanel Spacing="30" HorizontalAlignment="Center">
+        <!-- Deck Selector -->
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding SelectedDeckDisplayName}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
+                           FontSize="24"
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
 
-                <Grid ColumnDefinitions="Auto,8,Auto,8,Auto" HorizontalAlignment="Center">
-                    <!-- Left Arrow (TALL RED BAR like Balatro!) -->
+                <Grid ColumnDefinitions="Auto,12,Auto,12,Auto" HorizontalAlignment="Center">
+                    <!-- Left Arrow (match deck card height) -->
                     <Button Grid.Column="0"
                             Content="◀"
                             Classes="btn-red"
-                            Width="50" Height="110"
-                            FontSize="24"
+                            Width="40" Height="145"
+                            FontSize="28"
                             Padding="0"
                             VerticalContentAlignment="Center"/>
 
-                    <!-- Deck Card -->
-                    <Viewbox Grid.Column="2" Width="71" Height="95" Stretch="Uniform">
+                    <!-- Deck Card (scaled up 2x) -->
+                    <Viewbox Grid.Column="2" Width="142" Height="190" Stretch="Uniform">
                         <components:DeckSpinner Name="DeckSpinnerControl" ShowArrows="False" />
                     </Viewbox>
 
-                    <!-- Right Arrow (TALL RED BAR like Balatro!) -->
+                    <!-- Right Arrow (match deck card height) -->
                     <Button Grid.Column="4"
                             Content="▶"
                             Classes="btn-red"
-                            Width="50" Height="110"
-                            FontSize="24"
+                            Width="40" Height="145"
+                            FontSize="28"
                             Padding="0"
                             VerticalContentAlignment="Center"/>
                 </Grid>
 
-                <TextBlock Text="Start with extra $10"
+                <TextBlock Text="{Binding SelectedDeckDescription}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="12"
+                           FontSize="16"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            Opacity="0.7"/>
-            </StackPanel>
+        </StackPanel>
 
-            <!-- Stake Selector (compact) -->
-            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
-                <TextBlock Text="White Stake"
+        <!-- Stake Selector -->
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding SelectedStakeDisplayName}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
+                           FontSize="24"
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
 
-                <!-- Use existing SpinnerControl (already compact) -->
+                <!-- Use existing SpinnerControl (scaled up) -->
                 <controls:SpinnerControl Name="StakeSpinner"
                                         Label=""
                                         SpinnerType="stake"
                                         Minimum="0"
                                         Maximum="7"
                                         Value="0"
-                                        Width="157"
+                                        Width="240"
                                         HorizontalAlignment="Center" />
 
-                <TextBlock Text="Base Difficulty"
+                <TextBlock Text="{Binding SelectedStakeDescription}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="12"
+                           FontSize="16"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            Opacity="0.7"/>
-            </StackPanel>
-        </Grid>
+        </StackPanel>
 
         <!-- Select Button (bottom) -->
         <Button Name="SelectButton"
                 Content="Select this Deck"
                 Classes="btn-blue"
-                MinWidth="200"
-                MinHeight="32"
+                MinWidth="280"
+                MinHeight="48"
+                FontSize="18"
                 HorizontalAlignment="Center"
                 Command="{Binding SelectCommand}"/>
     </StackPanel>

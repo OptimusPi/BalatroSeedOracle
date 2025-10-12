@@ -52,6 +52,23 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void Maximize()
+        {
+            // Toggle between normal and maximized size
+            if (Width < 800)
+            {
+                Width = 900;
+                Height = 700;
+            }
+            else
+            {
+                Width = 350;
+                Height = 450;
+            }
+            OnMaximized();
+        }
+
+        [RelayCommand]
         private void Close()
         {
             OnClosed();
@@ -61,6 +78,11 @@ namespace BalatroSeedOracle.ViewModels
         /// Called when widget is expanded - override in derived classes
         /// </summary>
         protected virtual void OnExpanded() { }
+
+        /// <summary>
+        /// Called when widget is maximized - override in derived classes
+        /// </summary>
+        protected virtual void OnMaximized() { }
 
         /// <summary>
         /// Called when widget is minimized - override in derived classes

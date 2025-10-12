@@ -59,6 +59,9 @@ namespace BalatroSeedOracle.Views.Modals
             var filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
             if (filterSelector != null)
             {
+                // CRITICAL: Set SearchModal mode to show SELECT button
+                filterSelector.IsInSearchModal = true;
+
                 filterSelector.FilterSelected += (s, path) =>
                 {
                     ViewModel.LoadFilterCommand.Execute(path);

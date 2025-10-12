@@ -143,11 +143,6 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<bool>? OnVibeOutModeChangedEvent;
 
         /// <summary>
-        /// Raised when settings popup visibility should change
-        /// </summary>
-        public event EventHandler<bool>? OnSettingsPopupToggle;
-
-        /// <summary>
         /// Raised when volume popup visibility should change
         /// </summary>
         public event EventHandler<bool>? OnVolumePopupToggle;

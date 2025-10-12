@@ -1,73 +1,64 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True">
 
-    <UserControl.Styles>
-        <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="#CC2e3f42"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BoxShadow" Value="0 4 0 #1a1a1a"/>
-        </Style>
-
-        <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="#DD1a2428"/>
-            <Setter Property="CornerRadius" Value="8,8,0,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <Style Selector="Border.content-area">
-            <Setter Property="Background" Value="#F5FFFFFF"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BoxShadow" Value="0 2 8 #44000000"/>
-        </Style>
-    </UserControl.Styles>
-
     <Grid>
         <!-- Minimized State - Compact Music Icon -->
-        <Grid Name="MinimizedView"
-              IsVisible="{Binding IsMinimized}"
-              Margin="10,10,0,0"
-              PointerPressed="OnWidgetPointerPressed"
-              PointerMoved="OnWidgetPointerMoved"
-              PointerReleased="OnWidgetPointerReleased">
+        <StackPanel Name="MinimizedView"
+                    IsVisible="{Binding IsMinimized}"
+                    ZIndex="1"
+                    Spacing="4"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+            <i:Interaction.Behaviors>
+                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                                   Y="{Binding PositionY, Mode=TwoWay}" />
+                <!-- BALATRO SWAY ANIMATION! -->
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
             <Button Background="{StaticResource Red}"
                     BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="3"
-                    CornerRadius="12"
-                    Width="100" Height="100"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="64" Height="64"
                     Cursor="Hand"
-                    Command="{Binding ToggleMinimizeCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                    <TextBlock Text="🎵" FontSize="20" VerticalAlignment="Center"/>
-                    <TextBlock Text="Audio" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                </StackPanel>
+                    Command="{Binding ExpandCommand}">
+                <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
-        </Grid>
+            <TextBlock Text="Audio"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <!-- Expanded State - Full Settings Panel -->
         <Border Name="ExpandedView"
-                Classes="widget-container"
+                Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
+                ZIndex="100"
                 MinWidth="420"
                 MaxWidth="520"
-                Margin="10,10,0,0"
-                PointerPressed="OnWidgetPointerPressed"
-                PointerMoved="OnWidgetPointerMoved"
-                PointerReleased="OnWidgetPointerReleased">
+                MaxHeight="650">
+            <i:Interaction.Behaviors>
+                <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                                   Y="{Binding PositionY, Mode=TwoWay}" />
+            </i:Interaction.Behaviors>
 
             <Grid RowDefinitions="Auto,*">
                 <!-- Header with Title and Minimize Button -->
                 <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🎵" FontSize="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="Audio Visualizer Settings"
-                                       FontSize="14"
+                            <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontSize="13"
                                        FontWeight="Bold"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
@@ -75,14 +66,8 @@
 
                         <Button Grid.Column="1"
                                 Content="_"
-                                Command="{Binding ToggleMinimizeCommand}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="White"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="8,0"
-                                Cursor="Hand"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
                                 ToolTip.Tip="Minimize"/>
                     </Grid>
                 </Border>
@@ -90,14 +75,11 @@
                 <!-- Content Area with ScrollViewer -->
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
-                              MaxHeight="480"
-                              Padding="15">
+                              HorizontalScrollBarVisibility="Disabled">
 
-                    <Border Classes="content-area" Padding="15">
-                        <StackPanel Spacing="16">
+                    <StackPanel Margin="15" Spacing="16">
 
-                            <!-- THEME SELECTION -->
+                        <!-- THEME SELECTION -->
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Theme" Foreground="#2e3f42" FontWeight="Bold" FontSize="13"/>
                                 <ComboBox SelectedIndex="{Binding ThemeIndex}" HorizontalAlignment="Stretch" FontSize="12">
@@ -254,7 +236,7 @@
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
                                             <TextBlock Grid.Column="0" Text="Chords2" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Chords2Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Chords2Sensitivity, StringFormat="{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Chords2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
                                             <TextBlock Grid.Column="0" Text="Melody1" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
@@ -314,8 +296,7 @@
                                 </StackPanel>
                             </Expander>
 
-                        </StackPanel>
-                    </Border>
+                    </StackPanel>
                 </ScrollViewer>
             </Grid>
         </Border>

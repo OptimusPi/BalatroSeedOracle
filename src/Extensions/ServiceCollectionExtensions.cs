@@ -37,8 +37,6 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
 
-            // Component ViewModels removed
-
             return services;
         }
     }

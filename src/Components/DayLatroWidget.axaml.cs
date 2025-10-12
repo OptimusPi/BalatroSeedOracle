@@ -1,9 +1,6 @@
 using System;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
@@ -14,14 +11,11 @@ namespace BalatroSeedOracle.Components
 {
     /// <summary>
     /// Code-behind for DayLatroWidget
-    /// Minimal code following MVVM pattern - all logic is in DayLatroWidgetViewModel
+    /// MVVM pattern - ALL business logic in ViewModel, drag handled by DraggableWidgetBehavior
     /// </summary>
     public partial class DayLatroWidget : UserControl
     {
         public DayLatroWidgetViewModel? ViewModel { get; }
-
-        // Drag state
-        private bool _isDragging = false;
 
         public DayLatroWidget()
         {
@@ -107,110 +101,5 @@ namespace BalatroSeedOracle.Components
                 ViewModel.Dispose();
             }
         }
-
-        #region Drag Functionality
-
-        private Point _dragStartScreenPoint;
-        private Thickness _originalMargin;
-        private Grid? _cachedMinimizedView;
-        private Border? _cachedExpandedView;
-
-        public void OnWidgetPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            Helpers.DebugLogger.Log("DayLatroWidget", "PointerPressed");
-            var props = e.GetCurrentPoint(this).Properties;
-            if (!props.IsLeftButtonPressed)
-                return;
-
-            var clickedElement = e.Source as Control;
-            var isHeader = false;
-
-            // Walk up visual tree to see if we clicked on the header or minimized view
-            while (clickedElement != null)
-            {
-                if (clickedElement.Name == "MinimizedView" || clickedElement.Classes.Contains("widget-header"))
-                {
-                    isHeader = true;
-                    break;
-                }
-
-                // Don't drag if clicking on interactive controls (buttons, textboxes, etc.)
-                if (clickedElement is Button button && button.Command != null)
-                {
-                    return;
-                }
-                if (clickedElement is TextBox || clickedElement is ScrollViewer)
-                {
-                    return;
-                }
-
-                clickedElement = clickedElement.Parent as Control;
-            }
-
-            if (isHeader)
-            {
-                _isDragging = true;
-
-                // Store screen coordinates (null = screen space)
-                _dragStartScreenPoint = e.GetPosition(null);
-
-                // Store original margin before drag starts
-                var minimizedView = this.FindControl<Grid>("MinimizedView");
-                var expandedView = this.FindControl<Border>("ExpandedView");
-                _originalMargin = (minimizedView?.Margin ?? expandedView?.Margin) ?? new Thickness(0);
-
-                e.Pointer.Capture(this);
-                e.Handled = true;
-            }
-        }
-
-        public void OnWidgetPointerMoved(object? sender, PointerEventArgs e)
-        {
-            if (!_isDragging)
-                return;
-
-            // Get current screen position
-            var currentScreenPoint = e.GetPosition(null);
-
-            // Calculate delta from original position
-            var delta = currentScreenPoint - _dragStartScreenPoint;
-
-            // Apply delta to original margin
-            var newMargin = new Thickness(
-                _originalMargin.Left + delta.X,
-                _originalMargin.Top + delta.Y,
-                0,
-                0
-            );
-
-            // Update ViewModel position
-            if (ViewModel != null)
-            {
-                ViewModel.PositionX = newMargin.Left;
-                ViewModel.PositionY = newMargin.Top;
-            }
-
-            // Update visual margin (using cached controls - FAST!)
-            if (_cachedMinimizedView != null)
-                _cachedMinimizedView.Margin = newMargin;
-            if (_cachedExpandedView != null)
-                _cachedExpandedView.Margin = newMargin;
-
-            e.Handled = true;
-        }
-
-        public void OnWidgetPointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            Helpers.DebugLogger.Log("DayLatroWidget", $"PointerReleased - isDragging: {_isDragging}");
-            if (_isDragging)
-            {
-                _isDragging = false;
-                e.Pointer.Capture(null);
-                e.Handled = true;
-                Helpers.DebugLogger.Log("DayLatroWidget", "Pointer capture released");
-            }
-        }
-
-        #endregion
     }
 }

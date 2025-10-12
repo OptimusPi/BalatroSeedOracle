@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -47,6 +48,50 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string SelectedStakeName => GetStakeName(StakeIndex);
 
+        /// <summary>
+        /// Display name for selected deck (e.g., "Red Deck")
+        /// </summary>
+        public string SelectedDeckDisplayName => $"{GetDeckName(DeckIndex)} Deck";
+
+        /// <summary>
+        /// Description of the selected deck
+        /// </summary>
+        public string SelectedDeckDescription
+        {
+            get
+            {
+                var deckName = GetDeckName(DeckIndex);
+                return BalatroData.DeckDescriptions.TryGetValue(deckName, out var desc) ? desc : "";
+            }
+        }
+
+        /// <summary>
+        /// Display name for selected stake (e.g., "White Stake")
+        /// </summary>
+        public string SelectedStakeDisplayName => StakeDisplayValues[StakeIndex];
+
+        /// <summary>
+        /// Description of the selected stake
+        /// </summary>
+        public string SelectedStakeDescription
+        {
+            get
+            {
+                return StakeIndex switch
+                {
+                    0 => "Base Difficulty",
+                    1 => "Small Blind gives no money reward",
+                    2 => "Required score scales faster for each Ante",
+                    3 => "Shop can have Eternal Jokers (Can't be sold or destroyed)",
+                    4 => "-1 Discard",
+                    5 => "Required score scales faster for each Ante",
+                    6 => "Shop can have Perishable Jokers (Debuffed after 5 rounds)",
+                    7 => "Shop can have Rental Jokers (Costs $3 per round)",
+                    _ => "Base Difficulty"
+                };
+            }
+        }
+
         #endregion
 
         #region Events
@@ -68,12 +113,16 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnDeckIndexChanged(int value)
         {
             OnPropertyChanged(nameof(SelectedDeckName));
+            OnPropertyChanged(nameof(SelectedDeckDisplayName));
+            OnPropertyChanged(nameof(SelectedDeckDescription));
             RaiseSelectionChanged();
         }
 
         partial void OnStakeIndexChanged(int value)
         {
             OnPropertyChanged(nameof(SelectedStakeName));
+            OnPropertyChanged(nameof(SelectedStakeDisplayName));
+            OnPropertyChanged(nameof(SelectedStakeDescription));
             RaiseSelectionChanged();
         }
 
