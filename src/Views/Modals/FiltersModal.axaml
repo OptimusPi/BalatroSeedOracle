@@ -271,89 +271,15 @@
     <!-- Main Layout with top nav -->
     <Grid DragDrop.AllowDrop="True" Margin="0,0,0,10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
-            <RowDefinition Height="Auto"/> <!-- Tabs -->
+            <RowDefinition Height="Auto"/> <!-- Tabs (BalatroTabControl) -->
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
-        
-        <!-- Triangle pointer above tabs -->
-        <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="130"/> <!-- Select Filter -->
-                <ColumnDefinition Width="130"/> <!-- Visual -->
-                <ColumnDefinition Width="130"/> <!-- JSON -->
-                <ColumnDefinition Width="130"/> <!-- TEST -->
-                <ColumnDefinition Width="130"/> <!-- Save Filter -->
-            </Grid.ColumnDefinitions>
 
-            <!-- Triangle container -->
-            <Grid Grid.Column="0"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Bottom">
+        <!-- Reusable BalatroTabControl (replaces manual tab buttons + triangle) -->
+        <components:BalatroTabControl Grid.Row="0" Name="TabControl" HorizontalAlignment="Center" Margin="0,0,0,2"/>
 
-                <!-- Drop shadow triangle -->
-                <Polygon Points="10,20 20,5 0,5"
-                         Fill="{StaticResource SemiTransparentShadow}"
-                         Margin="2,2,0,0"/>
-
-                <!-- Main triangle that bounces -->
-                <Polygon Name="TabTriangle"
-                         Points="10,20 20,5 0,5"
-                         Fill="{StaticResource Red}">
-                    <Polygon.Styles>
-                        <Style Selector="Polygon">
-                            <Style.Animations>
-                                <Animation Duration="0:0:1.2"
-                                           IterationCount="Infinite"
-                                           PlaybackDirection="Alternate"
-                                           Easing="SineEaseInOut">
-                                    <KeyFrame Cue="0%">
-                                        <Setter Property="Margin" Value="0,0,0,0"/>
-                                    </KeyFrame>
-                                    <KeyFrame Cue="100%">
-                                        <Setter Property="Margin" Value="0,-8,0,8"/>
-                                    </KeyFrame>
-                                </Animation>
-                            </Style.Animations>
-                        </Style>
-                    </Polygon.Styles>
-                </Polygon>
-            </Grid>
-        </Grid>
-
-        <!-- Tab buttons -->
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,0,0,2">
-            <Button Name="LoadSaveTab"
-                    Content="Select"
-                    Classes="tab-button active"
-                    Click="OnTabClick"/>
-            <Button Name="VisualTab"
-                    Content="Visual"
-                    Classes="tab-button"
-                    IsEnabled="False"
-                    Click="OnTabClick"/>
-            <Button Name="JsonTab"
-                    Content="JSON"
-                    Classes="tab-button"
-                    IsEnabled="False"
-                    Click="OnTabClick"/>
-            <Button Name="TestTab"
-                    Content="🔥 TEST"
-                    Classes="tab-button"
-                    IsEnabled="False"
-                    Click="OnTabClick"/>
-            <Button Name="SaveFilterTab"
-                    Content="Finish"
-                    Classes="tab-button"
-                    IsEnabled="False"
-                    Click="OnTabClick"/>
-        </StackPanel>
-        
         <!-- Content area -->
-        <Grid Grid.Row="2" Margin="12,6,12,12" DragDrop.AllowDrop="True">
+        <Grid Grid.Row="1" Margin="12,6,12,12" DragDrop.AllowDrop="True">
             
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="{Binding IsVisualTabVisible}" DragDrop.AllowDrop="True">

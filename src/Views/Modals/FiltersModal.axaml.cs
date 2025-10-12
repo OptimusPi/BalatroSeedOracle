@@ -118,14 +118,10 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _clearNeedsButton;
         private Button? _clearWantsButton;
         private Button? _clearMustNotButton;
-        private Button? _visualTab;
-        private Button? _jsonTab;
-        private Button? _loadSaveTab;
         private TextBox? _saveFilterNameInput;
         private Button? _saveFilterButton;
         private Grid? _loadSavePanel;
         private Components.FilterSelectorControl? _filterSelector;
-        private Button? _visualTabButton;
         private ContentControl? _itemPaletteContent;
         private WrapPanel? _needsPanel;
         private WrapPanel? _wantsPanel;
@@ -147,26 +143,19 @@ namespace BalatroSeedOracle.Views.Modals
         private Border? _mustNotBorder;
         private Border? _needsBorder;
         private Border? _wantsBorder;
+        // Category navigation buttons (left sidebar in Visual tab)
         private Button? _bossesTab;
-        private Button? _browseButton;
-        private Button? _clearAllButton;
         private Button? _clearSearchButton;
         private Button? _clearTab;
         private Button? _commonJokersTab;
         private Button? _favoritesTab;
-        private Button? _jsonModeButton;
         private Button? _planetsTab;
         private Button? _playingCardsTab;
-        private Button? _quickTestButton;
         private Button? _rareJokersTab;
-        private Button? _saveButton;
-        private Button? _saveFilterTab;
-        private Button? _searchForSeedsButton;
         private Button? _soulJokersTab;
         private Button? _spectralsTab;
         private Button? _tagsTab;
         private Button? _tarotsTab;
-        private Button? _testTab;
         private Button? _uncommonJokersTab;
         private Button? _vouchersTab;
         private CheckBox? _modeToggle;
@@ -193,6 +182,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBox? _filterNameInput;
         private TextBox? _filterPathInput;
         private TextBox? _testSeedsInput;
+        private Components.BalatroTabControl? _tabControl;
 
         public FiltersModalContent()
         {
@@ -257,14 +247,11 @@ namespace BalatroSeedOracle.Views.Modals
             _clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
             _clearWantsButton = this.FindControl<Button>("ClearWantsButton");
             _clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
-            _visualTab = this.FindControl<Button>("VisualTab");
-            _jsonTab = this.FindControl<Button>("JsonTab");
-            _loadSaveTab = this.FindControl<Button>("LoadSaveTab");
+            _tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
             _saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             _saveFilterButton = this.FindControl<Button>("SaveFilterButton");
             _loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
             _filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
-            _visualTabButton = this.FindControl<Button>("VisualTab");
             _itemPaletteContent = this.FindControl<ContentControl>("ItemPaletteContent");
             _mainScrollViewer = this.FindControl<ScrollViewer>("MainScrollViewer");
             _needsPanel = this.FindControl<WrapPanel>("NeedsPanel");
@@ -277,7 +264,6 @@ namespace BalatroSeedOracle.Views.Modals
             _wantsScrollViewer = this.FindControl<ScrollViewer>("WantsScrollViewer");
             _mustNotScrollViewer = this.FindControl<ScrollViewer>("MustNotScrollViewer");
             _searchBox = this.FindControl<TextBox>("SearchBox");
-            _tabTriangle = this.FindControl<Polygon>("TabTriangle");
 
             // Additional controls to cache (QW-1 Extended)
             _jsonEditor = this.FindControl<AvaloniaEdit.TextEditor>("JsonEditor");
@@ -287,26 +273,19 @@ namespace BalatroSeedOracle.Views.Modals
             _mustNotBorder = this.FindControl<Border>("MustNotBorder");
             _needsBorder = this.FindControl<Border>("NeedsBorder");
             _wantsBorder = this.FindControl<Border>("WantsBorder");
+            // Category navigation buttons (left sidebar)
             _bossesTab = this.FindControl<Button>("BossesTab");
-            _browseButton = this.FindControl<Button>("BrowseButton");
-            _clearAllButton = this.FindControl<Button>("ClearAllButton");
             _clearSearchButton = this.FindControl<Button>("ClearSearchButton");
             _clearTab = this.FindControl<Button>("ClearTab");
             _commonJokersTab = this.FindControl<Button>("CommonJokersTab");
             _favoritesTab = this.FindControl<Button>("FavoritesTab");
-            _jsonModeButton = this.FindControl<Button>("JsonModeButton");
             _planetsTab = this.FindControl<Button>("PlanetsTab");
             _playingCardsTab = this.FindControl<Button>("PlayingCardsTab");
-            _quickTestButton = this.FindControl<Button>("QuickTestButton");
             _rareJokersTab = this.FindControl<Button>("RareJokersTab");
-            _saveButton = this.FindControl<Button>("SaveButton");
-            _saveFilterTab = this.FindControl<Button>("SaveFilterTab");
-            _searchForSeedsButton = this.FindControl<Button>("SearchForSeedsButton");
             _soulJokersTab = this.FindControl<Button>("SoulJokersTab");
             _spectralsTab = this.FindControl<Button>("SpectralsTab");
             _tagsTab = this.FindControl<Button>("TagsTab");
             _tarotsTab = this.FindControl<Button>("TarotsTab");
-            _testTab = this.FindControl<Button>("TestTab");
             _uncommonJokersTab = this.FindControl<Button>("UncommonJokersTab");
             _vouchersTab = this.FindControl<Button>("VouchersTab");
             _modeToggle = this.FindControl<CheckBox>("ModeToggle");
@@ -346,6 +325,21 @@ namespace BalatroSeedOracle.Views.Modals
             // This eliminates 173 O(n) visual tree walks, providing 50%+ performance improvement
             CacheControls();
 
+            // Initialize BalatroTabControl with proper tab titles
+            if (_tabControl != null)
+            {
+                _tabControl.SetTabs("Select", "Visual", "JSON", "🔥 TEST", "Finish");
+
+                // Disable all tabs except "Select" initially
+                _tabControl.SetTabEnabled(1, false); // Visual
+                _tabControl.SetTabEnabled(2, false); // JSON
+                _tabControl.SetTabEnabled(3, false); // TEST
+                _tabControl.SetTabEnabled(4, false); // Finish
+
+                // Wire up tab changed event
+                _tabControl.TabChanged += OnBalatroTabChanged;
+            }
+
             // Sync TextBox changes to ViewModel properties (controls already cached)
             if (_configNameBox != null)
             {
@@ -356,7 +350,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _configDescriptionBox.TextChanged += (s, e) => ViewModel.FilterDescription = _configDescriptionBox.Text ?? "";
             }
 
-            // Setup tab button handlers
+            // Setup tab button handlers (for sidebar navigation buttons)
             SetupTabButtons();
 
             // Setup drop zones
@@ -420,8 +414,8 @@ namespace BalatroSeedOracle.Views.Modals
             ClearFilter();
             UpdateTabStates(true);
 
-            // Switch to Visual tab (use cached reference - QW-1)
-            _visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // Switch to Visual tab (index 1)
+            SwitchToTab(1);
         }
 
         // NOTE: OnFilterListItemClick, OnMustHaveTabClick, OnShouldHaveTabClick, OnMustNotTabClick,
@@ -494,12 +488,8 @@ namespace BalatroSeedOracle.Views.Modals
                 await LoadConfigAsync(newFilePath);
                 UpdateTabStates(true);
 
-                // Switch to Visual tab - use OnTabClick directly to ensure proper tab switching
-                var visualTabButton = this.FindControl<Button>("VisualTab");
-                if (visualTabButton != null)
-                {
-                    OnTabClick(visualTabButton, new RoutedEventArgs());
-                }
+                // Switch to Visual tab (index 1)
+                SwitchToTab(1);
 
                 UpdateStatus($"Created copy: {newName}", false);
             }
@@ -651,13 +641,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Enable tabs
                 UpdateTabStates(true);
 
-                // Switch to Visual tab for editing - this will call UpdateTabVisibility correctly
-                var visualTabButton = this.FindControl<Button>("VisualTab");
-                if (visualTabButton != null)
-                {
-                    // Use OnTabClick directly to ensure proper tab switching
-                    OnTabClick(visualTabButton, new RoutedEventArgs());
-                }
+                // Switch to Visual tab for editing (index 1)
+                SwitchToTab(1);
             }
             catch (Exception ex)
             {
@@ -737,12 +722,8 @@ namespace BalatroSeedOracle.Views.Modals
                 await LoadConfigAsync(newFilePath);
                 UpdateTabStates(true);
 
-                // Switch to Visual tab - use OnTabClick directly to ensure proper tab switching
-                var visualTabButton = this.FindControl<Button>("VisualTab");
-                if (visualTabButton != null)
-                {
-                    OnTabClick(visualTabButton, new RoutedEventArgs());
-                }
+                // Switch to Visual tab (index 1)
+                SwitchToTab(1);
 
                 UpdateStatus($"Created copy: {newName}", false);
             }
@@ -759,9 +740,8 @@ namespace BalatroSeedOracle.Views.Modals
             ClearFilter();
             UpdateTabStates(true);
 
-            // Switch to Visual tab
-            var visualTabButton = this.FindControl<Button>("VisualTab");
-            visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // Switch to Visual tab (index 1)
+            SwitchToTab(1);
         }
 
         private void OnModeToggleChanged(object? sender, bool isChecked)
@@ -815,12 +795,25 @@ namespace BalatroSeedOracle.Views.Modals
         
         private void UpdateTabStates(bool configLoaded)
         {
+            // NEW: Use BalatroTabControl instead of individual buttons
+            if (_tabControl != null)
+            {
+                // Enable tabs only when a filter is loaded BY USER ACTION
+                _tabControl.SetTabEnabled(1, configLoaded); // Visual tab
+                _tabControl.SetTabEnabled(2, configLoaded); // JSON tab
+                _tabControl.SetTabEnabled(3, configLoaded); // TEST tab
+                _tabControl.SetTabEnabled(4, configLoaded); // Finish/Save tab
+
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal",
+                    $"UpdateTabStates: configLoaded={configLoaded}, tabs enabled={configLoaded}");
+            }
+
+            // OLD: Individual button references (kept for compatibility if any direct references exist)
             var visualTab = this.FindControl<Button>("VisualTab");
             var jsonTab = this.FindControl<Button>("JsonTab");
             var testTab = this.FindControl<Button>("TestTab");
             var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
 
-            // Enable tabs only when a filter is loaded BY USER ACTION
             if (visualTab != null)
             {
                 visualTab.IsEnabled = configLoaded;
@@ -985,12 +978,8 @@ namespace BalatroSeedOracle.Views.Modals
             // Enable tabs for new filter
             UpdateTabStates(true);
 
-            // Switch to Visual tab
-            var visualTab = this.FindControl<Button>("VisualTab");
-            if (visualTab != null)
-            {
-                OnTabClick(visualTab, new RoutedEventArgs());
-            }
+            // Switch to Visual tab (index 1)
+            SwitchToTab(1);
 
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "Created new empty filter configuration");
         }
@@ -4648,6 +4637,109 @@ namespace BalatroSeedOracle.Views.Modals
             activeButton?.Classes.Add("active");
         }
 
+        /// <summary>
+        /// Helper method to programmatically switch to a specific tab
+        /// Use this instead of manually triggering button clicks
+        /// </summary>
+        private void SwitchToTab(int tabIndex)
+        {
+            if (_tabControl != null)
+            {
+                _tabControl.SwitchToTab(tabIndex);
+                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Programmatically switched to tab {tabIndex}");
+            }
+        }
+
+        /// <summary>
+        /// NEW: Handles BalatroTabControl tab changes (replaces OnTabClick)
+        /// This is the proper MVVM approach - tab control tells us when user switches tabs
+        /// </summary>
+        private void OnBalatroTabChanged(object? sender, int tabIndex)
+        {
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"OnBalatroTabChanged called with tabIndex={tabIndex}");
+
+            // Prevent re-entrant tab logic if user double-clicks or triggers via keyboard quickly
+            if (_isSwitchingTab)
+            {
+                return;
+            }
+            _isSwitchingTab = true;
+            try
+            {
+                // Update ViewModel visibility properties (this hides/shows the content panels)
+                ViewModel.UpdateTabVisibility(tabIndex);
+
+                // Perform tab-specific initialization/cleanup
+                switch (tabIndex)
+                {
+                    case 0: // LoadSave tab
+                        // Make sure FilterSelector is visible when on LoadSave tab
+                        if (_filterSelector != null)
+                        {
+                            _filterSelector.IsVisible = true;
+                            _filterSelector.Opacity = 1;
+                        }
+                        break;
+
+                    case 1: // Visual tab
+                        // NUCLEAR OPTION: Force hide LoadSave panel and FilterSelector
+                        if (_loadSavePanel != null)
+                        {
+                            _loadSavePanel.IsVisible = false;
+                            _loadSavePanel.Opacity = 0;
+                            DebugLogger.Log("FiltersModal", "FORCED LoadSavePanel hidden");
+                        }
+
+                        if (_filterSelector != null)
+                        {
+                            _filterSelector.IsVisible = false;
+                            _filterSelector.Opacity = 0;
+                            DebugLogger.Log("FiltersModal", "FORCED FilterSelector hidden");
+                        }
+
+                        RestoreDragDropModeLayout();
+                        LoadAllCategories();
+                        UpdateDropZoneVisibility();
+                        // RELOAD from current config to refresh drop zones
+                        RefreshDropZonesFromConfig();
+                        break;
+
+                    case 2: // JSON tab
+                        EnterEditJsonMode();
+                        UpdateJsonEditor();
+                        // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
+                        // Only reload from selections if we're building a filter from scratch in Visual mode
+                        if (ViewModel.LoadedConfig == null)
+                        {
+                            ReloadJsonFromCurrentConfig();
+                        }
+                        break;
+
+                    case 3: // TEST tab
+                        UpdateJsonStats(); // Update stats display
+                        break;
+
+                    case 4: // Save/Finish tab
+                        UpdateSaveFilterPanel();
+                        break;
+                }
+
+                _currentTabIndex = tabIndex;
+            }
+            catch (Exception ex)
+            {
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Exception during BalatroTab switch: {ex}");
+            }
+            finally
+            {
+                _isSwitchingTab = false;
+            }
+        }
+
+        /// <summary>
+        /// DEPRECATED: Old manual tab click handler - replaced by OnBalatroTabChanged
+        /// Kept for backwards compatibility with any remaining direct button references
+        /// </summary>
         private void OnTabClick(object? sender, RoutedEventArgs e)
         {
             if (sender is not Button button)
@@ -7526,12 +7618,8 @@ namespace BalatroSeedOracle.Views.Modals
                         // Enable tabs and switch to Visual tab
                         UpdateTabStates(true);
 
-                        // Switch to Visual tab
-                        var visualTab = this.FindControl<Button>("VisualTab");
-                        if (visualTab != null)
-                        {
-                            OnTabClick(visualTab, new RoutedEventArgs());
-                        }
+                        // Switch to Visual tab (index 1)
+                        SwitchToTab(1);
                     }
 
                     // SearchWidget removed - using desktop icons now
