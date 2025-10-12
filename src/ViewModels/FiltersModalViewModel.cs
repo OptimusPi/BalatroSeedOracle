@@ -342,6 +342,8 @@ namespace BalatroSeedOracle.ViewModels
         /// <param name="tabIndex">0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save</param>
         public void UpdateTabVisibility(int tabIndex)
         {
+            DebugLogger.Log("FiltersModalViewModel", $"UpdateTabVisibility called with tabIndex={tabIndex}");
+
             // Hide all tabs first
             IsLoadSaveTabVisible = false;
             IsVisualTabVisible = false;
@@ -354,22 +356,29 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case 0:
                     IsLoadSaveTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "LoadSave tab visible, all others hidden");
                     break;
                 case 1:
                     IsVisualTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Visual tab visible, all others hidden");
                     break;
                 case 2:
                     IsJsonTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "JSON tab visible, all others hidden");
                     break;
                 case 3:
                     IsTestTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "TEST tab visible, all others hidden");
                     break;
                 case 4:
                     IsSaveTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
                     break;
             }
 
-            DebugLogger.Log("FiltersModalViewModel", $"Tab visibility updated: tabIndex={tabIndex}");
+            // Log final state
+            DebugLogger.Log("FiltersModalViewModel",
+                $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Test:{IsTestTabVisible} Save:{IsSaveTabVisible}");
         }
 
         // ===== HELPER METHODS =====

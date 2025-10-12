@@ -494,9 +494,12 @@ namespace BalatroSeedOracle.Views.Modals
                 await LoadConfigAsync(newFilePath);
                 UpdateTabStates(true);
 
-                // Switch to Visual tab
+                // Switch to Visual tab - use OnTabClick directly to ensure proper tab switching
                 var visualTabButton = this.FindControl<Button>("VisualTab");
-                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if (visualTabButton != null)
+                {
+                    OnTabClick(visualTabButton, new RoutedEventArgs());
+                }
 
                 UpdateStatus($"Created copy: {newName}", false);
             }
@@ -648,13 +651,13 @@ namespace BalatroSeedOracle.Views.Modals
                 // Enable tabs
                 UpdateTabStates(true);
 
-                // CRITICAL FIX: Hide LoadSaveTab BEFORE switching to Visual tab
-                // This prevents both tabs from being visible simultaneously
-                ViewModel.UpdateTabVisibility(1); // Visual tab index = 1
-
-                // Switch to Visual tab for editing (this will also call UpdateTabVisibility again, but that's OK)
+                // Switch to Visual tab for editing - this will call UpdateTabVisibility correctly
                 var visualTabButton = this.FindControl<Button>("VisualTab");
-                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if (visualTabButton != null)
+                {
+                    // Use OnTabClick directly to ensure proper tab switching
+                    OnTabClick(visualTabButton, new RoutedEventArgs());
+                }
             }
             catch (Exception ex)
             {
@@ -734,9 +737,12 @@ namespace BalatroSeedOracle.Views.Modals
                 await LoadConfigAsync(newFilePath);
                 UpdateTabStates(true);
 
-                // Switch to Visual tab
+                // Switch to Visual tab - use OnTabClick directly to ensure proper tab switching
                 var visualTabButton = this.FindControl<Button>("VisualTab");
-                visualTabButton?.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if (visualTabButton != null)
+                {
+                    OnTabClick(visualTabButton, new RoutedEventArgs());
+                }
 
                 UpdateStatus($"Created copy: {newName}", false);
             }
@@ -4699,12 +4705,37 @@ namespace BalatroSeedOracle.Views.Modals
                     button.Classes.Add("active");
                     ViewModel.UpdateTabVisibility(0);
                     AnimateTriangleToTab(0);
+
+                    // Make sure FilterSelector is visible when on LoadSave tab
+                    if (_filterSelector != null)
+                    {
+                        _filterSelector.IsVisible = true;
+                        _filterSelector.Opacity = 1;
+                    }
                     break;
 
                 case "VisualTab":
                     button.Classes.Add("active");
                     ViewModel.UpdateTabVisibility(1);
                     AnimateTriangleToTab(1);
+
+                    // NUCLEAR OPTION: Force hide BOTH panels and the FilterSelector control
+                    var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
+                    if (loadSavePanel != null)
+                    {
+                        loadSavePanel.IsVisible = false;
+                        loadSavePanel.Opacity = 0;
+                        DebugLogger.Log("FiltersModal", "FORCED LoadSavePanel hidden");
+                    }
+
+                    // Also hide the FilterSelector control directly
+                    if (_filterSelector != null)
+                    {
+                        _filterSelector.IsVisible = false;
+                        _filterSelector.Opacity = 0;
+                        DebugLogger.Log("FiltersModal", "FORCED FilterSelector hidden");
+                    }
+
                     RestoreDragDropModeLayout();
                     LoadAllCategories();
                     UpdateDropZoneVisibility();

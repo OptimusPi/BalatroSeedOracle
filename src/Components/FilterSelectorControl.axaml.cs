@@ -135,11 +135,19 @@ namespace BalatroSeedOracle.Components
         // Event handler for "Select This Filter" button (SearchModal context)
         private void OnSelectFilterClick(object? sender, RoutedEventArgs e)
         {
+            Helpers.DebugLogger.Log("FilterSelectorControl", "SELECT THIS FILTER button clicked!");
             var filterPath = _viewModel?.GetSelectedFilterPath();
+            Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter path: {filterPath ?? "null"}");
+
             if (!string.IsNullOrEmpty(filterPath))
             {
+                Helpers.DebugLogger.Log("FilterSelectorControl", $"Firing FilterSelected event with path: {filterPath}");
                 // Fire FilterSelected event for SearchModal to handle
                 FilterSelected?.Invoke(this, filterPath);
+            }
+            else
+            {
+                Helpers.DebugLogger.LogError("FilterSelectorControl", "No filter selected or path is empty!");
             }
         }
 
