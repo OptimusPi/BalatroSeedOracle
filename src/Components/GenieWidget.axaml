@@ -8,7 +8,8 @@
              x:CompileBindings="True">
 
     <!-- Single container with the drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
+          ZIndex="{Binding WidgetZIndex}">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}" />
@@ -17,7 +18,6 @@
         <!-- Minimized State - Magic Lamp Icon -->
         <StackPanel Name="MinimizedView"
                     IsVisible="{Binding IsMinimized}"
-                    ZIndex="1"
                     Spacing="4">
             <i:Interaction.Behaviors>
                 <!-- BALATRO SWAY ANIMATION! -->

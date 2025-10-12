@@ -20,7 +20,8 @@
     </UserControl.Styles>
 
     <!-- Single container with the drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
+          ZIndex="{Binding WidgetZIndex}">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}" />

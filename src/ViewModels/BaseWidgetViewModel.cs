@@ -37,6 +37,17 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private double _height = 450;
 
+        /// <summary>
+        /// Dynamic Z-index: minimized widgets = 1, expanded widgets = 100
+        /// </summary>
+        public int WidgetZIndex => IsMinimized ? 1 : 100;
+
+        partial void OnIsMinimizedChanged(bool value)
+        {
+            // Notify that WidgetZIndex has changed when IsMinimized changes
+            OnPropertyChanged(nameof(WidgetZIndex));
+        }
+
         [RelayCommand]
         private void Expand()
         {
