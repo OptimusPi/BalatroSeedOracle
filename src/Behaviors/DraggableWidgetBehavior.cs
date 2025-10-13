@@ -219,6 +219,15 @@ namespace BalatroSeedOracle.Behaviors
             _isDragging = false;
             e.Pointer.Capture(null);
 
+            // Snap to 128px grid for minimized widgets (stateless using modulo %)
+            // Expanded windows don't snap - free positioning!
+            if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
+            {
+                const double gridSize = 128.0;
+                X = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
+                Y = Math.Round(Y / gridSize) * gridSize;
+            }
+
             // CRITICAL: Clear all stored position values to prevent ZOOP!
             _pointerPressedPoint = new Point(double.NaN, double.NaN);
             _dragStartPoint = new Point(double.NaN, double.NaN);
