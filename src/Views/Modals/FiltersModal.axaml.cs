@@ -7296,43 +7296,6 @@ namespace BalatroSeedOracle.Views.Modals
             return popup;
         }
 
-        /// <summary>
-        /// Maps UI category names (plural) to JSON Type values (singular)
-        /// </summary>
-        private string MapCategoryToType(string category)
-        {
-            return category switch
-            {
-                "Jokers" => "Joker",
-                "SoulJokers" => "SoulJoker",
-                "Tarots" => "Tarot",
-                "Spectrals" => "Spectral",
-                "Vouchers" => "Voucher",
-                "Tags" => "Tag",
-                "Bosses" => "Boss",
-                "PlayingCards" => "PlayingCard",
-                _ => category, // Fallback to original if not mapped
-            };
-        }
-
-        /// <summary>
-        /// Maps JSON Type values (singular) to UI category names (plural)
-        /// </summary>
-        private string MapTypeToCategory(string type)
-        {
-            return type switch
-            {
-                "SoulJoker" => "SoulJokers",
-                "Joker" => "Jokers",
-                "Tarot" => "Tarots",
-                "Spectral" => "Spectrals",
-                "Voucher" => "Vouchers",
-                "Tag" => "Tags",
-                "Boss" => "Bosses",
-                "PlayingCard" => "PlayingCards",
-                _ => throw new ArgumentException($"Unknown type: {type}"),
-            };
-        }
 
         /// <summary>
         /// Normalizes item names to match the casing used in BalatroData
@@ -7533,7 +7496,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 foreach (var item in config.Must)
                 {
-                    var category = GetCategoryFromType(item.Type);
+                    var category = CategoryMapper.GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
                     // Add to selected needs with unique key
@@ -7561,7 +7524,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 foreach (var item in config.Should)
                 {
-                    var category = GetCategoryFromType(item.Type);
+                    var category = CategoryMapper.GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
                     // Add to selected wants with unique key
@@ -7588,7 +7551,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 foreach (var item in config.MustNot)
                 {
-                    var category = GetCategoryFromType(item.Type);
+                    var category = CategoryMapper.GetCategoryFromType(item.Type);
                     var itemName = item.Value;
 
                     // Add to selected must not with unique key
@@ -7626,20 +7589,6 @@ namespace BalatroSeedOracle.Views.Modals
             );
         }
 
-        private string GetCategoryFromType(string type)
-        {
-            return type.ToLower() switch
-            {
-                "joker" or "souljoker" => "Jokers",
-                "tarot" or "tarotcard" => "Tarots",
-                "spectral" or "spectralcard" => "Spectrals",
-                "planet" or "planetcard" => "Planets",
-                "tag" or "smallblindtag" or "bigblindtag" => "Tags",
-                "voucher" => "Vouchers",
-                "playingcard" => "PlayingCards",
-                _ => "Unknown",
-            };
-        }
 
         private void UpdatePersistentFavorites()
         {
