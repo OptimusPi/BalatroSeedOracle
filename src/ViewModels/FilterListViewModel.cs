@@ -151,6 +151,74 @@ namespace BalatroSeedOracle.ViewModels
             IsFilterSelected = true;
 
             LoadFilterStats(filter.FilePath);
+
+            // Auto-select first non-empty tab to show sprites immediately
+            AutoSelectFirstNonEmptyTab(filter.FilePath);
+        }
+
+        /// <summary>
+        /// Auto-selects the first non-empty tab when a filter is selected
+        /// Priority: must_have → should_have → must_not_have
+        /// </summary>
+        private void AutoSelectFirstNonEmptyTab(string filterPath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filterPath) || !File.Exists(filterPath))
+                {
+                    DebugLogger.Log("FilterListViewModel", "Cannot auto-select tab - no filter path");
+                    return;
+                }
+
+                var json = File.ReadAllText(filterPath);
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                using var doc = JsonDocument.Parse(json, options);
+                var root = doc.RootElement;
+
+                // Try "must" first (new format) or "must_have" (old format)
+                if ((root.TryGetProperty("must", out var must) ||
+                     root.TryGetProperty("must_have", out must)) &&
+                    must.ValueKind == JsonValueKind.Array &&
+                    must.GetArrayLength() > 0)
+                {
+                    DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_have' tab");
+                    SelectTab("must_have");
+                    return;
+                }
+
+                // Try "should" second (new format) or "should_have" (old format)
+                if ((root.TryGetProperty("should", out var should) ||
+                     root.TryGetProperty("should_have", out should)) &&
+                    should.ValueKind == JsonValueKind.Array &&
+                    should.GetArrayLength() > 0)
+                {
+                    DebugLogger.Log("FilterListViewModel", "Auto-selecting 'should_have' tab");
+                    SelectTab("should_have");
+                    return;
+                }
+
+                // Try "mustNot" third (new format) or "must_not_have" (old format)
+                if ((root.TryGetProperty("mustNot", out var mustNot) ||
+                     root.TryGetProperty("must_not_have", out mustNot)) &&
+                    mustNot.ValueKind == JsonValueKind.Array &&
+                    mustNot.GetArrayLength() > 0)
+                {
+                    DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_not_have' tab");
+                    SelectTab("must_not_have");
+                    return;
+                }
+
+                // If all tabs are empty, clear the display
+                DebugLogger.Log("FilterListViewModel", "All tabs empty - clearing display");
+                SelectedTabType = "";
+                FilterItems.Clear();
+                HasFilterItems = false;
+                IsTriangleVisible = false;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterListViewModel", $"Error auto-selecting tab: {ex.Message}");
+            }
         }
 
         [RelayCommand]
@@ -315,8 +383,17 @@ namespace BalatroSeedOracle.ViewModels
 
                 FilterItems.Clear();
 
+                // Map tab type to JSON property name
+                var jsonPropertyName = tabType switch
+                {
+                    "must_have" => "must",
+                    "should_have" => "should",
+                    "must_not_have" => "mustNot",
+                    _ => tabType
+                };
+
                 // Get the items array for the selected tab
-                if (root.TryGetProperty(tabType, out var itemsArray) && itemsArray.ValueKind == JsonValueKind.Array)
+                if (root.TryGetProperty(jsonPropertyName, out var itemsArray) && itemsArray.ValueKind == JsonValueKind.Array)
                 {
                     var items = new List<string>();
                     foreach (var item in itemsArray.EnumerateArray())
