@@ -274,13 +274,16 @@ namespace BalatroSeedOracle.ViewModels
                 if (root.TryGetProperty("description", out var descProp))
                     SelectedFilterStats.Add(new FilterStat { Label = "Description", Value = descProp.GetString() ?? "N/A", Color = "#FFFFFF" });
 
-                if (root.TryGetProperty("must_have", out var mustProp) && mustProp.ValueKind == JsonValueKind.Array)
+                // Check both "must" (new format) and "must_have" (old format)
+                if ((root.TryGetProperty("must", out var mustProp) || root.TryGetProperty("must_have", out mustProp)) && mustProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Have", Value = $"{mustProp.GetArrayLength()} items", Color = "#ff4c40" });
 
-                if (root.TryGetProperty("should_have", out var shouldProp) && shouldProp.ValueKind == JsonValueKind.Array)
+                // Check both "should" (new format) and "should_have" (old format)
+                if ((root.TryGetProperty("should", out var shouldProp) || root.TryGetProperty("should_have", out shouldProp)) && shouldProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Should Have", Value = $"{shouldProp.GetArrayLength()} items", Color = "#0093ff" });
 
-                if (root.TryGetProperty("must_not_have", out var mustNotProp) && mustNotProp.ValueKind == JsonValueKind.Array)
+                // Check both "mustNot" (new format) and "must_not_have" (old format)
+                if ((root.TryGetProperty("mustNot", out var mustNotProp) || root.TryGetProperty("must_not_have", out mustNotProp)) && mustNotProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Not Have", Value = $"{mustNotProp.GetArrayLength()} items", Color = "#ff9800" });
 
                 if (root.TryGetProperty("seed_count", out var seedCountProp))
