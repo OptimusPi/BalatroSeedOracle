@@ -99,16 +99,43 @@ namespace BalatroSeedOracle.Behaviors
             var props = e.GetCurrentPoint(AssociatedObject).Properties;
             if (!props.IsLeftButtonPressed) return;
 
-            // Check if click is on a draggable area (not buttons, textboxes, etc.)
+            // ONLY allow dragging if:
+            // 1. Clicking on widget-header (title bar)
+            // 2. NOT clicking on interactive controls (buttons, sliders, etc.)
             var clickedElement = e.Source as Control;
+            bool isOnHeader = false;
+            bool isOnInteractiveControl = false;
+
             while (clickedElement != null)
             {
-                // Don't drag if clicking interactive controls
-                if (clickedElement is Button || clickedElement is TextBox || clickedElement is Slider)
-                    return;
+                // First check: Are we clicking an interactive control? (BLOCK DRAG!)
+                if (clickedElement is Button || clickedElement is TextBox || clickedElement is Slider ||
+                    clickedElement is ComboBox || clickedElement is CheckBox)
+                {
+                    isOnInteractiveControl = true;
+                    break;
+                }
+
+                // Second check: Are we on the widget-header? (ALLOW DRAG)
+                if (clickedElement.Classes.Contains("widget-header"))
+                {
+                    isOnHeader = true;
+                }
 
                 clickedElement = clickedElement.Parent as Control;
             }
+
+            // Don't drag if clicking interactive controls (buttons, textboxes, sliders, etc.)
+            if (isOnInteractiveControl)
+            {
+                _isDragging = false;
+                // CRITICAL: Clear stored position to prevent ZOOP from stale values!
+                _pointerPressedPoint = new Point(double.NaN, double.NaN);
+                return;
+            }
+
+            // If we got here, it's NOT an interactive control - allow drag!
+            // This works for both minimized icons AND expanded window headers
 
             // Reset drag state on new press
             _isDragging = false;

@@ -4694,8 +4694,8 @@ namespace BalatroSeedOracle.Views.Modals
                         RestoreDragDropModeLayout();
                         LoadAllCategories();
                         UpdateDropZoneVisibility();
-                        // RELOAD from current config to refresh drop zones
-                        RefreshDropZonesFromConfig();
+                        // DON'T refresh drop zones - it clears everything! Drop zones already show correct items.
+                        // RefreshDropZonesFromConfig();  // DISABLED - This was clearing user's filter items!
                         break;
 
                     case 2: // JSON tab

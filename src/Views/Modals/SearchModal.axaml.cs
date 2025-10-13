@@ -66,9 +66,8 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     DebugLogger.Log("SearchModal", $"FilterSelected event received! Path: {path}");
                     await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter loaded, staying on Select Filter tab");
-                    // STAY on Select Filter tab - don't auto-switch
-                    // User can manually click Settings tab when ready
+                    DebugLogger.Log("SearchModal", "Filter loaded! User can review it, then manually click Settings tab when ready.");
+                    // DON'T auto-switch - let user review the filter first
                 };
             }
 
