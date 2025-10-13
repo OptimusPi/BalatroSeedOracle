@@ -46,9 +46,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// CSS class name that indicates draggable area (e.g., "widget-header")
         /// If set, ONLY elements with this class can be dragged
+        /// If empty/null, allows drag from anywhere (entire control)
         /// </summary>
         public static readonly StyledProperty<string?> DragHandleClassProperty =
-            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(nameof(DragHandleClass), "widget-header");
+            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(nameof(DragHandleClass), null);
 
         public string? DragHandleClass
         {
@@ -170,6 +171,14 @@ namespace BalatroSeedOracle.Behaviors
                 return;
             }
 
+            // If pointer press point is invalid (NaN), exit immediately
+            // This happens when OnPointerPressed detected a click on non-draggable area
+            if (double.IsNaN(_pointerPressedPoint.X) || double.IsNaN(_pointerPressedPoint.Y))
+            {
+                _isDragging = false;
+                return;
+            }
+
             // Get current position
             var parent = AssociatedObject.Parent as Visual;
             Point currentPoint = parent != null ? e.GetPosition(parent) : e.GetPosition(null);
@@ -209,6 +218,11 @@ namespace BalatroSeedOracle.Behaviors
 
             _isDragging = false;
             e.Pointer.Capture(null);
+
+            // CRITICAL: Clear all stored position values to prevent ZOOP!
+            _pointerPressedPoint = new Point(double.NaN, double.NaN);
+            _dragStartPoint = new Point(double.NaN, double.NaN);
+
             e.Handled = true;
         }
 

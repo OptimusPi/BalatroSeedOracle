@@ -12,7 +12,8 @@
           ZIndex="{Binding WidgetZIndex}">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
-                                               Y="{Binding PositionY, Mode=TwoWay}" />
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
         </i:Interaction.Behaviors>
 
         <!-- Minimized State - Magic Lamp Icon -->
@@ -29,6 +30,7 @@
                     BorderThickness="2"
                     CornerRadius="8"
                     Width="64" Height="64"
+                    Classes="widget-header"
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
