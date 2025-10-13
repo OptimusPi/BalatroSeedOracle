@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Motely.Filters;
@@ -78,7 +79,34 @@ namespace BalatroSeedOracle.Services
             writer.WriteEndObject();
             writer.Flush();
 
-            return Encoding.UTF8.GetString(stream.ToArray());
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+
+            // Compact number arrays to single line (antes, shopSlots, packSlots)
+            return CompactNumberArrays(json);
+        }
+
+        /// <summary>
+        /// Compacts number arrays (antes, shopSlots, packSlots) to single line for easier editing
+        /// Example: "antes": [1,2,3,4,5,6,7,8] instead of multi-line
+        /// </summary>
+        private string CompactNumberArrays(string json)
+        {
+            // Regex pattern: "arrayName": [\n  numbers\n]  →  "arrayName": [1,2,3,...]
+            var pattern = @"""(antes|shopSlots|packSlots)"":\s*\[\s*\n\s*((?:\d+,?\s*\n?\s*)*)\s*\]";
+
+            return System.Text.RegularExpressions.Regex.Replace(json, pattern, match =>
+            {
+                var arrayName = match.Groups[1].Value;
+                var numbersText = match.Groups[2].Value;
+
+                // Extract all numbers
+                var numbers = System.Text.RegularExpressions.Regex.Matches(numbersText, @"\d+")
+                    .Cast<System.Text.RegularExpressions.Match>()
+                    .Select(m => m.Value);
+
+                // Format as: "antes": [1,2,3,4,5,6,7,8]
+                return $"\"{arrayName}\": [{string.Join(",", numbers)}]";
+            });
         }
 
         /// <summary>
