@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,6 +15,7 @@ namespace BalatroSeedOracle.Behaviors
     {
         private bool _isDragging;
         private Point _dragStartPoint;
+        private Point _pointerPressedPoint;
         private double _originalLeft;
         private double _originalTop;
 
@@ -108,43 +110,58 @@ namespace BalatroSeedOracle.Behaviors
                 clickedElement = clickedElement.Parent as Control;
             }
 
-            _isDragging = true;
+            // Reset drag state on new press
+            _isDragging = false;
 
-            // Get position relative to parent for consistent coordinate system
+            // Store press position - DON'T start dragging yet (wait for movement)
             var parent = AssociatedObject.Parent as Visual;
             if (parent != null)
             {
-                _dragStartPoint = e.GetPosition(parent);
+                _pointerPressedPoint = e.GetPosition(parent);
             }
             else
             {
-                // Fallback to screen coordinates
-                _dragStartPoint = e.GetPosition(null);
+                _pointerPressedPoint = e.GetPosition(null);
             }
 
             _originalLeft = X;
             _originalTop = Y;
 
-            e.Pointer.Capture(AssociatedObject);
-            e.Handled = true;
+            // DON'T set e.Handled = true yet - let the widget's click handler run first
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (!_isDragging || AssociatedObject == null) return;
+            if (AssociatedObject == null) return;
 
-            // Get current position relative to the parent canvas/grid
-            var parent = AssociatedObject.Parent as Visual;
-            Point currentPoint;
-
-            if (parent != null)
+            // CRITICAL: Only process if left button is ACTUALLY PRESSED (not just hovering!)
+            var props = e.GetCurrentPoint(AssociatedObject).Properties;
+            if (!props.IsLeftButtonPressed)
             {
-                currentPoint = e.GetPosition(parent);
+                _isDragging = false;
+                return;
             }
-            else
+
+            // Get current position
+            var parent = AssociatedObject.Parent as Visual;
+            Point currentPoint = parent != null ? e.GetPosition(parent) : e.GetPosition(null);
+
+            // If not dragging yet, check if we've moved far enough to start
+            if (!_isDragging)
             {
-                // Fallback to screen coordinates if no parent
-                currentPoint = e.GetPosition(null);
+                var distance = Math.Abs(currentPoint.X - _pointerPressedPoint.X) + Math.Abs(currentPoint.Y - _pointerPressedPoint.Y);
+
+                // Only start dragging if moved more than 20 pixels
+                if (distance > 20)
+                {
+                    _isDragging = true;
+                    _dragStartPoint = _pointerPressedPoint;
+                    e.Pointer.Capture(AssociatedObject);
+                }
+                else
+                {
+                    return; // Not enough movement yet - let click handlers work
+                }
             }
 
             // Calculate delta from the drag start position

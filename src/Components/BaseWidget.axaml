@@ -39,9 +39,29 @@
                         PointerReleased="OnHeaderPointerReleased"
                         PointerCaptureLost="OnHeaderPointerCaptureLost"
                         Cursor="Hand">
-                    <Grid ColumnDefinitions="*,Auto,Auto,Auto">
-                        <!-- Title -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*">
+                        <!-- Window Control Buttons - NOW ON LEFT! -->
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"/>
+
+                        <Button Grid.Column="1"
+                                Content="□"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MaximizeCommand}"
+                                ToolTip.Tip="Maximize"
+                                IsVisible="False"/>
+
+                        <Button Grid.Column="2"
+                                Content="✕"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding CloseCommand}"
+                                ToolTip.Tip="Close"/>
+
+                        <!-- Title - NOW ON RIGHT! -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
@@ -49,26 +69,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
-
-                        <!-- Window Control Buttons -->
-                        <Button Grid.Column="1"
-                                Content="_"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding MinimizeCommand}"
-                                ToolTip.Tip="Minimize"/>
-
-                        <Button Grid.Column="2"
-                                Content="□"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding MaximizeCommand}"
-                                ToolTip.Tip="Maximize"
-                                IsVisible="False"/>
-
-                        <Button Grid.Column="3"
-                                Content="✕"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding CloseCommand}"
-                                ToolTip.Tip="Close"/>
                     </Grid>
                 </Border>
 

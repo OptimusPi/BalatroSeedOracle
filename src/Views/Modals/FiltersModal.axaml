@@ -477,10 +477,8 @@
             <!-- Load/Save Panel - Balatro Challenges Style -->
             <Grid Name="LoadSavePanel" IsVisible="{Binding IsLoadSaveTabVisible}">
                 <!-- Use the new reusable FilterSelectorControl (fills available space) -->
-                <components:FilterSelectorControl Name="FilterSelector"
-                                                  FilterSelected="OnFilterSelected"
-                                                  FilterCopyRequested="OnFilterCopyRequested"
-                                                  NewFilterRequested="OnNewFilterRequested"/>
+                <!-- Event handlers wired up in code-behind to prevent double-subscription -->
+                <components:FilterSelectorControl Name="FilterSelector"/>
             </Grid>
 
             <!-- JSON Panel - ENHANCED -->

@@ -21,6 +21,11 @@ namespace BalatroSeedOracle.ViewModels
         private double _triangleOffset = 0;
 
         /// <summary>
+        /// Event fired when tab changes - allows parent to handle tab switching
+        /// </summary>
+        public event EventHandler<int>? TabChanged;
+
+        /// <summary>
         /// Switches to the specified tab and updates triangle position
         /// </summary>
         [RelayCommand]
@@ -35,6 +40,9 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             ActiveTabIndex = tabIndex;
+
+            // Fire event so parent can update visibility
+            TabChanged?.Invoke(this, tabIndex);
 
             // Triangle auto-centers on active button (built into template!)
         }

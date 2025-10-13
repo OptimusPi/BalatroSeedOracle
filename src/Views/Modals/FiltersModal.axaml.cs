@@ -199,9 +199,6 @@ namespace BalatroSeedOracle.Views.Modals
             InitializeComponent();
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
 
-            // Setup auto-save timer
-            SetupAutoSave();
-
             // Initialize item categories from BalatroData
             _itemCategories = new Dictionary<string, List<string>>
             {
@@ -2817,11 +2814,8 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     // Need to save first
                     UpdateStatus("Please save your filter before searching", isError: true);
-                    var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
-                    if (saveFilterTab != null)
-                    {
-                        OnTabClick(saveFilterTab, new RoutedEventArgs());
-                    }
+                    // Switch to Finish tab (tab 4) using new BalatroTabControl
+                    _tabControl?.SwitchToTab(4);
                     return;
                 }
 
@@ -6839,152 +6833,6 @@ namespace BalatroSeedOracle.Views.Modals
             return _serializationService.SerializeConfig(config);
         }
 
-        // OLD METHOD - replaced by service but kept for compatibility
-        private string SerializeOuijaConfig_OLD(Motely.Filters.MotelyJsonConfig config)
-        {
-            // Manually build the JSON to ensure we get the exact nested format
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
-
-            writer.WriteStartObject();
-            
-            // Add metadata fields (write actual values instead of placeholders)
-            if (!string.IsNullOrWhiteSpace(config.Name))
-            {
-                writer.WriteString("name", config.Name);
-            }
-            else
-            {
-                writer.WriteString("name", "Untitled Filter");
-            }
-            writer.WriteString("description", config.Description ?? string.Empty);
-
-            // Author (prefer config.Author, fall back to profile service)
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            var authorName = !string.IsNullOrWhiteSpace(config.Author)
-                ? config.Author
-                : (userProfileService?.GetAuthorName() ?? "Jimbo");
-            writer.WriteString("author", authorName);
-
-            // Creation timestamp (ISO 8601 UTC)
-            var created = config.DateCreated ?? DateTime.UtcNow;
-            writer.WriteString("dateCreated", created.ToString("o"));
-
-            // Write must array
-            writer.WriteStartArray("must");
-            foreach (var item in config.Must)
-            {
-                WriteFilterItem(writer, item);
-            }
-            writer.WriteEndArray();
-
-            // Write should array
-            writer.WriteStartArray("should");
-            foreach (var item in config.Should)
-            {
-                WriteFilterItem(writer, item, includeScore: true);
-            }
-            writer.WriteEndArray();
-
-            // Write mustNot array
-            writer.WriteStartArray("mustNot");
-            foreach (var item in config.MustNot)
-            {
-                WriteFilterItem(writer, item);
-            }
-            writer.WriteEndArray();
-
-            // Write deck, stake, maxSearchAnte, minimumScore
-            writer.WriteString("deck", config.Deck);
-            writer.WriteString("stake", config.Stake);
-
-            writer.WriteEndObject();
-            writer.Flush();
-
-            return Encoding.UTF8.GetString(stream.ToArray());
-        }
-
-        private void WriteFilterItem(
-            Utf8JsonWriter writer,
-            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause item,
-            bool includeScore = false
-        )
-        {
-            writer.WriteStartObject();
-
-            // Write type and value
-            writer.WriteString("type", item.Type);
-            if (!string.IsNullOrEmpty(item.Value))
-            {
-                writer.WriteString("value", item.Value);
-            }
-
-            // Write edition if present
-            if (!string.IsNullOrEmpty(item.Edition))
-            {
-                writer.WriteString("edition", item.Edition);
-            }
-
-            // Write antes array
-            if (item.Antes != null && item.Antes.Length > 0)
-            {
-                writer.WriteStartArray("antes");
-                foreach (var ante in item.Antes)
-                {
-                    writer.WriteNumberValue(ante);
-                }
-                writer.WriteEndArray();
-            }
-
-            // Only write sources for items that can actually have sources
-            // Tags, vouchers, and bosses NEVER have sources
-            bool canHaveSources = item.Type != null && 
-                                  !item.Type.Equals("tag", StringComparison.OrdinalIgnoreCase) &&
-                                  !item.Type.Equals("voucher", StringComparison.OrdinalIgnoreCase) &&
-                                  !item.Type.Equals("boss", StringComparison.OrdinalIgnoreCase);
-
-            // Write sources object only for applicable items
-            if (canHaveSources && item.Sources != null)
-            {
-                writer.WriteStartObject("sources");
-                if (item.Sources.ShopSlots != null && item.Sources.ShopSlots.Length > 0)
-                {
-                    writer.WriteStartArray("shopSlots");
-                    foreach (var slot in item.Sources.ShopSlots)
-                    {
-                        writer.WriteNumberValue(slot);
-                    }
-                    writer.WriteEndArray();
-                }
-                if (item.Sources.PackSlots != null && item.Sources.PackSlots.Length > 0)
-                {
-                    writer.WriteStartArray("packSlots");
-                    foreach (var slot in item.Sources.PackSlots)
-                    {
-                        writer.WriteNumberValue(slot);
-                    }
-                    writer.WriteEndArray();
-                }
-                if (item.Sources.Tags.HasValue)
-                {
-                    writer.WriteBoolean("tags", item.Sources.Tags.Value);
-                }
-                if (item.Sources.RequireMega.HasValue)
-                {
-                    writer.WriteBoolean("requireMega", item.Sources.RequireMega.Value);
-                }
-                writer.WriteEndObject();
-            }
-
-            // Write score if requested (for should clauses)
-            if (includeScore && item.Score > 0)
-            {
-                writer.WriteNumber("score", item.Score);
-            }
-
-            writer.WriteEndObject();
-        }
-
         // Build config using existing UI state and delegate conversion to service
         private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
         {
@@ -8683,13 +8531,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _ => SpriteService.Instance.GetItemImage(itemName, category),
             };
         }
-        
-        // Auto-save functionality
-        private void SetupAutoSave()
-        {
-            // No longer using timer - saving immediately on changes
-        }
-        
+
         private async void MarkAsChanged()
         {
             // Save immediately if we have a filter path

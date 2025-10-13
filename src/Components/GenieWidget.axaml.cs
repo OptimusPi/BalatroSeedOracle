@@ -14,6 +14,9 @@ namespace BalatroSeedOracle.Components
     {
         public GenieWidgetViewModel? ViewModel { get; }
 
+        // Track click vs drag for minimized icon
+        private Avalonia.Point _iconPressedPosition;
+
         public GenieWidget()
         {
             // Check feature flag - hide widget if disabled
@@ -53,6 +56,29 @@ namespace BalatroSeedOracle.Components
         private void OnDetachedFromVisualTree(object? sender, EventArgs e)
         {
             // Cleanup if needed
+        }
+
+        /// <summary>
+        /// Track pointer pressed position to detect drag vs click
+        /// </summary>
+        private void OnMinimizedIconPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            _iconPressedPosition = e.GetPosition((Control)sender!);
+        }
+
+        /// <summary>
+        /// On release: if no drag happened, expand the widget
+        /// </summary>
+        private void OnMinimizedIconReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        {
+            var releasePosition = e.GetPosition((Control)sender!);
+            var distance = Math.Abs(releasePosition.X - _iconPressedPosition.X) + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
+
+            // If pointer moved less than 20 pixels, treat as click (not drag)
+            if (distance < 20 && ViewModel != null)
+            {
+                ViewModel.ExpandCommand.Execute(null);
+            }
         }
     }
 }

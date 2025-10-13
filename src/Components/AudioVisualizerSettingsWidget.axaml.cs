@@ -13,6 +13,9 @@ namespace BalatroSeedOracle.Components
     {
         public AudioVisualizerSettingsWidgetViewModel ViewModel { get; }
 
+        // Track click vs drag for minimized icon
+        private Avalonia.Point _iconPressedPosition;
+
         public AudioVisualizerSettingsWidget()
         {
             InitializeComponent();
@@ -50,6 +53,29 @@ namespace BalatroSeedOracle.Components
         private void OnDetachedFromVisualTree(object? sender, EventArgs e)
         {
             ViewModel.Dispose();
+        }
+
+        /// <summary>
+        /// Track pointer pressed position to detect drag vs click
+        /// </summary>
+        private void OnMinimizedIconPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            _iconPressedPosition = e.GetPosition((Control)sender!);
+        }
+
+        /// <summary>
+        /// On release: if no drag happened, expand the widget
+        /// </summary>
+        private void OnMinimizedIconReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        {
+            var releasePosition = e.GetPosition((Control)sender!);
+            var distance = Math.Abs(releasePosition.X - _iconPressedPosition.X) + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
+
+            // If pointer moved less than 20 pixels, treat as click (not drag)
+            if (distance < 20)
+            {
+                ViewModel.ExpandCommand.Execute(null);
+            }
         }
     }
 }

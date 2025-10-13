@@ -38,16 +38,17 @@
 
             <StackPanel Spacing="4">
                 <Grid>
-                    <!-- Button -->
-                    <Button Background="{StaticResource Grey}"
+                    <!-- Icon - now draggable! Changed from Button to Border -->
+                    <Border Background="{StaticResource Grey}"
                             BorderBrush="{StaticResource ModalBorder}"
                             BorderThickness="2"
                             CornerRadius="8"
                             Width="64" Height="64"
                             Cursor="Hand"
-                            Command="{Binding ExpandCommand}">
+                            PointerPressed="OnMinimizedIconPressed"
+                            PointerReleased="OnMinimizedIconReleased">
                         <TextBlock Text="📅" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
+                    </Border>
 
                     <!-- Notification badge overlay -->
                     <Border Classes="notification-badge small"
@@ -88,8 +89,15 @@
             <Grid RowDefinitions="Auto,*">
                 <!-- Header -->
                 <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"
+                                Margin="0,0,8,0"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
@@ -97,12 +105,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
-
-                        <Button Grid.Column="1"
-                                Content="_"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding MinimizeCommand}"
-                                ToolTip.Tip="Minimize"/>
                     </Grid>
                 </Border>
 

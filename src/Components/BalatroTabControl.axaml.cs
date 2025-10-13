@@ -20,6 +20,9 @@ namespace BalatroSeedOracle.Components
             ViewModel = new BalatroTabControlViewModel();
             DataContext = ViewModel;
 
+            // Wire up ViewModel's TabChanged event to forward it to our consumers
+            ViewModel.TabChanged += (s, tabIndex) => TabChanged?.Invoke(this, tabIndex);
+
             InitializeComponent();
         }
 
