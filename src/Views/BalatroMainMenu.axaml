@@ -77,6 +77,7 @@
         <!-- Volume Slider Popup (shown when music button clicked) -->
         <Popup x:Name="VolumePopup"
                IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
+               StaysOpen="False"
                Placement="Top"
                PlacementTarget="{Binding #MusicToggleButton}"
                VerticalOffset="-10">
