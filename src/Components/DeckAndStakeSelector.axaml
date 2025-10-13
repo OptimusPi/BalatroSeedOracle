@@ -9,69 +9,45 @@
     <StackPanel Spacing="30" HorizontalAlignment="Center">
         <!-- Deck Selector -->
         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding SelectedDeckDisplayName}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="24"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"/>
-
+                <!-- DeckSpinner shows deck name and description internally - no duplicate labels needed -->
                 <Grid ColumnDefinitions="Auto,12,Auto,12,Auto" HorizontalAlignment="Center">
-                    <!-- Left Arrow (match deck card height) -->
+                    <!-- Left Arrow -->
                     <Button Grid.Column="0"
                             Content="◀"
                             Classes="btn-red"
-                            Width="40" Height="145"
-                            FontSize="28"
+                            Width="60" Height="200"
+                            FontSize="32"
                             Padding="0"
                             VerticalContentAlignment="Center"/>
 
-                    <!-- Deck Card (scaled up 2x) -->
-                    <Viewbox Grid.Column="2" Width="142" Height="190" Stretch="Uniform">
+                    <!-- Deck Card (larger!) -->
+                    <Viewbox Grid.Column="2" Width="200" Height="260" Stretch="Uniform">
                         <components:DeckSpinner Name="DeckSpinnerControl" ShowArrows="False" />
                     </Viewbox>
 
-                    <!-- Right Arrow (match deck card height) -->
+                    <!-- Right Arrow -->
                     <Button Grid.Column="4"
                             Content="▶"
                             Classes="btn-red"
-                            Width="40" Height="145"
-                            FontSize="28"
+                            Width="60" Height="200"
+                            FontSize="32"
                             Padding="0"
                             VerticalContentAlignment="Center"/>
                 </Grid>
-
-                <TextBlock Text="{Binding SelectedDeckDescription}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource White}"
-                           HorizontalAlignment="Center"
-                           Opacity="0.7"/>
         </StackPanel>
 
         <!-- Stake Selector -->
         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding SelectedStakeDisplayName}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="24"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"/>
-
-                <!-- Use existing SpinnerControl (scaled up) -->
+                <!-- SpinnerControl shows stake name and description internally -->
                 <controls:SpinnerControl Name="StakeSpinner"
                                         Label=""
                                         SpinnerType="stake"
                                         Minimum="0"
                                         Maximum="7"
                                         Value="0"
-                                        Width="240"
+                                        Width="320"
+                                        Height="80"
                                         HorizontalAlignment="Center" />
-
-                <TextBlock Text="{Binding SelectedStakeDescription}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource White}"
-                           HorizontalAlignment="Center"
-                           Opacity="0.7"/>
         </StackPanel>
 
         <!-- Select Button (bottom) -->

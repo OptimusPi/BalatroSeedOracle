@@ -66,8 +66,11 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     DebugLogger.Log("SearchModal", $"FilterSelected event received! Path: {path}");
                     await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter loaded! User can review it, then manually click Settings tab when ready.");
-                    // DON'T auto-switch - let user review the filter first
+                    DebugLogger.Log("SearchModal", "Filter loaded, auto-advancing to Settings tab");
+
+                    // Auto-advance to Settings tab (tab 1) after selecting filter
+                    var tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
+                    tabControl?.SwitchToTab(1);
                 };
             }
 

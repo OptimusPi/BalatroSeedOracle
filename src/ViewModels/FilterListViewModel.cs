@@ -297,9 +297,9 @@ namespace BalatroSeedOracle.ViewModels
 
         private void LoadFilterItemsForTab(string tabType)
         {
+            var filterPath = GetSelectedFilterPath(); // Declare outside try for catch block access
             try
             {
-                var filterPath = GetSelectedFilterPath();
                 if (string.IsNullOrEmpty(filterPath) || !File.Exists(filterPath))
                 {
                     DebugLogger.Log("FilterListViewModel", "No filter selected or filter file not found");
