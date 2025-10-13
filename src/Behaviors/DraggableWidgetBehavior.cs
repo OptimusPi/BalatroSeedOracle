@@ -43,6 +43,19 @@ namespace BalatroSeedOracle.Behaviors
             set => SetValue(YProperty, value);
         }
 
+        /// <summary>
+        /// CSS class name that indicates draggable area (e.g., "widget-header")
+        /// If set, ONLY elements with this class can be dragged
+        /// </summary>
+        public static readonly StyledProperty<string?> DragHandleClassProperty =
+            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(nameof(DragHandleClass), "widget-header");
+
+        public string? DragHandleClass
+        {
+            get => GetValue(DragHandleClassProperty);
+            set => SetValue(DragHandleClassProperty, value);
+        }
+
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -99,43 +112,31 @@ namespace BalatroSeedOracle.Behaviors
             var props = e.GetCurrentPoint(AssociatedObject).Properties;
             if (!props.IsLeftButtonPressed) return;
 
-            // ONLY allow dragging if:
-            // 1. Clicking on widget-header (title bar)
-            // 2. NOT clicking on interactive controls (buttons, sliders, etc.)
-            var clickedElement = e.Source as Control;
-            bool isOnHeader = false;
-            bool isOnInteractiveControl = false;
-
-            while (clickedElement != null)
+            // PROPER MVVM: Check if clicking the configured drag handle class
+            // Default is "widget-header" but can be customized via XAML property
+            if (!string.IsNullOrEmpty(DragHandleClass))
             {
-                // First check: Are we clicking an interactive control? (BLOCK DRAG!)
-                if (clickedElement is Button || clickedElement is TextBox || clickedElement is Slider ||
-                    clickedElement is ComboBox || clickedElement is CheckBox)
+                var clickedElement = e.Source as Control;
+                bool isOnDragHandle = false;
+
+                while (clickedElement != null)
                 {
-                    isOnInteractiveControl = true;
-                    break;
+                    if (clickedElement.Classes.Contains(DragHandleClass))
+                    {
+                        isOnDragHandle = true;
+                        break;
+                    }
+                    clickedElement = clickedElement.Parent as Control;
                 }
 
-                // Second check: Are we on the widget-header? (ALLOW DRAG)
-                if (clickedElement.Classes.Contains("widget-header"))
+                // If not clicking the drag handle, clear state and exit (prevents ZOOP!)
+                if (!isOnDragHandle)
                 {
-                    isOnHeader = true;
+                    _isDragging = false;
+                    _pointerPressedPoint = new Point(double.NaN, double.NaN);
+                    return;
                 }
-
-                clickedElement = clickedElement.Parent as Control;
             }
-
-            // Don't drag if clicking interactive controls (buttons, textboxes, sliders, etc.)
-            if (isOnInteractiveControl)
-            {
-                _isDragging = false;
-                // CRITICAL: Clear stored position to prevent ZOOP from stale values!
-                _pointerPressedPoint = new Point(double.NaN, double.NaN);
-                return;
-            }
-
-            // If we got here, it's NOT an interactive control - allow drag!
-            // This works for both minimized icons AND expanded window headers
 
             // Reset drag state on new press
             _isDragging = false;
