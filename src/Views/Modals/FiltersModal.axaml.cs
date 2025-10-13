@@ -401,6 +401,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _filterSelector.FilterSelected += OnFilterSelected;
                 _filterSelector.FilterEditRequested += OnFilterEditRequested;
                 _filterSelector.FilterCopyRequested += OnFilterCopyRequested;
+                _filterSelector.FilterDeleteRequested += OnFilterDeleteRequested;
                 _filterSelector.NewFilterRequested += OnNewFilterRequested;
             }
         }
@@ -728,6 +729,58 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 DebugLogger.LogError("FiltersModal", $"Error copying filter: {ex.Message}");
                 UpdateStatus($"Error copying filter: {ex.Message}", true);
+            }
+        }
+
+        private async void OnFilterDeleteRequested(object? sender, string filterPath)
+        {
+            if (string.IsNullOrEmpty(filterPath))
+                return;
+
+            try
+            {
+                var filterName = IoPath.GetFileNameWithoutExtension(filterPath);
+
+                // Show confirmation dialog
+                var result = await MsBox.Avalonia.MessageBoxManager
+                    .GetMessageBoxStandard("Delete Filter?",
+                        $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
+                        MsBox.Avalonia.Enums.ButtonEnum.YesNo,
+                        MsBox.Avalonia.Enums.Icon.Warning)
+                    .ShowAsync();
+
+                if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
+                {
+                    // Delete the filter file
+                    if (File.Exists(filterPath))
+                    {
+                        File.Delete(filterPath);
+
+                        // Also delete associated database
+                        var dbPath = IoPath.Combine(Directory.GetCurrentDirectory(), "SearchResults", $"{filterName}.duckdb");
+                        if (File.Exists(dbPath))
+                        {
+                            File.Delete(dbPath);
+                        }
+
+                        // Refresh filter list
+                        _filterSelector?.RefreshFilters();
+
+                        // Clear current filter if it was the deleted one
+                        if (ViewModel.CurrentFilterPath == filterPath)
+                        {
+                            ClearFilter();
+                            UpdateTabStates(false);
+                        }
+
+                        UpdateStatus($"Deleted filter: {filterName}", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Error deleting filter: {ex.Message}");
+                UpdateStatus($"Error deleting filter: {ex.Message}", true);
             }
         }
 

@@ -355,6 +355,18 @@
                                 Click="OnCopyFilterClick"
                                 Margin="8,0,8,0"
                                 IsVisible="{Binding ShowActionButtons}"/>
+
+                        <!-- DELETE button (FiltersModal) -->
+                        <Button Name="DeleteFilterButton"
+                                Content="🗑️ DELETE FILTER"
+                                Classes="btn-red"
+                                Height="30"
+                                HorizontalAlignment="Stretch"
+                                FontSize="13"
+                                Click="OnDeleteFilterClick"
+                                Margin="8,0,8,0"
+                                Opacity="0.8"
+                                IsVisible="{Binding ShowActionButtons}"/>
                     </StackPanel>
                 </Grid>
             </Grid>

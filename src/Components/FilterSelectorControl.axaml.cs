@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.Components
         public event EventHandler<string>? FilterSelected;       // When a filter is clicked (for preview)
         public event EventHandler<string>? FilterEditRequested;   // When Edit button is clicked
         public event EventHandler<string>? FilterCopyRequested;
+        public event EventHandler<string>? FilterDeleteRequested; // When Delete button is clicked
         public event EventHandler? NewFilterRequested;
 
         private FilterListViewModel? _viewModel;
@@ -155,6 +156,16 @@ namespace BalatroSeedOracle.Components
         private void OnCreateNewFilterClick(object? sender, RoutedEventArgs e)
         {
             NewFilterRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Event handler for "Delete Filter" button
+        private void OnDeleteFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                FilterDeleteRequested?.Invoke(this, filterPath);
+            }
         }
     }
 }
