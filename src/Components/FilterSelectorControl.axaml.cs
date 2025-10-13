@@ -19,7 +19,8 @@ namespace BalatroSeedOracle.Components
         }
 
         // Events that parent controls can subscribe to
-        public event EventHandler<string>? FilterSelected;       // When a filter is clicked (for preview)
+        public event EventHandler<string>? FilterSelected;       // When a filter is clicked in list (for preview)
+        public event EventHandler<string>? FilterConfirmed;      // When "SELECT THIS FILTER" button is clicked (confirm and advance)
         public event EventHandler<string>? FilterEditRequested;   // When Edit button is clicked
         public event EventHandler<string>? FilterCopyRequested;
         public event EventHandler<string>? FilterDeleteRequested; // When Delete button is clicked
@@ -142,9 +143,9 @@ namespace BalatroSeedOracle.Components
 
             if (!string.IsNullOrEmpty(filterPath))
             {
-                Helpers.DebugLogger.Log("FilterSelectorControl", $"Firing FilterSelected event with path: {filterPath}");
-                // Fire FilterSelected event for SearchModal to handle
-                FilterSelected?.Invoke(this, filterPath);
+                Helpers.DebugLogger.Log("FilterSelectorControl", $"Firing FilterConfirmed event with path: {filterPath}");
+                // Fire FilterConfirmed event (NOT FilterSelected) so SearchModal knows to advance
+                FilterConfirmed?.Invoke(this, filterPath);
             }
             else
             {

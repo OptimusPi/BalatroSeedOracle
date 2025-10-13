@@ -62,13 +62,22 @@ namespace BalatroSeedOracle.Views.Modals
                 // CRITICAL: Set SearchModal mode to show SELECT button
                 filterSelector.IsInSearchModal = true;
 
+                // List click: Show preview only (don't advance)
                 filterSelector.FilterSelected += async (s, path) =>
                 {
-                    DebugLogger.Log("SearchModal", $"FilterSelected event received! Path: {path}");
+                    DebugLogger.Log("SearchModal", $"Filter clicked in list! Path: {path}");
                     await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter loaded, auto-advancing to Settings tab");
+                    DebugLogger.Log("SearchModal", "Filter loaded and displayed for preview - staying on Select Filter tab");
+                };
 
-                    // Auto-advance to Settings tab (tab 1) after selecting filter
+                // Button click: Confirm selection and advance to Settings
+                filterSelector.FilterConfirmed += async (s, path) =>
+                {
+                    DebugLogger.Log("SearchModal", $"SELECT THIS FILTER button clicked! Path: {path}");
+                    await ViewModel.LoadFilterAsync(path);
+                    DebugLogger.Log("SearchModal", "Filter confirmed, auto-advancing to Settings tab");
+
+                    // Auto-advance to Settings tab (tab 1)
                     var tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
                     tabControl?.SwitchToTab(1);
                 };
