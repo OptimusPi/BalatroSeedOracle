@@ -220,7 +220,8 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterListViewModel", $"Error loading filter stats: {ex.Message}");
+                var filename = Path.GetFileName(filterPath);
+                DebugLogger.LogError("FilterListViewModel", $"Error loading filter stats from '{filename}': {ex.Message}");
             }
         }
 
@@ -364,7 +365,8 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterListViewModel", $"Error loading filter items: {ex.Message}");
+                var filename = filterPath != null ? Path.GetFileName(filterPath) : "unknown";
+                DebugLogger.LogError("FilterListViewModel", $"Error loading filter items from '{filename}': {ex.Message}");
                 FilterItems.Clear();
                 HasFilterItems = false;
             }

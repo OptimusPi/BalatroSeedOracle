@@ -654,7 +654,8 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to load config: {ex.Message}");
+                var filename = configPath != null ? Path.GetFileName(configPath) : "unknown";
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to load config from '{filename}': {ex.Message}");
             }
         }
 
