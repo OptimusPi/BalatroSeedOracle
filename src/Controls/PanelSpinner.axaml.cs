@@ -303,6 +303,31 @@ public static class PanelItemFactory
         return items;
     }
 
+    // Create deck items with stake sticker composited on the card
+    public static List<PanelItem> CreateDeckItemsWithStake(string stakeName)
+    {
+        ArgumentNullException.ThrowIfNull(stakeName);
+        var items = new List<PanelItem>();
+
+        foreach (var deck in BalatroData.Decks)
+        {
+            var deckKey = deck.Key;
+            items.Add(
+                new PanelItem
+                {
+                    Title = deck.Value,
+                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc)
+                        ? desc
+                        : "",
+                    Value = $"{deckKey}_Deck",
+                    GetImage = () => SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
+                }
+            );
+        }
+
+        return items;
+    }
+
     public static List<PanelItem> CreateStakeItems()
     {
         var items = new List<PanelItem>

@@ -60,7 +60,7 @@
                             Content="Back"
                             Classes="back-button"
                             HorizontalAlignment="Stretch"
-                            Margin="3"/>
+                            Margin="0"/>
                 </Grid>
             </Border>
         </Grid>

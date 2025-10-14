@@ -18,6 +18,8 @@ namespace BalatroSeedOracle.Behaviors
         private Point _pointerPressedPoint;
         private double _originalLeft;
         private double _originalTop;
+        // Tracks whether the initial press was on the configured drag handle
+        private bool _pressOriginIsOnHandle;
 
         /// <summary>
         /// Dependency property for X position (Canvas.Left or Margin.Left binding)
@@ -134,8 +136,13 @@ namespace BalatroSeedOracle.Behaviors
                 if (!isOnDragHandle)
                 {
                     _isDragging = false;
+                    _pressOriginIsOnHandle = false;
                     _pointerPressedPoint = new Point(double.NaN, double.NaN);
                     return;
+                }
+                else
+                {
+                    _pressOriginIsOnHandle = true;
                 }
             }
 
@@ -152,9 +159,6 @@ namespace BalatroSeedOracle.Behaviors
             {
                 _pointerPressedPoint = e.GetPosition(null);
             }
-
-            _originalLeft = X;
-            _originalTop = Y;
 
             // DON'T set e.Handled = true yet - let the widget's click handler run first
         }
@@ -179,6 +183,15 @@ namespace BalatroSeedOracle.Behaviors
                 return;
             }
 
+            // Additional safety gate: if a drag handle class is set, only allow drag
+            // when the initial press originated on the drag handle. This prevents
+            // starting a drag from slider/content areas that may swallow PointerPressed.
+            if (!string.IsNullOrEmpty(DragHandleClass) && !_pressOriginIsOnHandle)
+            {
+                _isDragging = false;
+                return;
+            }
+
             // Get current position
             var parent = AssociatedObject.Parent as Visual;
             Point currentPoint = parent != null ? e.GetPosition(parent) : e.GetPosition(null);
@@ -193,6 +206,9 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     _isDragging = true;
                     _dragStartPoint = _pointerPressedPoint;
+                    // Set original position when drag actually starts to avoid stale state
+                    _originalLeft = X;
+                    _originalTop = Y;
                     e.Pointer.Capture(AssociatedObject);
                 }
                 else
@@ -214,25 +230,27 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            if (!_isDragging) return;
-
-            _isDragging = false;
-            e.Pointer.Capture(null);
-
-            // Snap to 128px grid for minimized widgets (stateless using modulo %)
-            // Expanded windows don't snap - free positioning!
-            if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
+            if (_isDragging)
             {
-                const double gridSize = 128.0;
-                X = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
-                Y = Math.Round(Y / gridSize) * gridSize;
+                _isDragging = false;
+                e.Pointer.Capture(null);
+
+                // Snap to 128px grid for minimized widgets (stateless using modulo %)
+                // Expanded windows don't snap - free positioning!
+                if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
+                {
+                    const double gridSize = 128.0;
+                    X = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
+                    Y = Math.Round(Y / gridSize) * gridSize;
+                }
+
+                e.Handled = true;
             }
 
-            // CRITICAL: Clear all stored position values to prevent ZOOP!
+            // Always clear stored press state to prevent stale data from causing jumps
             _pointerPressedPoint = new Point(double.NaN, double.NaN);
             _dragStartPoint = new Point(double.NaN, double.NaN);
-
-            e.Handled = true;
+            _pressOriginIsOnHandle = false;
         }
 
         private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)

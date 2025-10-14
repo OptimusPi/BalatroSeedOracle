@@ -148,6 +148,45 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Resources Section -->
+                <Border Background="{StaticResource ContainerDarkPrecise}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="📚 RESOURCES"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource Gold}"/>
+
+                        <Rectangle Height="1"
+                                   Fill="{StaticResource ModalBorder}"
+                                   Opacity="0.3"
+                                   Margin="0,4"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    Content="Word Lists"
+                                    Classes="btn-blue"
+                                    HorizontalAlignment="Stretch"
+                                    Click="OnWordListsClick"/>
+
+                            <Button Grid.Column="2"
+                                    Content="Credits"
+                                    Classes="btn-orange"
+                                    HorizontalAlignment="Stretch"
+                                    Click="OnCreditsClick"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
                 <!-- Info Box -->
                 <Border Background="#1a2528"
                         BorderBrush="{StaticResource StatusBlue}"

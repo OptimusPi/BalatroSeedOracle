@@ -1,6 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel">
 
@@ -9,12 +12,24 @@
             Padding="25">
         <StackPanel Spacing="20">
             <!-- Title -->
-            <TextBlock Text="SEARCH SETTINGS"
+            <TextBlock Text="DECK / STAKE"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="24"
                        Foreground="{StaticResource Gold}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,10"/>
+
+            <!-- Deck and Stake Selection -->
+            <components:DeckAndStakeSelector Name="DeckStakeSelector"
+                                            HorizontalAlignment="Center"/>
+
+            <!-- Advanced Settings -->
+            <TextBlock Text="ADVANCED SETTINGS"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       Foreground="{StaticResource VeryLightGrey}"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
 
             <!-- Thread Count -->
             <StackPanel Spacing="8">
@@ -28,7 +43,11 @@
                         TickFrequency="1"
                         IsSnapToTickEnabled="True"
                         Width="400"
-                        HorizontalAlignment="Left"/>
+                        HorizontalAlignment="Left">
+                    <i:Interaction.Behaviors>
+                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="1" MinIntervalMs="200"/>
+                    </i:Interaction.Behaviors>
+                </Slider>
             </StackPanel>
 
             <!-- Batch Size -->
@@ -43,7 +62,11 @@
                         TickFrequency="1"
                         IsSnapToTickEnabled="True"
                         Width="400"
-                        HorizontalAlignment="Left"/>
+                        HorizontalAlignment="Left">
+                    <i:Interaction.Behaviors>
+                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="1" MinIntervalMs="200"/>
+                    </i:Interaction.Behaviors>
+                </Slider>
                 <TextBlock Text="Higher = more memory usage, faster searches"
                            FontSize="12"
                            Foreground="{StaticResource MediumGrey}"
@@ -61,7 +84,11 @@
                         Maximum="10000"
                         TickFrequency="10"
                         Width="400"
-                        HorizontalAlignment="Left"/>
+                        HorizontalAlignment="Left">
+                    <i:Interaction.Behaviors>
+                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="50" MinIntervalMs="250"/>
+                    </i:Interaction.Behaviors>
+                </Slider>
             </StackPanel>
         </StackPanel>
     </Border>

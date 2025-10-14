@@ -23,32 +23,32 @@
                            HorizontalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Results Grid -->
-            <DataGrid Grid.Row="1"
-                      ItemsSource="{Binding SearchResults}"
-                      AutoGenerateColumns="False"
-                      CanUserSortColumns="True"
-                      CanUserResizeColumns="True"
-                      GridLinesVisibility="Horizontal"
-                      Background="{StaticResource DarkModalGrey}"
-                      RowBackground="{StaticResource ContainerDark}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Seed"
-                                        Binding="{Binding Seed}"
-                                        Width="120"
-                                        FontFamily="{StaticResource BalatroFont}"
-                                        FontSize="14"/>
-                    <DataGridTextColumn Header="Score"
-                                        Binding="{Binding Score}"
-                                        Width="80"
-                                        FontFamily="{StaticResource BalatroFont}"
-                                        FontSize="14"/>
-                    <DataGridTextColumn Header="Details"
-                                        Binding="{Binding Details}"
-                                        Width="*"
-                                        FontSize="12"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <!-- Results Grid wrapped in Balatro card for consistent inner panel -->
+            <Border Grid.Row="1" Classes="balatro-card" Padding="12">
+                <DataGrid ItemsSource="{Binding SearchResults}"
+                          AutoGenerateColumns="False"
+                          CanUserSortColumns="True"
+                          CanUserResizeColumns="True"
+                          GridLinesVisibility="Horizontal"
+                          RowBackground="{StaticResource ContainerDark}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Seed"
+                                            Binding="{Binding Seed}"
+                                            Width="120"
+                                            FontFamily="{StaticResource BalatroFont}"
+                                            FontSize="14"/>
+                        <DataGridTextColumn Header="Score"
+                                            Binding="{Binding Score}"
+                                            Width="80"
+                                            FontFamily="{StaticResource BalatroFont}"
+                                            FontSize="14"/>
+                        <DataGridTextColumn Header="Details"
+                                            Binding="{Binding Details}"
+                                            Width="*"
+                                            FontSize="12"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
 
             <!-- Actions -->
             <StackPanel Grid.Row="2"

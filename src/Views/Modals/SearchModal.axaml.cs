@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
@@ -12,6 +13,8 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class SearchModal : UserControl
     {
         public SearchModalViewModel ViewModel { get; }
+        private Components.BalatroTabControl? _tabHeader;
+        private bool _suppressHeaderSync = false;
 
         public event EventHandler? CloseRequested;
 
@@ -24,18 +27,7 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
 
             InitializeComponent();
-            InitializeTabs();
             WireUpComponentEvents();
-        }
-
-        private void InitializeTabs()
-        {
-            var tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
-            if (tabControl != null)
-            {
-                tabControl.SetTabs("Select Filter", "Settings", "Search", "Results");
-                tabControl.TabChanged += (s, tabIndex) => ViewModel.UpdateTabVisibility(tabIndex);
-            }
         }
 
         private void InitializeComponent()
@@ -55,6 +47,33 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void WireUpComponentEvents()
         {
+            // Balatro-style tab header setup
+            _tabHeader = this.FindControl<Components.BalatroTabControl>("TabHeader");
+            if (_tabHeader != null)
+            {
+                // Initialize tab titles from ViewModel
+                var titles = ViewModel.TabItems.Select(t => t.Header).ToArray();
+                _tabHeader.SetTabs(titles);
+
+                // Sync header when user clicks a tab button
+                _tabHeader.TabChanged += (s, tabIndex) =>
+                {
+                    _suppressHeaderSync = true;
+                    ViewModel.SelectedTabIndex = tabIndex;
+                    ViewModel.UpdateTabVisibility(tabIndex);
+                    _suppressHeaderSync = false;
+                };
+
+                // Sync header when ViewModel changes tab programmatically (e.g., after search)
+                ViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (!_suppressHeaderSync && e.PropertyName == nameof(ViewModel.SelectedTabIndex))
+                    {
+                        _tabHeader.SwitchToTab(ViewModel.SelectedTabIndex);
+                    }
+                };
+            }
+
             // FilterSelectorControl → ViewModel.LoadFilterCommand
             var filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
             if (filterSelector != null)
@@ -70,16 +89,17 @@ namespace BalatroSeedOracle.Views.Modals
                     DebugLogger.Log("SearchModal", "Filter loaded and displayed for preview - staying on Select Filter tab");
                 };
 
-                // Button click: Confirm selection and advance to Settings
+                // Button click: Confirm selection and advance to Search
                 filterSelector.FilterConfirmed += async (s, path) =>
                 {
                     DebugLogger.Log("SearchModal", $"SELECT THIS FILTER button clicked! Path: {path}");
                     await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter confirmed, auto-advancing to Settings tab");
+                    DebugLogger.Log("SearchModal", "Filter confirmed, auto-advancing to Search tab");
 
-                    // Auto-advance to Settings tab (tab 1)
-                    var tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
-                    tabControl?.SwitchToTab(1);
+                    // Auto-advance directly to Search tab (tab 2)
+                    ViewModel.SelectedTabIndex = 2;
+                    ViewModel.UpdateTabVisibility(2);
+                    _tabHeader?.SwitchToTab(2);
                 };
             }
 
@@ -91,11 +111,21 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
                                            "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+                    var stakeNames = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
 
                     if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
                         ViewModel.DeckSelection = deckNames[selection.deckIndex];
 
-                    ViewModel.StakeSelection = selection.stakeIndex.ToString();
+                    if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeNames.Length)
+                        ViewModel.StakeSelection = stakeNames[selection.stakeIndex];
+                };
+
+                // When the user clicks Select, jump to the Search tab
+                deckStakeSelector.DeckSelected += (s, _) =>
+                {
+                    ViewModel.SelectedTabIndex = 2; // Search tab
+                    ViewModel.UpdateTabVisibility(2);
+                    _tabHeader?.SwitchToTab(2);
                 };
             }
         }
@@ -103,62 +133,6 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// Tab click handler - PROPER MVVM: Updates ViewModel instead of directly manipulating UI
         /// </summary>
-        private void OnTabClick(object? sender, RoutedEventArgs e)
-        {
-            if (sender is not Button clickedButton) return;
-
-            // Find all tab buttons
-            var selectFilterTab = this.FindControl<Button>("SelectFilterTab");
-            var settingsTab = this.FindControl<Button>("SettingsTab");
-            var searchTab = this.FindControl<Button>("SearchTab");
-            var resultsTab = this.FindControl<Button>("ResultsTab");
-
-            // Remove 'active' class from all tabs
-            selectFilterTab?.Classes.Remove("active");
-            settingsTab?.Classes.Remove("active");
-            searchTab?.Classes.Remove("active");
-            resultsTab?.Classes.Remove("active");
-
-            // Determine which tab was clicked and update ViewModel
-            int tabIndex = 0;
-            if (clickedButton.Name == "SelectFilterTab")
-            {
-                clickedButton.Classes.Add("active");
-                tabIndex = 0;
-            }
-            else if (clickedButton.Name == "SettingsTab")
-            {
-                clickedButton.Classes.Add("active");
-                tabIndex = 1;
-            }
-            else if (clickedButton.Name == "SearchTab")
-            {
-                clickedButton.Classes.Add("active");
-                tabIndex = 2;
-            }
-            else if (clickedButton.Name == "ResultsTab")
-            {
-                clickedButton.Classes.Add("active");
-                tabIndex = 3;
-            }
-
-            // PROPER MVVM: Let ViewModel control visibility
-            ViewModel.UpdateTabVisibility(tabIndex);
-            UpdateTrianglePosition(tabIndex);
-        }
-
-        /// <summary>
-        /// Update bouncing triangle position to be under the active tab
-        /// Uses actual tab button bounds for perfect centering
-        /// </summary>
-        private void UpdateTrianglePosition(int tabIndex)
-        {
-            var triangleContainer = this.FindControl<Grid>("TriangleContainer");
-            if (triangleContainer != null)
-            {
-                // Move triangle to the active tab's column (perfect alignment!)
-                Grid.SetColumn(triangleContainer, tabIndex);
-            }
-        }
+        // Tab click wiring removed: native TabControl handles selection
     }
 }

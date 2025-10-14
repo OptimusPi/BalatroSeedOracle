@@ -136,6 +136,40 @@ namespace BalatroSeedOracle.ViewModels
             DeckSelected?.Invoke(this, EventArgs.Empty);
         }
 
+        // Navigate decks
+        [RelayCommand]
+        private void NextDeck()
+        {
+            var next = DeckIndex + 1;
+            if (next > 14) next = 0; // wrap
+            DeckIndex = next;
+        }
+
+        [RelayCommand]
+        private void PreviousDeck()
+        {
+            var prev = DeckIndex - 1;
+            if (prev < 0) prev = 14; // wrap
+            DeckIndex = prev;
+        }
+
+        // Navigate stakes
+        [RelayCommand]
+        private void NextStake()
+        {
+            var next = StakeIndex + 1;
+            if (next > 7) next = 0; // wrap
+            StakeIndex = next;
+        }
+
+        [RelayCommand]
+        private void PreviousStake()
+        {
+            var prev = StakeIndex - 1;
+            if (prev < 0) prev = 7; // wrap
+            StakeIndex = prev;
+        }
+
         #endregion
 
         #region Private Methods

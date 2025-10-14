@@ -110,17 +110,70 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Deserializes JSON string to MotelyJsonConfig
+        /// Deserializes JSON string to MotelyJsonConfig with hardened options.
+        /// Allows comments and trailing commas; case-insensitive property names.
         /// </summary>
         public MotelyJsonConfig? DeserializeConfig(string json)
         {
             try
             {
-                return JsonSerializer.Deserialize<MotelyJsonConfig>(json);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+
+                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                if (config == null)
+                {
+                    DebugLogger.LogError("FilterSerializationService", "DeserializeConfig returned null");
+                    return null;
+                }
+
+                // Basic sanity logging to aid debugging malformed files
+                DebugLogger.Log("FilterSerializationService", $"Deserialized config: Name='{config.Name}', Must={(config.Must?.Count ?? 0)}, Should={(config.Should?.Count ?? 0)}, MustNot={(config.MustNot?.Count ?? 0)}");
+                return config;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("FilterSerializationService", $"Failed to deserialize config: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Safely load a config from a file path using Motely's robust loader.
+        /// Falls back to hardened JSON options if Motely loader fails.
+        /// </summary>
+        public MotelyJsonConfig? DeserializeConfigFromFile(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                {
+                    DebugLogger.LogError("FilterSerializationService", $"File not found: {filePath}");
+                    return null;
+                }
+
+                if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
+                {
+                    DebugLogger.Log("FilterSerializationService", $"Loaded config via Motely loader: {Path.GetFileName(filePath)}");
+                    return config;
+                }
+
+                // Fallback: read text and use hardened options
+                var json = File.ReadAllText(filePath);
+                var fallback = DeserializeConfig(json);
+                if (fallback == null)
+                {
+                    DebugLogger.LogError("FilterSerializationService", $"Fallback deserialization failed for {filePath}");
+                }
+                return fallback;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSerializationService", $"Error loading config from file '{filePath}': {ex.Message}");
                 return null;
             }
         }
@@ -369,11 +422,14 @@ namespace BalatroSeedOracle.Services
                 case "jokers":
                     return itemName.StartsWith("j_") ? "Joker" : itemName;
                 case "tarots":
-                    return "Tarot";
+                    // Align with Motely type naming
+                    return "TarotCard";
                 case "planets":
-                    return "Planet";
+                    // Align with Motely type naming
+                    return "PlanetCard";
                 case "spectrals":
-                    return "Spectral";
+                    // Align with Motely type naming
+                    return "SpectralCard";
                 case "playingcards":
                     return "PlayingCard";
                 case "vouchers":

@@ -100,7 +100,7 @@
                                             Classes="btn-red"
                                             Content="{Binding Name}"
                                             Height="28"
-                                            MinWidth="200"
+                                            MinWidth="208"
                                             HorizontalAlignment="Center"
                                             HorizontalContentAlignment="Center"
                                             CornerRadius="6"
@@ -126,12 +126,13 @@
                             Command="{Binding PreviousPageCommand}"
                             IsEnabled="{Binding CanGoToPreviousPage}"/>
 
-                    <!-- Badge-style page indicator -->
+                    <!-- Badge-style page indicator (fixed width to prevent wiggling) -->
                     <Border Background="{StaticResource DarkModalGrey}"
                             BorderBrush="{StaticResource ModalBorder}"
                             BorderThickness="2"
                             CornerRadius="6"
                             Padding="16,6"
+                            MinWidth="85"
                             VerticalAlignment="Center">
                         <TextBlock Text="{Binding PageIndicator}"
                                    FontFamily="{StaticResource BalatroFont}"

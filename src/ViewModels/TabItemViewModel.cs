@@ -16,6 +16,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isSelected;
 
+        [ObservableProperty]
+        private bool _isEnabled = true;
+
         public TabItemViewModel(string header, object? content = null)
         {
             Header = header;

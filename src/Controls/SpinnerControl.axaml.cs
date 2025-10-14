@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace BalatroSeedOracle.Controls
@@ -17,7 +18,7 @@ namespace BalatroSeedOracle.Controls
         public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<
             SpinnerControl,
             int
-        >(nameof(Value), 1);
+        >(nameof(Value), 0);
 
         public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<
             SpinnerControl,
@@ -52,6 +53,12 @@ namespace BalatroSeedOracle.Controls
         public static readonly StyledProperty<bool> AllowAutoProperty =
             AvaloniaProperty.Register<SpinnerControl, bool>(
                 nameof(AllowAuto),
+                false
+            );
+
+        public static readonly StyledProperty<bool> IsEditingProperty =
+            AvaloniaProperty.Register<SpinnerControl, bool>(
+                nameof(IsEditing),
                 false
             );
 
@@ -112,10 +119,15 @@ namespace BalatroSeedOracle.Controls
         public event EventHandler<int>? ValueChanged;
 
 
+        public bool IsEditing
+        {
+            get => GetValue(IsEditingProperty);
+            set => SetValue(IsEditingProperty, value);
+        }
+
         public SpinnerControl()
         {
             InitializeComponent();
-            DataContext = this;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -242,6 +254,74 @@ namespace BalatroSeedOracle.Controls
             if (valueText != null)
             {
                 valueText.Text = text;
+            }
+        }
+
+        private void OnValueButtonClick(object? sender, RoutedEventArgs e)
+        {
+            IsEditing = true;
+            
+            // Focus and select text in the edit box
+            var valueEdit = this.FindControl<TextBox>("ValueEdit");
+            if (valueEdit != null)
+            {
+                valueEdit.Focus();
+                valueEdit.SelectAll();
+            }
+        }
+
+        private void OnValueEditLostFocus(object? sender, RoutedEventArgs e)
+        {
+            SaveEditValue();
+        }
+
+        private void OnValueEditKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SaveEditValue();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                IsEditing = false;
+                e.Handled = true;
+            }
+        }
+
+        private void SaveEditValue()
+        {
+            var valueEdit = this.FindControl<TextBox>("ValueEdit");
+            if (valueEdit != null && IsEditing)
+            {
+                var inputText = valueEdit.Text?.Trim();
+                
+                if (!string.IsNullOrEmpty(inputText))
+                {
+                    // Try to parse as integer
+                    if (int.TryParse(inputText, out int newValue))
+                    {
+                        // Validate and set the value
+                        Value = Math.Max(Minimum, Math.Min(Maximum, newValue));
+                    }
+                    // Check for "Auto" if allowed
+                    else if (AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Value = 0; // Auto value
+                    }
+                    // Try to find in display values if available
+                    else if (DisplayValues != null)
+                    {
+                        var index = Array.FindIndex(DisplayValues, v => 
+                            v.Equals(inputText, StringComparison.OrdinalIgnoreCase));
+                        if (index >= 0)
+                        {
+                            Value = index;
+                        }
+                    }
+                }
+                
+                IsEditing = false;
             }
         }
     }

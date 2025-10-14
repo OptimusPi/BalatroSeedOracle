@@ -16,11 +16,8 @@
                        HorizontalAlignment="Center"/>
 
             <!-- Filter Info -->
-            <Border Background="{StaticResource DarkModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Padding="15"
+            <Border Classes="balatro-card"
+                    Padding="16"
                     MaxWidth="500">
                 <StackPanel Spacing="8">
                     <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No Filter Loaded'}"
@@ -60,11 +57,8 @@
                     IsVisible="{Binding IsSearching}"/>
 
             <!-- Progress Bar -->
-            <Border Background="{StaticResource DarkModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Padding="15"
+            <Border Classes="balatro-card"
+                    Padding="16"
                     IsVisible="{Binding IsSearching}">
                 <StackPanel Spacing="12">
                     <ProgressBar Value="{Binding SearchProgress}"

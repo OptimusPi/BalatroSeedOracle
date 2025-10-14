@@ -15,7 +15,8 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class PaginatedFilterBrowserViewModel : ObservableObject
     {
-        private const int ITEMS_PER_PAGE = 10;
+        // Fixed pagination size for stability
+        private const int ITEMS_PER_PAGE = 120;
 
         private List<FilterBrowserItem> _allFilters = new();
 

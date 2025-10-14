@@ -90,6 +90,11 @@ namespace BalatroSeedOracle.Services
         {
             PlaySound("error");
         }
+
+        public void PlayWhoosh()
+        {
+            PlaySound("whoosh");
+        }
         
         private void PlaySound(string soundName)
         {

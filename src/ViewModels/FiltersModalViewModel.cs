@@ -381,6 +381,12 @@ namespace BalatroSeedOracle.ViewModels
                 $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Test:{IsTestTabVisible} Save:{IsSaveTabVisible}");
         }
 
+        // Automatically update tab visibility when the header selection changes
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            UpdateTabVisibility(value);
+        }
+
         // ===== HELPER METHODS =====
 
         private Dictionary<string, List<string>> InitializeItemCategories()
@@ -685,10 +691,15 @@ namespace BalatroSeedOracle.ViewModels
                 DataContext = saveFilterViewModel
             };
 
+            // Order must match UpdateTabVisibility mapping:
+            // 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
+            TabItems.Add(new TabItemViewModel("LOAD", CreateLoadTabContent()));
             TabItems.Add(new TabItemViewModel("VISUAL BUILDER", visualBuilderTab));
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
-            TabItems.Add(new TabItemViewModel("SAVE & TEST", saveFilterTab));
-            TabItems.Add(new TabItemViewModel("LOAD", CreateLoadTabContent()));
+            // Separate TEST header; content is shown via bound TestPanel
+            TabItems.Add(new TabItemViewModel("TEST", new Grid()));
+            // Separate SAVE header with SaveFilterTab content
+            TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
         }
 
         private object CreateLoadTabContent()

@@ -15,66 +15,7 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- Balatro-style tab buttons -->
-        <Style Selector="Button.tab-button">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="MinWidth" Value="140"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Name="PART_Border"
-                                Background="{StaticResource Red}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        
-        <!-- Hover state -->
-        <Style Selector="Button.tab-button:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Tab button inherits pressed behavior from global styles -->
-        
-        <!-- Active state - same as regular, no blue! -->
-        <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-        </Style>
-        
-        <!-- Active hover -->
-        <Style Selector="Button.tab-button.active:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Disabled state -->
-        <Style Selector="Button.tab-button:disabled /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
-        </Style>
-        <Style Selector="Button.tab-button:disabled">
-            <Setter Property="Cursor" Value="Arrow"/>
-        </Style>
+        <!-- Use global styles for tab buttons; removing modal-specific overrides -->
         
         <!-- Small button style -->
         <Style Selector="Button.small-button">
@@ -363,7 +304,7 @@
                 <StackPanel>
                     <!-- Input Section -->
                     <Border Background="{StaticResource DarkModalGrey}" CornerRadius="12" Margin="10">
-                        <Grid Margin="15">
+                        <Grid Margin="15" ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*" MaxWidth="300"/>
@@ -401,7 +342,7 @@
                                    Foreground="{StaticResource White}"
                                    FontSize="16"
                                    CornerRadius="6"
-                                   Height="40"
+                                   Height="44"
                                    Classes="btn-green"/>
 
                             <!-- Pop-out Analyzer Button -->
@@ -413,8 +354,7 @@
                                    Foreground="{StaticResource White}"
                                    FontSize="16"
                                    CornerRadius="6"
-                                   Height="40"
-                                   Margin="15,0,0,0"
+                                   Height="44"
                                    Classes="btn-blue"/>
                         </Grid>
                     </Border>

@@ -232,27 +232,88 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                // Build the filter configuration
+                // Build the filter configuration from current selections
                 var config = BuildConfigFromCurrentState();
-                
-                // Validate the filter
+
+                // Validate the filter name
                 if (string.IsNullOrWhiteSpace(config?.Name))
                 {
                     UpdateStatus("Please enter a filter name before testing", true);
                     return;
                 }
-                
-                // TODO: Launch a test search with this filter
-                UpdateStatus($"Filter '{config.Name}' is ready for testing!", false);
-                DebugLogger.Log("SaveFilterTab", $"Test filter clicked for: {config.Name}");
-                
-                // Could emit an event or call a service to actually run the test
+
+                // Persist config to a temp file so search can load it
+                var tempPath = _configurationService.GetTempFilterPath();
+                var saved = _configurationService.SaveFilterAsync(tempPath, config).GetAwaiter().GetResult();
+                if (!saved)
+                {
+                    UpdateStatus("Failed to save temp filter for testing", true);
+                    return;
+                }
+
+                // Derive deck/stake from parent selections
+                var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
+                var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
+
+                // Build small-batch search criteria; 2-character batch => 35^6 batches
+                var criteria = new BalatroSeedOracle.Models.SearchCriteria
+                {
+                    ConfigPath = tempPath,
+                    BatchSize = 2,
+                    StartBatch = 0,
+                    EndBatch = GetMaxBatchesForBatchSize(2),
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                };
+
+                // Start search via SearchManager
+                var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
+                if (searchManager == null)
+                {
+                    UpdateStatus("SearchManager not available", true);
+                    return;
+                }
+
+                // Kick off the search asynchronously and update status
+                _ = searchManager.StartSearchAsync(criteria, config);
+                UpdateStatus($"🔍 Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
             }
             catch (Exception ex)
             {
                 UpdateStatus($"Error testing filter: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Test filter error: {ex.Message}");
             }
+        }
+
+        // Helper to compute total batches for a given batch size (1-8)
+        private static ulong GetMaxBatchesForBatchSize(int batchSize)
+        {
+            return batchSize switch
+            {
+                1 => 64_339_296_875UL,
+                2 => 1_838_265_625UL,
+                3 => 52_521_875UL,
+                4 => 1_500_625UL,
+                5 => 42_875UL,
+                6 => 1_225UL,
+                7 => 35UL,
+                8 => 1UL,
+                _ => throw new ArgumentException($"Invalid batch size: {batchSize}. Valid range is 1-8."),
+            };
+        }
+
+        private string GetDeckName(int index)
+        {
+            var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
+                                    "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+        }
+
+        private string GetStakeName(int index)
+        {
+            var stakeNames = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
+            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
         }
 
         private void UpdateStatus(string message, bool isError)

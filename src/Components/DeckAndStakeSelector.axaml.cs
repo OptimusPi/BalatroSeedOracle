@@ -37,48 +37,13 @@ public partial class DeckAndStakeSelector : UserControl
 
         _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
         _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
-
-        // Configure stake spinner display values
-        if (_stakeSpinner != null && _viewModel != null)
-        {
-            _stakeSpinner.DisplayValues = _viewModel.StakeDisplayValues;
-        }
-
-        // Sync spinner changes to ViewModel
-        if (_deckSpinner != null && _viewModel != null)
-        {
-            _deckSpinner.DeckChanged += (s, deckIndex) =>
-            {
-                _viewModel.DeckIndex = deckIndex;
-            };
-        }
-
-        if (_stakeSpinner != null && _viewModel != null)
-        {
-            _stakeSpinner.ValueChanged += (s, e) =>
-            {
-                _viewModel.StakeIndex = (int)_stakeSpinner.Value;
-                // Update deck spinner to show new stake
-                _deckSpinner?.SetStakeIndex(_viewModel.StakeIndex);
-            };
-        }
-
-        // Sync ViewModel changes to spinners (for programmatic updates)
+        // Ensure sane initial indices
         if (_viewModel != null)
         {
-            _viewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(DeckAndStakeSelectorViewModel.DeckIndex) && _deckSpinner != null)
-                {
-                    _deckSpinner.SelectedDeckIndex = _viewModel.DeckIndex;
-                }
-                else if (e.PropertyName == nameof(DeckAndStakeSelectorViewModel.StakeIndex) && _stakeSpinner != null)
-                {
-                    _stakeSpinner.Value = _viewModel.StakeIndex;
-                    _deckSpinner?.SetStakeIndex(_viewModel.StakeIndex);
-                }
-            };
+            if (_viewModel.DeckIndex < 0) _viewModel.DeckIndex = 0;
+            if (_viewModel.StakeIndex < 0) _viewModel.StakeIndex = 0;
         }
+        // Pure MVVM: bindings handle synchronization; no manual event hookups required
     }
 
     // Public API - delegates to ViewModel

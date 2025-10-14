@@ -51,7 +51,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _selectButtonText = "LOAD THIS FILTER";
 
         [ObservableProperty]
-        private bool _selectButtonEnabled = true;
+        private bool _selectButtonEnabled = false;
 
         [ObservableProperty]
         private bool _hasFilters = false;
@@ -73,9 +73,12 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? FilterDeleteRequested;
         public event EventHandler? NewFilterRequested;
 
-        public FilterSelectorViewModel(SpriteService spriteService)
+        private readonly IConfigurationService _configurationService;
+
+        public FilterSelectorViewModel(SpriteService spriteService, IConfigurationService configurationService)
         {
             _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+            _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         }
 
         #region Property Changed Handlers
@@ -99,6 +102,9 @@ namespace BalatroSeedOracle.ViewModels
         {
             await LoadAvailableFiltersAsync();
             UpdateSelectButtonText();
+            // Disable select until a specific filter is chosen
+            SelectButtonEnabled = SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
+            UpdateCommandStates();
         }
 
         /// <summary>
@@ -110,14 +116,11 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var filterItems = new List<(PanelItem? item, DateTime? dateCreated)>();
 
-                // Look for .json files in JsonItemFilters directory
-                var directory = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                // Look for .json files in filters directory via configuration service
+                var directory = _configurationService.GetFiltersDirectory();
 
-                // Create directory if it doesn't exist
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                // Ensure directory exists via configuration service
+                _configurationService.EnsureDirectoryExists(directory);
 
                 var rootJsonFiles = Directory.GetFiles(directory, "*.json");
 
@@ -141,7 +144,15 @@ namespace BalatroSeedOracle.ViewModels
 
                 FilterItems = sortedItems;
                 HasFilters = sortedItems.Count > 0;
-                SelectButtonEnabled = HasFilters;
+                // Default-select the first filter so actions are immediately available
+                if (HasFilters && SelectedFilter == null)
+                {
+                    SelectedFilterIndex = 0;
+                    SelectedFilter = sortedItems[0];
+                }
+
+                // Enable when a selection is present
+                SelectButtonEnabled = SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
 
                 // Update command can execute states
                 UpdateCommandStates();
@@ -499,6 +510,13 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     DebugLogger.Log("FilterSelectorViewModel", $"Filter selected but NOT auto-loading: {SelectedFilter.Value} (AutoLoadEnabled={AutoLoadEnabled})");
                 }
+            }
+            else
+            {
+                // No selection – keep actions disabled and update text accordingly
+                SelectButtonEnabled = false;
+                UpdateSelectButtonText();
+                UpdateCommandStates();
             }
         }
 

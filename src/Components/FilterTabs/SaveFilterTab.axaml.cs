@@ -16,9 +16,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
         public SaveFilterTab()
         {
             InitializeComponent();
-            
-            // PROPER MVVM: Inject ViewModel via DI
-            DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.SaveFilterTabViewModel>();
         }
 
         private void InitializeComponent()

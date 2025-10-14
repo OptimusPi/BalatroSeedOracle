@@ -14,8 +14,9 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterListViewModel : ObservableObject
     {
-        private const int DEFAULT_FILTERS_PER_PAGE = 10;
-        private const double ITEM_HEIGHT = 32.0; // 28px button height + 4px margin (2px top + 2px bottom)
+        // Fixed pagination size for stability
+        private const int DEFAULT_FILTERS_PER_PAGE = 120;
+        private const double ITEM_HEIGHT = 32.0; // kept for any consumers; no dynamic sizing
 
         [ObservableProperty]
         private int _filtersPerPage = DEFAULT_FILTERS_PER_PAGE;
@@ -175,9 +176,7 @@ namespace BalatroSeedOracle.ViewModels
                 using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
-                // Try "must" first (new format) or "must_have" (old format)
-                if ((root.TryGetProperty("must", out var must) ||
-                     root.TryGetProperty("must_have", out must)) &&
+                if (root.TryGetProperty("must", out var must) &&
                     must.ValueKind == JsonValueKind.Array &&
                     must.GetArrayLength() > 0)
                 {
@@ -186,9 +185,7 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Try "should" second (new format) or "should_have" (old format)
-                if ((root.TryGetProperty("should", out var should) ||
-                     root.TryGetProperty("should_have", out should)) &&
+                if (root.TryGetProperty("should", out var should) &&
                     should.ValueKind == JsonValueKind.Array &&
                     should.GetArrayLength() > 0)
                 {
@@ -197,9 +194,7 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Try "mustNot" third (new format) or "must_not_have" (old format)
-                if ((root.TryGetProperty("mustNot", out var mustNot) ||
-                     root.TryGetProperty("must_not_have", out mustNot)) &&
+                if (root.TryGetProperty("mustNot", out var mustNot) &&
                     mustNot.ValueKind == JsonValueKind.Array &&
                     mustNot.GetArrayLength() > 0)
                 {
@@ -274,16 +269,13 @@ namespace BalatroSeedOracle.ViewModels
                 if (root.TryGetProperty("description", out var descProp))
                     SelectedFilterStats.Add(new FilterStat { Label = "Description", Value = descProp.GetString() ?? "N/A", Color = "#FFFFFF" });
 
-                // Check both "must" (new format) and "must_have" (old format)
-                if ((root.TryGetProperty("must", out var mustProp) || root.TryGetProperty("must_have", out mustProp)) && mustProp.ValueKind == JsonValueKind.Array)
+                if (root.TryGetProperty("must", out var mustProp) && mustProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Have", Value = $"{mustProp.GetArrayLength()} items", Color = "#ff4c40" });
 
-                // Check both "should" (new format) and "should_have" (old format)
-                if ((root.TryGetProperty("should", out var shouldProp) || root.TryGetProperty("should_have", out shouldProp)) && shouldProp.ValueKind == JsonValueKind.Array)
+                if (root.TryGetProperty("should", out var shouldProp) && shouldProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Should Have", Value = $"{shouldProp.GetArrayLength()} items", Color = "#0093ff" });
 
-                // Check both "mustNot" (new format) and "must_not_have" (old format)
-                if ((root.TryGetProperty("mustNot", out var mustNotProp) || root.TryGetProperty("must_not_have", out mustNotProp)) && mustNotProp.ValueKind == JsonValueKind.Array)
+                if (root.TryGetProperty("mustNot", out var mustNotProp) && mustNotProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Not Have", Value = $"{mustNotProp.GetArrayLength()} items", Color = "#ff9800" });
 
                 if (root.TryGetProperty("seed_count", out var seedCountProp))
@@ -318,28 +310,13 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void UpdateItemsPerPage(double availableHeight)
         {
-            if (availableHeight <= 0)
-            {
-                FiltersPerPage = DEFAULT_FILTERS_PER_PAGE;
-                return;
-            }
-
-            // Account for Border padding (4px total: 2px top + 2px bottom)
-            const double borderPadding = 4.0;
-            var usableHeight = availableHeight - borderPadding;
-
-            // Calculate how many items can fit (minimum 3, maximum 20)
-            var calculatedItems = Math.Floor(usableHeight / ITEM_HEIGHT);
-            var newPageSize = Math.Clamp((int)calculatedItems, 3, 20);
-
-            // PREVENT INFINITE LOOP: Only update if page size actually changed!
+            // Force fixed page size and ignore dynamic height
+            var newPageSize = DEFAULT_FILTERS_PER_PAGE;
             if (newPageSize == FiltersPerPage)
                 return;
 
             FiltersPerPage = newPageSize;
-            DebugLogger.Log("FilterListViewModel", $"Updated FiltersPerPage to {FiltersPerPage} (container: {availableHeight:F0}px, usable: {usableHeight:F0}px)");
-
-            // Refresh the current page with new page size
+            DebugLogger.Log("FilterListViewModel", $"Fixed FiltersPerPage to {FiltersPerPage}");
             UpdatePage();
         }
 

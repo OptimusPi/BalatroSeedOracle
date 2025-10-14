@@ -154,12 +154,15 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show tools modal (placeholder)
+        /// Show tools modal
         /// </summary>
         private void ShowToolsModal()
         {
-            // For now, show settings modal until Tools modal is implemented
-            ShowSettingsModal();
+            var toolsModal = new Modals.ToolsModal();
+            var modal = new StandardModal("TOOLS");
+            modal.SetContent(toolsModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "TOOLS");
         }
 
         /// <summary>

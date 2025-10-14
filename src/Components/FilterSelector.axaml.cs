@@ -110,7 +110,8 @@ namespace BalatroSeedOracle.Components
         private void InitializeViewModel()
         {
             var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
-            var viewModel = new FilterSelectorViewModel(spriteService);
+            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+            var viewModel = new FilterSelectorViewModel(spriteService, configurationService);
 
             // Wire up ViewModel events to our events for backward compatibility
             viewModel.FilterSelected += (s, e) => FilterSelected?.Invoke(this, e);

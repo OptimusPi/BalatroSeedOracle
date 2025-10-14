@@ -51,13 +51,19 @@
         <!-- Arrow button inherits pressed behavior from global styles -->
         
         <!-- Value display badge style -->
-        <Style Selector="Border.value-badge">
+        <Style Selector="Button.value-badge">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="MinWidth" Value="60"/>
             <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="Button.value-badge:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
         <!-- Value badge drop shadow -->
@@ -106,7 +112,7 @@
         <TextBlock Grid.Row="0"
                    Name="LabelText"
                    Classes="spinner-label"
-                   Text="{Binding Label}"/>
+                   Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
         
         <!-- Spinner control -->
         <Grid Grid.Row="1">
@@ -134,15 +140,29 @@
                         Height="32"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
-                <Border Classes="value-badge"
-                        HorizontalAlignment="Stretch">
+                <Button Name="ValueButton"
+                        Classes="value-badge"
+                        HorizontalAlignment="Stretch"
+                        Click="OnValueButtonClick">
                     <Grid>
+                        <!-- Display mode -->
                         <TextBlock Name="ValueText"
-                                   Classes="value-text"/>
+                                   Classes="value-text"
+                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <!-- Edit mode -->
+                        <TextBox Name="ValueEdit"
+                                 Classes="value-text"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 TextAlignment="Center"
+                                 IsVisible="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 LostFocus="OnValueEditLostFocus"
+                                 KeyDown="OnValueEditKeyDown"/>
                         <TextBlock Classes="dots-indicator"
                                    Text="•••"/>
                     </Grid>
-                </Border>
+                </Button>
             </Grid>
             
             <!-- Right arrow -->

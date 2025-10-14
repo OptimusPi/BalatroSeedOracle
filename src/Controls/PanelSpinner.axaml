@@ -5,18 +5,19 @@
     <UserControl.Styles>
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="259"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="20"/>
             
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,1,0,4"/>
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
@@ -52,12 +53,13 @@
         
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <!-- Match Balatro’s inner panel tone and tighter sizing -->
+            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="320"/>
-            <Setter Property="MinHeight" Value="259"/>
-            <Setter Property="MaxHeight" Value="315"/>
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="MinHeight" Value="240"/>
+            <Setter Property="MaxHeight" Value="300"/>
         </Style>
         
         <!-- Title text style -->
@@ -67,7 +69,8 @@
             
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="Margin" Value="0,6,0,2"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         </Style>
         
         <!-- Description text style -->
@@ -78,7 +81,9 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Margin" Value="16,0"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="MaxLines" Value="2"/>
+            <Setter Property="Margin" Value="12,0,12,4"/>
         </Style>
         
         <!-- Position dots container -->
@@ -127,6 +132,7 @@
                 Name="PrevButton"
                 Classes="panel-arrow"
                 Content="&lt;"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Click="OnPrevClick"/>
         
         <!-- Main panel content -->
@@ -147,10 +153,10 @@
                 <!-- Sprite Image Container with optional overlay -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
-                         MaxHeight="140"
+                         MaxHeight="128"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
-                         Margin="0,4">
+                         Margin="0,2">
                     <Grid Width="400" Height="200">
                         <!-- Base deck image -->
                         <Image Name="SpriteImage"
@@ -165,7 +171,7 @@
                 </Viewbox>
                 
                 <!-- Description -->
-                <Border Grid.Row="2" MinHeight="40" Margin="0,-4,0,0">
+                <Border Grid.Row="2" MinHeight="36" Margin="0,-2,0,0">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
                                VerticalAlignment="Center"/>
@@ -183,6 +189,7 @@
                 Name="NextButton"
                 Classes="panel-arrow"
                 Content="&gt;"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Click="OnNextClick"/>
     </Grid>
 </UserControl>

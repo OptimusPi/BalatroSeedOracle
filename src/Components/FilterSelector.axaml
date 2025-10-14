@@ -16,7 +16,8 @@
                                Name="FilterSpinner"
                                Items="{Binding FilterItems}"
                                SelectedIndex="{Binding SelectedFilterIndex, Mode=TwoWay}"
-                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"/>
+                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                               HorizontalAlignment="Center"/>
 
         <!-- Action buttons below spinner -->
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,6,0,0">
@@ -41,7 +42,7 @@
                 <Button Name="CopyFilterButton"
                         Content="MAKE A COPY"
                         Classes="btn-blue"
-                        Height="45"
+                        Height="44"
                         MinWidth="110"
                         FontSize="14"
                         Command="{Binding CopyFilterCommand}"/>
@@ -49,7 +50,7 @@
                 <Button Name="EditFilterButton"
                         Content="EDIT THIS FILTER"
                         Classes="btn-orange"
-                        Height="45"
+                        Height="44"
                         MinWidth="130"
                         FontSize="14"
                         Command="{Binding EditFilterCommand}"/>
@@ -57,7 +58,7 @@
                 <Button Name="DeleteFilterButton"
                         Content="DELETE"
                         Classes="btn-red"
-                        Height="45"
+                        Height="44"
                         Width="80"
                         FontSize="14"
                         Command="{Binding DeleteFilterCommand}"/>

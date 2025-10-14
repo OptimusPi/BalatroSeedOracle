@@ -5,8 +5,7 @@
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
 
     <!-- VERTICAL LAYOUT (Balatro style - Deck on top, Stake below) -->
-    <!-- Scaled up 2.5x so it's actually visible! -->
-    <StackPanel Spacing="30" HorizontalAlignment="Center">
+    <StackPanel Spacing="24" HorizontalAlignment="Center">
         <!-- Deck Selector -->
         <StackPanel Spacing="8" HorizontalAlignment="Center">
                 <!-- DeckSpinner shows deck name and description internally - no duplicate labels needed -->
@@ -15,24 +14,29 @@
                     <Button Grid.Column="0"
                             Content="◀"
                             Classes="btn-red"
-                            Width="60" Height="200"
+                            Width="56" Height="196"
                             FontSize="32"
                             Padding="0"
-                            VerticalContentAlignment="Center"/>
+                            VerticalContentAlignment="Center"
+                            Command="{Binding PreviousDeckCommand}"/>
 
                     <!-- Deck Card (larger!) -->
-                    <Viewbox Grid.Column="2" Width="200" Height="260" Stretch="Uniform">
-                        <components:DeckSpinner Name="DeckSpinnerControl" ShowArrows="False" />
+                    <Viewbox Grid.Column="2" Width="220" Height="280" Stretch="Uniform">
+                        <components:DeckSpinner Name="DeckSpinnerControl"
+                                                ShowArrows="False"
+                                                SelectedDeckIndex="{Binding DeckIndex, Mode=TwoWay}"
+                                                StakeIndex="{Binding StakeIndex, Mode=TwoWay}" />
                     </Viewbox>
 
                     <!-- Right Arrow -->
                     <Button Grid.Column="4"
                             Content="▶"
                             Classes="btn-red"
-                            Width="60" Height="200"
+                            Width="56" Height="196"
                             FontSize="32"
                             Padding="0"
-                            VerticalContentAlignment="Center"/>
+                            VerticalContentAlignment="Center"
+                            Command="{Binding NextDeckCommand}"/>
                 </Grid>
         </StackPanel>
 
@@ -44,7 +48,8 @@
                                         SpinnerType="stake"
                                         Minimum="0"
                                         Maximum="7"
-                                        Value="0"
+                                        Value="{Binding StakeIndex, Mode=TwoWay}"
+                                        DisplayValues="{Binding StakeDisplayValues}"
                                         Width="320"
                                         Height="80"
                                         HorizontalAlignment="Center" />

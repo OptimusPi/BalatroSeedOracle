@@ -1,5 +1,5 @@
 {
-  "GenieEnabled": false,
+  "GenieEnabled": true,
   "DaylatroEnabled": true,
   "ShaderBackgrounds": true,
   "VibeAudioEnabled": true,

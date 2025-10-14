@@ -8,67 +8,7 @@
              x:DataType="vm:FiltersModalViewModel">
              
     <UserControl.Styles>
-        <!-- Modal-specific styles ONLY. Global button/input/tab/nav styles removed to prevent drift. -->
-        <!-- Override Fluent's button template completely for tab buttons -->
-        <Style Selector="Button.tab-button">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="{StaticResource TabButtonFontSize}"/>
-            <!-- Allow height to expand with font; keep min for layout -->
-            <Setter Property="MinHeight" Value="46"/>
-            <Setter Property="MinWidth" Value="144"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Name="PART_Border"
-                                Background="{StaticResource Red}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        
-        <!-- Hover state -->
-        <Style Selector="Button.tab-button:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Tab button inherits pressed behavior from global styles -->
-        
-        <!-- Active state - same as regular, no blue! -->
-        <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-        </Style>
-        
-        <!-- Active hover -->
-        <Style Selector="Button.tab-button.active:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Disabled state -->
-        <Style Selector="Button.tab-button:disabled /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
-        </Style>
-        <Style Selector="Button.tab-button:disabled">
-            <Setter Property="Cursor" Value="Arrow"/>
-        </Style>
+        <!-- Use global styles for tab buttons; removing modal-specific overrides -->
         
         <Style Selector="Border.drop-zone">
             <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
@@ -275,11 +215,41 @@
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
 
-        <!-- Reusable BalatroTabControl (replaces manual tab buttons + triangle) -->
-        <components:BalatroTabControl Grid.Row="0" Name="TabControl" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+        <!-- Native TabControl header strip for consistent tabs -->
+        <TabControl Grid.Row="0"
+                    Name="TabControl"
+                    Classes="balatro-tabs"
+                    ItemsSource="{Binding TabItems}"
+                    SelectedIndex="{Binding SelectedTabIndex}"
+                    HorizontalAlignment="Center"
+                    Height="38"
+                    Margin="0,0,0,2">
+            <TabControl.Styles>
+                <Style Selector="TabControl > TabItem">
+                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+                </Style>
+            </TabControl.Styles>
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Header}"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <!-- Hide TabControl's own content by constraining height to tab strip -->
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <Grid Height="0"/>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
 
-        <!-- Content area -->
-        <Grid Grid.Row="1" Margin="12,6,12,12" DragDrop.AllowDrop="True">
+        <!-- Content Area with Tab Panels (Balatro-style Border to match SearchModal) -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkModalGrey}"
+                BorderThickness="0"
+                CornerRadius="0,0,12,12"
+                Padding="20"
+                Margin="0,8,0,0">
+            <Grid DragDrop.AllowDrop="True">
             
             <!-- Visual Panel -->
             <Grid Name="VisualPanel" IsVisible="{Binding IsVisualTabVisible}" DragDrop.AllowDrop="True">
@@ -337,15 +307,15 @@
                                         </Grid.ColumnDefinitions>
                                         
                                         <!-- Search Bar -->
-                                        <TextBox Grid.Column="0" Name="SearchBox" Watermark="Search items..." Height="28" VerticalContentAlignment="Center" 
-                                                 Background="{StaticResource DockGrey}"
-                                                 BorderThickness="0"
-                                                 Foreground="{StaticResource TextLight}"
-                                                 CaretBrush="{StaticResource TextLight}"
-                                                 SelectionBrush="{StaticResource Blue}"
-                                                 CornerRadius="6"
-                                                 Padding="8,4"
-                                                 Classes="search-box" IsHitTestVisible="True" Focusable="True" ZIndex="10" FontSize="12" />
+                                        <TextBox Grid.Column="0"
+                                                 Name="SearchBox"
+                                                 Classes="search-box"
+                                                 Watermark="Search items..."
+                                                 VerticalContentAlignment="Center"
+                                                 FontSize="14"
+                                                 IsHitTestVisible="True"
+                                                 Focusable="True"
+                                                 ZIndex="10" />
                                         <Button Grid.Column="2" Name="ClearSearchButton" Content="X" ToolTip.Tip="Clear Search" Width="24" Height="24" FontSize="10" Padding="0" Classes="small-button" />
                                     </Grid>
                                     
@@ -476,9 +446,11 @@
             
             <!-- Load/Save Panel - Balatro Challenges Style -->
             <Grid Name="LoadSavePanel" IsVisible="{Binding IsLoadSaveTabVisible}">
-                <!-- Use the new reusable FilterSelectorControl (fills available space) -->
+                <!-- Use the new reusable FilterSelectorControl (centered to match SearchModal) -->
                 <!-- Event handlers wired up in code-behind to prevent double-subscription -->
-                <components:FilterSelectorControl Name="FilterSelector"/>
+                <components:FilterSelectorControl Name="FilterSelector"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"/>
             </Grid>
 
             <!-- JSON Panel - ENHANCED -->
@@ -988,7 +960,7 @@
                                         Name="SaveChangesButton"
                                         Content="Save Changes"
                                         Classes="btn-green"
-                                        Height="40"
+                                        Height="44"
                                         FontSize="16"
                                         Click="OnSaveChangesClick"/>
                                         
@@ -996,7 +968,7 @@
                                         Name="SearchButton"
                                         Content="SEARCH"
                                         Classes="btn-blue"
-                                        Height="40"
+                                        Height="44"
                                         FontSize="16"
                                         Click="OnSearchClick"/>
                                         
@@ -1004,7 +976,7 @@
                                         Name="ExportButton"
                                         Content="Export"
                                         Classes="btn-blue"
-                                        Height="40"
+                                        Height="44"
                                         FontSize="16"
                                         Click="OnExportClick"/>
                             </Grid>
@@ -1012,6 +984,7 @@
                     </ScrollViewer>
                 </Border>
             </Grid>
-        </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

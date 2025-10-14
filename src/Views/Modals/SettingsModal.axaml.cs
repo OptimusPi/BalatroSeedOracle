@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
@@ -143,6 +144,44 @@ namespace BalatroSeedOracle.Views.Modals
             LoadSettings();
 
             DebugLogger.Log("SettingsModal", "Settings reset to defaults");
+        }
+
+        private void OnWordListsClick(object? sender, RoutedEventArgs e)
+        {
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+
+            if (mainMenu != null)
+            {
+                // Hide current modal
+                mainMenu.HideModalContent();
+
+                // Show word lists modal using ModalHelper extension
+                mainMenu.ShowWordListsModal();
+            }
+            else
+            {
+                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+            }
+        }
+
+        private void OnCreditsClick(object? sender, RoutedEventArgs e)
+        {
+            // Find the main menu in the visual tree
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+
+            if (mainMenu != null)
+            {
+                // Hide current modal
+                mainMenu.HideModalContent();
+
+                // Show credits modal using ModalHelper extension
+                mainMenu.ShowCreditsModal();
+            }
+            else
+            {
+                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+            }
         }
 
         // ViewModel for feature toggles

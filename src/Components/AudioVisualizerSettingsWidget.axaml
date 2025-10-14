@@ -84,7 +84,7 @@
 
                         <!-- THEME SELECTION -->
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Theme" Foreground="#2e3f42" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Theme" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
                                 <ComboBox SelectedIndex="{Binding ThemeIndex}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="Default"/>
                                     <ComboBoxItem Content="Wave Rider"/>
@@ -100,10 +100,10 @@
 
                             <!-- CUSTOM COLORS (only shown when CUSTOMIZE selected) -->
                             <StackPanel Spacing="10" IsVisible="{Binding IsCustomTheme}">
-                                <TextBlock Text="Custom Colors" Foreground="#ff4c40" FontWeight="Bold" FontSize="12"/>
+                                <TextBlock Text="Custom Colors" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                     <StackPanel Grid.Column="0" Spacing="4">
-                                        <TextBlock Text="Main" Foreground="#4a4a4a" FontSize="11"/>
+                                        <TextBlock Text="Main" Foreground="{StaticResource White}" FontSize="12"/>
                                         <ComboBox SelectedIndex="{Binding MainColor}" HorizontalAlignment="Stretch" FontSize="11">
                                             <ComboBoxItem Content="Red"/>
                                             <ComboBoxItem Content="Orange"/>
@@ -117,7 +117,7 @@
                                         </ComboBox>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4">
-                                        <TextBlock Text="Accent" Foreground="#4a4a4a" FontSize="11"/>
+                                        <TextBlock Text="Accent" Foreground="{StaticResource White}" FontSize="12"/>
                                         <ComboBox SelectedIndex="{Binding AccentColor}" HorizontalAlignment="Stretch" FontSize="11">
                                             <ComboBoxItem Content="Red"/>
                                             <ComboBoxItem Content="Orange"/>
@@ -135,39 +135,39 @@
 
                             <!-- INTENSITY SLIDERS -->
                             <StackPanel Spacing="10">
-                                <TextBlock Text="Intensity" Foreground="#2e3f42" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Intensity" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
 
                                 <!-- Music Sensitivity -->
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0" Text="Music" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="90"/>
+                                    <TextBlock Grid.Column="0" Text="Music" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="13" MinWidth="90"/>
                                     <Slider Grid.Column="1" Value="{Binding AudioIntensity}" Minimum="0" Maximum="2" VerticalAlignment="Center"/>
                                     <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="6,3" MinWidth="40">
-                                        <TextBlock Text="{Binding AudioIntensityNumeric}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding AudioIntensityNumeric}" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 
                                 <!-- Parallax -->
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0" Text="Parallax" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="90"/>
+                                    <TextBlock Grid.Column="0" Text="Parallax" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="13" MinWidth="90"/>
                                     <Slider Grid.Column="1" Value="{Binding ParallaxStrength}" Minimum="0" Maximum="2" VerticalAlignment="Center"/>
                                     <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="6,3" MinWidth="40">
-                                        <TextBlock Text="{Binding ParallaxNumeric}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ParallaxNumeric}" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 
                                 <!-- Speed -->
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0" Text="Speed" Foreground="#4a4a4a" VerticalAlignment="Center" FontSize="11" MinWidth="90"/>
+                                    <TextBlock Grid.Column="0" Text="Speed" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="13" MinWidth="90"/>
                                     <Slider Grid.Column="1" Value="{Binding TimeSpeed}" Minimum="0" Maximum="3" VerticalAlignment="Center"/>
                                     <Border Grid.Column="2" Background="#ff4c40" CornerRadius="4" Padding="6,3" MinWidth="40">
-                                        <TextBlock Text="{Binding TimeSpeedNumeric}" Foreground="White" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding TimeSpeedNumeric}" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
                             </StackPanel>
 
                             <!-- PRESETS -->
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Presets" Foreground="#2e3f42" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Presets" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
                                     <ComboBox Grid.Column="0" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" HorizontalAlignment="Stretch" FontSize="11">
                                         <ComboBox.ItemTemplate>
@@ -182,85 +182,85 @@
                             </StackPanel>
 
                             <!-- ADVANCED (EXPANDER) -->
-                            <Expander Header="⚙️ Advanced Settings" FontSize="12" FontWeight="Bold">
+                            <Expander Header="⚙️ Advanced Settings" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Gold}">
                                 <StackPanel Spacing="10" Margin="0,8,0,0">
 
                                     <!-- Audio Event Triggers -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="🔊 Audio Events" Foreground="#2e3f42" FontWeight="SemiBold" FontSize="11"/>
-                                        <CheckBox Content="Seed Found" IsChecked="{Binding SeedFoundTrigger}" Foreground="#4a4a4a" FontSize="10"/>
-                                        <CheckBox Content="High Score" IsChecked="{Binding HighScoreSeedTrigger}" Foreground="#4a4a4a" FontSize="10"/>
-                                        <CheckBox Content="Search Done" IsChecked="{Binding SearchCompleteTrigger}" Foreground="#4a4a4a" FontSize="10"/>
+                                        <TextBlock Text="🔊 Audio Events" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="13"/>
+                                        <CheckBox Content="Seed Found" IsChecked="{Binding SeedFoundTrigger}" Foreground="{StaticResource White}" FontSize="12"/>
+                                        <CheckBox Content="High Score" IsChecked="{Binding HighScoreSeedTrigger}" Foreground="{StaticResource White}" FontSize="12"/>
+                                        <CheckBox Content="Search Done" IsChecked="{Binding SearchCompleteTrigger}" Foreground="{StaticResource White}" FontSize="12"/>
                                     </StackPanel>
 
                                     <!-- Beat Detection + Vibe Intensity -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="🥁 Beat + Vibe Detection" Foreground="#2e3f42" FontWeight="SemiBold" FontSize="11"/>
+                                        <TextBlock Text="🥁 Beat + Vibe Detection" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="13"/>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                            <TextBlock Grid.Column="0" Text="Beat Threshold" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="90"/>
+                                            <TextBlock Grid.Column="0" Text="Beat Threshold" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="90"/>
                                             <Slider Grid.Column="1" Value="{Binding BeatThreshold}" Minimum="0" Maximum="1" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding BeatThreshold, StringFormat='{}{0:F2}'}" Foreground="#666" FontSize="10" MinWidth="35" HorizontalAlignment="Right"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding BeatThreshold, StringFormat='{}{0:F2}'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="35" HorizontalAlignment="Right"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                            <TextBlock Grid.Column="0" Text="Vibe Multiplier" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="90"/>
+                                            <TextBlock Grid.Column="0" Text="Vibe Multiplier" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="90"/>
                                             <Slider Grid.Column="1" Value="{Binding VibeIntensityMultiplier}" Minimum="0" Maximum="0.2" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding VibeIntensityMultiplier, StringFormat='{}{0:F3}'}" Foreground="#666" FontSize="10" MinWidth="35" HorizontalAlignment="Right"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding VibeIntensityMultiplier, StringFormat='{}{0:F3}'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="35" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </StackPanel>
 
                                     <!-- Per-Track Sensitivity -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="🎚️ Track Sensitivity" Foreground="#2e3f42" FontWeight="SemiBold" FontSize="11"/>
+                                        <TextBlock Text="🎚️ Track Sensitivity" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="13"/>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Drums1" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Drums1" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Drums1Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Drums1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Drums1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Drums2" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Drums2" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Drums2Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Drums2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Drums2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Bass1" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Bass1" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Bass1Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Bass1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Bass1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Bass2" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Bass2" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Bass2Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Bass2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Bass2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Chords1" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Chords1" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Chords1Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Chords1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Chords1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Chords2" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Chords2" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Chords2Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Chords2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Chords2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Melody1" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Melody1" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Melody1Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Melody1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Melody1Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                            <TextBlock Grid.Column="0" Text="Melody2" Foreground="#666" FontSize="10" VerticalAlignment="Center" MinWidth="60"/>
+                                            <TextBlock Grid.Column="0" Text="Melody2" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center" MinWidth="60"/>
                                             <Slider Grid.Column="1" Value="{Binding Melody2Sensitivity}" Minimum="0" Maximum="3"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding Melody2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="#666" FontSize="10" MinWidth="40"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Melody2Sensitivity, StringFormat='{}{0:F1}x'}" Foreground="{StaticResource White}" FontSize="12" MinWidth="40"/>
                                         </Grid>
                                     </StackPanel>
 
                                     <!-- Shader Effect Mappings -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="🎵 Effect Mapping + Intensity" Foreground="#2e3f42" FontWeight="SemiBold" FontSize="11"/>
+                                        <TextBlock Text="🎵 Effect Mapping + Intensity" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="13"/>
 
                                         <!-- Shadow Flicker -->
                                         <Grid ColumnDefinitions="90,*" ColumnSpacing="6" RowDefinitions="Auto,Auto">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Shadow" Foreground="#666" FontSize="10" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding ShadowFlickerSource}" FontSize="10">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Shadow" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding ShadowFlickerSource}" FontSize="11">
                                                 <ComboBoxItem Content="None"/>
                                                 <ComboBoxItem Content="Drums"/>
                                                 <ComboBoxItem Content="Bass"/>
@@ -272,8 +272,8 @@
 
                                         <!-- Spin -->
                                         <Grid ColumnDefinitions="90,*" ColumnSpacing="6" RowDefinitions="Auto,Auto">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Spin" Foreground="#666" FontSize="10" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding SpinSource}" FontSize="10">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Spin" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding SpinSource}" FontSize="11">
                                                 <ComboBoxItem Content="None"/>
                                                 <ComboBoxItem Content="Drums"/>
                                                 <ComboBoxItem Content="Bass"/>
@@ -285,8 +285,8 @@
 
                                         <!-- Beat Pulse -->
                                         <Grid ColumnDefinitions="90,*" ColumnSpacing="6" RowDefinitions="Auto,Auto">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Beat Pulse" Foreground="#666" FontSize="10" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding BeatPulseSource}" FontSize="10">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Beat Pulse" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding BeatPulseSource}" FontSize="11">
                                                 <ComboBoxItem Content="None"/>
                                                 <ComboBoxItem Content="Drums"/>
                                                 <ComboBoxItem Content="Bass"/>

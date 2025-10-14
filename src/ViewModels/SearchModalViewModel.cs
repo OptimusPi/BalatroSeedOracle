@@ -696,64 +696,27 @@ namespace BalatroSeedOracle.ViewModels
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 
-            TabItems.Add(new TabItemViewModel("🔍 SELECT", FilterTabContent));
-            TabItems.Add(new TabItemViewModel("⚙️ VISUAL", SettingsTabContent));
-            TabItems.Add(new TabItemViewModel("🚀 TEST", SearchTabContent));
-            TabItems.Add(new TabItemViewModel("📊 FINISH", ResultsTabContent));
+            TabItems.Add(new TabItemViewModel("Select Filter", FilterTabContent));
+            TabItems.Add(new TabItemViewModel("Deck/Stake", SettingsTabContent));
+            TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
+            TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
         }
 
         private UserControl CreateFilterTabContent()
         {
-            // FIXED: Use the clean FilterSelector component with PanelSpinner (card-based UI)
-            var filterSelector = new Components.FilterSelector
+            // Use the Balatro Challenges-style FilterSelectorControl for a consistent UX
+            var filterSelector = new Components.FilterSelectorControl
             {
-                ShowSelectButton = true,
-                ShowActionButtons = false, // Hide edit/copy/delete for now (just select to search)
-                AutoLoadEnabled = true,
-                Title = "SELECT FILTER FOR SEARCH"
+                Name = "FilterSelector",
+                IsInSearchModal = true
             };
 
-            // Wire up the FilterLoaded event - fires when user selects a filter
-            filterSelector.FilterLoaded += async (sender, filterPath) =>
-            {
-                DebugLogger.Log("SearchModalViewModel", $"Filter selected: {filterPath}");
-                CurrentFilterPath = filterPath;
-                await LoadFilterAsync(filterPath);
-
-                // Auto-switch to SEARCH tab after loading filter
-                SelectedTabIndex = 2;
-            };
-
-            // Create the deck and stake selector
-            var deckStakeSelector = new Components.DeckAndStakeSelector();
-
-            // Wire up the deck/stake selection events
-            deckStakeSelector.SelectionChanged += (sender, selection) =>
-            {
-                var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                                        "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                var stakeNames = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
-
-                if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
-                    DeckSelection = deckNames[selection.deckIndex];
-
-                if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeNames.Length)
-                    StakeSelection = stakeNames[selection.stakeIndex];
-
-                DebugLogger.Log("SearchModalViewModel", $"Deck/Stake changed to {DeckSelection}/{StakeSelection}");
-            };
-
-            // KISS: Simple, clean layout
+            // Layout: simple container hosting the selector
             var mainGrid = new Grid();
             mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star)); // FilterSelector
-            mainGrid.RowDefinitions.Add(new RowDefinition(new GridLength(15))); // Spacing
-            mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); // Deck/Stake selector
 
             Grid.SetRow(filterSelector, 0);
             mainGrid.Children.Add(filterSelector);
-
-            Grid.SetRow(deckStakeSelector, 2);
-            mainGrid.Children.Add(deckStakeSelector);
 
             return new UserControl
             {

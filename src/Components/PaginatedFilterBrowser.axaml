@@ -25,9 +25,11 @@
                 </Grid.RowDefinitions>
                 
                 <!-- Filter List with Selection Triangle -->
-                <Grid Grid.Row="0">
-                    <!-- Triangle indicator for selected item -->
-                    <Canvas Name="TriangleCanvas" ClipToBounds="False">
+                <!-- Wrap the whole list and triangle in a ScrollViewer so a fixed page of 120 items can scroll without clipping -->
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <!-- Triangle indicator for selected item -->
+                        <Canvas Name="TriangleCanvas" ClipToBounds="False">
                         <Polygon Name="SelectionTriangle"
                                  Points="15,0 0,10 15,20" 
                                  Fill="{StaticResource Red}"
@@ -54,19 +56,20 @@
                         </Polygon>
                     </Canvas>
                     
-                    <!-- Filter List -->
-                    <StackPanel Name="FilterListPanel" Margin="25,0,0,0">
-                        <ItemsControl ItemsSource="{Binding CurrentPageFilters}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Button Content="{Binding DisplayText}"
-                                            Classes="filter-list-item" 
-                                            IsPressed="{Binding IsSelected}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Grid>
+                        <!-- Filter List -->
+                        <StackPanel Name="FilterListPanel" Margin="25,0,0,0">
+                            <ItemsControl ItemsSource="{Binding CurrentPageFilters}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayText}"
+                                                Classes="filter-list-item" 
+                                                IsPressed="{Binding IsSelected}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
                 
                 <!-- Pagination Controls -->
                 <StackPanel Grid.Row="1" 

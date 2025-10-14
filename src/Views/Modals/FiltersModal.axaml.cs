@@ -182,7 +182,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBox? _filterNameInput;
         private TextBox? _filterPathInput;
         private TextBox? _testSeedsInput;
-        private Components.BalatroTabControl? _tabControl;
+        private TabControl? _tabControl;
 
         public FiltersModalContent()
         {
@@ -198,6 +198,10 @@ namespace BalatroSeedOracle.Views.Modals
             // SpriteService initializes lazily via Instance property
             InitializeComponent();
             BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", "FiltersModalContent constructor called");
+
+            // CRITICAL: Initialize tabs on the UI thread so TabControl headers render
+            // Do NOT do this inside the ViewModel constructor to avoid UI creation on background threads
+            ViewModel.InitializeTabs();
 
             // Initialize item categories from BalatroData
             _itemCategories = new Dictionary<string, List<string>>
@@ -244,7 +248,7 @@ namespace BalatroSeedOracle.Views.Modals
             _clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
             _clearWantsButton = this.FindControl<Button>("ClearWantsButton");
             _clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
-            _tabControl = this.FindControl<Components.BalatroTabControl>("TabControl");
+            _tabControl = this.FindControl<TabControl>("TabControl");
             _saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             _saveFilterButton = this.FindControl<Button>("SaveFilterButton");
             _loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
@@ -322,20 +326,17 @@ namespace BalatroSeedOracle.Views.Modals
             // This eliminates 173 O(n) visual tree walks, providing 50%+ performance improvement
             CacheControls();
 
-            // Initialize BalatroTabControl with proper tab titles
+            // Hook native TabControl selection changes to ViewModel visibility
             if (_tabControl != null)
             {
-                _tabControl.SetTabs("Select", "Visual", "JSON", "🔥 TEST", "Finish");
-
-                // Disable all tabs except "Select" initially
-                _tabControl.SetTabEnabled(1, false); // Visual
-                _tabControl.SetTabEnabled(2, false); // JSON
-                _tabControl.SetTabEnabled(3, false); // TEST
-                _tabControl.SetTabEnabled(4, false); // Finish
-
-                // Wire up tab changed event
-                _tabControl.TabChanged += OnBalatroTabChanged;
+                _tabControl.SelectionChanged += (s, e) =>
+                {
+                    ViewModel.UpdateTabVisibility(ViewModel.SelectedTabIndex);
+                };
             }
+
+            // Ensure initial visibility aligns with selected tab
+            ViewModel.UpdateTabVisibility(ViewModel.SelectedTabIndex);
 
             // Sync TextBox changes to ViewModel properties (controls already cached)
             if (_configNameBox != null)
@@ -820,92 +821,32 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void HideAllTabPanels()
         {
-            // Hide all tab content panels with correct control types
-            var visualPanel = this.FindControl<Grid>("VisualPanel");
-            var jsonPanel = this.FindControl<Grid>("JsonPanel");
-            var testPanel = this.FindControl<Grid>("TestPanel");
-            var savePanel = this.FindControl<Grid>("SaveFilterPanel");
-
-            if (visualPanel != null)
-                visualPanel.IsVisible = false;
-            if (jsonPanel != null)
-                jsonPanel.IsVisible = false;
-            if (testPanel != null)
-                testPanel.IsVisible = false;
-            if (savePanel != null)
-                savePanel.IsVisible = false;
-
-            // Show the load/save panel (filter selector)
-            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
-            if (loadSavePanel != null)
-            {
-                loadSavePanel.IsVisible = true;
-            }
+            // MVVM: Drive visibility via ViewModel flags, not direct UI property sets
+            ViewModel.IsVisualTabVisible = false;
+            ViewModel.IsJsonTabVisible = false;
+            ViewModel.IsTestTabVisible = false;
+            ViewModel.IsSaveTabVisible = false;
+            ViewModel.IsLoadSaveTabVisible = true;
         }
         
         private void UpdateTabStates(bool configLoaded)
         {
-            // NEW: Use BalatroTabControl instead of individual buttons
-            if (_tabControl != null)
+            // Enable/disable native TabItems via ViewModel.TabItems
+            var vm = ViewModel;
+            if (vm?.TabItems is { Count: >= 5 })
             {
-                // Enable tabs only when a filter is loaded BY USER ACTION
-                _tabControl.SetTabEnabled(1, configLoaded); // Visual tab
-                _tabControl.SetTabEnabled(2, configLoaded); // JSON tab
-                _tabControl.SetTabEnabled(3, configLoaded); // TEST tab
-                _tabControl.SetTabEnabled(4, configLoaded); // Finish/Save tab
+                // New index mapping: 0=Load, 1=Visual, 2=JSON, 3=Test, 4=Save
+                vm.TabItems[0].IsEnabled = true; // Load tab always available
+                vm.TabItems[1].IsEnabled = true; // Visual Builder always available
+                vm.TabItems[2].IsEnabled = true; // JSON Editor always available
 
-                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal",
-                    $"UpdateTabStates: configLoaded={configLoaded}, tabs enabled={configLoaded}");
+                var hasSelections = vm.SelectedMust.Count + vm.SelectedShould.Count + vm.SelectedMustNot.Count > 0;
+                // Enable Test and Save when a config is loaded or user has selections
+                vm.TabItems[3].IsEnabled = configLoaded || hasSelections; // Test
+                vm.TabItems[4].IsEnabled = configLoaded || hasSelections; // Save
             }
 
-            // OLD: Individual button references (kept for compatibility if any direct references exist)
-            var visualTab = this.FindControl<Button>("VisualTab");
-            var jsonTab = this.FindControl<Button>("JsonTab");
-            var testTab = this.FindControl<Button>("TestTab");
-            var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
-
-            if (visualTab != null)
-            {
-                visualTab.IsEnabled = configLoaded;
-                if (!configLoaded)
-                {
-                    visualTab.Classes.Remove("active");
-                }
-            }
-
-            if (jsonTab != null)
-            {
-                jsonTab.IsEnabled = configLoaded;
-                if (!configLoaded)
-                {
-                    jsonTab.Classes.Remove("active");
-                }
-            }
-
-            if (testTab != null)
-            {
-                testTab.IsEnabled = configLoaded;
-                if (!configLoaded)
-                {
-                    testTab.Classes.Remove("active");
-                }
-            }
-
-            if (saveFilterTab != null)
-            {
-                saveFilterTab.IsEnabled = configLoaded;
-                if (!configLoaded)
-                {
-                    saveFilterTab.Classes.Remove("active");
-                }
-            }
-            
-            // Show/hide selector panel based on whether filter is loaded
-            var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
-            if (loadSavePanel != null)
-            {
-                loadSavePanel.IsVisible = !configLoaded;
-            }
+            // Do not manually toggle panel visibility here; SelectedTabIndex controls it
         }
 
         private BalatroSeedOracle.Models.FilterItem? ParseItemKey(string key)
@@ -2867,8 +2808,9 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     // Need to save first
                     UpdateStatus("Please save your filter before searching", isError: true);
-                    // Switch to Finish tab (tab 4) using new BalatroTabControl
-                    _tabControl?.SwitchToTab(4);
+                    // Switch to Finish tab (tab 4) via ViewModel-selected TabControl
+                    ViewModel.SelectedTabIndex = 4;
+                    ViewModel.UpdateTabVisibility(4);
                     return;
                 }
 
@@ -3748,6 +3690,38 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateTabHighlight(tabId);
         }
 
+        private static string? ResolveCategoryForItem(string item)
+        {
+            if (string.IsNullOrWhiteSpace(item)) return null;
+
+            string normalized = item.Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+
+            bool Matches(IEnumerable<string> keys) =>
+                keys.Contains(item, StringComparer.OrdinalIgnoreCase) ||
+                keys.Any(k => string.Equals(
+                    k.Replace(" ", string.Empty, StringComparison.Ordinal)
+                     .Replace("_", string.Empty, StringComparison.Ordinal)
+                     .ToLowerInvariant(),
+                    normalized,
+                    StringComparison.Ordinal));
+
+            if (Matches(BalatroSeedOracle.Models.BalatroData.Jokers.Keys)) return "Jokers";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.TarotCards.Keys)) return "Tarots";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.SpectralCards.Keys)) return "Spectrals";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.Vouchers.Keys)) return "Vouchers";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.PlanetCards.Keys)) return "Planets";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.Tags.Keys)) return "Tags";
+            if (Matches(BalatroSeedOracle.Models.BalatroData.BossBlinds.Keys)) return "Bosses";
+
+            // Playing cards: allow simple heuristic
+            if (normalized.Contains("playingcard")) return "PlayingCards";
+
+            return null;
+        }
+
         private void ShowFavorites()
         {
             // Mark that we're in favorites mode
@@ -3843,24 +3817,8 @@ namespace BalatroSeedOracle.Views.Modals
                     // Add all items from the set to wants
                     foreach (var item in set.Items)
                     {
-                        // Find the category for this item
-                        string? category = null;
-                        if (BalatroData.Jokers.ContainsKey(item))
-                        {
-                            category = "Jokers";
-                        }
-                        else if (BalatroData.TarotCards.ContainsKey(item))
-                        {
-                            category = "Tarots";
-                        }
-                        else if (BalatroData.SpectralCards.ContainsKey(item))
-                        {
-                            category = "Spectrals";
-                        }
-                        else if (BalatroData.Vouchers.ContainsKey(item))
-                        {
-                            category = "Vouchers";
-                        }
+                        // Resolve category case-insensitively and with normalization
+                        var category = ResolveCategoryForItem(item);
 
                         if (category != null)
                         {
@@ -4690,11 +4648,9 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void SwitchToTab(int tabIndex)
         {
-            if (_tabControl != null)
-            {
-                _tabControl.SwitchToTab(tabIndex);
-                BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"Programmatically switched to tab {tabIndex}");
-            }
+            // Delegate to the same logic used for user-driven tab changes
+            // Ensures consistent visibility updates and any tab-specific initialization
+            OnBalatroTabChanged(this, tabIndex);
         }
 
         /// <summary>
@@ -4713,37 +4669,19 @@ namespace BalatroSeedOracle.Views.Modals
             _isSwitchingTab = true;
             try
             {
-                // Update ViewModel visibility properties (this hides/shows the content panels)
+                // Sync selection and update visibility via ViewModel (MVVM)
+                ViewModel.SelectedTabIndex = tabIndex;
                 ViewModel.UpdateTabVisibility(tabIndex);
 
                 // Perform tab-specific initialization/cleanup
                 switch (tabIndex)
                 {
                     case 0: // LoadSave tab
-                        // Make sure FilterSelector is visible when on LoadSave tab
-                        if (_filterSelector != null)
-                        {
-                            _filterSelector.IsVisible = true;
-                            _filterSelector.Opacity = 1;
-                        }
+                        // No manual visibility toggles; bindings control panel visibility
                         break;
 
                     case 1: // Visual tab
-                        // NUCLEAR OPTION: Force hide LoadSave panel and FilterSelector
-                        if (_loadSavePanel != null)
-                        {
-                            _loadSavePanel.IsVisible = false;
-                            _loadSavePanel.Opacity = 0;
-                            DebugLogger.Log("FiltersModal", "FORCED LoadSavePanel hidden");
-                        }
-
-                        if (_filterSelector != null)
-                        {
-                            _filterSelector.IsVisible = false;
-                            _filterSelector.Opacity = 0;
-                            DebugLogger.Log("FiltersModal", "FORCED FilterSelector hidden");
-                        }
-
+                        // Rely on bindings; perform any layout/data prep only
                         RestoreDragDropModeLayout();
                         LoadAllCategories();
                         UpdateDropZoneVisibility();
@@ -4842,39 +4780,16 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 case "LoadSaveTab":
                     button.Classes.Add("active");
+                    ViewModel.SelectedTabIndex = 0;
                     ViewModel.UpdateTabVisibility(0);
                     AnimateTriangleToTab(0);
-
-                    // Make sure FilterSelector is visible when on LoadSave tab
-                    if (_filterSelector != null)
-                    {
-                        _filterSelector.IsVisible = true;
-                        _filterSelector.Opacity = 1;
-                    }
                     break;
 
                 case "VisualTab":
                     button.Classes.Add("active");
+                    ViewModel.SelectedTabIndex = 1;
                     ViewModel.UpdateTabVisibility(1);
                     AnimateTriangleToTab(1);
-
-                    // NUCLEAR OPTION: Force hide BOTH panels and the FilterSelector control
-                    var loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
-                    if (loadSavePanel != null)
-                    {
-                        loadSavePanel.IsVisible = false;
-                        loadSavePanel.Opacity = 0;
-                        DebugLogger.Log("FiltersModal", "FORCED LoadSavePanel hidden");
-                    }
-
-                    // Also hide the FilterSelector control directly
-                    if (_filterSelector != null)
-                    {
-                        _filterSelector.IsVisible = false;
-                        _filterSelector.Opacity = 0;
-                        DebugLogger.Log("FiltersModal", "FORCED FilterSelector hidden");
-                    }
-
                     RestoreDragDropModeLayout();
                     LoadAllCategories();
                     UpdateDropZoneVisibility();
@@ -4884,6 +4799,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 case "JsonTab":
                     button.Classes.Add("active");
+                    ViewModel.SelectedTabIndex = 2;
                     ViewModel.UpdateTabVisibility(2);
                     AnimateTriangleToTab(2);
                     EnterEditJsonMode();
@@ -4898,6 +4814,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 case "TestTab":
                     button.Classes.Add("active");
+                    ViewModel.SelectedTabIndex = 3;
                     ViewModel.UpdateTabVisibility(3);
                     AnimateTriangleToTab(3);
                     UpdateJsonStats(); // Update stats display
@@ -4905,6 +4822,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 case "SaveFilterTab":
                     button.Classes.Add("active");
+                    ViewModel.SelectedTabIndex = 4;
                     ViewModel.UpdateTabVisibility(4);
                     AnimateTriangleToTab(4);
                     UpdateSaveFilterPanel();
