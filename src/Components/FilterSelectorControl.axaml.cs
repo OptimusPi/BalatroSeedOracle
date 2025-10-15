@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Components
 {
@@ -96,7 +97,7 @@ namespace BalatroSeedOracle.Components
         // Event handler for filter list item click
         private void OnFilterListItemClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ViewModels.FilterListItem item)
+            if (sender is Button button && button.Tag is Models.FilterListItem item)
             {
                 _viewModel?.SelectFilter(item);
 

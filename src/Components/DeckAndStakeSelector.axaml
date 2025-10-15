@@ -22,10 +22,7 @@
 
                     <!-- Deck Card (larger!) -->
                     <Viewbox Grid.Column="2" Width="220" Height="280" Stretch="Uniform">
-                        <components:DeckSpinner Name="DeckSpinnerControl"
-                                                ShowArrows="False"
-                                                SelectedDeckIndex="{Binding DeckIndex, Mode=TwoWay}"
-                                                StakeIndex="{Binding StakeIndex, Mode=TwoWay}" />
+                        <Image Source="{Binding DeckImage}" />
                     </Viewbox>
 
                     <!-- Right Arrow -->
@@ -42,17 +39,7 @@
 
         <!-- Stake Selector -->
         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <!-- SpinnerControl shows stake name and description internally -->
-                <controls:SpinnerControl Name="StakeSpinner"
-                                        Label=""
-                                        SpinnerType="stake"
-                                        Minimum="0"
-                                        Maximum="7"
-                                        Value="{Binding StakeIndex, Mode=TwoWay}"
-                                        DisplayValues="{Binding StakeDisplayValues}"
-                                        Width="320"
-                                        Height="80"
-                                        HorizontalAlignment="Center" />
+                <Image Source="{Binding StakeImage}" Width="320" Height="80" />
         </StackPanel>
 
         <!-- Select Button (bottom) -->

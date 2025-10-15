@@ -75,23 +75,37 @@
                 <StackPanel Grid.Row="1" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Center"
-                            Spacing="8"
+                            Spacing="6"
                             Margin="0,20,0,0">
-                    <Button Content="◄"
+                    <Button Content="◀"
                             Classes="btn-red"
-                            Width="40"
-                            Height="40"
+                            Width="44"
+                            Height="32"
+                            FontSize="14"
+                            Padding="0"
                             Command="{Binding PreviousPageCommand}"/>
-                    
-                    <Button Content="{Binding PageIndicatorText}"
+
+                    <!-- Badge-style page indicator (fixed width to prevent wiggling) -->
+                    <Border Background="{StaticResource DarkModalGrey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Padding="16,6"
+                            MinWidth="85"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageIndicatorText}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource White}"
+                                   TextAlignment="Center"/>
+                    </Border>
+
+                    <Button Content="▶"
                             Classes="btn-red"
-                            MinWidth="100"
-                            Height="40"/>
-                    
-                    <Button Content="►"
-                            Classes="btn-red"
-                            Width="40"
-                            Height="40"
+                            Width="44"
+                            Height="32"
+                            FontSize="14"
+                            Padding="0"
                             Command="{Binding NextPageCommand}"/>
                 </StackPanel>
                 

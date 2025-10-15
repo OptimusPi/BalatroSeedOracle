@@ -44,6 +44,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _showTestError = false;
 
+        // IsInitialized flag
+        private bool _isInitialized = false;
+
         // Filter collections
         public ObservableCollection<FilterItem> AvailableJokers { get; }
         public ObservableCollection<FilterItem> AvailableVouchers { get; }
@@ -66,7 +69,11 @@ namespace BalatroSeedOracle.ViewModels
             SelectedMustNot = new ObservableCollection<FilterItem>();
 
             // Load initial data
-            LoadAvailableItems();
+            if (!_isInitialized)
+            {
+                LoadAvailableItems();
+                _isInitialized = true;
+            }
         }
 
         #region Command Implementations

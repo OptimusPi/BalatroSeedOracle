@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
              x:DataType="vm:SearchModalViewModel">
 
@@ -25,29 +26,7 @@
 
             <!-- Results Grid wrapped in Balatro card for consistent inner panel -->
             <Border Grid.Row="1" Classes="balatro-card" Padding="12">
-                <DataGrid ItemsSource="{Binding SearchResults}"
-                          AutoGenerateColumns="False"
-                          CanUserSortColumns="True"
-                          CanUserResizeColumns="True"
-                          GridLinesVisibility="Horizontal"
-                          RowBackground="{StaticResource ContainerDark}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Seed"
-                                            Binding="{Binding Seed}"
-                                            Width="120"
-                                            FontFamily="{StaticResource BalatroFont}"
-                                            FontSize="14"/>
-                        <DataGridTextColumn Header="Score"
-                                            Binding="{Binding Score}"
-                                            Width="80"
-                                            FontFamily="{StaticResource BalatroFont}"
-                                            FontSize="14"/>
-                        <DataGridTextColumn Header="Details"
-                                            Binding="{Binding Details}"
-                                            Width="*"
-                                            FontSize="12"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <controls:SortableResultsGrid Name="ResultsGrid"/>
             </Border>
 
             <!-- Actions -->
@@ -56,11 +35,6 @@
                         HorizontalAlignment="Center"
                         Spacing="10"
                         Margin="0,15,0,0">
-                <Button Content="📋 EXPORT RESULTS"
-                        Command="{Binding ExportResultsCommand}"
-                        Classes="btn-blue"
-                        Height="40"
-                        MinWidth="180"/>
                 <Button Content="🗑️ CLEAR RESULTS"
                         Command="{Binding ClearResultsCommand}"
                         Classes="btn-red"

@@ -152,11 +152,14 @@ namespace BalatroSeedOracle.Controls
             var decrementButton = this.FindControl<Button>("DecrementButton");
             var incrementButton = this.FindControl<Button>("IncrementButton");
 
+            // In circular stake mode, arrows should always be enabled if we have multiple values
+            bool circularStake = IsCircularStakeSpinner();
+
             if (decrementButton != null)
-                decrementButton.IsEnabled = Value > Minimum;
+                decrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value > Minimum;
 
             if (incrementButton != null)
-                incrementButton.IsEnabled = Value < Maximum;
+                incrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value < Maximum;
         }
 
         private void InitializeComponent()
@@ -225,24 +228,55 @@ namespace BalatroSeedOracle.Controls
                     // Update button states
                     var decrementButton = this.FindControl<Button>("DecrementButton");
                     var incrementButton = this.FindControl<Button>("IncrementButton");
+                    bool circularStake = IsCircularStakeSpinner();
 
                     if (decrementButton != null)
-                        decrementButton.IsEnabled = newValue > Minimum;
+                        decrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue > Minimum;
 
                     if (incrementButton != null)
-                        incrementButton.IsEnabled = newValue < Maximum;
+                        incrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue < Maximum;
                 }
             }
         }
 
         private void OnDecrementClick(object? sender, RoutedEventArgs e)
         {
-            Value = Math.Max(Minimum, Value - Increment);
+            if (IsCircularStakeSpinner())
+            {
+                // Wrap to end when at minimum
+                if (Value > Minimum)
+                {
+                    Value = Value - Increment;
+                }
+                else
+                {
+                    Value = Maximum;
+                }
+            }
+            else
+            {
+                Value = Math.Max(Minimum, Value - Increment);
+            }
         }
 
         private void OnIncrementClick(object? sender, RoutedEventArgs e)
         {
-            Value = Math.Min(Maximum, Value + Increment);
+            if (IsCircularStakeSpinner())
+            {
+                // Wrap to start when at maximum
+                if (Value < Maximum)
+                {
+                    Value = Value + Increment;
+                }
+                else
+                {
+                    Value = Minimum;
+                }
+            }
+            else
+            {
+                Value = Math.Min(Maximum, Value + Increment);
+            }
         }
 
         /// <summary>
@@ -323,6 +357,20 @@ namespace BalatroSeedOracle.Controls
                 
                 IsEditing = false;
             }
+        }
+
+        // Helpers for detecting circular navigation mode
+        private bool IsCircularStakeSpinner()
+        {
+            var type = SpinnerType ?? string.Empty;
+            return string.Equals(type, "stake", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasMultipleValuesForCircular()
+        {
+            // Prefer DisplayValues length if provided; otherwise use range check
+            if (DisplayValues != null) return DisplayValues.Length > 1;
+            return Maximum > Minimum;
         }
     }
 }

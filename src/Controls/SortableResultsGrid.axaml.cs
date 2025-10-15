@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Specialized;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -11,6 +12,8 @@ using Avalonia.Interactivity;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.Input;
+using System.Windows.Input;
 
 namespace BalatroSeedOracle.Controls
 {
@@ -23,6 +26,13 @@ namespace BalatroSeedOracle.Controls
         private int _currentPage = 1;
         private int _itemsPerPage = 100;
         private int _totalPages = 1;
+        private ObservableCollection<SearchResult>? _itemsSource;
+
+        // ICommand properties exposed for XAML bindings
+        public ICommand CopySeedCommand { get; }
+        public ICommand SearchSimilarCommand { get; }
+        public ICommand AddToFavoritesCommand { get; }
+        public ICommand ExportSeedCommand { get; }
         
         public event EventHandler<SearchResult>? SeedCopied;
         public event EventHandler<SearchResult>? SearchSimilarRequested;
@@ -34,6 +44,39 @@ namespace BalatroSeedOracle.Controls
         {
             InitializeComponent();
             InitializeDataGrid();
+
+            // Initialize commands
+            CopySeedCommand = new RelayCommand<string>(seed =>
+            {
+                if (!string.IsNullOrWhiteSpace(seed))
+                {
+                    CopySeed(seed);
+                }
+            });
+
+            SearchSimilarCommand = new RelayCommand<SearchResult>(result =>
+            {
+                if (result != null)
+                {
+                    SearchSimilar(result);
+                }
+            });
+
+            AddToFavoritesCommand = new RelayCommand<SearchResult>(result =>
+            {
+                if (result != null)
+                {
+                    AddToFavorites(result);
+                }
+            });
+
+            ExportSeedCommand = new RelayCommand<SearchResult>(result =>
+            {
+                if (result != null)
+                {
+                    ExportSeed(result);
+                }
+            });
         }
         
         private void InitializeDataGrid()
@@ -43,6 +86,92 @@ namespace BalatroSeedOracle.Controls
             
             UpdateResultsCount();
             UpdatePageInfo();
+        }
+
+        /// <summary>
+        /// Bind an external collection of results. Updates grid as collection changes.
+        /// </summary>
+        public ObservableCollection<SearchResult>? ItemsSource
+        {
+            get => _itemsSource;
+            set
+            {
+                if (_itemsSource != null)
+                {
+                    _itemsSource.CollectionChanged -= OnItemsSourceChanged;
+                }
+
+                _itemsSource = value;
+
+                if (_itemsSource != null)
+                {
+                    _itemsSource.CollectionChanged += OnItemsSourceChanged;
+                    ResetFromItemsSource();
+                }
+                else
+                {
+                    ClearResults();
+                }
+            }
+        }
+
+        private void OnItemsSourceChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Reset:
+                    ResetFromItemsSource();
+                    break;
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems != null)
+                    {
+                        foreach (var item in e.NewItems)
+                        {
+                            if (item is SearchResult r)
+                            {
+                                _allResults.Add(r);
+                            }
+                        }
+                        ApplySorting();
+                        UpdateDisplay();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems != null)
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            if (item is SearchResult r)
+                            {
+                                var existing = _allResults.FirstOrDefault(x => x.Seed == r.Seed && x.TotalScore == r.TotalScore);
+                                if (existing != null)
+                                {
+                                    _allResults.Remove(existing);
+                                }
+                            }
+                        }
+                        UpdateDisplay();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    ResetFromItemsSource();
+                    break;
+            }
+        }
+
+        private void ResetFromItemsSource()
+        {
+            _allResults.Clear();
+            if (_itemsSource != null)
+            {
+                foreach (var r in _itemsSource)
+                {
+                    _allResults.Add(r);
+                }
+            }
+            ApplySorting();
+            UpdateDisplay();
         }
         
         /// <summary>
@@ -162,8 +291,18 @@ namespace BalatroSeedOracle.Controls
         
         private void UpdatePageInfo()
         {
-            var pageInfoText = this.FindControl<TextBlock>("PageInfoText")!;
-            pageInfoText.Text = $"Page {_currentPage} of {_totalPages}";
+            // Support either legacy TextBlock or new badge-style Button
+            var pageBadge = this.FindControl<Button>("PageInfoBadge");
+            if (pageBadge is not null)
+            {
+                pageBadge.Content = $"Page {_currentPage} of {_totalPages}";
+            }
+
+            var pageInfoText = this.FindControl<TextBlock>("PageInfoText");
+            if (pageInfoText is not null)
+            {
+                pageInfoText.Text = $"Page {_currentPage} of {_totalPages}";
+            }
         }
         
         private void UpdateStats()

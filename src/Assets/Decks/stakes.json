@@ -1,0 +1,19 @@
+{
+  "spriteSheet": "balatro-stake-chips.png",
+  "spriteWidth": 48,
+  "spriteHeight": 48,
+  "columns": 5,
+  "rows": 2,
+  "sprites": {
+    "stakes": {
+        "White Stake": { "x": 0, "y": 0 },
+        "Red Stake": { "x": 1, "y": 0 },
+        "Green Stake": { "x": 2, "y": 0 },
+        "Black Stake": { "x": 3, "y": 0 },
+        "Blue Stake": { "x": 4, "y": 0 },
+        "Purple Stake": { "x": 0, "y": 1 },
+        "Orange Stake": { "x": 1, "y": 1 },
+        "Gold Stake": { "x": 2, "y": 1 }
+    }
+  }
+}

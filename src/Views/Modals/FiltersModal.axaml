@@ -215,34 +215,12 @@
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
 
-        <!-- Native TabControl header strip for consistent tabs -->
-        <TabControl Grid.Row="0"
-                    Name="TabControl"
-                    Classes="balatro-tabs"
-                    ItemsSource="{Binding TabItems}"
-                    SelectedIndex="{Binding SelectedTabIndex}"
-                    HorizontalAlignment="Center"
-                    Height="38"
-                    Margin="0,0,0,2">
-            <TabControl.Styles>
-                <Style Selector="TabControl > TabItem">
-                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
-                </Style>
-            </TabControl.Styles>
-            <TabControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Header}"/>
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            <!-- Hide TabControl's own content by constraining height to tab strip -->
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <Grid Height="0"/>
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+        <!-- Balatro-style tab header control (buttons with triangle indicator) -->
+        <components:BalatroTabControl Grid.Row="0"
+                                      Name="TabHeader"
+                                      Classes="balatro-tabs"/>
 
-        <!-- Content Area with Tab Panels (Balatro-style Border to match SearchModal) -->
+        <!-- Main Content Area -->
         <Border Grid.Row="1"
                 Background="{StaticResource DarkModalGrey}"
                 BorderThickness="0"

@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Analysis;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels;
 
@@ -29,6 +30,9 @@ public partial class AnalyzerViewModel : ObservableObject
 
     [ObservableProperty]
     private MotelySeedAnalysis? _currentAnalysis;
+
+    [ObservableProperty]
+    private SeedAnalysisModel? _displayAnalysis;
 
     [ObservableProperty]
     private bool _isAnalyzing = false;
@@ -180,10 +184,13 @@ public partial class AnalyzerViewModel : ObservableObject
             });
 
             CurrentAnalysis = analysis;
+            // Update mapped display analysis for shared component
+            UpdateDisplayAnalysis();
         }
         catch (Exception ex)
         {
             CurrentAnalysis = new MotelySeedAnalysis($"Error: {ex.Message}", []);
+            UpdateDisplayAnalysis();
         }
         finally
         {
@@ -357,6 +364,75 @@ public partial class AnalyzerViewModel : ObservableObject
         OnPropertyChanged(nameof(ShopItems));
         OnPropertyChanged(nameof(BoosterPacks));
         OnPropertyChanged(nameof(AnteNavigationDisplay));
+
+        // Also update the shared display mapping
+        UpdateDisplayAnalysis();
+    }
+
+    private void UpdateDisplayAnalysis()
+    {
+        if (CurrentAnalysis == null)
+        {
+            DisplayAnalysis = null;
+            return;
+        }
+
+        var mapped = new SeedAnalysisModel
+        {
+            Seed = CurrentSeed,
+            Deck = SelectedDeck,
+            Stake = SelectedStake,
+            Error = CurrentAnalysis.Error
+        };
+
+        foreach (var ante in CurrentAnalysis.Antes)
+        {
+            var anteModel = new AnteAnalysisModel
+            {
+                AnteNumber = ante.Ante,
+                Boss = ante.Boss,
+                Voucher = ante.Voucher,
+                SmallBlindTag = new TagModel
+                {
+                    BlindType = "Small Blind",
+                    Tag = ante.SmallBlindTag
+                },
+                BigBlindTag = new TagModel
+                {
+                    BlindType = "Big Blind",
+                    Tag = ante.BigBlindTag
+                }
+            };
+
+            foreach (var item in ante.ShopQueue)
+            {
+                anteModel.ShopItems.Add(new ShopItemModel
+                {
+                    TypeCategory = item.TypeCategory,
+                    ItemValue = item.Value,
+                    Edition = item.Edition
+                });
+            }
+
+            foreach (var pack in ante.Packs)
+            {
+                var packModel = new BoosterPackModel
+                {
+                    PackType = pack.Type.GetPackType()
+                };
+
+                foreach (var packItem in pack.Items)
+                {
+                    packModel.Items.Add(packItem.ToString());
+                }
+
+                anteModel.BoosterPacks.Add(packModel);
+            }
+
+            mapped.Antes.Add(anteModel);
+        }
+
+        DisplayAnalysis = mapped;
     }
 }
 

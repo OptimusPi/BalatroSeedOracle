@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
@@ -29,6 +30,7 @@ public partial class MainWindow : Window
         {
             buyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
+
 
         // Get reference to main menu for cleanup
         _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
@@ -134,4 +136,6 @@ public partial class MainWindow : Window
             DebugLogger.LogError($"Error opening Balatro website: {ex.Message}");
         }
     }
+
+    
 }

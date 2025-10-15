@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
@@ -252,14 +253,5 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// Represents a filter in the list
     /// </summary>
-    public partial class FilterListItem : ObservableObject
-    {
-        public int Number { get; set; }
-        public string Name { get; set; } = "";
-        public string Author { get; set; } = "";
-        public string FilePath { get; set; } = "";
-
-        [ObservableProperty]
-        private bool _isSelected = false;
-    }
+    // Moved to Models/FilterListItem.cs
 }

@@ -204,6 +204,8 @@ namespace BalatroSeedOracle.ViewModels
             _searchId = searchId;
             _configPath = configPath;
             FilterName = filterName;
+            // Reflect filter name in widget title for BaseWidget minimized state
+            WidgetTitle = filterName;
 
             // Connect to the specific search instance
             if (_searchManager != null && !string.IsNullOrEmpty(_searchId))

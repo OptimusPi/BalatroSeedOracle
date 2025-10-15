@@ -1,119 +1,72 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:comp="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Views.SearchDesktopIcon"
              x:DataType="vm:SearchDesktopIconViewModel"
              x:CompileBindings="True">
-    
-    <UserControl.Styles>
-        <Style Selector="Border.desktop-icon-container">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Width" Value="128"/>
-            <Setter Property="Height" Value="128"/>
-            <Setter Property="Padding" Value="8,8,15,8"/>
-        </Style>
-        
-        <Style Selector="Button.desktop-icon">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-        </Style>
-        
-        <Style Selector="Button.desktop-icon:pointerover Border.icon-border">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
-        </Style>
-        
-        <!-- Notification badge styles are now in global styles -->
-        
-        <Style Selector="ProgressBar.search-progress">
-            <Setter Property="Height" Value="6"/>
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="Foreground" Value="{StaticResource Green}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="3"/>
-        </Style>
-    </UserControl.Styles>
-    
-    <Border Classes="desktop-icon-container">
-        <StackPanel Spacing="4">
-            <!-- Icon Button -->
-            <Grid>
-                <Button Classes="desktop-icon"
-                        Command="{Binding ViewResultsCommand}"
-                        ContextRequested="OnContextRequested">
-                    <Grid Width="128" Height="128">
-                        <!-- Icon background -->
-                        <Border Name="IconBorder"
-                                Classes="icon-border"
-                                Background="{StaticResource Grey}"
-                                CornerRadius="12"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="2">
-                            <Grid>
-                                <!-- Search state icon (updated dynamically) -->
-                                <Image Name="StateIcon"
-                                       Source="{Binding StateIcon}"
-                                       IsVisible="{Binding ShowStateIcon}"
-                                       Width="64"
-                                       Height="64"
-                                       Stretch="Uniform"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
 
-                                <!-- Filter preview (fanned cards) -->
-                                <ContentPresenter Name="FilterPreviewContainer"
-                                                  Content="{Binding FilterPreview}"
-                                                  IsVisible="{Binding !ShowStateIcon}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </Button>
-
-                <!-- Notification badge overlay using Canvas -->
-                <Canvas ZIndex="100">
-                    <Border Name="NotificationBadge"
-                            Classes="notification-badge"
-                            Canvas.Right="-8"
-                            Canvas.Top="-8"
-                            IsVisible="{Binding ShowNotificationBadge}">
-                        <TextBlock Name="BadgeText"
-                                   Text="{Binding NotificationText}" />
-                    </Border>
-                </Canvas>
-            </Grid>
-
-            <!-- Filter Name -->
-            <TextBlock Name="FilterNameText"
-                       Text="{Binding FilterName}"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="12"
-                       Foreground="{StaticResource White}"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap"
-                       MaxWidth="100"/>
+    <!-- Use shared BaseWidget for shortcuts -->
+    <comp:BaseWidget ContextRequested="OnContextRequested">
+        <!-- Expanded content shown when widget is opened -->
+        <StackPanel Spacing="10">
+            <!-- Header info -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding FilterName}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource White}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
 
             <!-- Progress Bar with Percentage -->
             <Grid>
-                <ProgressBar Name="SearchProgress"
-                             Classes="search-progress"
-                             Value="{Binding SearchProgress}"
+                <ProgressBar Value="{Binding SearchProgress}"
                              Maximum="100"
-                             IsVisible="True"/>
-                <TextBlock Name="ProgressText"
-                           Text="{Binding ProgressText}"
+                             Height="6"
+                             Background="{StaticResource DarkBackground}"
+                             Foreground="{StaticResource Green}"
+                             BorderThickness="0"
+                             CornerRadius="3"/>
+                <TextBlock Text="{Binding ProgressText}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="10"
+                           FontSize="11"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Margin="0,-1,0,0"/>
             </Grid>
+
+            <!-- Actions -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Open Search"
+                        Command="{Binding ViewResultsCommand}"/>
+                <Button Content="Pause"
+                        Command="{Binding PauseSearchCommand}"
+                        IsEnabled="{Binding IsSearching}"/>
+                <Button Content="Resume"
+                        Command="{Binding ResumeSearchCommand}"
+                        IsEnabled="{Binding !IsSearching}"/>
+                <Button Content="Stop"
+                        Command="{Binding StopSearchCommand}"/>
+                <Button Content="Remove Icon"
+                        Command="{Binding DeleteIconCommand}"/>
+            </StackPanel>
+
+            <!-- Preview: state icon or filter preview -->
+            <Border Background="{StaticResource Grey}" CornerRadius="8" Padding="10">
+                <Grid>
+                    <Image Source="{Binding StateIcon}"
+                           IsVisible="{Binding ShowStateIcon}"
+                           Width="64" Height="64" Stretch="Uniform"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ContentPresenter Content="{Binding FilterPreview}"
+                                      IsVisible="{Binding !ShowStateIcon}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
         </StackPanel>
-    </Border>
+    </comp:BaseWidget>
 </UserControl>

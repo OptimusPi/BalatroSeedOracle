@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Components;
 
 public partial class DeckAndStakeSelector : UserControl
 {
-    private DeckSpinner? _deckSpinner;
-    private SpinnerControl? _stakeSpinner;
     private DeckAndStakeSelectorViewModel? _viewModel;
 
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
@@ -23,7 +23,7 @@ public partial class DeckAndStakeSelector : UserControl
 
     private void InitializeViewModel()
     {
-        _viewModel = new DeckAndStakeSelectorViewModel();
+        _viewModel = new DeckAndStakeSelectorViewModel(ServiceHelper.GetRequiredService<SpriteService>());
         DataContext = _viewModel;
 
         // Forward ViewModel events to maintain API compatibility
@@ -35,8 +35,6 @@ public partial class DeckAndStakeSelector : UserControl
     {
         base.OnLoaded(e);
 
-        _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
-        _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
         // Ensure sane initial indices
         if (_viewModel != null)
         {

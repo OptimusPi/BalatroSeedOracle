@@ -11,15 +11,14 @@
     <!-- Balatro Tab Item - FLAT RED with bouncing triangle when selected -->
     <Style Selector="TabControl.balatro-tabs > TabItem">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-        <Setter Property="FontSize" Value="17"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Background" Value="{StaticResource Red}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="3,3,3,0"/>
         <Setter Property="CornerRadius" Value="12,12,0,0"/>
         <Setter Property="Margin" Value="4,0"/>
-        <Setter Property="MinWidth" Value="120"/>
+        <Setter Property="MinWidth" Value="144"/>
         <Setter Property="Height" Value="38"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -75,8 +74,8 @@
     <!-- Selected tab - flat red with visible triangle -->
     <Style Selector="TabControl.balatro-tabs > TabItem:selected">
         <Setter Property="Background" Value="{StaticResource Red}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="ZIndex" Value="10"/>
     </Style>
     
@@ -89,22 +88,22 @@
         </Setter>
     </Style>
     
-    <!-- Hover state - slightly brighter red -->
+    <!-- Hover state - Balatro orange like global tab-button -->
     <Style Selector="TabControl.balatro-tabs > TabItem:pointerover:not(:selected)">
-        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Background" Value="{StaticResource Orange}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
     </Style>
     
-    <!-- Floating arrow animation on selection -->
+    <!-- Floating arrow animation on selection (slightly larger bounce to match triangle vibe) -->
     <Style Selector="TabControl.balatro-tabs > TabItem:selected /template/ Path#PART_Arrow">
         <Style.Animations>
-            <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate">
+            <Animation Duration="0:0:0.8" IterationCount="Infinite" PlaybackDirection="Alternate">
                 <KeyFrame Cue="0%">
                     <Setter Property="Margin" Value="0,-15,0,0"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
-                    <Setter Property="Margin" Value="0,-18,0,0"/>
+                    <Setter Property="Margin" Value="0,-23,0,0"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>

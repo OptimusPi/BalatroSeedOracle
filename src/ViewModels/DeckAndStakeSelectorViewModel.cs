@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
+using Avalonia.Media.Imaging;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -12,6 +14,8 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public partial class DeckAndStakeSelectorViewModel : ObservableObject
     {
+        private readonly SpriteService _spriteService;
+
         [ObservableProperty]
         private int _deckIndex;
 
@@ -21,8 +25,15 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string[] _stakeDisplayValues;
 
-        public DeckAndStakeSelectorViewModel()
+        [ObservableProperty]
+        private Bitmap? _deckImage;
+
+        [ObservableProperty]
+        private Bitmap? _stakeImage;
+
+        public DeckAndStakeSelectorViewModel(SpriteService spriteService)
         {
+            _spriteService = spriteService;
             _stakeDisplayValues = new[]
             {
                 "White Stake",
@@ -115,6 +126,7 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(SelectedDeckName));
             OnPropertyChanged(nameof(SelectedDeckDisplayName));
             OnPropertyChanged(nameof(SelectedDeckDescription));
+            UpdateDeckImage();
             RaiseSelectionChanged();
         }
 
@@ -123,6 +135,7 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(SelectedStakeName));
             OnPropertyChanged(nameof(SelectedStakeDisplayName));
             OnPropertyChanged(nameof(SelectedStakeDescription));
+            UpdateStakeImage();
             RaiseSelectionChanged();
         }
 
@@ -177,6 +190,16 @@ namespace BalatroSeedOracle.ViewModels
         private void RaiseSelectionChanged()
         {
             SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
+        }
+
+        private void UpdateDeckImage()
+        {
+            DeckImage = (Bitmap?)_spriteService.GetDeckImage(SelectedDeckName);
+        }
+
+        private void UpdateStakeImage()
+        {
+            StakeImage = (Bitmap?)_spriteService.GetStakeImage(SelectedStakeName);
         }
 
         private string GetDeckName(int index)

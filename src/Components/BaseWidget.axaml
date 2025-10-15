@@ -22,6 +22,15 @@
                     <TextBlock Text="{Binding WidgetTitle}" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
+
+            <!-- Notification badge overlay -->
+            <Canvas ZIndex="100" IsVisible="{Binding ShowNotificationBadge}">
+                <Border Classes="notification-badge"
+                        Canvas.Right="-8"
+                        Canvas.Top="-8">
+                    <TextBlock Text="{Binding NotificationText}" />
+                </Border>
+            </Canvas>
         </Grid>
 
         <!-- Expanded State -->

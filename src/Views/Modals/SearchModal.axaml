@@ -26,10 +26,12 @@
                 CornerRadius="0,0,12,12"
                 Padding="20"
                 Margin="0,8,0,0">
-            <ScrollViewer>
-                <!-- Show the selected tab’s content -->
-                <ContentPresenter Content="{Binding CurrentTabContent}"/>
-            </ScrollViewer>
+            <!-- Show the selected tab’s content directly.
+                 Removing the outer ScrollViewer prevents the Results DataGrid
+                 from measuring to infinite height and pushing the footer far below. -->
+            <ContentPresenter Content="{Binding CurrentTabContent}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"/>
         </Border>
     </Grid>
 </UserControl>

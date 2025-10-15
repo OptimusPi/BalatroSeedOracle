@@ -25,6 +25,10 @@ namespace BalatroSeedOracle.Models
         public int AnteNumber { get; set; }
         public string AnteTitle => $"ANTE {AnteNumber}";
 
+        public MotelyBossBlind Boss { get; set; }
+        public bool HasBoss => Boss != 0;
+        public string BossName => Boss.ToString();
+
         public MotelyVoucher Voucher { get; set; }
         public bool HasVoucher => Voucher != 0;
         public string VoucherName => Voucher.ToString();

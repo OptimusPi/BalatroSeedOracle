@@ -153,9 +153,6 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (mainMenu != null)
             {
-                // Hide current modal
-                mainMenu.HideModalContent();
-
                 // Show word lists modal using ModalHelper extension
                 mainMenu.ShowWordListsModal();
             }
@@ -172,9 +169,6 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (mainMenu != null)
             {
-                // Hide current modal
-                mainMenu.HideModalContent();
-
                 // Show credits modal using ModalHelper extension
                 mainMenu.ShowCreditsModal();
             }

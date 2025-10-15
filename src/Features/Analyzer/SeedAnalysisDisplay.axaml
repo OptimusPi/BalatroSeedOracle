@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Features.Analyzer.SeedAnalysisDisplay"
+             x:DataType="models:SeedAnalysisModel">
+
+    <Grid RowDefinitions="Auto,Auto, *">
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Seed, StringFormat='Seed: {0}'}"
+                   Classes="balatro-modal-title"
+                   Margin="0,0,0,6"/>
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Deck, StringFormat='Deck: {0} | Stake: {Binding Stake}'}"
+                   Classes="info-display"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,12"/>
+
+        <!-- Ante Results -->
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding Antes}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:AnteAnalysisModel">
+                        <Border Classes="balatro-card" Margin="6">
+                            <StackPanel Spacing="8">
+                                <!-- Ante Title -->
+                                <TextBlock Text="{Binding AnteTitle}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource TextLight}"
+                                           HorizontalAlignment="Center"/>
+
+                                <!-- Boss & Voucher Row -->
+                                <Grid ColumnDefinitions="*,*" Margin="0,6">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="BOSS"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextInactive}"/>
+                                        <TextBlock Text="{Binding BossName}"
+                                                   Foreground="{StaticResource TextLight}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="VOUCHER"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextInactive}"/>
+                                        <TextBlock Text="{Binding VoucherName}"
+                                                   Foreground="{StaticResource TextLight}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Tags Row -->
+                                <Grid ColumnDefinitions="*,*" Margin="0,6">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="SMALL TAG"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextInactive}"/>
+                                        <TextBlock Text="{Binding SmallBlindTag.TagName}"
+                                                   Foreground="{StaticResource TextLight}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="BIG TAG"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextInactive}"/>
+                                        <TextBlock Text="{Binding BigBlindTag.TagName}"
+                                                   Foreground="{StaticResource TextLight}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Shop Queue -->
+                                <StackPanel Spacing="4" Margin="0,6">
+                                    <TextBlock Text="SHOP QUEUE"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <ItemsControl ItemsSource="{Binding ShopItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:ShopItemModel">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding ItemName}"
+                                                               Foreground="{StaticResource TextLight}"/>
+                                                    <TextBlock Text="{Binding EditionName}"
+                                                               Foreground="{Binding EditionColor}"
+                                                               IsVisible="{Binding HasEdition}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Booster Packs -->
+                                <StackPanel Spacing="4" Margin="0,6">
+                                    <TextBlock Text="BOOSTER PACKS"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <ItemsControl ItemsSource="{Binding BoosterPacks}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:BoosterPackModel">
+                                                <Border Classes="badge-container" Margin="0,0,8,8">
+                                                    <StackPanel Spacing="6">
+                                                        <TextBlock Text="{Binding PackName}"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{StaticResource TextLight}"/>
+                                                        <TextBlock Text="{Binding ItemsText}"
+                                                                   Foreground="{StaticResource TextLight}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

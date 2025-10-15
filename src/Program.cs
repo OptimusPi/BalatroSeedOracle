@@ -16,6 +16,9 @@ public class Program
         // Initialize Velopack
         VelopackApp.Build().Run();
             
+        // Enable debug logging
+        Helpers.DebugLogger.SetDebugEnabled(true);
+
         // Start Avalonia
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 

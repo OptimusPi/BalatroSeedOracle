@@ -93,8 +93,6 @@ namespace BalatroSeedOracle.Views.Modals
         private string _currentActiveTab = "SoulJokersTab";
         private TextBox? _configNameBox;
         private TextBox? _configDescriptionBox;
-        private int _currentTabIndex = 0;
-        private Polygon? _tabTriangle;
     private bool _isSwitchingTab = false; // reentrancy guard for tab switching
         private TextBox? _jsonTextBox;
         private object? _originalItemPaletteContent;
@@ -182,7 +180,8 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBox? _filterNameInput;
         private TextBox? _filterPathInput;
         private TextBox? _testSeedsInput;
-        private TabControl? _tabControl;
+        private BalatroTabControl? _tabHeader;
+        private bool _suppressHeaderSync = false;
 
         public FiltersModalContent()
         {
@@ -248,7 +247,8 @@ namespace BalatroSeedOracle.Views.Modals
             _clearNeedsButton = this.FindControl<Button>("ClearNeedsButton");
             _clearWantsButton = this.FindControl<Button>("ClearWantsButton");
             _clearMustNotButton = this.FindControl<Button>("ClearMustNotButton");
-            _tabControl = this.FindControl<TabControl>("TabControl");
+            // New Balatro-style tab header control
+            _tabHeader = this.FindControl<BalatroTabControl>("TabHeader");
             _saveFilterNameInput = this.FindControl<TextBox>("SaveFilterNameInput");
             _saveFilterButton = this.FindControl<Button>("SaveFilterButton");
             _loadSavePanel = this.FindControl<Grid>("LoadSavePanel");
@@ -326,17 +326,66 @@ namespace BalatroSeedOracle.Views.Modals
             // This eliminates 173 O(n) visual tree walks, providing 50%+ performance improvement
             CacheControls();
 
-            // Hook native TabControl selection changes to ViewModel visibility
-            if (_tabControl != null)
+            // Wire up Balatro-style tab header
+            if (_tabHeader != null)
             {
-                _tabControl.SelectionChanged += (s, e) =>
+                // Initialize tab titles from ViewModel.TabItems
+                var titles = ViewModel.TabItems.Select(t => t.Header).ToArray();
+                _tabHeader.SetTabs(titles);
+
+                // User clicks tab button → update ViewModel and visibility
+                _tabHeader.TabChanged += (s, tabIndex) =>
                 {
-                    ViewModel.UpdateTabVisibility(ViewModel.SelectedTabIndex);
+                    _suppressHeaderSync = true;
+                    ViewModel.SelectedTabIndex = tabIndex;
+                    ViewModel.UpdateTabVisibility(tabIndex);
+                    InitializeTab(tabIndex);
+                    _suppressHeaderSync = false;
                 };
+
+                // ViewModel changes tab programmatically → reflect in header
+                ViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (!_suppressHeaderSync && e.PropertyName == nameof(ViewModel.SelectedTabIndex))
+                    {
+                        _tabHeader.SwitchToTab(ViewModel.SelectedTabIndex);
+                    }
+                };
+
+                // Reflect initial state
+                _tabHeader.SwitchToTab(ViewModel.SelectedTabIndex);
+                InitializeTab(ViewModel.SelectedTabIndex);
             }
 
-            // Ensure initial visibility aligns with selected tab
+            // PROPER MVVM: React to SelectedTabIndex changes in ViewModel once
+            // We avoid double-calling UpdateTabVisibility and heavy init logic
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ViewModel.SelectedTabIndex))
+                {
+                    if (_isSwitchingTab) return;
+                    _isSwitchingTab = true;
+                    try
+                    {
+                        // ViewModel handles visibility via partial OnSelectedTabIndexChanged
+                        // We only run tab-specific initialization here
+                        InitializeTab(ViewModel.SelectedTabIndex);
+                        // Reflect tab change in Balatro header if present
+                        if (!_suppressHeaderSync)
+                        {
+                            _tabHeader?.SwitchToTab(ViewModel.SelectedTabIndex);
+                        }
+                    }
+                    finally
+                    {
+                        _isSwitchingTab = false;
+                    }
+                }
+            };
+
+            // Ensure initial visibility aligns with selected tab and perform init once
             ViewModel.UpdateTabVisibility(ViewModel.SelectedTabIndex);
+            InitializeTab(ViewModel.SelectedTabIndex);
 
             // Sync TextBox changes to ViewModel properties (controls already cached)
             if (_configNameBox != null)
@@ -373,8 +422,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _clearMustNotButton.Click += (s, e) => ClearMustNot();
             }
 
-            // Keep track of current tab for triangle animation
-            _currentTabIndex = 0;
+            // Legacy triangle animation removed; no index tracking required
 
             // Setup JSON Editor with autocomplete
             SetupJsonEditorAutocomplete();
@@ -844,6 +892,13 @@ namespace BalatroSeedOracle.Views.Modals
                 // Enable Test and Save when a config is loaded or user has selections
                 vm.TabItems[3].IsEnabled = configLoaded || hasSelections; // Test
                 vm.TabItems[4].IsEnabled = configLoaded || hasSelections; // Save
+
+                // Reflect enable/disable in Balatro header UI
+                _tabHeader?.SetTabEnabled(0, vm.TabItems[0].IsEnabled);
+                _tabHeader?.SetTabEnabled(1, vm.TabItems[1].IsEnabled);
+                _tabHeader?.SetTabEnabled(2, vm.TabItems[2].IsEnabled);
+                _tabHeader?.SetTabEnabled(3, vm.TabItems[3].IsEnabled);
+                _tabHeader?.SetTabEnabled(4, vm.TabItems[4].IsEnabled);
             }
 
             // Do not manually toggle panel visibility here; SelectedTabIndex controls it
@@ -1951,6 +2006,16 @@ namespace BalatroSeedOracle.Views.Modals
                 jsonEditor.TextArea.TextEntered += OnJsonTextEntered;
                 jsonEditor.TextArea.KeyDown += OnJsonKeyDown;
 
+                // Ensure syntax highlighting is installed for this instance
+                try
+                {
+                    SetupJsonSyntaxHighlighting(jsonEditor);
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("FiltersModal", $"Error setting JSON highlighting on JsonEditor: {ex.Message}");
+                }
+
                 DebugLogger.Log("FiltersModal", "JSON editor autocomplete configured");
             }
         }
@@ -1958,16 +2023,83 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnJsonKeyDown(object? sender, KeyEventArgs e)
         {
             // Ctrl+Space triggers autocomplete
-            if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            if (e.Key == Key.Space && (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
             {
                 ShowJsonCompletions();
+                e.Handled = true;
+            }
+
+            // Ctrl+Shift+F formats JSON
+            if (e.Key == Key.F && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                try
+                {
+                    var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+                    if (jsonEditor != null)
+                    {
+                        var jsonDoc = JsonDocument.Parse(jsonEditor.Text);
+                        var formatted = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+                        jsonEditor.Text = formatted;
+                        UpdateJsonStats();
+                        UpdateStatus("✨ JSON formatted successfully!", isError: false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UpdateStatus($"❌ Format error: {ex.Message}", isError: true);
+                }
+                e.Handled = true;
+            }
+
+            // Ctrl+Shift+V validates JSON
+            if (e.Key == Key.V && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                ValidateJsonSyntax();
                 e.Handled = true;
             }
         }
 
         private void OnJsonTextEntering(object? sender, TextInputEventArgs e)
         {
-            // Can be used to handle text before it's entered
+            // Auto-pair quotes, braces, and brackets before text inserts
+            var jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            if (jsonEditor?.TextArea == null) return;
+
+            var caretOffset = jsonEditor.TextArea.Caret.Offset;
+
+            try
+            {
+                switch (e.Text)
+                {
+                    case "\"": // Quote pairing
+                        e.Handled = true;
+                        jsonEditor.Document.Insert(caretOffset, "\"\"");
+                        jsonEditor.TextArea.Caret.Offset = caretOffset + 1;
+                        ShowJsonCompletions();
+                        break;
+                    case "{":
+                        e.Handled = true;
+                        jsonEditor.Document.Insert(caretOffset, "{}");
+                        jsonEditor.TextArea.Caret.Offset = caretOffset + 1;
+                        break;
+                    case "[":
+                        e.Handled = true;
+                        jsonEditor.Document.Insert(caretOffset, "[]");
+                        jsonEditor.TextArea.Caret.Offset = caretOffset + 1;
+                        break;
+                    case ":":
+                        // Insert colon and a space for readability
+                        e.Handled = true;
+                        jsonEditor.Document.Insert(caretOffset, ": ");
+                        jsonEditor.TextArea.Caret.Offset = caretOffset + 2;
+                        ShowJsonCompletions();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModal", $"Auto-pairing error: {ex.Message}");
+            }
         }
 
         private void OnJsonTextEntered(object? sender, TextInputEventArgs e)
@@ -3061,6 +3193,7 @@ namespace BalatroSeedOracle.Views.Modals
                         () =>
                         {
                             ValidateJsonSyntaxForAvaloniaEdit(jsonEditor);
+                            UpdateJsonStats();
                         },
                         DispatcherPriority.Background
                     );
@@ -4648,160 +4781,36 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void SwitchToTab(int tabIndex)
         {
-            // Delegate to the same logic used for user-driven tab changes
-            // Ensures consistent visibility updates and any tab-specific initialization
-            OnBalatroTabChanged(this, tabIndex);
+            // Single source of truth: update ViewModel.SelectedTabIndex
+            // Visibility changes are handled by ViewModel; init handled by PropertyChanged hook
+            ViewModel.SelectedTabIndex = tabIndex;
         }
 
         /// <summary>
         /// NEW: Handles BalatroTabControl tab changes (replaces OnTabClick)
         /// This is the proper MVVM approach - tab control tells us when user switches tabs
         /// </summary>
-        private void OnBalatroTabChanged(object? sender, int tabIndex)
+        private void InitializeTab(int tabIndex)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"OnBalatroTabChanged called with tabIndex={tabIndex}");
+            BalatroSeedOracle.Helpers.DebugLogger.Log("FiltersModal", $"InitializeTab called with tabIndex={tabIndex}");
 
-            // Prevent re-entrant tab logic if user double-clicks or triggers via keyboard quickly
-            if (_isSwitchingTab)
+            // Perform tab-specific initialization/cleanup
+            switch (tabIndex)
             {
-                return;
-            }
-            _isSwitchingTab = true;
-            try
-            {
-                // Sync selection and update visibility via ViewModel (MVVM)
-                ViewModel.SelectedTabIndex = tabIndex;
-                ViewModel.UpdateTabVisibility(tabIndex);
-
-                // Perform tab-specific initialization/cleanup
-                switch (tabIndex)
-                {
-                    case 0: // LoadSave tab
-                        // No manual visibility toggles; bindings control panel visibility
-                        break;
-
-                    case 1: // Visual tab
-                        // Rely on bindings; perform any layout/data prep only
-                        RestoreDragDropModeLayout();
-                        LoadAllCategories();
-                        UpdateDropZoneVisibility();
-                        // DON'T refresh drop zones - it clears everything! Drop zones already show correct items.
-                        // RefreshDropZonesFromConfig();  // DISABLED - This was clearing user's filter items!
-                        break;
-
-                    case 2: // JSON tab
-                        EnterEditJsonMode();
-                        UpdateJsonEditor();
-                        // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
-                        // Only reload from selections if we're building a filter from scratch in Visual mode
-                        if (ViewModel.LoadedConfig == null)
-                        {
-                            ReloadJsonFromCurrentConfig();
-                        }
-                        break;
-
-                    case 3: // TEST tab
-                        UpdateJsonStats(); // Update stats display
-                        break;
-
-                    case 4: // Save/Finish tab
-                        UpdateSaveFilterPanel();
-                        break;
-                }
-
-                _currentTabIndex = tabIndex;
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Exception during BalatroTab switch: {ex}");
-            }
-            finally
-            {
-                _isSwitchingTab = false;
-            }
-        }
-
-        /// <summary>
-        /// DEPRECATED: Old manual tab click handler - replaced by OnBalatroTabChanged
-        /// Kept for backwards compatibility with any remaining direct button references
-        /// </summary>
-        private void OnTabClick(object? sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button)
-            {
-                return;
-            }
-
-            // Prevent re-entrant tab logic if user double-clicks or triggers via keyboard quickly
-            if (_isSwitchingTab)
-            {
-                return;
-            }
-            _isSwitchingTab = true;
-            try
-            {
-                // Wrap full logic in try/catch so any transient null access doesn't crash app
-                SafeHandleTabSwitch(button);
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("FiltersModal", $"Exception during tab switch: {ex}");
-            }
-            finally
-            {
-                _isSwitchingTab = false;
-            }
-        }
-
-        private void SafeHandleTabSwitch(Button button)
-        {
-            // Ensure button has focus (fixes first-click issue)
-            button.Focus();
-
-            // Get all tab buttons
-            var visualTab = this.FindControl<Button>("VisualTab");
-            var jsonTab = this.FindControl<Button>("JsonTab");
-            var testTab = this.FindControl<Button>("TestTab");
-            var loadSaveTab = this.FindControl<Button>("LoadSaveTab");
-            var saveFilterTab = this.FindControl<Button>("SaveFilterTab");
-
-            // Remove active class from all tabs
-            visualTab?.Classes.Remove("active");
-            jsonTab?.Classes.Remove("active");
-            testTab?.Classes.Remove("active");
-            loadSaveTab?.Classes.Remove("active");
-            saveFilterTab?.Classes.Remove("active");
-
-            // Get triangle for animation
-            _tabTriangle = this.FindControl<Polygon>("TabTriangle");
-
-            // Handle tab switching using ViewModel (MVVM pattern)
-            switch (button.Name)
-            {
-                case "LoadSaveTab":
-                    button.Classes.Add("active");
-                    ViewModel.SelectedTabIndex = 0;
-                    ViewModel.UpdateTabVisibility(0);
-                    AnimateTriangleToTab(0);
+                case 0: // LoadSave tab
+                    // No manual visibility toggles; bindings control panel visibility
                     break;
 
-                case "VisualTab":
-                    button.Classes.Add("active");
-                    ViewModel.SelectedTabIndex = 1;
-                    ViewModel.UpdateTabVisibility(1);
-                    AnimateTriangleToTab(1);
+                case 1: // Visual tab
+                    // Rely on bindings; perform any layout/data prep only
                     RestoreDragDropModeLayout();
                     LoadAllCategories();
                     UpdateDropZoneVisibility();
-                    // RELOAD from current config to refresh drop zones
-                    RefreshDropZonesFromConfig();
+                    // DON'T refresh drop zones - it clears everything! Drop zones already show correct items.
+                    // RefreshDropZonesFromConfig();  // DISABLED - This was clearing user's filter items!
                     break;
 
-                case "JsonTab":
-                    button.Classes.Add("active");
-                    ViewModel.SelectedTabIndex = 2;
-                    ViewModel.UpdateTabVisibility(2);
-                    AnimateTriangleToTab(2);
+                case 2: // JSON tab
                     EnterEditJsonMode();
                     UpdateJsonEditor();
                     // DON'T reload from selections if we have a loaded filter - it would overwrite the JSON!
@@ -4812,42 +4821,18 @@ namespace BalatroSeedOracle.Views.Modals
                     }
                     break;
 
-                case "TestTab":
-                    button.Classes.Add("active");
-                    ViewModel.SelectedTabIndex = 3;
-                    ViewModel.UpdateTabVisibility(3);
-                    AnimateTriangleToTab(3);
+                case 3: // TEST tab
                     UpdateJsonStats(); // Update stats display
                     break;
 
-                case "SaveFilterTab":
-                    button.Classes.Add("active");
-                    ViewModel.SelectedTabIndex = 4;
-                    ViewModel.UpdateTabVisibility(4);
-                    AnimateTriangleToTab(4);
+                case 4: // Save/Finish tab
                     UpdateSaveFilterPanel();
                     break;
             }
+
+            // Legacy triangle animation removed; no index tracking required
         }
 
-        private void AnimateTriangleToTab(int tabIndex)
-        {
-            if (_tabTriangle == null)
-            {
-                return;
-            }
-
-            _currentTabIndex = tabIndex;
-            // Map tab index to actual column position
-            // Tab order: LoadSaveTab=0, VisualTab=1, JsonTab=2
-            var targetColumn = tabIndex;
-
-            // Move triangle to the correct column
-            if (_tabTriangle?.Parent is Grid triangleContainer)
-            {
-                Grid.SetColumn(triangleContainer, targetColumn);
-            }
-        }
 
         private void OnClearClick(object? sender, RoutedEventArgs e)
         {
@@ -6807,37 +6792,16 @@ namespace BalatroSeedOracle.Views.Modals
         // Build config using existing UI state and delegate conversion to service
         private Motely.Filters.MotelyJsonConfig BuildOuijaConfigFromSelections()
         {
-            // Get deck/stake preferences from the selector
+            // Get deck/stake preferences from the selector using public API
             string deckName = "Red";   // Default
             string stakeName = "White"; // Default
 
             var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("PreferredDeckStakeSelector");
             if (deckStakeSelector != null)
             {
-                // Get the deck spinner control
-                var deckSpinner = deckStakeSelector.FindControl<DeckSpinner>("DeckSpinnerControl");
-                if (deckSpinner != null)
-                {
-                    int deckIndex = deckSpinner.SelectedDeckIndex;
-                    string[] deckNames = { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                                           "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                    if (deckIndex >= 0 && deckIndex < deckNames.Length)
-                    {
-                        deckName = deckNames[deckIndex];
-                    }
-                }
-
-                // Get the stake spinner control
-                var stakeSpinner = deckStakeSelector.FindControl<SpinnerControl>("StakeSpinner");
-                if (stakeSpinner != null)
-                {
-                    int stakeIndex = (int)stakeSpinner.Value;
-                    string[] stakeNames = { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
-                    if (stakeIndex >= 0 && stakeIndex < stakeNames.Length)
-                    {
-                        stakeName = stakeNames[stakeIndex];
-                    }
-                }
+                // Use the public API properties instead of accessing internal controls
+                deckName = deckStakeSelector.SelectedDeckName;
+                stakeName = deckStakeSelector.SelectedStakeName;
             }
 
             var config = new Motely.Filters.MotelyJsonConfig
@@ -7433,33 +7397,13 @@ namespace BalatroSeedOracle.Views.Modals
                 configDescriptionBox.Text = config.Description;
             }
 
-            // Load deck/stake preferences
+            // Load deck/stake preferences using public API
             var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("PreferredDeckStakeSelector");
             if (deckStakeSelector != null && !string.IsNullOrEmpty(config.Deck) && !string.IsNullOrEmpty(config.Stake))
             {
-                // Map deck name to index
-                string[] deckNames = { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                                       "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                int deckIndex = Array.IndexOf(deckNames, config.Deck);
-                if (deckIndex == -1) deckIndex = 0; // Default to Red
-
-                // Map stake name to index
-                string[] stakeNames = { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
-                int stakeIndex = Array.IndexOf(stakeNames, config.Stake);
-                if (stakeIndex == -1) stakeIndex = 0; // Default to White
-
-                // Set the values in the spinners
-                var deckSpinner = deckStakeSelector.FindControl<DeckSpinner>("DeckSpinnerControl");
-                if (deckSpinner != null)
-                {
-                    deckSpinner.SelectedDeckIndex = deckIndex;
-                }
-
-                var stakeSpinner = deckStakeSelector.FindControl<SpinnerControl>("StakeSpinner");
-                if (stakeSpinner != null)
-                {
-                    stakeSpinner.Value = stakeIndex;
-                }
+                // Use the public SetDeck/SetStake methods instead of accessing internal controls
+                deckStakeSelector.SetDeck(config.Deck);
+                deckStakeSelector.SetStake(config.Stake);
             }
 
             // Load MUST items (needs)

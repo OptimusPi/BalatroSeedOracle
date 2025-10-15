@@ -7,12 +7,15 @@ using Avalonia.VisualTree;
 using BalatroSeedOracle.Components;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
+using System.IO;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterCreationModal : UserControl
     {
-        private FilterSelector? _filterSelector;
+        private FilterSelectorControl? _filterSelector;
         public FilterCreationModalViewModel ViewModel { get; }
 
         // Events to communicate with parent
@@ -26,14 +29,9 @@ namespace BalatroSeedOracle.Views.Modals
             DataContext = ViewModel;
             
             InitializeComponent();
-            
-            _filterSelector = this.FindControl<FilterSelector>("ExistingFilterSelector");
-            
-            // Hide the built-in select button since we have our own action buttons
-            if (_filterSelector != null)
-            {
-                _filterSelector.ShowSelectButton = false;
-            }
+
+            // Get the FilterSelectorControl from XAML
+            _filterSelector = this.FindControl<FilterSelectorControl>("FilterSelector");
             
             // Wire up ViewModel events to external events
             ViewModel.FilterSelectedForEdit += (s, e) => FilterSelectedForEdit?.Invoke(this, e);
@@ -46,11 +44,13 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             ViewModel.FilterImported += (s, e) => FilterImported?.Invoke(this, e);
             
-            // Wire up FilterSelector events to ViewModel
+            // Wire up FilterSelectorControl events to bubble to parent
             if (_filterSelector != null)
             {
-                _filterSelector.FilterLoaded += (s, path) => ViewModel.OnFilterSelected(path);
-                _filterSelector.FilterSelected += (s, path) => ViewModel.OnFilterSelected(path);
+                _filterSelector.FilterEditRequested += (s, path) => FilterSelectedForEdit?.Invoke(this, path);
+                _filterSelector.FilterCopyRequested += (s, path) => FilterImported?.Invoke(this, path);
+                _filterSelector.FilterDeleteRequested += OnFilterDeleteRequested;
+                _filterSelector.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             }
             
             // Handle ImportJsonCommand since it needs file picker access
@@ -60,6 +60,45 @@ namespace BalatroSeedOracle.Views.Modals
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private async void OnFilterDeleteRequested(object? sender, string filterPath)
+        {
+            if (string.IsNullOrEmpty(filterPath))
+                return;
+
+            try
+            {
+                var filterName = Path.GetFileNameWithoutExtension(filterPath);
+
+                var result = await MessageBoxManager
+                    .GetMessageBoxStandard("Delete Filter?",
+                        $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
+                        ButtonEnum.YesNo,
+                        Icon.Warning)
+                    .ShowAsync();
+
+                if (result == ButtonResult.Yes)
+                {
+                    if (File.Exists(filterPath))
+                    {
+                        File.Delete(filterPath);
+
+                        var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults", $"{filterName}.duckdb");
+                        if (File.Exists(dbPath))
+                        {
+                            File.Delete(dbPath);
+                        }
+
+                        _filterSelector?.RefreshFilters();
+                        DebugLogger.Log("FilterCreationModal", $"Deleted filter: {filterName}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterCreationModal", $"Error deleting filter: {ex.Message}");
+            }
         }
 
         private async System.Threading.Tasks.Task OnBrowse()
@@ -101,12 +140,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnFilterButtonClick(object? sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is FilterListItem filter)
-            {
-                ViewModel.SelectFilter(filter);
-            }
-        }
+        // Legacy selection handler removed; FilterSelectorControl manages selection internally
     }
 }

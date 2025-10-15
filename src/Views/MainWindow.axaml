@@ -27,7 +27,7 @@
     
     <Grid RowDefinitions="*,Auto">
         <!-- Main content -->
-        <local:BalatroMainMenu Grid.Row="0" />
+        <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
         
         <!-- Attribution line -->
         <Border Grid.Row="1" 
@@ -41,8 +41,10 @@
                 <TextBlock Name="BuyBalatroLink"
                            Classes="attribution-link"
                            Text="Buy Balatro"/>
+                <TextBlock Classes="attribution" Text=" • "/>
                 <TextBlock Classes="attribution" 
-                           Text=" • Created with ♥ for the Balatro community"/>
+                           Text="Created with ♥ for the Balatro community"/>
+                
             </StackPanel>
         </Border>
     </Grid>

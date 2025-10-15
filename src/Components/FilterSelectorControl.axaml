@@ -226,14 +226,14 @@
                         <!-- Tab Buttons -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
                             <Button Content="Must Have"
-                                    Classes="btn-red"
+                                    Classes="btn-green"
                                     Height="26"
                                     MinWidth="100"
                                     FontSize="13"
                                     Command="{Binding SelectTabCommand}"
                                     CommandParameter="must_have"/>
                             <Button Content="Should Have"
-                                    Classes="btn-red"
+                                    Classes="btn-blue"
                                     Height="26"
                                     MinWidth="105"
                                     FontSize="13"

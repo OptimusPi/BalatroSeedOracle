@@ -27,6 +27,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> voucherPositions = null!;
         private Dictionary<string, SpritePosition> uiAssetPositions = null!;
         private Dictionary<string, SpritePosition> deckPositions = null!;
+        private Dictionary<string, SpritePosition> stakePositions = null!;
         private Dictionary<string, SpritePosition> enhancementPositions = null!;
         private Dictionary<string, SpritePosition> sealPositions = null!;
         private Dictionary<string, SpritePosition> specialPositions = null!;
@@ -41,6 +42,8 @@ namespace BalatroSeedOracle.Services
         private Bitmap? spectralSheet;
         private Bitmap? voucherSheet;
         private Bitmap? uiAssetsSheet;
+        private Bitmap? deckSheet;
+        private Bitmap? stakeSheet;
         private Bitmap? enhancersSheet;
         private Bitmap? playingCardsSheet;
         private Bitmap? bossSheet;
@@ -55,6 +58,7 @@ namespace BalatroSeedOracle.Services
 
         private void LoadAssets()
         {
+            DebugLogger.Log("SpriteService", "Loading sprite assets...");
             try
             {
                 // Load joker positions from json
@@ -78,6 +82,12 @@ namespace BalatroSeedOracle.Services
 
                 // Load UI asset positions from json
                 uiAssetPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/ui_assets.json");
+
+                // Load deck positions from json
+                deckPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Decks/decks.json");
+
+                // Load stake positions from json
+                stakePositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Decks/stakes.json");
 
                 // Load booster pack positions from json
                 boosterPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/Boosters.json");
@@ -145,6 +155,8 @@ namespace BalatroSeedOracle.Services
                         DebugLogger.Log("SpriteService", $"Added stake sticker: {kvp.Key} -> {lower}");
                     }
                 }
+                DebugLogger.Log("SpriteService", $"Loaded {stickerPositions?.Count ?? 0} sticker positions.");
+                DebugLogger.Log("SpriteService", $"Loaded {deckPositions?.Count ?? 0} deck positions.");
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
@@ -153,6 +165,8 @@ namespace BalatroSeedOracle.Services
                 voucherSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png");
                 spectralSheet = tarotSheet;
                 uiAssetsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/ui_assets.png");
+                deckSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Decks.png");
+                stakeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
                 enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
                 playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
                 bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
@@ -253,6 +267,8 @@ namespace BalatroSeedOracle.Services
                 .Trim()
                 .Replace(" ", string.Empty, StringComparison.Ordinal)
                 .ToLowerInvariant();
+
+            DebugLogger.Log("SpriteService", $"Attempting to find sprite for {category} '{name_in}' (normalized: '{name}')");
 
             // Try the normalized name
             if (positions!.TryGetValue(name, out var pos))
@@ -644,16 +660,14 @@ namespace BalatroSeedOracle.Services
         }
 
         // New methods for deck, enhancement, and seal sprites
-        public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        public IImage? GetDeckImage(string name, int spriteWidth = 71, int spriteHeight = 95)
         {
-            return GetSpriteImage(
-                name,
-                deckPositions,
-                enhancersSheet,
-                spriteWidth,
-                spriteHeight,
-                "deck"
-            );
+            return GetSpriteImage(name, deckPositions, deckSheet, spriteWidth, spriteHeight, "deck");
+        }
+
+        public IImage? GetStakeImage(string name, int spriteWidth = 71, int spriteHeight = 95)
+        {
+            return GetSpriteImage(name, stakePositions, stakeSheet, spriteWidth, spriteHeight, "stake");
         }
 
         // Create a composite image with deck and stake sticker
@@ -661,44 +675,20 @@ namespace BalatroSeedOracle.Services
         {
             ArgumentNullException.ThrowIfNull(deckName);
             ArgumentNullException.ThrowIfNull(stakeName);
-            DebugLogger.Log(
-                "SpriteService",
-                $"GetDeckWithStakeSticker called: deck={deckName}, stake={stakeName}"
-            );
 
-            // Get the base deck image (full size 142x190)
-            var deckImage = GetDeckImage(deckName, 142, 190);
+            // Get the base deck image
+            var deckImage = GetDeckImage(deckName);
             if (deckImage == null)
             {
-                DebugLogger.LogError("SpriteService", $"Failed to get deck image for: {deckName}");
                 return null;
             }
 
-            // No early return for white stake - we want to show the white stake sticker too!
-
-            // Get the stake sticker (142x190 like deck)
-            string stakeFormat =
-                $"{char.ToUpper(stakeName[0], CultureInfo.InvariantCulture)}{stakeName.Substring(1)}Stake";
-            DebugLogger.Log("SpriteService", $"Looking for stake sticker: {stakeFormat}");
-
-            var stakeSticker = GetStickerImage(stakeFormat);
-            if (stakeSticker == null)
+            // Get the stake image
+            var stakeImage = GetStakeImage(stakeName);
+            if (stakeImage == null)
             {
-                DebugLogger.LogError(
-                    "SpriteService",
-                    $"Failed to get stake sticker for: {stakeFormat}"
-                );
-                // Fallback - just return deck scaled down
-                var pixelSizeFallback = new PixelSize(71, 95);
-                var renderTargetFallback = new RenderTargetBitmap(pixelSizeFallback);
-                using (var context = renderTargetFallback.CreateDrawingContext())
-                {
-                    context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
-                }
-                return renderTargetFallback;
+                return deckImage; // Return base deck image if stake is not found
             }
-
-            DebugLogger.Log("SpriteService", $"Got stake sticker, creating composite");
 
             // Create a render target to composite the images
             var pixelSize = new PixelSize(71, 95); // Card display size
@@ -706,14 +696,13 @@ namespace BalatroSeedOracle.Services
 
             using (var context = renderTarget.CreateDrawingContext())
             {
-                // Draw the deck image scaled down to 71x95
-                context.DrawImage(deckImage, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+                // Draw the deck image
+                context.DrawImage(deckImage, new Rect(0, 0, 71, 95));
 
-                // Draw the stake sticker on top (also scaled from 142x190 to 71x95)
-                context.DrawImage(stakeSticker, new Rect(0, 0, 142, 190), new Rect(0, 0, 71, 95));
+                // Draw the stake image on top
+                context.DrawImage(stakeImage, new Rect(0, 0, 71, 95));
             }
 
-            DebugLogger.Log("SpriteService", "Composite created successfully");
             return renderTarget;
         }
 

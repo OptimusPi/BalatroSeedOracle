@@ -157,6 +157,7 @@ namespace BalatroSeedOracle.ViewModels
                         var anteModel = new AnteAnalysisModel
                         {
                             AnteNumber = motelyAnte.Ante,
+                            Boss = motelyAnte.Boss,
                             Voucher = motelyAnte.Voucher,
                             SmallBlindTag = new TagModel
                             {
@@ -198,6 +199,12 @@ namespace BalatroSeedOracle.ViewModels
                         }
 
                         Antes.Add(anteModel);
+                    }
+
+                    // Attach ante collection to the current analysis for shared display component
+                    if (CurrentAnalysis != null)
+                    {
+                        CurrentAnalysis.Antes = Antes;
                     }
 
                     DebugLogger.Log("AnalyzeModalViewModel", $"Analysis completed successfully: {Antes.Count} antes");

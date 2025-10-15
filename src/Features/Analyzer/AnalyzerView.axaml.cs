@@ -4,6 +4,7 @@ using Avalonia.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Components;
 using Motely;
 
 namespace BalatroSeedOracle.Features.Analyzer;
@@ -20,18 +21,51 @@ public partial class AnalyzerView : UserControl
         // Set up hotkeys
         this.KeyDown += OnKeyDown;
 
-        // Wire up deck/stake selectors
-        var deckCombo = this.FindControl<ComboBox>("DeckComboBox");
-        var stakeCombo = this.FindControl<ComboBox>("StakeComboBox");
-
-        if (deckCombo != null)
+        // Wire up unified Deck & Stake selector (MVVM component)
+        var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckStakeSelector");
+        if (deckStakeSelector != null)
         {
-            deckCombo.SelectionChanged += DeckComboBox_SelectionChanged;
-        }
+            deckStakeSelector.SelectionChanged += (s, selection) =>
+            {
+                if (ViewModel == null) return;
 
-        if (stakeCombo != null)
-        {
-            stakeCombo.SelectionChanged += StakeComboBox_SelectionChanged;
+                var deckEnums = new[]
+                {
+                    MotelyDeck.Red,
+                    MotelyDeck.Blue,
+                    MotelyDeck.Yellow,
+                    MotelyDeck.Green,
+                    MotelyDeck.Black,
+                    MotelyDeck.Magic,
+                    MotelyDeck.Nebula,
+                    MotelyDeck.Ghost,
+                    MotelyDeck.Abandoned,
+                    MotelyDeck.Checkered,
+                    MotelyDeck.Zodiac,
+                    MotelyDeck.Painted,
+                    MotelyDeck.Anaglyph,
+                    MotelyDeck.Plasma,
+                    MotelyDeck.Erratic
+                };
+
+                var stakeEnums = new[]
+                {
+                    MotelyStake.White,
+                    MotelyStake.Red,
+                    MotelyStake.Green,
+                    MotelyStake.Black,
+                    MotelyStake.Blue,
+                    MotelyStake.Purple,
+                    MotelyStake.Orange,
+                    MotelyStake.Gold
+                };
+
+                if (selection.deckIndex >= 0 && selection.deckIndex < deckEnums.Length)
+                    ViewModel.SelectedDeck = deckEnums[selection.deckIndex];
+
+                if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeEnums.Length)
+                    ViewModel.SelectedStake = stakeEnums[selection.stakeIndex];
+            };
         }
 
         // Make control focusable for hotkeys
@@ -153,62 +187,5 @@ public partial class AnalyzerView : UserControl
         }
     }
 
-    private void DeckComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (ViewModel == null || e.AddedItems.Count == 0) return;
-
-        var deckCombo = sender as ComboBox;
-        if (deckCombo == null) return;
-
-        // Map combo box index to MotelyDeck enum
-        var deckNames = new[]
-        {
-            MotelyDeck.Red,
-            MotelyDeck.Blue,
-            MotelyDeck.Yellow,
-            MotelyDeck.Green,
-            MotelyDeck.Black,
-            MotelyDeck.Magic,
-            MotelyDeck.Nebula,
-            MotelyDeck.Ghost,
-            MotelyDeck.Abandoned,
-            MotelyDeck.Checkered,
-            MotelyDeck.Zodiac,
-            MotelyDeck.Painted,
-            MotelyDeck.Anaglyph,
-            MotelyDeck.Plasma,
-            MotelyDeck.Erratic
-        };
-
-        if (deckCombo.SelectedIndex >= 0 && deckCombo.SelectedIndex < deckNames.Length)
-        {
-            ViewModel.SelectedDeck = deckNames[deckCombo.SelectedIndex];
-        }
-    }
-
-    private void StakeComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (ViewModel == null || e.AddedItems.Count == 0) return;
-
-        var stakeCombo = sender as ComboBox;
-        if (stakeCombo == null) return;
-
-        // Map combo box index to MotelyStake enum
-        var stakeNames = new[]
-        {
-            MotelyStake.White,
-            MotelyStake.Red,
-            MotelyStake.Green,
-            MotelyStake.Black,
-            MotelyStake.Blue,
-            MotelyStake.Purple,
-            MotelyStake.Orange,
-            MotelyStake.Gold
-        };
-
-        if (stakeCombo.SelectedIndex >= 0 && stakeCombo.SelectedIndex < stakeNames.Length)
-        {
-            ViewModel.SelectedStake = stakeNames[stakeCombo.SelectedIndex];
-        }
-    }
+    // Legacy ComboBox handlers removed in favor of DeckAndStakeSelector
 }

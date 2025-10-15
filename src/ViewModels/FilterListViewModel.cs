@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -96,8 +97,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // FIXED: Use the actual Motely filter directory
-                var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "external", "Motely", "Motely", "JsonItemFilters");
+                // Use app-local filters directory for consistency across modals
+                var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                 if (!Directory.Exists(filtersDir))
                 {
                     DebugLogger.LogError("FilterListViewModel", $"Filters directory not found: {filtersDir}");

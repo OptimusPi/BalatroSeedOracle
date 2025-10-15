@@ -9,20 +9,21 @@
         <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
 
         <!-- Game colors -->
-        <SolidColorBrush x:Key="Red">#ff4c40</SolidColorBrush>
-        <SolidColorBrush x:Key="Blue">#0093ff</SolidColorBrush>
-        <SolidColorBrush x:Key="Green">#429f79</SolidColorBrush>
+        <SolidColorBrush x:Key="Red">#D73D3D</SolidColorBrush>
+        <SolidColorBrush x:Key="Blue">#4A90E2</SolidColorBrush>
+        <SolidColorBrush x:Key="Green">#3E8E6B</SolidColorBrush>
         <SolidColorBrush x:Key="PaleGreen">#56a887</SolidColorBrush>
-        <SolidColorBrush x:Key="Orange">#ff9800</SolidColorBrush>
-        <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="Purple">#525db0</SolidColorBrush>
+        <SolidColorBrush x:Key="Orange">#E88B00</SolidColorBrush>
+        <SolidColorBrush x:Key="Gold">#D4AF37</SolidColorBrush>
+        <SolidColorBrush x:Key="Purple">#86609F</SolidColorBrush>
         
         <!-- Hover/Pressed states -->
-        <SolidColorBrush x:Key="BlueHover">#0057a1</SolidColorBrush>
-        <SolidColorBrush x:Key="OrangeHover">#a05b00</SolidColorBrush>
-        <SolidColorBrush x:Key="RedHover">#a02721</SolidColorBrush>
-        <SolidColorBrush x:Key="GreenHover">#215f46</SolidColorBrush>
-        <SolidColorBrush x:Key="PurpleHover">#2c336b</SolidColorBrush>
+        <SolidColorBrush x:Key="BlueHover">#5DA0F2</SolidColorBrush>
+        <SolidColorBrush x:Key="OrangeHover">#F09A1A</SolidColorBrush>
+        <SolidColorBrush x:Key="RedHover">#E05A5A</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenHover">#50A880</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleHover">#9D7EBA</SolidColorBrush>
+        <SolidColorBrush x:Key="GoldHover">#E0C468</SolidColorBrush>
         
         <!-- Disabled states -->
         <SolidColorBrush x:Key="RedDisabled">#a94640</SolidColorBrush>
