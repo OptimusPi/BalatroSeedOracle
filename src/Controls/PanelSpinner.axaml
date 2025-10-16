@@ -40,12 +40,13 @@
         </Style>
         
         <Style Selector="Button.panel-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         
         <!-- Pressed state - hide shadow and move button down -->
         <Style Selector="Button.panel-arrow:pressed">
             <Setter Property="RenderTransform" Value="translateY(3px)"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         <Style Selector="Button.panel-arrow:pressed /template/ Border#DropShadow">
             <Setter Property="IsVisible" Value="False"/>

@@ -40,8 +40,8 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            // Go directly to FiltersModalContent which now has Balatro-style filter selection built-in
-            var filtersContent = new Views.Modals.FiltersModalContent();
+            // Restore original FiltersModal (full-featured designer with tabs)
+            var filtersContent = new Views.Modals.FiltersModal();
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
     
@@ -320,6 +320,37 @@ namespace BalatroSeedOracle.Helpers
                 {
                     DebugLogger.Log("ModalHelper", $"Beat pulse source changed to {sourceIndex}");
                     menu.ApplyBeatPulseSource(sourceIndex);
+                };
+
+                // Range events (advanced)
+                vm.ContrastRangeChangedEvent += (s, range) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Contrast range changed: {range.min} - {range.max}");
+                    menu.ApplyContrastRange(range.min, range.max);
+                };
+
+                vm.SpinRangeChangedEvent += (s, range) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Spin range changed: {range.min} - {range.max}");
+                    menu.ApplySpinAmountRange(range.min, range.max);
+                };
+
+                vm.TwirlRangeChangedEvent += (s, range) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Twirl range changed: {range.min} - {range.max}");
+                    menu.ApplyTwirlSpeedRange(range.min, range.max);
+                };
+
+                vm.ZoomPunchRangeChangedEvent += (s, range) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Zoom punch range changed: {range.min} - {range.max}");
+                    menu.ApplyZoomPunchRange(range.min, range.max);
+                };
+
+                vm.MelodySatRangeChangedEvent += (s, range) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Melody saturation range changed: {range.min} - {range.max}");
+                    menu.ApplyMelodySatRange(range.min, range.max);
                 };
             }
 

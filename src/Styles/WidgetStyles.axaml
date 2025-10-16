@@ -14,12 +14,12 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource SouthModalShadow}"/>
     </Style>
 
     <!-- Semi-transparent widget container variant -->
     <Style Selector="Border.widget-container.semi-transparent">
-        <Setter Property="Background" Value="#CC2e3f42"/>
+        <Setter Property="Background" Value="{StaticResource SemiTransparentDarkBackground}"/>
     </Style>
 
     <!-- Widget window (expanded/floating state) -->
@@ -28,7 +28,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="3"/>
         <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="0 8 24 0 #40000000"/>
+        <Setter Property="BoxShadow" Value="{StaticResource ElevatedWidgetShadow}"/>
     </Style>
 
     <!-- Widget header bar -->
@@ -47,8 +47,8 @@
 
     <!-- Light content area variant (for contrast) -->
     <Style Selector="Border.widget-content.light">
-        <Setter Property="Background" Value="#F5FFFFFF"/>
-        <Setter Property="BoxShadow" Value="0 2 8 #44000000"/>
+        <Setter Property="Background" Value="{StaticResource LightContentBackground}"/>
+        <Setter Property="BoxShadow" Value="{StaticResource LightContentShadow}"/>
     </Style>
 
     <!-- =============================================
@@ -112,7 +112,7 @@
     <!-- Widget secondary button -->
     <Style Selector="Button.widget-secondary-btn">
         <Setter Property="Background" Value="{StaticResource Blue}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="6"/>
         <Setter Property="Padding" Value="12,8"/>
@@ -126,7 +126,7 @@
 
     <Style Selector="Button.widget-secondary-btn:disabled">
         <Setter Property="Background" Value="{StaticResource MediumGrey}"/>
-        <Setter Property="Foreground" Value="#888"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Opacity" Value="0.5"/>
     </Style>
 
@@ -187,7 +187,8 @@
 
     <!-- Widget muted/secondary text -->
     <Style Selector="TextBlock.widget-muted">
-        <Setter Property="Foreground" Value="#666"/>
+        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        <Setter Property="Opacity" Value="0.6"/>
         <Setter Property="FontSize" Value="10"/>
     </Style>
 

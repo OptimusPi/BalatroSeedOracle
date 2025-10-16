@@ -215,8 +215,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnItemDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
         {
             Models.FilterItem? item = null;
-            
-            // Handle both Grid and Border elements
+
             if (sender is Grid grid)
             {
                 item = grid.DataContext as Models.FilterItem;
@@ -225,50 +224,51 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 item = border.DataContext as Models.FilterItem;
             }
-            
-            if (item != null)
+
+            if (item == null) return;
+
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm == null) return;
+
+            var config = vm.ItemConfigs.TryGetValue(item.ItemKey, out var existingConfig)
+                ? existingConfig
+                : new Models.ItemConfig { ItemKey = item.ItemKey, ItemType = item.ItemType };
+            var popupViewModel = new ViewModels.ItemConfigPopupViewModel(config);
+            popupViewModel.ItemName = item.DisplayName;
+            popupViewModel.ItemImage = item.ItemImage;
+
+
+            // Create the View
+            var configPopup = new Controls.ItemConfigPopup
             {
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                if (vm == null) return;
-                
-                // Create and show configuration popup
-                var configPopup = new Controls.ItemConfigPopup();
-                configPopup.SetItem(item.ItemKey, item.ItemType, item.DisplayName);
-                
-                // Get current configuration if exists
-                if (vm.ItemConfigs.TryGetValue(item.ItemKey, out var existingConfig))
-                {
-                    configPopup.LoadConfiguration(existingConfig);
-                }
-                
-                var popup = new Avalonia.Controls.Primitives.Popup
-                {
-                    Child = configPopup,
-                    Placement = Avalonia.Controls.PlacementMode.Pointer,
-                    IsLightDismissEnabled = false
-                };
-                
-                configPopup.ConfigApplied += (s, args) =>
-                {
-                    // Update the configuration
-                    vm.UpdateItemConfig(item.ItemKey, args.Configuration);
-                    popup.IsOpen = false;
-                };
-                
-                configPopup.Cancelled += (s, args) =>
-                {
-                    popup.IsOpen = false;
-                };
-                
-                configPopup.DeleteRequested += (s, args) =>
-                {
-                    // Remove the item from its zone
-                    vm.RemoveItem(item);
-                    popup.IsOpen = false;
-                };
-                
-                popup.IsOpen = true;
-            }
+                DataContext = popupViewModel
+            };
+
+            var popup = new Avalonia.Controls.Primitives.Popup
+            {
+                Child = configPopup,
+                Placement = Avalonia.Controls.PlacementMode.Pointer,
+                IsLightDismissEnabled = false
+            };
+
+            popupViewModel.ConfigApplied += (appliedConfig) =>
+            {
+                vm.UpdateItemConfig(item.ItemKey, appliedConfig);
+                popup.IsOpen = false;
+            };
+
+            popupViewModel.Cancelled += () =>
+            {
+                popup.IsOpen = false;
+            };
+
+            popupViewModel.DeleteRequested += () =>
+            {
+                vm.RemoveItem(item);
+                popup.IsOpen = false;
+            };
+
+            popup.IsOpen = true;
         }
 
         private void OnCategoryClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

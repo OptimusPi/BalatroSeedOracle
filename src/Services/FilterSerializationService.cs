@@ -9,7 +9,7 @@ using Motely.Filters;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels;
-using ItemConfig = BalatroSeedOracle.Controls.ItemConfig;
+using ItemConfig = BalatroSeedOracle.Models.ItemConfig;
 
 namespace BalatroSeedOracle.Services
 {

@@ -15,7 +15,7 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterCreationModal : UserControl
     {
-        private FilterSelectorControl? _filterSelector;
+        private FilterSelector? _filterSelector;
         public FilterCreationModalViewModel ViewModel { get; }
 
         // Events to communicate with parent
@@ -30,8 +30,8 @@ namespace BalatroSeedOracle.Views.Modals
             
             InitializeComponent();
 
-            // Get the FilterSelectorControl from XAML
-            _filterSelector = this.FindControl<FilterSelectorControl>("FilterSelector");
+            // Get the FilterSelector from XAML
+            _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
             
             // Wire up ViewModel events to external events
             ViewModel.FilterSelectedForEdit += (s, e) => FilterSelectedForEdit?.Invoke(this, e);
@@ -44,9 +44,13 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             ViewModel.FilterImported += (s, e) => FilterImported?.Invoke(this, e);
             
-            // Wire up FilterSelectorControl events to bubble to parent
+            // Configure FilterSelector for creation modal and wire events
             if (_filterSelector != null)
             {
+                // In creation modal, hide select button and disable auto-load
+                _filterSelector.ShowSelectButton = false;
+                _filterSelector.AutoLoadEnabled = false;
+
                 _filterSelector.FilterEditRequested += (s, path) => FilterSelectedForEdit?.Invoke(this, path);
                 _filterSelector.FilterCopyRequested += (s, path) => FilterImported?.Invoke(this, path);
                 _filterSelector.FilterDeleteRequested += OnFilterDeleteRequested;
@@ -140,6 +144,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        // Legacy selection handler removed; FilterSelectorControl manages selection internally
+        // Legacy selection handler removed; FilterSelector manages selection internally
     }
 }

@@ -1,8 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterListViewModel">
+
+    <UserControl.Resources>
+        <conv:TruncateConverter x:Key="TruncateConv"/>
+    </UserControl.Resources>
 
     <UserControl.Styles>
         <!-- Balatro-styled scrollbars - subtle and elegant -->
@@ -51,13 +56,12 @@
         <!-- Left: Filter List (Balatro challenges style) -->
         <Border Grid.Column="0"
                 Background="{StaticResource ContainerDarkPrecise}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="0,0,2,0"
-                Padding="12,10,8,10">
+                BorderThickness="0"
+                Padding="12,5,8,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="3"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>
@@ -72,43 +76,46 @@
                            HorizontalAlignment="Center"/>
 
                 <!-- Paginated filter list with numbers OUTSIDE buttons -->
-                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="0">
+                <!-- Add inner padding and disable clipping to prevent buttons appearing cut off near the divider -->
+                <Border Grid.Row="2" Name="FilterListContainer" ClipToBounds="False" Padding="6,6,12,6">
                     <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="0.5"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Button layout with centered triangle indicator -->
-                                <Grid Margin="0,1" HorizontalAlignment="Center">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="8"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Selection Indicator (red triangle, Balatro style) -->
-                                    <Viewbox Grid.Column="0"
-                                             Width="16"
-                                             Height="16"
+                                <!-- Button layout with triangle overlay (place overlay after button for layering) -->
+                                <Grid Margin="0" HorizontalAlignment="Stretch">
+                                    <!-- Full-width button showing the entire filter name (no truncation) -->
+                                    <Button Classes="btn-red"
+                                            Height="31"
+                                            MinHeight="31"
+                                            HorizontalAlignment="Stretch"
+                                            CornerRadius="6"
+                                            Margin="0,2,0,2"
+                                            Padding="12,6"
+                                            Command="{Binding DataContext.SelectFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <Button.Content>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="15"
+                                                       TextAlignment="Center"/>
+                                        </Button.Content>
+                                    </Button>
+                                    
+                                    <!-- Triangle overlay -->
+                                    <Viewbox Width="14" Height="14"
                                              VerticalAlignment="Center"
-                                             HorizontalAlignment="Center"
+                                             HorizontalAlignment="Left"
+                                             Margin="-18,0,0,0"
+                                             IsHitTestVisible="False"
                                              IsVisible="{Binding IsSelected}">
                                         <Polygon Points="0,0 0,16 16,8"
                                                  Fill="{StaticResource Red}"/>
                                     </Viewbox>
-
-                                    <!-- Button with just the name (no number) -->
-                                    <Button Grid.Column="2"
-                                            Classes="btn-red"
-                                            Content="{Binding Name}"
-                                            Height="28"
-                                            MinWidth="208"
-                                            HorizontalAlignment="Center"
-                                            HorizontalContentAlignment="Center"
-                                            CornerRadius="6"
-                                            Padding="12,0"
-                                            FontFamily="{StaticResource BalatroFont}"
-                                            FontSize="14"
-                                            Click="OnFilterListItemClick"
-                                            Tag="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -120,7 +127,7 @@
                     <Button Content="◀"
                             Classes="btn-red"
                             Width="44"
-                            Height="32"
+                            Height="33"
                             FontSize="14"
                             Padding="0"
                             Command="{Binding PreviousPageCommand}"
@@ -128,8 +135,8 @@
 
                     <!-- Badge-style page indicator (fixed width to prevent wiggling) -->
                     <Border Background="{StaticResource DarkModalGrey}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
                             CornerRadius="6"
                             Padding="16,6"
                             MinWidth="85"
@@ -191,7 +198,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -216,123 +222,195 @@
                                Opacity="0.6"
                                Margin="0,0,0,12"/>
 
-                    <!-- Inner Tabs with Triangle Indicator -->
-                    <Grid Grid.Row="2" Margin="0,0,0,8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="8"/>
-                        </Grid.RowDefinitions>
+                    <!-- REAL AvaloniaUI TabControl with content inside each tab -->
+                    <TabControl Grid.Row="2"
+                                Classes="balatro-tabs"
+                                SelectedIndex="{Binding SelectedTabIndex}"
+                                Margin="0,0,0,8">
+                        <!-- Must Have -->
+                        <TabItem Header="Must Have">
+                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="8,0,8,0"
+                                    BoxShadow="inset 0 2 4 #00000040">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <!-- Description above visualization -->
+                                        <TextBlock Text="{Binding SelectedFilterDescription}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource White}"
+                                                   Margin="0,0,0,8"
+                                                   TextWrapping="Wrap"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="3"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Top"/>
 
-                        <!-- Tab Buttons -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                            <Button Content="Must Have"
-                                    Classes="btn-green"
-                                    Height="26"
-                                    MinWidth="100"
-                                    FontSize="13"
-                                    Command="{Binding SelectTabCommand}"
-                                    CommandParameter="must_have"/>
-                            <Button Content="Should Have"
-                                    Classes="btn-blue"
-                                    Height="26"
-                                    MinWidth="105"
-                                    FontSize="13"
-                                    Command="{Binding SelectTabCommand}"
-                                    CommandParameter="should_have"/>
-                            <Button Content="Must Not"
-                                    Classes="btn-red"
-                                    Height="26"
-                                    MinWidth="90"
-                                    FontSize="13"
-                                    Command="{Binding SelectTabCommand}"
-                                    CommandParameter="must_not_have"/>
-                        </StackPanel>
+                                        <!-- Items displayed as cards -->
+                                        <ItemsControl ItemsSource="{Binding FilterItems}"
+                                                      IsVisible="{Binding HasFilterItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="8"
+                                                            Background="{StaticResource DarkModalGrey}"
+                                                            BorderThickness="0"
+                                                            Margin="4">
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Margin="4"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                        <!-- Triangle Indicator -->
-                        <Canvas Grid.Row="1" HorizontalAlignment="Center" Height="8">
-                            <Polygon Points="0,8 8,0 16,8"
-                                     Fill="{StaticResource Red}"
-                                     Canvas.Left="{Binding TriangleOffset}"
-                                     IsVisible="{Binding IsTriangleVisible}"/>
-                        </Canvas>
-                    </Grid>
+                                        <!-- Empty state -->
+                                        <TextBlock Text="No items in this category"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.6"
+                                                   IsVisible="{Binding !HasFilterItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
 
-                    <!-- Content Area with Cards Display -->
-                    <Border Grid.Row="3"
-                            Background="{StaticResource ContainerDarkPrecise}"
-                            BorderBrush="{StaticResource Blue}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            Padding="12"
-                            Margin="8,0,8,0"
-                            BoxShadow="inset 0 2 4 #00000040">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <Grid>
-                                <!-- Empty state when no tab selected -->
-                                <TextBlock Text="Select a tab to view items"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Opacity="0.6"
-                                           IsVisible="{Binding !IsTriangleVisible}"/>
+                        <!-- Should Have -->
+                        <TabItem Header="Should Have">
+                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="8,0,8,0"
+                                    BoxShadow="inset 0 2 4 #00000040">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <TextBlock Text="{Binding SelectedFilterDescription}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource White}"
+                                                   Margin="0,0,0,8"
+                                                   TextWrapping="Wrap"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="3"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Top"/>
 
-                                <!-- Empty state when tab has no items -->
-                                <TextBlock Text="No items in this category"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Opacity="0.6"
-                                           IsVisible="{Binding IsTriangleVisible}">
-                                    <TextBlock.IsVisible>
-                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="IsTriangleVisible"/>
-                                            <Binding Path="!HasFilterItems"/>
-                                        </MultiBinding>
-                                    </TextBlock.IsVisible>
-                                </TextBlock>
+                                        <ItemsControl ItemsSource="{Binding FilterItems}"
+                                                      IsVisible="{Binding HasFilterItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="8"
+                                                            Background="{StaticResource DarkModalGrey}"
+                                                            BorderThickness="0"
+                                                            Margin="4">
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Margin="4"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                                <!-- Items displayed as cards -->
-                                <ItemsControl ItemsSource="{Binding FilterItems}"
-                                              IsVisible="{Binding HasFilterItems}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BorderBrush="{StaticResource ModalBorder}"
-                                                    BorderThickness="2"
-                                                    CornerRadius="8"
-                                                    Background="{StaticResource DarkModalGrey}"
-                                                    Margin="4">
-                                                <Image Source="{Binding ItemImage}"
-                                                       Width="71"
-                                                       Height="95"
-                                                       Margin="4"/>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                        </ScrollViewer>
-                    </Border>
+                                        <TextBlock Text="No items in this category"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.6"
+                                                   IsVisible="{Binding !HasFilterItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
+
+                        <!-- Must Not -->
+                        <TabItem Header="Must Not">
+                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="8,0,8,0"
+                                    BoxShadow="inset 0 2 4 #00000040">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <TextBlock Text="{Binding SelectedFilterDescription}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource White}"
+                                                   Margin="0,0,0,8"
+                                                   TextWrapping="Wrap"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="3"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Top"/>
+
+                                        <ItemsControl ItemsSource="{Binding FilterItems}"
+                                                      IsVisible="{Binding HasFilterItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="8"
+                                                            Background="{StaticResource DarkModalGrey}"
+                                                            BorderThickness="0"
+                                                            Margin="4">
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Margin="4"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No items in this category"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.6"
+                                                   IsVisible="{Binding !HasFilterItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
+                    </TabControl>
 
                     <!-- Action Buttons (context-aware) -->
-                    <StackPanel Grid.Row="4" Spacing="8" Margin="0,12,0,8">
+                    <StackPanel Grid.Row="3" Spacing="8" Margin="0,12,0,8">
                         <!-- SELECT button (SearchModal) -->
                         <Button Name="SelectFilterButton"
-                                Content="SELECT THIS FILTER"
+                                Content="{Binding SelectButtonText}"
                                 Classes="btn-green"
                                 Height="40"
                                 HorizontalAlignment="Stretch"
                                 FontSize="16"
                                 Click="OnSelectFilterClick"
                                 Margin="8,0,8,0"
+                                IsEnabled="{Binding IsFilterSelected}"
                                 IsVisible="{Binding ShowSelectButton}"/>
 
                         <!-- EDIT button (FiltersModal) -->

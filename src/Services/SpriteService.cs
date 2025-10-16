@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> spectralPositions = null!;
         private Dictionary<string, SpritePosition> planetPositions = null!;
         private Dictionary<string, SpritePosition> voucherPositions = null!;
-        private Dictionary<string, SpritePosition> uiAssetPositions = null!;
+        
         private Dictionary<string, SpritePosition> deckPositions = null!;
         private Dictionary<string, SpritePosition> stakePositions = null!;
         private Dictionary<string, SpritePosition> enhancementPositions = null!;
@@ -41,7 +41,7 @@ namespace BalatroSeedOracle.Services
         private Bitmap? tarotSheet;
         private Bitmap? spectralSheet;
         private Bitmap? voucherSheet;
-        private Bitmap? uiAssetsSheet;
+        
         private Bitmap? deckSheet;
         private Bitmap? stakeSheet;
         private Bitmap? enhancersSheet;
@@ -49,7 +49,7 @@ namespace BalatroSeedOracle.Services
         private Bitmap? bossSheet;
         private Bitmap? stickersSheet;
         private Bitmap? boosterSheet;
-        private Bitmap? stakeChipsSheet;
+        
 
         private SpriteService()
         {
@@ -80,11 +80,7 @@ namespace BalatroSeedOracle.Services
                 // Load voucher positions from json
                 voucherPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json");
 
-                // Load UI asset positions from json
-                uiAssetPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/ui_assets.json");
-
-                // Load deck positions from json
-                deckPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Decks/decks.json");
+                
 
                 // Load stake positions from json
                 stakePositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Decks/stakes.json");
@@ -164,15 +160,16 @@ namespace BalatroSeedOracle.Services
                 tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
                 voucherSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png");
                 spectralSheet = tarotSheet;
-                uiAssetsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/ui_assets.png");
-                deckSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Decks.png");
+                
                 stakeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
                 enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
+                deckSheet = enhancersSheet;
                 playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
                 bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
                 stickersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/stickers.png");
                 boosterSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/boosters.png");
-                stakeChipsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
+                
+                
             }
             catch (Exception ex)
             {
@@ -184,7 +181,7 @@ namespace BalatroSeedOracle.Services
                 spectralPositions ??= new Dictionary<string, SpritePosition>();
                 planetPositions ??= new Dictionary<string, SpritePosition>();
                 voucherPositions ??= new Dictionary<string, SpritePosition>();
-                uiAssetPositions ??= new Dictionary<string, SpritePosition>();
+                
                 deckPositions ??= new Dictionary<string, SpritePosition>();
                 enhancementPositions ??= new Dictionary<string, SpritePosition>();
                 sealPositions ??= new Dictionary<string, SpritePosition>();
@@ -203,19 +200,87 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var uri = new Uri(jsonUri);
-                using var stream = AssetLoader.Open(uri);
+                using var stream = TryOpenAssetStream(jsonUri);
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
-                var positionsList = JsonSerializer.Deserialize<List<SpritePosition>>(json);
                 var positions = new Dictionary<string, SpritePosition>();
 
-                foreach (var pos in positionsList ?? new List<SpritePosition>())
+                // If this is a simple array of positions, use the original deserializer
+                var trimmed = json.TrimStart();
+                if (trimmed.StartsWith("["))
                 {
-                    if (pos?.Name != null)
+                    var positionsList = JsonSerializer.Deserialize<List<SpritePosition>>(json);
+                    foreach (var pos in positionsList ?? new List<SpritePosition>())
                     {
-                        positions[pos.Name.ToLowerInvariant()] = pos;
+                        if (pos?.Name != null)
+                        {
+                            positions[pos.Name.ToLowerInvariant()] = pos;
+                        }
+                    }
+                    return positions;
+                }
+
+                // Otherwise, support metadata-style JSON with a "sprites" object
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (!root.TryGetProperty("sprites", out var spritesObj))
+                {
+                    // No sprites object; return empty
+                    return positions;
+                }
+
+                // Determine the category from the file name so we pick the correct branch
+                var fileName = Path.GetFileName(jsonUri).ToLowerInvariant();
+                var categories = new List<string>();
+                if (fileName.Contains("decks")) categories.Add("decks");
+                else if (fileName.Contains("stakes")) categories.Add("stakes");
+                else
+                {
+                    // Fallback: include all categories present
+                    foreach (var prop in spritesObj.EnumerateObject())
+                    {
+                        categories.Add(prop.Name);
+                    }
+                }
+
+                foreach (var cat in categories)
+                {
+                    if (!spritesObj.TryGetProperty(cat, out var dictObj) || dictObj.ValueKind != JsonValueKind.Object)
+                        continue;
+
+                    foreach (var kv in dictObj.EnumerateObject())
+                    {
+                        var keyOriginal = kv.Name;
+                        var val = kv.Value;
+                        if (val.ValueKind == JsonValueKind.Object &&
+                            val.TryGetProperty("x", out var xEl) &&
+                            val.TryGetProperty("y", out var yEl))
+                        {
+                            var normalizedKey = keyOriginal
+                                .Trim()
+                                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                                .Replace("_", string.Empty, StringComparison.Ordinal)
+                                .ToLowerInvariant();
+
+                            var pos = new SpritePosition
+                            {
+                                Name = normalizedKey,
+                                Pos = new Pos { X = xEl.GetInt32(), Y = yEl.GetInt32() },
+                            };
+
+                            positions[normalizedKey] = pos;
+
+                            // For stakes, add a simplified alias without "stake" (e.g., "white" -> "whitestake")
+                            if (cat.Equals("stakes", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var simple = normalizedKey.Replace("stake", string.Empty, StringComparison.Ordinal);
+                                if (!string.IsNullOrEmpty(simple) && !positions.ContainsKey(simple))
+                                {
+                                    positions[simple] = pos;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -235,8 +300,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var uri = new Uri(bitmapUri);
-                return new Bitmap(AssetLoader.Open(uri));
+                using var stream = TryOpenAssetStream(bitmapUri);
+                return new Bitmap(stream);
             }
             catch (Exception ex)
             {
@@ -246,6 +311,70 @@ namespace BalatroSeedOracle.Services
                 );
                 return null;
             }
+        }
+
+        // Try to open an asset as a stream. First try the Avalonia AssetLoader (avares://).
+        // If that fails, attempt to locate the file on disk relative to known folders (current dir and parent dirs)
+        // This helps during development when resources may not be embedded/copied.
+        private static Stream TryOpenAssetStream(string avaresUri)
+        {
+            try
+            {
+                var uri = new Uri(avaresUri);
+                return AssetLoader.Open(uri);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"AssetLoader failed for '{avaresUri}': {ex.Message}. Falling back to filesystem lookup."
+                );
+            }
+
+            // Fallback: attempt to find the asset under a local Assets folder by stripping the avares scheme
+            // Expected format: avares://Assembly/Assets/Path/to/file
+            try
+            {
+                var parts = avaresUri.Split(new[] {"avares://"}, StringSplitOptions.RemoveEmptyEntries);
+                string relativePath = parts.Length > 0 ? parts[0] : avaresUri;
+
+                // If the relativePath contains a leading assembly name (e.g. BalatroSeedOracle/Assets/...), remove it
+                var idx = relativePath.IndexOf('/');
+                if (idx >= 0)
+                {
+                    relativePath = relativePath.Substring(idx + 1).Replace('/', Path.DirectorySeparatorChar);
+                }
+
+                // Try current directory and up to 5 parent directories to find Assets
+                string? baseDir = AppContext.BaseDirectory;
+                for (int depth = 0; depth < 6; depth++)
+                {
+                    var candidate = Path.Combine(baseDir ?? string.Empty, relativePath);
+                    if (File.Exists(candidate))
+                    {
+                        DebugLogger.Log("SpriteService", $"Found asset on disk: {candidate}");
+                        return File.OpenRead(candidate);
+                    }
+
+                    // Walk up one directory
+                    baseDir = baseDir != null ? Path.GetDirectoryName(baseDir) : null;
+                    if (baseDir == null) break;
+                }
+
+                // Also try the workspace relative path (relative to current working directory)
+                var cwdCandidate = Path.Combine(Environment.CurrentDirectory, relativePath);
+                if (File.Exists(cwdCandidate))
+                {
+                    DebugLogger.Log("SpriteService", $"Found asset in CWD: {cwdCandidate}");
+                    return File.OpenRead(cwdCandidate);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Filesystem fallback failed for '{avaresUri}': {ex.Message}");
+            }
+
+            throw new FileNotFoundException($"Asset not found: {avaresUri}");
         }
 
         private static IImage? GetSpriteImage(
@@ -279,6 +408,18 @@ namespace BalatroSeedOracle.Services
             }
             else
             {
+                // Stake-specific fallback: if caller passed just the color, try appending "stake"
+                if (string.Equals(category, "stake", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stakeKey = name + "stake";
+                    if (positions.TryGetValue(stakeKey, out var stakePos))
+                    {
+                        int x = stakePos.Pos.X * spriteWidth;
+                        int y = stakePos.Pos.Y * spriteHeight;
+                        return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                    }
+                }
+
                 DebugLogger.Log(
                     "SpriteService",
                     $"INFO: Could not find sprite for {category} '{name_in}' (tried: '{name}')"
@@ -647,25 +788,15 @@ namespace BalatroSeedOracle.Services
             return null;
         }
 
-        public IImage? GetUIAssetImage(string name, int spriteWidth = 18, int spriteHeight = 18)
-        {
-            return GetSpriteImage(
-                name,
-                uiAssetPositions,
-                uiAssetsSheet,
-                spriteWidth,
-                spriteHeight,
-                "ui_asset"
-            );
-        }
+        
 
         // New methods for deck, enhancement, and seal sprites
-        public IImage? GetDeckImage(string name, int spriteWidth = 71, int spriteHeight = 95)
+        public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
             return GetSpriteImage(name, deckPositions, deckSheet, spriteWidth, spriteHeight, "deck");
         }
 
-        public IImage? GetStakeImage(string name, int spriteWidth = 71, int spriteHeight = 95)
+        public IImage? GetStakeImage(string name, int spriteWidth = 48, int spriteHeight = 48)
         {
             return GetSpriteImage(name, stakePositions, stakeSheet, spriteWidth, spriteHeight, "stake");
         }
@@ -683,11 +814,22 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            // Get the stake image
+            // Get the stake image; if missing, fall back to stake sticker
             var stakeImage = GetStakeImage(stakeName);
             if (stakeImage == null)
             {
-                return deckImage; // Return base deck image if stake is not found
+                // Normalize to sticker key (e.g., "white" -> "whitestake")
+                var normalized = stakeName
+                    .ToLowerInvariant()
+                    .Replace("stake", string.Empty, StringComparison.Ordinal)
+                    .Trim();
+                var stickerKey = string.IsNullOrEmpty(normalized) ? "whitestake" : normalized + "stake";
+                stakeImage = GetStickerImage(stickerKey);
+                // If still not found, just return the base deck image
+                if (stakeImage == null)
+                {
+                    return deckImage;
+                }
             }
 
             // Create a render target to composite the images
@@ -868,83 +1010,7 @@ namespace BalatroSeedOracle.Services
         }
 
         // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
-        public IImage? GetStakeChipImage(string stakeName)
-        {
-            ArgumentNullException.ThrowIfNull(stakeName);
-            if (stakeChipsSheet == null)
-            {
-                DebugLogger.LogError("SpriteService", "Stake chips sheet not loaded!");
-                return null;
-            }
-
-            // Stake chips are 29x29 pixels arranged in a 5x2 grid
-            int spriteWidth = 29;
-            int spriteHeight = 29;
-
-            // Map stake names to grid positions
-            // Top row: White, Red, Green, Blue, Black
-            // Bottom row: Purple, Orange, Gold1, Gold2, Special
-            int x,
-                y;
-            switch (
-                stakeName
-                    .ToLowerInvariant()
-                    .Replace("stake", string.Empty, StringComparison.Ordinal)
-                    .Trim()
-            )
-            {
-                case "white":
-                    x = 0;
-                    y = 0;
-                    break;
-                case "red":
-                    x = 1;
-                    y = 0;
-                    break;
-                case "green":
-                    x = 2;
-                    y = 0;
-                    break;
-                case "blue":
-                    x = 3;
-                    y = 0;
-                    break;
-                case "black":
-                    x = 4;
-                    y = 0;
-                    break;
-                case "purple":
-                    x = 0;
-                    y = 1;
-                    break;
-                case "orange":
-                    x = 1;
-                    y = 1;
-                    break;
-                case "gold":
-                    x = 2;
-                    y = 1;
-                    break; // Use Gold1 for now
-                default:
-                    return null;
-            }
-
-            int pixelX = x * spriteWidth;
-            int pixelY = y * spriteHeight;
-
-            try
-            {
-                return new CroppedBitmap(
-                    stakeChipsSheet,
-                    new PixelRect(pixelX, pixelY, spriteWidth, spriteHeight)
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SpriteService", $"Error getting stake chip image: {ex.Message}");
-                return null;
-            }
-        }
+        
 
         public IImage? GetBoosterImage(string packType)
         {

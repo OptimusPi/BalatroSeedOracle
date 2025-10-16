@@ -5,31 +5,47 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
+using Avalonia;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.Input;
+using Motely;
 
 namespace BalatroSeedOracle.Components;
 
 public partial class DeckAndStakeSelector : UserControl
 {
-    private DeckAndStakeSelectorViewModel? _viewModel;
+    private readonly DeckAndStakeSelectorViewModel _viewModel;
 
+    // Events mirror the inner ViewModel so other controls can subscribe (kept for backward compatibility)
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
     public event EventHandler? DeckSelected;
 
     public DeckAndStakeSelector()
     {
         InitializeComponent();
-        InitializeViewModel();
-    }
-
-    private void InitializeViewModel()
-    {
+        // Create internal ViewModel and set DataContext to the ViewModel for pure MVVM binding
         _viewModel = new DeckAndStakeSelectorViewModel(ServiceHelper.GetRequiredService<SpriteService>());
         DataContext = _viewModel;
+        // Initialize styled properties from ViewModel
+        DeckIndex = _viewModel.DeckIndex;
+        StakeIndex = _viewModel.StakeIndex;
+    DeckImage = _viewModel.DeckImage;
+    StakeImage = _viewModel.StakeImage;
+        // Subscribe to ViewModel property changes to keep exposed styled properties in sync (compatibility)
+        _viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(_viewModel.DeckIndex)) DeckIndex = _viewModel.DeckIndex;
+            if (e.PropertyName == nameof(_viewModel.StakeIndex)) StakeIndex = _viewModel.StakeIndex;
+            if (e.PropertyName == nameof(_viewModel.DeckImage)) DeckImage = _viewModel.DeckImage;
+            if (e.PropertyName == nameof(_viewModel.StakeImage)) StakeImage = _viewModel.StakeImage;
+        };
 
-        // Forward ViewModel events to maintain API compatibility
-        _viewModel.SelectionChanged += (s, e) => SelectionChanged?.Invoke(this, e);
-        _viewModel.DeckSelected += (s, e) => DeckSelected?.Invoke(this, e);
+        // Forward inner ViewModel events to control-level events for compatibility
+        _viewModel.SelectionChanged += (s, selection) => SelectionChanged?.Invoke(this, selection);
+        _viewModel.DeckSelected += (s, ea) => DeckSelected?.Invoke(this, ea);
     }
+
+    // InitializeViewModel removed; initialization happens in constructor to avoid reassigning readonly field
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -44,41 +60,69 @@ public partial class DeckAndStakeSelector : UserControl
         // Pure MVVM: bindings handle synchronization; no manual event hookups required
     }
 
-    // Public API - delegates to ViewModel
+    // DeckIndex property for MVVM two-way binding
+    public static readonly StyledProperty<int> DeckIndexProperty =
+        AvaloniaProperty.Register<DeckAndStakeSelector, int>(nameof(DeckIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int DeckIndex
     {
-        get => _viewModel?.DeckIndex ?? 0;
+        get => GetValue(DeckIndexProperty);
         set
         {
-            if (_viewModel != null)
-            {
-                _viewModel.DeckIndex = value;
-            }
+            SetValue(DeckIndexProperty, value);
+            _viewModel.DeckIndex = value;
         }
     }
 
+    // StakeIndex property for MVVM two-way binding
+    public static readonly StyledProperty<int> StakeIndexProperty =
+        AvaloniaProperty.Register<DeckAndStakeSelector, int>(nameof(StakeIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int StakeIndex
     {
-        get => _viewModel?.StakeIndex ?? 0;
+        get => GetValue(StakeIndexProperty);
         set
         {
-            if (_viewModel != null)
-            {
-                _viewModel.StakeIndex = value;
-            }
+            SetValue(StakeIndexProperty, value);
+            _viewModel.StakeIndex = value;
         }
     }
 
-    public string SelectedDeckName => _viewModel?.SelectedDeckName ?? "Red";
-    public string SelectedStakeName => _viewModel?.SelectedStakeName ?? "White";
-
-    public void SetDeck(string deckName)
+    // Expose ViewModel-selected image paths as IImage for binding to Image.Source
+    public static readonly StyledProperty<IImage?> DeckImageProperty =
+        AvaloniaProperty.Register<DeckAndStakeSelector, IImage?>(nameof(DeckImage));
+    public IImage? DeckImage
     {
-        _viewModel?.SetDeck(deckName);
+        get => GetValue(DeckImageProperty);
+        private set => SetValue(DeckImageProperty, value);
     }
+    public static readonly StyledProperty<IImage?> StakeImageProperty =
+        AvaloniaProperty.Register<DeckAndStakeSelector, IImage?>(nameof(StakeImage));
+    public IImage? StakeImage
+    {
+        get => GetValue(StakeImageProperty);
+        private set => SetValue(StakeImageProperty, value);
+    }
+
+    // Commands for navigation and selection (expose as ICommand for broader compatibility)
+    public System.Windows.Input.ICommand PreviousDeckCommand => _viewModel.PreviousDeckCommand;
+    public System.Windows.Input.ICommand NextDeckCommand => _viewModel.NextDeckCommand;
+    public System.Windows.Input.ICommand PreviousStakeCommand => _viewModel.PreviousStakeCommand;
+    public System.Windows.Input.ICommand NextStakeCommand => _viewModel.NextStakeCommand;
+    public System.Windows.Input.ICommand SelectCommand => _viewModel.SelectCommand;
 
     public void SetStake(string stakeName)
     {
         _viewModel?.SetStake(stakeName);
     }
+    public void SetDeck(string deckName)
+    {
+        _viewModel?.SetDeck(deckName);
+    }
+
+    // Forward selected names
+    public string SelectedDeckName => _viewModel.SelectedDeckName;
+    public string SelectedStakeName => _viewModel.SelectedStakeName;
+
+    // Forward strongly-typed enum selections
+    public MotelyDeck SelectedDeck => _viewModel.SelectedDeck;
+    public MotelyStake SelectedStake => _viewModel.SelectedStake;
 }

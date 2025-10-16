@@ -20,8 +20,8 @@
 
         <!-- Header: Deck/Stake Selectors & Result Counter -->
         <Border Grid.Row="0"
-                Background="#1A1A1A"
-                BorderBrush="#FFD700"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,0,0,2"
                 Padding="20">
             <Grid ColumnDefinitions="Auto,20,Auto,*,Auto">
@@ -40,7 +40,7 @@
                     <TextBlock Text="{Binding ResultCounter}"
                                FontSize="16"
                                FontWeight="Bold"
-                               Foreground="#FFD700"
+                               Foreground="{StaticResource TextLight}"
                                HorizontalAlignment="Right"/>
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Button Content="◀ PgUp"
@@ -58,19 +58,19 @@
 
         <!-- Current Seed Display -->
         <Border Grid.Row="1"
-                Background="#252525"
+                Background="{StaticResource ContainerDarkPrecise}"
                 Padding="20,10">
             <Grid ColumnDefinitions="Auto,*">
                 <TextBlock Grid.Column="0"
                            Text="SEED: "
                            FontSize="18"
                            FontWeight="Bold"
-                           Foreground="#888"/>
+                           Foreground="{StaticResource TextInactive}"/>
                 <TextBlock Grid.Column="1"
                            Text="{Binding CurrentSeed}"
                            FontSize="18"
                            FontWeight="Bold"
-                           Foreground="#FFD700"
+                           Foreground="{StaticResource TextLight}"
                            Margin="5,0,0,0"/>
             </Grid>
         </Border>
@@ -84,15 +84,12 @@
 
                 <!-- Loading Indicator -->
                 <Border IsVisible="{Binding IsAnalyzing}"
-                        Background="#1A1A1A"
-                        BorderBrush="#FFD700"
-                        BorderThickness="2"
-                        CornerRadius="8"
+                        Classes="info-panel"
                         Padding="40">
                     <TextBlock Text="🃏 Analyzing seed..."
+                               Classes="info-badge-large"
                                FontSize="24"
                                FontWeight="Bold"
-                               Foreground="#FFD700"
                                HorizontalAlignment="Center"/>
                 </Border>
 
@@ -105,8 +102,8 @@
 
         <!-- Bottom Navigation -->
         <Border Grid.Row="3"
-                Background="#1A1A1A"
-                BorderBrush="#FFD700"
+                Background="{StaticResource ContainerDarkPrecise}"
+                BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="0,2,0,0"
                 Padding="20,10">
             <Grid ColumnDefinitions="*,Auto,*">
@@ -122,7 +119,7 @@
                     <TextBlock Text="{Binding AnteNavigationDisplay}"
                                FontSize="16"
                                FontWeight="Bold"
-                               Foreground="#FFD700"
+                               Foreground="{StaticResource TextLight}"
                                VerticalAlignment="Center"/>
                     <Button Content="Next Ante ▼"
                             Command="{Binding ScrollDownAnteCommand}"

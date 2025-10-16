@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
 using Motely.Filters;
 

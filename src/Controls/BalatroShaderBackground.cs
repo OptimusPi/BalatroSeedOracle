@@ -76,6 +76,13 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
+        // Allow runtime configuration of parameter ranges from UI
+        public void SetContrastRange(float min, float max) => _handler?.SetContrastRange(min, max);
+        public void SetSpinAmountRange(float min, float max) => _handler?.SetSpinAmountRange(min, max);
+        public void SetTwirlSpeedRange(float min, float max) => _handler?.SetTwirlSpeedRange(min, max);
+        public void SetZoomPunchRange(float min, float max) => _handler?.SetZoomPunchRange(min, max);
+        public void SetMelodySaturationRange(float min, float max) => _handler?.SetMelodySaturationRange(min, max);
+
         public void CycleTheme()
         {
             var themes = Enum.GetValues<BackgroundTheme>();
@@ -180,10 +187,6 @@ namespace BalatroSeedOracle.Controls
                 _customVisual = compositionTarget.Compositor.CreateCustomVisual(_handler);
                 ElementComposition.SetElementChildVisual(this, _customVisual);
                 _customVisual.Size = new Vector(Bounds.Width, Bounds.Height);
-                
-                // Start the animation loop by invalidating and registering for updates
-                _handler.Invalidate();
-                _handler.RegisterForNextAnimationFrameUpdate();
             }
 
             // Hook up mouse move for parallax effect
@@ -237,12 +240,24 @@ namespace BalatroSeedOracle.Controls
         private float _bassIntensity = 0f;
         private float _smoothedMelodySaturation = 0f; // Heavily smoothed for non-flickering saturation
 
-        // Shader parameters (controllable via settings)
-        private float _contrast = 2.0f;
-        private float _spinAmount = 0.3f;
+    // Shader parameters (controllable via settings)
+    private float _contrast = 2.0f;
+    private float _spinAmount = 0.3f;
         private float _speed = 1.0f; // Kept for compatibility, not used for base time anymore
         private float _baseTimeSpeed = 1.0f;
         private float _audioReactivityIntensity = 0.0f;
+
+    // Per-parameter ranges (min/max) used to map audio intensity into shader parameter ranges
+    private float _contrastRangeMin;
+    private float _contrastRangeMax;
+    private float _spinRangeMin;
+    private float _spinRangeMax;
+    private float _twirlRangeMin;
+    private float _twirlRangeMax;
+    private float _zoomPunchRangeMin;
+    private float _zoomPunchRangeMax;
+    private float _melodySatRangeMin;
+    private float _melodySatRangeMax;
 
         // Audio source mappings for shader parameters
         private AudioSource _shadowFlickerSource = AudioSource.Drums;
@@ -277,6 +292,18 @@ namespace BalatroSeedOracle.Controls
         private float _parallaxOffsetY = 0f;
         private float _parallaxStrength = 0.15f; // How much the mouse affects offset (0-1)
 
+        public override void OnMessage(object message)
+        {
+            // Handle initialization message to start animation
+            base.OnMessage(message);
+            
+            // When first created, start the animation loop
+            if (!_isDisposed && _isAnimating)
+            {
+                RegisterForNextAnimationFrameUpdate();
+            }
+        }
+
         public void SetAnimating(bool animating)
         {
             _isAnimating = animating;
@@ -285,6 +312,7 @@ namespace BalatroSeedOracle.Controls
             if (animating)
             {
                 _lastUpdateTime = _stopwatch.Elapsed.TotalSeconds;
+                RegisterForNextAnimationFrameUpdate();
             }
         }
 
@@ -345,6 +373,39 @@ namespace BalatroSeedOracle.Controls
         {
             _smoothedMelodySaturation = Math.Clamp(saturation, 0.0f, 1.0f);
         }
+
+        // Range setters (public API) - caller should set sensible ranges
+        public void SetContrastRange(float min, float max)
+        {
+            _contrastRangeMin = Math.Min(min, max);
+            _contrastRangeMax = Math.Max(min, max);
+        }
+
+        public void SetSpinAmountRange(float min, float max)
+        {
+            _spinRangeMin = Math.Min(min, max);
+            _spinRangeMax = Math.Max(min, max);
+        }
+
+        public void SetTwirlSpeedRange(float min, float max)
+        {
+            _twirlRangeMin = Math.Min(min, max);
+            _twirlRangeMax = Math.Max(min, max);
+        }
+
+        public void SetZoomPunchRange(float min, float max)
+        {
+            _zoomPunchRangeMin = Math.Min(min, max);
+            _zoomPunchRangeMax = Math.Max(min, max);
+        }
+
+        public void SetMelodySaturationRange(float min, float max)
+        {
+            _melodySatRangeMin = Math.Min(min, max);
+            _melodySatRangeMax = Math.Max(min, max);
+        }
+
+        private static float Lerp(float a, float b, float t) => a + (b - a) * t;
 
         public void SetAudioReactivityIntensity(float intensity)
         {
@@ -713,14 +774,25 @@ namespace BalatroSeedOracle.Controls
                 // Use global intensity multiplier for user control
                 float intensityScale = _audioReactivityIntensity;
 
-                // ShadowFlicker affects contrast: base 2.0, audio can add 0-0.5 (reduced from 3.0)
-                float audioContrast = _contrast + (shadowFlickerIntensity * 0.5f * intensityScale);
+                // Map audio intensities into configured ranges (if ranges set) using intensityScale
+                float audioContrast = _contrast;
+                if (_contrastRangeMax != _contrastRangeMin)
+                {
+                    audioContrast = Lerp(_contrastRangeMin, _contrastRangeMax, shadowFlickerIntensity * intensityScale);
+                }
 
-                // Spin affects spin_amount: base 0.3, audio can add 0-0.15 (reduced from 0.7)
-                float audioSpinAmount = _spinAmount + (spinIntensity * 0.15f * intensityScale);
+                float audioSpinAmount = _spinAmount;
+                if (_spinRangeMax != _spinRangeMin)
+                {
+                    audioSpinAmount = Lerp(_spinRangeMin, _spinRangeMax, spinIntensity * intensityScale);
+                }
 
-                // Twirl affects ADDITIONAL speed on top of base: audio can add 0-0.3x (reduced from 2.0)
-                float audioSpeedBoost = (twirlIntensity * 0.3f * intensityScale);
+                // Twirl maps to additional speed boost
+                float audioSpeedBoost = (twirlIntensity * intensityScale);
+                if (_twirlRangeMax != _twirlRangeMin)
+                {
+                    audioSpeedBoost = Lerp(_twirlRangeMin, _twirlRangeMax, twirlIntensity * intensityScale);
+                }
 
                 // ZoomThump creates punch effect - sudden zoom that decays
                 // When intensity spikes, add to zoom punch (range: 0-10 for noticeable but not extreme effect)
@@ -733,11 +805,15 @@ namespace BalatroSeedOracle.Controls
                 // Decay zoom punch exponentially (faster decay = snappier punch)
                 _zoomPunch *= 0.85f; // 15% decay per frame (~60fps = quick decay)
 
-                // Get saturation intensity from mapped audio source
+                // Get saturation intensity from mapped audio source and map into range if provided
                 float saturationIntensity = GetAudioIntensity(_colorSaturationSource);
+                float targetSaturation = saturationIntensity * intensityScale;
+                if (_melodySatRangeMax != _melodySatRangeMin)
+                {
+                    targetSaturation = Lerp(_melodySatRangeMin, _melodySatRangeMax, saturationIntensity * intensityScale);
+                }
 
                 // Smooth saturation heavily to prevent flickering (95% previous, 5% new)
-                float targetSaturation = saturationIntensity * intensityScale;
                 _smoothedMelodySaturation = _smoothedMelodySaturation * 0.95f + targetSaturation * 0.05f;
 
                 // Total speed = base time speed + audio boost

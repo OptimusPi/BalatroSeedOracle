@@ -345,6 +345,75 @@
                             </Border>
                         </Expander>
 
+                        <!-- ADVANCED MAPPING RANGES -->
+                        <Expander Header="🎚 Advanced Mapping Ranges" IsExpanded="False">
+                            <Border Background="#f9f9f9" CornerRadius="6" Padding="15" Margin="0,8,0,0">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Adjust how audio intensities map into shader parameter ranges. These let you amplify or compress the effect of each audio source." Foreground="#666" FontSize="11" TextWrapping="Wrap"/>
+
+                                    <!-- Contrast Range -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Contrast Range" Foreground="#4a4a4a" FontSize="12"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Min" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding ContrastRangeMin}" Minimum="0.5" Maximum="8.0"/>
+                                            <TextBlock Grid.Column="2" Text="Max" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="3" Value="{Binding ContrastRangeMax}" Minimum="0.5" Maximum="12.0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding ContrastRangeMin, StringFormat='Min: {0:F1}'}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Spin Range -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Spin Amount Range" Foreground="#4a4a4a" FontSize="12"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Min" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding SpinRangeMin}" Minimum="0.0" Maximum="1.0"/>
+                                            <TextBlock Grid.Column="2" Text="Max" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="3" Value="{Binding SpinRangeMax}" Minimum="0.0" Maximum="2.0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding SpinRangeMin, StringFormat='Min: {0:F2}'}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Twirl Speed Range -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Twirl Speed Range" Foreground="#4a4a4a" FontSize="12"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Min" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding TwirlRangeMin}" Minimum="0.0" Maximum="2.0"/>
+                                            <TextBlock Grid.Column="2" Text="Max" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="3" Value="{Binding TwirlRangeMax}" Minimum="0.0" Maximum="4.0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding TwirlRangeMin, StringFormat='Min: {0:F2}'}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Zoom Punch Range -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Zoom Punch Range" Foreground="#4a4a4a" FontSize="12"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Min" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding ZoomPunchRangeMin}" Minimum="0.0" Maximum="20.0"/>
+                                            <TextBlock Grid.Column="2" Text="Max" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="3" Value="{Binding ZoomPunchRangeMax}" Minimum="0.0" Maximum="40.0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding ZoomPunchRangeMin, StringFormat='Min: {0:F1}'}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Melody Saturation Range -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Melody Saturation Range" Foreground="#4a4a4a" FontSize="12"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Min" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding MelodySatRangeMin}" Minimum="0.0" Maximum="1.0"/>
+                                            <TextBlock Grid.Column="2" Text="Max" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="3" Value="{Binding MelodySatRangeMax}" Minimum="0.0" Maximum="2.0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding MelodySatRangeMin, StringFormat='Min: {0:F2}'}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Expander>
+
                     </StackPanel>
                 </Border>
             </ScrollViewer>

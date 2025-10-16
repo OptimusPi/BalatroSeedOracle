@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace BalatroSeedOracle.Controls
 {
-    public partial class ItemConfigPopup : UserControl
+    public partial class FilterItemDisplay : UserControl
     {
-        public ItemConfigPopup()
+        public FilterItemDisplay()
         {
             InitializeComponent();
         }

@@ -11,6 +11,7 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class StandardModal : UserControl
     {
         public event EventHandler? BackClicked;
+        private bool _isBackRequestedHooked = false;
 
         public StandardModal()
         {
@@ -29,6 +30,10 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 overlayBackground.PointerPressed += OnOverlayClicked;
             }
+
+            // Hook TopLevel.BackRequested once the control is attached
+            this.Loaded += OnLoaded;
+            this.Unloaded += OnUnloaded;
         }
 
         private void InitializeComponent()
@@ -89,7 +94,12 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
         {
-            BackClicked?.Invoke(this, EventArgs.Empty);
+            // First, allow in-modal back navigation for multi-step/progressive flows
+            if (!TryNavigateBackWithinModal())
+            {
+                // Default behavior: close the modal
+                BackClicked?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private void OnOverlayClicked(object? sender, Avalonia.Input.PointerPressedEventArgs e)
@@ -104,6 +114,71 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 BackClicked?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        private void OnTopLevelBackRequested(object? sender, RoutedEventArgs e)
+        {
+            // Try in-modal back first; if not possible, close the modal
+            if (TryNavigateBackWithinModal())
+            {
+                e.Handled = true;
+                return;
+            }
+
+            BackClicked?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
+        }
+
+        private void OnLoaded(object? sender, RoutedEventArgs e)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null && !_isBackRequestedHooked)
+            {
+                topLevel.BackRequested += OnTopLevelBackRequested;
+                _isBackRequestedHooked = true;
+            }
+        }
+
+        private void OnUnloaded(object? sender, RoutedEventArgs e)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null && _isBackRequestedHooked)
+            {
+                topLevel.BackRequested -= OnTopLevelBackRequested;
+                _isBackRequestedHooked = false;
+            }
+        }
+
+        /// <summary>
+        /// Checks whether the current modal content supports back navigation and attempts it.
+        /// Returns true if a back navigation occurred, false otherwise.
+        /// </summary>
+        private bool TryNavigateBackWithinModal()
+        {
+            try
+            {
+                var contentPresenter = this.FindControl<ContentPresenter>("ModalContent");
+                var content = contentPresenter?.Content;
+
+                // Try view-level implementation first
+                if (content is BalatroSeedOracle.Helpers.IModalBackNavigable viewNav && viewNav.TryGoBack())
+                {
+                    return true;
+                }
+
+                // Then try DataContext-level implementation (common for MVVM ViewModels)
+                if (content is Control control && control.DataContext is BalatroSeedOracle.Helpers.IModalBackNavigable vmNav)
+                {
+                    if (vmNav.TryGoBack())
+                        return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("StandardModal", $"Error during back navigation attempt: {ex.Message}");
+            }
+
+            return false;
         }
 
         /// <summary>

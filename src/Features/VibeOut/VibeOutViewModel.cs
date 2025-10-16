@@ -19,6 +19,8 @@ namespace BalatroSeedOracle.Features.VibeOut
         private readonly Random _random = new();
         private readonly DispatcherTimer _animationTimer;
         private readonly DispatcherTimer _vibeUpdateTimer;
+        private System.Timers.Timer? _volumeSaveDebounce;
+        private const int VolumeSaveDebounceMs = 250;
         
         // Matrix rain data
         public ObservableCollection<FallingSeed> MatrixSeeds { get; } = new();
@@ -170,7 +172,8 @@ namespace BalatroSeedOracle.Features.VibeOut
                 profile.VibeOutSettings.Melody1Volume = Melody1Volume;
                 profile.VibeOutSettings.Melody2Volume = Melody2Volume;
 
-                profileService.SaveProfile();
+                // Perform save off the UI thread to prevent stutters
+                Task.Run(() => profileService.SaveProfile());
             }
             catch (Exception ex)
             {
@@ -187,7 +190,23 @@ namespace BalatroSeedOracle.Features.VibeOut
             {
                 _audioManager.SetTrackVolume(trackName, volume, pan);
             }
-            SaveVolumeSettings();
+            ScheduleVolumeSettingsSave();
+        }
+
+        private void ScheduleVolumeSettingsSave()
+        {
+            if (_volumeSaveDebounce == null)
+            {
+                _volumeSaveDebounce = new System.Timers.Timer(VolumeSaveDebounceMs)
+                {
+                    AutoReset = false,
+                };
+                _volumeSaveDebounce.Elapsed += (s, e) => SaveVolumeSettings();
+            }
+
+            // Restart debounce timer on every change
+            _volumeSaveDebounce.Stop();
+            _volumeSaveDebounce.Start();
         }
 
         [RelayCommand]
@@ -235,6 +254,9 @@ namespace BalatroSeedOracle.Features.VibeOut
             
             _animationTimer.Stop();
             _vibeUpdateTimer.Stop();
+            _volumeSaveDebounce?.Stop();
+            _volumeSaveDebounce?.Dispose();
+            _volumeSaveDebounce = null;
             
             // Clean up audio
             if (_audioManager != null)

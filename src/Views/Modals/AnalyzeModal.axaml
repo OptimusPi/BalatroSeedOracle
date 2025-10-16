@@ -15,88 +15,13 @@
         <converters:TagSpriteConverter x:Key="TagSpriteConverter"/>
     </UserControl.Resources>
 
-    <UserControl.Styles>
-        <!-- Use global styles for tab buttons; removing modal-specific overrides -->
-        
-        <!-- Small button style -->
-        <Style Selector="Button.small-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.small-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        
-        <!-- Navigation arrow style -->
-        <Style Selector="Button.nav-arrow">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="26"/>
-            
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        <Style Selector="Button.nav-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        
-        <!-- Content box style -->
-        <Style Selector="Border.content-box">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Ante Panel Style -->
-        <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Margin" Value="5,5,5,10"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Shop Slot Style -->
-        <Style Selector="Border.shop-slot">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="MinWidth" Value="90"/>
-            <Setter Property="MinHeight" Value="130"/>
-        </Style>
-        
-        <!-- Tag Display Style -->
-        <Style Selector="Border.tag-display">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Section Header Style -->
-        <Style Selector="TextBlock.section-header">
-            <Setter Property="FontSize" Value="24"/>
-
-            <Setter Property="Margin" Value="0,0,0,15"/>
-            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
-        </Style>
-    </UserControl.Styles>
+    <!-- Remove local styles in favor of global Balatro styles -->
 
     <!-- DataTemplates -->
     <UserControl.DataTemplates>
         <!-- Shop Item Template -->
         <DataTemplate DataType="models:ShopItemModel">
-            <Border Classes="shop-slot" Width="100" Height="140">
+            <Border Classes="modal-content-box" Width="100" Height="140">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <!-- Item Sprite -->
                     <Image Source="{Binding Converter={StaticResource ShopItemSpriteConverter}}"
@@ -115,7 +40,7 @@
 
         <!-- Booster Pack Template -->
         <DataTemplate DataType="models:BoosterPackModel">
-            <Border Classes="shop-slot" MinWidth="100" MaxWidth="150" MinHeight="140" Margin="4">
+            <Border Classes="modal-content-box" MinWidth="100" MaxWidth="150" MinHeight="140" Margin="4">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <!-- Pack Sprite -->
                     <Image Source="{Binding Converter={StaticResource BoosterPackSpriteConverter}}"
@@ -143,7 +68,7 @@
 
         <!-- Tag Template -->
         <DataTemplate DataType="models:TagModel">
-            <Border Classes="tag-display" Margin="4">
+            <Border Classes="modal-content-box" CornerRadius="20" Padding="12,8" Margin="4">
                 <StackPanel Orientation="Horizontal">
                     <!-- Tag Sprite -->
                     <Image Source="{Binding Converter={StaticResource TagSpriteConverter}}"
@@ -165,10 +90,10 @@
 
         <!-- Ante Template -->
         <DataTemplate DataType="models:AnteAnalysisModel">
-            <Border Classes="ante-panel" Padding="20">
+            <Border Classes="BalatroSeedOracle-modal-card-precise" Padding="20">
                 <StackPanel>
                     <!-- Ante Header -->
-                    <TextBlock Text="{Binding AnteTitle}" Classes="section-header"/>
+                    <TextBlock Text="{Binding AnteTitle}" Classes="balatro-section-header"/>
 
                     <!-- Voucher Section -->
                     <StackPanel IsVisible="{Binding HasVoucher}">
@@ -219,20 +144,11 @@
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
         
-        <!-- Tab buttons (use global red flat tab-button style with built-in triangle) -->
-        <StackPanel Grid.Row="0"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,0,0,2">
-            <Button Content="DECK/STAKE"
-                    Classes="tab-button"
-                    Classes.active="{Binding IsSettingsTabActive}"
-                    Command="{Binding SwitchToSettingsTabCommand}"/>
-            <Button Content="ANALYZE"
-                    Classes="tab-button"
-                    Classes.active="{Binding IsAnalyzerTabActive}"
-                    Command="{Binding SwitchToAnalyzerTabCommand}"/>
-        </StackPanel>
+        <!-- Balatro-style tab header -->
+        <components:BalatroTabControl Grid.Row="0"
+                                      Name="TabHeader"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,2"/>
         
         <!-- Content panels -->
         <Grid Grid.Row="1">
@@ -249,8 +165,7 @@
                           Opacity="0.8"
                           Margin="0,8,0,0"/>
 
-                <Border Background="{StaticResource DarkModalGrey}"
-                        CornerRadius="12"
+                <Border Classes="BalatroSeedOracle-modal-card-precise"
                         Padding="40"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
@@ -262,7 +177,7 @@
             <ScrollViewer IsVisible="{Binding AnalyzerTabVisible}" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Input Section -->
-                    <Border Background="{StaticResource DarkModalGrey}" CornerRadius="12" Margin="10">
+                    <Border Classes="modal-content-panel" Margin="10">
                         <Grid Margin="15" ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -288,8 +203,6 @@
                                     Height="40"
                                     Margin="0,0,15,0"
                                     CornerRadius="6"
-                                    Background="{StaticResource VeryDarkGrey}"
-                                    BorderBrush="{StaticResource DarkBorder}"
                                     BorderThickness="0"/>
 
                             <!-- Analyze Button -->
@@ -321,8 +234,7 @@
                     <!-- Results Section -->
                     <StackPanel Margin="5">
                         <!-- Placeholder -->
-                        <Border Background="{StaticResource DarkModalGrey}"
-                               CornerRadius="12"
+                        <Border Classes="BalatroSeedOracle-modal-card-precise"
                                Padding="40"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"

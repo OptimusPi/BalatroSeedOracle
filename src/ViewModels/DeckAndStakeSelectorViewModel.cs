@@ -4,7 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using Avalonia.Media.Imaging;
+using Avalonia.Media;
+using Motely;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -26,10 +27,17 @@ namespace BalatroSeedOracle.ViewModels
         private string[] _stakeDisplayValues;
 
         [ObservableProperty]
-        private Bitmap? _deckImage;
+        private IImage? _deckImage;
 
         [ObservableProperty]
-        private Bitmap? _stakeImage;
+        private IImage? _stakeImage;
+
+        // Strongly-typed selections for deck and stake
+        [ObservableProperty]
+        private MotelyDeck _selectedDeck;
+
+        [ObservableProperty]
+        private MotelyStake _selectedStake;
 
         public DeckAndStakeSelectorViewModel(SpriteService spriteService)
         {
@@ -45,6 +53,14 @@ namespace BalatroSeedOracle.ViewModels
                 "Orange Stake",
                 "Gold Stake"
             };
+
+            // Initialize enum selections to defaults
+            SelectedDeck = MotelyDeck.Red;
+            SelectedStake = MotelyStake.White;
+
+            // Ensure images initialize
+            UpdateDeckImage();
+            UpdateStakeImage();
         }
 
         #region Properties
@@ -123,6 +139,8 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnDeckIndexChanged(int value)
         {
+            // keep enum in sync
+            SelectedDeck = GetDeckEnum(value);
             OnPropertyChanged(nameof(SelectedDeckName));
             OnPropertyChanged(nameof(SelectedDeckDisplayName));
             OnPropertyChanged(nameof(SelectedDeckDescription));
@@ -132,11 +150,50 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnStakeIndexChanged(int value)
         {
+            // keep enum in sync
+            SelectedStake = GetStakeEnum(value);
             OnPropertyChanged(nameof(SelectedStakeName));
             OnPropertyChanged(nameof(SelectedStakeDisplayName));
             OnPropertyChanged(nameof(SelectedStakeDescription));
             UpdateStakeImage();
             RaiseSelectionChanged();
+        }
+
+        // When enum selection changes directly, update indices
+        partial void OnSelectedDeckChanged(MotelyDeck value)
+        {
+            var idx = GetDeckIndex(value);
+            if (DeckIndex != idx)
+            {
+                DeckIndex = idx;
+            }
+            else
+            {
+                // refresh dependent state if index unchanged
+                OnPropertyChanged(nameof(SelectedDeckName));
+                OnPropertyChanged(nameof(SelectedDeckDisplayName));
+                OnPropertyChanged(nameof(SelectedDeckDescription));
+                UpdateDeckImage();
+                RaiseSelectionChanged();
+            }
+        }
+
+        partial void OnSelectedStakeChanged(MotelyStake value)
+        {
+            var idx = GetStakeIndex(value);
+            if (StakeIndex != idx)
+            {
+                StakeIndex = idx;
+            }
+            else
+            {
+                // refresh dependent state if index unchanged
+                OnPropertyChanged(nameof(SelectedStakeName));
+                OnPropertyChanged(nameof(SelectedStakeDisplayName));
+                OnPropertyChanged(nameof(SelectedStakeDescription));
+                UpdateStakeImage();
+                RaiseSelectionChanged();
+            }
         }
 
         #endregion
@@ -194,12 +251,12 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateDeckImage()
         {
-            DeckImage = (Bitmap?)_spriteService.GetDeckImage(SelectedDeckName);
+            DeckImage = _spriteService.GetDeckImage(SelectedDeckName);
         }
 
         private void UpdateStakeImage()
         {
-            StakeImage = (Bitmap?)_spriteService.GetStakeImage(SelectedStakeName);
+            StakeImage = _spriteService.GetStakeImage(SelectedStakeName);
         }
 
         private string GetDeckName(int index)
@@ -225,6 +282,52 @@ namespace BalatroSeedOracle.ViewModels
             };
         }
 
+        private MotelyDeck GetDeckEnum(int index)
+        {
+            return index switch
+            {
+                0 => MotelyDeck.Red,
+                1 => MotelyDeck.Blue,
+                2 => MotelyDeck.Yellow,
+                3 => MotelyDeck.Green,
+                4 => MotelyDeck.Black,
+                5 => MotelyDeck.Magic,
+                6 => MotelyDeck.Nebula,
+                7 => MotelyDeck.Ghost,
+                8 => MotelyDeck.Abandoned,
+                9 => MotelyDeck.Checkered,
+                10 => MotelyDeck.Zodiac,
+                11 => MotelyDeck.Painted,
+                12 => MotelyDeck.Anaglyph,
+                13 => MotelyDeck.Plasma,
+                14 => MotelyDeck.Erratic,
+                _ => MotelyDeck.Red,
+            };
+        }
+
+        private int GetDeckIndex(MotelyDeck deck)
+        {
+            return deck switch
+            {
+                MotelyDeck.Red => 0,
+                MotelyDeck.Blue => 1,
+                MotelyDeck.Yellow => 2,
+                MotelyDeck.Green => 3,
+                MotelyDeck.Black => 4,
+                MotelyDeck.Magic => 5,
+                MotelyDeck.Nebula => 6,
+                MotelyDeck.Ghost => 7,
+                MotelyDeck.Abandoned => 8,
+                MotelyDeck.Checkered => 9,
+                MotelyDeck.Zodiac => 10,
+                MotelyDeck.Painted => 11,
+                MotelyDeck.Anaglyph => 12,
+                MotelyDeck.Plasma => 13,
+                MotelyDeck.Erratic => 14,
+                _ => 0,
+            };
+        }
+
         private string GetStakeName(int index)
         {
             return index switch
@@ -241,6 +344,38 @@ namespace BalatroSeedOracle.ViewModels
             };
         }
 
+        private MotelyStake GetStakeEnum(int index)
+        {
+            return index switch
+            {
+                0 => MotelyStake.White,
+                1 => MotelyStake.Red,
+                2 => MotelyStake.Green,
+                3 => MotelyStake.Black,
+                4 => MotelyStake.Blue,
+                5 => MotelyStake.Purple,
+                6 => MotelyStake.Orange,
+                7 => MotelyStake.Gold,
+                _ => MotelyStake.White,
+            };
+        }
+
+        private int GetStakeIndex(MotelyStake stake)
+        {
+            return stake switch
+            {
+                MotelyStake.White => 0,
+                MotelyStake.Red => 1,
+                MotelyStake.Green => 2,
+                MotelyStake.Black => 3,
+                MotelyStake.Blue => 4,
+                MotelyStake.Purple => 5,
+                MotelyStake.Orange => 6,
+                MotelyStake.Gold => 7,
+                _ => 0,
+            };
+        }
+
         #endregion
 
         #region Public Methods
@@ -250,26 +385,25 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SetDeck(string deckName)
         {
-            int index = deckName?.ToLower() switch
+            SelectedDeck = (deckName?.ToLower()) switch
             {
-                "red" => 0,
-                "blue" => 1,
-                "yellow" => 2,
-                "green" => 3,
-                "black" => 4,
-                "magic" => 5,
-                "nebula" => 6,
-                "ghost" => 7,
-                "abandoned" => 8,
-                "checkered" => 9,
-                "zodiac" => 10,
-                "painted" => 11,
-                "anaglyph" => 12,
-                "plasma" => 13,
-                "erratic" => 14,
-                _ => 0
+                "red" => MotelyDeck.Red,
+                "blue" => MotelyDeck.Blue,
+                "yellow" => MotelyDeck.Yellow,
+                "green" => MotelyDeck.Green,
+                "black" => MotelyDeck.Black,
+                "magic" => MotelyDeck.Magic,
+                "nebula" => MotelyDeck.Nebula,
+                "ghost" => MotelyDeck.Ghost,
+                "abandoned" => MotelyDeck.Abandoned,
+                "checkered" => MotelyDeck.Checkered,
+                "zodiac" => MotelyDeck.Zodiac,
+                "painted" => MotelyDeck.Painted,
+                "anaglyph" => MotelyDeck.Anaglyph,
+                "plasma" => MotelyDeck.Plasma,
+                "erratic" => MotelyDeck.Erratic,
+                _ => MotelyDeck.Red,
             };
-            DeckIndex = index;
         }
 
         /// <summary>
@@ -277,19 +411,18 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SetStake(string stakeName)
         {
-            int index = stakeName?.ToLower() switch
+            SelectedStake = (stakeName?.ToLower()) switch
             {
-                "white" => 0,
-                "red" => 1,
-                "green" => 2,
-                "black" => 3,
-                "blue" => 4,
-                "purple" => 5,
-                "orange" => 6,
-                "gold" => 7,
-                _ => 0
+                "white" => MotelyStake.White,
+                "red" => MotelyStake.Red,
+                "green" => MotelyStake.Green,
+                "black" => MotelyStake.Black,
+                "blue" => MotelyStake.Blue,
+                "purple" => MotelyStake.Purple,
+                "orange" => MotelyStake.Orange,
+                "gold" => MotelyStake.Gold,
+                _ => MotelyStake.White,
             };
-            StakeIndex = index;
         }
 
         #endregion

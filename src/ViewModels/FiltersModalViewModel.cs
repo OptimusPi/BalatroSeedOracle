@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.ViewModels.FilterTabs;
 using Motely.Filters;
 using BalatroSeedOracle.Helpers;
 using Avalonia.Controls;
@@ -21,7 +22,7 @@ namespace BalatroSeedOracle.ViewModels
     /// Main ViewModel for FiltersModal - proper MVVM pattern
     /// Replaces 8,583-line god class in FiltersModal.axaml.cs
     /// </summary>
-    public partial class FiltersModalViewModel : ObservableObject
+    public partial class FiltersModalViewModel : ObservableObject, BalatroSeedOracle.Helpers.IModalBackNavigable
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
@@ -86,13 +87,29 @@ namespace BalatroSeedOracle.ViewModels
         // Computed properties
         public bool HasLoadedFilter => !string.IsNullOrEmpty(CurrentFilterPath);
 
+        public ObservableCollection<BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel> FilterTabs { get; }
+
+        public BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel MustHaveItems { get; }
+        public BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel ShouldHaveItems { get; }
+        public BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel MustNotHaveItems { get; }
+
         public FiltersModalViewModel(IConfigurationService configurationService, IFilterService filterService)
         {
             _configurationService = configurationService;
             _filterService = filterService;
             
             _itemCategories = InitializeItemCategories();
-            // DON'T call InitializeTabs() here - it creates UI controls on a background thread!
+
+            MustHaveItems = new BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel { Header = "Must Have" };
+            ShouldHaveItems = new BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel { Header = "Should Have" };
+            MustNotHaveItems = new BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel { Header = "Must Not Have" };
+
+            FilterTabs = new ObservableCollection<BalatroSeedOracle.ViewModels.FilterTabs.FilterTabViewModel>
+            {
+                MustHaveItems, 
+                ShouldHaveItems, 
+                MustNotHaveItems 
+            };
         }
         
         // Deck/Stake index helpers
@@ -128,7 +145,28 @@ namespace BalatroSeedOracle.ViewModels
         public object? VisualBuilderTab { get; set; }
         public object? JsonEditorTab { get; set; }
 
+        [ObservableProperty]
+        private object? _currentPopup;
+
+        // Expose the currently selected tab’s content to the view
+        public object? CurrentTabContent
+        {
+            get
+            {
+                var index = SelectedTabIndex;
+                return (index >= 0 && index < TabItems.Count)
+                    ? TabItems[index].Content
+                    : null;
+            }
+        }
+
         // ===== COMMANDS (using [RelayCommand] source generator) =====
+        [RelayCommand]
+        private void OpenItemConfigPopup(ItemConfig itemConfig)
+        {
+            CurrentPopup = new ItemConfigPopupViewModel(itemConfig);
+        }
+
         [RelayCommand]
         private async Task SaveCurrentFilter()
         {
@@ -306,6 +344,37 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        private void PopulateFilterTabs(Motely.Filters.MotelyJsonConfig config)
+        {
+            MustHaveItems.Items.Clear();
+            ShouldHaveItems.Items.Clear();
+            MustNotHaveItems.Items.Clear();
+
+            if (config.Must != null)
+            {
+                foreach (var item in config.Must)
+                {
+                    MustHaveItems.Items.Add(new FilterItem { Name = item.Value ?? "", Status = FilterItemStatus.MustHave });
+                }
+            }
+
+            if (config.Should != null)
+            {
+                foreach (var item in config.Should)
+                {
+                    ShouldHaveItems.Items.Add(new FilterItem { Name = item.Value ?? "", Status = FilterItemStatus.ShouldHave });
+                }
+            }
+
+            if (config.MustNot != null)
+            {
+                foreach (var item in config.MustNot)
+                {
+                    MustNotHaveItems.Items.Add(new FilterItem { Name = item.Value ?? "", Status = FilterItemStatus.MustNotHave });
+                }
+            }
+        }
+
         [RelayCommand]
         private async Task ReloadVisualFromSavedFile()
         {
@@ -322,6 +391,7 @@ namespace BalatroSeedOracle.ViewModels
                 var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(CurrentFilterPath);
                 if (config != null)
                 {
+                    PopulateFilterTabs(config);
                     LoadConfigIntoState(config);
                     LoadedConfig = config;
                     DebugLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
@@ -381,10 +451,27 @@ namespace BalatroSeedOracle.ViewModels
                 $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Test:{IsTestTabVisible} Save:{IsSaveTabVisible}");
         }
 
-        // Automatically update tab visibility when the header selection changes
+        /// <summary>
+        /// Implements in-modal back navigation for tabbed filters workflow.
+        /// Returns true if navigation occurred; false indicates caller should close modal.
+        /// </summary>
+        public bool TryGoBack()
+        {
+            if (SelectedTabIndex > 0)
+            {
+                var newIndex = SelectedTabIndex - 1;
+                SelectedTabIndex = newIndex;
+                UpdateTabVisibility(newIndex);
+                return true;
+            }
+            return false;
+        }
+
+        // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
             UpdateTabVisibility(value);
+            OnPropertyChanged(nameof(CurrentTabContent));
         }
 
         // ===== HELPER METHODS =====
@@ -700,89 +787,45 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("TEST", new Grid()));
             // Separate SAVE header with SaveFilterTab content
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
+
+            // Ensure initial tab content and visibility are set
+            UpdateTabVisibility(SelectedTabIndex);
+            OnPropertyChanged(nameof(CurrentTabContent));
         }
 
         private object CreateLoadTabContent()
         {
-            // Create a FilterSelector for loading filters
-            var filterSelector = new Components.FilterSelector
+            // Use the new FilterSelectorControl (unified component for both modals)
+            var filterSelector = new Components.FilterSelectorControl
             {
-                Title = "Select Filter to Load",
-                ShowSelectButton = true,
-                ShowActionButtons = true,
-                AutoLoadEnabled = false  // Don't auto-load on selection, wait for button click
+                // In FiltersModal, we are NOT in the Search context
+                IsInSearchModal = false
             };
-            
-            // Wire up the FilterLoaded event to actually load the filter
-            filterSelector.FilterLoaded += async (sender, filterPath) =>
-            {
-                try
-                {
-                    DebugLogger.Log("FiltersModalViewModel", $"Loading filter from: {filterPath}");
-                    
-                    // Read and parse the filter
-                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-                    
-                    if (config != null)
-                    {
-                        LoadedConfig = config;
-                        CurrentFilterPath = filterPath;
-                        
-                        // Update deck and stake
-                        if (!string.IsNullOrEmpty(config.Deck))
-                        {
-                            var deckIndex = Array.IndexOf(new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", 
-                                "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" }, 
-                                config.Deck);
-                            if (deckIndex >= 0) SelectedDeckIndex = deckIndex;
-                        }
-                        
-                        if (!string.IsNullOrEmpty(config.Stake))
-                        {
-                            var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" },
-                                config.Stake.ToLower());
-                            if (stakeIndex >= 0) SelectedStakeIndex = stakeIndex;
-                        }
 
-                        // CRITICAL FIX: Switch to Visual Builder tab to show loaded filter (index 1, NOT 0!)
-                        // Tab indices: 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
-                        UpdateTabVisibility(1); // Visual tab
-
-                        DebugLogger.Log("FiltersModalViewModel", $"Filter loaded successfully: {config.Name}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter: {ex.Message}");
-                }
-            };
-            
-            // Handle filter editing
+            // Handle EDIT action: load config and switch to Visual Builder
             filterSelector.FilterEditRequested += async (sender, filterPath) =>
             {
-                // Trigger the same load logic for editing
                 try
                 {
                     DebugLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
-                    
+
                     var json = await System.IO.File.ReadAllTextAsync(filterPath);
                     var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-                    
+
                     if (config != null)
                     {
                         LoadedConfig = config;
                         CurrentFilterPath = filterPath;
-                        
-                        // Update deck and stake
+
+                        // Update deck and stake selection indices
                         if (!string.IsNullOrEmpty(config.Deck))
                         {
-                            var deckIndex = Array.IndexOf(new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", 
-                                "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" }, 
+                            var deckIndex = Array.IndexOf(new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic",
+                                "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" },
                                 config.Deck);
                             if (deckIndex >= 0) SelectedDeckIndex = deckIndex;
                         }
-                        
+
                         if (!string.IsNullOrEmpty(config.Stake))
                         {
                             var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" },
@@ -790,10 +833,8 @@ namespace BalatroSeedOracle.ViewModels
                             if (stakeIndex >= 0) SelectedStakeIndex = stakeIndex;
                         }
 
-                        // CRITICAL FIX: Switch to Visual Builder tab for editing (index 1, NOT 0!)
-                        // Tab indices: 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
-                        UpdateTabVisibility(1); // Visual tab
-
+                        // Switch to Visual Builder tab
+                        SelectedTabIndex = 1;
                         DebugLogger.Log("FiltersModalViewModel", $"Filter loaded for editing: {config.Name}");
                     }
                 }
@@ -802,8 +843,97 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
                 }
             };
-            
-            // Handle filter deletion
+
+            // Handle COPY action: duplicate file, resolve name collisions, load copy for editing
+            filterSelector.FilterCopyRequested += async (sender, originalPath) =>
+            {
+                try
+                {
+                    var directory = System.IO.Path.GetDirectoryName(originalPath) ?? Directory.GetCurrentDirectory();
+                    var baseName = System.IO.Path.GetFileNameWithoutExtension(originalPath);
+                    var extension = System.IO.Path.GetExtension(originalPath);
+
+                    // Prefer "(copy)" suffix and append counter if needed
+                    string candidateName = $"{baseName} (copy)";
+                    string newPath = System.IO.Path.Combine(directory, candidateName + extension);
+                    int counter = 2;
+                    while (System.IO.File.Exists(newPath))
+                    {
+                        candidateName = $"{baseName} (copy {counter})";
+                        newPath = System.IO.Path.Combine(directory, candidateName + extension);
+                        counter++;
+                    }
+
+                    // Read original config; if parse fails, still copy raw file
+                    Motely.Filters.MotelyJsonConfig? config = null;
+                    try
+                    {
+                        var json = await System.IO.File.ReadAllTextAsync(originalPath);
+                        config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                    }
+                    catch { }
+
+                    if (config != null)
+                    {
+                        // Update the config name to reflect copy and write new file
+                        var options = new System.Text.Json.JsonSerializerOptions
+                        {
+                            WriteIndented = true
+                        };
+                        config.Name = string.IsNullOrWhiteSpace(config.Name) ? candidateName : $"{config.Name} (copy)";
+                        var newJson = System.Text.Json.JsonSerializer.Serialize(config, options);
+                        await System.IO.File.WriteAllTextAsync(newPath, newJson);
+                    }
+                    else
+                    {
+                        // Fallback: simple file copy
+                        System.IO.File.Copy(originalPath, newPath, overwrite: false);
+                    }
+
+                    // Refresh list and load the new copy for editing
+                    filterSelector.RefreshFilters();
+
+                    try
+                    {
+                        var newJson = await System.IO.File.ReadAllTextAsync(newPath);
+                        var newConfig = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(newJson);
+                        if (newConfig != null)
+                        {
+                            LoadedConfig = newConfig;
+                            CurrentFilterPath = newPath;
+
+                            // Preserve deck/stake selections from the copy
+                            if (!string.IsNullOrEmpty(newConfig.Deck))
+                            {
+                                var deckIndex = Array.IndexOf(new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic",
+                                    "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" },
+                                    newConfig.Deck);
+                                if (deckIndex >= 0) SelectedDeckIndex = deckIndex;
+                            }
+
+                            if (!string.IsNullOrEmpty(newConfig.Stake))
+                            {
+                                var stakeIndex = Array.IndexOf(new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" },
+                                    newConfig.Stake.ToLower());
+                                if (stakeIndex >= 0) SelectedStakeIndex = stakeIndex;
+                            }
+
+                            SelectedTabIndex = 1;
+                            DebugLogger.Log("FiltersModalViewModel", $"Created and loaded copy: {candidateName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("FiltersModalViewModel", $"Copy created but failed to load: {ex.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("FiltersModalViewModel", $"Error copying filter: {ex.Message}");
+                }
+            };
+
+            // Handle DELETE action
             filterSelector.FilterDeleteRequested += (sender, filterPath) =>
             {
                 try
@@ -820,7 +950,23 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.LogError("FiltersModalViewModel", $"Error deleting filter: {ex.Message}");
                 }
             };
-            
+
+            // Handle CREATE NEW FILTER
+            filterSelector.NewFilterRequested += (sender, e) =>
+            {
+                try
+                {
+                    DebugLogger.Log("FiltersModalViewModel", "Create New Filter requested from Load tab");
+                    CreateNewFilter();
+                    SelectedTabIndex = 1;
+                    DebugLogger.Log("FiltersModalViewModel", "Switched to Visual Builder for new filter");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("FiltersModalViewModel", $"Error handling Create New Filter: {ex.Message}");
+                }
+            };
+
             return new Border
             {
                 Background = Avalonia.Media.Brush.Parse("#2a2a2a"),

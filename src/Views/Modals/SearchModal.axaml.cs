@@ -89,7 +89,7 @@ namespace BalatroSeedOracle.Views.Modals
                     DebugLogger.Log("SearchModal", "Filter loaded and displayed for preview - staying on Select Filter tab");
                 };
 
-                // Button click: Confirm selection and advance to Search
+                // Confirmed load: fired by Select button, then advance to Search
                 filterSelector.FilterConfirmed += async (s, path) =>
                 {
                     DebugLogger.Log("SearchModal", $"SELECT THIS FILTER button clicked! Path: {path}");

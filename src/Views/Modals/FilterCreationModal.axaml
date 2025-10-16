@@ -7,9 +7,8 @@
 
     <!-- Unified: Drop bespoke layout and host FilterSelectorControl -->
     <Grid Margin="20" RowDefinitions="*,Auto">
-        <!-- Filter selector with its own left/right panels -->
-        <components:FilterSelectorControl Name="FilterSelector"
-                                         IsInSearchModal="False"/>
+        <!-- Filter selector (MVVM) with its own left/right panels -->
+        <components:FilterSelector Name="FilterSelector"/>
 
         <!-- Extra actions specific to creation modal -->
         <StackPanel Grid.Row="1"

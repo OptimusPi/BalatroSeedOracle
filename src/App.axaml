@@ -112,6 +112,11 @@
         <SolidColorBrush x:Key="VeryDarkBackground">#2a2a2a</SolidColorBrush>
         <SolidColorBrush x:Key="DarkGreyBorder">#4a4a4a</SolidColorBrush>
         <SolidColorBrush x:Key="LightTextGrey">#D0D0D0</SolidColorBrush>
+
+        <!-- Consolidated global brushes for repeated inline hexes -->
+        <SolidColorBrush x:Key="ControlBorderGrey">#555555</SolidColorBrush>
+        <SolidColorBrush x:Key="GridLineDarkGrey">#444444</SolidColorBrush>
+        <SolidColorBrush x:Key="TabHoverBackground">#5a6d71</SolidColorBrush>
         
         <!-- Frequently used inline colors that need to be globalized -->
         <SolidColorBrush x:Key="ItemConfigDarkBg">#1e2b2d</SolidColorBrush>
@@ -148,6 +153,12 @@
         <BoxShadows x:Key="StandardModalShadow">0 5 0 #777e89</BoxShadows>
         <BoxShadows x:Key="LightBoxShadow">0 2 10 #22000000</BoxShadows>
         <BoxShadows x:Key="DeepBoxShadow">0 5 20 #000000AA</BoxShadows>
+        <!-- Additional box shadow and brush resources to remove inline duplicates -->
+        <BoxShadows x:Key="SouthModalShadow">0 4 0 #777e89</BoxShadows>
+        <BoxShadows x:Key="ElevatedWidgetShadow">0 8 24 0 #40000000</BoxShadows>
+        <SolidColorBrush x:Key="SemiTransparentDarkBackground">#CC2e3f42</SolidColorBrush>
+        <SolidColorBrush x:Key="LightContentBackground">#F5FFFFFF</SolidColorBrush>
+        <BoxShadows x:Key="LightContentShadow">0 2 8 #44000000</BoxShadows>
         
     </Application.Resources>
 
@@ -169,7 +180,7 @@
 
         <!-- Component-specific styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroModal.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/ButtonStyles.axaml" />
+        <!-- Removed ButtonStyles include; consolidated into global styles and precise palette -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
         
@@ -179,16 +190,32 @@
         <!-- Exact color picker precision styles -->
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroPreciseColors.axaml" />
 
-        <!-- Balatro Tab Triangle Animation (pulsing opacity) -->
+        <!-- Balatro Tab Triangle Animation: down arrow, margin bounce within fixed lane -->
         <Style Selector="TextBlock.balatro-triangle">
-            <Setter Property="Opacity" Value="0.8"/>
+            <Setter Property="Foreground" Value="{StaticResource Red}"/>
+            <Setter Property="Text" Value="▼"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Opacity" Value="0.9"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,-2,0,0"/>
             <Style.Animations>
-                <Animation Duration="0:0:0.8" IterationCount="Infinite" PlaybackDirection="Alternate">
+                <!-- Opacity pulse -->
+                <Animation Duration="0:0:0.8" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
                     <KeyFrame Cue="0%">
-                        <Setter Property="Opacity" Value="0.8"/>
+                        <Setter Property="Opacity" Value="0.85"/>
                     </KeyFrame>
                     <KeyFrame Cue="100%">
                         <Setter Property="Opacity" Value="1.0"/>
+                    </KeyFrame>
+                </Animation>
+                <!-- Vertical bounce via Margin inside fixed-height indicator lane (no reflow) -->
+                <Animation Duration="0:0:0.8" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Margin" Value="0,-1,0,0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Margin" Value="0,-4,0,0"/>
                     </KeyFrame>
                 </Animation>
             </Style.Animations>

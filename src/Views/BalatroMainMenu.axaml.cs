@@ -481,6 +481,47 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        // Range application helpers
+        internal void ApplyContrastRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetContrastRange(min, max);
+            }
+        }
+
+        internal void ApplySpinAmountRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinAmountRange(min, max);
+            }
+        }
+
+        internal void ApplyTwirlSpeedRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTwirlSpeedRange(min, max);
+            }
+        }
+
+        internal void ApplyZoomPunchRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetZoomPunchRange(min, max);
+            }
+        }
+
+        internal void ApplyMelodySatRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetMelodySaturationRange(min, max);
+            }
+        }
+
         #endregion
 
         #region Desktop Icon Management
@@ -651,7 +692,7 @@ namespace BalatroSeedOracle.Views
                 if (modal != null)
                 {
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as Modals.FiltersModalContent;
+                    var filtersModal = modalContent?.Content as Modals.FiltersModal;
                     if (filtersModal != null)
                     {
                         DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
@@ -682,3 +723,4 @@ namespace BalatroSeedOracle.Views
         #endregion
     }
 }
+

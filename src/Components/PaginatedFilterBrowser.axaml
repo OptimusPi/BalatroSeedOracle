@@ -28,8 +28,8 @@
                 <!-- Wrap the whole list and triangle in a ScrollViewer so a fixed page of 120 items can scroll without clipping -->
                 <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
                     <Grid>
-                        <!-- Triangle indicator for selected item -->
-                        <Canvas Name="TriangleCanvas" ClipToBounds="False">
+                        <!-- Triangle indicator for selected item (overlay, does not affect layout) -->
+                        <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
                         <Polygon Name="SelectionTriangle"
                                  Points="15,0 0,10 15,20" 
                                  Fill="{StaticResource Red}"
@@ -57,7 +57,7 @@
                     </Canvas>
                     
                         <!-- Filter List -->
-                        <StackPanel Name="FilterListPanel" Margin="25,0,0,0">
+                        <StackPanel Name="FilterListPanel" Margin="0">
                             <ItemsControl ItemsSource="{Binding CurrentPageFilters}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -80,7 +80,7 @@
                     <Button Content="◀"
                             Classes="btn-red"
                             Width="44"
-                            Height="32"
+                            Height="33"
                             FontSize="14"
                             Padding="0"
                             Command="{Binding PreviousPageCommand}"/>
@@ -211,27 +211,28 @@
     </Grid>
     
     <UserControl.Styles>
-        <!-- Filter list item style -->
+        <!-- Filter list item style (Balatro Challenges row spec) -->
         <Style Selector="Button.filter-list-item">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="26"/>
             <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="210"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,2"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="{StaticResource RedPressedPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         
         <!-- Special blue styling for CREATE NEW FILTER -->

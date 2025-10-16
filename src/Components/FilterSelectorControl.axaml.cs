@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Models;
+using Avalonia.VisualTree;
 
 namespace BalatroSeedOracle.Components
 {
@@ -29,6 +30,7 @@ namespace BalatroSeedOracle.Components
 
         private FilterListViewModel? _viewModel;
         private Border? _filterListContainer;
+        private bool _pageSizeInitialized = false;
 
         public FilterSelectorControl()
         {
@@ -65,12 +67,31 @@ namespace BalatroSeedOracle.Components
         {
             // Find the filter list container
             _filterListContainer = this.FindControl<Border>("FilterListContainer");
+            var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
 
+            // Do not set page size here; wait for template attach to measure item height
+
+            // When items control is attached and template materializes, re-calc using measured height
+            if (itemsControl != null)
+            {
+                itemsControl.AttachedToVisualTree += (s, a) =>
+                {
+                    if (_filterListContainer != null && !_pageSizeInitialized)
+                    {
+                        // Finalize page size using measured item height once the template is materialized
+                        UpdateItemsPerPage(_filterListContainer.Bounds.Height);
+                        _pageSizeInitialized = true;
+                    }
+                };
+            }
+
+            // Recalculate page size on container resize so it always fits whole items
             if (_filterListContainer != null)
             {
-                // Subscribe to size changes
-                _filterListContainer.GetObservable(BoundsProperty)
-                    .Subscribe(bounds => UpdateItemsPerPage(bounds.Height));
+                _filterListContainer.SizeChanged += (s, args) =>
+                {
+                    UpdateItemsPerPage(_filterListContainer.Bounds.Height);
+                };
             }
         }
 
@@ -78,8 +99,63 @@ namespace BalatroSeedOracle.Components
         {
             if (_viewModel != null && containerHeight > 0)
             {
-                _viewModel.UpdateItemsPerPage(containerHeight);
+                // Try to measure the actual height of a filter item button for accurate paging
+                var measuredItemHeight = MeasureFilterItemHeight();
+
+                // Use the content height inside the Border, subtracting its vertical padding
+                var effectiveHeight = containerHeight;
+                if (_filterListContainer != null)
+                {
+                    var padding = _filterListContainer.Padding;
+                    effectiveHeight = Math.Max(0, containerHeight - (padding.Top + padding.Bottom));
+                }
+
+                _viewModel.UpdateItemsPerPage(effectiveHeight, measuredItemHeight);
             }
+        }
+
+        private double MeasureFilterItemHeight()
+        {
+            try
+            {
+                var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
+                if (itemsControl != null)
+                {
+                    // Find the first Button inside the item template
+                    var button = itemsControl.FindDescendantOfType<Button>();
+                    if (button != null)
+                    {
+                        // Base height from measured bounds (includes template visuals)
+                        var measuredHeight = button.Bounds.Height;
+
+                        if (measuredHeight <= 0)
+                        {
+                            // If bounds not ready, force a measure
+                            button.Measure(Size.Infinity);
+                            measuredHeight = button.DesiredSize.Height;
+                        }
+
+                        if (measuredHeight > 0)
+                        {
+                            // Account for the button's vertical margin inside the item grid
+                            var marginTop = button.Margin.Top;
+                            var marginBottom = button.Margin.Bottom;
+
+                            // Include StackPanel item spacing
+                            var stackPanel = itemsControl.FindDescendantOfType<StackPanel>();
+                            var spacing = stackPanel != null ? stackPanel.Spacing : 0;
+
+                            // Add a small safety buffer to avoid off‑by‑one clipping
+                            return Math.Ceiling(measuredHeight + marginTop + marginBottom + spacing + 2);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // Conservative fallback: typical button height + margins + small buffer
+            // Default global MinHeight is 40; margin top/bottom ~3 each; spacing 0
+            return 48.0;
         }
 
         // Public method to refresh the filter list

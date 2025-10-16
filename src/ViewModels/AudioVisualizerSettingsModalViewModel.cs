@@ -14,6 +14,8 @@ namespace BalatroSeedOracle.ViewModels
     public partial class AudioVisualizerSettingsModalViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
+        private System.Timers.Timer? _settingsSaveDebounce;
+        private const int SettingsSaveDebounceMs = 250;
 
         // Total number of themes (8 built-in + 1 CUSTOMIZE option)
         private const int TotalThemeCount = 9;
@@ -166,6 +168,37 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private float _shaderMelodySaturation = 0.0f;
 
+    // Range settings for mapping audio into shader parameter ranges
+    [ObservableProperty]
+    private float _contrastRangeMin = 1.0f;
+
+    [ObservableProperty]
+    private float _contrastRangeMax = 4.0f;
+
+    [ObservableProperty]
+    private float _spinRangeMin = 0.0f;
+
+    [ObservableProperty]
+    private float _spinRangeMax = 1.0f;
+
+    [ObservableProperty]
+    private float _twirlRangeMin = 0.0f;
+
+    [ObservableProperty]
+    private float _twirlRangeMax = 0.5f;
+
+    [ObservableProperty]
+    private float _zoomPunchRangeMin = 0.0f;
+
+    [ObservableProperty]
+    private float _zoomPunchRangeMax = 10.0f;
+
+    [ObservableProperty]
+    private float _melodySatRangeMin = 0.0f;
+
+    [ObservableProperty]
+    private float _melodySatRangeMax = 1.0f;
+
         public AudioVisualizerSettingsModalViewModel()
         {
             _userProfileService = App.GetService<UserProfileService>()
@@ -191,6 +224,16 @@ namespace BalatroSeedOracle.ViewModels
         public string ShaderMelodySaturationText => $"{ShaderMelodySaturation:F2}";
 
         #endregion
+
+    #region Range Events
+
+    public event EventHandler<(float min, float max)>? ContrastRangeChangedEvent;
+    public event EventHandler<(float min, float max)>? SpinRangeChangedEvent;
+    public event EventHandler<(float min, float max)>? TwirlRangeChangedEvent;
+    public event EventHandler<(float min, float max)>? ZoomPunchRangeChangedEvent;
+    public event EventHandler<(float min, float max)>? MelodySatRangeChangedEvent;
+
+    #endregion
 
         #region Generated Property Changed Methods
 
@@ -360,6 +403,66 @@ namespace BalatroSeedOracle.ViewModels
             ShaderMelodySaturationChangedEvent?.Invoke(this, value);
         }
 
+        partial void OnContrastRangeMinChanged(float value)
+        {
+            ContrastRangeChangedEvent?.Invoke(this, (ContrastRangeMin, ContrastRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnContrastRangeMaxChanged(float value)
+        {
+            ContrastRangeChangedEvent?.Invoke(this, (ContrastRangeMin, ContrastRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnSpinRangeMinChanged(float value)
+        {
+            SpinRangeChangedEvent?.Invoke(this, (SpinRangeMin, SpinRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnSpinRangeMaxChanged(float value)
+        {
+            SpinRangeChangedEvent?.Invoke(this, (SpinRangeMin, SpinRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnTwirlRangeMinChanged(float value)
+        {
+            TwirlRangeChangedEvent?.Invoke(this, (TwirlRangeMin, TwirlRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnTwirlRangeMaxChanged(float value)
+        {
+            TwirlRangeChangedEvent?.Invoke(this, (TwirlRangeMin, TwirlRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnZoomPunchRangeMinChanged(float value)
+        {
+            ZoomPunchRangeChangedEvent?.Invoke(this, (ZoomPunchRangeMin, ZoomPunchRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnZoomPunchRangeMaxChanged(float value)
+        {
+            ZoomPunchRangeChangedEvent?.Invoke(this, (ZoomPunchRangeMin, ZoomPunchRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnMelodySatRangeMinChanged(float value)
+        {
+            MelodySatRangeChangedEvent?.Invoke(this, (MelodySatRangeMin, MelodySatRangeMax));
+            SaveSettings();
+        }
+
+        partial void OnMelodySatRangeMaxChanged(float value)
+        {
+            MelodySatRangeChangedEvent?.Invoke(this, (MelodySatRangeMin, MelodySatRangeMax));
+            SaveSettings();
+        }
+
         #endregion
 
         #region Events
@@ -467,7 +570,33 @@ namespace BalatroSeedOracle.ViewModels
             vibeSettings.ColorSaturationIntensity = ColorSaturationIntensity;
             vibeSettings.BeatPulseIntensity = BeatPulseIntensity;
 
-            _userProfileService.SaveProfile(profile);
+            ScheduleSettingsSave();
+        }
+
+        private void ScheduleSettingsSave()
+        {
+            if (_settingsSaveDebounce == null)
+            {
+                _settingsSaveDebounce = new System.Timers.Timer(SettingsSaveDebounceMs)
+                {
+                    AutoReset = false,
+                };
+                _settingsSaveDebounce.Elapsed += (s, e) =>
+                {
+                    try
+                    {
+                        // Save off UI thread to avoid freezes while dragging
+                        Task.Run(() => _userProfileService.SaveProfile());
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("AudioVisualizerSettingsModalViewModel", $"Failed to save settings: {ex.Message}");
+                    }
+                };
+            }
+
+            _settingsSaveDebounce.Stop();
+            _settingsSaveDebounce.Start();
         }
 
         private void SaveTheme()

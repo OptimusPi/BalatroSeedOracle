@@ -4,45 +4,25 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
 
-    <!-- VERTICAL LAYOUT (Balatro style - Deck on top, Stake below) -->
     <StackPanel Spacing="24" HorizontalAlignment="Center">
-        <!-- Deck Selector -->
-        <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <!-- DeckSpinner shows deck name and description internally - no duplicate labels needed -->
-                <Grid ColumnDefinitions="Auto,12,Auto,12,Auto" HorizontalAlignment="Center">
-                    <!-- Left Arrow -->
-                    <Button Grid.Column="0"
-                            Content="◀"
-                            Classes="btn-red"
-                            Width="56" Height="196"
-                            FontSize="32"
-                            Padding="0"
-                            VerticalContentAlignment="Center"
-                            Command="{Binding PreviousDeckCommand}"/>
+        <!-- Deck Spinner (Balatro-style panel with title/description/dots) -->
+        <components:DeckSpinner
+            ShowArrows="True"
+            SelectedDeckIndex="{Binding DeckIndex}"
+            StakeIndex="{Binding StakeIndex}"
+            HorizontalAlignment="Center"/>
 
-                    <!-- Deck Card (larger!) -->
-                    <Viewbox Grid.Column="2" Width="220" Height="280" Stretch="Uniform">
-                        <Image Source="{Binding DeckImage}" />
-                    </Viewbox>
+        <!-- Stake Spinner: simple enum-based spinner, no PanelItemFactory -->
+        <controls:SpinnerControl Name="StakeSpinner"
+                                 Label="Stake"
+                                 SpinnerType="stake"
+                                 Value="{Binding StakeIndex}"
+                                 Minimum="0"
+                                 Maximum="7"
+                                 Increment="1"
+                                 DisplayValues="{Binding StakeDisplayValues}"/>
 
-                    <!-- Right Arrow -->
-                    <Button Grid.Column="4"
-                            Content="▶"
-                            Classes="btn-red"
-                            Width="56" Height="196"
-                            FontSize="32"
-                            Padding="0"
-                            VerticalContentAlignment="Center"
-                            Command="{Binding NextDeckCommand}"/>
-                </Grid>
-        </StackPanel>
-
-        <!-- Stake Selector -->
-        <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <Image Source="{Binding StakeImage}" Width="320" Height="80" />
-        </StackPanel>
-
-        <!-- Select Button (bottom) -->
+        <!-- Select Button -->
         <Button Name="SelectButton"
                 Content="Select this Deck"
                 Classes="btn-blue"

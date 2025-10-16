@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
 
 namespace BalatroSeedOracle.ViewModels
@@ -11,6 +13,27 @@ namespace BalatroSeedOracle.ViewModels
     {
         public static readonly IValueConverter EqualsConverter = new EqualsValueConverter();
         public static readonly IValueConverter NotEqualsConverter = new NotEqualsValueConverter();
+    }
+
+    public class IndexConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is ContentPresenter contentPresenter)
+            {
+                var itemsControl = ItemsControl.ItemsControlFromItemContainer(contentPresenter);
+                if (itemsControl != null)
+                {
+                    return itemsControl.IndexFromContainer(contentPresenter).ToString();
+                }
+            }
+            return string.Empty;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EqualsValueConverter : IValueConverter

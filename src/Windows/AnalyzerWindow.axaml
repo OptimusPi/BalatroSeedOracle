@@ -14,7 +14,7 @@
         MinHeight="600"
         WindowStartupLocation="CenterScreen"
         CanResize="True"
-        Background="#1A1A1A">
+        Background="{StaticResource Grey}">
 
     <Design.DataContext>
         <vm:AnalyzerViewModel/>

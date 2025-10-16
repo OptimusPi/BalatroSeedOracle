@@ -7,7 +7,7 @@
     <!-- Reusable Balatro-style tab switcher with bouncing triangle -->
     <!-- MVVM: ViewModel controls active tab, triangle follows automatically -->
 
-    <Grid HorizontalAlignment="Center" Margin="0,0,0,-3">
+    <Grid HorizontalAlignment="Center" Margin="0,4,0,0">
         <!-- Tab Buttons (triangle built into each button via global .tab-button style) -->
         <ItemsControl ItemsSource="{Binding Tabs}">
             <ItemsControl.ItemsPanel>
@@ -17,12 +17,22 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Button Content="{Binding Title}"
-                            Classes="tab-button"
-                            Classes.active="{Binding IsActive}"
-                            IsEnabled="{Binding IsEnabled}"
-                            Command="{Binding $parent[UserControl].DataContext.SwitchTabCommand}"
-                            CommandParameter="{Binding Index}"/>
+                    <StackPanel Orientation="Vertical" Spacing="2" HorizontalAlignment="Center">
+                        <!-- Fixed-height indicator lane to prevent content reflow -->
+                        <Grid Height="16" ClipToBounds="True">
+                            <TextBlock Classes="balatro-triangle"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       IsVisible="{Binding IsActive}"/>
+                        </Grid>
+                        <!-- Red Balatro button with drop shadow + press animation -->
+                        <Button Content="{Binding Title}"
+                                Classes="tab-button"
+                                Classes.active="{Binding IsActive}"
+                                IsEnabled="{Binding IsEnabled}"
+                                Command="{Binding $parent[UserControl].DataContext.SwitchTabCommand}"
+                                CommandParameter="{Binding Index}"/>
+                    </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

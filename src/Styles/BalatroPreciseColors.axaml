@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!-- Local precise-only resources -->
   <Styles.Resources>
-    <SolidColorBrush x:Key="RedPressedPrecise" Color="#70150f"/>
     
     <!-- Base precise button style -->
     <Style x:Key="PreciseBaseButton" Selector="Button">
@@ -56,7 +55,7 @@
     <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="CornerRadius" Value="12"/>
     <Setter Property="Padding" Value="20"/>
-    <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+    <Setter Property="BoxShadow" Value="{StaticResource SouthModalShadow}"/>
   </Style>
   <Style Selector="Button.btn-red-precise">
     <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -73,11 +72,11 @@
     <Setter Property="Background" Value="{StaticResource RedHover}"/>
   </Style>
   <Style Selector="Button.btn-red-precise:pressed">
-    <Setter Property="Background" Value="{StaticResource RedPressedPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
   </Style>
   <Style Selector="Button.btn-orange-precise">
     <Setter Property="Background" Value="{StaticResource Orange}"/>
-    <Setter Property="Foreground" Value="#000000"/>
+    <Setter Property="Foreground" Value="{StaticResource PureBlack}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     
     <Setter Property="BorderThickness" Value="0"/>

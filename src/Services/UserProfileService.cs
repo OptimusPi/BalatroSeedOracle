@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -15,6 +16,9 @@ namespace BalatroSeedOracle.Services
         private const string PROFILE_FILENAME = "userprofile.json";
         private readonly string _profilePath;
         private UserProfile _currentProfile;
+        private DateTime _lastSaveLogTime = DateTime.MinValue;
+        private int _suppressedSaveLogs = 0;
+        private const int MinSaveLogIntervalMs = 1000;
 
         public UserProfileService()
         {
@@ -167,30 +171,70 @@ namespace BalatroSeedOracle.Services
                 {
                     _currentProfile = profile;
                 }
-                
-                // Ensure directory exists
-                var directory = Path.GetDirectoryName(_profilePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
 
-                var json = JsonSerializer.Serialize(
-                    _currentProfile,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
-                File.WriteAllText(_profilePath, json);
-                DebugLogger.Log(
-                    "UserProfileService",
-                    $"Profile saved successfully to: {_profilePath}"
-                );
+                // Offload I/O to background thread to avoid UI freezes
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Ensure directory exists
+                        var directory = Path.GetDirectoryName(_profilePath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        var json = JsonSerializer.Serialize(
+                            _currentProfile,
+                            new JsonSerializerOptions { WriteIndented = true }
+                        );
+                        await File.WriteAllTextAsync(_profilePath, json).ConfigureAwait(false);
+                        ThrottledLogSaveSuccess();
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "UserProfileService",
+                            $"Error saving profile to {_profilePath}: {ex.Message}"
+                        );
+                    }
+                });
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "UserProfileService",
-                    $"Error saving profile to {_profilePath}: {ex.Message}"
+                    $"Error dispatching profile save: {ex.Message}"
                 );
+            }
+        }
+
+        private void ThrottledLogSaveSuccess()
+        {
+            var now = DateTime.UtcNow;
+            var elapsedMs = (now - _lastSaveLogTime).TotalMilliseconds;
+            if (elapsedMs >= MinSaveLogIntervalMs)
+            {
+                if (_suppressedSaveLogs > 0)
+                {
+                    DebugLogger.Log(
+                        "UserProfileService",
+                        $"Profile saved to: {_profilePath} (suppressed {_suppressedSaveLogs} rapid logs)"
+                    );
+                    _suppressedSaveLogs = 0;
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "UserProfileService",
+                        $"Profile saved successfully to: {_profilePath}"
+                    );
+                }
+                _lastSaveLogTime = now;
+            }
+            else
+            {
+                Interlocked.Increment(ref _suppressedSaveLogs);
             }
         }
     }

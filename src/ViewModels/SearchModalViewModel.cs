@@ -18,7 +18,7 @@ using Avalonia.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public partial class SearchModalViewModel : ObservableObject, IDisposable
+    public partial class SearchModalViewModel : ObservableObject, IDisposable, BalatroSeedOracle.Helpers.IModalBackNavigable
     {
         private readonly SearchManager _searchManager;
         private readonly CircularConsoleBuffer _consoleBuffer;
@@ -323,6 +323,22 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             DebugLogger.Log("SearchModalViewModel", $"Switched to tab {tabIndex}");
+        }
+
+        /// <summary>
+        /// Implements in-modal back navigation for progressive/tabbed flow.
+        /// Returns true if navigation occurred; false to signal modal should close.
+        /// </summary>
+        public bool TryGoBack()
+        {
+            if (SelectedTabIndex > 0)
+            {
+                var newIndex = SelectedTabIndex - 1;
+                SelectedTabIndex = newIndex;
+                UpdateTabVisibility(newIndex);
+                return true;
+            }
+            return false;
         }
 
         [RelayCommand]
@@ -704,7 +720,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private UserControl CreateFilterTabContent()
         {
-            // Use the Balatro Challenges-style FilterSelectorControl for a consistent UX
+            // Use the challenges-inspired FilterSelectorControl for the filter chooser
             var filterSelector = new Components.FilterSelectorControl
             {
                 Name = "FilterSelector",

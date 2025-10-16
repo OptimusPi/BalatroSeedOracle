@@ -52,7 +52,13 @@ namespace BalatroSeedOracle.ViewModels
                 if (SelectedFilter == null) return 0;
                 var pageItems = GetCurrentPageItems();
                 var index = pageItems.FindIndex(f => f.FilePath == SelectedFilter.FilePath);
-                return index >= 0 ? (index * 44) + 20 : 0; // 44px per item + offset
+                // Match visual row height with XAML style: Height 22 + vertical margin (2 top/bottom) = 26
+                const double RowButtonHeight = 22;
+                const double RowVerticalMarginTotal = 4; // 2 top + 2 bottom
+                const double TriangleHeight = 20;        // Polygon visual height
+                var rowHeight = RowButtonHeight + RowVerticalMarginTotal; // 26
+                var triangleTopOffset = (rowHeight - TriangleHeight) / 2; // center triangle in row
+                return index >= 0 ? (index * rowHeight) + triangleTopOffset : 0;
             }
         }
 
@@ -263,16 +269,8 @@ namespace BalatroSeedOracle.ViewModels
                 var filter = pageItems[i];
                 string displayText;
                 
-                if (filter.IsCreateNew)
-                {
-                    displayText = filter.Name; // No number for CREATE NEW
-                }
-                else
-                {
-                    // Calculate actual number (accounting for CREATE NEW being item 0)
-                    var actualFilterIndex = _allFilters.FindIndex(f => f.FilePath == filter.FilePath);
-                    displayText = $"{actualFilterIndex}  {filter.Name}";
-                }
+                // Match Balatro Challenges style: no in-button number, just the name
+                displayText = filter.Name;
                 
                 var itemViewModel = new FilterBrowserItemViewModel
                 {

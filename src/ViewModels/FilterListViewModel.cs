@@ -15,9 +15,10 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterListViewModel : ObservableObject
     {
-        // Fixed pagination size for stability
-        private const int DEFAULT_FILTERS_PER_PAGE = 120;
-        private const double ITEM_HEIGHT = 32.0; // kept for any consumers; no dynamic sizing
+    // Fixed page size for stability in the UI.
+    // 10 items requested; we will render exactly 10 per page.
+    private const int DEFAULT_FILTERS_PER_PAGE = 10;
+        private const double ITEM_HEIGHT = 23.0; // default fallback: 22px button + 1px safety
 
         [ObservableProperty]
         private int _filtersPerPage = DEFAULT_FILTERS_PER_PAGE;
@@ -33,6 +34,9 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private string _selectedFilterAuthor = "";
+
+        [ObservableProperty]
+        private string _selectedFilterDescription = "";
 
         [ObservableProperty]
         private ObservableCollection<FilterStat> _selectedFilterStats = new();
@@ -76,6 +80,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _showActionButtons = true;
 
+        // Dynamic text for the SELECT button in SearchModal
+        [ObservableProperty]
+        private string _selectButtonText = "SEARCH WITH THIS FILTER";
+
         private List<FilterListItem> _allFilters = new();
 
         public FilterListViewModel()
@@ -90,6 +98,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             ShowSelectButton = isInSearchModal;
             ShowActionButtons = !isInSearchModal;
+            UpdateSelectButtonText();
             DebugLogger.Log("FilterListViewModel", $"Mode changed: ShowSelectButton={ShowSelectButton}, ShowActionButtons={ShowActionButtons}");
         }
 
@@ -152,10 +161,29 @@ namespace BalatroSeedOracle.ViewModels
             SelectedFilterAuthor = $"by {filter.Author}";
             IsFilterSelected = true;
 
+            // Update select button text to reflect current context
+            UpdateSelectButtonText();
+
             LoadFilterStats(filter.FilePath);
 
             // Auto-select first non-empty tab to show sprites immediately
             AutoSelectFirstNonEmptyTab(filter.FilePath);
+        }
+
+        /// <summary>
+        /// Updates the select button text based on context and selection state.
+        /// </summary>
+        private void UpdateSelectButtonText()
+        {
+            if (ShowSelectButton)
+            {
+                SelectButtonText = SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+            }
+            else
+            {
+                // Not visible in FiltersModal, but keep value sensible
+                SelectButtonText = "LOAD THIS FILTER";
+            }
         }
 
         /// <summary>
@@ -251,7 +279,7 @@ namespace BalatroSeedOracle.ViewModels
                 DisplayedFilters.Add(item);
             }
 
-            PageIndicator = $"{CurrentPage + 1} / {TotalPages}";
+            PageIndicator = $"Page {CurrentPage + 1}/{TotalPages}";
             CanGoToPreviousPage = CurrentPage > 0;
             CanGoToNextPage = CurrentPage < TotalPages - 1;
         }
@@ -260,6 +288,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
+                SelectedFilterDescription = "";
                 var json = File.ReadAllText(filterPath);
                 var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
                 using var doc = JsonDocument.Parse(json, options);
@@ -268,7 +297,11 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedFilterStats.Clear();
 
                 if (root.TryGetProperty("description", out var descProp))
-                    SelectedFilterStats.Add(new FilterStat { Label = "Description", Value = descProp.GetString() ?? "N/A", Color = "#FFFFFF" });
+                {
+                    var desc = descProp.GetString() ?? "N/A";
+                    SelectedFilterStats.Add(new FilterStat { Label = "Description", Value = desc, Color = "#FFFFFF" });
+                    SelectedFilterDescription = desc;
+                }
 
                 if (root.TryGetProperty("must", out var mustProp) && mustProp.ValueKind == JsonValueKind.Array)
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Have", Value = $"{mustProp.GetArrayLength()} items", Color = "#ff4c40" });
@@ -286,6 +319,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var filename = Path.GetFileName(filterPath);
                 DebugLogger.LogError("FilterListViewModel", $"Error loading filter stats from '{filename}': {ex.Message}");
+                SelectedFilterDescription = "";
             }
         }
 
@@ -307,17 +341,29 @@ namespace BalatroSeedOracle.ViewModels
         public string? GetSelectedFilterPath() => SelectedFilter?.FilePath;
 
         /// <summary>
-        /// Recalculates the number of items per page based on available container height
+        /// Dynamically compute the number of items per page from available height.
+        /// Ensures the last item never gets clipped by using measured row height.
         /// </summary>
-        public void UpdateItemsPerPage(double availableHeight)
+        public void UpdateItemsPerPage(double availableHeight, double? measuredItemHeight = null)
         {
-            // Force fixed page size and ignore dynamic height
-            var newPageSize = DEFAULT_FILTERS_PER_PAGE;
-            if (newPageSize == FiltersPerPage)
+            // Determine the visual height of a single row (button + margins + spacing + safety)
+            var rowHeight = Math.Max(ITEM_HEIGHT, measuredItemHeight ?? ITEM_HEIGHT);
+
+            if (availableHeight <= 0 || rowHeight <= 0)
                 return;
 
-            FiltersPerPage = newPageSize;
-            DebugLogger.Log("FilterListViewModel", $"Fixed FiltersPerPage to {FiltersPerPage}");
+            // Leave a small buffer so the last item never overlaps pagination
+            const double bottomSafety = 2.0;
+            var effectiveHeight = Math.Max(0, availableHeight - bottomSafety);
+
+            var computed = Math.Max(1, (int)Math.Floor(effectiveHeight / rowHeight));
+
+            // Avoid unnecessary updates
+            if (computed == FiltersPerPage)
+                return;
+
+            FiltersPerPage = computed;
+            DebugLogger.Log("FilterListViewModel", $"Dynamic FiltersPerPage set to {FiltersPerPage} (rowHeight={rowHeight:F1}, available={availableHeight:F1})");
             UpdatePage();
         }
 

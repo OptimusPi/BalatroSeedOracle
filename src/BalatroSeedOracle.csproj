@@ -29,6 +29,12 @@
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Controls\SelectableItemDisplay.axaml.cs">
+      <DependentUpon>SelectableItemDisplay.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
   <!-- Copy Audio files to output directory for Vibe Out mode -->
   <ItemGroup>
     <None Update="Assets\Audio\*.ogg">

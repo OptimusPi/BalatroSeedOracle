@@ -45,7 +45,7 @@
         </Style>
         
         <Style Selector="Button.arrow-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         
         <!-- Arrow button inherits pressed behavior from global styles -->
@@ -63,7 +63,7 @@
         </Style>
         
         <Style Selector="Button.value-badge:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
         </Style>
         
         <!-- Value badge drop shadow -->
