@@ -55,8 +55,6 @@
                         <ComboBoxItem Content="Seed" Tag="Seed"/>
                         <ComboBoxItem Content="Score ↓" Tag="TotalScore_Desc" IsSelected="True"/>
                         <ComboBoxItem Content="Score ↑" Tag="TotalScore_Asc"/>
-                        <ComboBoxItem Content="Date Found ↓" Tag="DateFound_Desc"/>
-                        <ComboBoxItem Content="Date Found ↑" Tag="DateFound_Asc"/>
                     </ComboBox>
                     
                     <!-- Export button -->
@@ -119,22 +117,7 @@
                                     Width="80"
                                     SortMemberPath="TotalScore"/>
                 
-                <!-- Individual Scores column -->
-                <DataGridTemplateColumn Header="📊 Scores" Width="200">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding ScoresDisplay}" 
-                                       FontFamily="Consolas" 
-                                       FontSize="11"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                
-                <!-- Date Found column -->
-                <DataGridTextColumn Header="⏰ Found" 
-                                    Binding="{Binding DateFound, StringFormat='{}{0:HH:mm:ss}'}" 
-                                    Width="80"
-                                    SortMemberPath="DateFound"/>
+                <!-- Tally columns will be added dynamically based on Labels/Scores -->
                 
                 <!-- Actions column -->
                 <DataGridTemplateColumn Header="⚡ Actions" Width="150">

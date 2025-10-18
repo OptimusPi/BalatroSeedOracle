@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -29,6 +32,10 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
     [ObservableProperty]
     private IImage? _itemImage;
+
+    // Preview image for playing cards (composited)
+    [ObservableProperty]
+    private IImage? _previewImage;
 
     [ObservableProperty]
     private bool _antesVisible;
@@ -68,6 +75,20 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedSuit = "Spades";
+
+    // Lists for UI bindings
+    [ObservableProperty]
+    private List<string> _ranks = new();
+
+    [ObservableProperty]
+    private List<string> _suits = new();
+
+    [ObservableProperty]
+    private List<string> _enhancements = new();
+
+    // Edition images for selection UI
+    [ObservableProperty]
+    private Dictionary<string, IImage> _editionImages = new();
 
     // Sources and advanced options
     [ObservableProperty]
@@ -128,6 +149,9 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         SelectedRank = config.Rank ?? "Ace";
         SelectedSuit = config.Suit ?? "Spades";
 
+        InitLists();
+        UpdatePreview();
+
         // Initialize sources from config
         if (config.Sources is IEnumerable<string> srcEnum)
         {
@@ -155,6 +179,93 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         PackSlotsText = config.PackSlots != null && config.PackSlots.Count > 0
             ? string.Join(",", config.PackSlots)
             : "";
+    }
+
+    private void InitLists()
+    {
+        // Populate ranks and suits from metadata layout
+        Ranks = new List<string> { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
+        Suits = new List<string> { "Hearts", "Clubs", "Diamonds", "Spades" };
+
+        // Include "None" option for enhancements
+        Enhancements = new List<string> { "None", "Bonus", "Mult", "Wild", "Lucky", "Glass", "Steel", "Stone", "Gold" };
+
+        // Edition images for selector
+        var ss = SpriteService.Instance;
+        var editionMap = new Dictionary<string, string>
+        {
+            { "Normal", "Normal" },
+            { "Foil", "Foil" },
+            { "Holographic", "Holographic" },
+            { "Polychrome", "Polychrome" },
+            { "Negative", "Negative" },
+        };
+        var imgs = new Dictionary<string, IImage>();
+        foreach (var kvp in editionMap)
+        {
+            var img = ss.GetEditionImage(kvp.Value);
+            if (img != null)
+            {
+                imgs[kvp.Key] = img;
+            }
+        }
+        EditionImages = imgs;
+    }
+
+    private void UpdatePreview()
+    {
+        // Only render for playing cards
+        if (!RankVisible)
+        {
+            PreviewImage = ItemImage;
+            return;
+        }
+
+        var ss = SpriteService.Instance;
+
+        // Base card: enhancement or blank
+        IImage? baseCard = null;
+        if (!string.IsNullOrWhiteSpace(SelectedEnhancement) && !string.Equals(SelectedEnhancement, "None", StringComparison.OrdinalIgnoreCase))
+        {
+            baseCard = ss.GetEnhancementImage(SelectedEnhancement);
+        }
+        baseCard ??= ss.GetSpecialImage("BlankCard");
+
+        // Pattern overlay (suit/rank)
+        var pattern = ss.GetPlayingCardImage(SelectedSuit, SelectedRank, SelectedEnhancement);
+
+        if (baseCard == null && pattern == null)
+        {
+            PreviewImage = null;
+            return;
+        }
+
+        // Composite using render target (full size, UI scales down)
+        var width = 142;
+        var height = 190;
+        var renderTarget = new RenderTargetBitmap(new PixelSize(width, height), new Vector(96, 96));
+        using (var ctx = renderTarget.CreateDrawingContext())
+        {
+            if (baseCard != null)
+            {
+                ctx.DrawImage(baseCard, new Rect(0, 0, width, height));
+            }
+            if (pattern != null)
+            {
+                ctx.DrawImage(pattern, new Rect(0, 0, width, height));
+            }
+
+            // Optional: overlay seal if present
+            if (!string.IsNullOrWhiteSpace(SelectedSeal) && !string.Equals(SelectedSeal, "None", StringComparison.OrdinalIgnoreCase))
+            {
+                var sealImg = ss.GetSealImage(SelectedSeal, width, height);
+                if (sealImg != null)
+                {
+                    ctx.DrawImage(sealImg, new Rect(0, 0, width, height));
+                }
+            }
+        }
+        PreviewImage = renderTarget;
     }
 
     [RelayCommand]
@@ -214,6 +325,12 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     {
         DeleteRequested?.Invoke();
     }
+
+    // Update preview when selections change
+    partial void OnSelectedRankChanged(string value) => UpdatePreview();
+    partial void OnSelectedSuitChanged(string value) => UpdatePreview();
+    partial void OnSelectedEnhancementChanged(string value) => UpdatePreview();
+    partial void OnSelectedSealChanged(string value) => UpdatePreview();
 
     private static List<int> ParseSlots(string text)
     {

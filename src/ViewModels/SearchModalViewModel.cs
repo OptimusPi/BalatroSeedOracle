@@ -550,9 +550,21 @@ namespace BalatroSeedOracle.ViewModels
                 var existingResults = await _searchInstance.GetResultsPageAsync(0, 1000);
                 if (existingResults != null)
                 {
+                    // Inject tally labels from SearchInstance column names (seed, score, then tallies)
+                    var labels = _searchInstance.ColumnNames.Count > 2
+                        ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                        : Array.Empty<string>();
+
+                    int idx = 0;
                     foreach (var result in existingResults)
                     {
+                        // Set labels only on the first result to drive grid headers
+                        if (idx == 0 && labels.Length > 0)
+                        {
+                            result.Labels = labels;
+                        }
                         SearchResults.Add(result);
+                        idx++;
                     }
                 }
                 
@@ -734,6 +746,25 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Name = "FilterSelector",
                 IsInSearchModal = true
+            };
+
+            // Wire events directly so Select button advances to Search tab
+            filterSelector.FilterSelected += async (s, path) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"Filter clicked in list! Path: {path}");
+                await LoadFilterAsync(path);
+                DebugLogger.Log("SearchModalViewModel", "Filter loaded for preview - staying on Select Filter tab");
+            };
+
+            filterSelector.FilterConfirmed += async (s, path) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", $"SELECT THIS FILTER button clicked! Path: {path}");
+                await LoadFilterAsync(path);
+                DebugLogger.Log("SearchModalViewModel", "Filter confirmed, auto-advancing to Search tab");
+
+                // Advance to Search tab (index 2)
+                SelectedTabIndex = 2;
+                UpdateTabVisibility(2);
             };
 
             // Layout: simple container hosting the selector

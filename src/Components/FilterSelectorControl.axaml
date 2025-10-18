@@ -90,18 +90,18 @@
                                 <Grid Margin="0" HorizontalAlignment="Stretch">
                                     <!-- Full-width button showing the entire filter name (no truncation) -->
                                     <Button Classes="btn-red"
-                                            Height="31"
-                                            MinHeight="31"
+                                            Height="32"
+                                            MinHeight="32"
                                             HorizontalAlignment="Stretch"
                                             CornerRadius="6"
                                             Margin="0,2,0,2"
-                                            Padding="12,6"
+                                            Padding="14,6"
                                             Command="{Binding DataContext.SelectFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}">
                                         <Button.Content>
                                             <TextBlock Text="{Binding Name}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="15"
+                                                       FontSize="16"
                                                        TextAlignment="Center"/>
                                         </Button.Content>
                                     </Button>
@@ -262,14 +262,16 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border CornerRadius="8"
-                                                            Background="{StaticResource DarkModalGrey}"
-                                                            BorderThickness="0"
-                                                            Margin="4">
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource White}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="2"
+                                                            Margin="4"
+                                                            Padding="2">
                                                         <Image Source="{Binding ItemImage}"
                                                                Width="71"
                                                                Height="95"
-                                                               Margin="4"/>
+                                                               Margin="2"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
@@ -319,14 +321,16 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border CornerRadius="8"
-                                                            Background="{StaticResource DarkModalGrey}"
-                                                            BorderThickness="0"
-                                                            Margin="4">
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource White}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="2"
+                                                            Margin="4"
+                                                            Padding="2">
                                                         <Image Source="{Binding ItemImage}"
                                                                Width="71"
                                                                Height="95"
-                                                               Margin="4"/>
+                                                               Margin="2"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
@@ -375,14 +379,16 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border CornerRadius="8"
-                                                            Background="{StaticResource DarkModalGrey}"
-                                                            BorderThickness="0"
-                                                            Margin="4">
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource White}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="2"
+                                                            Margin="4"
+                                                            Padding="2">
                                                         <Image Source="{Binding ItemImage}"
                                                                Width="71"
                                                                Height="95"
-                                                               Margin="4"/>
+                                                               Margin="2"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

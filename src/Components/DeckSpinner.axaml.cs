@@ -75,6 +75,9 @@ namespace BalatroSeedOracle.Components
 
                 // Apply initial SelectedDeckIndex
                 _innerSpinner.SelectedIndex = Math.Max(0, Math.Min(SelectedDeckIndex, _innerSpinner.Items.Count - 1));
+
+                // Apply initial stake overlay to deck images
+                SetStakeIndex(StakeIndex);
             }
 
             // Watch for ShowArrows property changes
@@ -86,23 +89,11 @@ namespace BalatroSeedOracle.Components
                 }
             });
 
-            // Watch for SelectedDeckIndex changes (MVVM binding)
-            this.GetObservable(SelectedDeckIndexProperty).Subscribe(value =>
+            // Refresh deck images when StakeIndex changes so overlay sticker matches
+            this.GetObservable(StakeIndexProperty).Subscribe(index =>
             {
-                if (_innerSpinner != null)
-                {
-                    _innerSpinner.SelectedIndex = Math.Max(0, Math.Min(value, _innerSpinner.Items.Count - 1));
-                }
+                SetStakeIndex(index);
             });
-
-            // Watch for StakeIndex changes (MVVM binding)
-            this.GetObservable(StakeIndexProperty).Subscribe(value =>
-            {
-                SetStakeIndex(value);
-            });
-
-            // Apply initial stake overlay
-            SetStakeIndex(StakeIndex);
         }
 
         public string SelectedDeckName

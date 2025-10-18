@@ -303,7 +303,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="MinHeight" Value="45" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="MaxWidth" Value="160" />
@@ -509,6 +509,11 @@
     </Style>
 
     <Style Selector="Button.tab-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+    </Style>
+
+    <!-- Pressed state should match hover: stay dark red -->
+    <Style Selector="Button.tab-button:pressed">
         <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
     </Style>
 

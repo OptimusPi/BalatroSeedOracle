@@ -39,7 +39,8 @@
                     MaxWidth="1400"
                     MaxHeight="900"
                     BoxShadow="{StaticResource StandardModalShadow}"
-                    ClipToBounds="False">
+                    ClipToBounds="False"
+                    Padding="4,4,4,0">
                 
                 <Grid>
                     <Grid.RowDefinitions>

@@ -349,16 +349,26 @@ namespace BalatroSeedOracle.Services
                 string? baseDir = AppContext.BaseDirectory;
                 for (int depth = 0; depth < 6; depth++)
                 {
-                    var candidate = Path.Combine(baseDir ?? string.Empty, relativePath);
+                    if (baseDir == null) break;
+
+                    // Direct path
+                    var candidate = Path.Combine(baseDir, relativePath);
                     if (File.Exists(candidate))
                     {
                         DebugLogger.Log("SpriteService", $"Found asset on disk: {candidate}");
                         return File.OpenRead(candidate);
                     }
 
+                    // Repository-style path: base/src/<relative>
+                    var srcCandidate = Path.Combine(baseDir, "src", relativePath);
+                    if (File.Exists(srcCandidate))
+                    {
+                        DebugLogger.Log("SpriteService", $"Found asset in src path: {srcCandidate}");
+                        return File.OpenRead(srcCandidate);
+                    }
+
                     // Walk up one directory
-                    baseDir = baseDir != null ? Path.GetDirectoryName(baseDir) : null;
-                    if (baseDir == null) break;
+                    baseDir = Path.GetDirectoryName(baseDir);
                 }
 
                 // Also try the workspace relative path (relative to current working directory)
@@ -367,6 +377,14 @@ namespace BalatroSeedOracle.Services
                 {
                     DebugLogger.Log("SpriteService", $"Found asset in CWD: {cwdCandidate}");
                     return File.OpenRead(cwdCandidate);
+                }
+
+                // And CWD/src path
+                var cwdSrcCandidate = Path.Combine(Environment.CurrentDirectory, "src", relativePath);
+                if (File.Exists(cwdSrcCandidate))
+                {
+                    DebugLogger.Log("SpriteService", $"Found asset in CWD src path: {cwdSrcCandidate}");
+                    return File.OpenRead(cwdSrcCandidate);
                 }
             }
             catch (Exception ex)
@@ -395,6 +413,7 @@ namespace BalatroSeedOracle.Services
             string name = name_in
                 .Trim()
                 .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
                 .ToLowerInvariant();
 
             DebugLogger.Log("SpriteService", $"Attempting to find sprite for {category} '{name_in}' (normalized: '{name}')");
@@ -1191,8 +1210,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var uri = new Uri(jsonUri);
-                using var stream = AssetLoader.Open(uri);
+                // Use robust asset loading with filesystem fallback to handle non-embedded resources during development
+                using var stream = TryOpenAssetStream(jsonUri);
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
@@ -1235,7 +1254,13 @@ namespace BalatroSeedOracle.Services
 
             foreach (var kvp in sprites)
             {
-                result[kvp.Key.ToLowerInvariant()] = new SpritePosition
+                var normalizedKey = kvp.Key
+                    .Trim()
+                    .Replace(" ", string.Empty, StringComparison.Ordinal)
+                    .Replace("_", string.Empty, StringComparison.Ordinal)
+                    .ToLowerInvariant();
+
+                result[normalizedKey] = new SpritePosition
                 {
                     Name = kvp.Key,
                     Pos = new Pos { X = kvp.Value.X, Y = kvp.Value.Y },

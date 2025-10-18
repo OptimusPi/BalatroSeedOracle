@@ -72,11 +72,7 @@
     
     <Style Selector="TabControl.balatro-tabs > TabItem:selected /template/ TextBlock#PART_Triangle">
         <Setter Property="IsVisible" Value="True"/>
-        <Setter Property="Transitions">
-            <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-            </Transitions>
-        </Setter>
+        <Setter Property="Opacity" Value="1.0"/>
     </Style>
     
     <!-- Hover state - Balatro orange like global tab-button -->
@@ -85,10 +81,7 @@
         <Setter Property="Foreground" Value="{StaticResource White}"/>
     </Style>
     
-    <!-- Indicator visibility only; bounce handled by global balatro-triangle style -->
-    <Style Selector="TabControl.balatro-tabs > TabItem:selected /template/ TextBlock#PART_Triangle">
-        <Setter Property="IsVisible" Value="True"/>
-    </Style>
+
     
     <!-- Tab content area -->
     <Style Selector="TabControl.balatro-tabs > TabItem > ScrollViewer">

@@ -85,7 +85,7 @@
                 Classes="widget-window"
                 ZIndex="100"
                 Width="350"
-                MaxHeight="550"
+                MaxHeight="360"
                 IsVisible="{Binding !IsMinimized}">
 
             <Grid RowDefinitions="Auto,*">

@@ -14,6 +14,9 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.Input;
 using System.Windows.Input;
+using Avalonia.Data;
+using Avalonia.Controls.Templates;
+using Avalonia.Media;
 
 namespace BalatroSeedOracle.Controls
 {
@@ -27,6 +30,7 @@ namespace BalatroSeedOracle.Controls
         private int _itemsPerPage = 100;
         private int _totalPages = 1;
         private ObservableCollection<SearchResult>? _itemsSource;
+        private bool _tallyColumnsInitialized = false;
 
         // ICommand properties exposed for XAML bindings
         public ICommand CopySeedCommand { get; }
@@ -93,81 +97,51 @@ namespace BalatroSeedOracle.Controls
         {
             var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid")!;
             dataGrid.ItemsSource = _displayedResults;
-            
+            // Ensure tally columns once we have items
+            EnsureTallyColumns();
             UpdateResultsCount();
             UpdatePageInfo();
         }
 
-        /// <summary>
-        /// Bind an external collection of results. Updates grid as collection changes.
-        /// </summary>
-        public ObservableCollection<SearchResult>? ItemsSource
+        private void EnsureTallyColumns()
         {
-            get => _itemsSource;
-            set
+            if (_tallyColumnsInitialized) return;
+            var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
+            if (dataGrid == null) return;
+
+            var first = _allResults.FirstOrDefault();
+            if (first?.Scores == null || first.Scores.Length == 0)
             {
-                if (_itemsSource != null)
-                {
-                    _itemsSource.CollectionChanged -= OnItemsSourceChanged;
-                }
-
-                _itemsSource = value;
-
-                if (_itemsSource != null)
-                {
-                    _itemsSource.CollectionChanged += OnItemsSourceChanged;
-                    ResetFromItemsSource();
-                }
-                else
-                {
-                    ClearResults();
-                }
+                // Try items source if allResults empty
+                first = _itemsSource?.FirstOrDefault();
+                if (first?.Scores == null || first.Scores.Length == 0) return;
             }
-        }
 
-        private void OnItemsSourceChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
+            for (int i = 0; i < first!.Scores!.Length; i++)
             {
-                case NotifyCollectionChangedAction.Reset:
-                    ResetFromItemsSource();
-                    break;
-                case NotifyCollectionChangedAction.Add:
-                    if (e.NewItems != null)
-                    {
-                        foreach (var item in e.NewItems)
-                        {
-                            if (item is SearchResult r)
-                            {
-                                _allResults.Add(r);
-                            }
-                        }
-                        ApplySorting();
-                        UpdateDisplay();
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    if (e.OldItems != null)
-                    {
-                        foreach (var item in e.OldItems)
-                        {
-                            if (item is SearchResult r)
-                            {
-                                var existing = _allResults.FirstOrDefault(x => x.Seed == r.Seed && x.TotalScore == r.TotalScore);
-                                if (existing != null)
-                                {
-                                    _allResults.Remove(existing);
-                                }
-                            }
-                        }
-                        UpdateDisplay();
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
-                    ResetFromItemsSource();
-                    break;
+                var header = (first.Labels != null && i < first.Labels.Length && !string.IsNullOrWhiteSpace(first.Labels[i]))
+                    ? first.Labels[i]
+                    : $"tally{ i + 1 }";
+
+                var col = new DataGridTemplateColumn
+                {
+                    Header = header,
+                    Width = new DataGridLength(80)
+                };
+
+                // Bind TextBlock to Scores[i]
+                var template = new FuncDataTemplate<Models.SearchResult>((item, _) =>
+                {
+                    var tb = new TextBlock { FontFamily = new FontFamily("Consolas"), FontSize = 11 };
+                    tb.Bind(TextBlock.TextProperty, new Binding($"Scores[{i}]"));
+                    return tb;
+                }, true);
+
+                col.CellTemplate = template;
+                dataGrid.Columns.Add(col);
             }
+
+            _tallyColumnsInitialized = true;
         }
 
         private void ResetFromItemsSource()
@@ -180,30 +154,27 @@ namespace BalatroSeedOracle.Controls
                     _allResults.Add(r);
                 }
             }
+            // Rebuild tally columns if needed
+            EnsureTallyColumns();
             ApplySorting();
             UpdateDisplay();
         }
-        
-        /// <summary>
-        /// Add results to the grid
-        /// </summary>
+
         public void AddResults(IEnumerable<SearchResult> results)
         {
             foreach (var result in results)
             {
                 _allResults.Add(result);
             }
-            
+            EnsureTallyColumns();
             ApplySorting();
             UpdateDisplay();
         }
-        
-        /// <summary>
-        /// Add a single result to the grid
-        /// </summary>
+
         public void AddResult(SearchResult result)
         {
             _allResults.Add(result);
+            EnsureTallyColumns();
             ApplySorting();
             UpdateDisplay();
         }
@@ -498,6 +469,77 @@ namespace BalatroSeedOracle.Controls
         public (string column, bool descending) GetCurrentSort()
         {
             return (_currentSortColumn, _sortDescending);
+        }
+        
+        // Bind an external collection of results. Updates grid as collection changes.
+        public ObservableCollection<SearchResult>? ItemsSource
+        {
+            get => _itemsSource;
+            set
+            {
+                if (_itemsSource != null)
+                {
+                    _itemsSource.CollectionChanged -= OnItemsSourceChanged;
+                }
+
+                _itemsSource = value;
+
+                if (_itemsSource != null)
+                {
+                    _itemsSource.CollectionChanged += OnItemsSourceChanged;
+                    ResetFromItemsSource();
+                }
+                else
+                {
+                    ClearResults();
+                }
+            }
+        }
+
+        private void OnItemsSourceChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Reset:
+                    ResetFromItemsSource();
+                    break;
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems != null)
+                    {
+                        foreach (var item in e.NewItems)
+                        {
+                            if (item is SearchResult r)
+                            {
+                                _allResults.Add(r);
+                            }
+                        }
+                        EnsureTallyColumns();
+                        ApplySorting();
+                        UpdateDisplay();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems != null)
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            if (item is SearchResult r)
+                            {
+                                var existing = _allResults.FirstOrDefault(x => x.Seed == r.Seed && x.TotalScore == r.TotalScore);
+                                if (existing != null)
+                                {
+                                    _allResults.Remove(existing);
+                                }
+                            }
+                        }
+                        UpdateDisplay();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    ResetFromItemsSource();
+                    break;
+            }
         }
     }
 }

@@ -11,6 +11,8 @@
 
     <UserControl.Resources>
         <converters:IndexConverter x:Key="IndexConverter" />
+        <!-- Add string equality converter for edition radio buttons -->
+        <converters:EqualsValueConverter x:Key="StringEqualsConverter" />
     </UserControl.Resources>
 
     <UserControl.Styles>
@@ -37,6 +39,13 @@
                            FontSize="16"
                            Foreground="{StaticResource Gold}"
                            HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- Preview (for PlayingCard) -->
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding RankVisible}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Image Source="{Binding PreviewImage}" Width="71" Height="95" Stretch="Uniform"/>
+                </StackPanel>
             </Border>
 
             <!-- Ante Selection -->

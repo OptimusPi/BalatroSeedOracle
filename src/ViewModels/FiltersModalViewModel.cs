@@ -967,13 +967,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
             };
 
-            return new Border
-            {
-                Background = Avalonia.Media.Brush.Parse("#2a2a2a"),
-                CornerRadius = new Avalonia.CornerRadius(8),
-                Padding = new Avalonia.Thickness(20),
-                Child = filterSelector
-            };
+            return filterSelector;
         }
         
         private string GetDeckName(int index)

@@ -352,9 +352,8 @@ namespace BalatroSeedOracle.ViewModels
             if (availableHeight <= 0 || rowHeight <= 0)
                 return;
 
-            // Leave a small buffer so the last item never overlaps pagination
-            const double bottomSafety = 2.0;
-            var effectiveHeight = Math.Max(0, availableHeight - bottomSafety);
+            // No bottom safety needed; container row isolates pagination below
+            var effectiveHeight = Math.Max(0, availableHeight);
 
             var computed = Math.Max(1, (int)Math.Floor(effectiveHeight / rowHeight));
 

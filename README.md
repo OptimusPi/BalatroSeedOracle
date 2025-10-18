@@ -2,6 +2,9 @@
 
 Search millions of Balatro seeds to find the perfect runs for your strategies.
 
+## Docs
+- See `docs/INDEX.md` for the current documentation index and cleanup plan.
+
 ## What is this?
 
 Balatro Seed Oracle helps you find specific Balatro seeds based on detailed criteria:

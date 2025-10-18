@@ -418,7 +418,7 @@
             <Button Grid.Row="1"
                     Content="Back"
                     Command="{Binding CloseCommand}"
-                    Classes="btn-orange"
+                    Classes="back-button"
                     HorizontalAlignment="Stretch"
                     Padding="15,10"
                     FontSize="14"

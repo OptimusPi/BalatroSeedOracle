@@ -9,7 +9,8 @@
     <Style Selector="Border.BalatroSeedOracle-modal-card">
         <Setter Property="Background" Value="{StaticResource Grey}"/>
         <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <!-- Darker inner border to replace light ModalBorder -->
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
         <Setter Property="BoxShadow" Value="{StaticResource ModalBoxShadow}"/>
@@ -19,7 +20,8 @@
     <Style Selector="Border.BalatroSeedOracle-modal-card-precise">
         <Setter Property="Background" Value="{StaticResource Grey}"/>
         <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <!-- Darker inner border to replace light ModalBorder -->
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
         <Setter Property="BoxShadow" Value="{StaticResource SouthModalShadow}"/>
@@ -59,27 +61,26 @@
         
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
         <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Purple}" />
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="0,8"/>
-        <Setter Property="MinWidth" Value="100"/>
-        <Setter Property="Margin" Value="8,0,8,0"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Margin" Value="0,10,0,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}" 
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                </Border>
+                <Grid>
+                    <!-- Drop shadow below -->
+                    <Border Background="{StaticResource DropShadow}" CornerRadius="8" Margin="0,4,0,0"/>
+                    <!-- Button surface -->
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Margin="0,0,0,4">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
             </ControlTemplate>
         </Setter>
     </Style>
     
+    <!-- Back button - Orange with drop shadow and pressed state -->
     <Style Selector="Button.back-button">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="28"/>
@@ -116,7 +117,6 @@
                                     <Style Selector="TextBlock">
                                         <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
                                         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                        
                                     </Style>
                                 </ContentPresenter.Styles>
                             </ContentPresenter>
@@ -126,7 +126,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
     <Style Selector="Button.back-button:pointerover">
         <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
     </Style>
@@ -137,5 +136,5 @@
     <Style Selector="Button.back-button:pressed /template/ Border#DropShadow">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    
+
 </Styles>

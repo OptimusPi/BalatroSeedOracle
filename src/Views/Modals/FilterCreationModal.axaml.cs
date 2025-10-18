@@ -15,7 +15,7 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterCreationModal : UserControl
     {
-        private FilterSelector? _filterSelector;
+        private FilterSelectorControl? _filterSelector;
         public FilterCreationModalViewModel ViewModel { get; }
 
         // Events to communicate with parent
@@ -30,26 +30,23 @@ namespace BalatroSeedOracle.Views.Modals
             
             InitializeComponent();
 
-            // Get the FilterSelector from XAML
-            _filterSelector = this.FindControl<FilterSelector>("FilterSelector");
+            // Get the FilterSelectorControl from XAML
+            _filterSelector = this.FindControl<FilterSelectorControl>("FilterSelector");
             
             // Wire up ViewModel events to external events
             ViewModel.FilterSelectedForEdit += (s, e) => FilterSelectedForEdit?.Invoke(this, e);
             ViewModel.FilterCloneRequested += (s, filterPath) => 
             {
-                // Clone event - create a separate event for this
-                // For now, treat clone same as import since both open editor with loaded filter
                 FilterImported?.Invoke(this, filterPath);
             };
             ViewModel.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             ViewModel.FilterImported += (s, e) => FilterImported?.Invoke(this, e);
             
-            // Configure FilterSelector for creation modal and wire events
+            // Configure FilterSelectorControl for creation modal and wire events
             if (_filterSelector != null)
             {
-                // In creation modal, hide select button and disable auto-load
-                _filterSelector.ShowSelectButton = false;
-                _filterSelector.AutoLoadEnabled = false;
+                // Not in SearchModal; use default mode
+                _filterSelector.IsInSearchModal = false;
 
                 _filterSelector.FilterEditRequested += (s, path) => FilterSelectedForEdit?.Invoke(this, path);
                 _filterSelector.FilterCopyRequested += (s, path) => FilterImported?.Invoke(this, path);
@@ -144,6 +141,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        // Legacy selection handler removed; FilterSelector manages selection internally
+        // Legacy selection handler removed; FilterSelectorControl manages selection internally
     }
 }

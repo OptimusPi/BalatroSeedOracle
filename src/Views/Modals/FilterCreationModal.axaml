@@ -5,12 +5,9 @@
              x:Class="BalatroSeedOracle.Views.Modals.FilterCreationModal"
              x:DataType="vm:FilterCreationModalViewModel">
 
-    <!-- Unified: Drop bespoke layout and host FilterSelectorControl -->
     <Grid Margin="20" RowDefinitions="*,Auto">
-        <!-- Filter selector (MVVM) with its own left/right panels -->
-        <components:FilterSelector Name="FilterSelector"/>
-
-        <!-- Extra actions specific to creation modal -->
+        <components:FilterSelectorControl Name="FilterSelector"/>
+        
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"

@@ -188,8 +188,9 @@ namespace BalatroSeedOracle.Controls
                 _customVisual = compositionTarget.Compositor.CreateCustomVisual(_handler);
                 ElementComposition.SetElementChildVisual(this, _customVisual);
                 _customVisual.Size = new Vector(Bounds.Width, Bounds.Height);
+                _customVisual.SendHandlerMessage("StartAnimations");
             }
-
+        
             // Hook up mouse move for parallax effect
             this.PointerMoved += OnPointerMoved;
         }
