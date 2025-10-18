@@ -7,24 +7,24 @@
     <UserControl.Styles>
         <!-- Taller side bars for navigation -->
         <Style Selector="Button#PrevButton">
-            <Setter Property="Height" Value="196"/>
-            <Setter Property="Width" Value="56"/>
-            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="Height" Value="148"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="FontSize" Value="28"/>
         </Style>
         <Style Selector="Button#NextButton">
-            <Setter Property="Height" Value="196"/>
-            <Setter Property="Width" Value="56"/>
-            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="Height" Value="148"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="FontSize" Value="28"/>
         </Style>
 
         <!-- Larger card image -->
         <Style Selector="controls|PanelSpinner Viewbox">
-            <Setter Property="MaxHeight" Value="196"/>
+            <Setter Property="MaxHeight" Value="148"/>
         </Style>
 
         <!-- Slightly wider inner panel for roomy layout -->
         <Style Selector="controls|PanelSpinner Border.panel-content">
-            <Setter Property="Width" Value="360"/>
+            <Setter Property="Width" Value="300"/>
         </Style>
     </UserControl.Styles>
 

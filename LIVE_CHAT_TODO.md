@@ -20,17 +20,19 @@ Purpose: Lightweight, running list I update as you chat. Send quick notes and sc
 ---
 
 ## Inbox (New Items)
-- ui: Deck/Stake selector is too large globally.
-  - Description: Deck and stake selectors feel oversized in Analyzer and modal.
-  - Screenshot: user will send; logging context first.
-  - Status: todo
+- Empty — I'll log new items here as you send them.
 
 ## Working / Next Up
-- Empty — I’ll move items here as we start them.
+- Empty — I'll move items here as we start them.
 
 ## Completed Today
 - Initialized live chat TODO tracker.
 - Added template and usage notes.
+- ui: Fixed Deck/Stake selector sizing globally.
+  - Reduced DeckSpinner: Height 196→148, Width 56→44, FontSize 32→28, Panel Width 360→300
+  - Reduced StakeSpinner: Height 120→90, Width 56→44, FontSize 28→24, Panel Width 360→300
+  - Reduced SpinnerControl: Button Height 36→32, Badge Height 40→36
+  - Status: done (2025-10-18)
 
 ### UI: Deck/Stake Selector – Context & Pointers
 - Components: `src/Components/DeckAndStakeSelector.axaml`, `src/Components/DeckSpinner.axaml`.

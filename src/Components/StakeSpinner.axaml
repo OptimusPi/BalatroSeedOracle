@@ -6,20 +6,20 @@
     <!-- Styles to match DeckSpinner sizing but smaller height for chips -->
     <UserControl.Styles>
         <Style Selector="Button#PrevButton">
-            <Setter Property="Height" Value="120"/>
-            <Setter Property="Width" Value="56"/>
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="Height" Value="90"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="FontSize" Value="24"/>
         </Style>
         <Style Selector="Button#NextButton">
-            <Setter Property="Height" Value="120"/>
-            <Setter Property="Width" Value="56"/>
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="Height" Value="90"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="FontSize" Value="24"/>
         </Style>
         <Style Selector="controls|PanelSpinner Viewbox">
-            <Setter Property="MaxHeight" Value="120"/>
+            <Setter Property="MaxHeight" Value="90"/>
         </Style>
         <Style Selector="controls|PanelSpinner Border.panel-content">
-            <Setter Property="Width" Value="360"/>
+            <Setter Property="Width" Value="300"/>
         </Style>
     </UserControl.Styles>
 
