@@ -198,15 +198,15 @@
             <Setter Property="Opacity" Value="1.0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Margin" Value="0,-1,0,0"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
             <Style.Animations>
                 <!-- Vertical bounce via Margin inside fixed-height indicator lane (no reflow) -->
-                <Animation Duration="0:0:0.3" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+                <Animation Duration="0:0:0.6" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
                     <KeyFrame Cue="0%">
-                        <Setter Property="Margin" Value="0,-1,0,0"/>
+                        <Setter Property="Margin" Value="0,0,0,0"/>
                     </KeyFrame>
                     <KeyFrame Cue="100%">
-                        <Setter Property="Margin" Value="0,-2,0,0"/>
+                        <Setter Property="Margin" Value="0,-4,0,0"/>
                     </KeyFrame>
                 </Animation>
             </Style.Animations>

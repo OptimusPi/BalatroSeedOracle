@@ -7,23 +7,21 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel">
 
-    <Border Background="{StaticResource DarkModalGrey}"
-            CornerRadius="8"
-            Padding="25">
-        <StackPanel Spacing="20">
+    <Border Padding="25">
+        <StackPanel Spacing="25">
             <!-- Title -->
-            <TextBlock Text="DECK / STAKE"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="24"
-                       Foreground="{StaticResource Gold}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,10"/>
+        <TextBlock Text="DECK / STAKE"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="24"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,10"/>
 
-            <!-- Deck and Stake Selection -->
-            <components:DeckAndStakeSelector Name="DeckStakeSelector"
-                                            HorizontalAlignment="Center"/>
+        <!-- Deck and Stake Selection -->
+        <components:DeckAndStakeSelector Name="DeckStakeSelector"
+                                        HorizontalAlignment="Center"/>
 
-            <!-- Advanced Settings -->
+        <!-- Advanced Settings -->
             <TextBlock Text="ADVANCED SETTINGS"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="18"

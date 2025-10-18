@@ -1,42 +1,42 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Controls.AnteSelector">
-    
+
     <UserControl.Styles>
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="5"/>
         </Style>
-        
+
         <Style Selector="CheckBox:checked /template/ ContentPresenter">
-            <Setter Property="Background" Value="#4400FF88"/>
+            <Setter Property="Background" Value="{StaticResource GreenHighlight}"/>
         </Style>
-        
+
         <Style Selector="TextBlock.ante-label">
-            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="Foreground" Value="{StaticResource Teal}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
     </UserControl.Styles>
-    
-    <Border Background="#22000000" 
-            BorderBrush="#00FF88" 
-            BorderThickness="2" 
-            CornerRadius="8" 
+
+    <Border Background="{StaticResource SemiTransparentBlack}"
+            BorderBrush="{StaticResource Teal}"
+            BorderThickness="2"
+            CornerRadius="8"
             Padding="15">
         <StackPanel Spacing="10">
-            <TextBlock Text="Search Antes" 
+            <TextBlock Text="Search Antes"
                        Classes="ante-label"
                        HorizontalAlignment="Center"/>
-            
+
             <TextBlock Text="Select which antes to search for this item:"
-                       Foreground="#CCCCCC"
+                       Foreground="{StaticResource VeryLightGrey}"
                        FontSize="12"
                        HorizontalAlignment="Center"/>
-            
+
             <!-- Quick Select Options -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
@@ -44,26 +44,22 @@
                         Margin="0,5,0,10">
                 <Button Content="All"
                         Command="{Binding SelectAllCommand}"
-                        Background="#00FF88"
-                        Foreground="Black"
+                        Classes="btn-green"
                         Padding="10,5"
                         FontSize="12"/>
                 <Button Content="None"
                         Command="{Binding SelectNoneCommand}"
-                        Background="#FF4444"
-                        Foreground="White"
+                        Classes="btn-red"
                         Padding="10,5"
                         FontSize="12"/>
                 <Button Content="Early (1-3)"
                         Command="{Binding SelectEarlyCommand}"
-                        Background="#FFD700"
-                        Foreground="Black"
+                        Classes="btn-gold"
                         Padding="10,5"
                         FontSize="12"/>
                 <Button Content="Late (4-8)"
                         Command="{Binding SelectLateCommand}"
-                        Background="#9966FF"
-                        Foreground="White"
+                        Classes="btn-purple"
                         Padding="10,5"
                         FontSize="12"/>
             </StackPanel>
@@ -85,7 +81,7 @@
 
             <!-- Selected Summary -->
             <TextBlock Text="{Binding SelectionSummary}"
-                       Foreground="#00FF88"
+                       Foreground="{StaticResource Teal}"
                        FontSize="12"
                        HorizontalAlignment="Center"
                        Margin="0,10,0,0"/>

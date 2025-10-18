@@ -119,9 +119,10 @@ namespace BalatroSeedOracle.Controls
 
             for (int i = 0; i < first!.Scores!.Length; i++)
             {
+                // UPPERCASE header from Labels (from SearchInstance.ColumnNames)
                 var header = (first.Labels != null && i < first.Labels.Length && !string.IsNullOrWhiteSpace(first.Labels[i]))
-                    ? first.Labels[i]
-                    : $"tally{ i + 1 }";
+                    ? first.Labels[i].ToUpperInvariant()
+                    : $"TALLY{i + 1}";
 
                 var col = new DataGridTemplateColumn
                 {

@@ -159,8 +159,6 @@
                                  IsVisible="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  LostFocus="OnValueEditLostFocus"
                                  KeyDown="OnValueEditKeyDown"/>
-                        <TextBlock Classes="dots-indicator"
-                                   Text="•••"/>
                     </Grid>
                 </Button>
             </Grid>

@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -30,10 +32,53 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 // Bind results to the sortable grid
                 grid.ItemsSource = vm.SearchResults;
 
-                // Forward export-all to the ViewModel command
-                grid.ExportAllRequested += (s, results) =>
+                // Forward export-all with CSV format: SEED,TOTALSCORE,<tally labels>
+                grid.ExportAllRequested += async (s, results) =>
                 {
-                    vm.ExportResultsCommand?.Execute(null);
+                    try
+                    {
+                        if (results == null || !results.Any())
+                        {
+                            DebugLogger.Log("ResultsTab", "No results to export");
+                            return;
+                        }
+
+                        var first = results.First();
+                        var labels = first?.Labels ?? Array.Empty<string>();
+
+                        // Build CSV header: SEED,TOTALSCORE,<labels>
+                        var header = "SEED,TOTALSCORE";
+                        if (labels.Length > 0)
+                        {
+                            header += "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                        }
+
+                        // Build CSV rows
+                        var csv = new System.Text.StringBuilder();
+                        csv.AppendLine(header);
+
+                        foreach (var result in results)
+                        {
+                            var row = $"{result.Seed},{result.TotalScore}";
+                            if (result.Scores != null && result.Scores.Length > 0)
+                            {
+                                row += "," + string.Join(",", result.Scores);
+                            }
+                            csv.AppendLine(row);
+                        }
+
+                        // Save to publish/results.csv
+                        var publishDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "publish");
+                        System.IO.Directory.CreateDirectory(publishDir);
+                        var csvPath = System.IO.Path.Combine(publishDir, "results.csv");
+
+                        await System.IO.File.WriteAllTextAsync(csvPath, csv.ToString());
+                        DebugLogger.Log("ResultsTab", $"Exported {results.Count()} results to {csvPath}");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        DebugLogger.LogError("ResultsTab", $"Export failed: {ex.Message}");
+                    }
                 };
 
                 // Wire up add-to-favorites

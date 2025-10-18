@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Controls;
 
@@ -170,24 +171,22 @@ public partial class PanelSpinner : UserControl
             _descriptionText.Text = item.Description;
 
         // Check if we should show a custom control or an image
+        DebugLogger.Log("PanelSpinner", $"UpdateDisplay: item={item.Title}, _spriteImage={_spriteImage != null}");
         if (_spriteImage != null)
         {
-            var viewbox = _spriteImage.Parent as Viewbox;
-            if (viewbox?.Parent is Grid grid)
+            // Simple path: just set the image directly
+            if (item.GetImage != null)
             {
-                var customControlsInImageRow = grid.Children
-                    .Where(child => Grid.GetRow(child) == 1 && child != viewbox)
-                    .ToList();
-                
-                foreach (var child in customControlsInImageRow)
+                var image = item.GetImage();
+                DebugLogger.Log("PanelSpinner", $"✅ Setting image: image={image != null}, title={item.Title}");
+                _spriteImage.Source = image;
+            }
+            else if (item.GetControl != null && item.Value == "__CREATE_NEW__")
+            {
+                // Custom control path (for filter modal)
+                var viewbox = _spriteImage.Parent as Viewbox;
+                if (viewbox?.Parent is Grid grid)
                 {
-                    grid.Children.Remove(child);
-                }
-                
-                // Only show custom control if this specific item has one AND it's the special create item
-                if (item.GetControl != null && item.Value == "__CREATE_NEW__")
-                {
-                    // Show custom control instead of image
                     var customControl = item.GetControl();
                     if (customControl != null)
                     {
@@ -196,20 +195,11 @@ public partial class PanelSpinner : UserControl
                         grid.Children.Add(customControl);
                     }
                 }
-                else
-                {
-                    // Show image for regular filters
-                    viewbox.IsVisible = true;
-                    if (item.GetImage != null)
-                    {
-                        var image = item.GetImage();
-                        _spriteImage.Source = image;
-                    }
-                    else
-                    {
-                        _spriteImage.Source = null;
-                    }
-                }
+            }
+            else
+            {
+                DebugLogger.LogError("PanelSpinner", $"GetImage is NULL for item: {item.Title}");
+                _spriteImage.Source = null;
             }
         }
 

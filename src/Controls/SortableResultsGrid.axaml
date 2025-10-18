@@ -93,7 +93,7 @@
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <!-- Seed column with copy button -->
-                <DataGridTemplateColumn Header="🎲 Seed" Width="150" SortMemberPath="Seed">
+                <DataGridTemplateColumn Header="SEED" Width="150" SortMemberPath="Seed">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="5">
@@ -112,37 +112,27 @@
                 </DataGridTemplateColumn>
                 
                 <!-- Score column -->
-                <DataGridTextColumn Header="🏆 Score" 
-                                    Binding="{Binding TotalScore}" 
+                <DataGridTextColumn Header="TOTALSCORE"
+                                    Binding="{Binding TotalScore}"
                                     Width="80"
                                     SortMemberPath="TotalScore"/>
                 
                 <!-- Tally columns will be added dynamically based on Labels/Scores -->
                 
                 <!-- Actions column -->
-                <DataGridTemplateColumn Header="⚡ Actions" Width="150">
+                <DataGridTemplateColumn Header="ACTIONS" Width="90">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="3">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
                                 <Button Classes="copy-btn"
-                                        Content="🔍"
-                                        ToolTip.Tip="Search similar"
-                                        Command="{Binding $parent[UserControl].SearchSimilarCommand}"
-                                        CommandParameter="{Binding}"/>
+                                        Content="📋"
+                                        ToolTip.Tip="Copy seed"
+                                        Command="{Binding $parent[UserControl].CopySeedCommand}"
+                                        CommandParameter="{Binding Seed}"/>
                                 <Button Classes="copy-btn"
-                                        Content="⭐"
-                                        ToolTip.Tip="Add to favorites"
-                                        Command="{Binding $parent[UserControl].AddToFavoritesCommand}"
-                                        CommandParameter="{Binding}"/>
-                                <Button Classes="copy-btn"
-                                        Content="🧪"
+                                        Content="📊"
                                         ToolTip.Tip="Analyze seed"
                                         Command="{Binding $parent[UserControl].AnalyzeSeedCommand}"
-                                        CommandParameter="{Binding}"/>
-                                <Button Classes="copy-btn"
-                                        Content="📤"
-                                        ToolTip.Tip="Export this seed"
-                                        Command="{Binding $parent[UserControl].ExportSeedCommand}"
                                         CommandParameter="{Binding}"/>
                             </StackPanel>
                         </DataTemplate>

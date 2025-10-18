@@ -163,6 +163,10 @@ namespace BalatroSeedOracle.Services
                 
                 stakeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
                 enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
+                if (enhancersSheet != null)
+                {
+                    DebugLogger.Log("SpriteService", $"🖼️ Enhancers.png loaded: {enhancersSheet.PixelSize.Width}x{enhancersSheet.PixelSize.Height}");
+                }
                 deckSheet = enhancersSheet;
                 playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
                 bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
@@ -423,7 +427,11 @@ namespace BalatroSeedOracle.Services
             {
                 int x = pos.Pos.X * spriteWidth;
                 int y = pos.Pos.Y * spriteHeight;
-                return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                DebugLogger.Log("SpriteService", $"📐 Cropping {category} '{name}': pos=({pos.Pos.X},{pos.Pos.Y}), pixels=({x},{y}) to ({x+spriteWidth},{y+spriteHeight}), size={spriteWidth}x{spriteHeight}");
+                DebugLogger.Log("SpriteService", $"📐 Sheet size: {spriteSheet.PixelSize.Width}x{spriteSheet.PixelSize.Height}");
+                var cropped = new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                DebugLogger.Log("SpriteService", $"✅ CroppedBitmap created successfully for '{name}'");
+                return cropped;
             }
             else
             {
@@ -812,7 +820,26 @@ namespace BalatroSeedOracle.Services
         // New methods for deck, enhancement, and seal sprites
         public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
-            return GetSpriteImage(name, deckPositions, deckSheet, spriteWidth, spriteHeight, "deck");
+            var normalized = name.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).Replace("_", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
+            if (deckPositions.TryGetValue(normalized, out var pos))
+            {
+                DebugLogger.Log("SpriteService", $"Found '{name}' in deckPositions at ({pos.Pos.X}, {pos.Pos.Y})");
+            }
+            else
+            {
+                DebugLogger.LogError("SpriteService", $"'{name}' NOT found in deckPositions! Available: {string.Join(", ", deckPositions.Keys)}");
+            }
+
+            var result = GetSpriteImage(name, deckPositions, deckSheet, spriteWidth, spriteHeight, "deck");
+            if (result == null)
+            {
+                DebugLogger.LogError("SpriteService", $"GetDeckImage returned NULL for '{name}'! deckPositions={deckPositions != null}, deckSheet={deckSheet != null}");
+            }
+            else
+            {
+                DebugLogger.Log("SpriteService", $"✅ GetDeckImage SUCCESS for '{name}'!");
+            }
+            return result;
         }
 
         public IImage? GetStakeImage(string name, int spriteWidth = 48, int spriteHeight = 48)
@@ -833,35 +860,33 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            // Get the stake image; if missing, fall back to stake sticker
-            var stakeImage = GetStakeImage(stakeName);
-            if (stakeImage == null)
+            // Get the stake STICKER image (not the UI chip - stickers overlay on cards!)
+            // Normalize to sticker key (e.g., "white" -> "whitestake")
+            var normalized = stakeName
+                .ToLowerInvariant()
+                .Replace("stake", string.Empty, StringComparison.Ordinal)
+                .Trim();
+            var stickerKey = string.IsNullOrEmpty(normalized) ? "whitestake" : normalized + "stake";
+            var stickerImage = GetStickerImage(stickerKey);
+
+            // If sticker not found, just return the base deck image
+            if (stickerImage == null)
             {
-                // Normalize to sticker key (e.g., "white" -> "whitestake")
-                var normalized = stakeName
-                    .ToLowerInvariant()
-                    .Replace("stake", string.Empty, StringComparison.Ordinal)
-                    .Trim();
-                var stickerKey = string.IsNullOrEmpty(normalized) ? "whitestake" : normalized + "stake";
-                stakeImage = GetStickerImage(stickerKey);
-                // If still not found, just return the base deck image
-                if (stakeImage == null)
-                {
-                    return deckImage;
-                }
+                DebugLogger.Log("SpriteService", $"⚠️ Stake sticker '{stickerKey}' not found, returning deck without sticker");
+                return deckImage;
             }
 
             // Create a render target to composite the images
-            var pixelSize = new PixelSize(71, 95); // Card display size
+            var pixelSize = new PixelSize(142, 190); // Full card size (stickers are 142x190!)
             var renderTarget = new RenderTargetBitmap(pixelSize);
 
             using (var context = renderTarget.CreateDrawingContext())
             {
                 // Draw the deck image
-                context.DrawImage(deckImage, new Rect(0, 0, 71, 95));
+                context.DrawImage(deckImage, new Rect(0, 0, 142, 190));
 
-                // Draw the stake image on top
-                context.DrawImage(stakeImage, new Rect(0, 0, 71, 95));
+                // Draw the stake sticker on top (same size as deck)
+                context.DrawImage(stickerImage, new Rect(0, 0, 142, 190));
             }
 
             return renderTarget;
