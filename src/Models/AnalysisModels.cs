@@ -13,6 +13,7 @@ namespace BalatroSeedOracle.Models
         public string Seed { get; set; } = "";
         public MotelyDeck Deck { get; set; }
         public MotelyStake Stake { get; set; }
+        public string DeckStakeText => $"Deck: {Deck} | Stake: {Stake}";
         public ObservableCollection<AnteAnalysisModel> Antes { get; set; } = new();
         public string? Error { get; set; }
     }
