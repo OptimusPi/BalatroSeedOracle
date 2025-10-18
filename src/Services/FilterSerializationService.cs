@@ -401,6 +401,17 @@ namespace BalatroSeedOracle.Services
                 writer.WriteNumber("score", item.Score);
             }
 
+            // Nested clauses for And/Or grouping
+            if (item.Clauses?.Count > 0)
+            {
+                writer.WriteStartArray("clauses");
+                foreach (var nestedClause in item.Clauses)
+                {
+                    WriteFilterItem(writer, nestedClause, includeScore);
+                }
+                writer.WriteEndArray();
+            }
+
             writer.WriteEndObject();
         }
 
