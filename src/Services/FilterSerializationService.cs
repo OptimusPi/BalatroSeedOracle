@@ -273,7 +273,10 @@ namespace BalatroSeedOracle.Services
                     var filterItem = CreateFilterClause(category, itemName, itemConfig);
                     if (filterItem != null)
                     {
-                        filterItem.Score = defaultScore;
+                        // Apply score from config if specified, otherwise use antes-based default
+                        filterItem.Score = itemConfig.Score > 0
+                            ? itemConfig.Score
+                            : (itemConfig.Antes?.Count ?? Math.Max(defaultScore, 1));
                         targetList.Add(filterItem);
                     }
                 }
