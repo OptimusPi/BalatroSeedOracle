@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.Controls
         public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<
             SpinnerControl,
             int
-        >(nameof(Value), 0);
+        >(nameof(Value), 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
         public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<
             SpinnerControl,

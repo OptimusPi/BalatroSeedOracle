@@ -195,7 +195,7 @@ namespace BalatroSeedOracle.Models
             Decks["Green"] = "Green Deck";
             Decks["Black"] = "Black Deck";
             Decks["Magic"] = "Magic Deck";
-            Decks["Nebulous"] = "Nebulous Deck";
+            Decks["Nebula"] = "Nebula Deck";
             Decks["Ghost"] = "Ghost Deck";
             Decks["Abandoned"] = "Abandoned Deck";
             Decks["Checkered"] = "Checkered Deck";
@@ -214,7 +214,7 @@ namespace BalatroSeedOracle.Models
             { "Green", "$2 per remaining hand/discard\nEnd of round (no interest)" },
             { "Black", "+1 Joker slot\n-1 hand every round" },
             { "Magic", "Start run with the 'Crystal Ball' Voucher" },
-            { "Nebulous", "Start run with a 'Telescope' Voucher" },
+            { "Nebula", "Start run with a 'Telescope' Voucher" },
             { "Ghost", "Spectral cards may appear in the shop\nStart with a 'Hex' Spectral" },
             { "Abandoned", "No face cards in deck" },
             { "Checkered", "Start with 26 spades and 26 hearts" },

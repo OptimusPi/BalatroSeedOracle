@@ -20,7 +20,7 @@
 
                 <!-- Stake Spinner: simple enum-based spinner, no PanelItemFactory -->
                 <controls:SpinnerControl Name="StakeSpinner"
-                                         Label="Stake"
+                                         Label=""
                                          SpinnerType="stake"
                                          Value="{Binding StakeIndex}"
                                          Minimum="0"
