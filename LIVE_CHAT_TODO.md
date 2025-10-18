@@ -25,14 +25,39 @@ Purpose: Lightweight, running list I update as you chat. Send quick notes and sc
 ## Working / Next Up
 - Empty — I'll move items here as we start them.
 
-## Completed Today
-- Initialized live chat TODO tracker.
-- Added template and usage notes.
+## Completed Today (2025-10-18)
+
+### Session 1: MD File Cleanup & UI Fixes
 - ui: Fixed Deck/Stake selector sizing globally.
   - Reduced DeckSpinner: Height 196→148, Width 56→44, FontSize 32→28, Panel Width 360→300
   - Reduced StakeSpinner: Height 120→90, Width 56→44, FontSize 28→24, Panel Width 360→300
   - Reduced SpinnerControl: Button Height 36→32, Badge Height 40→36
-  - Status: done (2025-10-18)
+  - Status: done
+
+### Session 2: Bug Fixes & Features
+- ui: Fixed CREATE NEW FILTER button in SearchModal filter paginator
+  - Added event subscription in SearchModal.axaml.cs
+  - Added OpenFiltersModal() method to navigate up visual tree
+  - Status: done
+
+- json: Fixed default score logic for filter items
+  - Items without explicit scores now default to antes count (min 1) instead of 0
+  - Example: {"Type": "TarotCard", "value": "Any"} with 6 antes = 6 points
+  - Status: done
+
+- json: Implemented Max mode and Or clause support
+  - Added nested clauses serialization in FilterSerializationService
+  - Max mode uses MaxCount aggregation (highest occurrence vs sum of scores)
+  - Or clauses allow grouping multiple conditions where any one can match
+  - Created comprehensive MAX_MODE_GUIDE.md documentation
+  - Status: done
+
+- docs: Cleaned up completed MD files
+  - Deleted SHADER_ANIMATION_FIX.md (completed)
+  - Deleted PAGINATION_FIX.md (completed)
+  - Deleted FILTER_MODAL_REFACTORING_PLAN.md (duplicate)
+  - Deleted dead AuthorModal.axaml.cs code
+  - Status: done
 
 ### UI: Deck/Stake Selector – Context & Pointers
 - Components: `src/Components/DeckAndStakeSelector.axaml`, `src/Components/DeckSpinner.axaml`.
