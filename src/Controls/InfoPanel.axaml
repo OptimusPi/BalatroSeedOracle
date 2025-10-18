@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.InfoPanel"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:DataType="vm:SearchModalViewModel">
+
+    <!-- Use existing Balatro card styling for proper theme compliance -->
+    <Border Classes="balatro-card" Padding="12">
+        <StackPanel Spacing="6">
+            <TextBlock Text="NOTE"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextDark}"/>
+
+            <TextBlock Text="{Binding PanelText}"
+                       Foreground="{StaticResource TextLight}"
+                       FontSize="13"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+    </Border>
+</UserControl>

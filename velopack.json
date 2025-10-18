@@ -6,9 +6,8 @@
   "releaseNotes": {
     "path": "./CHANGELOG.md"
   },
-  "icon": "./src/Assets/icon.ico",
-  "mainExe": "Oracle",
-  "splashImage": "./src/Assets/splash.png",
+  "icon": "./src/BalatroSeedOracle.ico",
+  "mainExe": "BalatroSeedOracle.exe",
   "shortcuts": {
     "desktop": true,
     "startMenu": true

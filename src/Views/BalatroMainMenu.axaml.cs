@@ -79,7 +79,13 @@ namespace BalatroSeedOracle.Views
             ViewModel.OnIsAnimatingChangedEvent += (s, isAnimating) =>
             {
                 if (_shaderBackground != null)
-                    _shaderBackground.IsAnimating = isAnimating;
+                {
+                    // Ensure UI-thread dispatch when touching visual controls
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        _shaderBackground.IsAnimating = isAnimating;
+                    }, Avalonia.Threading.DispatcherPriority.Render);
+                }
             };
 
             // VibeOut mode changes
@@ -360,6 +366,14 @@ namespace BalatroSeedOracle.Views
         #endregion
 
         #region Shader Management (Delegated to ViewModel)
+
+        internal void ApplyVisualizerTheme(int themeIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyVisualizerTheme(shader, themeIndex);
+            }
+        }
 
         internal void ApplyMainColor(int colorIndex)
         {

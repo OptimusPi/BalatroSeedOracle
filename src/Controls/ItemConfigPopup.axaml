@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:converters="using:BalatroSeedOracle.ViewModels"
              mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="600"
              x:Class="BalatroSeedOracle.Controls.ItemConfigPopup"
@@ -62,6 +63,37 @@
                         <CheckBox IsChecked="{Binding SelectedAntes[8]}" Content="8" Classes="ante-checkbox" Margin="2"/>
                     </UniformGrid>
                 </Grid>
+            </Border>
+
+            <!-- Sources Selection -->
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SourcesVisible}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="SOURCE"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               Foreground="{StaticResource LightGrey}"/>
+
+                    <!-- Embedded selector control -->
+                    <controls:SourceSelector x:Name="SourceSelector"/>
+
+                    <!-- Advanced options -->
+                    <Expander Header="Advanced Source Options" IsExpanded="False">
+                        <StackPanel Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Shop Slots (comma-separated)" Foreground="{StaticResource LightGrey}"/>
+                                <TextBox Text="{Binding ShopSlotsText}" Width="160"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Pack Slots (comma-separated)" Foreground="{StaticResource LightGrey}"/>
+                                <TextBox Text="{Binding PackSlotsText}" Width="160"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <CheckBox IsChecked="{Binding SkipBlindTags}" Content="Skip Blind Tags"/>
+                                <CheckBox IsChecked="{Binding IsMegaArcana}" Content="Mega Arcana Only"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
             </Border>
 
             <!-- Edition Selection -->

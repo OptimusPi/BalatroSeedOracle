@@ -64,7 +64,7 @@
                                        Foreground="{StaticResource Green}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
@@ -110,7 +110,7 @@
                                        Foreground="{StaticResource Blue}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
@@ -260,7 +260,7 @@
 
                 <!-- Status/Results Area -->
                 <Border Grid.Row="4"
-                        Background="{StaticResource ContainerDarkPrecise}"
+                        Background="{StaticResource DarkModalGrey}"
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="15">
@@ -283,7 +283,7 @@
                         <!-- Loading/Results Display -->
                         <Grid Grid.Row="1">
                             <!-- Loading Spinner -->
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     CornerRadius="50"
                                     Width="60"
                                     Height="60"
@@ -348,7 +348,7 @@
                             </Border>
 
                             <!-- Default State -->
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     CornerRadius="50"
                                     Width="80"
                                     Height="80"

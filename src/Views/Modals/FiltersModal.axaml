@@ -18,13 +18,14 @@
                                       HorizontalAlignment="Center"
                                       Margin="0,0,0,2"/>
 
-        <!-- Content area (Balatro modal styling) -->
+        <!-- Content area (unified styling with SearchModal) -->
         <Border Grid.Row="1"
-                Background="{StaticResource DarkModalGrey}"
+                Background="Transparent"
                 BorderThickness="0"
                 CornerRadius="0,0,12,12"
-                Padding="20"
-                Margin="0,8,0,0">
+                Padding="0"
+                Margin="0,4,0,0"
+                ClipToBounds="False">
             <!-- Show the selected tab’s content directly -->
             <ContentPresenter Content="{Binding CurrentTabContent}"
                               HorizontalAlignment="Stretch"

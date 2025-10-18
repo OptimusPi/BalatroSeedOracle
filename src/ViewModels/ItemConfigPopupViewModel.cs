@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -48,6 +49,9 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private bool _suitVisible;
 
     [ObservableProperty]
+    private bool _sourcesVisible;
+
+    [ObservableProperty]
     private List<bool> _selectedAntes = Enumerable.Repeat(true, 9).ToList();
 
     [ObservableProperty]
@@ -64,6 +68,23 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedSuit = "Spades";
+
+    // Sources and advanced options
+    [ObservableProperty]
+    private string _selectedSource = ""; // empty => Any Source
+
+    [ObservableProperty]
+    private bool _skipBlindTags;
+
+    [ObservableProperty]
+    private bool _isMegaArcana;
+
+    // Comma-separated slot inputs for simple UI handling
+    [ObservableProperty]
+    private string _shopSlotsText = "";
+
+    [ObservableProperty]
+    private string _packSlotsText = "";
 
     public ItemConfigPopupViewModel(ItemConfig config)
     {
@@ -84,6 +105,9 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         EnhancementVisible = config.ItemType == "PlayingCard";
         RankVisible = config.ItemType == "PlayingCard";
         SuitVisible = config.ItemType == "PlayingCard";
+        SourcesVisible = config.ItemType == "Joker" || config.ItemType == "SoulJoker" ||
+                         config.ItemType == "Tarot" || config.ItemType == "Spectral" ||
+                         config.ItemType == "Planet" || config.ItemType == "PlayingCard";
 
         if (config.Antes != null)
         {
@@ -103,6 +127,34 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         SelectedEnhancement = config.Enhancement;
         SelectedRank = config.Rank ?? "Ace";
         SelectedSuit = config.Suit ?? "Spades";
+
+        // Initialize sources from config
+        if (config.Sources is IEnumerable<string> srcEnum)
+        {
+            SelectedSource = srcEnum.FirstOrDefault() ?? "";
+        }
+        else if (config.Sources is string[] srcArray && srcArray.Length > 0)
+        {
+            SelectedSource = srcArray[0] ?? "";
+        }
+        else if (config.Sources is List<string> srcList && srcList.Count > 0)
+        {
+            SelectedSource = srcList[0] ?? "";
+        }
+        else
+        {
+            SelectedSource = "";
+        }
+
+        SkipBlindTags = config.SkipBlindTags;
+        IsMegaArcana = config.IsMegaArcana;
+
+        ShopSlotsText = config.ShopSlots != null && config.ShopSlots.Count > 0
+            ? string.Join(",", config.ShopSlots)
+            : "";
+        PackSlotsText = config.PackSlots != null && config.PackSlots.Count > 0
+            ? string.Join(",", config.PackSlots)
+            : "";
     }
 
     [RelayCommand]
@@ -128,6 +180,26 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             Suit = SelectedSuit
         };
 
+        // Apply sources if supported
+        if (SourcesVisible)
+        {
+            // Normalize selected source into an array; empty string means any source, omit in that case
+            if (!string.IsNullOrEmpty(SelectedSource))
+            {
+                config.Sources = new[] { SelectedSource };
+            }
+
+            // Advanced options
+            config.SkipBlindTags = SkipBlindTags;
+            config.IsMegaArcana = IsMegaArcana;
+
+            // Parse comma-separated slot inputs
+            var shopSlots = ParseSlots(ShopSlotsText);
+            var packSlots = ParseSlots(PackSlotsText);
+            config.ShopSlots = shopSlots.Count > 0 ? shopSlots : null;
+            config.PackSlots = packSlots.Count > 0 ? packSlots : null;
+        }
+
         ConfigApplied?.Invoke(config);
     }
 
@@ -141,5 +213,19 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private void Delete()
     {
         DeleteRequested?.Invoke();
+    }
+
+    private static List<int> ParseSlots(string text)
+    {
+        var result = new List<int>();
+        if (string.IsNullOrWhiteSpace(text)) return result;
+        foreach (var part in text.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (int.TryParse(part.Trim(), out var value))
+            {
+                result.Add(value);
+            }
+        }
+        return result;
     }
 }

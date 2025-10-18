@@ -210,7 +210,7 @@
     
     <!-- Card-like container (like the Common Sets area) - Dark inner panel -->
     <Style Selector="Border.balatro-card">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}" />
+        <Setter Property="Background" Value="{StaticResource DarkModalGrey}" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16" />
@@ -414,15 +414,9 @@
         <Setter Property="Background" Value="{StaticResource ModalBorder}" />
     </Style>
     
-    <!-- Modal content box style - Main modal container (medium grey) -->
-    <Style Selector="Border.modal-content-box">
-        <Setter Property="Background" Value="{StaticResource Grey}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-        <Setter Property="BorderThickness" Value="3"/>
-        <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
-        <Setter Property="Padding" Value="30"/>
-    </Style>
+    <!-- Removed duplicate global style for Border.modal-content-box.
+         Use component-specific definition from Styles/BalatroModal.axaml (dark inner panel, no border).
+         This prevents double-layer backgrounds and conflicting borders in modals. -->
     
     <!-- Remove default focus rectangle / inner highlight on buttons -->
     <Style Selector="Button:focus-visible">

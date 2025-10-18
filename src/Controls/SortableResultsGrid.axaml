@@ -14,7 +14,7 @@
         
         <!-- Header with sorting controls -->
         <Border Grid.Row="0" 
-                Background="{StaticResource ContainerDarkPrecise}" 
+                Background="{StaticResource DarkModalGrey}" 
                 BorderBrush="{StaticResource ModalBorder}" 
                 BorderThickness="0,0,0,2" 
                 Padding="12">
@@ -47,7 +47,7 @@
                                VerticalAlignment="Center"/>
                     
                     <ComboBox Name="SortComboBox" 
-                              Background="{StaticResource ContainerDarkPrecise}"
+                              Background="{StaticResource DarkModalGrey}"
                               Foreground="{StaticResource Gold}"
                               BorderBrush="{StaticResource ModalBorder}"
                               SelectionChanged="SortComboBox_SelectionChanged"
@@ -87,6 +87,9 @@
                               CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
                     <MenuItem Header="📤 Export this seed"
                               Command="{Binding $parent[UserControl].ExportSeedCommand}"
+                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
+                    <MenuItem Header="🧪 Analyze"
+                              Command="{Binding $parent[UserControl].AnalyzeSeedCommand}"
                               CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
@@ -134,7 +137,7 @@
                                     SortMemberPath="DateFound"/>
                 
                 <!-- Actions column -->
-                <DataGridTemplateColumn Header="⚡ Actions" Width="120">
+                <DataGridTemplateColumn Header="⚡ Actions" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="3">
@@ -147,6 +150,11 @@
                                         Content="⭐"
                                         ToolTip.Tip="Add to favorites"
                                         Command="{Binding $parent[UserControl].AddToFavoritesCommand}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Classes="copy-btn"
+                                        Content="🧪"
+                                        ToolTip.Tip="Analyze seed"
+                                        Command="{Binding $parent[UserControl].AnalyzeSeedCommand}"
                                         CommandParameter="{Binding}"/>
                                 <Button Classes="copy-btn"
                                         Content="📤"
@@ -162,7 +170,7 @@
         
         <!-- Footer with pagination and stats -->
         <Border Grid.Row="2" 
-                Background="{StaticResource ContainerDarkPrecise}" 
+                Background="{StaticResource DarkModalGrey}" 
                 BorderBrush="{StaticResource ModalBorder}" 
                 BorderThickness="0,2,0,0" 
                 Padding="12">

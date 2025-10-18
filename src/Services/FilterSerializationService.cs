@@ -48,6 +48,12 @@ namespace BalatroSeedOracle.Services
             var created = config.DateCreated ?? DateTime.UtcNow;
             writer.WriteString("dateCreated", created.ToString("o"));
 
+            // Top-level scoring mode (optional)
+            if (!string.IsNullOrWhiteSpace(config.Mode))
+            {
+                writer.WriteString("mode", config.Mode);
+            }
+
             // Must array
             writer.WriteStartArray("must");
             foreach (var item in config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
@@ -386,8 +392,8 @@ namespace BalatroSeedOracle.Services
                 writer.WriteNumber("min", (decimal)item.Min.Value);
             }
 
-            // Score (for should clauses)
-            if (includeScore && item.Score > 0)
+            // Score (for should clauses) - include even if zero or negative
+            if (includeScore)
             {
                 writer.WriteNumber("score", item.Score);
             }

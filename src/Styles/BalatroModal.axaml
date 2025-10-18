@@ -27,7 +27,7 @@
     
     <!-- Inner content panel - Dark grey with no borders like in Balatro -->
     <Style Selector="Border.modal-content-panel">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="20"/>
@@ -36,7 +36,7 @@
     
     <!-- Modal content box - Same as content panel, NO BORDERS -->
     <Style Selector="Border.modal-content-box">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="24"/>

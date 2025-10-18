@@ -22,7 +22,7 @@
   </Styles.Resources>
   <!-- Modal inner container (borderless dark panel) -->
   <Style Selector="Border.modal-inner-container">
-    <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
     <Setter Property="CornerRadius" Value="12"/>
     <Setter Property="Padding" Value="20"/>
     <Setter Property="Margin" Value="8"/>
@@ -69,7 +69,7 @@
     <Setter Property="Cursor" Value="Hand"/>
   </Style>
   <Style Selector="Button.btn-red-precise:pointerover">
-    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
   </Style>
   <Style Selector="Button.btn-red-precise:pressed">
     <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
@@ -90,7 +90,7 @@
   </Style>
   <!-- Panels -->
   <Style Selector="Border.info-panel, Border.badge-container">
-    <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
     <Setter Property="BorderThickness" Value="0"/>
   </Style>
   <Style Selector="Border.info-panel">
@@ -120,7 +120,7 @@
   </Style>
   <!-- Nav tabs -->
   <Style Selector="Button.nav-tab-precise">
-    <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
     <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     
@@ -143,11 +143,11 @@
     <Setter Property="Background" Value="{StaticResource Red}"/>
   </Style>
   <Style Selector="Button.nav-tab-precise.active:pointerover">
-    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
   </Style>
   <!-- Precise input -->
   <Style Selector="TextBox.input-precise">
-    <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
     <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
     <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
     <Setter Property="BorderThickness" Value="1"/>

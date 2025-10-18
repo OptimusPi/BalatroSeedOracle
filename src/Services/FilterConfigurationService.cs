@@ -84,12 +84,14 @@ namespace BalatroSeedOracle.Services
                     var hashIndex = itemNameWithSuffix.IndexOf('#');
                     var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
 
-                    var itemConfig = itemConfigs.ContainsKey(item) ? itemConfigs[item] : new ItemConfig();
+                    var hasConfig = itemConfigs.ContainsKey(item);
+                    var itemConfig = hasConfig ? itemConfigs[item] : new ItemConfig();
 
                     var filterItem = CreateFilterItemFromSelection(category, itemName, itemConfig);
                     if (filterItem != null)
                     {
-                        filterItem.Score = defaultScore;
+                        // Preserve user-specified score from ItemConfig when available; otherwise use default per list
+                        filterItem.Score = hasConfig ? itemConfig.Score : defaultScore;
                         targetList.Add(filterItem);
                     }
                 }

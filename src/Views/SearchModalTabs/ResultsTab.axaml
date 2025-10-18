@@ -5,7 +5,7 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
              x:DataType="vm:SearchModalViewModel">
 
-    <Border Background="{StaticResource ContainerDarkPrecise}"
+    <Border Background="{StaticResource DarkModalGrey}"
             CornerRadius="8"
             Padding="15">
         <Grid>
@@ -24,10 +24,21 @@
                            HorizontalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Results Grid wrapped in Balatro card for consistent inner panel -->
-            <Border Grid.Row="1" Classes="balatro-card" Padding="12">
-                <controls:SortableResultsGrid Name="ResultsGrid"/>
-            </Border>
+            <!-- Results area: white challenge panel above the sortable grid -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- General Balatro-styled info card (generic, not game challenge) -->
+                <controls:InfoPanel Grid.Row="0"/>
+
+                <!-- Sortable grid wrapped in Balatro card -->
+                <Border Grid.Row="1" Classes="balatro-card" Padding="12">
+                    <controls:SortableResultsGrid Name="ResultsGrid"/>
+                </Border>
+            </Grid>
 
             <!-- Actions -->
             <StackPanel Grid.Row="2"

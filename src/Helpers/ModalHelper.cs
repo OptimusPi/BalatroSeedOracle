@@ -40,7 +40,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            // Restore original FiltersModal (full-featured designer with tabs)
+            // Always show the original drag-and-drop FiltersModal
             var filtersContent = new Views.Modals.FiltersModal();
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
@@ -230,6 +230,12 @@ namespace BalatroSeedOracle.Helpers
                 var vm = audioVisualizerView.ViewModel;
 
                 // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
+                vm.ThemeChangedEvent += (s, themeIndex) =>
+                {
+                    DebugLogger.Log("ModalHelper", $"Advanced modal: Theme changed to {themeIndex}");
+                    menu.ApplyVisualizerTheme(themeIndex);
+                };
+
                 vm.MainColorChangedEvent += (s, colorIndex) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Advanced modal: Main color changed to {colorIndex}");

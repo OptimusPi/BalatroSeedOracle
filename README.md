@@ -111,6 +111,7 @@ Create custom filters manually:
 {
   "name": "Negative Perkeo Hunt",
   "description": "Find seeds with Negative Perkeo and Telescope",
+  "mode": "sum", // optional: "sum" (default) or "max"
   "deck": "Red", 
   "stake": "White",
   "must": [
@@ -164,6 +165,32 @@ Create custom filters manually:
 - **Batch processing** - Configurable search chunk sizes
 
 Typical speeds: 10-50 million seeds per second depending on filter complexity.
+
+## Scoring Modes
+
+- `mode`: Controls how scores from `should` clauses are aggregated.
+- Supported values: `sum` (default), `max`, `max_count`, `maxcount`.
+- Behavior:
+  - `sum`: Adds `count * score` for each `should` clause.
+  - `max`: Uses the maximum raw occurrence `count` across all `should` clauses (per-clause `score` is ignored).
+- Notes:
+  - `minScore` in the Search modal is compared against the aggregated value from the selected mode.
+  - Negative `score` values are allowed; they only affect `sum` mode.
+
+Example using max aggregation:
+
+```json
+{
+  "name": "Tarot or Planet Rush",
+  "mode": "max",
+  "should": [
+    { "type": "TarotCard", "value": "TheFool", "antes": [1,2,3], "score": 5 },
+    { "type": "PlanetCard", "value": "Jupiter", "antes": [1,2,3], "score": 50 }
+  ]
+}
+```
+
+In this example, even though `PlanetCard` has higher `score`, `mode: max` ignores `score` and takes the higher raw occurrence count between the two clauses.
 
 ## File Structure
 

@@ -55,7 +55,7 @@
 
         <!-- Left: Filter List (Balatro challenges style) -->
         <Border Grid.Column="0"
-                Background="{StaticResource ContainerDarkPrecise}"
+                Background="Transparent"
                 BorderThickness="0"
                 Padding="12,5,8,10">
             <Grid>
@@ -160,11 +160,14 @@
             </Grid>
         </Border>
 
-        <!-- Right: Filter Details -->
+        <!-- Right: Filter Details (Balatro Challenges-style dark panel) -->
         <Border Grid.Column="1"
-                Background="{StaticResource ContainerDark}"
+                Background="{StaticResource DarkModalGrey}"
+                BorderThickness="0"
                 CornerRadius="8"
-                Padding="16">
+                Padding="16"
+                Margin="8,0,8,0"
+                BoxShadow="inset 0 2 4 #00000040">
             <Grid>
                 <!-- Placeholder when no filter selected -->
                 <StackPanel VerticalAlignment="Center"
@@ -229,7 +232,7 @@
                                 Margin="0,0,0,8">
                         <!-- Must Have -->
                         <TabItem Header="Must Have">
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -288,7 +291,7 @@
 
                         <!-- Should Have -->
                         <TabItem Header="Should Have">
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -344,7 +347,7 @@
 
                         <!-- Must Not -->
                         <TabItem Header="Must Not">
-                            <Border Background="{StaticResource ContainerDarkPrecise}"
+                            <Border Background="{StaticResource DarkModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"

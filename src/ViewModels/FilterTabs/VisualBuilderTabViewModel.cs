@@ -136,9 +136,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Simple property change handling
             PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(SelectedCategory) || e.PropertyName == nameof(SearchFilter))
+                if (e.PropertyName == nameof(SelectedCategory))
                 {
                     RefreshFilteredItems();
+                }
+                else if (e.PropertyName == nameof(SearchFilter))
+                {
+                    // When search text changes, rebuild filtered collections from All*
+                    ApplyFilter();
                 }
             };
 
@@ -578,6 +583,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ItemImage = spriteService.GetVoucherImage("Overstock")
                 });
             }
+
+            // Ensure filtered lists and UI are refreshed after data loads
+            ApplyFilter();
         }
         
         private string FormatDisplayName(string name)

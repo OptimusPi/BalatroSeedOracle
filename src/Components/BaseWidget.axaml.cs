@@ -105,11 +105,32 @@ namespace BalatroSeedOracle.Components
                 0
             );
 
-            // Update actual margin for visual feedback
+            // Update actual margin for visual feedback with simple clamping to parent bounds
             var expandedView = this.FindControl<Border>("ExpandedView");
 
             if (expandedView != null)
+            {
+                var parentVisual = expandedView.Parent as Visual;
+                if (parentVisual != null)
+                {
+                    var parentBounds = parentVisual.Bounds;
+                    var selfBounds = expandedView.Bounds;
+
+                    // Fallbacks if bounds aren't available yet
+                    var maxX = parentBounds.Width > 0 && selfBounds.Width > 0
+                        ? Math.Max(0, parentBounds.Width - selfBounds.Width)
+                        : double.MaxValue;
+                    var maxY = parentBounds.Height > 0 && selfBounds.Height > 0
+                        ? Math.Max(0, parentBounds.Height - selfBounds.Height)
+                        : double.MaxValue;
+
+                    var clampedLeft = Math.Clamp(newMargin.Left, 0, maxX);
+                    var clampedTop = Math.Clamp(newMargin.Top, 0, maxY);
+                    newMargin = new Thickness(clampedLeft, clampedTop, 0, 0);
+                }
+
                 expandedView.Margin = newMargin;
+            }
 
             // Also update ViewModel position if it exists
             if (DataContext is BaseWidgetViewModel vm)

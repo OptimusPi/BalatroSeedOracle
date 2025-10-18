@@ -58,6 +58,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _lastKnownResultCount = 0;
 
+        // UX: generic Balatro-styled info text for the Results tab panel
+        [ObservableProperty]
+        private string _panelText = "Tip: Results appear below. Use Export to save seeds.";
+
         [ObservableProperty]
         private string? _currentFilterPath; // CRITICAL: Store the path to the loaded filter!
 
@@ -154,6 +158,7 @@ namespace BalatroSeedOracle.ViewModels
                 
                 ClearResults();
                 AddConsoleMessage("Starting search...");
+                PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
                 var searchCriteria = BuildSearchCriteria();
                 _searchInstance = await _searchManager.StartSearchAsync(searchCriteria, LoadedConfig);
@@ -211,6 +216,7 @@ namespace BalatroSeedOracle.ViewModels
             _consoleBuffer.Clear();
             LastKnownResultCount = 0;
             LatestProgress = null;
+            PanelText = "Tip: Results appear below. Use Export to save seeds.";
             DebugLogger.Log("SearchModalViewModel", "Results cleared");
         }
 
@@ -238,6 +244,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 LoadConfigFromPath(configPath);
+                PanelText = $"Filter loaded: {LoadedConfig?.Name ?? System.IO.Path.GetFileNameWithoutExtension(configPath)}";
                 await Task.CompletedTask;
             }
             catch (Exception ex)
@@ -371,6 +378,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsSearching = false;
             AddConsoleMessage($"Search completed. Found {SearchResults.Count} results.");
+            PanelText = $"Search complete: {SearchResults.Count} seeds";
             DebugLogger.Log("SearchModalViewModel", $"Search completed with {SearchResults.Count} results");
         }
 
@@ -691,6 +699,7 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(SearchProgress));
             OnPropertyChanged(nameof(ProgressText));
             OnPropertyChanged(nameof(ResultsCount));
+            PanelText = $"{e.ResultsFound} seeds | {e.PercentComplete:0}%";
         }
 
 
@@ -734,15 +743,10 @@ namespace BalatroSeedOracle.ViewModels
             Grid.SetRow(filterSelector, 0);
             mainGrid.Children.Add(filterSelector);
 
+            // Return selector directly inside a simple container without hardcoded background
             return new UserControl
             {
-                Content = new Border
-                {
-                    Background = Avalonia.Media.Brush.Parse("#1e2b2d"),
-                    CornerRadius = new Avalonia.CornerRadius(0, 8, 8, 8),
-                    Padding = new Avalonia.Thickness(15),
-                    Child = mainGrid
-                }
+                Content = mainGrid
             };
         }
 

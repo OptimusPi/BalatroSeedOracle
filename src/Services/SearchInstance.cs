@@ -1066,6 +1066,10 @@ namespace BalatroSeedOracle.Services
                     MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
                 };
 
+                // Propagate top-level scoring mode and initialize computed fields
+                scoringConfig.Mode = config.Mode;
+                scoringConfig.PostProcess();
+
                 Action<MotelySeedScoreTally> dummyCallback = _ => { }; // Empty callback for interface
                 var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, dummyCallback);
 

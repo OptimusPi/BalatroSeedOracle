@@ -4,7 +4,7 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab"
              x:DataType="vm:SearchModalViewModel">
 
-    <Border Background="{StaticResource ContainerDarkPrecise}"
+    <Border Background="{StaticResource DarkModalGrey}"
             CornerRadius="8"
             Padding="25">
         <StackPanel Spacing="25" VerticalAlignment="Center">

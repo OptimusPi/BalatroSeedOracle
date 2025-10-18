@@ -186,7 +186,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
                 var exportPath = Path.Combine(desktopPath, exportFileName);
 
-                var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                // Use custom serializer to include mode and preserve score formatting
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                var serializer = new FilterSerializationService(userProfileService!);
+                var json = serializer.SerializeConfig(config);
                 await File.WriteAllTextAsync(exportPath, json);
 
                 UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);

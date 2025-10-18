@@ -18,13 +18,9 @@
 
             <!-- NO TABS - keeping it simple for now, all content in one page -->
 
-            <!-- WHITE CONTENT AREA (Balatro style) - Semi-transparent for visibility over shader background -->
+            <!-- Dark content area (Balatro-style inner panel) -->
             <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="550">
-                <Border Background="#F5FFFFFF"
-                        CornerRadius="8"
-                        Padding="20"
-                        BoxShadow="0 2 8 #44000000">
-
+                <Border Classes="modal-content-panel">
                     <StackPanel Spacing="20">
 
                         <!-- THEME SELECTION SECTION -->

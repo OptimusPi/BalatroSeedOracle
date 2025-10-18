@@ -21,6 +21,32 @@ namespace BalatroSeedOracle.Behaviors
         // Tracks whether the initial press was on the configured drag handle
         private bool _pressOriginIsOnHandle;
 
+        // Helper to clamp position within parent bounds so widgets cannot be dragged off-screen
+        private (double X, double Y) ClampPosition(double x, double y)
+        {
+            if (AssociatedObject == null)
+                return (x, y);
+
+            var parentVisual = AssociatedObject.Parent as Visual;
+            if (parentVisual == null)
+                return (x, y);
+
+            var parentBounds = parentVisual.Bounds;
+            var selfBounds = AssociatedObject.Bounds;
+
+            // If bounds are not available yet, avoid clamping to prevent jumpy behavior
+            if (parentBounds.Width <= 0 || parentBounds.Height <= 0 || selfBounds.Width <= 0 || selfBounds.Height <= 0)
+                return (Math.Max(0, x), Math.Max(0, y));
+
+            var maxX = Math.Max(0, parentBounds.Width - selfBounds.Width);
+            var maxY = Math.Max(0, parentBounds.Height - selfBounds.Height);
+
+            var clampedX = Math.Clamp(x, 0, maxX);
+            var clampedY = Math.Clamp(y, 0, maxY);
+
+            return (clampedX, clampedY);
+        }
+
         /// <summary>
         /// Dependency property for X position (Canvas.Left or Margin.Left binding)
         /// </summary>
@@ -221,9 +247,12 @@ namespace BalatroSeedOracle.Behaviors
             var deltaX = currentPoint.X - _dragStartPoint.X;
             var deltaY = currentPoint.Y - _dragStartPoint.Y;
 
-            // Apply delta to original position for proper dragging
-            X = _originalLeft + deltaX;
-            Y = _originalTop + deltaY;
+            // Apply delta to original position and clamp within parent bounds
+            var newX = _originalLeft + deltaX;
+            var newY = _originalTop + deltaY;
+            var clamped = ClampPosition(newX, newY);
+            X = clamped.X;
+            Y = clamped.Y;
 
             e.Handled = true;
         }
@@ -240,8 +269,11 @@ namespace BalatroSeedOracle.Behaviors
                 if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
                 {
                     const double gridSize = 128.0;
-                    X = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
-                    Y = Math.Round(Y / gridSize) * gridSize;
+                    var snappedX = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
+                    var snappedY = Math.Round(Y / gridSize) * gridSize;
+                    var clamped = ClampPosition(snappedX, snappedY);
+                    X = clamped.X;
+                    Y = clamped.Y;
                 }
 
                 e.Handled = true;

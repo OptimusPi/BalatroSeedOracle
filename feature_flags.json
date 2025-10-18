@@ -3,6 +3,6 @@
   "DaylatroEnabled": true,
   "ShaderBackgrounds": true,
   "VibeAudioEnabled": true,
-  "ExperimentalSearch": true,
+  "ExperimentalSearch": false,
   "DebugMode": true
 }

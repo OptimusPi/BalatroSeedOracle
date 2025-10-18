@@ -1,9 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
@@ -137,6 +141,16 @@ namespace BalatroSeedOracle.Views.Modals
                 topLevel.BackRequested += OnTopLevelBackRequested;
                 _isBackRequestedHooked = true;
             }
+
+            // Animate modal appearance for smooth slide-in
+            try
+            {
+                AnimateIn();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("StandardModal", $"AnimateIn failed: {ex.Message}");
+            }
         }
 
         private void OnUnloaded(object? sender, RoutedEventArgs e)
@@ -147,6 +161,57 @@ namespace BalatroSeedOracle.Views.Modals
                 topLevel.BackRequested -= OnTopLevelBackRequested;
                 _isBackRequestedHooked = false;
             }
+        }
+
+        /// <summary>
+        /// Slide-in the modal with a subtle bounce and fade the overlay.
+        /// </summary>
+        private void AnimateIn()
+        {
+            var overlay = this.FindControl<Border>("OverlayBackground");
+            var modalBorder = this.FindControl<Border>("ModalBorder");
+            if (overlay == null || modalBorder == null)
+                return;
+
+            // Set up transitions
+            overlay.Transitions = new Transitions
+            {
+                new DoubleTransition
+                {
+                    Property = Border.OpacityProperty,
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    Easing = new CubicEaseOut()
+                }
+            };
+
+            modalBorder.Transitions = new Transitions
+            {
+                new DoubleTransition
+                {
+                    Property = Border.OpacityProperty,
+                    Duration = TimeSpan.FromMilliseconds(250),
+                    Easing = new CubicEaseOut()
+                },
+                new ThicknessTransition
+                {
+                    Property = Border.MarginProperty,
+                    Duration = TimeSpan.FromMilliseconds(320),
+                    Easing = new BackEaseOut()
+                }
+            };
+
+            // Start from offscreen and transparent
+            overlay.Opacity = 0;
+            modalBorder.Opacity = 0;
+            modalBorder.Margin = new Thickness(0, -24, 0, 24);
+
+            // Animate to final state on next UI tick
+            Dispatcher.UIThread.Post(() =>
+            {
+                overlay.Opacity = 1;
+                modalBorder.Opacity = 1;
+                modalBorder.Margin = new Thickness(0, 0, 0, 0);
+            }, DispatcherPriority.Render);
         }
 
         /// <summary>

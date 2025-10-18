@@ -37,6 +37,7 @@ namespace BalatroSeedOracle.Controls
             {
                 _isAnimating = value;
                 _handler?.SetAnimating(value);
+                // Do not schedule from UI thread; compositor handles scheduling during render.
             }
         }
 
@@ -308,11 +309,13 @@ namespace BalatroSeedOracle.Controls
         {
             _isAnimating = animating;
 
-            // Reset last update time to prevent catch-up spin when resuming
+            // Reset last update time to prevent catch-up spin when resuming.
+            // Do not call RegisterForNextAnimationFrameUpdate() here, as it
+            // requires compositor lock. Scheduling is triggered from OnMessage
+            // via SendMessage from the control when animation is re-enabled.
             if (animating)
             {
                 _lastUpdateTime = _stopwatch.Elapsed.TotalSeconds;
-                RegisterForNextAnimationFrameUpdate();
             }
         }
 

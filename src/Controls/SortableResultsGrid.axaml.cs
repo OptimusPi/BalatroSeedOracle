@@ -33,12 +33,14 @@ namespace BalatroSeedOracle.Controls
         public ICommand SearchSimilarCommand { get; }
         public ICommand AddToFavoritesCommand { get; }
         public ICommand ExportSeedCommand { get; }
+        public ICommand AnalyzeSeedCommand { get; }
         
         public event EventHandler<SearchResult>? SeedCopied;
         public event EventHandler<SearchResult>? SearchSimilarRequested;
         public event EventHandler<SearchResult>? AddToFavoritesRequested;
         public event EventHandler<SearchResult>? ExportSeedRequested;
         public event EventHandler<IEnumerable<SearchResult>>? ExportAllRequested;
+        public event EventHandler<SearchResult>? AnalyzeRequested;
         
         public SortableResultsGrid()
         {
@@ -75,6 +77,14 @@ namespace BalatroSeedOracle.Controls
                 if (result != null)
                 {
                     ExportSeed(result);
+                }
+            });
+
+            AnalyzeSeedCommand = new RelayCommand<SearchResult>(result =>
+            {
+                if (result != null)
+                {
+                    Analyze(result);
                 }
             });
         }
@@ -425,7 +435,13 @@ namespace BalatroSeedOracle.Controls
             AddToFavoritesRequested?.Invoke(this, result);
             DebugLogger.Log("SortableResultsGrid", $"Add to favorites requested for seed: {result.Seed}");
         }
-        
+
+        public void Analyze(SearchResult result)
+        {
+            AnalyzeRequested?.Invoke(this, result);
+            DebugLogger.Log("SortableResultsGrid", $"Analyze requested for seed: {result.Seed}");
+        }
+
         public void ExportSeed(SearchResult result)
         {
             ExportSeedRequested?.Invoke(this, result);

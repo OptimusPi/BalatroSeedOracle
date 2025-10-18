@@ -4,6 +4,8 @@ using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
@@ -40,6 +42,17 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     if (!string.IsNullOrWhiteSpace(result?.Seed))
                     {
                         FavoritesService.Instance.AddFavoriteItem(result.Seed);
+                    }
+                };
+
+                // Wire up analyze request to open Analyze modal with seed
+                grid.AnalyzeRequested += (s, result) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(result?.Seed) && vm.MainMenu != null)
+                    {
+                        var analyzeModal = new AnalyzeModal();
+                        analyzeModal.SetSeedAndAnalyze(result.Seed);
+                        vm.MainMenu.ShowModal("SEED ANALYZER", analyzeModal);
                     }
                 };
             }
