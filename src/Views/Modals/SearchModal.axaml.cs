@@ -101,6 +101,13 @@ namespace BalatroSeedOracle.Views.Modals
                     ViewModel.UpdateTabVisibility(2);
                     _tabHeader?.SwitchToTab(2);
                 };
+
+                // Create new filter: Open FiltersModal
+                filterSelector.NewFilterRequested += (s, e) =>
+                {
+                    DebugLogger.Log("SearchModal", "CREATE NEW FILTER button clicked!");
+                    OpenFiltersModal();
+                };
             }
 
             // DeckAndStakeSelector → ViewModel properties
@@ -134,5 +141,33 @@ namespace BalatroSeedOracle.Views.Modals
         /// Tab click handler - PROPER MVVM: Updates ViewModel instead of directly manipulating UI
         /// </summary>
         // Tab click wiring removed: native TabControl handles selection
+
+        /// <summary>
+        /// Opens the FiltersModal by navigating up to BalatroMainMenu
+        /// </summary>
+        private void OpenFiltersModal()
+        {
+            try
+            {
+                // Walk up visual tree to find BalatroMainMenu
+                var parent = this.Parent;
+                while (parent != null)
+                {
+                    if (parent is BalatroMainMenu mainMenu)
+                    {
+                        DebugLogger.Log("SearchModal", "Found BalatroMainMenu, calling ShowFiltersModal()");
+                        mainMenu.ShowFiltersModal();
+                        return;
+                    }
+                    parent = (parent as Control)?.Parent;
+                }
+
+                DebugLogger.LogError("SearchModal", "Could not find BalatroMainMenu in visual tree!");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
+            }
+        }
     }
 }
