@@ -190,10 +190,18 @@ namespace BalatroSeedOracle.Views
         {
             this.Loaded -= InitializeVibeAudio;
 
+            DebugLogger.Log("BalatroMainMenu", "🎵 InitializeVibeAudio called - getting VibeAudioManager from DI");
+
             try
             {
                 var audioManager = ServiceHelper.GetService<VibeAudioManager>();
-                if (audioManager == null) return;
+                if (audioManager == null)
+                {
+                    DebugLogger.LogError("BalatroMainMenu", "❌ VibeAudioManager is NULL - not registered in DI!");
+                    return;
+                }
+
+                DebugLogger.Log("BalatroMainMenu", "✅ VibeAudioManager obtained from DI, subscribing to AudioAnalysisUpdated");
 
                 // Store handler reference for cleanup
                 _audioAnalysisHandler = (bass, mid, treble, peak) =>
@@ -211,10 +219,11 @@ namespace BalatroSeedOracle.Views
                 };
 
                 audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
+                DebugLogger.Log("BalatroMainMenu", "✅ VibeAudio initialized! Music visualization should work now!");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to start vibe audio: {ex.Message}");
+                DebugLogger.LogError("BalatroMainMenu", $"❌ Failed to start vibe audio: {ex.Message}");
             }
         }
 
