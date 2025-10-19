@@ -388,11 +388,11 @@ namespace BalatroSeedOracle.Views
 
             var oldContent = _modalContainer.Children[0];
 
-            // Balatro-style "pop_out" animation - quick and juicy (0.2s like juice_up)
+            // Gravity fall with bounce - modal falls completely out of view
             var fallAnimation = new Avalonia.Animation.Animation
             {
-                Duration = TimeSpan.FromMilliseconds(200), // Balatro juice_up standard duration
-                Easing = new QuadraticEaseIn(), // Accelerate into fall
+                Duration = TimeSpan.FromMilliseconds(800), // Smooth gravity fall
+                Easing = new ExponentialEaseIn(), // Gravity acceleration
                 Children =
                 {
                     new Avalonia.Animation.KeyFrame
@@ -403,18 +403,43 @@ namespace BalatroSeedOracle.Views
                             new Setter(TranslateTransform.YProperty, 0d),
                             new Setter(OpacityProperty, 1.0d),
                             new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.0d)
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0d),
+                            new Setter(RotateTransform.AngleProperty, 0d)
                         }
                     },
                     new Avalonia.Animation.KeyFrame
                     {
-                        Cue = new Cue(1),
+                        Cue = new Cue(0.3), // Start rotating as it falls
                         Setters =
                         {
-                            new Setter(TranslateTransform.YProperty, 500d),
+                            new Setter(TranslateTransform.YProperty, 100d),
+                            new Setter(OpacityProperty, 0.9d),
+                            new Setter(ScaleTransform.ScaleYProperty, 0.98d),
+                            new Setter(RotateTransform.AngleProperty, 2d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(0.7), // Accelerating
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 400d),
+                            new Setter(OpacityProperty, 0.5d),
+                            new Setter(ScaleTransform.ScaleYProperty, 0.9d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.95d),
+                            new Setter(RotateTransform.AngleProperty, 5d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(1), // Completely out of view
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 1200d), // Way off screen
                             new Setter(OpacityProperty, 0.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.8d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.95d)
+                            new Setter(ScaleTransform.ScaleYProperty, 0.7d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.85d),
+                            new Setter(RotateTransform.AngleProperty, 8d)
                         }
                     }
                 }
@@ -422,12 +447,13 @@ namespace BalatroSeedOracle.Views
 
             var transformGroup = new TransformGroup();
             transformGroup.Children.Add(new ScaleTransform(1, 1));
+            transformGroup.Children.Add(new RotateTransform(0));
             transformGroup.Children.Add(new TranslateTransform(0, 0));
             oldContent.RenderTransform = transformGroup;
             oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
             await fallAnimation.RunAsync(oldContent);
-            await Task.Delay(150); // Balatro standard delay between sequences
+            await Task.Delay(200); // Brief pause before new modal appears
 
             _modalContainer.Children.Clear();
             ShowModalWithAnimation(newContent, title);
@@ -449,11 +475,11 @@ namespace BalatroSeedOracle.Views
                 SetTitle(title);
             }
 
-            // Balatro-style "pop_in" animation with juice
+            // Smooth gravity bounce - rises from below with elastic bounce
             var popAnimation = new Avalonia.Animation.Animation
             {
-                Duration = TimeSpan.FromMilliseconds(350), // Slightly longer for bounce effect
-                Easing = new BackEaseOut(), // Subtle overshoot like Balatro's juice
+                Duration = TimeSpan.FromMilliseconds(600), // Smooth rise with bounce
+                Easing = new ElasticEaseOut(), // Bouncy landing
                 Children =
                 {
                     new Avalonia.Animation.KeyFrame
@@ -461,26 +487,26 @@ namespace BalatroSeedOracle.Views
                         Cue = new Cue(0),
                         Setters =
                         {
-                            new Setter(TranslateTransform.YProperty, 400d),
+                            new Setter(TranslateTransform.YProperty, 800d), // Start from below
                             new Setter(OpacityProperty, 0.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.7d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.9d)
+                            new Setter(ScaleTransform.ScaleYProperty, 0.5d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.8d)
                         }
                     },
                     new Avalonia.Animation.KeyFrame
                     {
-                        Cue = new Cue(0.6), // Quick rise
+                        Cue = new Cue(0.4), // Rising up
                         Setters =
                         {
-                            new Setter(TranslateTransform.YProperty, -10d), // Slight overshoot
-                            new Setter(OpacityProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.02d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.01d)
+                            new Setter(TranslateTransform.YProperty, 200d),
+                            new Setter(OpacityProperty, 0.8d),
+                            new Setter(ScaleTransform.ScaleYProperty, 0.95d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.98d)
                         }
                     },
                     new Avalonia.Animation.KeyFrame
                     {
-                        Cue = new Cue(1), // Settle
+                        Cue = new Cue(1), // Final position with elastic bounce
                         Setters =
                         {
                             new Setter(TranslateTransform.YProperty, 0d),
@@ -499,32 +525,6 @@ namespace BalatroSeedOracle.Views
             content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
             await popAnimation.RunAsync(content);
-            var settleAnimation = new Avalonia.Animation.Animation
-            {
-                Duration = TimeSpan.FromMilliseconds(50),
-                Children =
-                {
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(0),
-                        Setters =
-                        {
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.0d)
-                        }
-                    },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(1),
-                        Setters =
-                        {
-                            new Setter(ScaleTransform.ScaleYProperty, 1.005d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.002d)
-                        }
-                    }
-                }
-            };
-            await settleAnimation.RunAsync(content);
         }
 
         /// <summary>
