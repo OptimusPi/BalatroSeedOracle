@@ -227,9 +227,9 @@ namespace BalatroSeedOracle.Models
         public int ThemeIndex { get; set; } = 0;
 
         /// <summary>
-        /// Music reactivity intensity (0-2, default 0.0 = OFF for non-vomit-inducing experience)
+        /// Music reactivity intensity (0-2, default 1.0 for balanced reactivity)
         /// </summary>
-        public float AudioIntensity { get; set; } = 0.0f;
+        public float AudioIntensity { get; set; } = 1.0f;
 
         /// <summary>
         /// Mouse parallax strength (0-2, default 0.29)
