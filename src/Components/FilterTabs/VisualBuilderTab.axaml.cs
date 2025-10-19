@@ -327,6 +327,36 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (_adornerLayer == null) return;
                 
                 // Create ghost image - 80% opacity with subtle sway like Balatro
+                // For legendary jokers, layer the soul face on top
+                var imageGrid = new Grid
+                {
+                    Width = 71,
+                    Height = 95
+                };
+
+                // Main card image
+                imageGrid.Children.Add(new Image
+                {
+                    Source = item.ItemImage,
+                    Width = 71,
+                    Height = 95,
+                    Stretch = Stretch.Uniform,
+                    Opacity = 0.8 // BALATRO-STYLE 80% OPACITY
+                });
+
+                // Soul face overlay for legendary jokers
+                if (item.SoulFaceImage != null)
+                {
+                    imageGrid.Children.Add(new Image
+                    {
+                        Source = item.SoulFaceImage,
+                        Width = 71,
+                        Height = 95,
+                        Stretch = Stretch.Uniform,
+                        Opacity = 0.8
+                    });
+                }
+
                 _dragAdorner = new Border
                 {
                     Background = Brushes.Transparent,
@@ -334,14 +364,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         {
                             Children =
                             {
-                                new Image
-                                {
-                                    Source = item.ItemImage,
-                                    Width = 71,
-                                    Height = 95,
-                                    Stretch = Stretch.Uniform,
-                                    Opacity = 0.8 // BALATRO-STYLE 80% OPACITY
-                                },
+                                imageGrid,
                                 new TextBlock
                                 {
                                     Text = item.DisplayName,
