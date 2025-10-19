@@ -17,8 +17,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+
         [ObservableProperty]
         private string _searchFilter = "";
+
+        [ObservableProperty]
+        private bool _isLoading = true;
 
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
@@ -147,9 +151,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             };
 
-            // Load initial data
-            LoadSampleData();
-            ApplyFilter();
+            // Initialize data asynchronously without blocking UI
+            // Fire and forget is OK here - data will populate when ready
+            _ = Task.Run(LoadSampleDataAsync);
         }
 
         public void SetCategory(string category)
@@ -331,6 +335,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #endregion
 
         #region Helper Methods
+
+        private async Task LoadSampleDataAsync()
+        {
+            try
+            {
+                await Task.Run(() => LoadSampleData());
+
+                // Apply filter and update loading state on UI thread
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ApplyFilter();
+                    IsLoading = false;
+                });
+            }
+            catch (Exception ex)
+            {
+                // Even on error, clear loading state
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsLoading = false;
+                });
+                // Log error if needed (but not using DebugLogger!)
+                throw;
+            }
+        }
 
         private void LoadSampleData()
         {
