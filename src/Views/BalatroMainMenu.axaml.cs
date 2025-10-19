@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -9,6 +11,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -351,7 +355,7 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show a UserControl as a modal overlay
+        /// Show a UserControl as a modal overlay with smooth transition
         /// </summary>
         public void ShowModalContent(UserControl content, string? title = null)
         {
@@ -363,7 +367,86 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsVolumePopupOpen = false;
             }
 
+            // If there's already a modal showing, do a smooth transition
+            if (_modalContainer.IsVisible && _modalContainer.Children.Count > 0)
+            {
+                TransitionToNewModal(content, title);
+            }
+            else
+            {
+                // No existing modal - just show the new one with pop-up animation
+                ShowModalWithAnimation(content, title);
+            }
+        }
+
+        /// <summary>
+        /// Smoothly transition from current modal to new modal (Balatro-style)
+        /// </summary>
+        private async void TransitionToNewModal(UserControl newContent, string? title)
+        {
+            if (_modalContainer == null || _modalContainer.Children.Count == 0) return;
+
+            var oldContent = _modalContainer.Children[0];
+
+            // Balatro-style "pop_out" animation - quick and juicy (0.2s like juice_up)
+            var fallAnimation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(200), // Balatro juice_up standard duration
+                Easing = new QuadraticEaseIn(), // Accelerate into fall
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 0d),
+                            new Setter(OpacityProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(1),
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 500d),
+                            new Setter(OpacityProperty, 0.0d),
+                            new Setter(ScaleTransform.ScaleYProperty, 0.8d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.95d)
+                        }
+                    }
+                }
+            };
+
+            // Apply composite transform for scale + translate
+            var transformGroup = new TransformGroup();
+            transformGroup.Children.Add(new ScaleTransform(1, 1));
+            transformGroup.Children.Add(new TranslateTransform(0, 0));
+            oldContent.RenderTransform = transformGroup;
+            oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+            // Run fall animation
+            await fallAnimation.RunAsync(oldContent);
+
+            // Balatro-style 0.15s delay between actions (from blind.lua)
+            await Task.Delay(150);
+
+            // Swap content
             _modalContainer.Children.Clear();
+
+            // Show new modal with pop-up animation
+            ShowModalWithAnimation(newContent, title);
+        }
+
+        /// <summary>
+        /// Show modal with pop-up bounce animation (Balatro-style)
+        /// </summary>
+        private async void ShowModalWithAnimation(UserControl content, string? title)
+        {
+            if (_modalContainer == null) return;
+
             _modalContainer.Children.Add(content);
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
@@ -372,6 +455,87 @@ namespace BalatroSeedOracle.Views
             {
                 SetTitle(title);
             }
+
+            // Balatro-style "pop_in" animation with juice
+            var popAnimation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(350), // Slightly longer for bounce effect
+                Easing = new BackEaseOut(), // Subtle overshoot like Balatro's juice
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 400d),
+                            new Setter(OpacityProperty, 0.0d),
+                            new Setter(ScaleTransform.ScaleYProperty, 0.7d),
+                            new Setter(ScaleTransform.ScaleXProperty, 0.9d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(0.6), // Quick rise
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, -10d), // Slight overshoot
+                            new Setter(OpacityProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.02d),
+                            new Setter(ScaleTransform.ScaleXProperty, 1.01d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(1), // Settle
+                        Setters =
+                        {
+                            new Setter(TranslateTransform.YProperty, 0d),
+                            new Setter(OpacityProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0d)
+                        }
+                    }
+                }
+            };
+
+            // Apply composite transform for scale + translate
+            var transformGroup = new TransformGroup();
+            transformGroup.Children.Add(new ScaleTransform(1, 1));
+            transformGroup.Children.Add(new TranslateTransform(0, 0));
+            content.RenderTransform = transformGroup;
+            content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+            // Run pop-up animation
+            await popAnimation.RunAsync(content);
+
+            // Add a tiny juice_up effect after landing (0.05s like hover effects)
+            var settleAnimation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(50),
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0d)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Cue(1),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleYProperty, 1.005d),
+                            new Setter(ScaleTransform.ScaleXProperty, 1.002d)
+                        }
+                    }
+                }
+            };
+            await settleAnimation.RunAsync(content);
         }
 
         /// <summary>
