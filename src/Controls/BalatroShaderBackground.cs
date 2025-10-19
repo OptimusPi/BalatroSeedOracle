@@ -181,16 +181,24 @@ namespace BalatroSeedOracle.Controls
         {
             base.OnAttachedToVisualTree(e);
 
+            Helpers.DebugLogger.Log("ShaderBackground", "🎨 OnAttachedToVisualTree - initializing shader");
+
             var compositionTarget = ElementComposition.GetElementVisual(this);
             if (compositionTarget?.Compositor != null)
             {
+                Helpers.DebugLogger.Log("ShaderBackground", "✅ Compositor found, creating shader handler");
                 _handler = new BalatroShaderHandler();
                 _customVisual = compositionTarget.Compositor.CreateCustomVisual(_handler);
                 ElementComposition.SetElementChildVisual(this, _customVisual);
                 _customVisual.Size = new Vector(Bounds.Width, Bounds.Height);
                 _customVisual.SendHandlerMessage("StartAnimations");
+                Helpers.DebugLogger.Log("ShaderBackground", $"🎨 Shader initialized! Size: {Bounds.Width}x{Bounds.Height}");
             }
-        
+            else
+            {
+                Helpers.DebugLogger.LogError("ShaderBackground", "❌ Compositor is NULL - shader won't work!");
+            }
+
             // Hook up mouse move for parallax effect
             this.PointerMoved += OnPointerMoved;
         }
@@ -518,9 +526,18 @@ namespace BalatroSeedOracle.Controls
             };
         }
 
+        private int _frameCount = 0;
+
         public override void OnRender(ImmediateDrawingContext context)
         {
             if (_isDisposed) return;
+
+            // Log first few frames to verify rendering is happening
+            if (_frameCount < 5)
+            {
+                _frameCount++;
+                Helpers.DebugLogger.Log("ShaderBackground", $"🎬 OnRender frame {_frameCount} - isAnimating: {_isAnimating}");
+            }
 
             // Update "fake time" - constant spin + music kicks
             var currentTime = _stopwatch.Elapsed.TotalSeconds;
@@ -556,6 +573,8 @@ namespace BalatroSeedOracle.Controls
         private void InitializeShader()
         {
             if (_shaderBuilder != null) return;
+
+            Helpers.DebugLogger.Log("ShaderBackground", "🎨 InitializeShader - compiling SKSL shader");
 
             // REAL Balatro background shader (converted from external/Balatro/resources/shaders/background.fs)
             var sksl = @"
@@ -641,8 +660,13 @@ namespace BalatroSeedOracle.Controls
             var effect = SKRuntimeEffect.CreateShader(sksl, out var error);
             if (effect != null)
             {
+                Helpers.DebugLogger.Log("ShaderBackground", "✅ SKSL shader compiled successfully!");
                 _shaderBuilder = new SKRuntimeShaderBuilder(effect);
                 SetUniforms();
+            }
+            else
+            {
+                Helpers.DebugLogger.LogError("ShaderBackground", $"❌ SKSL shader compilation FAILED: {error}");
             }
         }
 
