@@ -1,0 +1,242 @@
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.Xaml.Interactivity;
+
+namespace BalatroSeedOracle.Behaviors
+{
+    /// <summary>
+    /// Balatro-style card drag animation with tilt, hover, and juice effects
+    /// Implements the exact mechanics from card.lua and moveable.lua
+    /// </summary>
+    public class CardDragBehavior : Behavior<Control>
+    {
+        private DispatcherTimer? _animationTimer;
+        private DateTime _startTime;
+        private double _cardId;
+        private Point? _lastPointerPosition;
+        private Point? _pointerPressedPosition;
+        private DateTime? _juiceStartTime;
+        private bool _isHovering;
+        private bool _isDragging;
+        private TransformGroup? _transformGroup;
+        private RotateTransform? _rotateTransform;
+        private ScaleTransform? _scaleTransform;
+        private const double TILT_FACTOR = 0.3;
+        private const double AMBIENT_TILT = 0.2;
+
+        /// <summary>
+        /// Enable/disable all animations
+        /// </summary>
+        public static readonly StyledProperty<bool> IsEnabledProperty =
+            AvaloniaProperty.Register<CardDragBehavior, bool>(nameof(IsEnabled), true);
+
+        public bool IsEnabled
+        {
+            get => GetValue(IsEnabledProperty);
+            set => SetValue(IsEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Juice intensity on grab (0.4 = Balatro default)
+        /// </summary>
+        public static readonly StyledProperty<double> JuiceAmountProperty =
+            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(JuiceAmount), 0.4);
+
+        public double JuiceAmount
+        {
+            get => GetValue(JuiceAmountProperty);
+            set => SetValue(JuiceAmountProperty, value);
+        }
+
+        protected override void OnAttached()
+        {
+            base.OnAttached();
+
+            if (AssociatedObject == null) return;
+
+            // Generate unique card ID for timing variation
+            _cardId = new Random().NextDouble() * 100;
+            _startTime = DateTime.Now;
+
+            // Set up transform group with rotation and scale
+            _rotateTransform = new RotateTransform();
+            _scaleTransform = new ScaleTransform(1.0, 1.0);
+            _transformGroup = new TransformGroup();
+            _transformGroup.Children.Add(_scaleTransform);
+            _transformGroup.Children.Add(_rotateTransform);
+
+            AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            AssociatedObject.RenderTransform = _transformGroup;
+
+            // Attach pointer events
+            AssociatedObject.PointerEntered += OnPointerEntered;
+            AssociatedObject.PointerExited += OnPointerExited;
+            AssociatedObject.PointerMoved += OnPointerMoved;
+            AssociatedObject.PointerPressed += OnPointerPressed;
+            AssociatedObject.PointerReleased += OnPointerReleased;
+
+            // Start 60 FPS animation timer
+            _animationTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16.67)
+            };
+            _animationTimer.Tick += OnAnimationTick;
+            _animationTimer.Start();
+        }
+
+        protected override void OnDetaching()
+        {
+            base.OnDetaching();
+
+            if (AssociatedObject != null)
+            {
+                AssociatedObject.PointerEntered -= OnPointerEntered;
+                AssociatedObject.PointerExited -= OnPointerExited;
+                AssociatedObject.PointerMoved -= OnPointerMoved;
+                AssociatedObject.PointerPressed -= OnPointerPressed;
+                AssociatedObject.PointerReleased -= OnPointerReleased;
+            }
+
+            _animationTimer?.Stop();
+            _animationTimer = null;
+        }
+
+        private void OnPointerEntered(object? sender, PointerEventArgs e)
+        {
+            _isHovering = true;
+            _lastPointerPosition = e.GetPosition(AssociatedObject);
+        }
+
+        private void OnPointerExited(object? sender, PointerEventArgs e)
+        {
+            _isHovering = false;
+            _lastPointerPosition = null;
+        }
+
+        private void OnPointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (_isHovering || _isDragging)
+            {
+                _lastPointerPosition = e.GetPosition(AssociatedObject);
+            }
+        }
+
+        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            _isDragging = true;
+            _pointerPressedPosition = e.GetPosition(AssociatedObject);
+
+            // Trigger juice animation (Balatro's bounce effect on pickup)
+            _juiceStartTime = DateTime.Now;
+        }
+
+        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            _isDragging = false;
+            _pointerPressedPosition = null;
+        }
+
+        private void OnAnimationTick(object? sender, EventArgs e)
+        {
+            if (!IsEnabled || AssociatedObject == null || _rotateTransform == null || _scaleTransform == null)
+                return;
+
+            var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
+
+            // Calculate tilt based on current mode
+            double tiltAngle = 0;
+            double tiltAmount = 0;
+
+            if (_isDragging && _lastPointerPosition.HasValue && _pointerPressedPosition.HasValue)
+            {
+                // DRAG MODE: Tilt based on drag offset (like Balatro's focus state)
+                var bounds = AssociatedObject.Bounds;
+                var centerX = bounds.Width / 2;
+                var centerY = bounds.Height / 2;
+
+                // Calculate offset from center (hover_offset in Balatro)
+                var offsetX = (_lastPointerPosition.Value.X - centerX) / bounds.Width;
+                var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
+
+                // Drag delta from initial press
+                var dx = (_lastPointerPosition.Value.X - _pointerPressedPosition.Value.X) / bounds.Width;
+                var dy = (_lastPointerPosition.Value.Y - _pointerPressedPosition.Value.Y) / bounds.Height;
+
+                // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
+                tiltAmount = Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * TILT_FACTOR;
+
+                // Tilt angle based on drag direction
+                tiltAngle = Math.Atan2(dy, dx);
+            }
+            else if (_isHovering && _lastPointerPosition.HasValue)
+            {
+                // HOVER MODE: Tilt towards cursor
+                var bounds = AssociatedObject.Bounds;
+                var centerX = bounds.Width / 2;
+                var centerY = bounds.Height / 2;
+
+                var offsetX = (_lastPointerPosition.Value.X - centerX) / bounds.Width;
+                var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
+
+                // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
+                tiltAmount = Math.Abs(offsetY + offsetX - 1) * TILT_FACTOR;
+
+                // Tilt angle towards cursor
+                tiltAngle = Math.Atan2(offsetY, offsetX);
+            }
+            else
+            {
+                // AMBIENT MODE: Breathing tilt (like BalatroCardSwayBehavior)
+                // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
+                tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+
+                // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
+                tiltAmount = AMBIENT_TILT * (0.5 + Math.Cos(tiltAngle)) * TILT_FACTOR;
+            }
+
+            // Apply rotation (convert radians to degrees)
+            _rotateTransform.Angle = tiltAmount * 10;
+
+            // Apply juice effect (bounce/wiggle on pickup)
+            if (_juiceStartTime.HasValue)
+            {
+                var juiceElapsed = (DateTime.Now - _juiceStartTime.Value).TotalSeconds;
+                var juiceDuration = 0.4; // Balatro default
+
+                if (juiceElapsed < juiceDuration)
+                {
+                    // Calculate decay factor (cubic for scale, quadratic for rotation)
+                    var progress = juiceElapsed / juiceDuration;
+                    var decayScale = Math.Max(0, Math.Pow(1 - progress, 3));
+                    var decayRotation = Math.Max(0, Math.Pow(1 - progress, 2));
+
+                    // Scale oscillation: scale_amt * sin(50.8*t) * decay^3
+                    var scaleJuice = JuiceAmount * Math.Sin(50.8 * juiceElapsed) * decayScale;
+                    _scaleTransform.ScaleX = 1.0 + scaleJuice;
+                    _scaleTransform.ScaleY = 1.0 + scaleJuice;
+
+                    // Rotation wobble: r_amt * sin(40.8*t) * decay^2
+                    var rotationJuice = (JuiceAmount * 0.6) * Math.Sin(40.8 * juiceElapsed) * decayRotation;
+                    _rotateTransform.Angle += rotationJuice * 10; // Add to tilt rotation
+                }
+                else
+                {
+                    // Juice finished
+                    _juiceStartTime = null;
+                    _scaleTransform.ScaleX = 1.0;
+                    _scaleTransform.ScaleY = 1.0;
+                }
+            }
+            else
+            {
+                // No juice, ensure scale is normal
+                _scaleTransform.ScaleX = 1.0;
+                _scaleTransform.ScaleY = 1.0;
+            }
+        }
+    }
+}
