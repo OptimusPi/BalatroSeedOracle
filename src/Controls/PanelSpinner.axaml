@@ -76,14 +76,15 @@
         <!-- Description text style -->
         <Style Selector="TextBlock.panel-description">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-            <Setter Property="MaxLines" Value="2"/>
-            <Setter Property="Margin" Value="12,0,12,4"/>
+            <Setter Property="MaxLines" Value="3"/>
+            <Setter Property="Margin" Value="12,4,12,6"/>
+            <Setter Property="LineHeight" Value="17"/>
         </Style>
         
         <!-- Position dots container -->
@@ -171,7 +172,14 @@
                 </Viewbox>
                 
                 <!-- Description -->
-                <Border Grid.Row="2" MinHeight="36" Margin="0,-2,0,0">
+                <Border Grid.Row="2"
+                        MinHeight="44"
+                        Margin="10,2,10,2"
+                        Background="{StaticResource DarkModalGrey}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="2"
+                        CornerRadius="6"
+                        Padding="8,6">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
                                VerticalAlignment="Center"/>
