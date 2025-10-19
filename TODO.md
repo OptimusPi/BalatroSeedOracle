@@ -31,7 +31,14 @@
 
 ## ✅ CRITICAL ISSUES (FIXED TODAY - 10/19/2024)
 
-### 1. Debug Logging Cleanup (COMPLETED)
+### 1. SearchModal Critical Fixes (COMPLETED)
+- [x] Added missing ShowSearchModal() method - SEARCH button now works!
+- [x] Added missing ShowFiltersModal() method - CREATE NEW FILTER works!
+- [x] Fixed MainMenu reference for proper modal navigation
+- [x] Added Balatro-style modal transitions (200ms fall, 350ms rise)
+- [x] Removed thread/batch settings from Deck/Stake tab (UI cleanup)
+
+### 2. Debug Logging Cleanup (COMPLETED)
 - [x] Wrapped all DebugLogger methods with #if DEBUG preprocessor directives
 - [x] Removed all Console.WriteLine calls (6 files cleaned)
 - [x] Removed all System.Diagnostics.Debug.WriteLine calls (3 files cleaned)
