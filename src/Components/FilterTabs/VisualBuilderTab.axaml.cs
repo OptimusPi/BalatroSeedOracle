@@ -367,6 +367,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     });
                 }
 
+                // Create card content that will have physics applied
+                var cardContent = new Border
+                {
+                    Background = Brushes.Transparent,
+                    Child = imageGrid
+                };
+
+                // ADD BALATRO-STYLE SWAY PHYSICS TO THE CARD!
+                // Apply the CardDragBehavior for tilt, sway, and juice effects
+                var dragBehavior = new Behaviors.CardDragBehavior
+                {
+                    IsEnabled = true,
+                    JuiceAmount = 0.4 // Balatro default juice on pickup
+                };
+                Avalonia.Xaml.Interactivity.Interaction.GetBehaviors(cardContent).Add(dragBehavior);
+
                 _dragAdorner = new Border
                 {
                     Background = Brushes.Transparent,
@@ -374,7 +390,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         {
                             Children =
                             {
-                                imageGrid,
+                                cardContent, // Card with physics
                                 new TextBlock
                                 {
                                     Text = item.DisplayName,
