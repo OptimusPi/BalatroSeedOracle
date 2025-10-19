@@ -74,41 +74,8 @@ namespace BalatroSeedOracle.Views.Modals
                 };
             }
 
-            // FilterSelectorControl → ViewModel.LoadFilterCommand
-            var filterSelector = this.FindControl<Components.FilterSelectorControl>("FilterSelector");
-            if (filterSelector != null)
-            {
-                // CRITICAL: Set SearchModal mode to show SELECT button
-                filterSelector.IsInSearchModal = true;
-
-                // List click: Show preview only (don't advance)
-                filterSelector.FilterSelected += async (s, path) =>
-                {
-                    DebugLogger.Log("SearchModal", $"Filter clicked in list! Path: {path}");
-                    await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter loaded and displayed for preview - staying on Select Filter tab");
-                };
-
-                // Confirmed load: fired by Select button, then advance to Search
-                filterSelector.FilterConfirmed += async (s, path) =>
-                {
-                    DebugLogger.Log("SearchModal", $"SELECT THIS FILTER button clicked! Path: {path}");
-                    await ViewModel.LoadFilterAsync(path);
-                    DebugLogger.Log("SearchModal", "Filter confirmed, auto-advancing to Search tab");
-
-                    // Auto-advance directly to Search tab (tab 2)
-                    ViewModel.SelectedTabIndex = 2;
-                    ViewModel.UpdateTabVisibility(2);
-                    _tabHeader?.SwitchToTab(2);
-                };
-
-                // Create new filter: Open FiltersModal
-                filterSelector.NewFilterRequested += (s, e) =>
-                {
-                    DebugLogger.Log("SearchModal", "CREATE NEW FILTER button clicked!");
-                    OpenFiltersModal();
-                };
-            }
+            // CREATE NEW FILTER button callback (FilterSelectorControl is created dynamically by ViewModel)
+            ViewModel.SetNewFilterRequestedCallback(OpenFiltersModal);
 
             // DeckAndStakeSelector → ViewModel properties
             var deckStakeSelector = this.FindControl<Components.DeckAndStakeSelector>("DeckStakeSelector");

@@ -29,6 +29,9 @@ namespace BalatroSeedOracle.ViewModels
         // Reference to main menu for VibeOut mode
         public Views.BalatroMainMenu? MainMenu { get; set; }
 
+        // Callback for CREATE NEW FILTER button (set by View)
+        private Action? _newFilterRequestedAction;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
         private bool _isSearching = false;
@@ -298,6 +301,14 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedTabIndex = parsedIndex;
                 UpdateTabVisibility(parsedIndex);
             }
+        }
+
+        /// <summary>
+        /// Set callback for CREATE NEW FILTER button (called from View)
+        /// </summary>
+        public void SetNewFilterRequestedCallback(Action callback)
+        {
+            _newFilterRequestedAction = callback;
         }
 
         /// <summary>
@@ -765,6 +776,12 @@ namespace BalatroSeedOracle.ViewModels
                 // Advance to Search tab (index 2)
                 SelectedTabIndex = 2;
                 UpdateTabVisibility(2);
+            };
+
+            filterSelector.NewFilterRequested += (s, e) =>
+            {
+                DebugLogger.Log("SearchModalViewModel", "CREATE NEW FILTER button clicked! Opening FiltersModal...");
+                _newFilterRequestedAction?.Invoke();
             };
 
             // Layout: simple container hosting the selector
