@@ -28,12 +28,8 @@ namespace BalatroSeedOracle.Views.Modals
                 backButton.Click += OnBackButtonClick;
             }
 
-            // Click-away-to-close: Click on overlay background to close
-            var overlayBackground = this.FindControl<Border>("OverlayBackground");
-            if (overlayBackground != null)
-            {
-                overlayBackground.PointerPressed += OnOverlayClicked;
-            }
+            // REMOVED click-away handler - main modals should only close via back button
+            // Only popup controls (like volume slider) should have click-away behavior
 
             // Hook TopLevel.BackRequested once the control is attached
             this.Loaded += OnLoaded;
@@ -106,19 +102,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnOverlayClicked(object? sender, Avalonia.Input.PointerPressedEventArgs e)
-        {
-            // Only close if clicked directly on overlay, not on modal content
-            var clickedElement = e.Source as Control;
-            var overlayBackground = this.FindControl<Border>("OverlayBackground");
-            var modalBorder = this.FindControl<Border>("ModalBorder");
-
-            // Check if click was on the overlay background (not on the modal itself)
-            if (clickedElement == overlayBackground)
-            {
-                BackClicked?.Invoke(this, EventArgs.Empty);
-            }
-        }
 
         private void OnTopLevelBackRequested(object? sender, RoutedEventArgs e)
         {

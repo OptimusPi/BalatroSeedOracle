@@ -5,12 +5,12 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <!-- Clickable overlay - click outside modal to close -->
+        <!-- Overlay background (not clickable - modals only close via back button) -->
         <Border x:Name="OverlayBackground"
                 Background="{StaticResource SemiTransparentBlack}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                IsHitTestVisible="True" />
+                IsHitTestVisible="False" />
 
         <!-- Modal positioning grid -->
         <Grid x:Name="ModalContainer">

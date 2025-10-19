@@ -29,6 +29,7 @@ namespace BalatroSeedOracle.Views
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
         private Action<float, float, float, float>? _audioAnalysisHandler;
+        private Popup? _volumePopup;
 
         // ViewModel (injected via DI - never null after construction)
         public BalatroMainMenuViewModel ViewModel { get; }
@@ -64,6 +65,7 @@ namespace BalatroSeedOracle.Views
             _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
             _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
             _mainContent = this.FindControl<Grid>("MainContent");
+            _volumePopup = this.FindControl<Popup>("VolumePopup");
         }
 
         /// <summary>
@@ -235,6 +237,69 @@ namespace BalatroSeedOracle.Views
 
             // Check for resumable search
             ViewModel.CheckAndRestoreSearchIcon(ShowSearchDesktopIcon);
+
+            // Set up click-away handler for popups (NOT for main modals which have back buttons)
+            this.PointerPressed += OnPointerPressedForPopupClickAway;
+        }
+
+        /// <summary>
+        /// Handles pointer press to close popups when clicking outside
+        /// This is for TRUE popups (volume slider, etc) NOT main modals which have back buttons
+        /// </summary>
+        private void OnPointerPressedForPopupClickAway(object? sender, PointerPressedEventArgs e)
+        {
+            // Only handle click-away for actual popups, not main modals
+            if (_volumePopup?.IsOpen == true)
+            {
+                // Get the source of the click
+                var source = e.Source as Control;
+
+                // Don't close if clicking on the music toggle button itself (let it toggle naturally)
+                var musicButton = this.FindControl<Button>("MusicToggleButton");
+                if (source == musicButton)
+                {
+                    return; // Let the button's click handler toggle the popup
+                }
+
+                // Check if the click source is a child of the music button
+                var parent = source;
+                while (parent != null)
+                {
+                    if (parent == musicButton)
+                    {
+                        return; // Click was on music button or its child
+                    }
+                    parent = parent.Parent as Control;
+                }
+
+                // Get the position of the click
+                var clickPosition = e.GetPosition(this);
+
+                // Get the volume popup's child (the Border control)
+                if (_volumePopup.Child is Control popupContent)
+                {
+                    // Check if click is outside the popup bounds
+                    var popupBounds = popupContent.Bounds;
+                    var popupPosition = popupContent.TranslatePoint(new Point(0, 0), this);
+
+                    if (popupPosition.HasValue)
+                    {
+                        var absolutePopupBounds = new Rect(
+                            popupPosition.Value.X,
+                            popupPosition.Value.Y,
+                            popupBounds.Width,
+                            popupBounds.Height
+                        );
+
+                        // If click is outside popup, close it
+                        if (!absolutePopupBounds.Contains(clickPosition))
+                        {
+                            ViewModel.IsVolumePopupOpen = false;
+                            DebugLogger.Log("BalatroMainMenu", "Volume popup closed via click-away");
+                        }
+                    }
+                }
+            }
         }
 
         #region Modal Management (View-only logic)
@@ -261,6 +326,12 @@ namespace BalatroSeedOracle.Views
         public void ShowModalContent(UserControl content, string? title = null)
         {
             if (_modalContainer == null) return;
+
+            // Close any open popups when opening a modal
+            if (ViewModel.IsVolumePopupOpen)
+            {
+                ViewModel.IsVolumePopupOpen = false;
+            }
 
             _modalContainer.Children.Clear();
             _modalContainer.Children.Add(content);
