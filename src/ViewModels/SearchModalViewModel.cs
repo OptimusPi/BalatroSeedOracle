@@ -780,7 +780,6 @@ namespace BalatroSeedOracle.ViewModels
 
             filterSelector.NewFilterRequested += (s, e) =>
             {
-                DebugLogger.Log("SearchModalViewModel", "CREATE NEW FILTER button clicked! Opening FiltersModal...");
                 _newFilterRequestedAction?.Invoke();
             };
 
