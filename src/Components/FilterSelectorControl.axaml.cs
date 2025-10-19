@@ -233,7 +233,10 @@ namespace BalatroSeedOracle.Components
         // Event handler for "+ NEW" button
         private void OnCreateNewFilterClick(object? sender, RoutedEventArgs e)
         {
+            Helpers.DebugLogger.Log("FilterSelectorControl", "🆕 CREATE NEW FILTER button clicked!");
+            Helpers.DebugLogger.Log("FilterSelectorControl", $"NewFilterRequested has {NewFilterRequested?.GetInvocationList().Length ?? 0} subscribers");
             NewFilterRequested?.Invoke(this, EventArgs.Empty);
+            Helpers.DebugLogger.Log("FilterSelectorControl", "✅ NewFilterRequested event fired!");
         }
 
         // Event handler for "Delete Filter" button
