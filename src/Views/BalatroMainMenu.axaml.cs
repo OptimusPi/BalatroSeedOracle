@@ -148,6 +148,36 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
+        /// Show search modal
+        /// </summary>
+        private void ShowSearchModal()
+        {
+            var searchModal = new Modals.SearchModal();
+            // Set the MainMenu reference so CREATE NEW FILTER button works
+            searchModal.ViewModel.MainMenu = this;
+
+            var modal = new StandardModal("🎰 SEED SEARCH");
+            modal.SetContent(searchModal);
+            modal.BackClicked += (s, e) => HideModalContent();
+
+            ShowModalContent(modal, "🎰 SEED SEARCH");
+        }
+
+        /// <summary>
+        /// Show filters modal (for creating/managing filters)
+        /// </summary>
+        public void ShowFiltersModal()
+        {
+            var filtersModal = new Modals.FiltersModal();
+
+            var modal = new StandardModal("🎨 FILTER DESIGNER");
+            modal.SetContent(filtersModal);
+            modal.BackClicked += (s, e) => HideModalContent();
+
+            ShowModalContent(modal, "🎨 FILTER DESIGNER");
+        }
+
+        /// <summary>
         /// Show settings modal
         /// </summary>
         private void ShowSettingsModal()
@@ -625,6 +655,8 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
 
                 var searchContent = new SearchModal();
+                // Set the MainMenu reference so CREATE NEW FILTER button works
+                searchContent.ViewModel.MainMenu = this;
                 _ = searchContent.ViewModel.ConnectToExistingSearch(searchId);
 
                 if (!string.IsNullOrEmpty(configPath))

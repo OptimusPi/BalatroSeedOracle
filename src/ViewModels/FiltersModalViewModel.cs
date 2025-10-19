@@ -871,7 +871,10 @@ namespace BalatroSeedOracle.ViewModels
                         var json = await System.IO.File.ReadAllTextAsync(originalPath);
                         config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
                     }
-                    catch { }
+                    catch
+                    {
+                        // Failed to load/parse filter - will remain null and be skipped below
+                    }
 
                     if (config != null)
                     {

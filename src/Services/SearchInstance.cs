@@ -1284,7 +1284,10 @@ namespace BalatroSeedOracle.Services
                 _threadAppender.Dispose(); // Dispose the ThreadLocal itself
                 _connection.Dispose();
             }
-            catch { }
+            catch
+            {
+                // Ignore disposal errors - best effort cleanup
+            }
 
             // Force dispose of the search if it still exists and not already disposed
             if (_currentSearch != null)

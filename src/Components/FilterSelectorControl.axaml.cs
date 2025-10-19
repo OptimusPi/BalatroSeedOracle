@@ -151,7 +151,10 @@ namespace BalatroSeedOracle.Components
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // Error measuring button - use fallback height
+            }
 
             // Conservative fallback: typical button height + margins + small buffer
             // Default global MinHeight is 40; margin top/bottom ~3 each; spacing 0

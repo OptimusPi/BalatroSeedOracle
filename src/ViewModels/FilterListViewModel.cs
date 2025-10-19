@@ -334,7 +334,10 @@ namespace BalatroSeedOracle.ViewModels
                     return authorProp.GetString() ?? "Unknown";
                 }
             }
-            catch { }
+            catch
+            {
+                // JSON parsing failed - return default
+            }
             return "Unknown";
         }
 

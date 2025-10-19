@@ -57,10 +57,9 @@ namespace BalatroSeedOracle.Controls
                     _parentWindow.WindowState = WindowState.Maximized;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 // Handle any errors silently
-                System.Diagnostics.Debug.WriteLine($"MaximizeButton error: {ex.Message}");
             }
         }
         

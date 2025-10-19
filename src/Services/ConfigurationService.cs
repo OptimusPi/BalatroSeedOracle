@@ -36,9 +36,9 @@ namespace BalatroSeedOracle.Services
                 
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error saving filter: {ex.Message}");
+                // Error saving filter
                 return false;
             }
         }
@@ -62,9 +62,9 @@ namespace BalatroSeedOracle.Services
                     return null;
                 });
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error loading filter: {ex.Message}");
+                // Error loading filter
                 return null;
             }
         }

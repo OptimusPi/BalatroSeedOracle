@@ -338,7 +338,7 @@ namespace BalatroSeedOracle.Controls
             }
             else
             {
-                Console.WriteLine($"Shader compilation error: {error}");
+                // Shader compilation failed - effect will be null
             }
         }
 

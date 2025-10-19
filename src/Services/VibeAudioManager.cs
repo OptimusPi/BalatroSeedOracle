@@ -90,31 +90,23 @@ namespace BalatroSeedOracle.Services
 
         public VibeAudioManager()
         {
-            Console.WriteLine("🎵🎵🎵 VIBE AUDIO MANAGER CONSTRUCTOR CALLED! 🎵🎵🎵");
             try
             {
                 InitializeAudio();
-                Console.WriteLine("✅ InitializeAudio() completed");
-
                 LoadAllTracks();
-                Console.WriteLine($"✅ LoadAllTracks() completed - Loaded {_tracks.Count} tracks");
 
                 // Start volume fade timer for smooth transitions (60fps)
                 _volumeFadeTimer = new System.Timers.Timer(1000.0 / 60.0); // ~16ms = 60fps
                 _volumeFadeTimer.Elapsed += (s, e) => UpdateAllVolumes();
                 _volumeFadeTimer.AutoReset = true;
                 _volumeFadeTimer.Start();
-                Console.WriteLine("✅ Volume fade timer started (60fps)");
 
                 // Start all tracks playing at default volumes (user can adjust with sliders)
                 InitializeAllTracks();
-                Console.WriteLine("✅ All tracks initialized");
-
-                Console.WriteLine($"🎵 VIBE AUDIO MANAGER READY! {_tracks.Count} tracks loaded");
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"❌ VIBE AUDIO MANAGER FAILED: {ex.Message}\n{ex.StackTrace}");
+                // Silently fail - audio not critical to app function
             }
         }
 
@@ -220,7 +212,6 @@ namespace BalatroSeedOracle.Services
             if (_waveOut != null && _tracks.Count > 0)
             {
                 _waveOut.Play();
-                Console.WriteLine($"✅ Started playback with {_tracks.Count} synchronized tracks");
             }
         }
         
@@ -268,7 +259,6 @@ namespace BalatroSeedOracle.Services
             if (_tracks.TryGetValue(trackName, out var track))
             {
                 track.SetTarget(Math.Clamp(volume, 0f, 1f), pan);
-                Console.WriteLine($"SetTrackVolume: {trackName} vol={volume:F2} pan={pan:F2}");
             }
         }
 
@@ -276,12 +266,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_tracks.TryGetValue(trackName, out var track))
             {
-                Console.WriteLine($"SetTrack: {trackName} vol={targetVolume:F2} pan={targetPan:F2}");
                 track.SetTarget(targetVolume, targetPan);
             }
             else
             {
-                Console.WriteLine($"⚠️ Track not found: {trackName}");
             }
         }
 
@@ -658,7 +646,6 @@ namespace BalatroSeedOracle.Services
             TargetVolume = Math.Clamp(volume, 0f, 1f);
             CurrentVolume = TargetVolume;
             _volumeProvider.Volume = CurrentVolume;
-            Console.WriteLine($"  → {Name} volume NOW: {_volumeProvider.Volume}");
         }
 
         public void UpdateVolume(float speed)

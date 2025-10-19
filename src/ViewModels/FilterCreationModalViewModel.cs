@@ -192,7 +192,10 @@ namespace BalatroSeedOracle.ViewModels
                     return config?.Author ?? "Unknown";
                 }
             }
-            catch { }
+            catch
+            {
+                // Error reading/parsing filter - return default
+            }
             return "Unknown";
         }
 

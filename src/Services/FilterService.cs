@@ -41,9 +41,9 @@ namespace BalatroSeedOracle.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error getting available filters: {ex.Message}");
+                // Error getting filters - return empty list
             }
 
             return Task.FromResult(filters);
@@ -60,9 +60,9 @@ namespace BalatroSeedOracle.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error deleting filter: {ex.Message}");
+                // Error deleting filter
                 return false;
             }
         }

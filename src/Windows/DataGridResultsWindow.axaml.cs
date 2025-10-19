@@ -176,10 +176,9 @@ LIMIT 100;";
                         _sqlEditor.SyntaxHighlighting = AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("SQL");
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    // Log but don't crash on syntax highlighting issues
-                    System.Diagnostics.Debug.WriteLine($"Failed to set SQL syntax highlighting: {ex.Message}");
+                    // Ignore syntax highlighting issues
                 }
             }, DispatcherPriority.Background);
         }
@@ -453,9 +452,9 @@ LIMIT 50;",
                 {
                     _sqlEditor.Text = query;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to set SQL editor text: {ex.Message}");
+                    // Ignore editor text setting errors
                 }
             }
         }

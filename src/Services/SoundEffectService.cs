@@ -42,7 +42,6 @@ namespace BalatroSeedOracle.Services
             if (Directory.Exists(path))
             {
                 _soundsPath = path;
-                Debug.WriteLine($"🔊 Sound path set to: {path}");
             }
         }
         
@@ -116,7 +115,6 @@ namespace BalatroSeedOracle.Services
                     }
                     if (File.Exists(localSoundPath))
                     {
-                        Debug.WriteLine($"🔊 Playing sound: {localSoundPath}");
                         PlaySoundFile(localSoundPath);
                     }
                     // Or if user has set a custom sounds path
@@ -125,18 +123,15 @@ namespace BalatroSeedOracle.Services
                         var customSoundPath = Path.Combine(_soundsPath, soundFile);
                         if (File.Exists(customSoundPath))
                         {
-                            Debug.WriteLine($"🔊 Playing sound: {customSoundPath}");
                             PlaySoundFile(customSoundPath);
                         }
                     }
                     else
                     {
-                        Debug.WriteLine($"🔊 Sound (not found): {soundName} -> {soundFile}");
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"🔊 Sound: {soundName}");
                 }
             });
         }
@@ -165,9 +160,9 @@ namespace BalatroSeedOracle.Services
                 waveOut.Init(reader);
                 waveOut.Play();
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"🔊 Failed to play sound: {ex.Message}");
+                // Sound playback failed - non-critical
                 // Clean up if initialization failed
                 reader?.Dispose();
                 waveOut?.Dispose();
