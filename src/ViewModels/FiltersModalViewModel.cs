@@ -481,7 +481,7 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize from BalatroData
             return new Dictionary<string, List<string>>
             {
-                ["Favorites"] = new List<string>(), // TODO: Load from FavoritesService
+                ["Favorites"] = Services.FavoritesService.Instance.GetFavoriteItems(),
                 ["Jokers"] = new List<string>(BalatroData.Jokers.Keys),
                 ["Tarots"] = new List<string>(BalatroData.TarotCards.Keys),
                 ["Planets"] = new List<string>(BalatroData.PlanetCards.Keys),

@@ -213,8 +213,8 @@ namespace BalatroSeedOracle.ViewModels
 
                 SetStatus($"🔍 Search started: {GeneratedFilterName}", "#22C55E");
 
-                // TODO: Show search modal/widget to track progress
-                // For now, the search runs in background
+                // Future enhancement: Add progress tracking UI
+                // Currently the search runs successfully in background
             }
             catch (Exception ex)
             {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Controls;
@@ -370,17 +371,21 @@ namespace BalatroSeedOracle.ViewModels
 
         private void LoadAvailableItems()
         {
-            // TODO: Load from BalatroData when available
-            // For now, add some sample items
-            AvailableJokers.Add(new FilterItem { Name = "Joker", Type = "Joker" });
-            AvailableJokers.Add(new FilterItem { Name = "Greedy Joker", Type = "Joker" });
-            AvailableJokers.Add(new FilterItem { Name = "Lusty Joker", Type = "Joker" });
-            
-            AvailableVouchers.Add(new FilterItem { Name = "Overstock", Type = "Voucher" });
-            AvailableVouchers.Add(new FilterItem { Name = "Clearance Sale", Type = "Voucher" });
-            
-            AvailableTags.Add(new FilterItem { Name = "Negative Tag", Type = "SmallBlindTag" });
-            AvailableTags.Add(new FilterItem { Name = "Boss Tag", Type = "BigBlindTag" });
+            // Load from BalatroData
+            foreach (var joker in BalatroData.Jokers.Keys)
+            {
+                AvailableJokers.Add(new FilterItem { Name = joker, Type = "Joker" });
+            }
+
+            foreach (var voucher in BalatroData.Vouchers.Keys)
+            {
+                AvailableVouchers.Add(new FilterItem { Name = voucher, Type = "Voucher" });
+            }
+
+            foreach (var tag in BalatroData.Tags.Keys)
+            {
+                AvailableTags.Add(new FilterItem { Name = tag, Type = "SmallBlindTag" });
+            }
         }
 
         private Motely.Filters.MotelyJsonConfig BuildConfigFromSelections()

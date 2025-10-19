@@ -77,6 +77,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _beatPulseSource;
 
+        [ObservableProperty]
+        private string _errorMessage = string.Empty;
+
         // Intensity sliders for shader effects (0-100%)
         [ObservableProperty]
         private float _shadowFlickerIntensity = 50f;
@@ -689,10 +692,12 @@ namespace BalatroSeedOracle.ViewModels
                 // Check if name already exists
                 if (PresetHelper.PresetNameExists(presetName))
                 {
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Preset name '{presetName}' already exists");
-                    // TODO: Show error message to user
+                    ErrorMessage = $"Preset '{presetName}' already exists. Please choose a different name.";
                     return;
                 }
+
+                // Clear any previous error
+                ErrorMessage = string.Empty;
 
                 // Create new preset from current settings
                 var preset = new VisualizerPreset

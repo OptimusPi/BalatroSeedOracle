@@ -79,13 +79,12 @@ namespace BalatroSeedOracle.Behaviors
             AssociatedObject.PointerPressed += OnPointerPressed;
             AssociatedObject.PointerReleased += OnPointerReleased;
 
-            // Start 60 FPS animation timer
+            // Create animation timer but don't start it yet
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67)
+                Interval = TimeSpan.FromMilliseconds(16.67) // 60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
-            _animationTimer.Start();
         }
 
         protected override void OnDetaching()
@@ -109,12 +108,31 @@ namespace BalatroSeedOracle.Behaviors
         {
             _isHovering = true;
             _lastPointerPosition = e.GetPosition(AssociatedObject);
+
+            // Start animation timer when hovering begins
+            if (_animationTimer != null && !_animationTimer.IsEnabled)
+            {
+                _animationTimer.Start();
+            }
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)
         {
             _isHovering = false;
             _lastPointerPosition = null;
+
+            // Stop animation timer when not hovering or dragging
+            if (!_isDragging && _animationTimer != null && _animationTimer.IsEnabled)
+            {
+                _animationTimer.Stop();
+                // Reset transforms to neutral state
+                if (_rotateTransform != null) _rotateTransform.Angle = 0;
+                if (_scaleTransform != null)
+                {
+                    _scaleTransform.ScaleX = 1.0;
+                    _scaleTransform.ScaleY = 1.0;
+                }
+            }
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -132,12 +150,31 @@ namespace BalatroSeedOracle.Behaviors
 
             // Trigger juice animation (Balatro's bounce effect on pickup)
             _juiceStartTime = DateTime.Now;
+
+            // Ensure animation timer is running when dragging
+            if (_animationTimer != null && !_animationTimer.IsEnabled)
+            {
+                _animationTimer.Start();
+            }
         }
 
         private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
             _pointerPressedPosition = null;
+
+            // Stop animation timer if not hovering anymore
+            if (!_isHovering && _animationTimer != null && _animationTimer.IsEnabled)
+            {
+                _animationTimer.Stop();
+                // Reset transforms to neutral state
+                if (_rotateTransform != null) _rotateTransform.Angle = 0;
+                if (_scaleTransform != null)
+                {
+                    _scaleTransform.ScaleX = 1.0;
+                    _scaleTransform.ScaleY = 1.0;
+                }
+            }
         }
 
         private void OnAnimationTick(object? sender, EventArgs e)

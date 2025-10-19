@@ -349,14 +349,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsLoading = false;
                 });
             }
-            catch (Exception ex)
+            catch
             {
                 // Even on error, clear loading state
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
                 });
-                // Log error if needed (but not using DebugLogger!)
                 throw;
             }
         }
