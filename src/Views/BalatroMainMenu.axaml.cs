@@ -420,23 +420,16 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Apply composite transform for scale + translate
             var transformGroup = new TransformGroup();
             transformGroup.Children.Add(new ScaleTransform(1, 1));
             transformGroup.Children.Add(new TranslateTransform(0, 0));
             oldContent.RenderTransform = transformGroup;
             oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
-            // Run fall animation
             await fallAnimation.RunAsync(oldContent);
+            await Task.Delay(150); // Balatro standard delay between sequences
 
-            // Balatro-style 0.15s delay between actions (from blind.lua)
-            await Task.Delay(150);
-
-            // Swap content
             _modalContainer.Children.Clear();
-
-            // Show new modal with pop-up animation
             ShowModalWithAnimation(newContent, title);
         }
 
@@ -499,17 +492,13 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Apply composite transform for scale + translate
             var transformGroup = new TransformGroup();
             transformGroup.Children.Add(new ScaleTransform(1, 1));
             transformGroup.Children.Add(new TranslateTransform(0, 0));
             content.RenderTransform = transformGroup;
             content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
-            // Run pop-up animation
             await popAnimation.RunAsync(content);
-
-            // Add a tiny juice_up effect after landing (0.05s like hover effects)
             var settleAnimation = new Avalonia.Animation.Animation
             {
                 Duration = TimeSpan.FromMilliseconds(50),

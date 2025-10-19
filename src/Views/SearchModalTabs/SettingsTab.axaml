@@ -2,92 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:components="using:BalatroSeedOracle.Components"
-             xmlns:i="using:Avalonia.Xaml.Interactivity"
-             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel">
 
     <Border Padding="25">
-        <StackPanel Spacing="25">
+        <StackPanel Spacing="25" VerticalAlignment="Center">
             <!-- Title -->
-        <TextBlock Text="DECK / STAKE"
-                   FontFamily="{StaticResource BalatroFont}"
-                   FontSize="24"
-                   Foreground="{StaticResource Gold}"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,10"/>
-
-        <!-- Deck and Stake Selection -->
-        <components:DeckAndStakeSelector Name="DeckStakeSelector"
-                                        HorizontalAlignment="Center"/>
-
-        <!-- Advanced Settings -->
-            <TextBlock Text="ADVANCED SETTINGS"
+            <TextBlock Text="DECK / STAKE"
                        FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
-                       Foreground="{StaticResource VeryLightGrey}"
+                       FontSize="24"
+                       Foreground="{StaticResource Gold}"
                        HorizontalAlignment="Center"
-                       Margin="0,10,0,0"/>
+                       Margin="0,0,0,10"/>
 
-            <!-- Thread Count -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="{Binding ThreadCount, StringFormat='Threads: {0}'}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource White}"/>
-                <Slider Value="{Binding ThreadCount}"
-                        Minimum="1"
-                        Maximum="32"
-                        TickFrequency="1"
-                        IsSnapToTickEnabled="True"
-                        Width="400"
-                        HorizontalAlignment="Left">
-                    <i:Interaction.Behaviors>
-                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="1" MinIntervalMs="200"/>
-                    </i:Interaction.Behaviors>
-                </Slider>
-            </StackPanel>
+            <!-- Deck and Stake Selection -->
+            <components:DeckAndStakeSelector Name="DeckStakeSelector"
+                                            HorizontalAlignment="Center"/>
 
-            <!-- Batch Size -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="{Binding BatchSize, StringFormat='Batch Size: {0} digits'}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource White}"/>
-                <Slider Value="{Binding BatchSize}"
-                        Minimum="1"
-                        Maximum="5"
-                        TickFrequency="1"
-                        IsSnapToTickEnabled="True"
-                        Width="400"
-                        HorizontalAlignment="Left">
-                    <i:Interaction.Behaviors>
-                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="1" MinIntervalMs="200"/>
-                    </i:Interaction.Behaviors>
-                </Slider>
-                <TextBlock Text="Higher = more memory usage, faster searches"
-                           FontSize="12"
-                           Foreground="{StaticResource MediumGrey}"
-                           Opacity="0.7"/>
-            </StackPanel>
-
-            <!-- Max Results -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="{Binding MaxResults, StringFormat='Max Results: {0}'}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource White}"/>
-                <Slider Value="{Binding MaxResults}"
-                        Minimum="10"
-                        Maximum="10000"
-                        TickFrequency="10"
-                        Width="400"
-                        HorizontalAlignment="Left">
-                    <i:Interaction.Behaviors>
-                        <behaviors:PlaySfxOnValueChangeBehavior Sound="whoosh" Threshold="50" MinIntervalMs="250"/>
-                    </i:Interaction.Behaviors>
-                </Slider>
-            </StackPanel>
+            <!-- Select button handled by the DeckAndStakeSelector component itself -->
         </StackPanel>
     </Border>
 </UserControl>
