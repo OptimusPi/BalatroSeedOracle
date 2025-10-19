@@ -36,4 +36,6 @@ var json = JsonSerializer.Serialize(filter, new JsonSerializerOptions
 });
 
 File.WriteAllText(@"X:\BalatroSeedOracle\JsonItemFilters\AllJokers.json", json);
+#if DEBUG
 Console.WriteLine($"Created AllJokers.json with {jokers.Count} jokers!");
+#endif
