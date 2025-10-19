@@ -136,6 +136,7 @@
                                                         <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
 
+                                                    <!-- Main card image -->
                                                     <Image Grid.Row="0"
                                                            Source="{Binding ItemImage}"
                                                            Width="50"
@@ -143,6 +144,16 @@
                                                            Stretch="Uniform"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
+
+                                                    <!-- Soul face overlay for legendary jokers -->
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding SoulFaceImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding DisplayName}"
@@ -221,6 +232,7 @@
                                                         <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
 
+                                                    <!-- Main card image -->
                                                     <Image Grid.Row="0"
                                                            Source="{Binding ItemImage}"
                                                            Width="50"
@@ -228,6 +240,16 @@
                                                            Stretch="Uniform"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
+
+                                                    <!-- Soul face overlay for legendary jokers -->
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding SoulFaceImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding DisplayName}"
@@ -305,6 +327,7 @@
                                                         <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
 
+                                                    <!-- Main card image -->
                                                     <Image Grid.Row="0"
                                                            Source="{Binding ItemImage}"
                                                            Width="50"
@@ -312,6 +335,16 @@
                                                            Stretch="Uniform"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
+
+                                                    <!-- Soul face overlay for legendary jokers -->
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding SoulFaceImage}"
+                                                           Width="50"
+                                                           Height="50"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding DisplayName}"
