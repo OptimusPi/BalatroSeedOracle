@@ -526,14 +526,15 @@ namespace BalatroSeedOracle.Controls
         {
             if (_isDisposed) return;
 
-            // Update "fake time" - constant spin + music kicks
-            var currentTime = _stopwatch.Elapsed.TotalSeconds;
-            var deltaTime = (float)(currentTime - _lastUpdateTime);
-            _lastUpdateTime = currentTime;
-
-            // Beat-driven rotation with inertia and alternating direction
+            // Only update time and animations when IsAnimating is true
             if (_isAnimating)
             {
+                // Update "fake time" - constant spin + music kicks
+                var currentTime = _stopwatch.Elapsed.TotalSeconds;
+                var deltaTime = (float)(currentTime - _lastUpdateTime);
+                _lastUpdateTime = currentTime;
+
+                // Beat-driven rotation with inertia and alternating direction
                 // Beat kicks add GENTLE rotational impulse with direction flip
                 var beatKick = _beatPulse * 8.0f; // Much gentler (was 50!)
                 _rotationVelocity += beatKick * _spinDirection * deltaTime;
@@ -553,7 +554,11 @@ namespace BalatroSeedOracle.Controls
                 InitializeShader();
                 RenderShader(canvas);
 
-                RegisterForNextAnimationFrameUpdate();
+                // Only register for next frame if animating
+                if (_isAnimating)
+                {
+                    RegisterForNextAnimationFrameUpdate();
+                }
             }
         }
 

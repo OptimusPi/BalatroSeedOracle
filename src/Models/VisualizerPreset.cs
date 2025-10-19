@@ -44,9 +44,9 @@ namespace BalatroSeedOracle.Models
         public float ParallaxStrength { get; set; }
 
         /// <summary>
-        /// Base animation speed (0-3)
+        /// Base animation speed (0-3, default 1.0)
         /// </summary>
-        public float TimeSpeed { get; set; }
+        public float TimeSpeed { get; set; } = 1.0f;
 
         /// <summary>
         /// Enable seed found audio event trigger
