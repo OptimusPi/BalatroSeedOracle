@@ -110,30 +110,27 @@ namespace BalatroSeedOracle.Views.Modals
         // Tab click wiring removed: native TabControl handles selection
 
         /// <summary>
-        /// Opens the FiltersModal by navigating up to BalatroMainMenu
+        /// Opens the FiltersModal via ViewModel's MainMenu reference
         /// </summary>
         private void OpenFiltersModal()
         {
             try
             {
-                // Walk up visual tree to find BalatroMainMenu
-                var parent = this.Parent;
-                while (parent != null)
-                {
-                    if (parent is BalatroMainMenu mainMenu)
-                    {
-                        DebugLogger.Log("SearchModal", "Found BalatroMainMenu, calling ShowFiltersModal()");
-                        mainMenu.ShowFiltersModal();
-                        return;
-                    }
-                    parent = (parent as Control)?.Parent;
-                }
+                DebugLogger.Log("SearchModal", "🆕 OpenFiltersModal called");
 
-                DebugLogger.LogError("SearchModal", "Could not find BalatroMainMenu in visual tree!");
+                if (ViewModel.MainMenu != null)
+                {
+                    DebugLogger.Log("SearchModal", "✅ ViewModel.MainMenu exists, calling ShowFiltersModal()");
+                    ViewModel.MainMenu.ShowFiltersModal();
+                }
+                else
+                {
+                    DebugLogger.LogError("SearchModal", "❌ ViewModel.MainMenu is NULL! Can't open FiltersModal");
+                }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
+                DebugLogger.LogError("SearchModal", $"❌ Error opening FiltersModal: {ex.Message}\n{ex.StackTrace}");
             }
         }
     }
