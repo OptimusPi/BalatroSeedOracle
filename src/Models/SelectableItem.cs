@@ -13,6 +13,7 @@ namespace BalatroSeedOracle.Models
         private IImage? _itemImage;
         private string _displayName = "";
         private string _itemKey = "";
+        private bool _isBeingDragged;
 
         public string Name
         {
@@ -120,6 +121,19 @@ namespace BalatroSeedOracle.Models
         }
         
         public string ItemType => _type;
+
+        public bool IsBeingDragged
+        {
+            get => _isBeingDragged;
+            set
+            {
+                if (_isBeingDragged != value)
+                {
+                    _isBeingDragged = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         // Additional properties for filter configuration
         public string? Value { get; set; }

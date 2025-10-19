@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
         private AdornerLayer? _adornerLayer;
+        private TranslateTransform? _adornerTransform;
         
         public VisualBuilderTab()
         {
@@ -29,9 +30,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
             
             // Set DataContext to the VisualBuilderTabViewModel
             DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
-            
+
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
+
+            // Track mouse movement to update adorner position during drag
+            this.PointerMoved += OnPointerMovedDuringDrag;
         }
         
         private void SetupDropZones()
@@ -116,6 +120,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _draggedItem = item;
                 DebugLogger.Log("VisualBuilderTab", $"Starting drag for item: {item.Name}");
 
+                // BALATRO-STYLE: Make the card "disappear" from grid while dragging
+                item.IsBeingDragged = true;
+
                 // Play card select sound
                 SoundEffectService.Instance.PlayCardSelect();
 
@@ -131,6 +138,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     RemoveDragAdorner();
+
+                    // BALATRO-STYLE: Restore the card in the grid
+                    item.IsBeingDragged = false;
                 });
 
                 DebugLogger.Log("VisualBuilderTab", $"Drag completed with result: {result}");
@@ -376,10 +386,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 }
                             }
                         },
-                    RenderTransform = new TranslateTransform(startPosition.X - 35, startPosition.Y - 47), // Center on cursor
                     ZIndex = 1000 // Ensure it's on top
                 };
-                
+
+                // Create transform and store reference so we can update it during drag
+                _adornerTransform = new TranslateTransform(startPosition.X - 35, startPosition.Y - 47);
+                _dragAdorner.RenderTransform = _adornerTransform;
+
                 AdornerLayer.SetAdornedElement(_dragAdorner, this);
                 _adornerLayer.Children.Add(_dragAdorner);
                 
@@ -390,7 +403,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("VisualBuilderTab", $"Failed to create drag adorner: {ex.Message}");
             }
         }
-        
+
+        private void OnPointerMovedDuringDrag(object? sender, PointerEventArgs e)
+        {
+            // Update adorner position to follow cursor during drag
+            if (_dragAdorner != null && _adornerTransform != null)
+            {
+                var position = e.GetPosition(this);
+                _adornerTransform.X = position.X - 35; // Center on cursor
+                _adornerTransform.Y = position.Y - 47;
+            }
+        }
+
         private void RemoveDragAdorner()
         {
             try

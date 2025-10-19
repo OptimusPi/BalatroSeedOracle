@@ -1,6 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab">
 
     <Grid>
@@ -61,7 +64,11 @@
                         <DataTemplate>
                             <StackPanel Margin="8"
                                        Cursor="Hand"
-                                       PointerPressed="OnItemPointerPressed">
+                                       PointerPressed="OnItemPointerPressed"
+                                       Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
+                                <i:Interaction.Behaviors>
+                                    <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                </i:Interaction.Behaviors>
                                 <Grid>
                                     <!-- Main card image -->
                                     <Image Source="{Binding ItemImage}"
