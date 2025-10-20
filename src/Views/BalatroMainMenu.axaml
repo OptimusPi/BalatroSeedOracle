@@ -140,6 +140,16 @@
             <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
                                                     IsVisible="{Binding IsVisualizerWidgetVisible}"
                                                     ClipToBounds="False"/>
+
+            <!-- 🎛️ VISUALIZER DEV WIDGET - Advanced shader control for power users -->
+            <components:VisualizerDevWidget x:Name="VisualizerDevWidget"
+                                           IsVisible="True"
+                                           ClipToBounds="False"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Top"
+                                           Margin="0,10,10,0"
+                                           Width="400"
+                                           Height="500"/>
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->

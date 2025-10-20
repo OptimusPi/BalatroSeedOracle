@@ -17,7 +17,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using SkiaSharp;
 
-namespace BalatroSeedOracle.Components.Widgets
+namespace BalatroSeedOracle.Components
 {
     /// <summary>
     /// Professional Visualizer Development Tool
