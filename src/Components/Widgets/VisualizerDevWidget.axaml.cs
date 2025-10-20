@@ -118,7 +118,7 @@ namespace BalatroSeedOracle.Components.Widgets
             {
                 mainColorHex.LostFocus += (s, e) =>
                 {
-                    if (TryParseHexColor(mainColorHex.Text, out var color))
+                    if (mainColorHex.Text != null && TryParseHexColor(mainColorHex.Text, out var color))
                     {
                         _currentPreset.MainColor = color;
                         _shaderBackground?.SetMainColor(color);
@@ -132,7 +132,7 @@ namespace BalatroSeedOracle.Components.Widgets
             {
                 accentColorHex.LostFocus += (s, e) =>
                 {
-                    if (TryParseHexColor(accentColorHex.Text, out var color))
+                    if (accentColorHex.Text != null && TryParseHexColor(accentColorHex.Text, out var color))
                     {
                         _currentPreset.AccentColor = color;
                         _shaderBackground?.SetAccentColor(color);
@@ -146,7 +146,7 @@ namespace BalatroSeedOracle.Components.Widgets
             {
                 bgColorHex.LostFocus += (s, e) =>
                 {
-                    if (TryParseHexColor(bgColorHex.Text, out var color))
+                    if (bgColorHex.Text != null && TryParseHexColor(bgColorHex.Text, out var color))
                     {
                         _currentPreset.BackgroundColor = color;
                         _shaderBackground?.SetBackgroundColor(color);

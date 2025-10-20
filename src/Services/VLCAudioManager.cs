@@ -95,9 +95,16 @@ namespace BalatroSeedOracle.Services
                 var musicFile = audioFiles[0];
                 Console.WriteLine($"[VLCAudioManager] Loading music: {Path.GetFileName(musicFile)}");
 
-                var media = new Media(_libVLC, musicFile, FromType.FromPath);
-                _mediaPlayer.Media = media;
-                _mediaPlayer.Play();
+                if (_libVLC != null && _mediaPlayer != null)
+                {
+                    var media = new Media(_libVLC, musicFile, FromType.FromPath);
+                    _mediaPlayer.Media = media;
+                    _mediaPlayer.Play();
+                }
+                else
+                {
+                    Console.WriteLine("[VLCAudioManager] ERROR: LibVLC or MediaPlayer is null, cannot load music");
+                }
 
                 Console.WriteLine("[VLCAudioManager] Playback started");
             }
