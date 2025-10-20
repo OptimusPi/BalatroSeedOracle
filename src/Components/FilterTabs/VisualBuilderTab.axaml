@@ -117,63 +117,39 @@
                 Padding="15">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="15">
-                    <!-- MUST HAVE Zone - using proper app styles -->
-                    <Border Name="MustDropZone"
-                            Background="{StaticResource VeryDarkBackground}"
-                            BorderBrush="{StaticResource AccentGreen}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            MinHeight="120"
-                            Padding="8"
-                            Margin="0,0,0,8"
-                            DragDrop.AllowDrop="True">
+                    <!-- MUST HAVE Zone -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="MUST HAVE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Green}"
+                                   HorizontalAlignment="Left"/>
+                        <Border Name="MustDropZone"
+                                Background="{StaticResource VeryDarkBackground}"
+                                BorderBrush="{StaticResource Green}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="8"
+                                Margin="0"
+                                DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedMust}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4">
-                                            <!-- Card exactly like screenshot -->
-                                            <Border Background="{StaticResource White}"
-                                                    CornerRadius="4"
-                                                    Padding="4"
-                                                    Width="60"
-                                                    Height="80"
-                                                    Cursor="Hand"
-                                                    DoubleTapped="OnItemDoubleTapped">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="*"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                            <!-- Main card image (NO BORDER!) -->
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"/>
 
-                                                    <!-- Main card image -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding ItemImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-
-                                                    <!-- Soul face overlay for legendary jokers -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding SoulFaceImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding DisplayName}"
-                                                               Foreground="Black"
-                                                               FontFamily="{StaticResource BalatroFont}"
-                                                               FontSize="8"
-                                                               HorizontalAlignment="Center"
-                                                               TextAlignment="Center"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                </Grid>
-                                            </Border>
+                                            <!-- Soul face overlay for legendary jokers -->
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                             
                                             <!-- Hover-only Remove Button -->
                                             <Button Content="×" 
@@ -213,63 +189,42 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                    </Border>
-                    
-                    <!-- SHOULD HAVE Zone (self-labeled) -->
-                    <Border Name="ShouldDropZone"
-                            Background="{StaticResource Blue}"
-                            CornerRadius="8"
-                            MinHeight="120"
-                            Padding="8"
-                            Margin="0,0,0,8"
-                            DragDrop.AllowDrop="True">
+                        </Border>
+                    </StackPanel>
+
+                    <!-- SHOULD HAVE Zone -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SHOULD HAVE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Blue}"
+                                   HorizontalAlignment="Left"/>
+                        <Border Name="ShouldDropZone"
+                                Background="{StaticResource VeryDarkBackground}"
+                                BorderBrush="{StaticResource Blue}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="8"
+                                Margin="0"
+                                DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4">
-                                            <!-- Card exactly like screenshot -->
-                                            <Border Background="{StaticResource White}"
-                                                    CornerRadius="4"
-                                                    Padding="4"
-                                                    Width="60"
-                                                    Height="80"
-                                                    Cursor="Hand"
-                                                    DoubleTapped="OnItemDoubleTapped">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="*"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                            <!-- Main card image (NO BORDER!) -->
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"/>
 
-                                                    <!-- Main card image -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding ItemImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-
-                                                    <!-- Soul face overlay for legendary jokers -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding SoulFaceImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding DisplayName}"
-                                                               Foreground="Black"
-                                                               FontFamily="{StaticResource BalatroFont}"
-                                                               FontSize="8"
-                                                               HorizontalAlignment="Center"
-                                                               TextAlignment="Center"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                </Grid>
-                                            </Border>
+                                            <!-- Soul face overlay for legendary jokers -->
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                             <!-- Hover-only Remove Button -->
                                             <Button Content="×"
@@ -309,62 +264,41 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                    </Border>
-                    
-                    <!-- MUST NOT HAVE Zone (self-labeled) -->
-                    <Border Name="MustNotDropZone"
-                            Background="{StaticResource Red}"
-                            CornerRadius="8"
-                            MinHeight="120"
-                            Padding="8"
-                            DragDrop.AllowDrop="True">
+                        </Border>
+                    </StackPanel>
+
+                    <!-- MUST NOT HAVE Zone -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="MUST NOT HAVE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Red}"
+                                   HorizontalAlignment="Left"/>
+                        <Border Name="MustNotDropZone"
+                                Background="{StaticResource VeryDarkBackground}"
+                                BorderBrush="{StaticResource Red}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                MinHeight="120"
+                                Padding="8"
+                                DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4">
-                                            <!-- Card exactly like screenshot -->
-                                            <Border Background="{StaticResource White}"
-                                                    CornerRadius="4"
-                                                    Padding="4"
-                                                    Width="60"
-                                                    Height="80"
-                                                    Cursor="Hand"
-                                                    DoubleTapped="OnItemDoubleTapped">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="*"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                            <!-- Main card image (NO BORDER!) -->
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"/>
 
-                                                    <!-- Main card image -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding ItemImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-
-                                                    <!-- Soul face overlay for legendary jokers -->
-                                                    <Image Grid.Row="0"
-                                                           Source="{Binding SoulFaceImage}"
-                                                           Width="50"
-                                                           Height="50"
-                                                           Stretch="Uniform"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding DisplayName}"
-                                                               Foreground="Black"
-                                                               FontFamily="{StaticResource BalatroFont}"
-                                                               FontSize="8"
-                                                               HorizontalAlignment="Center"
-                                                               TextAlignment="Center"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                </Grid>
-                                            </Border>
+                                            <!-- Soul face overlay for legendary jokers -->
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                             <!-- Hover-only Remove Button -->
                                             <Button Content="×"
@@ -404,7 +338,8 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                    </Border>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Border>
