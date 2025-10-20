@@ -41,10 +41,12 @@ namespace BalatroSeedOracle.Windows
         private Button? _loadMoreButton;
         private TextEditor? _sqlEditor;
         private ComboBox? _exampleQueriesCombo;
-        
+
+        private const int INITIAL_RESULTS_PAGE_SIZE = 1000;  // Initial number of results to load
+
         private ObservableCollection<DataGridResultItem> _results = new();
         private ObservableCollection<DataGridResultItem> _filteredResults = new();
-        private int _currentLoadedCount = 1000;
+        private int _currentLoadedCount = INITIAL_RESULTS_PAGE_SIZE;
         private int _totalCount = 0;
         
         public DataGridResultsWindow()

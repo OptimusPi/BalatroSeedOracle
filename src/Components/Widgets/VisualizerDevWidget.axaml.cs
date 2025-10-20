@@ -252,7 +252,6 @@ namespace BalatroSeedOracle.Components
                 volumeSlider.ValueChanged += (s, e) =>
                 {
                     var volume = (float)(e.NewValue / 100.0);
-                    // _audioManager?.SetTrackVolume(trackIndex, volume);
                 };
             }
 
@@ -261,7 +260,6 @@ namespace BalatroSeedOracle.Components
                 muteCheckBox.IsCheckedChanged += (s, e) =>
                 {
                     var isMuted = muteCheckBox.IsChecked ?? false;
-                    // _audioManager?.SetTrackMuted(trackIndex, isMuted);
                 };
             }
         }

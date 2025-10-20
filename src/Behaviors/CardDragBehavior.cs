@@ -28,6 +28,10 @@ namespace BalatroSeedOracle.Behaviors
         private const double TILT_FACTOR = 0.3;
         private const double AMBIENT_TILT = 0.2;
 
+        // Balatro juice effect frequencies (from card.lua)
+        private const double JUICE_BOUNCE_FREQUENCY = 50.8;  // Scale oscillation frequency
+        private const double JUICE_WOBBLE_FREQUENCY = 40.8;  // Rotation wobble frequency
+
         /// <summary>
         /// Enable/disable all animations
         /// </summary>
@@ -251,13 +255,13 @@ namespace BalatroSeedOracle.Behaviors
                     var decayScale = Math.Max(0, Math.Pow(1 - progress, 3));
                     var decayRotation = Math.Max(0, Math.Pow(1 - progress, 2));
 
-                    // Scale oscillation: scale_amt * sin(50.8*t) * decay^3
-                    var scaleJuice = JuiceAmount * Math.Sin(50.8 * juiceElapsed) * decayScale;
+                    // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
+                    var scaleJuice = JuiceAmount * Math.Sin(JUICE_BOUNCE_FREQUENCY * juiceElapsed) * decayScale;
                     _scaleTransform.ScaleX = 1.0 + scaleJuice;
                     _scaleTransform.ScaleY = 1.0 + scaleJuice;
 
-                    // Rotation wobble: r_amt * sin(40.8*t) * decay^2
-                    var rotationJuice = (JuiceAmount * 0.6) * Math.Sin(40.8 * juiceElapsed) * decayRotation;
+                    // Rotation wobble: r_amt * sin(FREQUENCY*t) * decay^2
+                    var rotationJuice = (JuiceAmount * 0.6) * Math.Sin(JUICE_WOBBLE_FREQUENCY * juiceElapsed) * decayRotation;
                     _rotateTransform.Angle += rotationJuice * 10; // Add to tilt rotation
                 }
                 else

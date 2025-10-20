@@ -97,12 +97,7 @@ namespace BalatroSeedOracle.Views.Modals
             var color = HSVToColor(hue, 0.8f, 1.0f);
             var accentColor = HSVToColor((hue + 0.5f) % 1.0f, 0.7f, 0.9f);
 
-            // TODO: Need to add RGB color setters instead of just color index
-            // For now, map to nearest color index (0=Red, 1=Orange, 2=Yellow, 3=Green, 4=Blue, 5=Purple, 6=Brown, 7=White)
-            // _shaderPreview.SetMainColor(color.R / 255f, color.G / 255f, color.B / 255f);
-            // _shaderPreview.SetAccentColor(accentColor.R / 255f, accentColor.G / 255f, accentColor.B / 255f);
-
-            // Use hue to select color index
+            // Use hue to select color index (0=Red through 7=White)
             int mainColorIndex = (int)(hue * 8) % 8;
             int accentColorIndex = (mainColorIndex + 4) % 8; // Opposite on color wheel
             _shaderPreview.SetMainColor(mainColorIndex);
@@ -149,13 +144,6 @@ namespace BalatroSeedOracle.Views.Modals
                 treble * melodyResponse,
                 peak * drumsResponse
             );
-
-            // TODO: Track intensities not available from event - need to get from VibeAudioManager directly
-            // _shaderPreview.UpdateTrackIntensities(
-            //     melodyIntensity * melodyResponse,
-            //     chordIntensity * bassResponse,
-            //     bassIntensity * bassResponse
-            // );
 
             // Use bass as overall intensity for now
             _shaderPreview.UpdateVibeIntensity(bass);
