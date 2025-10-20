@@ -140,6 +140,7 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? CreateShortcutRequested;
         public event EventHandler? CloseRequested;
         public event EventHandler? MaximizeToggleRequested;
+        public event EventHandler<(string searchId, string? configPath, string filterName)>? MinimizeToDesktopRequested;
 
         #endregion
 
@@ -209,6 +210,39 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanStopSearch()
         {
             return IsSearching;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanMinimizeToDesktop))]
+        private void MinimizeToDesktop()
+        {
+            try
+            {
+                if (_searchInstance == null || string.IsNullOrEmpty(_currentSearchId))
+                {
+                    DebugLogger.LogError("SearchModalViewModel", "Cannot minimize - no active search instance");
+                    return;
+                }
+
+                var filterName = LoadedConfig?.Name ?? "Unknown Filter";
+
+                DebugLogger.Log("SearchModalViewModel", $"Minimizing search to desktop: SearchID={_currentSearchId}, Filter={filterName}, ConfigPath={CurrentFilterPath}");
+
+                // Raise event for View to handle (creates SearchDesktopIcon and closes modal)
+                MinimizeToDesktopRequested?.Invoke(this, (_currentSearchId, CurrentFilterPath, filterName));
+
+                AddConsoleMessage($"Search '{filterName}' minimized to desktop widget");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Error minimizing search: {ex.Message}");
+                AddConsoleMessage($"Error minimizing search: {ex.Message}");
+            }
+        }
+
+        private bool CanMinimizeToDesktop()
+        {
+            // Can minimize if a search is running or paused
+            return _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
         }
 
         [RelayCommand]

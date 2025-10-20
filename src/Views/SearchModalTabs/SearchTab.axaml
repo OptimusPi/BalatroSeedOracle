@@ -56,6 +56,17 @@
                     HorizontalAlignment="Center"
                     IsVisible="{Binding IsSearching}"/>
 
+            <!-- Minimize to Desktop Button -->
+            <Button Content="📌 MINIMIZE TO DESKTOP"
+                    Command="{Binding MinimizeToDesktopCommand}"
+                    Classes="btn-blue"
+                    Height="60"
+                    MinWidth="300"
+                    FontSize="18"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsSearching}"
+                    ToolTip.Tip="Continue search in background widget"/>
+
             <!-- Progress Bar -->
             <Border Classes="balatro-card"
                     Padding="16"

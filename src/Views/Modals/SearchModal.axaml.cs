@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.Views.Modals
             DataContext = ViewModel;
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
+            ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
 
             InitializeComponent();
             WireUpComponentEvents();
@@ -128,6 +129,35 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handle minimize to desktop request - creates SearchDesktopIcon and closes modal
+        /// </summary>
+        private void OnMinimizeToDesktopRequested(object? sender, (string searchId, string? configPath, string filterName) args)
+        {
+            try
+            {
+                DebugLogger.Log("SearchModal", $"OnMinimizeToDesktopRequested: SearchID={args.searchId}, Filter={args.filterName}");
+
+                if (ViewModel.MainMenu == null)
+                {
+                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't create desktop icon");
+                    return;
+                }
+
+                // Create the SearchDesktopIcon widget on the main menu
+                ViewModel.MainMenu.ShowSearchDesktopIcon(args.searchId, args.configPath);
+
+                // Close the search modal
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+
+                DebugLogger.Log("SearchModal", "Search minimized to desktop successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModal", $"Error minimizing search to desktop: {ex.Message}");
             }
         }
     }
