@@ -7,14 +7,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
-using static BalatroSeedOracle.Services.VibeAudioManager;
+using static BalatroSeedOracle.Services.VLCAudioManager;
 
 namespace BalatroSeedOracle.Features.VibeOut
 {
     public partial class VibeOutViewModel : ObservableObject
     {
         // Core vibe system
-        private VibeAudioManager? _audioManager;
+        private VLCAudioManager? _audioManager;
         private int _vibeIntensity = 0; // 0-3 scale
         private readonly Random _random = new();
         private readonly DispatcherTimer _animationTimer;
@@ -221,7 +221,7 @@ namespace BalatroSeedOracle.Features.VibeOut
                 _searchStartTime = DateTime.UtcNow;
 
                 // Get the singleton audio manager from DI (DON'T create a new one!)
-                _audioManager = ServiceHelper.GetRequiredService<VibeAudioManager>();
+                _audioManager = ServiceHelper.GetRequiredService<VLCAudioManager>();
                 _audioManager.SetMasterVolume(MasterVolume);
 
                 // Load saved volume settings and apply to audio manager

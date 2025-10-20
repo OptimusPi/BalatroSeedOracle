@@ -246,12 +246,12 @@ namespace BalatroSeedOracle.Services
             _accentColorIndex = Math.Clamp(colorIndex, 0, 7);
         }
 
-        // Get audio intensity from VibeAudioManager
+        // Get audio intensity from VLCAudioManager
         private float GetAudioIntensity(AudioSource source)
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
                 if (audioManager == null) return 0f;
 
                 return source switch

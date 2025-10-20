@@ -228,10 +228,10 @@ namespace BalatroSeedOracle.Views
 
             try
             {
-                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
                 if (audioManager == null)
                 {
-                    DebugLogger.LogError("BalatroMainMenu", "VibeAudioManager is NULL - music visualization won't work!");
+                    DebugLogger.LogError("BalatroMainMenu", "VLCAudioManager is NULL - music visualization won't work!");
                     return;
                 }
 
@@ -541,7 +541,7 @@ namespace BalatroSeedOracle.Views
                 _modalContainer.Children.Clear();
             }, DispatcherPriority.Background);
 
-            var audioManager = App.GetService<Services.VibeAudioManager>();
+            var audioManager = App.GetService<Services.VLCAudioManager>();
         }
 
         #endregion
@@ -935,7 +935,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<VibeAudioManager>();
+                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
                 if (audioManager != null && _audioAnalysisHandler != null)
                 {
                     audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;

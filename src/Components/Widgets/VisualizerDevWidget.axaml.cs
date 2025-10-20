@@ -26,7 +26,7 @@ namespace BalatroSeedOracle.Components.Widgets
     public partial class VisualizerDevWidget : UserControl
     {
         private BalatroShaderBackground? _shaderBackground;
-        private VibeAudioManager? _audioManager;
+        private VLCAudioManager? _audioManager;
         private readonly DispatcherTimer _peakUpdateTimer;
 
         // Track peak values
@@ -64,7 +64,7 @@ namespace BalatroSeedOracle.Components.Widgets
                 ?.FirstOrDefault();
 
             // Get audio manager
-            _audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            _audioManager = ServiceHelper.GetService<VLCAudioManager>();
 
             // Start peak meter updates if audio is available
             if (_audioManager != null)

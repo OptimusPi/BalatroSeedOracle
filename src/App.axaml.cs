@@ -43,8 +43,8 @@ public partial class App : Application
                 // Initialize background music!
                 try
                 {
-                    var audioManager = _serviceProvider.GetRequiredService<Services.VibeAudioManager>();
-                    DebugLogger.Log("App", "🎵 Starting background music...");
+                    var audioManager = _serviceProvider.GetRequiredService<Services.VLCAudioManager>();
+                    DebugLogger.Log("App", "🎵 Starting background music (LibVLC cross-platform)...");
                     // Force initialization by accessing a property
                     var trackCount = audioManager.GetType();
                     DebugLogger.Log("App", $"🎵 Audio manager initialized: {audioManager}");
@@ -78,7 +78,7 @@ public partial class App : Application
             DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
             
             // Stop audio first
-            var audioManager = _serviceProvider?.GetService<Services.VibeAudioManager>();
+            var audioManager = _serviceProvider?.GetService<Services.VLCAudioManager>();
             audioManager?.Dispose();
             
             // Get the search manager and stop all active searches

@@ -14,7 +14,7 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class VisualizerWorkspace : UserControl
     {
         private BalatroShaderBackground? _shaderPreview;
-        private VibeAudioManager? _audioManager;
+        private VLCAudioManager? _audioManager;
         private Random _random = new Random();
 
         public event EventHandler? CloseRequested;
@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Views.Modals
             SetupControls();
 
             // Get audio manager for real-time reactivity
-            _audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            _audioManager = ServiceHelper.GetService<VLCAudioManager>();
             if (_audioManager != null)
             {
                 _audioManager.AudioAnalysisUpdated += OnAudioUpdate;

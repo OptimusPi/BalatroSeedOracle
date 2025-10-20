@@ -20,7 +20,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class BalatroMainMenuViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
-        private readonly VibeAudioManager? _audioManager;
+        private readonly VLCAudioManager? _audioManager;
 
         [ObservableProperty]
         private string _mainTitle = "Welcome!";
@@ -78,7 +78,7 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize services
             _userProfileService = App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-            _audioManager = ServiceHelper.GetService<VibeAudioManager>();
+            _audioManager = ServiceHelper.GetService<VLCAudioManager>();
 
             // Load settings
             LoadSettings();
