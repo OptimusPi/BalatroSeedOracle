@@ -367,8 +367,18 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsVolumePopupOpen = false;
             }
 
-            // Just show the modal directly - NO ANIMATIONS
-            _modalContainer.Children.Clear();
+            // IMPORTANT: Only clear if we're showing a fresh modal (container was hidden)
+            // If transitioning between modals, just replace the content to avoid flicker
+            if (!_modalContainer.IsVisible || _modalContainer.Children.Count == 0)
+            {
+                _modalContainer.Children.Clear();
+            }
+            else
+            {
+                // Replace existing modal content (no flicker!)
+                _modalContainer.Children.Clear();
+            }
+
             _modalContainer.Children.Add(content);
             _modalContainer.IsVisible = true;
         }
