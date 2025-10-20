@@ -23,19 +23,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Border? _dragAdorner;
         private AdornerLayer? _adornerLayer;
         private TranslateTransform? _adornerTransform;
-        
+        private TopLevel? _topLevel;
+
         public VisualBuilderTab()
         {
             InitializeComponent();
-            
+
             // Set DataContext to the VisualBuilderTabViewModel
             DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
 
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
-
-            // Track mouse movement to update adorner position during drag
-            this.PointerMoved += OnPointerMovedDuringDrag;
         }
         
         private void SetupDropZones()
@@ -332,10 +330,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             try
             {
                 // Find adorner layer - research shows this is the proper approach
-                var topLevel = this.FindAncestorOfType<TopLevel>();
-                _adornerLayer = topLevel != null ? AdornerLayer.GetAdornerLayer(topLevel) : null;
-                if (_adornerLayer == null) return;
-                
+                _topLevel = this.FindAncestorOfType<TopLevel>();
+                _adornerLayer = _topLevel != null ? AdornerLayer.GetAdornerLayer(_topLevel) : null;
+
+                if (_adornerLayer == null)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", "Failed to find adorner layer!");
+                    return;
+                }
+
                 // Create ghost image - 80% opacity with subtle sway like Balatro
                 // For legendary jokers, layer the soul face on top
                 var imageGrid = new Grid
@@ -411,8 +414,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 AdornerLayer.SetAdornedElement(_dragAdorner, this);
                 _adornerLayer.Children.Add(_dragAdorner);
-                
-                DebugLogger.Log("VisualBuilderTab", "Ghost image created with adorner layer");
+
+                // CRITICAL FIX: Attach global pointer handler to TopLevel so adorner follows cursor during drag
+                // During DragDrop.DoDragDrop(), normal PointerMoved events don't reach the control
+                if (_topLevel != null)
+                {
+                    _topLevel.PointerMoved += OnPointerMovedDuringDrag;
+                    DebugLogger.Log("VisualBuilderTab", "Global pointer handler attached to TopLevel");
+                }
+
+                DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
             }
             catch (Exception ex)
             {
@@ -423,11 +434,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnPointerMovedDuringDrag(object? sender, PointerEventArgs e)
         {
             // Update adorner position to follow cursor during drag
-            if (_dragAdorner != null && _adornerTransform != null)
+            if (_dragAdorner != null && _adornerTransform != null && _topLevel != null)
             {
-                var position = e.GetPosition(this);
-                _adornerTransform.X = position.X - 35; // Center on cursor
-                _adornerTransform.Y = position.Y - 47;
+                // Get position relative to TopLevel (where adorner layer is)
+                var position = e.GetPosition(_topLevel);
+                _adornerTransform.X = position.X - 35; // Center on cursor (half of 71px width)
+                _adornerTransform.Y = position.Y - 47; // Center on cursor (half of 95px height)
             }
         }
 
@@ -435,6 +447,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             try
             {
+                // CRITICAL: Detach global pointer handler from TopLevel to prevent memory leak
+                if (_topLevel != null)
+                {
+                    _topLevel.PointerMoved -= OnPointerMovedDuringDrag;
+                    DebugLogger.Log("VisualBuilderTab", "Global pointer handler detached from TopLevel");
+                }
+
                 if (_dragAdorner != null && _adornerLayer != null)
                 {
                     _adornerLayer.Children.Remove(_dragAdorner);
@@ -455,6 +474,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     _dragAdorner = null;
                     _adornerLayer = null;
+                    _topLevel = null;
                     DebugLogger.Log("VisualBuilderTab", "Ghost image removed and disposed");
                 }
             }
