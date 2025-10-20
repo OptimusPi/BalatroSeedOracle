@@ -709,6 +709,22 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        internal void ApplyShaderPixelSize(float pixelSize)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderPixelSize(shader, pixelSize);
+            }
+        }
+
+        internal void ApplyShaderSpinEase(float spinEase)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderSpinEase(shader, spinEase);
+            }
+        }
+
         internal void ApplyShadowFlickerSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)

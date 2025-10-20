@@ -249,6 +249,22 @@
                                         <TextBlock Grid.Column="3" Text="(0-100)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
                                     </Grid>
 
+                                    <!-- Pixel Size (pixelation) -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Pixel Size" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="PixelSizeSlider" Minimum="100" Maximum="5000" Value="1440" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="PixelSizeTextBox" Text="1440" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(100-5000)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Spin Ease (swirl strength) -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Spin Ease" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="SpinEaseSlider" Minimum="0" Maximum="2" Value="0.5" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="SpinEaseTextBox" Text="0.5" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0-2)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
                                 </StackPanel>
                             </Expander>
 

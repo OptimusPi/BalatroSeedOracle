@@ -584,6 +584,16 @@ namespace BalatroSeedOracle.ViewModels
             shader?.SetMelodySaturation(saturation);
         }
 
+        public void ApplyShaderPixelSize(BalatroShaderBackground? shader, float pixelSize)
+        {
+            shader?.SetPixelSize(pixelSize);
+        }
+
+        public void ApplyShaderSpinEase(BalatroShaderBackground? shader, float spinEase)
+        {
+            shader?.SetSpinEase(spinEase);
+        }
+
         /// <summary>
         /// Apply shadow flicker source to shader
         /// </summary>

@@ -143,7 +143,7 @@
 
             <!-- 🎛️ VISUALIZER DEV WIDGET - Advanced shader control for power users -->
             <components:VisualizerDevWidget x:Name="VisualizerDevWidget"
-                                           IsVisible="True"
+                                           IsVisible="False"
                                            ClipToBounds="False"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Top"

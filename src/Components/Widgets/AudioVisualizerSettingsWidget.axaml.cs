@@ -125,6 +125,8 @@ namespace BalatroSeedOracle.Components
             var parallaxYSlider = this.FindControl<Slider>("ParallaxYSlider");
             var timeSlider = this.FindControl<Slider>("TimeSlider");
             var spinTimeSlider = this.FindControl<Slider>("SpinTimeSlider");
+            var pixelSizeSlider = this.FindControl<Slider>("PixelSizeSlider");
+            var spinEaseSlider = this.FindControl<Slider>("SpinEaseSlider");
 
             // Find textboxes for two-way binding
             var contrastTextBox = this.FindControl<TextBox>("ContrastTextBox");
@@ -135,6 +137,8 @@ namespace BalatroSeedOracle.Components
             var parallaxYTextBox = this.FindControl<TextBox>("ParallaxYTextBox");
             var timeTextBox = this.FindControl<TextBox>("TimeTextBox");
             var spinTimeTextBox = this.FindControl<TextBox>("SpinTimeTextBox");
+            var pixelSizeTextBox = this.FindControl<TextBox>("PixelSizeTextBox");
+            var spinEaseTextBox = this.FindControl<TextBox>("SpinEaseTextBox");
 
             // Wire up sliders to apply shader parameters
             if (contrastSlider != null)
@@ -181,6 +185,28 @@ namespace BalatroSeedOracle.Components
                 };
             }
 
+            if (pixelSizeSlider != null)
+            {
+                pixelSizeSlider.ValueChanged += (s, e) => {
+                    var value = (float)pixelSizeSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderPixelSize(value);
+                    if (pixelSizeTextBox != null)
+                        pixelSizeTextBox.Text = value.ToString("F0");
+                };
+            }
+
+            if (spinEaseSlider != null)
+            {
+                spinEaseSlider.ValueChanged += (s, e) => {
+                    var value = (float)spinEaseSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderSpinEase(value);
+                    if (spinEaseTextBox != null)
+                        spinEaseTextBox.Text = value.ToString("F2");
+                };
+            }
+
             // Wire up textboxes to update sliders
             if (contrastTextBox != null && contrastSlider != null)
             {
@@ -222,6 +248,28 @@ namespace BalatroSeedOracle.Components
                     {
                         value = Math.Clamp(value, 0f, 1f);
                         saturationSlider.Value = value;
+                    }
+                };
+            }
+
+            if (pixelSizeTextBox != null && pixelSizeSlider != null)
+            {
+                pixelSizeTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(pixelSizeTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, 100f, 5000f);
+                        pixelSizeSlider.Value = value;
+                    }
+                };
+            }
+
+            if (spinEaseTextBox != null && spinEaseSlider != null)
+            {
+                spinEaseTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(spinEaseTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, 0f, 2f);
+                        spinEaseSlider.Value = value;
                     }
                 };
             }
