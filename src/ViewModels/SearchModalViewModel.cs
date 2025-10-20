@@ -158,14 +158,16 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 IsSearching = true;
-                _currentSearchId = Guid.NewGuid().ToString();
-                
+
                 ClearResults();
                 AddConsoleMessage("Starting search...");
                 PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
                 var searchCriteria = BuildSearchCriteria();
                 _searchInstance = await _searchManager.StartSearchAsync(searchCriteria, LoadedConfig);
+
+                // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
+                _currentSearchId = _searchInstance.SearchId;
 
                 // Subscribe to SearchInstance events directly
                 _searchInstance.SearchCompleted += OnSearchCompleted;
