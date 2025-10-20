@@ -181,6 +181,77 @@
                                 </Grid>
                             </StackPanel>
 
+                            <!-- SHADER PARAMETERS - DIRECT CONTROL -->
+                            <Expander Header="🎨 Shader Parameters (Manual Control)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Gold}">
+                                <StackPanel Spacing="8" Margin="0,8,0,0">
+
+                                    <!-- Contrast -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Contrast" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="ContrastSlider" Minimum="0.1" Maximum="10" Value="2" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="ContrastTextBox" Text="2.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0.1-10)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Spin Amount -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Spin" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="SpinAmountSlider" Minimum="0" Maximum="1" Value="0.3" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="SpinAmountTextBox" Text="0.3" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0-1)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Zoom Scale -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Zoom" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="ZoomScaleSlider" Minimum="-50" Maximum="50" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="ZoomScaleTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(-50 to 50)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Saturation Amount -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Saturation" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="SaturationSlider" Minimum="0" Maximum="1" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="SaturationTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0-1)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Parallax X -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Parallax X" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="ParallaxXSlider" Minimum="-1" Maximum="1" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="ParallaxXTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(-1 to 1)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Parallax Y -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Parallax Y" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="ParallaxYSlider" Minimum="-1" Maximum="1" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="ParallaxYTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(-1 to 1)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Time (manual control) -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Time" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="TimeSlider" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="TimeTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0-100)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Spin Time (manual control) -->
+                                    <Grid ColumnDefinitions="Auto,*,60,Auto" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="Spin Time" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="12" MinWidth="70"/>
+                                        <Slider Grid.Column="1" Name="SpinTimeSlider" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Name="SpinTimeTextBox" Text="0.0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="(0-100)" Foreground="#80FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                </StackPanel>
+                            </Expander>
+
                             <!-- ADVANCED (EXPANDER) -->
                             <Expander Header="⚙️ Advanced Settings" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Gold}">
                                 <StackPanel Spacing="10" Margin="0,8,0,0">

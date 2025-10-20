@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.ViewModels;
@@ -108,6 +109,123 @@ namespace BalatroSeedOracle.Components
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+
+            // Wire up shader parameter controls
+            WireShaderParameterControls();
+        }
+
+        private void WireShaderParameterControls()
+        {
+            // Find shader parameter sliders and wire them up
+            var contrastSlider = this.FindControl<Slider>("ContrastSlider");
+            var spinAmountSlider = this.FindControl<Slider>("SpinAmountSlider");
+            var zoomScaleSlider = this.FindControl<Slider>("ZoomScaleSlider");
+            var saturationSlider = this.FindControl<Slider>("SaturationSlider");
+            var parallaxXSlider = this.FindControl<Slider>("ParallaxXSlider");
+            var parallaxYSlider = this.FindControl<Slider>("ParallaxYSlider");
+            var timeSlider = this.FindControl<Slider>("TimeSlider");
+            var spinTimeSlider = this.FindControl<Slider>("SpinTimeSlider");
+
+            // Find textboxes for two-way binding
+            var contrastTextBox = this.FindControl<TextBox>("ContrastTextBox");
+            var spinAmountTextBox = this.FindControl<TextBox>("SpinAmountTextBox");
+            var zoomScaleTextBox = this.FindControl<TextBox>("ZoomScaleTextBox");
+            var saturationTextBox = this.FindControl<TextBox>("SaturationTextBox");
+            var parallaxXTextBox = this.FindControl<TextBox>("ParallaxXTextBox");
+            var parallaxYTextBox = this.FindControl<TextBox>("ParallaxYTextBox");
+            var timeTextBox = this.FindControl<TextBox>("TimeTextBox");
+            var spinTimeTextBox = this.FindControl<TextBox>("SpinTimeTextBox");
+
+            // Wire up sliders to apply shader parameters
+            if (contrastSlider != null)
+            {
+                contrastSlider.ValueChanged += (s, e) => {
+                    var value = (float)contrastSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderContrast(value);
+                    if (contrastTextBox != null)
+                        contrastTextBox.Text = value.ToString("F1");
+                };
+            }
+
+            if (spinAmountSlider != null)
+            {
+                spinAmountSlider.ValueChanged += (s, e) => {
+                    var value = (float)spinAmountSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderSpinAmount(value);
+                    if (spinAmountTextBox != null)
+                        spinAmountTextBox.Text = value.ToString("F2");
+                };
+            }
+
+            if (zoomScaleSlider != null)
+            {
+                zoomScaleSlider.ValueChanged += (s, e) => {
+                    var value = (float)zoomScaleSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderZoomPunch(value);
+                    if (zoomScaleTextBox != null)
+                        zoomScaleTextBox.Text = value.ToString("F1");
+                };
+            }
+
+            if (saturationSlider != null)
+            {
+                saturationSlider.ValueChanged += (s, e) => {
+                    var value = (float)saturationSlider.Value;
+                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                    mainMenu?.ApplyShaderMelodySaturation(value);
+                    if (saturationTextBox != null)
+                        saturationTextBox.Text = value.ToString("F2");
+                };
+            }
+
+            // Wire up textboxes to update sliders
+            if (contrastTextBox != null && contrastSlider != null)
+            {
+                contrastTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(contrastTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, 0.1f, 10f);
+                        contrastSlider.Value = value;
+                    }
+                };
+            }
+
+            if (spinAmountTextBox != null && spinAmountSlider != null)
+            {
+                spinAmountTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(spinAmountTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, 0f, 1f);
+                        spinAmountSlider.Value = value;
+                    }
+                };
+            }
+
+            if (zoomScaleTextBox != null && zoomScaleSlider != null)
+            {
+                zoomScaleTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(zoomScaleTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, -50f, 50f);
+                        zoomScaleSlider.Value = value;
+                    }
+                };
+            }
+
+            if (saturationTextBox != null && saturationSlider != null)
+            {
+                saturationTextBox.TextChanged += (s, e) => {
+                    if (float.TryParse(saturationTextBox.Text, out var value))
+                    {
+                        value = Math.Clamp(value, 0f, 1f);
+                        saturationSlider.Value = value;
+                    }
+                };
+            }
+
         }
 
         private void OnDetachedFromVisualTree(object? sender, EventArgs e)

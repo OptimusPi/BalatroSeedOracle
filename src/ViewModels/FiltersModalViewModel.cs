@@ -409,7 +409,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save</param>
+        /// <param name="tabIndex">0=LoadSave, 1=Visual, 2=JSON, 3=Save</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log("FiltersModalViewModel", $"UpdateTabVisibility called with tabIndex={tabIndex}");
@@ -437,10 +437,6 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("FiltersModalViewModel", "JSON tab visible, all others hidden");
                     break;
                 case 3:
-                    IsTestTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "TEST tab visible, all others hidden");
-                    break;
-                case 4:
                     IsSaveTabVisible = true;
                     DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
                     break;
@@ -448,7 +444,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Log final state
             DebugLogger.Log("FiltersModalViewModel",
-                $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Test:{IsTestTabVisible} Save:{IsSaveTabVisible}");
+                $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}");
         }
 
         /// <summary>
@@ -779,12 +775,10 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             // Order must match UpdateTabVisibility mapping:
-            // 0=LoadSave, 1=Visual, 2=JSON, 3=Test, 4=Save
+            // 0=LoadSave, 1=Visual, 2=JSON, 3=Save (TEST tab removed)
             TabItems.Add(new TabItemViewModel("LOAD", CreateLoadTabContent()));
             TabItems.Add(new TabItemViewModel("VISUAL BUILDER", visualBuilderTab));
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
-            // Separate TEST header; content is shown via bound TestPanel
-            TabItems.Add(new TabItemViewModel("TEST", new Grid()));
             // Separate SAVE header with SaveFilterTab content
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
 

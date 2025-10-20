@@ -11,6 +11,12 @@ namespace BalatroSeedOracle.Models
         public string Name { get; set; } = "";
         public string Author { get; set; } = "";
         public string FilePath { get; set; } = "";
+        public string Description { get; set; } = "";
+
+        /// <summary>
+        /// Display index for the current page (1-based like Balatro)
+        /// </summary>
+        public string DisplayIndex => Number.ToString();
 
         [ObservableProperty]
         private bool _isSelected = false;

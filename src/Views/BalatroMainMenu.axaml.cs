@@ -367,16 +367,10 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsVolumePopupOpen = false;
             }
 
-            // If there's already a modal showing, do a smooth transition
-            if (_modalContainer.IsVisible && _modalContainer.Children.Count > 0)
-            {
-                TransitionToNewModal(content, title);
-            }
-            else
-            {
-                // No existing modal - just show the new one with pop-up animation
-                ShowModalWithAnimation(content, title);
-            }
+            // Just show the modal directly - NO ANIMATIONS
+            _modalContainer.Children.Clear();
+            _modalContainer.Children.Add(content);
+            _modalContainer.IsVisible = true;
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
+using AudioSource = BalatroSeedOracle.Controls.BalatroShaderBackground.AudioSource;
 
 namespace BalatroSeedOracle.ViewModels
 {

@@ -65,6 +65,25 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<FilterItemViewModel> _filterItems = new();
 
+        // Separate collections for each tab (Balatro Challenges style)
+        [ObservableProperty]
+        private ObservableCollection<FilterItemViewModel> _mustHaveItems = new();
+
+        [ObservableProperty]
+        private ObservableCollection<FilterItemViewModel> _shouldHaveItems = new();
+
+        [ObservableProperty]
+        private ObservableCollection<FilterItemViewModel> _mustNotHaveItems = new();
+
+        [ObservableProperty]
+        private bool _hasMustHaveItems = false;
+
+        [ObservableProperty]
+        private bool _hasShouldHaveItems = false;
+
+        [ObservableProperty]
+        private bool _hasMustNotHaveItems = false;
+
         [ObservableProperty]
         private double _triangleOffset = 0;
 
@@ -124,12 +143,14 @@ namespace BalatroSeedOracle.ViewModels
                     var filterPath = filterFiles[i];
                     var filterName = Path.GetFileNameWithoutExtension(filterPath);
                     var author = GetFilterAuthor(filterPath);
+                    var description = GetFilterDescription(filterPath);
 
                     _allFilters.Add(new FilterListItem
                     {
                         Number = i + 1,
                         Name = filterName,
                         Author = author,
+                        Description = description,
                         FilePath = filterPath
                     });
                 }
@@ -296,6 +317,11 @@ namespace BalatroSeedOracle.ViewModels
 
                 SelectedFilterStats.Clear();
 
+                // Clear all item collections
+                MustHaveItems.Clear();
+                ShouldHaveItems.Clear();
+                MustNotHaveItems.Clear();
+
                 if (root.TryGetProperty("description", out var descProp))
                 {
                     var desc = descProp.GetString() ?? "N/A";
@@ -303,14 +329,43 @@ namespace BalatroSeedOracle.ViewModels
                     SelectedFilterDescription = desc;
                 }
 
+                var spriteService = ServiceHelper.GetService<SpriteService>();
+
+                // Load Must Have items
                 if (root.TryGetProperty("must", out var mustProp) && mustProp.ValueKind == JsonValueKind.Array)
+                {
+                    LoadItemsIntoCollection(mustProp, MustHaveItems, spriteService);
+                    HasMustHaveItems = MustHaveItems.Count > 0;
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Have", Value = $"{mustProp.GetArrayLength()} items", Color = "#ff4c40" });
+                }
+                else
+                {
+                    HasMustHaveItems = false;
+                }
 
+                // Load Should Have items
                 if (root.TryGetProperty("should", out var shouldProp) && shouldProp.ValueKind == JsonValueKind.Array)
+                {
+                    LoadItemsIntoCollection(shouldProp, ShouldHaveItems, spriteService);
+                    HasShouldHaveItems = ShouldHaveItems.Count > 0;
                     SelectedFilterStats.Add(new FilterStat { Label = "Should Have", Value = $"{shouldProp.GetArrayLength()} items", Color = "#0093ff" });
+                }
+                else
+                {
+                    HasShouldHaveItems = false;
+                }
 
+                // Load Must Not Have items
                 if (root.TryGetProperty("mustNot", out var mustNotProp) && mustNotProp.ValueKind == JsonValueKind.Array)
+                {
+                    LoadItemsIntoCollection(mustNotProp, MustNotHaveItems, spriteService);
+                    HasMustNotHaveItems = MustNotHaveItems.Count > 0;
                     SelectedFilterStats.Add(new FilterStat { Label = "Must Not Have", Value = $"{mustNotProp.GetArrayLength()} items", Color = "#ff9800" });
+                }
+                else
+                {
+                    HasMustNotHaveItems = false;
+                }
 
                 if (root.TryGetProperty("seed_count", out var seedCountProp))
                     SelectedFilterStats.Add(new FilterStat { Label = "Target Seeds", Value = seedCountProp.GetInt32().ToString(), Color = "#ffd700" });
@@ -320,6 +375,41 @@ namespace BalatroSeedOracle.ViewModels
                 var filename = Path.GetFileName(filterPath);
                 DebugLogger.LogError("FilterListViewModel", $"Error loading filter stats from '{filename}': {ex.Message}");
                 SelectedFilterDescription = "";
+                HasMustHaveItems = false;
+                HasShouldHaveItems = false;
+                HasMustNotHaveItems = false;
+            }
+        }
+
+        private void LoadItemsIntoCollection(JsonElement itemsArray, ObservableCollection<FilterItemViewModel> collection, SpriteService? spriteService)
+        {
+            var items = new List<string>();
+            foreach (var item in itemsArray.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                {
+                    items.Add(item.GetString() ?? "");
+                }
+                else if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty("item", out var itemProp))
+                {
+                    items.Add(itemProp.GetString() ?? "");
+                }
+            }
+
+            if (items.Count > 0 && spriteService != null)
+            {
+                foreach (var itemName in items)
+                {
+                    var sprite = GetItemSprite(itemName, spriteService);
+                    if (sprite != null)
+                    {
+                        collection.Add(new FilterItemViewModel
+                        {
+                            ItemName = itemName,
+                            ItemImage = sprite
+                        });
+                    }
+                }
             }
         }
 
@@ -339,6 +429,25 @@ namespace BalatroSeedOracle.ViewModels
                 // JSON parsing failed - return default
             }
             return "Unknown";
+        }
+
+        private string GetFilterDescription(string filterPath)
+        {
+            try
+            {
+                var json = File.ReadAllText(filterPath);
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                using var doc = JsonDocument.Parse(json, options);
+                if (doc.RootElement.TryGetProperty("description", out var descProp))
+                {
+                    return descProp.GetString() ?? "";
+                }
+            }
+            catch
+            {
+                // JSON parsing failed - return default
+            }
+            return "";
         }
 
         public string? GetSelectedFilterPath() => SelectedFilter?.FilePath;

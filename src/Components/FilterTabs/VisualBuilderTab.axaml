@@ -117,9 +117,11 @@
                 Padding="15">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="15">
-                    <!-- MUST HAVE Zone (self-labeled) -->
+                    <!-- MUST HAVE Zone - using proper app styles -->
                     <Border Name="MustDropZone"
-                            Background="{StaticResource Green}"
+                            Background="{StaticResource VeryDarkBackground}"
+                            BorderBrush="{StaticResource AccentGreen}"
+                            BorderThickness="2"
                             CornerRadius="8"
                             MinHeight="120"
                             Padding="8"
