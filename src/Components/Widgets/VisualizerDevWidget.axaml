@@ -164,25 +164,75 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Color Pickers -->
+                            <!-- Pixel Size -->
+                            <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Pixel Size (Pixelation)" FontWeight="Bold" FontSize="11"
+                                               Foreground="#FFD700"/>
+                                    <Grid ColumnDefinitions="*,80">
+                                        <Slider Grid.Column="0" Name="PixelSizeSlider"
+                                                Minimum="100" Maximum="5000" Value="1440"
+                                                TickFrequency="10" IsSnapToTickEnabled="False"/>
+                                        <TextBox Grid.Column="1" Name="PixelSizeTextBox"
+                                                 Text="1440.0" Margin="5,0,0,0"
+                                                 FontFamily="Consolas" FontSize="11"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Spin Ease -->
+                            <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Spin Ease (Swirl Strength)" FontWeight="Bold" FontSize="11"
+                                               Foreground="#FFD700"/>
+                                    <Grid ColumnDefinitions="*,80">
+                                        <Slider Grid.Column="0" Name="SpinEaseSlider"
+                                                Minimum="0" Maximum="2" Value="0.5"
+                                                TickFrequency="0.01" IsSnapToTickEnabled="False"/>
+                                        <TextBox Grid.Column="1" Name="SpinEaseTextBox"
+                                                 Text="0.5" Margin="5,0,0,0"
+                                                 FontFamily="Consolas" FontSize="11"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Colors - Simple hex input for now -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
                                 <StackPanel Spacing="10">
-                                    <TextBlock Text="Colors" FontWeight="Bold" FontSize="11"
+                                    <TextBlock Text="Colors (Hex Values)" FontWeight="Bold" FontSize="11"
                                                Foreground="#FFD700"/>
-                                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                        <Button Grid.Row="0" Name="MainColorButton"
-                                                Height="30" Background="#FF4C40">
-                                            <TextBlock Text="Main Color" Foreground="White"/>
-                                        </Button>
-                                        <Button Grid.Row="1" Name="AccentColorButton"
-                                                Height="30" Background="#0093FF">
-                                            <TextBlock Text="Accent Color" Foreground="White"/>
-                                        </Button>
-                                        <Button Grid.Row="2" Name="BackgroundColorButton"
-                                                Height="30" Background="#1E2B2D">
-                                            <TextBlock Text="Background Color" Foreground="White"/>
-                                        </Button>
-                                    </Grid>
+                                    <StackPanel Spacing="8">
+                                        <!-- Main Color -->
+                                        <Grid ColumnDefinitions="100,*">
+                                            <TextBlock Grid.Column="0" Text="Main:" FontSize="11"
+                                                       VerticalAlignment="Center" Foreground="#80FFFFFF"/>
+                                            <TextBox Grid.Column="1" Name="MainColorHex" Text="#FF4C40"
+                                                     FontFamily="Consolas" FontSize="11"
+                                                     VerticalAlignment="Center"
+                                                     Watermark="e.g. #FF4C40"/>
+                                        </Grid>
+                                        <!-- Accent Color -->
+                                        <Grid ColumnDefinitions="100,*">
+                                            <TextBlock Grid.Column="0" Text="Accent:" FontSize="11"
+                                                       VerticalAlignment="Center" Foreground="#80FFFFFF"/>
+                                            <TextBox Grid.Column="1" Name="AccentColorHex" Text="#0093FF"
+                                                     FontFamily="Consolas" FontSize="11"
+                                                     VerticalAlignment="Center"
+                                                     Watermark="e.g. #0093FF"/>
+                                        </Grid>
+                                        <!-- Background Color -->
+                                        <Grid ColumnDefinitions="100,*">
+                                            <TextBlock Grid.Column="0" Text="Background:" FontSize="11"
+                                                       VerticalAlignment="Center" Foreground="#80FFFFFF"/>
+                                            <TextBox Grid.Column="1" Name="BackgroundColorHex" Text="#1E2B2D"
+                                                     FontFamily="Consolas" FontSize="11"
+                                                     VerticalAlignment="Center"
+                                                     Watermark="e.g. #1E2B2D"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <TextBlock Text="Pro tip: Use any hex color picker online!"
+                                               FontSize="9" Foreground="#80FFFFFF"
+                                               HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -233,110 +283,188 @@
 
                             <!-- Bass 1 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Bass 1" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Bass1VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Bass1MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Bass1PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Bass 1" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Bass1VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Bass1MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Bass1PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Bass1FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Bass1IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                             <!-- Bass 2 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Bass 2" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Bass2VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Bass2MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Bass2PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Bass 2" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Bass2VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Bass2MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Bass2PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Bass2FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Bass2IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                             <!-- Chords 1 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Chords 1" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Chords1VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Chords1MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Chords1PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Chords 1" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Chords1VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Chords1MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Chords1PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Chords1FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Chords1IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                             <!-- Chords 2 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Chords 2" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Chords2VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Chords2MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Chords2PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Chords 2" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Chords2VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Chords2MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Chords2PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Chords2FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Chords2IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                             <!-- Melody 1 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Melody 1" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Melody1VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Melody1MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Melody1PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Melody 1" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Melody1VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Melody1MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Melody1PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Melody1FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Melody1IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                             <!-- Melody 2 -->
                             <Border Background="#22FFFFFF" CornerRadius="4" Padding="8">
-                                <Grid ColumnDefinitions="80,*,40,60">
-                                    <TextBlock Grid.Column="0" Text="Melody 2" FontWeight="Bold"
-                                               FontSize="11" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" Name="Melody2VolumeSlider"
-                                            Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
-                                    <CheckBox Grid.Column="2" Name="Melody2MuteCheckBox"
-                                              Content="M" Margin="5,0"/>
-                                    <Border Grid.Column="3" Background="#111" CornerRadius="2"
-                                            Margin="5,0,0,0" Padding="2">
-                                        <TextBlock Name="Melody2PeakText" Text="0.00"
-                                                   FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#0F0" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </Grid>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="80,*,40,60">
+                                        <TextBlock Grid.Column="0" Text="Melody 2" FontWeight="Bold"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" Name="Melody2VolumeSlider"
+                                                Minimum="0" Maximum="100" Value="100" Margin="5,0"/>
+                                        <CheckBox Grid.Column="2" Name="Melody2MuteCheckBox"
+                                                  Content="M" Margin="5,0"/>
+                                        <Border Grid.Column="3" Background="#111" CornerRadius="2"
+                                                Margin="5,0,0,0" Padding="2">
+                                            <TextBlock Name="Melody2PeakText" Text="0.00"
+                                                       FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#0F0" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Frequency and Intensity displays -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,5,0,0">
+                                        <TextBlock Grid.Column="0" Text="Freq:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="1" Name="Melody2FrequencyText" Text="0.0 Hz"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="Intensity:" FontSize="10" Foreground="#80FFFFFF" Margin="0,0,5,0"/>
+                                        <TextBox Grid.Column="3" Name="Melody2IntensityText" Text="0.000"
+                                                 FontFamily="Consolas" FontSize="10" IsReadOnly="True"
+                                                 Background="#22000000" BorderThickness="0"/>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
 
                         </StackPanel>

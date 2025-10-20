@@ -76,11 +76,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Button layout with number outside and triangle indicator (Balatro style) -->
+                                <!-- Button layout with number outside and check mark indicator (Balatro style) -->
                                 <Grid Margin="0" HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="24"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="32"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Number outside (like Balatro challenges) -->
@@ -92,16 +93,7 @@
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Right"
                                                Margin="0,0,6,0"
-                                               Opacity="0.7"/>
-
-                                    <!-- Triangle indicator (shows when selected) -->
-                                    <Polygon Grid.Column="0"
-                                             Points="18,8 10,0 10,16"
-                                             Fill="{StaticResource Red}"
-                                             VerticalAlignment="Center"
-                                             HorizontalAlignment="Right"
-                                             Margin="0,0,2,0"
-                                             IsVisible="{Binding IsSelected}"/>
+                                               Opacity="0.9"/>
 
                                     <!-- Full-width button with filter info -->
                                     <Button Grid.Column="1"
@@ -139,6 +131,24 @@
                                             </Grid>
                                         </Button.Content>
                                     </Button>
+
+                                    <!-- Check mark circle (shows when selected, like Balatro) -->
+                                    <Border Grid.Column="2"
+                                            Width="20" Height="20"
+                                            CornerRadius="10"
+                                            Background="#40C853"
+                                            BorderBrush="#2A8A3A"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            IsVisible="{Binding IsSelected}">
+                                        <TextBlock Text="✓"
+                                                   Foreground="White"
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -249,22 +259,24 @@
                                Opacity="0.8"
                                Margin="0,0,0,8"/>
 
-                    <!-- Description (FULL, not truncated!) -->
+                    <!-- Description (FULL, not truncated!) - Dark Balatro style -->
                     <Border Grid.Row="2"
-                            Background="#F4E4C1"
+                            Background="#1A3A3A"
                             BorderBrush="{StaticResource Border}"
                             BorderThickness="2"
                             CornerRadius="6"
                             Padding="12,8"
                             Margin="0,0,0,12"
-                            MaxHeight="80">
+                            MaxHeight="80"
+                            BoxShadow="inset 0 2 4 #00000040">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <TextBlock Text="{Binding SelectedFilterDescription}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="13"
-                                       Foreground="#2C2C2C"
+                                       Foreground="#FFFFFF"
                                        TextWrapping="Wrap"
-                                       LineHeight="18"/>
+                                       LineHeight="18"
+                                       Opacity="0.9"/>
                         </ScrollViewer>
                     </Border>
 

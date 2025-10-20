@@ -6,6 +6,7 @@ using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -105,16 +106,52 @@ namespace BalatroSeedOracle.Components.Widgets
             AttachUniformControl("SaturationAmountSlider", "SaturationAmountTextBox", 0, 1,
                 value => _shaderBackground?.SetSaturationAmount((float)value));
 
-            // Color buttons
-            var mainColorBtn = this.FindControl<Button>("MainColorButton");
-            if (mainColorBtn != null)
+            AttachUniformControl("PixelSizeSlider", "PixelSizeTextBox", 100, 5000,
+                value => _shaderBackground?.SetPixelSize((float)value));
+
+            AttachUniformControl("SpinEaseSlider", "SpinEaseTextBox", 0, 2,
+                value => _shaderBackground?.SetSpinEase((float)value));
+
+            // Color controls - simplified for now (will add full ColorPicker later)
+            var mainColorHex = this.FindControl<TextBox>("MainColorHex");
+            if (mainColorHex != null)
             {
-                mainColorBtn.Click += async (s, e) =>
+                mainColorHex.LostFocus += (s, e) =>
                 {
-                    // For now, cycle through predefined colors
-                    _currentPreset.MainColor = NextColor(_currentPreset.MainColor);
-                    ApplyColor(mainColorBtn, _currentPreset.MainColor);
-                    _shaderBackground?.SetMainColor(_currentPreset.MainColor);
+                    if (TryParseHexColor(mainColorHex.Text, out var color))
+                    {
+                        _currentPreset.MainColor = color;
+                        _shaderBackground?.SetMainColor(color);
+                        AutoSavePreset();
+                    }
+                };
+            }
+
+            var accentColorHex = this.FindControl<TextBox>("AccentColorHex");
+            if (accentColorHex != null)
+            {
+                accentColorHex.LostFocus += (s, e) =>
+                {
+                    if (TryParseHexColor(accentColorHex.Text, out var color))
+                    {
+                        _currentPreset.AccentColor = color;
+                        _shaderBackground?.SetAccentColor(color);
+                        AutoSavePreset();
+                    }
+                };
+            }
+
+            var bgColorHex = this.FindControl<TextBox>("BackgroundColorHex");
+            if (bgColorHex != null)
+            {
+                bgColorHex.LostFocus += (s, e) =>
+                {
+                    if (TryParseHexColor(bgColorHex.Text, out var color))
+                    {
+                        _currentPreset.BackgroundColor = color;
+                        _shaderBackground?.SetBackgroundColor(color);
+                        AutoSavePreset();
+                    }
                 };
             }
 
@@ -174,6 +211,7 @@ namespace BalatroSeedOracle.Components.Widgets
                 var value = e.NewValue;
                 textBox.Text = value.ToString("F3");
                 onValueChanged?.Invoke(value);
+                AutoSavePreset();
             };
 
             // TextBox changed - update slider and shader
@@ -184,6 +222,7 @@ namespace BalatroSeedOracle.Components.Widgets
                     value = Math.Clamp(value, min, max);
                     slider.Value = value;
                     onValueChanged?.Invoke(value);
+                    AutoSavePreset();
                 }
             };
 
@@ -197,6 +236,7 @@ namespace BalatroSeedOracle.Components.Widgets
                         value = Math.Clamp(value, min, max);
                         slider.Value = value;
                         onValueChanged?.Invoke(value);
+                        AutoSavePreset();
                     }
                 }
             };
@@ -239,6 +279,28 @@ namespace BalatroSeedOracle.Components.Widgets
             UpdatePeakMeter("Chords2", _audioManager.ChordsIntensity);
             UpdatePeakMeter("Melody1", _audioManager.MelodyIntensity);
             UpdatePeakMeter("Melody2", _audioManager.MelodyIntensity);
+
+            // Update frequency and intensity displays for non-drums tracks
+            // Note: Frequency data will come from FFT analysis in future update
+            // For now, using placeholder frequencies based on typical ranges
+            UpdateFrequencyIntensity("Bass1", 80.0f, _audioManager.BassIntensity);    // Bass ~80Hz
+            UpdateFrequencyIntensity("Bass2", 80.0f, _audioManager.BassIntensity);
+            UpdateFrequencyIntensity("Chords1", 400.0f, _audioManager.ChordsIntensity); // Chords ~400Hz
+            UpdateFrequencyIntensity("Chords2", 400.0f, _audioManager.ChordsIntensity);
+            UpdateFrequencyIntensity("Melody1", 800.0f, _audioManager.MelodyIntensity); // Melody ~800Hz
+            UpdateFrequencyIntensity("Melody2", 800.0f, _audioManager.MelodyIntensity);
+        }
+
+        private void UpdateFrequencyIntensity(string trackName, float frequency, float intensity)
+        {
+            var freqText = this.FindControl<TextBox>($"{trackName}FrequencyText");
+            var intensityText = this.FindControl<TextBox>($"{trackName}IntensityText");
+
+            if (freqText != null)
+                freqText.Text = $"{frequency:F1} Hz";
+
+            if (intensityText != null)
+                intensityText.Text = intensity.ToString("F3");
         }
 
         private void UpdatePeakMeter(string trackName, float intensity)
@@ -268,39 +330,45 @@ namespace BalatroSeedOracle.Components.Widgets
                 peakText.Foreground = Avalonia.Media.Brushes.Lime; // Good
         }
 
-        private SKColor NextColor(SKColor current)
+        private bool TryParseHexColor(string hex, out SKColor color)
         {
-            // Cycle through a rainbow of colors
-            var colors = new[]
-            {
-                new SKColor(255, 0, 0),    // Red
-                new SKColor(255, 128, 0),  // Orange
-                new SKColor(255, 255, 0),  // Yellow
-                new SKColor(0, 255, 0),    // Green
-                new SKColor(0, 255, 255),  // Cyan
-                new SKColor(0, 0, 255),    // Blue
-                new SKColor(255, 0, 255),  // Magenta
-                new SKColor(255, 255, 255) // White
-            };
+            color = SKColor.Empty;
+            if (string.IsNullOrWhiteSpace(hex)) return false;
 
-            for (int i = 0; i < colors.Length; i++)
+            hex = hex.Trim();
+            if (hex.StartsWith("#")) hex = hex.Substring(1);
+
+            if (hex.Length == 6)
             {
-                if (colors[i].Red == current.Red &&
-                    colors[i].Green == current.Green &&
-                    colors[i].Blue == current.Blue)
+                try
                 {
-                    return colors[(i + 1) % colors.Length];
+                    var r = Convert.ToByte(hex.Substring(0, 2), 16);
+                    var g = Convert.ToByte(hex.Substring(2, 2), 16);
+                    var b = Convert.ToByte(hex.Substring(4, 2), 16);
+                    color = new SKColor(r, g, b);
+                    return true;
                 }
+                catch { }
             }
-
-            return colors[0]; // Default to red
+            return false;
         }
 
-        private void ApplyColor(Button button, SKColor color)
+        private void AutoSavePreset()
         {
-            var brush = new Avalonia.Media.SolidColorBrush(
-                Avalonia.Media.Color.FromRgb(color.Red, color.Green, color.Blue));
-            button.Background = brush;
+            // Auto-save the current preset to a default file
+            GatherCurrentValues();
+
+            var presetsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "BalatroSeedOracle", "VisualizerPresets");
+            Directory.CreateDirectory(presetsDir);
+
+            var autoSavePath = Path.Combine(presetsDir, "_autosave.json");
+            var json = JsonSerializer.Serialize(_currentPreset, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(autoSavePath, json);
         }
 
         private void SavePreset(object? sender, RoutedEventArgs e)

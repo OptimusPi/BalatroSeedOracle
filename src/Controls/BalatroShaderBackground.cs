@@ -112,6 +112,8 @@ namespace BalatroSeedOracle.Controls
         public void SetParallaxY(float value) => _renderer?.SetUniform("parallax_y", Math.Clamp(value, -1.0f, 1.0f));
         public void SetZoomScale(float value) => _renderer?.SetUniform("zoom_scale", Math.Clamp(value, -50.0f, 50.0f));
         public void SetSaturationAmount(float value) => _renderer?.SetUniform("saturation_amount", Math.Clamp(value, 0.0f, 1.0f));
+        public void SetPixelSize(float value) => _renderer?.SetUniform("pixel_size", Math.Clamp(value, 100.0f, 5000.0f));
+        public void SetSpinEase(float value) => _renderer?.SetUniform("spin_ease", Math.Clamp(value, 0.0f, 2.0f));
 
         // Convenience method for setting parallax from mouse position
         public void SetParallax(float x, float y)
@@ -210,6 +212,8 @@ namespace BalatroSeedOracle.Controls
             private float _parallaxY = 0f;
             private float _zoomScale = 0f;
             private float _saturationAmount = 0f;
+            private float _pixelSize = 1440.0f;  // Default from const
+            private float _spinEase = 0.5f;      // Default from const
 
             public override void OnMessage(object message)
             {
@@ -223,10 +227,8 @@ namespace BalatroSeedOracle.Controls
             public void SetAnimating(bool animating)
             {
                 _isAnimating = animating;
-                if (_isAnimating && !_isDisposed)
-                {
-                    RegisterForNextAnimationFrameUpdate();
-                }
+                // Animation will resume/stop on next frame
+                // We can't call Invalidate() here as we may not have compositor lock
             }
 
             public void SetUniform(string name, float value)
@@ -241,6 +243,8 @@ namespace BalatroSeedOracle.Controls
                     case "parallax_y": _parallaxY = value; break;
                     case "zoom_scale": _zoomScale = value; break;
                     case "saturation_amount": _saturationAmount = value; break;
+                    case "pixel_size": _pixelSize = value; break;
+                    case "spin_ease": _spinEase = value; break;
                 }
             }
 
@@ -286,9 +290,8 @@ namespace BalatroSeedOracle.Controls
                     uniform float parallax_y;
                     uniform float zoom_scale;
                     uniform float saturation_amount;
-
-                    const float PIXEL_SIZE_FAC = 1440.0;
-                    const float SPIN_EASE = 0.5;
+                    uniform float pixel_size;  // Was const, now uniform!
+                    uniform float spin_ease;   // Was const, now uniform!
 
                     // Helper function to convert RGB to HSV
                     float3 rgb2hsv(float3 c) {
@@ -309,13 +312,13 @@ namespace BalatroSeedOracle.Controls
 
                     float4 main(float2 screen_coords) {
                         // Convert to UV coords with pixelation and parallax
-                        float pixel_size = length(resolution) / PIXEL_SIZE_FAC;
-                        float2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * resolution) / length(resolution) - float2(parallax_x, parallax_y);
+                        float pix_size = length(resolution) / pixel_size;
+                        float2 uv = (floor(screen_coords * (1.0 / pix_size)) * pix_size - 0.5 * resolution) / length(resolution) - float2(parallax_x, parallax_y);
                         float uv_len = length(uv);
 
                         // Center swirl that changes with time
-                        float speed = (spin_time * SPIN_EASE * 0.2) + 302.2;
-                        float new_pixel_angle = atan(uv.y, uv.x) + speed - SPIN_EASE * 20.0 * (1.0 * spin_amount * uv_len + (1.0 - 1.0 * spin_amount));
+                        float speed = (spin_time * spin_ease * 0.2) + 302.2;
+                        float new_pixel_angle = atan(uv.y, uv.x) + speed - spin_ease * 20.0 * (1.0 * spin_amount * uv_len + (1.0 - 1.0 * spin_amount));
                         float2 mid = (resolution / length(resolution)) / 2.0;
                         uv = float2((uv_len * cos(new_pixel_angle) + mid.x), (uv_len * sin(new_pixel_angle) + mid.y)) - mid;
 
@@ -392,6 +395,8 @@ namespace BalatroSeedOracle.Controls
                 _shaderBuilder.Uniforms["parallax_y"] = _parallaxY;
                 _shaderBuilder.Uniforms["zoom_scale"] = _zoomScale;
                 _shaderBuilder.Uniforms["saturation_amount"] = _saturationAmount;
+                _shaderBuilder.Uniforms["pixel_size"] = _pixelSize;
+                _shaderBuilder.Uniforms["spin_ease"] = _spinEase;
 
                 // Build and apply shader
                 using var shader = _shaderBuilder.Build();

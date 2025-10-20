@@ -16,6 +16,9 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
             services.AddSingleton<SoundEffectService>();
+            // Use VLCAudioManager for cross-platform audio support (replaces NAudio)
+            services.AddSingleton<VLCAudioManager>();
+            // Keep VibeAudioManager as a wrapper for now during transition
             services.AddSingleton<VibeAudioManager>();
             // FavoritesService uses a private constructor and singleton Instance
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
