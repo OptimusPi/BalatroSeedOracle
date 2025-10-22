@@ -243,7 +243,7 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:disabled">
         <Setter Property="Background" Value="{StaticResource ModalGrey}" />
@@ -255,14 +255,14 @@
         <Setter Property="Background" Value="{StaticResource Orange}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-orange:pointerover">
-        <Setter Property="Background" Value="{StaticResource Orange}" />
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-green">
         <Setter Property="Background" Value="{StaticResource Green}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
-        <Setter Property="Background" Value="{StaticResource Green}" />
+        <Setter Property="Background" Value="{StaticResource GreenHover}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:disabled">
         <Setter Property="Background" Value="{StaticResource ModalGrey}" />
@@ -274,10 +274,10 @@
         <Setter Property="Background" Value="{StaticResource Red}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pressed">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
     </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple">
@@ -309,7 +309,7 @@
         <Setter Property="MaxWidth" Value="160" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
     </Style>
     <Style Selector="Button.nav-button.active">
         <Setter Property="Background" Value="{StaticResource Blue}" />
@@ -509,12 +509,12 @@
     </Style>
 
     <Style Selector="Button.tab-button:pointerover">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+        <Setter Property="Background" Value="{StaticResource RedHover}"/>
     </Style>
 
     <!-- Pressed state should match hover: stay dark red -->
     <Style Selector="Button.tab-button:pressed">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+        <Setter Property="Background" Value="{StaticResource RedHover}"/>
     </Style>
 
     <!-- Active tab style: keep default weight (no bold) -->

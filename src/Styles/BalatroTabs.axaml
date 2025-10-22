@@ -57,7 +57,7 @@
 
     <!-- Disabled tab visual state -->
     <Style Selector="TabControl.balatro-tabs > TabItem:disabled">
-        <Setter Property="Foreground" Value="{StaticResource TextInactive}"/>
+        <Setter Property="Foreground" Value="{StaticResource LightTextGrey}"/>
         <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="Opacity" Value="0.6"/>
         <Setter Property="Cursor" Value="Arrow"/>

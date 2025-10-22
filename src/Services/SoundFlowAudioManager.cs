@@ -145,20 +145,15 @@ namespace BalatroSeedOracle.Services
                 return;
             }
 
-            // Load each track (try FLAC first, then OGG fallback)
+            // Load each track - FLAC ONLY (OGG Vorbis decoder not available in MiniAudio build)
             foreach (var trackName in _trackNames)
             {
-                // Try FLAC first (native MiniAudio support, no decoder issues!)
                 var filePath = Path.Combine(audioDir, $"{trackName}.flac");
                 if (!File.Exists(filePath))
                 {
-                    // Fallback to OGG (may fail if Vorbis not compiled in)
-                    filePath = Path.Combine(audioDir, $"{trackName}.ogg");
-                    if (!File.Exists(filePath))
-                    {
-                        Console.WriteLine($"[SoundFlowAudioManager] WARNING: Missing {trackName}.flac/.ogg");
-                        continue;
-                    }
+                    Console.WriteLine($"[SoundFlowAudioManager] ERROR: Missing {trackName}.flac - FLAC files required!");
+                    Console.WriteLine($"[SoundFlowAudioManager] Convert OGG files with: ffmpeg -i {trackName}.ogg -c:a flac {trackName}.flac");
+                    continue;
                 }
 
                 try

@@ -25,28 +25,32 @@
         </Style>
     </Window.Styles>
     
-    <Grid RowDefinitions="*,Auto">
-        <!-- Main content -->
-        <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
-        
-        <!-- Attribution line -->
-        <Border Grid.Row="1" 
-                Background="{StaticResource DarkBackground}" 
-                Padding="4,3">
-            <StackPanel Orientation="Horizontal" 
-                        HorizontalAlignment="Center"
-                        Spacing="5">
-                <TextBlock Classes="attribution" 
-                           Text="Not affiliated with LocalThunk or Playstack • "/>
-                <TextBlock Name="BuyBalatroLink"
-                           Classes="attribution-link"
-                           Text="Buy Balatro"/>
-                <TextBlock Classes="attribution" Text=" • "/>
-                <TextBlock Classes="attribution" 
-                           Text="Created with ♥ for the Balatro community"/>
-                
-            </StackPanel>
-        </Border>
-    </Grid>
+    <Panel>
+        <Grid RowDefinitions="*,Auto">
+            <!-- Main content -->
+            <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
+
+            <!-- Attribution line -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource DarkBackground}"
+                    Padding="4,3">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="5">
+                    <TextBlock Classes="attribution"
+                               Text="Not affiliated with LocalThunk or Playstack • "/>
+                    <TextBlock Name="BuyBalatroLink"
+                               Classes="attribution-link"
+                               Text="Buy Balatro"/>
+                    <TextBlock Classes="attribution" Text=" • "/>
+                    <TextBlock Classes="attribution"
+                               Text="Created with ♥ for the Balatro community"/>
+
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <AdornerLayer />
+    </Panel>
     
 </Window>

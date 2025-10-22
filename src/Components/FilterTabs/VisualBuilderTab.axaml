@@ -116,21 +116,23 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="15">
                     <!-- MUST HAVE Zone -->
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="6">
                         <TextBlock Text="MUST HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontWeight="Bold"
                                    Foreground="{StaticResource Green}"
-                                   HorizontalAlignment="Left"/>
+                                   HorizontalAlignment="Left"
+                                   Margin="4,0"/>
                         <Border Name="MustDropZone"
-                                Background="{StaticResource DarkBackground}"
+                                Background="{StaticResource DarkTealGrey}"
                                 BorderBrush="{StaticResource Green}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
+                                BorderThickness="3"
+                                CornerRadius="12"
+                                MinHeight="140"
+                                Padding="12"
                                 Margin="0"
+                                BoxShadow="inset 0 2 6 #00000050"
                                 DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedMust}">
                                 <ItemsControl.ItemTemplate>
@@ -191,21 +193,23 @@
                     </StackPanel>
 
                     <!-- SHOULD HAVE Zone -->
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="6">
                         <TextBlock Text="SHOULD HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontWeight="Bold"
                                    Foreground="{StaticResource Blue}"
-                                   HorizontalAlignment="Left"/>
+                                   HorizontalAlignment="Left"
+                                   Margin="4,0"/>
                         <Border Name="ShouldDropZone"
-                                Background="{StaticResource DarkBackground}"
+                                Background="{StaticResource DarkTealGrey}"
                                 BorderBrush="{StaticResource Blue}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
+                                BorderThickness="3"
+                                CornerRadius="12"
+                                MinHeight="140"
+                                Padding="12"
                                 Margin="0"
+                                BoxShadow="inset 0 2 6 #00000050"
                                 DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
@@ -266,20 +270,21 @@
                     </StackPanel>
 
                     <!-- MUST NOT HAVE Zone -->
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="6">
                         <TextBlock Text="MUST NOT HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontWeight="Bold"
                                    Foreground="{StaticResource Red}"
-                                   HorizontalAlignment="Left"/>
+                                   HorizontalAlignment="Left"
+                                   Margin="4,0"/>
                         <Border Name="MustNotDropZone"
-                                Background="{StaticResource DarkBackground}"
+                                Background="{StaticResource DarkTealGrey}"
                                 BorderBrush="{StaticResource Red}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
+                                BorderThickness="3"
+                                CornerRadius="12"
+                                MinHeight="140"
+                                Padding="12"
                                 DragDrop.AllowDrop="True">
                             <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>

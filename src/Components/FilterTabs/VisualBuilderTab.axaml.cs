@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -10,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
@@ -19,6 +21,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
     /// </summary>
     public partial class VisualBuilderTab : UserControl
     {
+        private static AdornerLayer? _staticAdornerLayer;
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
         private AdornerLayer? _adornerLayer;
@@ -124,8 +127,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Play card select sound
                 SoundEffectService.Instance.PlayCardSelect();
 
-                // CREATE GHOST IMAGE - Adorner layer approach from research
-                CreateDragAdorner(item, e.GetPosition(this));
+                var topLevel = TopLevel.GetTopLevel(this);
+                bool adornerCreated = CreateDragAdorner(item, e.GetPosition(topLevel));
+
+                if (!adornerCreated)
+                {
+                    // Adorner creation failed - restore item visibility and abort drag
+                    item.IsBeingDragged = false;
+                    DebugLogger.LogError("VisualBuilderTab", "Drag aborted - failed to create adorner");
+                    return;
+                }
 
                 var dragData = new Avalonia.Input.DataObject();
                 dragData.Set("FilterItem", item);
@@ -325,18 +336,43 @@ namespace BalatroSeedOracle.Components.FilterTabs
             AvaloniaXamlLoader.Load(this);
         }
         
-        private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
+        private bool CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {
             try
             {
-                // Find adorner layer - research shows this is the proper approach
-                _topLevel = this.FindAncestorOfType<TopLevel>();
-                _adornerLayer = _topLevel != null ? AdornerLayer.GetAdornerLayer(_topLevel) : null;
-
-                if (_adornerLayer == null)
+                if (_staticAdornerLayer != null)
                 {
-                    DebugLogger.LogError("VisualBuilderTab", "Failed to find adorner layer!");
-                    return;
+                    _adornerLayer = _staticAdornerLayer;
+                }
+                else
+                {
+                    _topLevel = TopLevel.GetTopLevel(this);
+                    if (_topLevel == null)
+                    {
+                        DebugLogger.LogError("VisualBuilderTab", "TopLevel not found!");
+                        return false;
+                    }
+
+                    var mainWindow = _topLevel as MainWindow;
+                    if (mainWindow != null)
+                    {
+                        var panel = mainWindow.Content as Panel;
+                        if (panel != null)
+                        {
+                            _adornerLayer = panel.Children.OfType<AdornerLayer>().FirstOrDefault();
+                            if (_adornerLayer != null)
+                            {
+                                _staticAdornerLayer = _adornerLayer;
+                                DebugLogger.Log("VisualBuilderTab", "Found and cached AdornerLayer from MainWindow!");
+                            }
+                        }
+                    }
+
+                    if (_adornerLayer == null)
+                    {
+                        DebugLogger.LogError("VisualBuilderTab", "AdornerLayer not found in MainWindow.Content!");
+                        return false;
+                    }
                 }
 
                 // Create ghost image - 80% opacity with subtle sway like Balatro
@@ -424,10 +460,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
+                return true;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("VisualBuilderTab", $"Failed to create drag adorner: {ex.Message}");
+                return false;
             }
         }
 

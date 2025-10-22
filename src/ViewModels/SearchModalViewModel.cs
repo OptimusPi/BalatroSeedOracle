@@ -26,6 +26,7 @@ namespace BalatroSeedOracle.ViewModels
         private SearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
 
+        public Views.BalatroMainMenu? MainMenu { get; set; }
 
         // Callback for CREATE NEW FILTER button (set by View)
         private Action? _newFilterRequestedAction;
@@ -57,6 +58,12 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isResultsTabVisible = false;
 
         [ObservableProperty]
+        private int _deckIndex = 0;
+
+        [ObservableProperty]
+        private int _stakeIndex = 0;
+
+        [ObservableProperty]
         private int _lastKnownResultCount = 0;
 
         // UX: generic Balatro-styled info text for the Results tab panel
@@ -84,6 +91,64 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> _availableWordLists = new();
 
+        // Search parameters
+        [ObservableProperty]
+        private int _minScore = 0;
+
+        [ObservableProperty]
+        private bool _isDebugMode = false;
+
+        [ObservableProperty]
+        private string _debugSeed = string.Empty;
+
+        // Console
+        [ObservableProperty]
+        private string _consoleText = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+
+        [ObservableProperty]
+        private string _jsonValidationStatus = "JSON: Valid ✓";
+
+        [ObservableProperty]
+        private string _jsonValidationColor = "Green";
+
+        // Stats properties
+        [ObservableProperty]
+        private double _progressPercent = 0.0;
+
+        [ObservableProperty]
+        private string _searchSpeed = "0 seeds/s";
+
+        [ObservableProperty]
+        private int _currentBatch = 0;
+
+        [ObservableProperty]
+        private int _maxBatch = 0;
+
+        [ObservableProperty]
+        private long _seedsProcessed = 0;
+
+        [ObservableProperty]
+        private string _timeElapsed = "00:00:00";
+
+        [ObservableProperty]
+        private string _estimatedTimeRemaining = "--:--:--";
+
+        [ObservableProperty]
+        private string _findRate = "0.00%";
+
+        [ObservableProperty]
+        private string _rarity = "1 in 0";
+
+        // Cook button dynamic properties
+        public string CookButtonText => IsSearching ? "STOP COOKING" : "Let Jimbo COOK!";
+
+        // Results filtering
+        [ObservableProperty]
+        private string _resultsFilterText = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<SearchResult> _filteredResults = new();
+
         public SearchModalViewModel(SearchManager searchManager)
         {
             _searchManager = searchManager;
@@ -109,6 +174,12 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnIsSearchingChanged(bool value)
         {
             StopSearchCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(CookButtonText));
+        }
+
+        partial void OnResultsFilterTextChanged(string value)
+        {
+            FilterResults();
         }
 
         #region Properties
@@ -118,6 +189,7 @@ namespace BalatroSeedOracle.ViewModels
             : null;
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
+        public int MaxThreadCount { get; } = Environment.ProcessorCount; // Auto-detect CPU cores
         public int BatchSize { get; set; } = 3;
 
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
@@ -398,7 +470,105 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Feature removed
         }
-        
+
+        [RelayCommand]
+        private async Task ToggleSearchAsync()
+        {
+            if (IsSearching)
+            {
+                StopSearch();
+            }
+            else
+            {
+                await StartSearchAsync();
+            }
+        }
+
+        [RelayCommand]
+        private void ClearConsole()
+        {
+            ConsoleText = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+            ConsoleOutput.Clear();
+            _consoleBuffer.Clear();
+            DebugLogger.Log("SearchModalViewModel", "Console cleared");
+        }
+
+        [RelayCommand]
+        private void RefreshResults()
+        {
+            FilterResults();
+            DebugLogger.Log("SearchModalViewModel", "Results refreshed");
+        }
+
+        [RelayCommand]
+        private void SortBySeed()
+        {
+            var sorted = FilteredResults.OrderBy(r => r.Seed).ToList();
+            FilteredResults.Clear();
+            foreach (var result in sorted)
+            {
+                FilteredResults.Add(result);
+            }
+            DebugLogger.Log("SearchModalViewModel", "Results sorted by seed");
+        }
+
+        [RelayCommand]
+        private void SortByScore()
+        {
+            var sorted = FilteredResults.OrderByDescending(r => r.TotalScore).ToList();
+            FilteredResults.Clear();
+            foreach (var result in sorted)
+            {
+                FilteredResults.Add(result);
+            }
+            DebugLogger.Log("SearchModalViewModel", "Results sorted by score");
+        }
+
+        [RelayCommand]
+        private async Task CopySeedsAsync()
+        {
+            try
+            {
+                var seeds = string.Join("\n", FilteredResults.Select(r => r.Seed));
+                if (!string.IsNullOrEmpty(seeds) && MainMenu != null)
+                {
+                    var clipboard = TopLevel.GetTopLevel(MainMenu)?.Clipboard;
+                    if (clipboard != null)
+                    {
+                        await clipboard.SetTextAsync(seeds);
+                        AddConsoleMessage($"Copied {FilteredResults.Count} seeds to clipboard");
+                        DebugLogger.Log("SearchModalViewModel", $"Copied {FilteredResults.Count} seeds to clipboard");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to copy seeds: {ex.Message}");
+            }
+        }
+
+        private void FilterResults()
+        {
+            FilteredResults.Clear();
+
+            if (string.IsNullOrWhiteSpace(ResultsFilterText))
+            {
+                // No filter - show all results
+                foreach (var result in SearchResults)
+                {
+                    FilteredResults.Add(result);
+                }
+            }
+            else
+            {
+                // Filter by seed name
+                var filter = ResultsFilterText.ToLowerInvariant();
+                foreach (var result in SearchResults.Where(r => r.Seed.ToLowerInvariant().Contains(filter)))
+                {
+                    FilteredResults.Add(result);
+                }
+            }
+        }
 
         #endregion
 
@@ -437,10 +607,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
             var formattedMessage = $"[{timestamp}] {message}";
-            
+
             _consoleBuffer.AddLine(formattedMessage);
             ConsoleOutput.Add(formattedMessage);
-            
+
+            // Update the ConsoleText binding
+            ConsoleText += formattedMessage + "\n";
+
             // Keep console output manageable
             while (ConsoleOutput.Count > 1000)
             {
@@ -738,6 +911,67 @@ namespace BalatroSeedOracle.ViewModels
         {
             LatestProgress = e;
             LastKnownResultCount = e.ResultsFound;
+
+            // Update all stats properties
+            ProgressPercent = e.PercentComplete;
+
+            // Calculate seeds per second from SeedsPerMillisecond
+            double seedsPerSecond = e.SeedsPerMillisecond * 1000.0;
+            SearchSpeed = $"{seedsPerSecond:N0} seeds/s";
+
+            // Use the search instance for additional stats if available
+            if (_searchInstance != null)
+            {
+                SeedsProcessed = (long)e.SeedsSearched;
+                TimeElapsed = _searchInstance.SearchDuration.ToString(@"hh\:mm\:ss");
+
+                // Estimate time remaining based on progress
+                if (e.PercentComplete > 0 && e.PercentComplete < 100)
+                {
+                    var elapsed = _searchInstance.SearchDuration;
+                    var totalEstimated = TimeSpan.FromSeconds(elapsed.TotalSeconds / (e.PercentComplete / 100.0));
+                    var remaining = totalEstimated - elapsed;
+                    EstimatedTimeRemaining = remaining.ToString(@"hh\:mm\:ss");
+                }
+                else
+                {
+                    EstimatedTimeRemaining = "--:--:--";
+                }
+            }
+            else
+            {
+                SeedsProcessed = (long)e.SeedsSearched;
+                TimeElapsed = "00:00:00";
+                EstimatedTimeRemaining = "--:--:--";
+            }
+
+            // Batch info - we'll need to calculate these or leave as placeholders
+            // These aren't in the SearchProgress model currently
+            CurrentBatch = 0;
+            MaxBatch = 0;
+
+            // Calculate find rate and rarity
+            if (e.SeedsSearched > 0)
+            {
+                double rate = (double)e.ResultsFound / e.SeedsSearched * 100.0;
+                FindRate = $"{rate:0.00}%";
+
+                if (e.ResultsFound > 0)
+                {
+                    ulong rarity = e.SeedsSearched / (ulong)e.ResultsFound;
+                    Rarity = $"1 in {rarity:N0}";
+                }
+                else
+                {
+                    Rarity = "1 in ∞";
+                }
+            }
+            else
+            {
+                FindRate = "0.00%";
+                Rarity = "1 in 0";
+            }
+
             OnPropertyChanged(nameof(SearchProgress));
             OnPropertyChanged(nameof(ProgressText));
             OnPropertyChanged(nameof(ResultsCount));

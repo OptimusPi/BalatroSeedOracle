@@ -21,7 +21,6 @@ namespace BalatroSeedOracle.Services
         public const string GENIE_ENABLED = "GenieEnabled";
         public const string DAYLATRO_ENABLED = "DaylatroEnabled";
         public const string SHADER_BACKGROUNDS = "ShaderBackgrounds";
-        public const string VIBE_AUDIO = "VibeAudioEnabled";
         public const string VISUALIZER_WIDGET = "VisualizerWidget";
         public const string EXPERIMENTAL_SEARCH = "ExperimentalSearch";
         public const string DEBUG_MODE = "DebugMode";
@@ -69,7 +68,6 @@ namespace BalatroSeedOracle.Services
                 { GENIE_ENABLED, "AI Assistant (Genie)" },
                 { DAYLATRO_ENABLED, "Daylatro Mode (daily challenges)" },
                 { SHADER_BACKGROUNDS, "Animated Shader Backgrounds" },
-                { VIBE_AUDIO, "Vibe Audio System (8-track music)" },
                 { EXPERIMENTAL_SEARCH, "Experimental Search Features" },
                 { DEBUG_MODE, "Debug Mode (verbose logging)" }
             };
@@ -94,7 +92,6 @@ namespace BalatroSeedOracle.Services
                         { GENIE_ENABLED, false },  // Genie OFF by default
                         { DAYLATRO_ENABLED, true },  // Daylatro ON by default
                         { SHADER_BACKGROUNDS, true },  // Shaders ON
-                        { VIBE_AUDIO, true },  // Audio ON
                         { EXPERIMENTAL_SEARCH, false },  // Experimental search OFF
                         { DEBUG_MODE, false }  // Debug OFF
                     };

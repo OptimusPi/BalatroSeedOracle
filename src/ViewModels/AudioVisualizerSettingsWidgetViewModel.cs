@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views;
 
@@ -454,18 +455,17 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        /// <summary>
-        /// Apply track volume to the audio manager
-        /// </summary>
         private void ApplyTrackVolume(string trackName, float volume)
         {
-            if (_ownerControl == null) return;
-
-            var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu != null)
+            var audioManager = Helpers.ServiceHelper.GetService<SoundFlowAudioManager>();
+            if (audioManager == null)
             {
-                mainMenu.SetTrackVolume(trackName, volume);
+                DebugLogger.LogError("AudioVisualizerSettingsWidgetViewModel", "SoundFlowAudioManager service not found!");
+                return;
             }
+
+            audioManager.SetTrackVolume(trackName, volume);
+            DebugLogger.Log("AudioVisualizerSettingsWidgetViewModel", $"Volume slider: {trackName} → {volume:F2}");
         }
 
         // Shader Effect Intensities

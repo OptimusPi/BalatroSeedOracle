@@ -201,7 +201,7 @@ namespace BalatroSeedOracle.Models
             Decks["Checkered"] = "Checkered Deck";
             Decks["Zodiac"] = "Zodiac Deck";
             Decks["Painted"] = "Painted Deck";
-            Decks["Anagraph"] = "Anagraph Deck";
+            Decks["Anaglyph"] = "Anaglyph Deck";
             Decks["Plasma"] = "Plasma Deck";
             Decks["Erratic"] = "Erratic Deck";
         }
@@ -220,7 +220,7 @@ namespace BalatroSeedOracle.Models
             { "Checkered", "Start with 26 spades and 26 hearts" },
             { "Zodiac", "Start run with 'Tarot Merchant'\n'Planet Merchant' and 'Overstock'" },
             { "Painted", "+2 hand size\n-1 Joker slot" },
-            { "Anagraph", "After defeating each boss blind,\nchange all cards to a random rank" },
+            { "Anaglyph", "After defeating each Boss Blind,\ngain a Double Tag" },
             {
                 "Plasma",
                 "Balance chips and mult\nwhen calculating score for played hand\nX2 base blind size"

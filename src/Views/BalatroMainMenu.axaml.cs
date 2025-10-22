@@ -56,7 +56,6 @@ namespace BalatroSeedOracle.Views
 
             // Defer initialization to OnLoaded
             this.Loaded += OnLoaded;
-            this.Loaded += InitializeVibeAudio;
         }
 
         private void InitializeComponent()
@@ -204,49 +203,6 @@ namespace BalatroSeedOracle.Views
             modal.SetContent(analyzeModal);
             modal.BackClicked += (s, ev) => HideModalContent();
             ShowModalContent(modal, "SEED ANALYZER");
-        }
-
-        /// <summary>
-        /// Initialize vibe audio on load
-        /// </summary>
-        private void InitializeVibeAudio(object? sender, RoutedEventArgs e)
-        {
-            this.Loaded -= InitializeVibeAudio;
-
-            try
-            {
-                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
-                if (audioManager == null)
-                {
-                    DebugLogger.LogError("BalatroMainMenu", "VLCAudioManager is NULL - music visualization won't work!");
-                    return;
-                }
-
-                // Store handler reference for cleanup
-                _audioAnalysisHandler = (bass, mid, treble, peak) =>
-                {
-                    // REMOVED: VibeOut-related methods (UpdateVibeIntensity, UpdateMelodicFFT, UpdateTrackIntensities)
-                    // TODO: Restore audio visualization with new architecture
-                    /*
-                    if (_background is BalatroShaderBackground shader)
-                    {
-                        shader.UpdateVibeIntensity(peak * 0.05f);
-                        shader.UpdateMelodicFFT(mid, treble, peak);
-                        shader.UpdateTrackIntensities(
-                            audioManager.MelodyIntensity,
-                            audioManager.ChordsIntensity,
-                            audioManager.BassIntensity
-                        );
-                    }
-                    */
-                };
-
-                audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to start vibe audio: {ex.Message}");
-            }
         }
 
         /// <summary>
@@ -542,7 +498,7 @@ namespace BalatroSeedOracle.Views
                 _modalContainer.Children.Clear();
             }, DispatcherPriority.Background);
 
-            var audioManager = App.GetService<Services.VLCAudioManager>();
+            var audioManager = App.GetService<Services.SoundFlowAudioManager>();
         }
 
         #endregion
@@ -1007,7 +963,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
+                var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
                 if (audioManager != null && _audioAnalysisHandler != null)
                 {
                     audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;

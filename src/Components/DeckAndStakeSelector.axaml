@@ -25,7 +25,7 @@
 
         <!-- Select Button -->
         <Button Name="SelectButton"
-                Content="Select this Deck"
+                Content="CONTINUE"
                 Classes="btn-blue"
                 MinWidth="280"
                 MinHeight="48"

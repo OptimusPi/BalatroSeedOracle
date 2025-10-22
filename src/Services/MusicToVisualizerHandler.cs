@@ -251,7 +251,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<VLCAudioManager>();
+                var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
                 if (audioManager == null) return 0f;
 
                 return source switch

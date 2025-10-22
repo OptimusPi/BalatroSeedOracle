@@ -60,22 +60,7 @@ namespace BalatroSeedOracle.Views.Modals
                 togglesControl.ItemsSource = _featureToggles;
             }
 
-            // Load general settings
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            if (userProfileService != null)
-            {
-                var authorBox = this.FindControl<TextBox>("AuthorNameBox");
-                if (authorBox != null)
-                {
-                    authorBox.Text = userProfileService.GetAuthorName();
-                }
-
-                var threadBox = this.FindControl<NumericUpDown>("ThreadCountBox");
-                if (threadBox != null)
-                {
-                    threadBox.Value = Environment.ProcessorCount; // Default to CPU cores
-                }
-            }
+            // Thread count setting removed - now in Search Modal
         }
 
         private string GetDetailedDescription(string key)
@@ -85,7 +70,6 @@ namespace BalatroSeedOracle.Views.Modals
                 FeatureFlagsService.GENIE_ENABLED => "Experimental AI assistant for filter suggestions",
                 FeatureFlagsService.DAYLATRO_ENABLED => "Show daily challenge seeds and leaderboards",
                 FeatureFlagsService.SHADER_BACKGROUNDS => "GPU-rendered animated backgrounds",
-                FeatureFlagsService.VIBE_AUDIO => "Multi-track adaptive music system",
                 FeatureFlagsService.EXPERIMENTAL_SEARCH => "Beta search optimizations and features",
                 FeatureFlagsService.DEBUG_MODE => "Show detailed logs and diagnostics",
                 _ => ""
@@ -105,26 +89,7 @@ namespace BalatroSeedOracle.Views.Modals
                 FeatureFlagsService.Instance.SetFeature(toggle.Key, toggle.IsEnabled);
             }
 
-            // Save general settings
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            if (userProfileService != null)
-            {
-                var authorBox = this.FindControl<TextBox>("AuthorNameBox");
-                if (authorBox != null && !string.IsNullOrWhiteSpace(authorBox.Text))
-                {
-                    userProfileService.SetAuthorName(authorBox.Text.Trim());
-                }
-
-                var threadBox = this.FindControl<NumericUpDown>("ThreadCountBox");
-                if (threadBox != null && threadBox.Value.HasValue)
-                {
-                    // Save thread count preference to user profile (custom property)
-                    // For now just log it - can implement in UserProfileService later
-                    DebugLogger.Log("SettingsModal", $"Thread count preference: {(int)threadBox.Value.Value}");
-                }
-
-                userProfileService.SaveProfile();
-            }
+            // Thread count setting removed - now in Search Modal
 
             DebugLogger.Log("SettingsModal", "Settings saved successfully");
             CloseRequested?.Invoke(this, EventArgs.Empty);
