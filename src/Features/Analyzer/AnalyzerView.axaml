@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
@@ -32,7 +32,7 @@
                                                  Grid.ColumnSpan="3"
                                                  HorizontalAlignment="Left"/>
 
-                <!-- Result Counter (Right side) -->
+                <!-- Result Counter (Right side) - LOCKED width, no wiggle! -->
                 <StackPanel Grid.Column="4"
                             Spacing="5"
                             HorizontalAlignment="Right"
@@ -40,8 +40,9 @@
                     <TextBlock Text="{Binding ResultCounter}"
                                FontSize="16"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextLight}"
-                               HorizontalAlignment="Right"/>
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Right"
+                               Width="180"/>
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Button Content="◀ PgUp"
                                 Command="{Binding PreviousResultCommand}"
@@ -70,7 +71,7 @@
                            Text="{Binding CurrentSeed}"
                            FontSize="18"
                            FontWeight="Bold"
-                           Foreground="{StaticResource TextLight}"
+                           Foreground="{StaticResource White}"
                            Margin="5,0,0,0"/>
             </Grid>
         </Border>
@@ -119,7 +120,7 @@
                     <TextBlock Text="{Binding AnteNavigationDisplay}"
                                FontSize="16"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextLight}"
+                               Foreground="{StaticResource White}"
                                VerticalAlignment="Center"/>
                     <Button Content="Next Ante ▼"
                             Command="{Binding ScrollDownAnteCommand}"

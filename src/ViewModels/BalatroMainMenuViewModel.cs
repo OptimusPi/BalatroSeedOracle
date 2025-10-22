@@ -20,7 +20,13 @@ namespace BalatroSeedOracle.ViewModels
     public partial class BalatroMainMenuViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
-        private readonly VLCAudioManager? _audioManager;
+        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private Action<float, float, float, float>? _audioAnalysisHandler;
+
+        /// <summary>
+        /// Expose audio manager for widgets to access frequency data
+        /// </summary>
+        public SoundFlowAudioManager? AudioManager => _soundFlowAudioManager;
 
         [ObservableProperty]
         private string _mainTitle = "Welcome!";
@@ -56,10 +62,6 @@ namespace BalatroSeedOracle.ViewModels
         private bool _authorDisplayMode = true;
 
         [ObservableProperty]
-        private bool _isVibeOutMode = false;
-
-
-        [ObservableProperty]
         private bool _isVolumePopupOpen = false;
 
         [ObservableProperty]
@@ -78,7 +80,13 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize services
             _userProfileService = App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-            _audioManager = ServiceHelper.GetService<VLCAudioManager>();
+
+            // Get SoundFlow audio manager (8 independent tracks)
+            _soundFlowAudioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
+            if (_soundFlowAudioManager != null)
+            {
+                Console.WriteLine("[ViewModel] 🎵 Using SoundFlowAudioManager (8 independent tracks)");
+            }
 
             // Load settings
             LoadSettings();
@@ -116,11 +124,6 @@ namespace BalatroSeedOracle.ViewModels
             AuthorDisplayMode = !value;
         }
 
-        partial void OnIsVibeOutModeChanged(bool value)
-        {
-            OnVibeOutModeChangedEvent?.Invoke(this, value);
-        }
-
         #region Events
 
         /// <summary>
@@ -137,11 +140,6 @@ namespace BalatroSeedOracle.ViewModels
         /// Raised when animation state changes (for background control)
         /// </summary>
         public event EventHandler<bool>? OnIsAnimatingChangedEvent;
-
-        /// <summary>
-        /// Raised when VibeOut mode changes
-        /// </summary>
-        public event EventHandler<bool>? OnVibeOutModeChangedEvent;
 
         /// <summary>
         /// Raised when volume popup visibility should change
@@ -266,15 +264,6 @@ namespace BalatroSeedOracle.ViewModels
             AuthorEditMode = false;
         }
 
-        public void ExitVibeOutMode()
-        {
-            IsVibeOutMode = false;
-        }
-
-        public void EnterVibeOutMode()
-        {
-            IsVibeOutMode = true;
-        }
 
         [RelayCommand]
         private void BuyBalatro()
@@ -390,34 +379,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var profile = _userProfileService.GetProfile();
-                var settings = profile.VibeOutSettings;
+                // TODO: Visualizer settings loading disabled - will be replaced by proper effect binding system
 
-                DebugLogger.Log("BalatroMainMenuViewModel", "Loading visualizer settings on startup...");
-
-                // Apply theme
-                shader.SetTheme(settings.ThemeIndex);
-
-                // Apply intensity settings
-                shader.UpdateVibeIntensity(settings.AudioIntensity);
-                shader.SetBaseTimeSpeed(settings.TimeSpeed);
-                shader.SetParallaxStrength(settings.ParallaxStrength);
-
-                // Apply custom colors if CUSTOMIZE theme is selected (index 8)
-                if (settings.ThemeIndex == 8)
-                {
-                    shader.SetMainColor(settings.MainColor);
-                    shader.SetAccentColor(settings.AccentColor);
-                }
-
-                // Apply shader effect audio sources
-                shader.SetShadowFlickerSource((AudioSource)settings.ShadowFlickerSource);
-                shader.SetSpinSource((AudioSource)settings.SpinSource);
-                shader.SetTwirlSource((AudioSource)settings.TwirlSource);
-                shader.SetZoomThumpSource((AudioSource)settings.ZoomThumpSource);
-                shader.SetColorSaturationSource((AudioSource)settings.ColorSaturationSource);
-                shader.SetBeatPulseSource((AudioSource)settings.BeatPulseSource);
-
-                DebugLogger.Log("BalatroMainMenuViewModel", $"Visualizer settings loaded - Theme: {settings.ThemeIndex}, Intensity: {settings.AudioIntensity}");
+                DebugLogger.Log("BalatroMainMenuViewModel", "Visualizer settings loading temporarily disabled - awaiting effect binding implementation");
             }
             catch (Exception ex)
             {
@@ -434,14 +398,8 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_userProfileService.GetSearchState() is { } resumeState)
                 {
-                    // Check if the search is recent (within last 24 hours)
+                    // User will close searches they don't want - no need for auto-cleanup!
                     var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
-                    if (timeSinceSearch.TotalHours > 24)
-                    {
-                        _userProfileService.ClearSearchState();
-                        return;
-                    }
-
                     DebugLogger.Log("BalatroMainMenuViewModel", $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago");
 
                     if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
@@ -475,7 +433,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                _audioManager?.PlayClickSound();
+                // No click sounds with SoundFlow for now
             }
             catch (Exception ex)
             {
@@ -491,12 +449,55 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 float volumeFloat = (float)(volume / 100.0);
-                _audioManager?.SetMasterVolume(volumeFloat);
-                _audioManager?.SetSfxVolume(volumeFloat);
+
+                if (_soundFlowAudioManager != null)
+                {
+                    _soundFlowAudioManager.MasterVolume = volumeFloat;
+                }
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to apply volume: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Set volume of a specific audio track (only works with SoundFlowAudioManager)
+        /// </summary>
+        public void SetTrackVolume(string trackName, float volume)
+        {
+            try
+            {
+                _soundFlowAudioManager?.SetTrackVolume(trackName, volume);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to set track volume: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Wire up audio analysis to shader (called by View when shader is ready)
+        /// </summary>
+        public void WireAudioAnalysisToShader(BalatroShaderBackground shader)
+        {
+            try
+            {
+                if (_soundFlowAudioManager != null)
+                {
+                    _audioAnalysisHandler = (bass, mid, treble, peak) =>
+                    {
+                        // Audio reactivity will be handled by proper effect binding system
+                        // TODO: Implement effect bindings that map tracks to shader parameters
+                    };
+
+                    _soundFlowAudioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
+                    Console.WriteLine("[ViewModel] ✅ Audio analysis handler connected (awaiting effect binding system)");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to wire audio analysis: {ex.Message}");
             }
         }
 
@@ -509,7 +510,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyVisualizerTheme(BalatroShaderBackground? shader, int themeIndex)
         {
-            shader?.SetTheme(themeIndex);
+            // Removed - themes replaced by direct color control
         }
 
         /// <summary>
@@ -517,7 +518,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyMainColor(BalatroShaderBackground? shader, int colorIndex)
         {
-            shader?.SetMainColor(colorIndex);
+            var color = IndexToSKColor(colorIndex);
+            shader?.SetMainColor(color);
         }
 
         /// <summary>
@@ -525,7 +527,28 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyAccentColor(BalatroShaderBackground? shader, int colorIndex)
         {
-            shader?.SetAccentColor(colorIndex);
+            var color = IndexToSKColor(colorIndex);
+            shader?.SetAccentColor(color);
+        }
+
+        /// <summary>
+        /// Convert color dropdown index to SKColor
+        /// </summary>
+        private SkiaSharp.SKColor IndexToSKColor(int index)
+        {
+            return index switch
+            {
+                0 => new SkiaSharp.SKColor(255, 76, 64),    // Red (Balatro Red)
+                1 => new SkiaSharp.SKColor(255, 165, 0),    // Orange
+                2 => new SkiaSharp.SKColor(255, 215, 0),    // Yellow (Gold)
+                3 => new SkiaSharp.SKColor(0, 255, 127),    // Green (Spring Green)
+                4 => new SkiaSharp.SKColor(0, 147, 255),    // Blue (Balatro Blue)
+                5 => new SkiaSharp.SKColor(147, 51, 234),   // Purple
+                6 => new SkiaSharp.SKColor(139, 69, 19),    // Brown (Saddle Brown)
+                7 => new SkiaSharp.SKColor(255, 255, 255),  // White
+                8 => new SkiaSharp.SKColor(30, 43, 45),     // None (Dark background)
+                _ => new SkiaSharp.SKColor(255, 76, 64),    // Default to Red
+            };
         }
 
         /// <summary>
@@ -533,7 +556,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyAudioIntensity(BalatroShaderBackground? shader, float intensity)
         {
-            shader?.SetAudioReactivityIntensity(intensity);
+            // Removed - will be handled by effect binding system
         }
 
         /// <summary>
@@ -541,15 +564,15 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyParallaxStrength(BalatroShaderBackground? shader, float strength)
         {
-            shader?.SetParallaxStrength(strength);
+            // Removed - use SetParallax() directly for now
         }
 
         /// <summary>
-        /// Apply time speed to shader
+        /// Apply time speed to shader (animation speed multiplier)
         /// </summary>
         public void ApplyTimeSpeed(BalatroShaderBackground? shader, float speed)
         {
-            shader?.SetBaseTimeSpeed(speed);
+            shader?.SetTime(speed); // Now controls animation speed
         }
 
         /// <summary>
@@ -569,19 +592,19 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Apply zoom punch to shader
+        /// Apply zoom scale to shader
         /// </summary>
         public void ApplyShaderZoomPunch(BalatroShaderBackground? shader, float zoom)
         {
-            shader?.SetZoomPunch(zoom);
+            shader?.SetZoomScale(zoom);
         }
 
         /// <summary>
-        /// Apply melody saturation to shader
+        /// Apply saturation to shader
         /// </summary>
         public void ApplyShaderMelodySaturation(BalatroShaderBackground? shader, float saturation)
         {
-            shader?.SetMelodySaturation(saturation);
+            shader?.SetSaturationAmount(saturation);
         }
 
         public void ApplyShaderPixelSize(BalatroShaderBackground? shader, float pixelSize)
@@ -594,12 +617,17 @@ namespace BalatroSeedOracle.ViewModels
             shader?.SetSpinEase(spinEase);
         }
 
+        public void ApplyShaderLoopCount(BalatroShaderBackground? shader, float loopCount)
+        {
+            shader?.SetLoopCount(loopCount);
+        }
+
         /// <summary>
         /// Apply shadow flicker source to shader
         /// </summary>
         public void ApplyShadowFlickerSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetShadowFlickerSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         /// <summary>
@@ -607,7 +635,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplySpinSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetSpinSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         /// <summary>
@@ -615,7 +643,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyTwirlSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetTwirlSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         /// <summary>
@@ -623,7 +651,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyZoomThumpSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetZoomThumpSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         /// <summary>
@@ -631,7 +659,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyColorSaturationSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetColorSaturationSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         /// <summary>
@@ -639,7 +667,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyBeatPulseSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            shader?.SetBeatPulseSource((AudioSource)sourceIndex);
+            // Removed - will be replaced by proper effect binding system
         }
 
         #endregion

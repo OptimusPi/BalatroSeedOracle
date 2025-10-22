@@ -180,11 +180,21 @@ namespace BalatroSeedOracle.Components
             {
                 _viewModel?.SelectFilter(item);
 
-                // Fire FilterSelected event so parent controls can respond to filter selection
                 var filterPath = _viewModel?.GetSelectedFilterPath();
                 if (!string.IsNullOrEmpty(filterPath))
                 {
-                    FilterSelected?.Invoke(this, filterPath);
+                    // In SearchModal context: auto-advance to next tab (Balatro-style)
+                    // In FiltersModal context: just show preview (requires explicit "EDIT" click)
+                    if (IsInSearchModal)
+                    {
+                        Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter clicked in SearchModal - auto-advancing with: {filterPath}");
+                        FilterConfirmed?.Invoke(this, filterPath);
+                    }
+                    else
+                    {
+                        Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter clicked in FiltersModal - showing preview: {filterPath}");
+                        FilterSelected?.Invoke(this, filterPath);
+                    }
                 }
             }
         }

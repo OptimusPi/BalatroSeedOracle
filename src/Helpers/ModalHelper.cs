@@ -129,12 +129,6 @@ namespace BalatroSeedOracle.Helpers
         {
             var searchModal = new SearchModal();
 
-            // Inject MainMenu reference for VibeOut mode
-            if (searchModal.ViewModel != null)
-            {
-                searchModal.ViewModel.MainMenu = menu;
-            }
-
             // DON'T auto-navigate for fresh launches - let user select filter first
 
             // Handle desktop icon creation when modal closes with active search
@@ -165,12 +159,6 @@ namespace BalatroSeedOracle.Helpers
         public static StandardModal ShowSearchModalForInstance(this Views.BalatroMainMenu menu, string searchId, string? configPath = null)
         {
             var searchModal = new SearchModal();
-
-            // Inject MainMenu reference for VibeOut mode
-            if (searchModal.ViewModel != null)
-            {
-                searchModal.ViewModel.MainMenu = menu;
-            }
 
             // Remove the desktop widget that opened this modal
             menu.RemoveSearchDesktopIcon(searchId);
@@ -329,6 +317,8 @@ namespace BalatroSeedOracle.Helpers
                 };
 
                 // Range events (advanced)
+                // REMOVED: Range methods no longer exist on BalatroMainMenu (VibeOut feature removed)
+                /*
                 vm.ContrastRangeChangedEvent += (s, range) =>
                 {
                     DebugLogger.Log("ModalHelper", $"Contrast range changed: {range.min} - {range.max}");
@@ -358,9 +348,10 @@ namespace BalatroSeedOracle.Helpers
                     DebugLogger.Log("ModalHelper", $"Melody saturation range changed: {range.min} - {range.max}");
                     menu.ApplyMelodySatRange(range.min, range.max);
                 };
+                */
             }
 
-            return menu.ShowModal("VIBE MODE SETTINGS", audioVisualizerView);
+            return menu.ShowModal("VISUALIZER SETTINGS", audioVisualizerView);
         }
 
         /// <summary>

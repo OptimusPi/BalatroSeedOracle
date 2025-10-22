@@ -5,30 +5,23 @@
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
 
     <StackPanel Spacing="24" HorizontalAlignment="Center">
-        <!-- Dark panel background wrapping deck and stake selectors -->
-        <Border Background="{StaticResource DarkModalGrey}"
-                CornerRadius="12"
-                Padding="25,20"
-                HorizontalAlignment="Center">
-            <StackPanel Spacing="20">
-                <!-- Deck Spinner (Balatro-style panel with title/description/dots) -->
-                <components:DeckSpinner
-                    ShowArrows="True"
-                    SelectedDeckIndex="{Binding DeckIndex}"
-                    StakeIndex="{Binding StakeIndex}"
-                    HorizontalAlignment="Center"/>
+        <!-- Deck Spinner (Balatro-style panel with title/description/dots) -->
+        <components:DeckSpinner
+            ShowArrows="True"
+            SelectedDeckIndex="{Binding DeckIndex}"
+            StakeIndex="{Binding StakeIndex}"
+            HorizontalAlignment="Center"/>
 
-                <!-- Stake Spinner: simple enum-based spinner, no PanelItemFactory -->
-                <controls:SpinnerControl Name="StakeSpinner"
-                                         Label=""
-                                         SpinnerType="stake"
-                                         Value="{Binding StakeIndex}"
-                                         Minimum="0"
-                                         Maximum="7"
-                                         Increment="1"
-                                         DisplayValues="{Binding StakeDisplayValues}"/>
-            </StackPanel>
-        </Border>
+        <!-- Stake Spinner: enum-only selection (no text editing) -->
+        <controls:SpinnerControl Name="StakeSpinner"
+                                 Label=""
+                                 SpinnerType="stake"
+                                 Value="{Binding StakeIndex}"
+                                 Minimum="0"
+                                 Maximum="7"
+                                 Increment="1"
+                                 ReadOnly="True"
+                                 DisplayValues="{Binding StakeDisplayValues}"/>
 
         <!-- Select Button -->
         <Button Name="SelectButton"

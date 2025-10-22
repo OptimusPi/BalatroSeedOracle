@@ -1,0 +1,202 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
+             x:DataType="vm:FrequencyDebugWidgetViewModel"
+             x:CompileBindings="True">
+
+    <!-- Single container with drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
+          ZIndex="{Binding WidgetZIndex}">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Compact Icon -->
+        <StackPanel IsVisible="{Binding IsMinimized}"
+                    ZIndex="1"
+                    Spacing="4"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="64" Height="64"
+                    Classes="widget-header"
+                    Cursor="Hand">
+                <TextBlock Text="📊" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="FFT"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Expanded State - Frequency Debug Panel -->
+        <Border Classes="widget-window"
+                IsVisible="{Binding !IsMinimized}"
+                ZIndex="100"
+                MinWidth="320"
+                MaxWidth="380">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header with Title and Minimize Button -->
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"
+                                Margin="0,0,8,0"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📊" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="Frequency Analyzer"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area -->
+                <StackPanel Grid.Row="1" Margin="15" Spacing="12">
+
+                    <!-- Track Selector -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Track" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="12"/>
+                        <ComboBox SelectedIndex="{Binding SelectedTrackIndex}" HorizontalAlignment="Stretch" FontSize="11">
+                            <ComboBoxItem Content="Bass1"/>
+                            <ComboBoxItem Content="Bass2"/>
+                            <ComboBoxItem Content="Drums1"/>
+                            <ComboBoxItem Content="Drums2"/>
+                            <ComboBoxItem Content="Chords1"/>
+                            <ComboBoxItem Content="Chords2"/>
+                            <ComboBoxItem Content="Melody1"/>
+                            <ComboBoxItem Content="Melody2"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- BASS RANGE: 20-250 Hz -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="🔊 BASS (20-250 Hz)" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="12"/>
+
+                        <!-- Bass Average -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Avg" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding BassAvg}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding BassAvg, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Bass Peak -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Peak" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding BassPeak}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding BassPeak, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- MID RANGE: 250-2000 Hz -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="🎸 MID (250-2000 Hz)" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="12"/>
+
+                        <!-- Mid Average -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Avg" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding MidAvg}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding MidAvg, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Mid Peak -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Peak" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding MidPeak}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding MidPeak, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- HIGH RANGE: 2000-20000 Hz -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="✨ HIGH (2000-20000 Hz)" Foreground="{StaticResource Gold}" FontWeight="SemiBold" FontSize="12"/>
+
+                        <!-- High Average -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Avg" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding HighAvg}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding HighAvg, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- High Peak -->
+                        <Grid ColumnDefinitions="60,*,60">
+                            <TextBlock Grid.Column="0" Text="Peak" Foreground="{StaticResource White}" FontSize="11" VerticalAlignment="Center"/>
+                            <ProgressBar Grid.Column="1" Value="{Binding HighPeak}" Maximum="1" Height="16" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding HighPeak, StringFormat='{}{0:F3}'}"
+                                       Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="11"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- CAPTURED MAX VALUES -->
+                    <Border BorderBrush="{StaticResource Gold}" BorderThickness="1" CornerRadius="4" Padding="8" Background="#1a1e21">
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="📈 CAPTURED MAX VALUES" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="11"/>
+                                <Button Grid.Column="1" Content="Reset" Classes="btn-red" FontSize="10" Padding="8,4" Command="{Binding ResetMaxValuesCommand}"/>
+                            </Grid>
+
+                            <!-- Bass Max Values -->
+                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
+                                <TextBlock Grid.Column="0" Text="BASS" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding BassAvgMax, StringFormat='Avg: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding BassPeakMax, StringFormat='Peak: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                            </Grid>
+
+                            <!-- Mid Max Values -->
+                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
+                                <TextBlock Grid.Column="0" Text="MID" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding MidAvgMax, StringFormat='Avg: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding MidPeakMax, StringFormat='Peak: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                            </Grid>
+
+                            <!-- High Max Values -->
+                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
+                                <TextBlock Grid.Column="0" Text="HIGH" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding HighAvgMax, StringFormat='Avg: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding HighPeakMax, StringFormat='Peak: {0:F3}'}"
+                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

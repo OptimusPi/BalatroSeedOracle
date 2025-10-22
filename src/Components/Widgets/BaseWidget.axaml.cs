@@ -148,6 +148,29 @@ namespace BalatroSeedOracle.Components
             {
                 _isDragging = false;
                 e.Pointer.Capture(null);
+
+                // SNAP TO GRID when drag ends!
+                const double gridSize = 20.0; // Match the starting X position
+                var expandedView = this.FindControl<Border>("ExpandedView");
+                if (expandedView != null)
+                {
+                    var currentMargin = expandedView.Margin;
+
+                    // Snap to nearest grid position
+                    var snappedX = Math.Round(currentMargin.Left / gridSize) * gridSize;
+                    var snappedY = Math.Round(currentMargin.Top / gridSize) * gridSize;
+
+                    var snappedMargin = new Thickness(snappedX, snappedY, 0, 0);
+                    expandedView.Margin = snappedMargin;
+
+                    // Update ViewModel with snapped position
+                    if (DataContext is BaseWidgetViewModel vm)
+                    {
+                        vm.PositionX = snappedX;
+                        vm.PositionY = snappedY;
+                    }
+                }
+
                 e.Handled = true;
             }
         }

@@ -25,19 +25,19 @@
     
     <Style Selector="TextBox:pointerover">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="BorderBrush" Value="{StaticResource LightGrey}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
     
     <Style Selector="TextBox:disabled">
-        <Setter Property="Background" Value="{StaticResource DropShadow}" />
+        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
         <Setter Property="Foreground" Value="{StaticResource ModalBorder}" />
         <Setter Property="BorderBrush" Value="{StaticResource PureBlack}" />
     </Style>
     
     <Style Selector="TextBox:readonly">
-        <Setter Property="Background" Value="{StaticResource DropShadow}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="BorderBrush" Value="{StaticResource PureBlack}" />
     </Style>
     
@@ -56,7 +56,7 @@
     <!-- JSON Editor specific styles -->
     <Style Selector="TextBox.json-editor">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="BorderBrush" Value="{StaticResource DarkBackground}" />
         <Setter Property="FontFamily" Value="Cascadia Code,Consolas,Menlo,Monaco,monospace" />
         <Setter Property="FontSize" Value="14" />

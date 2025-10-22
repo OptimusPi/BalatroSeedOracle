@@ -14,12 +14,12 @@
             <!-- Description -->
             <TextBlock Text="Safe testing environment for new components" 
                        FontSize="16" 
-                       Foreground="{StaticResource TextLight}"
+                       Foreground="{StaticResource White}"
                        FontFamily="{StaticResource BalatroFont}"
                        HorizontalAlignment="Center"/>
             
             <!-- Test Area -->
-            <Border Background="{StaticResource DarkModalGrey}" 
+            <Border Background="{StaticResource DarkBackground}" 
                     BorderThickness="0" 
                     CornerRadius="12" 
                     Padding="40"
@@ -28,7 +28,7 @@
                 <Grid>
                     <TextBlock Text="🧪 Component testing area - Add your experimental components here!" 
                                FontSize="18" 
-                               Foreground="{StaticResource MediumGrey}"
+                               Foreground="{StaticResource ModalGrey}"
                                FontFamily="{StaticResource BalatroFont}"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"

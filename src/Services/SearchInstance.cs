@@ -158,7 +158,7 @@ namespace BalatroSeedOracle.Services
                 var filterName = Path.GetFileNameWithoutExtension(configPath);
                 var searchResultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
                 Directory.CreateDirectory(searchResultsDir);
-                _dbPath = Path.Combine(searchResultsDir, $"{filterName}.duckdb");
+                _dbPath = Path.Combine(searchResultsDir, $"{filterName}.db");
                 _connectionString = $"Data Source={_dbPath}";
             }
             DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database configured with {_columnNames.Count} columns at {_dbPath}");

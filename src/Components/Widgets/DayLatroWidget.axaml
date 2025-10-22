@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -10,7 +10,7 @@
     <UserControl.Styles>
         <!-- Local style overrides for DayLatro-specific widgets -->
         <Style Selector="TextBox.score-input">
-            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -40,7 +40,7 @@
             <StackPanel Spacing="4">
                 <Grid>
                     <!-- Icon - draggable! Has widget-header class so DraggableWidgetBehavior allows drag -->
-                    <Border Background="{StaticResource Grey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             BorderBrush="{StaticResource ModalBorder}"
                             BorderThickness="2"
                             CornerRadius="8"
@@ -215,7 +215,7 @@
                                     ToolTip.Tip="Refresh scores"/>
                         </Grid>
 
-                        <Border Background="{StaticResource VeryDarkBackground}"
+                        <Border Background="{StaticResource DarkBackground}"
                                 CornerRadius="6"
                                 Padding="10"
                                 MaxHeight="200">

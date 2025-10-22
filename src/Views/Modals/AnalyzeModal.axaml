@@ -165,12 +165,10 @@
                           Opacity="0.8"
                           Margin="0,8,0,0"/>
 
-                <Border Classes="BalatroSeedOracle-modal-card-precise"
-                        Padding="40"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                    <components:DeckAndStakeSelector Name="DeckAndStakeSelector"/>
-                </Border>
+                <!-- Deck and Stake selector (no wrapper needed - component styles itself) -->
+                <components:DeckAndStakeSelector Name="DeckAndStakeSelector"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
             </StackPanel>
             
             <!-- Analyzer Panel -->

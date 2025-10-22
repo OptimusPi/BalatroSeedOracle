@@ -40,13 +40,11 @@ public partial class App : Application
             {
                 desktop.MainWindow = new Views.MainWindow();
 
-                // Initialize background music!
+                // Initialize background music with SoundFlow (8-track)
                 try
                 {
-                    var audioManager = _serviceProvider.GetRequiredService<Services.VLCAudioManager>();
-                    DebugLogger.Log("App", "🎵 Starting background music (LibVLC cross-platform)...");
-                    // Force initialization by accessing a property
-                    var trackCount = audioManager.GetType();
+                    var audioManager = _serviceProvider.GetRequiredService<Services.SoundFlowAudioManager>();
+                    DebugLogger.Log("App", "🎵 Starting 8-track audio with SoundFlow...");
                     DebugLogger.Log("App", $"🎵 Audio manager initialized: {audioManager}");
                 }
                 catch (Exception ex)
@@ -78,7 +76,7 @@ public partial class App : Application
             DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
             
             // Stop audio first
-            var audioManager = _serviceProvider?.GetService<Services.VLCAudioManager>();
+            var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
             audioManager?.Dispose();
             
             // Get the search manager and stop all active searches

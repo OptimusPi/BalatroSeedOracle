@@ -507,14 +507,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     if (BalatroData.PlanetCards?.Keys != null)
                     {
+                        // Filter out wildcard duplicates: "any", "*", "anyplanet" all map to "Any Planet"
+                        // Only keep "anyplanet" as the canonical wildcard
+                        var seenAnyPlanet = false;
+
                         DebugLogger.Log("VisualBuilderTab", $"Loading {BalatroData.PlanetCards.Keys.Count} planets");
                         foreach (var planetName in BalatroData.PlanetCards.Keys)
                         {
                             try
                             {
-                                var item = new FilterItem 
-                                { 
-                                    Name = planetName, 
+                                // Skip duplicate "Any Planet" wildcards
+                                if (planetName == "any" || planetName == "*")
+                                    continue;
+
+                                // Only add one "Any Planet" wildcard
+                                if (planetName == "anyplanet")
+                                {
+                                    if (seenAnyPlanet) continue;
+                                    seenAnyPlanet = true;
+                                }
+
+                                var item = new FilterItem
+                                {
+                                    Name = planetName,
                                     Type = "Planet",
                                     DisplayName = FormatDisplayName(planetName),
                                     ItemImage = spriteService.GetPlanetCardImage(planetName)

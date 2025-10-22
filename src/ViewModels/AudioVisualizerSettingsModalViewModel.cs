@@ -506,7 +506,7 @@ namespace BalatroSeedOracle.ViewModels
         private void LoadSettings()
         {
             var profile = _userProfileService.GetProfile();
-            var vibeSettings = profile.VibeOutSettings;
+            var vibeSettings = profile.VisualizerSettings;
 
             // Load values from profile - use generated properties
             ThemeIndex = vibeSettings.ThemeIndex;
@@ -546,7 +546,7 @@ namespace BalatroSeedOracle.ViewModels
         private void SaveSettings()
         {
             var profile = _userProfileService.GetProfile();
-            var vibeSettings = profile.VibeOutSettings;
+            var vibeSettings = profile.VisualizerSettings;
 
             vibeSettings.ThemeIndex = ThemeIndex;
             vibeSettings.MainColor = MainColor;
@@ -605,7 +605,7 @@ namespace BalatroSeedOracle.ViewModels
         private void SaveTheme()
         {
             var profile = _userProfileService.GetProfile();
-            profile.VibeOutSettings.ThemeIndex = ThemeIndex;
+            profile.VisualizerSettings.ThemeIndex = ThemeIndex;
             _userProfileService.SaveProfile(profile);
             DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Theme saved: {ThemeIndex}");
         }

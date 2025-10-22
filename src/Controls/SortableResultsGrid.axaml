@@ -14,7 +14,7 @@
         
         <!-- Header with sorting controls -->
         <Border Grid.Row="0" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderBrush="{StaticResource ModalBorder}" 
                 BorderThickness="0,0,0,2" 
                 Padding="12">
@@ -26,7 +26,7 @@
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15">
                     <TextBlock Text="🔍 SEARCH RESULTS" 
-                               Foreground="{StaticResource TextLight}" 
+                               Foreground="{StaticResource White}" 
                                FontFamily="{StaticResource BalatroFont}" 
                                FontSize="18" 
                                FontWeight="Bold"
@@ -42,12 +42,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                     <!-- Sort controls -->
                     <TextBlock Text="Sort by:" 
-                               Foreground="{StaticResource TextLight}" 
+                               Foreground="{StaticResource White}" 
                                FontSize="12" 
                                VerticalAlignment="Center"/>
                     
                     <ComboBox Name="SortComboBox" 
-                              Background="{StaticResource DarkModalGrey}"
+                              Background="{StaticResource DarkBackground}"
                               Foreground="{StaticResource Gold}"
                               BorderBrush="{StaticResource ModalBorder}"
                               SelectionChanged="SortComboBox_SelectionChanged"
@@ -143,7 +143,7 @@
         
         <!-- Footer with pagination and stats -->
         <Border Grid.Row="2" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderBrush="{StaticResource ModalBorder}" 
                 BorderThickness="0,2,0,0" 
                 Padding="12">
@@ -157,7 +157,7 @@
                 <TextBlock Grid.Column="0" 
                            Name="StatsText"
                            Text="Ready to search"
-                           Foreground="{StaticResource TextLight}" 
+                           Foreground="{StaticResource White}" 
                            FontSize="12"
                            VerticalAlignment="Center"/>
                 

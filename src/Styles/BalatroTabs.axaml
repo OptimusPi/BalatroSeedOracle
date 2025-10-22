@@ -1,14 +1,14 @@
 <Styles xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Balatro-style TabControl with red tabs and floating arrow -->
+    <!-- Balatro-style TabControl with RED tabs (actual Balatro style) -->
     <Style Selector="TabControl.balatro-tabs">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="TabStripPlacement" Value="Top"/>
     </Style>
-    
-    <!-- Balatro Tab Item - rounded red with bouncing triangle indicator (matches modal top nav) -->
+
+    <!-- Balatro Tab Item - rounded RED buttons -->
     <Style Selector="TabControl.balatro-tabs > TabItem">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="18"/>
@@ -30,7 +30,7 @@
                     <!-- Fixed-height indicator lane to prevent reflow -->
                     <Grid Height="16" ClipToBounds="True">
                         <TextBlock Name="PART_Triangle"
-                                   Classes="balatro-triangle"
+                                   Classes="balatro-triangle balatro-bounce-vertical"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Bottom"
                                    IsVisible="False"/>
@@ -58,16 +58,15 @@
     <!-- Disabled tab visual state -->
     <Style Selector="TabControl.balatro-tabs > TabItem:disabled">
         <Setter Property="Foreground" Value="{StaticResource TextInactive}"/>
-        <Setter Property="Background" Value="{StaticResource Grey}"/>
+        <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="Opacity" Value="0.6"/>
         <Setter Property="Cursor" Value="Arrow"/>
     </Style>
     
-    <!-- Selected tab - flat red with visible triangle -->
+    <!-- Selected tab - stays red -->
     <Style Selector="TabControl.balatro-tabs > TabItem:selected">
         <Setter Property="Background" Value="{StaticResource Red}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
-        <Setter Property="ZIndex" Value="10"/>
     </Style>
     
     <Style Selector="TabControl.balatro-tabs > TabItem:selected /template/ TextBlock#PART_Triangle">
@@ -75,7 +74,7 @@
         <Setter Property="Opacity" Value="1.0"/>
     </Style>
     
-    <!-- Hover state - Balatro orange like global tab-button -->
+    <!-- Hover state - orange -->
     <Style Selector="TabControl.balatro-tabs > TabItem:pointerover:not(:selected)">
         <Setter Property="Background" Value="{StaticResource Orange}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
@@ -85,7 +84,7 @@
     
     <!-- Tab content area -->
     <Style Selector="TabControl.balatro-tabs > TabItem > ScrollViewer">
-        <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="0,0,12,12"/>

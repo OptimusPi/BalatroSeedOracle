@@ -103,6 +103,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _selectButtonText = "SEARCH WITH THIS FILTER";
 
+        // Triangle X position for downward-pointing triangle above tabs (Balatro Challenges style)
+        [ObservableProperty]
+        private double _selectedTabTriangleX = 30; // Initial position for first tab
+
         private List<FilterListItem> _allFilters = new();
 
         public FilterListViewModel()
@@ -473,8 +477,20 @@ namespace BalatroSeedOracle.ViewModels
             if (computed == FiltersPerPage)
                 return;
 
+            // PRESERVE selected filter position when resizing
+            var selectedIndex = _allFilters.FindIndex(f => f.IsSelected);
+            var oldFiltersPerPage = FiltersPerPage;
+
             FiltersPerPage = computed;
             DebugLogger.Log("FilterListViewModel", $"Dynamic FiltersPerPage set to {FiltersPerPage} (rowHeight={rowHeight:F1}, available={availableHeight:F1})");
+
+            // If a filter was selected, jump to the page containing it
+            if (selectedIndex >= 0)
+            {
+                CurrentPage = selectedIndex / FiltersPerPage;
+                DebugLogger.Log("FilterListViewModel", $"Preserved selected filter at index {selectedIndex}, jumping to page {CurrentPage + 1}");
+            }
+
             UpdatePage();
         }
 
@@ -490,7 +506,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsTriangleVisible = !string.IsNullOrEmpty(tabType);
 
-            // Calculate offset based on tab type
+            // Calculate offset based on tab type (for right-pointing triangle next to filter list items)
             // These values match the original hardcoded positions
             TriangleOffset = tabType switch
             {
@@ -499,6 +515,8 @@ namespace BalatroSeedOracle.ViewModels
                 "must_not_have" => 105,  // Right tab
                 _ => 0
             };
+
+            // Note: SelectedTabTriangleX is calculated in FilterListViewModel.Tabs.cs OnSelectedTabIndexChanged
         }
 
         private void LoadFilterItemsForTab(string tabType)

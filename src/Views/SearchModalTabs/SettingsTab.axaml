@@ -7,15 +7,7 @@
 
     <Border Padding="25">
         <StackPanel Spacing="25" VerticalAlignment="Center">
-            <!-- Title -->
-            <TextBlock Text="DECK / STAKE"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="24"
-                       Foreground="{StaticResource Gold}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,10"/>
-
-            <!-- Deck and Stake Selection -->
+            <!-- Deck and Stake Selection (no label needed - it's obvious!) -->
             <components:DeckAndStakeSelector Name="DeckStakeSelector"
                                             HorizontalAlignment="Center"/>
 

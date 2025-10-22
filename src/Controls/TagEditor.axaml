@@ -11,7 +11,7 @@
         </Style>
         
         <Style Selector="Border.tag-chip:pointerover">
-            <Setter Property="Background" Value="{StaticResource LightGrey}"/>
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
         </Style>
         
         <Style Selector="TextBlock.tag-text">

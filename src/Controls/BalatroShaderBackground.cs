@@ -25,8 +25,8 @@ namespace BalatroSeedOracle.Controls
             Sunset,
             Midnight,
             Sepia,
-            Dynamic,
-            VibeOut
+            Dynamic
+            // REMOVED: VibeOut (feature removed)
         }
 
         public enum AudioSource
@@ -114,6 +114,7 @@ namespace BalatroSeedOracle.Controls
         public void SetSaturationAmount(float value) => _renderer?.SetUniform("saturation_amount", Math.Clamp(value, 0.0f, 1.0f));
         public void SetPixelSize(float value) => _renderer?.SetUniform("pixel_size", Math.Clamp(value, 100.0f, 5000.0f));
         public void SetSpinEase(float value) => _renderer?.SetUniform("spin_ease", Math.Clamp(value, 0.0f, 2.0f));
+        public void SetLoopCount(float value) => _renderer?.SetUniform("loop_count", Math.Clamp(value, 1.0f, 10.0f));
 
         // Convenience method for setting parallax from mouse position
         public void SetParallax(float x, float y)
@@ -121,72 +122,6 @@ namespace BalatroSeedOracle.Controls
             SetParallaxX(x);
             SetParallaxY(y);
         }
-
-        #endregion
-
-        #region Legacy Compatibility (will be removed after refactor)
-
-        // These exist temporarily for backward compatibility
-        public void UpdateMelodicFFT(float mid, float treble, float peak) { /* No-op - audio handled elsewhere */ }
-        public void UpdateTrackIntensities(float melody, float chords, float bass) { /* No-op */ }
-        public void UpdateVibeIntensity(float intensity) { /* No-op */ }
-        public void SetVibeIntensity(float intensity) { /* No-op */ }
-        public void SetTheme(int themeIndex) { /* No-op - use color setters instead */ }
-        public void SetAudioIntensity(float intensity) { /* No-op */ }
-        public void SetTimeSpeed(float speed) => SetSpinTime(speed);
-        public void SetTwirlAmount(float amount) => SetSpinAmount(amount);
-        public void SetSpeed(float speed) => SetTime(speed);
-        public void SetBaseTimeSpeed(float speed) => SetTime(speed);
-        public void SetAudioReactivityIntensity(float intensity) { /* No-op */ }
-        public void SetParallaxStrength(float strength) { /* No-op - use SetParallax directly */ }
-        public void SetMelodySaturation(float saturation) => SetSaturationAmount(saturation);
-        public void SetZoomPunch(float zoom) => SetZoomScale(zoom);
-
-        // Legacy color index methods
-        public void SetMainColor(int colorIndex)
-        {
-            var color = GetColorFromIndex(colorIndex);
-            SetMainColor(color);
-        }
-
-        public void SetAccentColor(int colorIndex)
-        {
-            var color = GetColorFromIndex(colorIndex);
-            SetAccentColor(color);
-        }
-
-        private SKColor GetColorFromIndex(int index)
-        {
-            return index switch
-            {
-                0 => new SKColor(255, 0, 0),      // Red
-                1 => new SKColor(255, 128, 0),    // Orange
-                2 => new SKColor(255, 255, 0),    // Yellow
-                3 => new SKColor(0, 255, 0),      // Green
-                4 => new SKColor(0, 107, 180),    // Blue
-                5 => new SKColor(153, 51, 204),   // Purple
-                6 => new SKColor(153, 102, 51),   // Brown
-                7 => new SKColor(255, 255, 255),  // White
-                _ => new SKColor(255, 0, 0)       // Default to Red
-            };
-        }
-
-        // Legacy range setters (no-op now)
-        public void SetContrastRange(float min, float max) { }
-        public void SetSpinAmountRange(float min, float max) { }
-        public void SetTwirlSpeedRange(float min, float max) { }
-        public void SetZoomPunchRange(float min, float max) { }
-        public void SetMelodySaturationRange(float min, float max) { }
-
-        // Legacy audio source methods (no-op)
-        public void SetShadowFlickerSource(AudioSource source) { }
-        public void SetSpinSource(AudioSource source) { }
-        public void SetTwirlSource(AudioSource source) { }
-        public void SetZoomThumpSource(AudioSource source) { }
-        public void SetColorSaturationSource(AudioSource source) { }
-        public void SetBeatPulseSource(AudioSource source) { }
-        public void SetTwistSource(AudioSource source) { }
-        public void CycleTheme() { }
 
         #endregion
 
@@ -200,7 +135,11 @@ namespace BalatroSeedOracle.Controls
             private bool _isAnimating = true;
             private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            // Current uniform values
+            // Animation speed multipliers (controlled by sliders)
+            private float _timeSpeed = 1.0f;
+            private float _spinTimeSpeed = 1.0f;
+
+            // Current uniform values (calculated from elapsed time * speed)
             private float _time = 0f;
             private float _spinTime = 0f;
             private SKColor _color1 = new SKColor(255, 76, 64);   // Balatro Red
@@ -214,6 +153,7 @@ namespace BalatroSeedOracle.Controls
             private float _saturationAmount = 0f;
             private float _pixelSize = 1440.0f;  // Default from const
             private float _spinEase = 0.5f;      // Default from const
+            private float _loopCount = 5.0f;     // Default loop count for paint effect
 
             public override void OnMessage(object message)
             {
@@ -235,8 +175,8 @@ namespace BalatroSeedOracle.Controls
             {
                 switch (name)
                 {
-                    case "time": _time = value; break;
-                    case "spin_time": _spinTime = value; break;
+                    case "time": _timeSpeed = value; break;  // NOW a speed multiplier!
+                    case "spin_time": _spinTimeSpeed = value; break;  // NOW a speed multiplier!
                     case "contrast": _contrast = value; break;
                     case "spin_amount": _spinAmount = value; break;
                     case "parallax_x": _parallaxX = value; break;
@@ -245,6 +185,7 @@ namespace BalatroSeedOracle.Controls
                     case "saturation_amount": _saturationAmount = value; break;
                     case "pixel_size": _pixelSize = value; break;
                     case "spin_ease": _spinEase = value; break;
+                    case "loop_count": _loopCount = value; break;
                 }
             }
 
@@ -292,6 +233,7 @@ namespace BalatroSeedOracle.Controls
                     uniform float saturation_amount;
                     uniform float pixel_size;  // Was const, now uniform!
                     uniform float spin_ease;   // Was const, now uniform!
+                    uniform float loop_count;  // Controls paint effect complexity (1-10)
 
                     // Helper function to convert RGB to HSV
                     float3 rgb2hsv(float3 c) {
@@ -327,7 +269,10 @@ namespace BalatroSeedOracle.Controls
                         speed = time * 2.0;
                         float2 uv2 = float2(uv.x + uv.y);
 
-                        for (int i = 0; i < 5; i++) {
+                        // Dynamic loop count (max 10 for shader compatibility)
+                        int max_loops = int(clamp(loop_count, 1.0, 10.0));
+                        for (int i = 0; i < 10; i++) {
+                            if (i >= max_loops) break;  // Early exit based on uniform
                             uv2 += sin(max(uv.x, uv.y)) + uv;
                             uv += 0.5 * float2(cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121), sin(uv2.x - 0.113 * speed));
                             uv -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
@@ -374,12 +319,12 @@ namespace BalatroSeedOracle.Controls
 
                 var currentSize = new SKSize((float)bounds.Width, (float)bounds.Height);
 
-                // Auto-advance time when animating
+                // Auto-advance time when animating (multiply by speed)
                 if (_isAnimating)
                 {
                     var elapsedSeconds = (float)_stopwatch.Elapsed.TotalSeconds;
-                    _time = elapsedSeconds;
-                    _spinTime = elapsedSeconds;
+                    _time = elapsedSeconds * _timeSpeed;
+                    _spinTime = elapsedSeconds * _spinTimeSpeed;
                 }
 
                 // Update all uniforms
@@ -397,6 +342,7 @@ namespace BalatroSeedOracle.Controls
                 _shaderBuilder.Uniforms["saturation_amount"] = _saturationAmount;
                 _shaderBuilder.Uniforms["pixel_size"] = _pixelSize;
                 _shaderBuilder.Uniforms["spin_ease"] = _spinEase;
+                _shaderBuilder.Uniforms["loop_count"] = _loopCount;
 
                 // Build and apply shader
                 using var shader = _shaderBuilder.Build();

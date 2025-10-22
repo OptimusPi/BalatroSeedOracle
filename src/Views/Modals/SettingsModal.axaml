@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
              MinWidth="600"
@@ -37,7 +37,7 @@
                     <TextBlock Text="Toggle experimental and beta features"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
-                               Foreground="{StaticResource MediumGrey}"
+                               Foreground="{StaticResource ModalGrey}"
                                Opacity="0.7"
                                Margin="0,0,0,6"/>
 
@@ -141,7 +141,7 @@
                                 <TextBlock Text="(CPU cores recommended)"
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="11"
-                                           Foreground="{StaticResource MediumGrey}"
+                                           Foreground="{StaticResource ModalGrey}"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>

@@ -26,8 +26,6 @@ namespace BalatroSeedOracle.ViewModels
         private SearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
 
-        // Reference to main menu for VibeOut mode
-        public Views.BalatroMainMenu? MainMenu { get; set; }
 
         // Callback for CREATE NEW FILTER button (set by View)
         private Action? _newFilterRequestedAction;
@@ -398,22 +396,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void EnterVibeOutMode()
         {
-            try
-            {
-                if (MainMenu != null)
-                {
-                    MainMenu.EnterVibeOutMode();
-                    DebugLogger.Log("SearchModalViewModel", "🎵 VibeOut mode activated!");
-                }
-                else
-                {
-                    DebugLogger.LogError("SearchModalViewModel", "MainMenu reference not set - cannot enter VibeOut mode");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to start VibeOut: {ex.Message}");
-            }
+            // Feature removed
         }
         
 

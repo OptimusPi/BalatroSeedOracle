@@ -13,7 +13,7 @@
         
         <!-- LEFT SIDE: Paginated Filter List -->
         <Border Grid.Column="0" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderThickness="0" 
                 CornerRadius="8" 
                 Padding="20">
@@ -28,32 +28,14 @@
                 <!-- Wrap the whole list and triangle in a ScrollViewer so a fixed page of 120 items can scroll without clipping -->
                 <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
                     <Grid>
-                        <!-- Triangle indicator for selected item (overlay, does not affect layout) -->
+                        <!-- Triangle indicator for selected item (Balatro Challenges style) -->
                         <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
                         <Polygon Name="SelectionTriangle"
-                                 Points="15,0 0,10 15,20" 
-                                 Fill="{StaticResource Red}"
+                                 Points="15,0 0,10 15,20"
+                                 Classes="balatro-triangle balatro-bounce-horizontal"
                                  Canvas.Left="0"
                                  Canvas.Top="{Binding SelectedItemTriangleY}"
-                                 IsVisible="{Binding HasSelectedFilter}">
-                            <Polygon.Styles>
-                                <Style Selector="Polygon">
-                                    <Style.Animations>
-                                        <Animation Duration="0:0:1.2" 
-                                                   IterationCount="Infinite"
-                                                   PlaybackDirection="Alternate"
-                                                   Easing="SineEaseInOut">
-                                            <KeyFrame Cue="0%">
-                                                <Setter Property="Margin" Value="0,0,0,0"/>
-                                            </KeyFrame>
-                                            <KeyFrame Cue="100%">
-                                                <Setter Property="Margin" Value="8,0,0,0"/>
-                                            </KeyFrame>
-                                        </Animation>
-                                    </Style.Animations>
-                                </Style>
-                            </Polygon.Styles>
-                        </Polygon>
+                                 IsVisible="{Binding HasSelectedFilter}"/>
                     </Canvas>
                     
                         <!-- Filter List -->
@@ -72,40 +54,46 @@
                 </ScrollViewer>
                 
                 <!-- Pagination Controls -->
-                <StackPanel Grid.Row="1" 
-                            Orientation="Horizontal" 
+                <!-- Pagination Controls (matching Balatro screenshot) -->
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
                             HorizontalAlignment="Center"
-                            Spacing="6"
+                            Spacing="4"
                             Margin="0,20,0,0">
-                    <Button Content="◀"
+                    <Button Content="&lt;"
                             Classes="btn-red"
                             Width="44"
-                            Height="33"
-                            FontSize="14"
+                            Height="36"
+                            FontSize="16"
+                            FontWeight="Bold"
                             Padding="0"
+                            CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"/>
 
-                    <!-- Badge-style page indicator (fixed width to prevent wiggling) -->
-                    <Border Background="{StaticResource DarkModalGrey}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
-                            CornerRadius="6"
-                            Padding="16,6"
-                            MinWidth="85"
+                    <!-- Page indicator -->
+                    <Border Background="{StaticResource Red}"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            MinWidth="100"
                             VerticalAlignment="Center">
                         <TextBlock Text="{Binding PageIndicatorText}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   Foreground="{StaticResource White}"
+                                   FontWeight="Bold"
+                                   Foreground="White"
                                    TextAlignment="Center"/>
                     </Border>
 
-                    <Button Content="▶"
+                    <Button Content="&gt;"
                             Classes="btn-red"
                             Width="44"
-                            Height="32"
-                            FontSize="14"
+                            Height="36"
+                            FontSize="16"
+                            FontWeight="Bold"
                             Padding="0"
+                            CornerRadius="8"
                             Command="{Binding NextPageCommand}"/>
                 </StackPanel>
                 
@@ -114,7 +102,7 @@
                            Text="{Binding StatusText}"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="14"
-                           Foreground="{StaticResource TextLight}"
+                           Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            Margin="0,10,0,0"/>
             </Grid>
@@ -122,7 +110,7 @@
         
         <!-- RIGHT SIDE: Details Panel -->
         <Border Grid.Column="2" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderThickness="0" 
                 CornerRadius="8" 
                 Padding="20">
@@ -146,7 +134,7 @@
                         <TextBlock Text="{Binding SelectedFilter.Description}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   Foreground="{StaticResource TextLight}"
+                                   Foreground="{StaticResource White}"
                                    TextWrapping="Wrap"
                                    HorizontalAlignment="Center"/>
                         
@@ -154,13 +142,13 @@
                         <StackPanel Spacing="8">
                             <TextBlock Text="{Binding SelectedFilter.AuthorText}"
                                        FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"/>
+                                       Foreground="{StaticResource ModalGrey}"/>
                             <TextBlock Text="{Binding SelectedFilter.DateText}"
                                        FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"/>
+                                       Foreground="{StaticResource ModalGrey}"/>
                             <TextBlock Text="{Binding SelectedFilter.StatsText}"
                                        FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"/>
+                                       Foreground="{StaticResource ModalGrey}"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -170,7 +158,7 @@
                            Text="Select a filter to view details"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="18"
-                           Foreground="{StaticResource MediumGrey}"
+                           Foreground="{StaticResource ModalGrey}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            IsVisible="{Binding !HasSelectedFilter}"/>
@@ -228,11 +216,11 @@
         </Style>
         
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         
         <!-- Special blue styling for CREATE NEW FILTER -->
@@ -241,7 +229,7 @@
         </Style>
         
         <Style Selector="Button.create-new-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
         </Style>
         
         <Style Selector="Button.create-new-item:pressed">

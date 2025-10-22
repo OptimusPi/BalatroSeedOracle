@@ -28,7 +28,7 @@ namespace BalatroSeedOracle.Views
         private Grid? _modalContainer;
         private Control? _background;
         private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
-        private Grid? _vibeOutOverlay;
+        // private Grid? _vibeOutOverlay; // REMOVED: VibeOut feature removed
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
@@ -67,7 +67,7 @@ namespace BalatroSeedOracle.Views
             _modalContainer = this.FindControl<Grid>("ModalContainer");
             _background = this.FindControl<Control>("BackgroundControl");
             _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
-            _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay");
+            // _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay"); // REMOVED: VibeOut feature removed
             _mainContent = this.FindControl<Grid>("MainContent");
             _volumePopup = this.FindControl<Popup>("VolumePopup");
         }
@@ -91,19 +91,6 @@ namespace BalatroSeedOracle.Views
                     {
                         _shaderBackground.IsAnimating = isAnimating;
                     }, Avalonia.Threading.DispatcherPriority.Render);
-                }
-            };
-
-            // VibeOut mode changes
-            ViewModel.OnVibeOutModeChangedEvent += (s, isVibeOut) =>
-            {
-                if (isVibeOut)
-                {
-                    EnterVibeOutModeView();
-                }
-                else
-                {
-                    ExitVibeOutModeView();
                 }
             };
 
@@ -238,6 +225,9 @@ namespace BalatroSeedOracle.Views
                 // Store handler reference for cleanup
                 _audioAnalysisHandler = (bass, mid, treble, peak) =>
                 {
+                    // REMOVED: VibeOut-related methods (UpdateVibeIntensity, UpdateMelodicFFT, UpdateTrackIntensities)
+                    // TODO: Restore audio visualization with new architecture
+                    /*
                     if (_background is BalatroShaderBackground shader)
                     {
                         shader.UpdateVibeIntensity(peak * 0.05f);
@@ -248,6 +238,7 @@ namespace BalatroSeedOracle.Views
                             audioManager.BassIntensity
                         );
                     }
+                    */
                 };
 
                 audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
@@ -556,8 +547,9 @@ namespace BalatroSeedOracle.Views
 
         #endregion
 
-        #region VibeOut Mode (View-only logic)
-
+        #region VibeOut Mode - REMOVED
+        // REMOVED: VibeOut feature has been removed from the application
+        /*
         /// <summary>
         /// Enter VibeOut mode - view changes only
         /// </summary>
@@ -612,7 +604,7 @@ namespace BalatroSeedOracle.Views
         {
             ViewModel.ExitVibeOutMode();
         }
-
+        */
         #endregion
 
         #region Settings Modal Wiring (View-only)
@@ -725,6 +717,57 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        // New shader parameter methods that call shader directly
+        internal void ApplyShaderTime(float time)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTime(time);
+            }
+        }
+
+        internal void ApplyShaderSpinTime(float spinTime)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinTime(spinTime);
+            }
+        }
+
+        internal void ApplyShaderParallaxX(float parallaxX)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetParallaxX(parallaxX);
+            }
+        }
+
+        internal void ApplyShaderParallaxY(float parallaxY)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetParallaxY(parallaxY);
+            }
+        }
+
+        internal void ApplyShaderLoopCount(float loopCount)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetLoopCount(loopCount);
+            }
+        }
+
+        /// <summary>
+        /// Set the volume for a specific track in the audio manager
+        /// </summary>
+        internal void SetTrackVolume(string trackName, float volume)
+        {
+            // TODO: Implement track volume control when audio manager supports it
+            // This is a stub for now to fix build errors
+            DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
+        }
+
         internal void ApplyShadowFlickerSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
@@ -773,7 +816,9 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        // Range application helpers
+        // Range application helpers - REMOVED (VibeOut feature)
+        // REMOVED: These methods no longer exist on BalatroShaderBackground
+        /*
         internal void ApplyContrastRange(float min, float max)
         {
             if (_background is BalatroShaderBackground shader)
@@ -813,6 +858,7 @@ namespace BalatroSeedOracle.Views
                 shader.SetMelodySaturationRange(min, max);
             }
         }
+        */
 
         #endregion
 
@@ -1006,12 +1052,15 @@ namespace BalatroSeedOracle.Views
         {
             base.OnKeyDown(e);
 
+            // REMOVED: VibeOut mode ESC key handler
+            /*
             // ESC to exit VibeOut mode
             if (e.Key == Key.Escape && ViewModel?.IsVibeOutMode == true)
             {
                 ViewModel.ExitVibeOutMode();
                 e.Handled = true;
             }
+            */
         }
 
         #endregion

@@ -63,7 +63,7 @@
             
             <!-- Current Filter Info -->
             <Border Grid.Row="6"
-                    Background="{StaticResource DarkModalGrey}"
+                    Background="{StaticResource DarkBackground}"
                     BorderThickness="2"
                     BorderBrush="{StaticResource ModalBorder}"
                     CornerRadius="8"
@@ -81,7 +81,7 @@
                     
                     <TextBlock Text="{Binding LastModified}" 
                                FontSize="10" 
-                               Foreground="{StaticResource TextLight}"
+                               Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"/>
                 </StackPanel>
             </Border>
@@ -109,7 +109,7 @@
             
             <!-- Status Area -->
             <Border Grid.Row="9"
-                    Background="{StaticResource DarkModalGrey}"
+                    Background="{StaticResource DarkBackground}"
                     BorderThickness="1"
                     BorderBrush="{StaticResource ModalBorder}"
                     CornerRadius="6"
@@ -153,7 +153,7 @@
             
             <!-- Test Results Area -->
             <Border Grid.Row="4"
-                    Background="{StaticResource DarkModalGrey}"
+                    Background="{StaticResource DarkBackground}"
                     BorderThickness="2"
                     BorderBrush="{StaticResource ModalBorder}"
                     CornerRadius="8"
@@ -168,7 +168,7 @@
                     <TextBlock Grid.Row="0"
                                Text="Ready to test..."
                                FontSize="12"
-                               Foreground="{StaticResource TextLight}"
+                               Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap"
@@ -176,7 +176,7 @@
                     
                     <!-- Results Icon -->
                     <Border Grid.Row="1"
-                            Background="{StaticResource DarkModalGrey}"
+                            Background="{StaticResource DarkBackground}"
                             CornerRadius="30"
                             Width="50"
                             Height="50"
@@ -184,7 +184,7 @@
                             VerticalAlignment="Center">
                         <TextBlock Text="?"
                                    FontSize="24"
-                                   Foreground="{StaticResource TextLight}"
+                                   Foreground="{StaticResource White}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>

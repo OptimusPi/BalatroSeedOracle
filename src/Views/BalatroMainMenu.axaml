@@ -13,21 +13,22 @@
              x:CompileBindings="False">
 
     <UserControl.Styles>
-        <!-- Modal panel style - Balatro card style with beveled border -->
+        <!-- Modal panel style - Clean Balatro style (NO pixel borders!) -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
-            <Setter Property="CornerRadius" Value="18"/>
-            <Setter Property="Padding" Value="2"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PureBlack}"/>
+            <Setter Property="Background" Value="#4a5f6d"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderBrush" Value="#7090a0"/>
             <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BoxShadow" Value="0 8 24 0 #99000000"/>
         </Style>
-        
-        <!-- Inner content panel (darker) -->
+
+        <!-- Inner content panel - Clean background, no borders -->
         <Style Selector="Border.inner-panel">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <Setter Property="Background" Value="#3e5562"/>
             <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Padding" Value="24"/>
         </Style>
         
         <!-- Kill any weird focus/selection effects -->
@@ -69,8 +70,10 @@
     </UserControl.Styles>
 
     <Grid>
-        <!-- Animated balatro-style background - behind everything -->
-        <controls:BalatroShaderBackground x:Name="BackgroundControl" />
+        <!-- Animated balatro-style background - behind everything (stretches to fill entire window) -->
+        <controls:BalatroShaderBackground x:Name="BackgroundControl"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch" />
 
         <!-- Settings Popup removed - now using modal system -->
 
@@ -141,15 +144,10 @@
                                                     IsVisible="{Binding IsVisualizerWidgetVisible}"
                                                     ClipToBounds="False"/>
 
-            <!-- 🎛️ VISUALIZER DEV WIDGET - Advanced shader control for power users -->
-            <components:VisualizerDevWidget x:Name="VisualizerDevWidget"
-                                           IsVisible="False"
-                                           ClipToBounds="False"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Top"
-                                           Margin="0,10,10,0"
-                                           Width="400"
-                                           Height="500"/>
+            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
+            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
+                                            ClipToBounds="False"/>
+
         </Grid>
         
         <!-- Main content that will be blurred when modals are open -->
@@ -163,7 +161,7 @@
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
 
-                        Foreground="{StaticResource TextLight}"
+                        Foreground="{StaticResource White}"
                         HorizontalAlignment="Center"
                         Margin="0,4,4,4"/>
 
@@ -178,11 +176,11 @@
                 <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource Grey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="4,0,4,2"
                             Margin="0,0,0,4">
@@ -215,7 +213,6 @@
                                              Text="{Binding AuthorName, Mode=TwoWay}"
                                              FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
-
                                              Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
@@ -232,11 +229,11 @@
                 <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,4,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource Grey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="2"
                             Margin="0,0,0,4">
@@ -288,11 +285,11 @@
                 <!-- Right Side Dock (like Language selector in real Balatro) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource Grey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
@@ -369,28 +366,5 @@
               HorizontalAlignment="Stretch"
               Margin="0"/>
 
-        <!-- VibeOut Mode Overlay - ESC to Exit button -->
-        <Grid x:Name="VibeOutOverlay"
-              IsVisible="{Binding IsVibeOutMode}"
-              ZIndex="200"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch">
-            <Button x:Name="ExitVibeOutButton"
-                    Command="{Binding ExitVibeOutCommand}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="20"
-                    Padding="16,8"
-                    Background="#33000000"
-                    BorderBrush="#66FFFFFF"
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Opacity="0.7">
-                <TextBlock Text="ESC to Exit"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="18"
-                           Foreground="White"/>
-            </Button>
-        </Grid>
     </Grid>
 </UserControl>

@@ -1,17 +1,20 @@
-<ContentControl xmlns="https://github.com/avaloniaui"
+﻿<ContentControl xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:vm="using:BalatroSeedOracle.ViewModels"
                 x:Class="BalatroSeedOracle.Components.BaseWidget"
-                x:DataType="vm:BaseWidgetViewModel">
+                x:DataType="vm:BaseWidgetViewModel"
+                ZIndex="{Binding WidgetZIndex}">
 
     <!-- SHARED BASE WIDGET COMPONENT - All widgets use this! -->
+    <!-- ZIndex: Minimized=1, Expanded=100 (expanded widgets always on top!) -->
     <Grid>
         <!-- Minimized State -->
         <Grid Name="MinimizedView"
+              ZIndex="0"
               IsVisible="{Binding IsMinimized}">
             <Button Classes="widget-icon"
                     Width="100" Height="100"
-                    Background="{StaticResource Grey}"
+                    Background="{StaticResource ModalGrey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="3"
                     CornerRadius="12"
@@ -35,6 +38,7 @@
 
         <!-- Expanded State -->
         <Border Name="ExpandedView"
+                ZIndex="10"
                 Classes="widget-container"
                 Background="{StaticResource MediumBackground}"
                 IsVisible="{Binding !IsMinimized}"

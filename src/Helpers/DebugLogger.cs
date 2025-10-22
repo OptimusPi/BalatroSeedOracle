@@ -20,6 +20,14 @@ public static class DebugLogger
     }
 
     /// <summary>
+    /// Sets whether verbose logging is enabled
+    /// </summary>
+    public static void SetVerboseEnabled(bool enabled)
+    {
+        EnableVerboseLogging = enabled;
+    }
+
+    /// <summary>
     /// Logs a debug message with timestamp if debug logging is enabled
     /// </summary>
     /// <param name="message">The message to log</param>

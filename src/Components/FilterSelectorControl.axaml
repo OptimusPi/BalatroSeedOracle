@@ -23,7 +23,7 @@
             <Setter Property="Margin" Value="0,2,0,0"/>
         </Style>
         <Style Selector="ScrollBar /template/ Thumb">
-            <Setter Property="Background" Value="{StaticResource MediumGrey}"/>
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Opacity" Value="0.5"/>
             <Setter Property="Transitions">
@@ -155,38 +155,43 @@
                     </ItemsControl>
                 </Border>
 
-                <!-- Pagination Controls -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
-                    <Button Content="◀"
+                <!-- Pagination Controls (matching Balatro screenshot) -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                    <Button Content="&lt;"
                             Classes="btn-red"
                             Width="44"
-                            Height="33"
-                            FontSize="14"
+                            Height="36"
+                            FontSize="16"
+                            FontWeight="Bold"
                             Padding="0"
+                            CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"
                             IsEnabled="{Binding CanGoToPreviousPage}"/>
 
-                    <!-- Badge-style page indicator (fixed width to prevent wiggling) -->
-                    <Border Background="{StaticResource DarkModalGrey}"
+                    <!-- Page indicator -->
+                    <Border Background="{StaticResource Red}"
                             BorderBrush="Transparent"
                             BorderThickness="0"
-                            CornerRadius="6"
-                            Padding="16,6"
-                            MinWidth="85"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            MinWidth="100"
                             VerticalAlignment="Center">
                         <TextBlock Text="{Binding PageIndicator}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   Foreground="{StaticResource White}"
+                                   FontWeight="Bold"
+                                   Foreground="White"
                                    TextAlignment="Center"/>
                     </Border>
 
-                    <Button Content="▶"
+                    <Button Content="&gt;"
                             Classes="btn-red"
                             Width="44"
-                            Height="32"
-                            FontSize="14"
+                            Height="36"
+                            FontSize="16"
+                            FontWeight="Bold"
                             Padding="0"
+                            CornerRadius="8"
                             Command="{Binding NextPageCommand}"
                             IsEnabled="{Binding CanGoToNextPage}"/>
                 </StackPanel>
@@ -195,7 +200,7 @@
 
         <!-- Right: Filter Details (Balatro Challenges-style dark panel) -->
         <Border Grid.Column="1"
-                Background="{StaticResource DarkModalGrey}"
+                Background="{StaticResource DarkBackground}"
                 BorderThickness="0"
                 CornerRadius="8"
                 Padding="16"
@@ -280,37 +285,51 @@
                         </ScrollViewer>
                     </Border>
 
-                    <!-- REAL AvaloniaUI TabControl with Balatro-style tabs -->
-                    <TabControl Grid.Row="3"
-                                SelectedIndex="{Binding SelectedTabIndex}"
-                                Margin="0,0,0,8">
+                    <!-- REAL AvaloniaUI TabControl with Balatro-style tabs and bouncing triangle -->
+                    <Grid Grid.Row="3" Margin="0,0,0,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"/>   <!-- Triangle indicator space -->
+                            <RowDefinition Height="*"/>    <!-- TabControl -->
+                        </Grid.RowDefinitions>
 
-                        <TabControl.Styles>
-                            <!-- Balatro-style red tab headers -->
-                            <Style Selector="TabItem">
-                                <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                <Setter Property="FontSize" Value="14"/>
-                                <Setter Property="Background" Value="{StaticResource Red}"/>
-                                <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                <Setter Property="Padding" Value="16,8"/>
-                                <Setter Property="Margin" Value="2,0"/>
-                                <Setter Property="CornerRadius" Value="6 6 0 0"/>
-                            </Style>
+                        <!-- Triangle indicator above active tab (Balatro Challenges style - points DOWN) -->
+                        <Canvas Grid.Row="0" ClipToBounds="False" IsHitTestVisible="False">
+                            <Polygon Points="0,0 16,0 8,12"
+                                     Classes="balatro-triangle balatro-bounce-vertical"
+                                     Canvas.Left="{Binding SelectedTabTriangleX}"
+                                     Canvas.Top="0"
+                                     IsVisible="{Binding IsFilterSelected}"/>
+                        </Canvas>
 
-                            <Style Selector="TabItem:selected">
-                                <Setter Property="Background" Value="{StaticResource RedHighlight}"/>
-                                <Setter Property="Foreground" Value="{StaticResource White}"/>
-                            </Style>
+                        <TabControl Grid.Row="1"
+                                    SelectedIndex="{Binding SelectedTabIndex}">
 
-                            <Style Selector="TabItem:pointerover">
-                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                            </Style>
+                            <TabControl.Styles>
+                                <!-- Balatro-style red tab headers (fully rounded and separated) -->
+                                <Style Selector="TabItem">
+                                    <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Background" Value="{StaticResource Red}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
+                                    <Setter Property="Padding" Value="16,8"/>
+                                    <Setter Property="Margin" Value="4,0"/>
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
 
-                            <Style Selector="TabItem:pressed">
-                                <Setter Property="Background" Value="{StaticResource DarkRed}"/>
-                            </Style>
-                        </TabControl.Styles>
+                                <Style Selector="TabItem:selected">
+                                    <Setter Property="Background" Value="#FF5050"/>
+                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
+                                </Style>
+
+                                <Style Selector="TabItem:pointerover">
+                                    <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Style>
+
+                                <Style Selector="TabItem:pressed">
+                                    <Setter Property="Background" Value="{StaticResource DarkRed}"/>
+                                </Style>
+                            </TabControl.Styles>
 
                         <!-- Must Have -->
                         <TabItem Header="Must Have">
@@ -468,6 +487,7 @@
                             </Border>
                         </TabItem>
                     </TabControl>
+                </Grid>
 
                     <!-- Action Buttons (context-aware) -->
                     <Grid Grid.Row="4" Margin="0,12,0,8">

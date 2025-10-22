@@ -22,7 +22,7 @@
                     <Grid>
                         <!-- Drop shadow -->
                         <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
+                                Background="{StaticResource HoverShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <!-- Button face -->
@@ -39,13 +39,13 @@
         </Style>
         
         <Style Selector="Button.panel-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         
         <!-- Pressed state - hide shadow and move button down -->
         <Style Selector="Button.panel-arrow:pressed">
             <Setter Property="RenderTransform" Value="translateY(3px)"/>
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         <Style Selector="Button.panel-arrow:pressed /template/ Border#DropShadow">
             <Setter Property="IsVisible" Value="False"/>
@@ -171,18 +171,20 @@
                     </Grid>
                 </Viewbox>
                 
-                <!-- Description -->
+                <!-- Description (fixed height - no growing!) -->
                 <Border Grid.Row="2"
-                        MinHeight="44"
+                        Height="66"
                         Margin="10,2,10,2"
-                        Background="{StaticResource DarkModalGrey}"
+                        Background="{StaticResource DarkBackground}"
                         BorderBrush="{StaticResource ModalBorder}"
                         BorderThickness="2"
                         CornerRadius="6"
                         Padding="8,6">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxLines="3"/>
                 </Border>
                 
                 <!-- Position dots -->

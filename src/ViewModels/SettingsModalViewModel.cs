@@ -42,14 +42,14 @@ namespace BalatroSeedOracle.ViewModels
         private void LoadSettings()
         {
             var profile = _userProfileService.GetProfile();
-            VisualizerTheme = profile.VibeOutSettings.ThemeIndex;
+            VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
             DebugLogger.Log("SettingsModalViewModel", $"Settings loaded - Visualizer theme: {VisualizerTheme}");
         }
 
         private void SaveVisualizerTheme()
         {
             var profile = _userProfileService.GetProfile();
-            profile.VibeOutSettings.ThemeIndex = VisualizerTheme;
+            profile.VisualizerSettings.ThemeIndex = VisualizerTheme;
             _userProfileService.SaveProfile(profile);
             VisualizerThemeChanged?.Invoke(this, VisualizerTheme);
             DebugLogger.Log("SettingsModalViewModel", $"Visualizer theme saved: {VisualizerTheme}");

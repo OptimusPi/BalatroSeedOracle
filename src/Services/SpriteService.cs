@@ -148,11 +148,8 @@ namespace BalatroSeedOracle.Services
                         // Store stake stickers with lowercase keys
                         var lower = kvp.Key.ToLowerInvariant();
                         stickerPositions[lower] = kvp.Value;
-                        DebugLogger.Log("SpriteService", $"Added stake sticker: {kvp.Key} -> {lower}");
                     }
                 }
-                DebugLogger.Log("SpriteService", $"Loaded {stickerPositions?.Count ?? 0} sticker positions.");
-                DebugLogger.Log("SpriteService", $"Loaded {deckPositions?.Count ?? 0} deck positions.");
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
@@ -163,10 +160,6 @@ namespace BalatroSeedOracle.Services
                 
                 stakeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
                 enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
-                if (enhancersSheet != null)
-                {
-                    DebugLogger.Log("SpriteService", $"🖼️ Enhancers.png loaded: {enhancersSheet.PixelSize.Width}x{enhancersSheet.PixelSize.Height}");
-                }
                 deckSheet = enhancersSheet;
                 playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
                 bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
@@ -327,12 +320,8 @@ namespace BalatroSeedOracle.Services
                 var uri = new Uri(avaresUri);
                 return AssetLoader.Open(uri);
             }
-            catch (Exception ex)
+            catch
             {
-                DebugLogger.Log(
-                    "SpriteService",
-                    $"AssetLoader failed for '{avaresUri}': {ex.Message}. Falling back to filesystem lookup."
-                );
             }
 
             // Fallback: attempt to find the asset under a local Assets folder by stripping the avares scheme
@@ -359,7 +348,6 @@ namespace BalatroSeedOracle.Services
                     var candidate = Path.Combine(baseDir, relativePath);
                     if (File.Exists(candidate))
                     {
-                        DebugLogger.Log("SpriteService", $"Found asset on disk: {candidate}");
                         return File.OpenRead(candidate);
                     }
 
@@ -367,7 +355,6 @@ namespace BalatroSeedOracle.Services
                     var srcCandidate = Path.Combine(baseDir, "src", relativePath);
                     if (File.Exists(srcCandidate))
                     {
-                        DebugLogger.Log("SpriteService", $"Found asset in src path: {srcCandidate}");
                         return File.OpenRead(srcCandidate);
                     }
 
@@ -379,7 +366,6 @@ namespace BalatroSeedOracle.Services
                 var cwdCandidate = Path.Combine(Environment.CurrentDirectory, relativePath);
                 if (File.Exists(cwdCandidate))
                 {
-                    DebugLogger.Log("SpriteService", $"Found asset in CWD: {cwdCandidate}");
                     return File.OpenRead(cwdCandidate);
                 }
 
@@ -387,7 +373,6 @@ namespace BalatroSeedOracle.Services
                 var cwdSrcCandidate = Path.Combine(Environment.CurrentDirectory, "src", relativePath);
                 if (File.Exists(cwdSrcCandidate))
                 {
-                    DebugLogger.Log("SpriteService", $"Found asset in CWD src path: {cwdSrcCandidate}");
                     return File.OpenRead(cwdSrcCandidate);
                 }
             }
@@ -420,17 +405,12 @@ namespace BalatroSeedOracle.Services
                 .Replace("_", string.Empty, StringComparison.Ordinal)
                 .ToLowerInvariant();
 
-            DebugLogger.Log("SpriteService", $"Attempting to find sprite for {category} '{name_in}' (normalized: '{name}')");
-
             // Try the normalized name
             if (positions!.TryGetValue(name, out var pos))
             {
                 int x = pos.Pos.X * spriteWidth;
                 int y = pos.Pos.Y * spriteHeight;
-                DebugLogger.Log("SpriteService", $"📐 Cropping {category} '{name}': pos=({pos.Pos.X},{pos.Pos.Y}), pixels=({x},{y}) to ({x+spriteWidth},{y+spriteHeight}), size={spriteWidth}x{spriteHeight}");
-                DebugLogger.Log("SpriteService", $"📐 Sheet size: {spriteSheet.PixelSize.Width}x{spriteSheet.PixelSize.Height}");
                 var cropped = new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
-                DebugLogger.Log("SpriteService", $"✅ CroppedBitmap created successfully for '{name}'");
                 return cropped;
             }
             else
@@ -447,10 +427,6 @@ namespace BalatroSeedOracle.Services
                     }
                 }
 
-                DebugLogger.Log(
-                    "SpriteService",
-                    $"INFO: Could not find sprite for {category} '{name_in}' (tried: '{name}')"
-                );
                 return null;
             }
         }
@@ -770,7 +746,7 @@ namespace BalatroSeedOracle.Services
                     editionsSheet = LoadBitmap(editionsUri);
                     if (editionsSheet != null)
                     {
-                        DebugLogger.Log("SpriteService", "Loaded editions sprite sheet");
+                        // DebugLogger.Log("SpriteService", "Loaded editions sprite sheet");
                     }
                     else
                     {
@@ -821,11 +797,7 @@ namespace BalatroSeedOracle.Services
         public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
             var normalized = name.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).Replace("_", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
-            if (deckPositions.TryGetValue(normalized, out var pos))
-            {
-                DebugLogger.Log("SpriteService", $"Found '{name}' in deckPositions at ({pos.Pos.X}, {pos.Pos.Y})");
-            }
-            else
+            if (!deckPositions.TryGetValue(normalized, out var pos))
             {
                 DebugLogger.LogError("SpriteService", $"'{name}' NOT found in deckPositions! Available: {string.Join(", ", deckPositions.Keys)}");
             }
@@ -834,10 +806,6 @@ namespace BalatroSeedOracle.Services
             if (result == null)
             {
                 DebugLogger.LogError("SpriteService", $"GetDeckImage returned NULL for '{name}'! deckPositions={deckPositions != null}, deckSheet={deckSheet != null}");
-            }
-            else
-            {
-                DebugLogger.Log("SpriteService", $"✅ GetDeckImage SUCCESS for '{name}'!");
             }
             return result;
         }
@@ -872,7 +840,6 @@ namespace BalatroSeedOracle.Services
             // If sticker not found, just return the base deck image
             if (stickerImage == null)
             {
-                DebugLogger.Log("SpriteService", $"⚠️ Stake sticker '{stickerKey}' not found, returning deck without sticker");
                 return deckImage;
             }
 
@@ -997,7 +964,6 @@ namespace BalatroSeedOracle.Services
                 .ToLowerInvariant();
             if (normalizedName == "smallblind" || normalizedName == "bigblind")
             {
-                DebugLogger.Log("SpriteService", $"Redirecting {name} from boss to tag image");
                 return GetTagImage(name); // Redirect to tag images
             }
             
@@ -1014,10 +980,6 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.LogError(
                     "SpriteService",
                     $"Boss position not found for: {name} (normalized: {normalizedName})"
-                );
-                DebugLogger.Log(
-                    "SpriteService",
-                    $"Available boss names: {string.Join(", ", bossPositions.Keys)}"
                 );
                 return null;
             }
@@ -1038,15 +1000,7 @@ namespace BalatroSeedOracle.Services
         public IImage? GetStickerImage(string stickerType)
         {
             ArgumentNullException.ThrowIfNull(stickerType);
-            DebugLogger.Log("SpriteService", $"GetStickerImage called with: '{stickerType}'");
-            if (stickerPositions != null)
-            {
-                DebugLogger.Log(
-                    "SpriteService",
-                    $"Available sticker keys: {string.Join(", ", stickerPositions.Keys)}"
-                );
-            }
-            else
+            if (stickerPositions == null)
             {
                 DebugLogger.LogError("SpriteService", "stickerPositions is null!");
             }

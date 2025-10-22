@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
+using SkiaSharp;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -59,28 +60,24 @@ namespace BalatroSeedOracle.Views.Modals
                         UpdateShaderColors();
                 };
 
-            if (intensitySlider != null)
-                intensitySlider.PropertyChanged += (s, e) => {
-                    if (e.Property == Slider.ValueProperty && _shaderPreview != null)
-                        _shaderPreview.SetAudioIntensity((float)intensitySlider.Value);
-                };
+            // intensitySlider removed - audio reactivity handled by effect bindings now
 
             if (speedSlider != null)
                 speedSlider.PropertyChanged += (s, e) => {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
-                        _shaderPreview.SetTimeSpeed((float)speedSlider.Value);
+                        _shaderPreview.SetTime((float)speedSlider.Value); // Now controls animation speed
                 };
 
             if (twistSlider != null)
                 twistSlider.PropertyChanged += (s, e) => {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
-                        _shaderPreview.SetTwirlAmount((float)twistSlider.Value);
+                        _shaderPreview.SetSpinAmount((float)twistSlider.Value);
                 };
 
             if (zoomSlider != null)
                 zoomSlider.PropertyChanged += (s, e) => {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
-                        _shaderPreview.SetZoomPunch((float)zoomSlider.Value);
+                        _shaderPreview.SetZoomScale((float)zoomSlider.Value);
                 };
         }
 
@@ -93,15 +90,18 @@ namespace BalatroSeedOracle.Views.Modals
 
             float hue = (float)hueSlider.Value / 360f;
 
-            // Convert hue to RGB
-            var color = HSVToColor(hue, 0.8f, 1.0f);
-            var accentColor = HSVToColor((hue + 0.5f) % 1.0f, 0.7f, 0.9f);
+            // Convert hue to SKColor
+            var mainColor = HSVToSKColor(hue, 0.8f, 1.0f);
+            var accentColor = HSVToSKColor((hue + 0.5f) % 1.0f, 0.7f, 0.9f);
 
-            // Use hue to select color index (0=Red through 7=White)
-            int mainColorIndex = (int)(hue * 8) % 8;
-            int accentColorIndex = (mainColorIndex + 4) % 8; // Opposite on color wheel
-            _shaderPreview.SetMainColor(mainColorIndex);
-            _shaderPreview.SetAccentColor(accentColorIndex);
+            _shaderPreview.SetMainColor(mainColor);
+            _shaderPreview.SetAccentColor(accentColor);
+        }
+
+        private SKColor HSVToSKColor(float h, float s, float v)
+        {
+            var color = HSVToColor(h, s, v);
+            return new SKColor(color.R, color.G, color.B, color.A);
         }
 
         private Color HSVToColor(float h, float s, float v)
@@ -128,25 +128,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnAudioUpdate(float bass, float mid, float treble, float peak)
         {
-            if (_shaderPreview == null) return;
-
-            var bassSlider = this.FindControl<Slider>("BassResponseSlider");
-            var melodySlider = this.FindControl<Slider>("MelodyResponseSlider");
-            var drumsSlider = this.FindControl<Slider>("DrumsResponseSlider");
-
-            float bassResponse = (float)(bassSlider?.Value ?? 0.7);
-            float melodyResponse = (float)(melodySlider?.Value ?? 0.5);
-            float drumsResponse = (float)(drumsSlider?.Value ?? 0.8);
-
-            // Apply audio reactivity based on user settings
-            _shaderPreview.UpdateMelodicFFT(
-                mid * melodyResponse,
-                treble * melodyResponse,
-                peak * drumsResponse
-            );
-
-            // Use bass as overall intensity for now
-            _shaderPreview.UpdateVibeIntensity(bass);
+            // Audio reactivity is now handled by the proper effect binding system
+            // This method kept for future implementation
         }
 
         // MOOD PRESETS - These are therapeutic combinations!

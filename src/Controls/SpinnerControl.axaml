@@ -28,7 +28,7 @@
                     <Grid>
                         <!-- Drop shadow -->
                         <Border Name="PART_Shadow"
-                                Background="{StaticResource DropShadow}"
+                                Background="{StaticResource HoverShadow}"
                                 CornerRadius="4"
                                 Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=button}"/>
                         <!-- Button -->
@@ -45,7 +45,7 @@
         </Style>
         
         <Style Selector="Button.arrow-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         
         <!-- Arrow button inherits pressed behavior from global styles -->
@@ -63,7 +63,7 @@
         </Style>
         
         <Style Selector="Button.value-badge:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         
         <!-- Value badge drop shadow -->
@@ -134,7 +134,7 @@
             <!-- Value badge with drop shadow -->
             <Grid Grid.Column="2" Classes="value-badge-container">
                 <!-- Drop shadow -->
-                <Border Background="{StaticResource DropShadow}"
+                <Border Background="{StaticResource HoverShadow}"
                         CornerRadius="6"
                         HorizontalAlignment="Stretch"
                         Height="32"

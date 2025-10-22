@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
@@ -62,7 +62,7 @@
         </Border>
         
         <!-- Text Editor -->
-        <Border Background="{StaticResource VeryDarkBackground}"
+        <Border Background="{StaticResource DarkBackground}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="2"
                 CornerRadius="8"
@@ -80,7 +80,7 @@
                         Padding="12,8">
                     <TextBlock Text="One word or phrase per line"
                                FontSize="14"
-                               Foreground="{StaticResource MediumGrey}"/>
+                               Foreground="{StaticResource ModalGrey}"/>
                 </Border>
                 
                 <!-- Editor content -->
@@ -105,7 +105,7 @@
         <!-- Status text -->
         <TextBlock Name="StatusText"
                    Text="Edit word lists used by filters"
-                   Foreground="{StaticResource MediumGrey}"
+                   Foreground="{StaticResource ModalGrey}"
                    FontSize="14"
                    HorizontalAlignment="Center"/>
     </StackPanel>

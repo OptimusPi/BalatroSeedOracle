@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -66,9 +66,7 @@
                                        Cursor="Hand"
                                        PointerPressed="OnItemPointerPressed"
                                        Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
-                                <i:Interaction.Behaviors>
-                                    <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
-                                </i:Interaction.Behaviors>
+                                <!-- CardDragBehavior REMOVED - only needed on drag ghost, not source items -->
                                 <Grid>
                                     <!-- Main card image -->
                                     <Image Source="{Binding ItemImage}"
@@ -126,7 +124,7 @@
                                    Foreground="{StaticResource Green}"
                                    HorizontalAlignment="Left"/>
                         <Border Name="MustDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
+                                Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Green}"
                                 BorderThickness="2"
                                 CornerRadius="8"
@@ -201,7 +199,7 @@
                                    Foreground="{StaticResource Blue}"
                                    HorizontalAlignment="Left"/>
                         <Border Name="ShouldDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
+                                Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Blue}"
                                 BorderThickness="2"
                                 CornerRadius="8"
@@ -276,7 +274,7 @@
                                    Foreground="{StaticResource Red}"
                                    HorizontalAlignment="Left"/>
                         <Border Name="MustNotDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
+                                Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Red}"
                                 BorderThickness="2"
                                 CornerRadius="8"

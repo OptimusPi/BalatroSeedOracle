@@ -58,7 +58,7 @@
                     <TextBlock Grid.Row="0" Text="ANTES"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
-                               Foreground="{StaticResource LightGrey}"
+                               Foreground="{StaticResource ModalBorder}"
                                Margin="0,0,0,6"/>
                     <UniformGrid Grid.Row="1" Columns="9" Margin="-2">
                         <CheckBox IsChecked="{Binding SelectedAntes[0]}" Content="0" Classes="ante-checkbox" Margin="2"/>
@@ -80,7 +80,7 @@
                     <TextBlock Text="SOURCE"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
-                               Foreground="{StaticResource LightGrey}"/>
+                               Foreground="{StaticResource ModalBorder}"/>
 
                     <!-- Embedded selector control -->
                     <controls:SourceSelector x:Name="SourceSelector"/>
@@ -89,11 +89,11 @@
                     <Expander Header="Advanced Source Options" IsExpanded="False">
                         <StackPanel Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="Shop Slots (comma-separated)" Foreground="{StaticResource LightGrey}"/>
+                                <TextBlock Text="Shop Slots (comma-separated)" Foreground="{StaticResource ModalBorder}"/>
                                 <TextBox Text="{Binding ShopSlotsText}" Width="160"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="Pack Slots (comma-separated)" Foreground="{StaticResource LightGrey}"/>
+                                <TextBlock Text="Pack Slots (comma-separated)" Foreground="{StaticResource ModalBorder}"/>
                                 <TextBox Text="{Binding PackSlotsText}" Width="160"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="12">
@@ -115,7 +115,7 @@
                     <TextBlock Grid.Row="0" Text="EDITION"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
-                               Foreground="{StaticResource LightGrey}"
+                               Foreground="{StaticResource ModalBorder}"
                                Margin="0,0,0,6"/>
                     <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
                         <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Normal'}" GroupName="ItemEdition" Classes="edition-radio" Margin="2">
@@ -145,11 +145,11 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                        <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource LightGrey}" Margin="0,0,0,6"/>
+                        <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource ModalBorder}" Margin="0,0,0,6"/>
                         <ComboBox ItemsSource="{Binding Ranks}" SelectedItem="{Binding SelectedRank}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                        <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource LightGrey}" Margin="0,0,0,6"/>
+                        <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource ModalBorder}" Margin="0,0,0,6"/>
                         <ComboBox ItemsSource="{Binding Suits}" SelectedItem="{Binding SelectedSuit}" />
                     </StackPanel>
                 </Grid>
@@ -158,7 +158,7 @@
             <!-- Enhancement Selection -->
             <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding EnhancementVisible}">
                 <StackPanel>
-                    <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource LightGrey}" Margin="0,0,0,6"/>
+                    <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource ModalBorder}" Margin="0,0,0,6"/>
                     <ComboBox ItemsSource="{Binding Enhancements}" SelectedItem="{Binding SelectedEnhancement}" />
                 </StackPanel>
             </Border>

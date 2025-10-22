@@ -71,11 +71,31 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Look for music files in the music directory
-                var musicDir = Path.Combine(Directory.GetCurrentDirectory(), "external", "Balatro", "resources", "music");
-                if (!Directory.Exists(musicDir))
+                // Look for music files in the Assets/Audio directory
+                // Try multiple paths to handle both 'dotnet run' (repo root) and direct execution (bin/ output)
+                var possiblePaths = new[]
                 {
-                    Console.WriteLine($"[VLCAudioManager] Music directory not found: {musicDir}");
+                    Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio"),          // bin/Debug or bin/Release
+                    Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio"),  // dotnet run from repo root
+                };
+
+                string? musicDir = null;
+                foreach (var path in possiblePaths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        musicDir = path;
+                        break;
+                    }
+                }
+
+                if (musicDir == null)
+                {
+                    Console.WriteLine($"[VLCAudioManager] Music directory not found. Tried:");
+                    foreach (var path in possiblePaths)
+                    {
+                        Console.WriteLine($"  - {path}");
+                    }
                     return;
                 }
 

@@ -1,11 +1,11 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.AudioVisualizerSettingsModal"
              x:DataType="vm:AudioVisualizerSettingsModalViewModel">
 
     <!-- Authentic Balatro Modal: Teal-grey background, light border, drop shadow -->
-    <Border Background="{StaticResource Grey}"
+    <Border Background="{StaticResource ModalGrey}"
             BorderBrush="{StaticResource ModalBorder}"
             BorderThickness="3"
             CornerRadius="12"

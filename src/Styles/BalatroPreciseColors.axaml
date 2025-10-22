@@ -22,7 +22,7 @@
   </Styles.Resources>
   <!-- Modal inner container (borderless dark panel) -->
   <Style Selector="Border.modal-inner-container">
-    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
+    <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
     <Setter Property="CornerRadius" Value="12"/>
     <Setter Property="Padding" Value="20"/>
     <Setter Property="Margin" Value="8"/>
@@ -30,38 +30,38 @@
   </Style>
   <!-- Badges -->
   <Style Selector="TextBlock.info-badge">
-    <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
+
     <Setter Property="FontSize" Value="12"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="Background" Value="Transparent"/>
   </Style>
   <Style Selector="Label.info-badge">
-    <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="Background" Value="Transparent"/>
   </Style>
   <Style Selector="TextBlock.info-badge-large">
-    <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
+
     <Setter Property="FontSize" Value="16"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="Background" Value="Transparent"/>
   </Style>
   <!-- Precise modal -->
   <Style Selector="Border.balatro-modal-precise">
-    <Setter Property="Background" Value="{StaticResource Grey}"/>
+    <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
     <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
     <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="CornerRadius" Value="12"/>
     <Setter Property="Padding" Value="20"/>
-    <Setter Property="BoxShadow" Value="{StaticResource SouthModalShadow}"/>
+    <Setter Property="BoxShadow" Value="0 4 0 0 #1a1a1a"/>
   </Style>
   <Style Selector="Button.btn-red-precise">
     <Setter Property="Background" Value="{StaticResource Red}"/>
-    <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-    
+
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="16,8"/>
@@ -69,10 +69,10 @@
     <Setter Property="Cursor" Value="Hand"/>
   </Style>
   <Style Selector="Button.btn-red-precise:pointerover">
-    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
   </Style>
   <Style Selector="Button.btn-red-precise:pressed">
-    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
   </Style>
   <Style Selector="Button.btn-orange-precise">
     <Setter Property="Background" Value="{StaticResource Orange}"/>
@@ -86,11 +86,11 @@
     <Setter Property="Cursor" Value="Hand"/>
   </Style>
   <Style Selector="Button.btn-orange-precise:pointerover">
-    <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+    <Setter Property="Background" Value="{StaticResource Orange}"/>
   </Style>
   <!-- Panels -->
   <Style Selector="Border.info-panel, Border.badge-container">
-    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
+    <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
     <Setter Property="BorderThickness" Value="0"/>
   </Style>
   <Style Selector="Border.info-panel">
@@ -105,14 +105,14 @@
   </Style>
   <!-- Stats -->
   <Style Selector="TextBlock.stats-value">
-    <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
-    
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
+
     <Setter Property="FontSize" Value="18"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
   </Style>
   <Style Selector="TextBlock.stats-label">
-    <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
     <Setter Property="FontSize" Value="12"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -120,10 +120,10 @@
   </Style>
   <!-- Nav tabs -->
   <Style Selector="Button.nav-tab-precise">
-    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-    <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+    <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-    
+
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="CornerRadius" Value="6,6,0,0"/>
@@ -137,18 +137,18 @@
     </Setter>
   </Style>
   <Style Selector="Button.nav-tab-precise:pointerover">
-    <Setter Property="Background" Value="{StaticResource Grey}"/>
+    <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
   </Style>
   <Style Selector="Button.nav-tab-precise.active">
     <Setter Property="Background" Value="{StaticResource Red}"/>
   </Style>
   <Style Selector="Button.nav-tab-precise.active:pointerover">
-    <Setter Property="Background" Value="{StaticResource RedShadowPrecise}"/>
+    <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
   </Style>
   <!-- Precise input -->
   <Style Selector="TextBox.input-precise">
-    <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-    <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+    <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+    <Setter Property="Foreground" Value="{StaticResource White}"/>
     <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="6"/>
@@ -156,12 +156,12 @@
     <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="SelectionBrush" Value="{StaticResource Red}"/>
-    <Setter Property="CaretBrush" Value="{StaticResource TextLight}"/>
+    <Setter Property="CaretBrush" Value="{StaticResource White}"/>
   </Style>
   <Style Selector="TextBox.input-precise:focus">
     <Setter Property="BorderBrush" Value="{StaticResource Red}"/>
   </Style>
   <Style Selector="TextBox.input-precise:pointerover">
-    <Setter Property="BorderBrush" Value="{StaticResource InfoTextPrecise}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource White}"/>
   </Style>
 </Styles>

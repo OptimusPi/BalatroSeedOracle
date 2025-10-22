@@ -13,7 +13,7 @@
         
         <!-- LEFT HALF: MVVM Filter Builder -->
         <Border Grid.Column="0" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderThickness="0" 
                 CornerRadius="8" 
                 Padding="20">
@@ -64,7 +64,7 @@
                                        Foreground="{StaticResource Green}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource DarkModalGrey}"
+                            <Border Background="{StaticResource DarkBackground}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
@@ -110,7 +110,7 @@
                                        Foreground="{StaticResource Blue}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource DarkModalGrey}"
+                            <Border Background="{StaticResource DarkBackground}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     MinHeight="60"
@@ -224,7 +224,7 @@
         
         <!-- RIGHT HALF: Item Palette + Test Status (Unified) -->
         <Border Grid.Column="2" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderThickness="0" 
                 CornerRadius="8" 
                 Padding="20">
@@ -260,7 +260,7 @@
 
                 <!-- Status/Results Area -->
                 <Border Grid.Row="4"
-                        Background="{StaticResource DarkModalGrey}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="15">
@@ -274,7 +274,7 @@
                         <TextBlock Grid.Row="0"
                                    Text="{Binding TestStatus}"
                                    FontSize="14"
-                                   Foreground="{StaticResource TextLight}"
+                                   Foreground="{StaticResource White}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    HorizontalAlignment="Center"
                                    TextWrapping="Wrap"
@@ -283,7 +283,7 @@
                         <!-- Loading/Results Display -->
                         <Grid Grid.Row="1">
                             <!-- Loading Spinner -->
-                            <Border Background="{StaticResource DarkModalGrey}"
+                            <Border Background="{StaticResource DarkBackground}"
                                     CornerRadius="50"
                                     Width="60"
                                     Height="60"
@@ -348,7 +348,7 @@
                             </Border>
 
                             <!-- Default State -->
-                            <Border Background="{StaticResource DarkModalGrey}"
+                            <Border Background="{StaticResource DarkBackground}"
                                     CornerRadius="50"
                                     Width="80"
                                     Height="80"
@@ -364,7 +364,7 @@
                                 </Border.IsVisible>
                                 <TextBlock Text="?"
                                            FontSize="40"
-                                           Foreground="{StaticResource TextLight}"
+                                           Foreground="{StaticResource White}"
                                            FontWeight="Bold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
@@ -452,7 +452,7 @@
         
         <!-- RIGHT HALF: Item Palette -->
         <Border Grid.Column="2" 
-                Background="{StaticResource DarkModalGrey}" 
+                Background="{StaticResource DarkBackground}" 
                 BorderThickness="0" 
                 CornerRadius="8" 
                 Padding="20">

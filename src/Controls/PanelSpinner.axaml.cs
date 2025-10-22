@@ -171,14 +171,12 @@ public partial class PanelSpinner : UserControl
             _descriptionText.Text = item.Description;
 
         // Check if we should show a custom control or an image
-        DebugLogger.Log("PanelSpinner", $"UpdateDisplay: item={item.Title}, _spriteImage={_spriteImage != null}");
         if (_spriteImage != null)
         {
             // Simple path: just set the image directly
             if (item.GetImage != null)
             {
                 var image = item.GetImage();
-                DebugLogger.Log("PanelSpinner", $"✅ Setting image: image={image != null}, title={item.Title}");
                 _spriteImage.Source = image;
             }
             else if (item.GetControl != null && item.Value == "__CREATE_NEW__")

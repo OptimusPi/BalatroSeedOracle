@@ -34,9 +34,9 @@ namespace BalatroSeedOracle.Models
         public SearchResumeState? LastSearchState { get; set; }
 
         /// <summary>
-        /// Vibe Out visualizer settings
+        /// Audio visualizer settings
         /// </summary>
-        public VibeOutSettings VibeOutSettings { get; set; } = new();
+        public VisualizerSettings VisualizerSettings { get; set; } = new();
 
         /// <summary>
         /// Music volume (0.0 to 1.0)
@@ -160,9 +160,9 @@ namespace BalatroSeedOracle.Models
     // SearchWidgetConfig removed - using desktop icons now
 
     /// <summary>
-    /// Vibe Out visualizer settings for music-reactive shader parameters
+    /// Audio visualizer settings for music-reactive shader parameters
     /// </summary>
-    public class VibeOutSettings
+    public class VisualizerSettings
     {
         /// <summary>
         /// Shader type: 0=Balatro (default), 1=Psychedelic

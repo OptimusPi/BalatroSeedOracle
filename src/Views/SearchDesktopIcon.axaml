@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:comp="using:BalatroSeedOracle.Components"
@@ -56,7 +56,7 @@
             </StackPanel>
 
             <!-- Preview: state icon or filter preview -->
-            <Border Background="{StaticResource Grey}" CornerRadius="8" Padding="10">
+            <Border Background="{StaticResource ModalGrey}" CornerRadius="8" Padding="10">
                 <Grid>
                     <Image Source="{Binding StateIcon}"
                            IsVisible="{Binding ShowStateIcon}"

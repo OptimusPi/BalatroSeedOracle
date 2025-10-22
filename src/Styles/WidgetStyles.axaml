@@ -10,11 +10,11 @@
 
     <!-- Standard widget container (default medium grey) -->
     <Style Selector="Border.widget-container">
-        <Setter Property="Background" Value="{StaticResource Grey}"/>
+        <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="{StaticResource SouthModalShadow}"/>
+        <Setter Property="BoxShadow" Value="0 4 0 0 #1a1a1a"/>
     </Style>
 
     <!-- Semi-transparent widget container variant -->
@@ -28,7 +28,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="3"/>
         <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="{StaticResource ElevatedWidgetShadow}"/>
+        <Setter Property="BoxShadow" Value="0 6 16 0 #55000000"/>
     </Style>
 
     <!-- Widget header bar -->
@@ -48,7 +48,7 @@
     <!-- Light content area variant (for contrast) -->
     <Style Selector="Border.widget-content.light">
         <Setter Property="Background" Value="{StaticResource LightContentBackground}"/>
-        <Setter Property="BoxShadow" Value="{StaticResource LightContentShadow}"/>
+        <Setter Property="BoxShadow" Value="0 2 8 0 #22000000"/>
     </Style>
 
     <!-- =============================================
@@ -94,7 +94,7 @@
 
     <Style Selector="Button.widget-minimize-btn:pointerover">
         <Setter Property="Foreground" Value="{StaticResource White}"/>
-        <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
     </Style>
 
     <!-- Widget action button (submit, etc) -->
@@ -106,7 +106,7 @@
     </Style>
 
     <Style Selector="Button.widget-submit-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+        <Setter Property="Background" Value="{StaticResource Green}"/>
     </Style>
 
     <!-- Widget secondary button -->
@@ -121,11 +121,11 @@
     </Style>
 
     <Style Selector="Button.widget-secondary-btn:pointerover">
-        <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        <Setter Property="Background" Value="{StaticResource Blue}"/>
     </Style>
 
     <Style Selector="Button.widget-secondary-btn:disabled">
-        <Setter Property="Background" Value="{StaticResource MediumGrey}"/>
+        <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Opacity" Value="0.5"/>
     </Style>
@@ -136,7 +136,7 @@
 
     <!-- Widget text input -->
     <Style Selector="TextBox.widget-input">
-        <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
@@ -159,7 +159,7 @@
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="AcceptsReturn" Value="True"/>
         <Setter Property="MinHeight" Value="60"/>
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
     </Style>
 
     <Style Selector="TextBox.widget-prompt-input:focus">
@@ -181,20 +181,20 @@
     <!-- Widget section label -->
     <Style Selector="TextBlock.widget-label">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <!-- Widget muted/secondary text -->
     <Style Selector="TextBlock.widget-muted">
-        <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Opacity" Value="0.6"/>
         <Setter Property="FontSize" Value="10"/>
     </Style>
 
     <!-- Widget info display text -->
     <Style Selector="TextBlock.widget-info">
-        <Setter Property="Foreground" Value="{StaticResource InfoTextPrecise}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
 

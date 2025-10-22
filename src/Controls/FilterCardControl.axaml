@@ -21,7 +21,7 @@
         <Style Selector="TextBlock.section-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource ModalBorder}"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
         </Style>
     </UserControl.Styles>

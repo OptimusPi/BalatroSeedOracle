@@ -1,0 +1,45 @@
+<Styles xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Balatro-style bouncing triangle animations -->
+
+    <!-- Vertical bounce (for tab indicators) - uses Margin for Avalonia compatibility -->
+    <Style Selector="Polygon.balatro-bounce-vertical">
+        <Style.Animations>
+            <Animation Duration="0:0:0.6"
+                       IterationCount="Infinite"
+                       PlaybackDirection="Alternate"
+                       Easing="CubicEaseInOut">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Margin" Value="0,0,0,0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Margin" Value="0,6,0,0"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Horizontal bounce (for list item indicators) - uses Margin for Avalonia compatibility -->
+    <Style Selector="Polygon.balatro-bounce-horizontal">
+        <Style.Animations>
+            <Animation Duration="0:0:0.8"
+                       IterationCount="Infinite"
+                       PlaybackDirection="Alternate"
+                       Easing="SineEaseInOut">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Margin" Value="0,0,0,0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Margin" Value="8,0,0,0"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Triangle indicator style (red, matching Balatro) -->
+    <Style Selector="Polygon.balatro-triangle">
+        <Setter Property="Fill" Value="{StaticResource Red}"/>
+    </Style>
+
+</Styles>

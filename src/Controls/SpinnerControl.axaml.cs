@@ -62,6 +62,12 @@ namespace BalatroSeedOracle.Controls
                 false
             );
 
+        public static readonly StyledProperty<bool> ReadOnlyProperty =
+            AvaloniaProperty.Register<SpinnerControl, bool>(
+                nameof(ReadOnly),
+                false
+            );
+
         public string Label
         {
             get => GetValue(LabelProperty);
@@ -123,6 +129,12 @@ namespace BalatroSeedOracle.Controls
         {
             get => GetValue(IsEditingProperty);
             set => SetValue(IsEditingProperty, value);
+        }
+
+        public bool ReadOnly
+        {
+            get => GetValue(ReadOnlyProperty);
+            set => SetValue(ReadOnlyProperty, value);
         }
 
         public SpinnerControl()
@@ -293,8 +305,12 @@ namespace BalatroSeedOracle.Controls
 
         private void OnValueButtonClick(object? sender, RoutedEventArgs e)
         {
+            // Don't allow editing if ReadOnly is true (for enum spinners like stake)
+            if (ReadOnly)
+                return;
+
             IsEditing = true;
-            
+
             // Focus and select text in the edit box
             var valueEdit = this.FindControl<TextBox>("ValueEdit");
             if (valueEdit != null)

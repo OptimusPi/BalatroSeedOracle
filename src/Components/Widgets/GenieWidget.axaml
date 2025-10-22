@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -25,7 +25,7 @@
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
 
-            <Border Background="{StaticResource Grey}"
+            <Border Background="{StaticResource ModalGrey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="8"
@@ -84,7 +84,7 @@
                                 <TextBlock Text="✨ Describe your dream seed:"
                                            FontWeight="Bold"
                                            FontSize="12"
-                                           Foreground="{StaticResource InfoTextPrecise}"/>
+                                           Foreground="{StaticResource White}"/>
                                 <TextBox Classes="widget-prompt-input"
                                          Text="{Binding UserPrompt}"
                                          Watermark="e.g. 'Find me a Perkeo with Blueprint and Negative tags'"
@@ -125,11 +125,11 @@
                                     <TextBlock Text="{Binding GeneratedFilterName}"
                                                FontWeight="Bold"
                                                FontSize="12"
-                                               Foreground="{StaticResource TextLight}"/>
+                                               Foreground="{StaticResource White}"/>
 
                                     <TextBlock Text="{Binding GeneratedFilterSummary}"
                                                FontSize="10"
-                                               Foreground="{StaticResource InfoTextPrecise}"
+                                               Foreground="{StaticResource White}"
                                                TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">

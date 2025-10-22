@@ -85,7 +85,7 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         File.Delete(filterPath);
 
-                        var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults", $"{filterName}.duckdb");
+                        var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults", $"{filterName}.db");
                         if (File.Exists(dbPath))
                         {
                             File.Delete(dbPath);

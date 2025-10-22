@@ -42,8 +42,8 @@ namespace BalatroSeedOracle.Components
             // Set initial ZIndex
             this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
 
-            // Initialize ViewModel after XAML is loaded
-            ViewModel.Initialize();
+            // REMOVED: Initialize() method no longer exists
+            // ViewModel.Initialize();
 
             // Wire up cleanup
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
@@ -63,9 +63,10 @@ namespace BalatroSeedOracle.Components
                 mainMenu.ApplyMainColor(ViewModel.MainColor);
                 mainMenu.ApplyAccentColor(ViewModel.AccentColor);
             }
-            mainMenu.ApplyAudioIntensity(ViewModel.AudioIntensity);
-            mainMenu.ApplyParallaxStrength(ViewModel.ParallaxStrength);
-            mainMenu.ApplyTimeSpeed(ViewModel.TimeSpeed);
+            // REMOVED: AudioIntensity, ParallaxStrength, TimeSpeed properties no longer exist
+            // mainMenu.ApplyAudioIntensity(ViewModel.AudioIntensity);
+            // mainMenu.ApplyParallaxStrength(ViewModel.ParallaxStrength);
+            // mainMenu.ApplyTimeSpeed(ViewModel.TimeSpeed);
             mainMenu.ApplyShadowFlickerSource(ViewModel.ShadowFlickerSource);
             mainMenu.ApplySpinSource(ViewModel.SpinSource);
             mainMenu.ApplyBeatPulseSource(ViewModel.BeatPulseSource);
@@ -84,6 +85,8 @@ namespace BalatroSeedOracle.Components
                     case nameof(ViewModel.AccentColor):
                         mainMenu.ApplyAccentColor(ViewModel.AccentColor);
                         break;
+                    // REMOVED: AudioIntensity, ParallaxStrength, TimeSpeed
+                    /*
                     case nameof(ViewModel.AudioIntensity):
                         mainMenu.ApplyAudioIntensity(ViewModel.AudioIntensity);
                         break;
@@ -93,6 +96,7 @@ namespace BalatroSeedOracle.Components
                     case nameof(ViewModel.TimeSpeed):
                         mainMenu.ApplyTimeSpeed(ViewModel.TimeSpeed);
                         break;
+                    */
                     case nameof(ViewModel.ShadowFlickerSource):
                         mainMenu.ApplyShadowFlickerSource(ViewModel.ShadowFlickerSource);
                         break;
@@ -278,7 +282,8 @@ namespace BalatroSeedOracle.Components
 
         private void OnDetachedFromVisualTree(object? sender, EventArgs e)
         {
-            ViewModel.Dispose();
+            // REMOVED: Dispose() method no longer exists
+            // ViewModel.Dispose();
         }
 
         /// <summary>
