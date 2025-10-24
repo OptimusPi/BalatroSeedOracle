@@ -47,6 +47,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _selectedCategory = "Legendary";
 
+        // Pagination state
+        [ObservableProperty]
+        private int _currentPageIndex = 0; // 0=Jokers, 1=Consumables, 2=Map, 3=Cards
+
+        public string CurrentPageTitle => CurrentPageIndex switch
+        {
+            0 => "JOKERS",
+            1 => "CONSUMABLES",
+            2 => "MAP",
+            3 => "CARDS",
+            _ => "JOKERS"
+        };
+
+        public string PageIndicator => $"{CurrentPageIndex + 1}/4 - {CurrentPageTitle}";
+
+        // Page visibility helpers (for XAML binding)
+        public bool IsJokersPage => CurrentPageIndex == 0;
+        public bool IsConsumablesPage => CurrentPageIndex == 1;
+        public bool IsMapPage => CurrentPageIndex == 2;
+        public bool IsCardsPage => CurrentPageIndex == 3;
+
+        // Edition/Enhancement/Seal toggles
+        [ObservableProperty]
+        private string _currentEdition = "None";
+
+        [ObservableProperty]
+        private string _currentEnhancement = "None";
+
+        [ObservableProperty]
+        private string _currentSeal = "None";
+
         // Display name for current category
         public string CurrentCategoryDisplay => SelectedCategory switch
         {
@@ -228,6 +259,47 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand RemoveFromMustCommand { get; }
         public ICommand RemoveFromShouldCommand { get; }
         public ICommand RemoveFromMustNotCommand { get; }
+
+        // Page navigation commands
+        [RelayCommand]
+        private void NextPage()
+        {
+            if (CurrentPageIndex < 3)
+            {
+                CurrentPageIndex++;
+                OnPropertyChanged(nameof(PageIndicator));
+                OnPropertyChanged(nameof(CurrentPageTitle));
+                OnPropertyChanged(nameof(IsJokersPage));
+                OnPropertyChanged(nameof(IsConsumablesPage));
+                OnPropertyChanged(nameof(IsMapPage));
+                OnPropertyChanged(nameof(IsCardsPage));
+            }
+        }
+
+        [RelayCommand]
+        private void PreviousPage()
+        {
+            if (CurrentPageIndex > 0)
+            {
+                CurrentPageIndex--;
+                OnPropertyChanged(nameof(PageIndicator));
+                OnPropertyChanged(nameof(CurrentPageTitle));
+                OnPropertyChanged(nameof(IsJokersPage));
+                OnPropertyChanged(nameof(IsConsumablesPage));
+                OnPropertyChanged(nameof(IsMapPage));
+                OnPropertyChanged(nameof(IsCardsPage));
+            }
+        }
+
+        // Returns list of categories visible on current page
+        public List<string> VisibleCategories => CurrentPageIndex switch
+        {
+            0 => new List<string> { "Favorites", "Legendary", "Rare", "Uncommon", "Common" }, // JOKERS
+            1 => new List<string> { "Tarot", "Planet", "Spectral" }, // CONSUMABLES
+            2 => new List<string> { "Voucher", "Tag", "Boss" }, // MAP
+            3 => new List<string> { "PlayingCards" }, // CARDS (will need suit subcategories)
+            _ => new List<string>()
+        };
 
         #endregion
 

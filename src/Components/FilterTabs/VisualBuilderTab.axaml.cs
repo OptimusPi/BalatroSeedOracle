@@ -766,7 +766,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Use Margin for absolute positioning instead of RenderTransform
                 // This ensures the adorner appears exactly where we want it
-                _dragAdorner.Margin = new Thickness(startPosition.X - 35, startPosition.Y - 47, 0, 0);
+                _dragAdorner.Margin = new Thickness(startPosition.X, startPosition.Y, 0, 0);
                 _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
                 _dragAdorner.VerticalAlignment = VerticalAlignment.Top;
 
