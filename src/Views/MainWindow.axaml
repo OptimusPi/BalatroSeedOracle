@@ -4,7 +4,8 @@
         x:Class="BalatroSeedOracle.Views.MainWindow"
         Title="🃏Balatro Seed BalatroSeedOracle🥠"
         Width="1280"
-        Height="720">
+        Height="720"
+        DragDrop.AllowDrop="True">
     
     <Window.Styles>
         <Style Selector="TextBlock.attribution">

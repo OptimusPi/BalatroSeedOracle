@@ -69,6 +69,36 @@ namespace BalatroSeedOracle.Views
             // _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay"); // REMOVED: VibeOut feature removed
             _mainContent = this.FindControl<Grid>("MainContent");
             _volumePopup = this.FindControl<Popup>("VolumePopup");
+
+            // CRITICAL FIX: Add drag event handlers to ModalContainer to allow events to pass through
+            // Without this, drag events stop at ModalContainer and never reach modal content
+            if (_modalContainer != null)
+            {
+                _modalContainer.AddHandler(DragDrop.DragOverEvent, OnModalContainerDragOver, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, true);
+                _modalContainer.AddHandler(DragDrop.DropEvent, OnModalContainerDrop, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, true);
+                DebugLogger.Log("BalatroMainMenu", "✅ ModalContainer drag event handlers installed");
+            }
+            
+        }
+
+        /// <summary>
+        /// Allows drag events to pass through ModalContainer to modal content
+        /// </summary>
+        private void OnModalContainerDragOver(object? sender, DragEventArgs e)
+        {
+            // Allow ALL drag effects - let the actual drop zones decide
+            e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
+            // DON'T set e.Handled - let event continue to modal content
+            DebugLogger.Log("BalatroMainMenu", $"ModalContainer DragOver - allowing passthrough");
+        }
+
+        /// <summary>
+        /// Allows drop events to pass through ModalContainer to modal content
+        /// </summary>
+        private void OnModalContainerDrop(object? sender, DragEventArgs e)
+        {
+            // DON'T set e.Handled - let event continue to modal content drop zones
+            DebugLogger.Log("BalatroMainMenu", "ModalContainer Drop - allowing passthrough");
         }
 
         /// <summary>

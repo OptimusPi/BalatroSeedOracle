@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.StandardModal">
     
@@ -28,7 +28,7 @@
             <!-- Main modal container - Balatro style (RESPONSIVE!) -->
             <Border x:Name="ModalBorder"
                     Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource ModalGrey}"
+                    Background="{StaticResource Grey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="4"

@@ -1,17 +1,16 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
@@ -21,12 +20,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
     /// </summary>
     public partial class VisualBuilderTab : UserControl
     {
-        private static AdornerLayer? _staticAdornerLayer;
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
         private AdornerLayer? _adornerLayer;
         private TranslateTransform? _adornerTransform;
         private TopLevel? _topLevel;
+        private bool _isDragging = false;
+        private Avalonia.Point _dragStartPosition;
 
         public VisualBuilderTab()
         {
@@ -41,193 +41,262 @@ namespace BalatroSeedOracle.Components.FilterTabs
         
         private void SetupDropZones()
         {
-            // Find drop zones and enable drag-drop
+            // Find drop zones - we'll check them manually via hit testing
             var mustZone = this.FindControl<Border>("MustDropZone");
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
             var mustNotZone = this.FindControl<Border>("MustNotDropZone");
-            
+
             DebugLogger.Log("VisualBuilderTab", $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}");
-            
-            if (mustZone != null)
+
+            // Attach pointer handlers to TopLevel so we get events even when pointer moves outside the control
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null)
             {
-                mustZone.AddHandler(DragDrop.DropEvent, OnDrop);
-                mustZone.AddHandler(DragDrop.DragOverEvent, OnDragOver);
-                mustZone.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
-                DebugLogger.Log("VisualBuilderTab", "Must zone handlers attached");
+                topLevel.PointerMoved += OnPointerMovedManualDrag;
+                topLevel.PointerReleased += OnPointerReleasedManualDrag;
+                DebugLogger.Log("VisualBuilderTab", "Manual drag pointer handlers attached to TopLevel");
             }
-            
-            if (shouldZone != null)
+            else
             {
-                shouldZone.AddHandler(DragDrop.DropEvent, OnDrop);
-                shouldZone.AddHandler(DragDrop.DragOverEvent, OnDragOver);
-                shouldZone.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
-                DebugLogger.Log("VisualBuilderTab", "Should zone handlers attached");
-            }
-            
-            if (mustNotZone != null)
-            {
-                mustNotZone.AddHandler(DragDrop.DropEvent, OnDrop);
-                mustNotZone.AddHandler(DragDrop.DragOverEvent, OnDragOver);
-                mustNotZone.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
-                DebugLogger.Log("VisualBuilderTab", "MustNot zone handlers attached");
+                DebugLogger.LogError("VisualBuilderTab", "Failed to attach pointer handlers - no TopLevel");
             }
         }
         
-        private async void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             try
             {
-                await OnItemPointerPressedAsync(sender, e);
+                Models.FilterItem? item = null;
+
+                // Handle Image, StackPanel, Grid, and Border elements
+                if (sender is Image image)
+                {
+                    item = image.DataContext as Models.FilterItem;
+                }
+                else if (sender is StackPanel stackPanel)
+                {
+                    item = stackPanel.DataContext as Models.FilterItem;
+                }
+                else if (sender is Grid grid)
+                {
+                    item = grid.DataContext as Models.FilterItem;
+                }
+                else if (sender is Border border)
+                {
+                    item = border.DataContext as Models.FilterItem;
+                }
+
+                if (item != null)
+                {
+                    _draggedItem = item;
+                    _isDragging = true;
+                    _dragStartPosition = e.GetPosition(this);
+
+                    DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG START for item: {item.Name}");
+
+                    // BALATRO-STYLE: Make the card "disappear" from grid while dragging
+                    item.IsBeingDragged = true;
+
+                    // Play card select sound
+                    SoundEffectService.Instance.PlayCardSelect();
+
+                    // CREATE GHOST IMAGE
+                    CreateDragAdorner(item, _dragStartPosition);
+
+                    // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
+                    // Capturing to sender (the small image) would prevent us from getting events outside its bounds
+                }
+                else
+                {
+                    DebugLogger.Log("VisualBuilderTab", "No item found for drag operation");
+                }
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("VisualBuilderTab", $"Drag operation failed: {ex.Message}");
-                // Ensure adorner is cleaned up on error
                 RemoveDragAdorner();
+                _isDragging = false;
+            }
+        }
+        
+        private void OnPointerMovedManualDrag(object? sender, PointerEventArgs e)
+        {
+            if (!_isDragging || _draggedItem == null) return;
+
+            try
+            {
+                DebugLogger.Log("VisualBuilderTab", $"🖱️ Pointer moved during drag");
+
+                // Update adorner position
+                if (_dragAdorner != null && _adornerTransform != null && _topLevel != null)
+                {
+                    var position = e.GetPosition(_topLevel);
+                    _adornerTransform.X = position.X - 35; // Center on cursor
+                    _adornerTransform.Y = position.Y - 47;
+                    DebugLogger.Log("VisualBuilderTab", $"Ghost moved to ({position.X}, {position.Y})");
+                }
+
+                // Check if we're over a drop zone and provide visual feedback
+                var mustZone = this.FindControl<Border>("MustDropZone");
+                var shouldZone = this.FindControl<Border>("ShouldDropZone");
+                var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+
+                if (_topLevel == null) return;
+                var cursorPos = e.GetPosition(_topLevel);
+
+                Border? targetZone = null;
+
+                if (IsPointOverControl(cursorPos, mustZone, _topLevel))
+                {
+                    targetZone = mustZone;
+                }
+                else if (IsPointOverControl(cursorPos, shouldZone, _topLevel))
+                {
+                    targetZone = shouldZone;
+                }
+                else if (IsPointOverControl(cursorPos, mustNotZone, _topLevel))
+                {
+                    targetZone = mustNotZone;
+                }
+
+                if (targetZone != null)
+                {
+                    // Add visual feedback
+                    if (!targetZone.Classes.Contains("drag-over"))
+                    {
+                        targetZone.Classes.Add("drag-over");
+                    }
+                    RemoveDragOverClassExcept(targetZone);
+                }
+                else
+                {
+                    RemoveDragOverClassExcept(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Error in OnPointerMovedManualDrag: {ex.Message}");
             }
         }
 
-        private async Task OnItemPointerPressedAsync(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private bool IsPointOverControl(Avalonia.Point point, Control? control, TopLevel topLevel)
         {
-            // Ensure we're on UI thread at start
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            if (control == null) return false;
+
+            try
             {
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => OnItemPointerPressedAsync(sender, e));
-                return;
+                // Transform point from TopLevel coordinates to control coordinates
+                var controlPos = control.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                if (!controlPos.HasValue) return false;
+
+                var bounds = new Avalonia.Rect(controlPos.Value, new Avalonia.Size(control.Bounds.Width, control.Bounds.Height));
+                return bounds.Contains(point);
             }
-
-            Models.FilterItem? item = null;
-
-            // Handle Image, StackPanel, Grid, and Border elements
-            if (sender is Image image)
+            catch
             {
-                item = image.DataContext as Models.FilterItem;
+                return false;
             }
-            else if (sender is StackPanel stackPanel)
+        }
+
+        private void RemoveDragOverClassExcept(Border? exceptZone)
+        {
+            var mustZone = this.FindControl<Border>("MustDropZone");
+            var shouldZone = this.FindControl<Border>("ShouldDropZone");
+            var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+
+            if (mustZone != exceptZone)
+                mustZone?.Classes.Remove("drag-over");
+            if (shouldZone != exceptZone)
+                shouldZone?.Classes.Remove("drag-over");
+            if (mustNotZone != exceptZone)
+                mustNotZone?.Classes.Remove("drag-over");
+        }
+
+        private void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
+        {
+            if (!_isDragging || _draggedItem == null) return;
+
+            try
             {
-                item = stackPanel.DataContext as Models.FilterItem;
-            }
-            else if (sender is Grid grid)
-            {
-                item = grid.DataContext as Models.FilterItem;
-            }
-            else if (sender is Border border)
-            {
-                item = border.DataContext as Models.FilterItem;
-            }
+                DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG RELEASED");
 
-            if (item != null)
-            {
-                _draggedItem = item;
-                DebugLogger.Log("VisualBuilderTab", $"Starting drag for item: {item.Name}");
+                // Remove all visual feedback
+                RemoveDragOverClassExcept(null);
 
-                // BALATRO-STYLE: Make the card "disappear" from grid while dragging
-                item.IsBeingDragged = true;
-
-                // Play card select sound
-                SoundEffectService.Instance.PlayCardSelect();
-
-                var topLevel = TopLevel.GetTopLevel(this);
-                bool adornerCreated = CreateDragAdorner(item, e.GetPosition(topLevel));
-
-                if (!adornerCreated)
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                if (vm == null)
                 {
-                    // Adorner creation failed - restore item visibility and abort drag
-                    item.IsBeingDragged = false;
-                    DebugLogger.LogError("VisualBuilderTab", "Drag aborted - failed to create adorner");
+                    DebugLogger.Log("VisualBuilderTab", "Drop failed - no ViewModel");
                     return;
                 }
 
-                var dragData = new Avalonia.Input.DataObject();
-                dragData.Set("FilterItem", item);
-
-                var result = await DragDrop.DoDragDrop(e, dragData, Avalonia.Input.DragDropEffects.Copy);
-
-                // After await, marshal back to UI thread for cleanup
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                // Get cursor position and find which zone we dropped on
+                if (_topLevel == null)
                 {
-                    RemoveDragAdorner();
-
-                    // BALATRO-STYLE: Restore the card in the grid
-                    item.IsBeingDragged = false;
-                });
-
-                DebugLogger.Log("VisualBuilderTab", $"Drag completed with result: {result}");
-            }
-            else
-            {
-                DebugLogger.Log("VisualBuilderTab", "No item found for drag operation");
-            }
-        }
-        
-        private void OnDragOver(object? sender, Avalonia.Input.DragEventArgs e)
-        {
-            DebugLogger.Log("VisualBuilderTab", $"OnDragOver called on {(sender as Border)?.Name ?? "unknown"}");
-            
-            if (e.Data.Contains("FilterItem"))
-            {
-                e.DragEffects = Avalonia.Input.DragDropEffects.Copy;
-                DebugLogger.Log("VisualBuilderTab", "Drag accepted - FilterItem data found");
-                
-                // Add visual feedback
-                if (sender is Border border && !border.Classes.Contains("drag-over"))
-                {
-                    border.Classes.Add("drag-over");
+                    DebugLogger.Log("VisualBuilderTab", "Drop failed - no TopLevel");
+                    return;
                 }
-            }
-            else
-            {
-                e.DragEffects = Avalonia.Input.DragDropEffects.None;
-                DebugLogger.Log("VisualBuilderTab", "Drag rejected - no FilterItem data");
-            }
-        }
-        
-        private void OnDragLeave(object? sender, Avalonia.Input.DragEventArgs e)
-        {
-            // Remove visual feedback
-            if (sender is Border border)
-            {
-                border.Classes.Remove("drag-over");
-            }
-        }
-        
-        private void OnDrop(object? sender, Avalonia.Input.DragEventArgs e)
-        {
-            DebugLogger.Log("VisualBuilderTab", $"OnDrop called on {(sender as Border)?.Name ?? "unknown"}");
-            
-            // Remove visual feedback
-            if (sender is Border border)
-            {
-                border.Classes.Remove("drag-over");
-            }
-            
-            if (e.Data.Contains("FilterItem") && DataContext is BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                var item = e.Data.Get("FilterItem") as Models.FilterItem;
-                if (item != null && sender is Border dropBorder)
+
+                var cursorPos = e.GetPosition(_topLevel);
+
+                var mustZone = this.FindControl<Border>("MustDropZone");
+                var shouldZone = this.FindControl<Border>("ShouldDropZone");
+                var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+
+                Border? targetZone = null;
+                string? zoneName = null;
+
+                if (IsPointOverControl(cursorPos, mustZone, _topLevel))
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"Dropping {item.Name} into {dropBorder.Name}");
-                    
+                    targetZone = mustZone;
+                    zoneName = "MustDropZone";
+                }
+                else if (IsPointOverControl(cursorPos, shouldZone, _topLevel))
+                {
+                    targetZone = shouldZone;
+                    zoneName = "ShouldDropZone";
+                }
+                else if (IsPointOverControl(cursorPos, mustNotZone, _topLevel))
+                {
+                    targetZone = mustNotZone;
+                    zoneName = "MustNotDropZone";
+                }
+
+                if (targetZone != null && zoneName != null)
+                {
+                    DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
+
                     // Play card drop sound
                     SoundEffectService.Instance.PlayCardDrop();
-                    
-                    switch (dropBorder.Name)
+
+                    switch (zoneName)
                     {
                         case "MustDropZone":
-                            vm.AddToMustCommand.Execute(item);
+                            vm.AddToMustCommand.Execute(_draggedItem);
                             break;
                         case "ShouldDropZone":
-                            vm.AddToShouldCommand.Execute(item);
+                            vm.AddToShouldCommand.Execute(_draggedItem);
                             break;
                         case "MustNotDropZone":
-                            vm.AddToMustNotCommand.Execute(item);
+                            vm.AddToMustNotCommand.Execute(_draggedItem);
                             break;
                     }
                 }
+                else
+                {
+                    DebugLogger.Log("VisualBuilderTab", "Drop cancelled - not over any drop zone");
+                }
             }
-            else
+            finally
             {
-                DebugLogger.Log("VisualBuilderTab", "Drop failed - no FilterItem data or ViewModel");
+                // Always cleanup
+                RemoveDragAdorner();
+                if (_draggedItem != null)
+                {
+                    _draggedItem.IsBeingDragged = false;
+                }
+                _isDragging = false;
+                _draggedItem = null;
             }
         }
         
@@ -336,43 +405,68 @@ namespace BalatroSeedOracle.Components.FilterTabs
             AvaloniaXamlLoader.Load(this);
         }
         
-        private bool CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
+        private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {
+            DebugLogger.Log("VisualBuilderTab", $"🫡 CreateDragAdorner beginning,.......");
+
             try
             {
-                if (_staticAdornerLayer != null)
-                {
-                    _adornerLayer = _staticAdornerLayer;
-                }
-                else
-                {
-                    _topLevel = TopLevel.GetTopLevel(this);
-                    if (_topLevel == null)
-                    {
-                        DebugLogger.LogError("VisualBuilderTab", "TopLevel not found!");
-                        return false;
-                    }
+                // Find adorner layer - walk up visual tree to find Window/TopLevel
+                _topLevel = TopLevel.GetTopLevel(this);
 
-                    var mainWindow = _topLevel as MainWindow;
-                    if (mainWindow != null)
+                if (_topLevel == null)
+                {
+                    // Fallback: manually walk up the visual tree
+                    Visual? current = this.GetVisualParent();
+                    while (current != null && _topLevel == null)
                     {
-                        var panel = mainWindow.Content as Panel;
-                        if (panel != null)
+                        if (current is TopLevel tl)
                         {
-                            _adornerLayer = panel.Children.OfType<AdornerLayer>().FirstOrDefault();
-                            if (_adornerLayer != null)
+                            _topLevel = tl;
+                            break;
+                        }
+                        current = current.GetVisualParent();
+                    }
+                }
+
+                // Find the AdornerLayer - it's a child of the Panel in MainWindow
+                if (_topLevel != null)
+                {
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    DebugLogger.Log("VisualBuilderTab", $"🔍 ADORNER SEARCH [{timestamp}] TopLevel type: {_topLevel.GetType().Name}");
+
+                    // First try standard GetAdornerLayer
+                    _adornerLayer = AdornerLayer.GetAdornerLayer(_topLevel);
+                    DebugLogger.Log("VisualBuilderTab", $"GetAdornerLayer result: {_adornerLayer != null}");
+
+                    if (_adornerLayer == null && _topLevel is Window window)
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Window.Content type: {window.Content?.GetType().Name ?? "null"}");
+
+                        if (window.Content is Panel panel)
+                        {
+                            DebugLogger.Log("VisualBuilderTab", $"Panel has {panel.Children.Count} children");
+
+                            // Fallback: Find AdornerLayer in the Panel's children
+                            foreach (var child in panel.Children)
                             {
-                                _staticAdornerLayer = _adornerLayer;
-                                DebugLogger.Log("VisualBuilderTab", "Found and cached AdornerLayer from MainWindow!");
+                                DebugLogger.Log("VisualBuilderTab", $"Panel child: {child.GetType().Name}");
+
+                                if (child is AdornerLayer layer)
+                                {
+                                    _adornerLayer = layer;
+                                    DebugLogger.Log("VisualBuilderTab", "✅ Found AdornerLayer in MainWindow Panel");
+                                    break;
+                                }
                             }
                         }
                     }
+                }
 
-                    if (_adornerLayer == null)
-                    {
-                        DebugLogger.LogError("VisualBuilderTab", "AdornerLayer not found in MainWindow.Content!");
-                        return false;
-                    }
+                if (_adornerLayer == null)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Failed to find adorner layer! TopLevel: {_topLevel != null}");
+                    return;
                 }
 
                 // Create ghost image - 80% opacity with subtle sway like Balatro
@@ -402,7 +496,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         Width = 71,
                         Height = 95,
                         Stretch = Stretch.Uniform,
-                        Opacity = 0.8
+                        Opacity = 1.0
                     });
                 }
 
@@ -440,44 +534,21 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     Opacity = 0.9
                                 }
                             }
-                        },
-                    ZIndex = 1000 // Ensure it's on top
+                        }
                 };
 
                 // Create transform and store reference so we can update it during drag
-                _adornerTransform = new TranslateTransform(startPosition.X - 35, startPosition.Y - 47);
+                _adornerTransform = new TranslateTransform(startPosition.X, startPosition.Y);
                 _dragAdorner.RenderTransform = _adornerTransform;
 
                 AdornerLayer.SetAdornedElement(_dragAdorner, this);
                 _adornerLayer.Children.Add(_dragAdorner);
 
-                // CRITICAL FIX: Attach global pointer handler to TopLevel so adorner follows cursor during drag
-                // During DragDrop.DoDragDrop(), normal PointerMoved events don't reach the control
-                if (_topLevel != null)
-                {
-                    _topLevel.PointerMoved += OnPointerMovedDuringDrag;
-                    DebugLogger.Log("VisualBuilderTab", "Global pointer handler attached to TopLevel");
-                }
-
                 DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
-                return true;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("VisualBuilderTab", $"Failed to create drag adorner: {ex.Message}");
-                return false;
-            }
-        }
-
-        private void OnPointerMovedDuringDrag(object? sender, PointerEventArgs e)
-        {
-            // Update adorner position to follow cursor during drag
-            if (_dragAdorner != null && _adornerTransform != null && _topLevel != null)
-            {
-                // Get position relative to TopLevel (where adorner layer is)
-                var position = e.GetPosition(_topLevel);
-                _adornerTransform.X = position.X - 35; // Center on cursor (half of 71px width)
-                _adornerTransform.Y = position.Y - 47; // Center on cursor (half of 95px height)
             }
         }
 
@@ -485,13 +556,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             try
             {
-                // CRITICAL: Detach global pointer handler from TopLevel to prevent memory leak
-                if (_topLevel != null)
-                {
-                    _topLevel.PointerMoved -= OnPointerMovedDuringDrag;
-                    DebugLogger.Log("VisualBuilderTab", "Global pointer handler detached from TopLevel");
-                }
-
                 if (_dragAdorner != null && _adornerLayer != null)
                 {
                     _adornerLayer.Children.Remove(_dragAdorner);
@@ -524,6 +588,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            // Detach global pointer handlers
+            if (_topLevel != null)
+            {
+                _topLevel.PointerMoved -= OnPointerMovedManualDrag;
+                _topLevel.PointerReleased -= OnPointerReleasedManualDrag;
+            }
+
             // Ensure cleanup on navigation away
             RemoveDragAdorner();
             base.OnDetachedFromVisualTree(e);
