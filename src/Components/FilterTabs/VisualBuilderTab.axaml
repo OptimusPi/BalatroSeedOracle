@@ -78,7 +78,8 @@
                                        PointerPressed="OnItemPointerPressed"
                                        Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
                                 <i:Interaction.Behaviors>
-                                    <behaviors:CardDragBehavior IsEnabled="False" JuiceAmount="0.4"/>
+                                    <!-- Enabled: Cards sway on hover and when spawned -->
+                                    <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                 </i:Interaction.Behaviors>
                                 <Grid>
                                     <!-- Main card image -->
@@ -120,24 +121,25 @@
         </Grid>
 
         <!-- RIGHT: Drop Zones (clean, no scrollbars!) -->
-        <StackPanel Grid.Column="2" Spacing="15" VerticalAlignment="Top">
+        <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Top">
                     <!-- MUST HAVE Zone -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="MUST HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Green}"
-                                   HorizontalAlignment="Left"/>
-                        <Border Name="MustDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
-                                BorderBrush="{StaticResource Green}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
-                                Margin="0"
-                                DragDrop.AllowDrop="True">
+                    <Border Name="MustDropZone"
+                            Background="{StaticResource VeryDarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            MinHeight="100"
+                            MaxHeight="200"
+                            Padding="8"
+                            Margin="0"
+                            DragDrop.AllowDrop="True">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="MUST HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Green}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
                             <ItemsControl ItemsSource="{Binding SelectedMust}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -193,26 +195,27 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </Border>
-                    </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <!-- SHOULD HAVE Zone -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="SHOULD HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Blue}"
-                                   HorizontalAlignment="Left"/>
-                        <Border Name="ShouldDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
-                                BorderBrush="{StaticResource Blue}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
-                                Margin="0"
-                                DragDrop.AllowDrop="True">
+                    <Border Name="ShouldDropZone"
+                            Background="{StaticResource VeryDarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            MinHeight="100"
+                            MaxHeight="200"
+                            Padding="8"
+                            Margin="0"
+                            DragDrop.AllowDrop="True">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="SHOULD HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Blue}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
                             <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -268,25 +271,27 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </Border>
-                    </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <!-- MUST NOT HAVE Zone -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="MUST NOT HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Red}"
-                                   HorizontalAlignment="Left"/>
-                        <Border Name="MustNotDropZone"
-                                Background="{StaticResource VeryDarkBackground}"
-                                BorderBrush="{StaticResource Red}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                MinHeight="120"
-                                Padding="8"
-                                DragDrop.AllowDrop="True">
+                    <Border Name="MustNotDropZone"
+                            Background="{StaticResource VeryDarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            MinHeight="100"
+                            MaxHeight="200"
+                            Padding="8"
+                            Margin="0"
+                            DragDrop.AllowDrop="True">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="MUST NOT HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource Red}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
                             <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -342,8 +347,8 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </Border>
-                    </StackPanel>
+                        </StackPanel>
+                    </Border>
         </StackPanel>
     </Grid>
 </UserControl>

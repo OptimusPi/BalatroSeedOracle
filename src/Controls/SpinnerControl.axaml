@@ -59,12 +59,12 @@
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
-        
-        <Style Selector="Button.value-badge:pointerover">
-            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
-        </Style>
+
+        <!-- Removed hover style - value badge is not clickable -->
+
         
         <!-- Value badge drop shadow -->
         <Style Selector="Grid.value-badge-container">

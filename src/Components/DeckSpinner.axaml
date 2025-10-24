@@ -5,14 +5,14 @@
 
     <!-- Override inner spinner visuals to resemble Balatro deck tab -->
     <UserControl.Styles>
-        <!-- Taller side bars for navigation -->
+        <!-- Tall skinny navigation arrows that stretch with panel -->
         <Style Selector="Button#PrevButton">
-            <Setter Property="Height" Value="148"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Width" Value="44"/>
             <Setter Property="FontSize" Value="28"/>
         </Style>
         <Style Selector="Button#NextButton">
-            <Setter Property="Height" Value="148"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Width" Value="44"/>
             <Setter Property="FontSize" Value="28"/>
         </Style>

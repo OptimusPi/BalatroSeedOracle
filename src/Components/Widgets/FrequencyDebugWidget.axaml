@@ -3,9 +3,14 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
              x:DataType="vm:FrequencyDebugWidgetViewModel"
              x:CompileBindings="True">
+
+    <UserControl.Resources>
+        <conv:BoolToLedColorConverter x:Key="BoolToLedColor"/>
+    </UserControl.Resources>
 
     <!-- Single container with drag behavior -->
     <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -166,32 +171,74 @@
                                 <Button Grid.Column="1" Content="Reset" Classes="btn-red" FontSize="10" Padding="8,4" Command="{Binding ResetMaxValuesCommand}"/>
                             </Grid>
 
-                            <!-- Bass Max Values -->
-                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
-                                <TextBlock Grid.Column="0" Text="BASS" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{Binding BassAvgMax, StringFormat='Avg: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                                <TextBlock Grid.Column="2" Text="{Binding BassPeakMax, StringFormat='Peak: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                            </Grid>
+                            <!-- Bass Max Values with LED and Threshold -->
+                            <StackPanel Spacing="2">
+                                <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
+                                    <TextBlock Grid.Column="0" Text="BASS" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding BassAvgMax, StringFormat='Avg: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding BassPeakMax, StringFormat='Peak: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <!-- LED Indicator -->
+                                    <Ellipse Grid.Column="3" Width="20" Height="20" HorizontalAlignment="Right" Margin="6,0,0,0">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding BassBeatBrightness, Converter={StaticResource BoolToLedColor}}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,50">
+                                    <TextBlock Grid.Column="0" Text="Trigger:" Foreground="{StaticResource VeryLightGrey}" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Slider Grid.Column="1" Value="{Binding BassThreshold}" Minimum="0" Maximum="{Binding BassPeakMax}" Height="12" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding BassThreshold, StringFormat='{}{0:F2}'}"
+                                               Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
 
-                            <!-- Mid Max Values -->
-                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
-                                <TextBlock Grid.Column="0" Text="MID" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{Binding MidAvgMax, StringFormat='Avg: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                                <TextBlock Grid.Column="2" Text="{Binding MidPeakMax, StringFormat='Peak: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                            </Grid>
+                            <!-- Mid Max Values with LED and Threshold -->
+                            <StackPanel Spacing="2">
+                                <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
+                                    <TextBlock Grid.Column="0" Text="MID" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding MidAvgMax, StringFormat='Avg: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding MidPeakMax, StringFormat='Peak: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <!-- LED Indicator -->
+                                    <Ellipse Grid.Column="3" Width="20" Height="20" HorizontalAlignment="Right" Margin="6,0,0,0">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding MidBeatBrightness, Converter={StaticResource BoolToLedColor}}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,50">
+                                    <TextBlock Grid.Column="0" Text="Trigger:" Foreground="{StaticResource VeryLightGrey}" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Slider Grid.Column="1" Value="{Binding MidThreshold}" Minimum="0" Maximum="{Binding MidPeakMax}" Height="12" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding MidThreshold, StringFormat='{}{0:F2}'}"
+                                               Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
 
-                            <!-- High Max Values -->
-                            <Grid ColumnDefinitions="45,*,*" RowDefinitions="Auto">
-                                <TextBlock Grid.Column="0" Text="HIGH" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{Binding HighAvgMax, StringFormat='Avg: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                                <TextBlock Grid.Column="2" Text="{Binding HighPeakMax, StringFormat='Peak: {0:F3}'}"
-                                           Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
-                            </Grid>
+                            <!-- High Max Values with LED and Threshold -->
+                            <StackPanel Spacing="2">
+                                <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
+                                    <TextBlock Grid.Column="0" Text="HIGH" Foreground="{StaticResource White}" FontSize="10" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding HighAvgMax, StringFormat='Avg: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding HighPeakMax, StringFormat='Peak: {0:F3}'}"
+                                               Foreground="#00d4ff" FontFamily="Consolas" FontSize="10" Margin="4,0"/>
+                                    <!-- LED Indicator -->
+                                    <Ellipse Grid.Column="3" Width="20" Height="20" HorizontalAlignment="Right" Margin="6,0,0,0">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding HighBeatBrightness, Converter={StaticResource BoolToLedColor}}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,50">
+                                    <TextBlock Grid.Column="0" Text="Trigger:" Foreground="{StaticResource VeryLightGrey}" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Slider Grid.Column="1" Value="{Binding HighThreshold}" Minimum="0" Maximum="{Binding HighPeakMax}" Height="12" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding HighThreshold, StringFormat='{}{0:F2}'}"
+                                               Foreground="{StaticResource Gold}" FontFamily="Consolas" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 

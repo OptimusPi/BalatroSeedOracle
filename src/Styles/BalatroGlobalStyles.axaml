@@ -67,7 +67,12 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    
+
+    <!-- Button hover - darken background slightly on hover -->
+    <Style Selector="Button:not(.SystemCaptionButton):pointerover">
+        <Setter Property="Opacity" Value="0.85" />
+    </Style>
+
     <!-- Button hover - enhanced shadow effects for red buttons -->
     <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
@@ -307,6 +312,7 @@
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="MaxWidth" Value="160" />
+        <Setter Property="Focusable" Value="False" />
     </Style>
     <Style Selector="Button.nav-button:pointerover">
         <Setter Property="Background" Value="{StaticResource RedHover}" />

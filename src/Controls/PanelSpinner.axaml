@@ -5,12 +5,12 @@
     <UserControl.Styles>
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
-            <Setter Property="Width" Value="50"/>
+            <Setter Property="Width" Value="36"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -53,13 +53,13 @@
         
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
-            <!-- Match Balatro’s inner panel tone and tighter sizing -->
+            <!-- Match Balatro's inner panel tone and tighter sizing -->
             <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="300"/>
-            <Setter Property="MinHeight" Value="240"/>
-            <Setter Property="MaxHeight" Value="300"/>
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="MinHeight" Value="220"/>
+            <Setter Property="MaxHeight" Value="280"/>
         </Style>
         
         <!-- Title text style -->
@@ -173,13 +173,12 @@
                 
                 <!-- Description (fixed height - no growing!) -->
                 <Border Grid.Row="2"
-                        Height="66"
+                        Height="56"
                         Margin="10,2,10,2"
                         Background="{StaticResource DarkBackground}"
-                        BorderBrush="{StaticResource ModalBorder}"
-                        BorderThickness="2"
+                        BorderThickness="0"
                         CornerRadius="6"
-                        Padding="8,6">
+                        Padding="8,4">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
                                VerticalAlignment="Center"

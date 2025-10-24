@@ -15,14 +15,14 @@
         <!-- Modal positioning grid -->
         <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="45"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="45"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="35"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style (RESPONSIVE!) -->

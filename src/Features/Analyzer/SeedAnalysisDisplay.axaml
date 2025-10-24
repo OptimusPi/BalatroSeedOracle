@@ -5,6 +5,12 @@
              x:Class="BalatroSeedOracle.Features.Analyzer.SeedAnalysisDisplay"
              x:DataType="models:SeedAnalysisModel">
 
+    <UserControl.Resources>
+        <conv:ShopItemSpriteConverter x:Key="ShopItemSpriteConverter"/>
+        <conv:BoosterPackSpriteConverter x:Key="BoosterPackSpriteConverter"/>
+        <conv:TagSpriteConverter x:Key="TagSpriteConverter"/>
+    </UserControl.Resources>
+
     <Grid RowDefinitions="Auto,Auto, *">
         <!-- Header -->
         <TextBlock Grid.Row="0"
@@ -49,59 +55,142 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <!-- Tags Row -->
-                                <Grid ColumnDefinitions="*,*" Margin="0,6">
-                                    <StackPanel Grid.Column="0" Spacing="4">
-                                        <TextBlock Text="SMALL TAG"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource TextInactive}"/>
-                                        <TextBlock Text="{Binding SmallBlindTag.TagName}"
-                                                   Foreground="{StaticResource White}"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="4">
-                                        <TextBlock Text="BIG TAG"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource TextInactive}"/>
-                                        <TextBlock Text="{Binding BigBlindTag.TagName}"
-                                                   Foreground="{StaticResource White}"/>
-                                    </StackPanel>
-                                </Grid>
+                                <!-- Skip Tags with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
+                                    <TextBlock Text="SKIP TAGS"
+                                               FontWeight="Bold"
+                                               FontSize="14"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <!-- Small Blind Tag -->
+                                        <Border Background="{StaticResource VeryDarkBackground}"
+                                                BorderThickness="0"
+                                                CornerRadius="20"
+                                                Padding="10,6"
+                                                Margin="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Image Source="{Binding SmallBlindTag, Converter={StaticResource TagSpriteConverter}}"
+                                                       Width="34"
+                                                       Height="34"
+                                                       Stretch="Uniform"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Small Blind"
+                                                               FontSize="9"
+                                                               Opacity="0.7"
+                                                               Foreground="{StaticResource VeryLightGrey}"/>
+                                                    <TextBlock Text="{Binding SmallBlindTag.TagName}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource White}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                        <!-- Big Blind Tag -->
+                                        <Border Background="{StaticResource VeryDarkBackground}"
+                                                BorderThickness="0"
+                                                CornerRadius="20"
+                                                Padding="10,6"
+                                                Margin="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Image Source="{Binding BigBlindTag, Converter={StaticResource TagSpriteConverter}}"
+                                                       Width="34"
+                                                       Height="34"
+                                                       Stretch="Uniform"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Big Blind"
+                                                               FontSize="9"
+                                                               Opacity="0.7"
+                                                               Foreground="{StaticResource VeryLightGrey}"/>
+                                                    <TextBlock Text="{Binding BigBlindTag.TagName}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource White}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </StackPanel>
 
-                                <!-- Shop Queue -->
-                                <StackPanel Spacing="4" Margin="0,6">
+                                <!-- Shop Queue with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="SHOP QUEUE"
                                                FontWeight="Bold"
+                                               FontSize="14"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding ShopItems}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="models:ShopItemModel">
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBlock Text="{Binding ItemName}"
-                                                               Foreground="{StaticResource White}"/>
-                                                    <TextBlock Text="{Binding EditionName}"
-                                                               Foreground="{Binding EditionColor}"
-                                                               IsVisible="{Binding HasEdition}"/>
-                                                </StackPanel>
+                                                <Border Background="{StaticResource VeryDarkBackground}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="6"
+                                                        Width="80"
+                                                        Height="120"
+                                                        Margin="4">
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                        <!-- Item Sprite -->
+                                                        <Image Source="{Binding Converter={StaticResource ShopItemSpriteConverter}}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"/>
+                                                        <!-- Edition Badge -->
+                                                        <TextBlock Text="{Binding EditionName}"
+                                                                   FontSize="9"
+                                                                   HorizontalAlignment="Center"
+                                                                   Foreground="{Binding EditionColor}"
+                                                                   IsVisible="{Binding HasEdition}"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </StackPanel>
 
-                                <!-- Booster Packs -->
-                                <StackPanel Spacing="4" Margin="0,6">
+                                <!-- Booster Packs with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="BOOSTER PACKS"
                                                FontWeight="Bold"
+                                               FontSize="14"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding BoosterPacks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="models:BoosterPackModel">
-                                                <Border Classes="badge-container" Margin="0,0,8,8">
-                                                    <StackPanel Spacing="6">
+                                                <Border Background="{StaticResource VeryDarkBackground}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="6"
+                                                        MinWidth="90"
+                                                        MaxWidth="140"
+                                                        MinHeight="130"
+                                                        Margin="4"
+                                                        Padding="6">
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                        <!-- Pack Sprite -->
+                                                        <Image Source="{Binding Converter={StaticResource BoosterPackSpriteConverter}}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"/>
+                                                        <!-- Pack Name -->
                                                         <TextBlock Text="{Binding PackName}"
-                                                                   FontWeight="Bold"
+                                                                   FontSize="10"
+                                                                   HorizontalAlignment="Center"
                                                                    Foreground="{StaticResource White}"/>
+                                                        <!-- Pack Items -->
                                                         <TextBlock Text="{Binding ItemsText}"
-                                                                   Foreground="{StaticResource White}"/>
+                                                                   FontSize="8"
+                                                                   HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap"
+                                                                   MaxWidth="90"
+                                                                   Opacity="0.8"
+                                                                   Margin="0,2,0,0"
+                                                                   Foreground="{StaticResource VeryLightGrey}"
+                                                                   IsVisible="{Binding HasItems}"/>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>

@@ -66,6 +66,29 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private double _highPeakMax;
 
+        // Beat detection thresholds
+        [ObservableProperty]
+        private double _bassThreshold = 0.5;
+
+        [ObservableProperty]
+        private double _midThreshold = 0.3;
+
+        [ObservableProperty]
+        private double _highThreshold = 0.2;
+
+        // LED brightness values (0.0 to 1.0, decays naturally)
+        [ObservableProperty]
+        private double _bassBeatBrightness = 0.0;
+
+        [ObservableProperty]
+        private double _midBeatBrightness = 0.0;
+
+        [ObservableProperty]
+        private double _highBeatBrightness = 0.0;
+
+        // Decay rate per frame (0.75 = 25% decay per frame)
+        private const double DECAY_RATE = 0.75;
+
         public FrequencyDebugWidgetViewModel()
         {
             WidgetTitle = "Frequency Analyzer";
@@ -133,6 +156,23 @@ namespace BalatroSeedOracle.ViewModels
                             if (bands.MidPeak > MidPeakMax) MidPeakMax = bands.MidPeak;
                             if (bands.HighAvg > HighAvgMax) HighAvgMax = bands.HighAvg;
                             if (bands.HighPeak > HighPeakMax) HighPeakMax = bands.HighPeak;
+
+                            // Beat detection with decay
+                            // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
+                            if (bands.BassPeak > BassThreshold)
+                                BassBeatBrightness = 1.0;
+                            else
+                                BassBeatBrightness *= DECAY_RATE;
+
+                            if (bands.MidPeak > MidThreshold)
+                                MidBeatBrightness = 1.0;
+                            else
+                                MidBeatBrightness *= DECAY_RATE;
+
+                            if (bands.HighPeak > HighThreshold)
+                                HighBeatBrightness = 1.0;
+                            else
+                                HighBeatBrightness *= DECAY_RATE;
                         });
 
                         // ~60 FPS update rate

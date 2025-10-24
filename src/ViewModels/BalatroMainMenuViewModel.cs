@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
 using AudioSource = BalatroSeedOracle.Controls.BalatroShaderBackground.AudioSource;
@@ -379,9 +380,59 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var profile = _userProfileService.GetProfile();
-                // TODO: Visualizer settings loading disabled - will be replaced by proper effect binding system
+                var settings = profile.VisualizerSettings ?? new VisualizerSettings();
 
-                DebugLogger.Log("BalatroMainMenuViewModel", "Visualizer settings loading temporarily disabled - awaiting effect binding implementation");
+                if (profile.VisualizerSettings == null)
+                {
+                    profile.VisualizerSettings = settings;
+                    _userProfileService.SaveProfile(profile);
+                }
+
+                // Theme + color selections
+                var themeIndex = Math.Clamp(settings.ThemeIndex, 0, 8);
+                ApplyVisualizerTheme(shader, themeIndex);
+
+                var mainColorIndex = Math.Clamp(settings.MainColor, 0, 8);
+                ApplyMainColor(shader, mainColorIndex);
+
+                var accentColorIndex = Math.Clamp(settings.AccentColor, 0, 8);
+                ApplyAccentColor(shader, accentColorIndex);
+
+                // Shader parameter preferences
+                var timeSpeed = Math.Clamp(settings.TimeSpeed, 0f, 3f);
+                ApplyTimeSpeed(shader, timeSpeed);
+
+                var audioIntensity = Math.Clamp(settings.AudioIntensity, 0f, 2f);
+                ApplyAudioIntensity(shader, audioIntensity);
+
+                var parallaxStrength = Math.Clamp(settings.ParallaxStrength, 0f, 2f);
+                ApplyParallaxStrength(shader, parallaxStrength);
+
+                // Audio effect source mappings (effect binding stubs for future work)
+                ApplyShadowFlickerSource(shader, Math.Clamp(settings.ShadowFlickerSource, 0, 4));
+                ApplySpinSource(shader, Math.Clamp(settings.SpinSource, 0, 4));
+                ApplyTwirlSource(shader, Math.Clamp(settings.TwirlSource, 0, 4));
+                ApplyZoomThumpSource(shader, Math.Clamp(settings.ZoomThumpSource, 0, 4));
+                ApplyColorSaturationSource(shader, Math.Clamp(settings.ColorSaturationSource, 0, 4));
+                ApplyBeatPulseSource(shader, Math.Clamp(settings.BeatPulseSource, 0, 4));
+
+                // Per-track volume balancing for SoundFlow audio stems
+                if (_soundFlowAudioManager != null)
+                {
+                    SetTrackVolume("Drums1", Math.Clamp(settings.Drums1Volume, 0f, 1f));
+                    SetTrackVolume("Drums2", Math.Clamp(settings.Drums2Volume, 0f, 1f));
+                    SetTrackVolume("Bass1", Math.Clamp(settings.Bass1Volume, 0f, 1f));
+                    SetTrackVolume("Bass2", Math.Clamp(settings.Bass2Volume, 0f, 1f));
+                    SetTrackVolume("Chords1", Math.Clamp(settings.Chords1Volume, 0f, 1f));
+                    SetTrackVolume("Chords2", Math.Clamp(settings.Chords2Volume, 0f, 1f));
+                    SetTrackVolume("Melody1", Math.Clamp(settings.Melody1Volume, 0f, 1f));
+                    SetTrackVolume("Melody2", Math.Clamp(settings.Melody2Volume, 0f, 1f));
+                }
+
+                DebugLogger.Log(
+                    "BalatroMainMenuViewModel",
+                    $"Visualizer settings applied (Theme={themeIndex}, MainColor={mainColorIndex}, AccentColor={accentColorIndex}, TimeSpeed={timeSpeed:F2}, AudioIntensity={audioIntensity:F2})"
+                );
             }
             catch (Exception ex)
             {

@@ -23,9 +23,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
         private AdornerLayer? _adornerLayer;
-        private TranslateTransform? _adornerTransform;
         private TopLevel? _topLevel;
         private bool _isDragging = false;
+        private bool _isAnimating = false; // Track if rubber-band animation is playing
         private Avalonia.Point _dragStartPosition;
         private Control? _originalDragSource; // Store the original control to animate back to
         private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
@@ -66,6 +66,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         
         private void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
+            // Prevent starting a new drag if one is already in progress or animating
+            if (_isDragging || _isAnimating) return;
+
             try
             {
                 Models.FilterItem? item = null;
@@ -137,6 +140,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnDropZoneItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
+            // Prevent starting a new drag if one is already in progress or animating
+            if (_isDragging || _isAnimating) return;
+
             try
             {
                 var grid = sender as Grid;
@@ -440,6 +446,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (_dragAdorner == null || _topLevel == null) return;
 
+            _isAnimating = true; // Prevent new drags during animation
+
             try
             {
                 // Get current position
@@ -477,6 +485,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             catch (Exception ex)
             {
                 DebugLogger.LogError("VisualBuilderTab", $"Error animating ghost back: {ex.Message}");
+            }
+            finally
+            {
+                _isAnimating = false; // Allow new drags after animation completes
             }
         }
 
@@ -761,7 +773,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Don't use SetAdornedElement - it causes relative positioning issues
                 _adornerLayer.Children.Add(_dragAdorner);
 
-                DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
+                // TRIGGER THE SWAY ANIMATION manually by simulating a pointer press on the card
+                // Since the ghost won't receive real pointer events, we fake them
+                if (_topLevel != null)
+                {
+                    var fakePointerArgs = new PointerPressedEventArgs(
+                        cardContent,
+                        new Avalonia.Input.Pointer(0, Avalonia.Input.PointerType.Mouse, true),
+                        _topLevel,
+                        new Avalonia.Point(35, 47), // Center of the card
+                        (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                        new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                        KeyModifiers.None);
+
+                    cardContent.RaiseEvent(fakePointerArgs);
+                }
+
+                DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y}) with sway animation triggered");
             }
             catch (Exception ex)
             {

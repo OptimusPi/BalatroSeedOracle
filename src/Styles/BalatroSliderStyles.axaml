@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==================================================================
+         BALATRO SLIDER STYLE
+         Mimics the Balatro game slider design:
+         - Empty dark gray track/slit
+         - Filled red bar that grows from left (like a thermometer!)
+         - No visible thumb (just drag anywhere on the bar)
+         ================================================================== -->
+
+    <Style Selector="Slider:horizontal">
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="MinHeight" Value="16"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Slider">
+                <Grid>
+                    <!-- Background Track (empty dark slit) -->
+                    <Border Background="{StaticResource SliderEmpty}"
+                            CornerRadius="3"
+                            Height="12"
+                            VerticalAlignment="Center"/>
+
+                    <!-- Filled portion (red bar that grows) -->
+                    <Canvas VerticalAlignment="Center" Height="12">
+                        <Border x:Name="PART_SelectionRange"
+                                Background="{StaticResource Red}"
+                                CornerRadius="3"
+                                Height="12"
+                                Canvas.Left="0"
+                                Canvas.Top="0"/>
+                    </Canvas>
+
+                    <!-- Invisible thumb for interaction (covers whole track) -->
+                    <Track x:Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           Orientation="Horizontal">
+                        <Track.DecreaseButton>
+                            <RepeatButton Classes="trackButton" Opacity="0"/>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Classes="trackButton" Opacity="0"/>
+                        </Track.IncreaseButton>
+                        <Track.Thumb>
+                            <Thumb Width="0" Height="0" Opacity="0"/>
+                        </Track.Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Hide the track buttons -->
+    <Style Selector="Slider RepeatButton.trackButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="RepeatButton">
+                <Border Background="Transparent"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+</Styles>
