@@ -16,9 +16,9 @@ namespace BalatroSeedOracle.Converters
         {
             if (value is bool isDragging)
             {
-                // When dragging: 15% opacity (very faint, like card was "picked up")
+                // When dragging: 0% opacity (completely invisible - card was "picked up")
                 // When not dragging: 100% opacity (normal)
-                return isDragging ? 0.15 : 1.0;
+                return isDragging ? 0.0 : 1.0;
             }
             return 1.0; // Default to fully visible
         }

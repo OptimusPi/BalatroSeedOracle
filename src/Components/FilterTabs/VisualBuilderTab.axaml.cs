@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
     {
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
+        private TranslateTransform? _adornerTransform; // Transform for positioning the ghost (allows sway to work)
         private AdornerLayer? _adornerLayer;
         private TopLevel? _topLevel;
         private bool _isDragging = false;
@@ -215,11 +216,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                // Update adorner position using Margin for absolute positioning
-                if (_dragAdorner != null && _topLevel != null)
+                // Update adorner position using TranslateTransform (allows CardDragBehavior sway to work)
+                if (_adornerTransform != null && _topLevel != null)
                 {
                     var position = e.GetPosition(_topLevel);
-                    _dragAdorner.Margin = new Thickness(position.X - 35, position.Y - 47, 0, 0);
+                    _adornerTransform.X = position.X - 35;
+                    _adornerTransform.Y = position.Y - 47;
 
                     // Log less frequently to avoid spam
                     if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 100 < 16) // ~10fps logging
@@ -450,10 +452,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
+                if (_adornerTransform == null) return;
+
                 // Get current position
-                var currentMargin = _dragAdorner.Margin;
-                var startX = currentMargin.Left;
-                var startY = currentMargin.Top;
+                var startX = _adornerTransform.X;
+                var startY = _adornerTransform.Y;
 
                 // Target is the original position
                 var targetX = _dragStartPosition.X - 35;
@@ -474,13 +477,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var currentX = startX + (targetX - startX) * eased;
                     var currentY = startY + (targetY - startY) * eased;
 
-                    _dragAdorner.Margin = new Thickness(currentX, currentY, 0, 0);
+                    _adornerTransform.X = currentX;
+                    _adornerTransform.Y = currentY;
 
                     await Task.Delay(16); // ~60fps
                 }
 
                 // Ensure final position is exact
-                _dragAdorner.Margin = new Thickness(targetX, targetY, 0, 0);
+                _adornerTransform.X = targetX;
+                _adornerTransform.Y = targetY;
             }
             catch (Exception ex)
             {
@@ -627,6 +632,111 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        private async void OnStartOverClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Get Balatro color resources from App.axaml
+            var darkBg = Application.Current?.FindResource("DarkBackground") as Avalonia.Media.SolidColorBrush;
+            var modalGrey = Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
+            var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
+            var white = Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
+
+            // Show confirmation dialog with Balatro-style colors
+            var dialog = new Window
+            {
+                Width = 400,
+                Height = 200,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Background = darkBg,
+                Title = "Start Over?",
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
+                SystemDecorations = SystemDecorations.Full
+            };
+
+            var panel = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 20
+            };
+
+            var label = new TextBlock
+            {
+                Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
+                FontSize = 16,
+                Foreground = white,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                TextAlignment = Avalonia.Media.TextAlignment.Center
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Spacing = 15
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 120,
+                Height = 45,
+                FontSize = 16,
+                Background = modalGrey,
+                Foreground = white,
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            var confirmButton = new Button
+            {
+                Content = "YES, START OVER",
+                Width = 180,
+                Height = 45,
+                FontSize = 16,
+                Background = red,
+                Foreground = white,
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            cancelButton.Click += (s, ev) => dialog.Close();
+            confirmButton.Click += (s, ev) =>
+            {
+                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                if (vm != null)
+                {
+                    // Clear all drop zones
+                    vm.SelectedMust.Clear();
+                    vm.SelectedShould.Clear();
+                    vm.SelectedMustNot.Clear();
+
+                    // Reset search filter
+                    vm.SearchFilter = "";
+
+                    // Reset to page 1 (Jokers)
+                    vm.CurrentPageIndex = 0;
+                }
+                dialog.Close();
+            };
+
+            buttonPanel.Children.Add(cancelButton);
+            buttonPanel.Children.Add(confirmButton);
+
+            panel.Children.Add(label);
+            panel.Children.Add(buttonPanel);
+
+            dialog.Content = panel;
+
+            var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (owner != null)
+            {
+                await dialog.ShowDialog(owner);
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -764,9 +874,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
                 };
 
-                // Use Margin for absolute positioning instead of RenderTransform
-                // This ensures the adorner appears exactly where we want it
-                _dragAdorner.Margin = new Thickness(startPosition.X, startPosition.Y, 0, 0);
+                // Create TranslateTransform for positioning (allows CardDragBehavior sway to work)
+                _adornerTransform = new TranslateTransform
+                {
+                    X = startPosition.X,
+                    Y = startPosition.Y
+                };
+                _dragAdorner.RenderTransform = _adornerTransform;
                 _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
                 _dragAdorner.VerticalAlignment = VerticalAlignment.Top;
 

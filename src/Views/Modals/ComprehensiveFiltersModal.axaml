@@ -326,7 +326,7 @@
                                 <TextBlock Text="✓"
                                            FontSize="40"
                                            Foreground="{StaticResource White}"
-                                           FontWeight="Bold"
+                                           
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>
@@ -342,7 +342,7 @@
                                 <TextBlock Text="✗"
                                            FontSize="40"
                                            Foreground="{StaticResource White}"
-                                           FontWeight="Bold"
+                                           
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>
@@ -365,7 +365,7 @@
                                 <TextBlock Text="?"
                                            FontSize="40"
                                            Foreground="{StaticResource White}"
-                                           FontWeight="Bold"
+                                           
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>

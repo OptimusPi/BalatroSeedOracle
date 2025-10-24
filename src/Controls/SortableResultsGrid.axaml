@@ -29,7 +29,7 @@
                                Foreground="{StaticResource White}" 
                                FontFamily="{StaticResource BalatroFont}" 
                                FontSize="18" 
-                               FontWeight="Bold"
+                               
                                VerticalAlignment="Center"/>
                     
                     <TextBlock Name="ResultsCountText" 

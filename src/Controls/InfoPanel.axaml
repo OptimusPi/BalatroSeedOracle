@@ -10,7 +10,7 @@
             <TextBlock Text="NOTE"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="18"
-                       FontWeight="Bold"
+                       
                        Foreground="{StaticResource TextDark}"/>
 
             <TextBlock Text="{Binding PanelText}"

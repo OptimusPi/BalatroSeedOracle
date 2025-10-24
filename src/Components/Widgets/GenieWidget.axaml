@@ -38,7 +38,7 @@
             </Border>
             <TextBlock Text="Genie"
                        FontSize="10"
-                       FontWeight="Bold"
+                       
                        Foreground="White"
                        HorizontalAlignment="Center"/>
         </StackPanel>
@@ -66,7 +66,7 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -82,7 +82,7 @@
                             <!-- Prompt Input -->
                             <StackPanel Spacing="6">
                                 <TextBlock Text="✨ Describe your dream seed:"
-                                           FontWeight="Bold"
+                                           
                                            FontSize="12"
                                            Foreground="{StaticResource White}"/>
                                 <TextBox Classes="widget-prompt-input"
@@ -118,12 +118,12 @@
                                     Padding="10">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="✅ Generated Filter:"
-                                               FontWeight="Bold"
+                                               
                                                FontSize="11"
                                                Foreground="{StaticResource Blue}"/>
 
                                     <TextBlock Text="{Binding GeneratedFilterName}"
-                                               FontWeight="Bold"
+                                               
                                                FontSize="12"
                                                Foreground="{StaticResource White}"/>
 

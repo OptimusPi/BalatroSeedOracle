@@ -2,7 +2,7 @@
 <SyntaxDefinition name="JSON" extensions=".json" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <Color name="Digits" foreground="#B5CEA8" />
   <Color name="String" foreground="#CE9178" />
-  <Color name="Keywords" foreground="#569CD6" fontWeight="bold" />
+  <Color name="Keywords" foreground="#569CD6"  />
   <Color name="PropertyName" foreground="#9CDCFE" />
   <Color name="Comment" foreground="#6A9955" fontStyle="italic" />
 

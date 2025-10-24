@@ -16,7 +16,7 @@
                 <TextBlock Text="{Binding FilterName}"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="14"
-                           FontWeight="Bold"
+                           
                            Foreground="{StaticResource White}"
                            VerticalAlignment="Center"/>
             </StackPanel>

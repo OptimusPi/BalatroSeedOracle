@@ -145,7 +145,7 @@
                                         <TextBlock Text="✓"
                                                    Foreground="White"
                                                    FontSize="12"
-                                                   FontWeight="Bold"
+                                                   
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"/>
                                     </Border>
@@ -162,7 +162,7 @@
                             Width="44"
                             Height="36"
                             FontSize="16"
-                            FontWeight="Bold"
+                            
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"
@@ -179,7 +179,7 @@
                         <TextBlock Text="{Binding PageIndicator}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   FontWeight="Bold"
+                                   
                                    Foreground="White"
                                    TextAlignment="Center"/>
                     </Border>
@@ -189,7 +189,7 @@
                             Width="44"
                             Height="36"
                             FontSize="16"
-                            FontWeight="Bold"
+                            
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding NextPageCommand}"
@@ -467,7 +467,7 @@
                                                                        Foreground="{StaticResource Red}"
                                                                        HorizontalAlignment="Center"
                                                                        VerticalAlignment="Center"
-                                                                       FontWeight="Bold"/>
+                                                                       />
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>

@@ -23,29 +23,44 @@
             </Grid.RowDefinitions>
 
             <!-- Top Section: Search -->
-            <StackPanel Grid.Row="0" Spacing="4">
-                <!-- Search Box (full width) -->
+            <StackPanel Grid.Row="0" Spacing="1">
+                <!-- Search Box (matches nav-button dimensions) -->
                 <TextBox Text="{Binding SearchFilter}"
                          Watermark="Search items..."
-                         Height="32"
+                         MinHeight="45"
+                         FontSize="16"
                          BorderThickness="0"
                          Background="{StaticResource SliderEmpty}"
+                         VerticalContentAlignment="Center"
+                         Padding="8,4"
                          Margin="0,0,8,0"/>
 
-                <!-- Search Button (full width) -->
+                <!-- Search Button (matches nav-button dimensions) -->
                 <Button Content="SEARCH"
                         Classes="btn-blue"
-                        Height="36"
-                        FontSize="14"
-                        FontWeight="Bold"
+                        MinHeight="45"
+                        FontSize="16"
+                        
+                        Padding="8,4"
                         Margin="0,0,8,0"
                         HorizontalAlignment="Stretch"/>
+
+                <!-- Start Over Button (matches nav-button dimensions) -->
+                <Button Content="START OVER"
+                        Classes="btn-orange"
+                        MinHeight="45"
+                        FontSize="16"
+                        
+                        Padding="8,4"
+                        Margin="0,0,8,0"
+                        HorizontalAlignment="Stretch"
+                        Click="OnStartOverClick"/>
 
                 <!-- Divider -->
                 <Rectangle Height="2"
                            Fill="{StaticResource ModalBorder}"
                            Opacity="0.3"
-                           Margin="0,4,8,4"/>
+                           Margin="0,8,8,8"/>
             </StackPanel>
 
             <!-- Category Buttons (filtered by current page) -->
@@ -83,17 +98,17 @@
                         IsVisible="{Binding IsCardsPage}"/>
             </StackPanel>
 
-            <!-- Bottom Section: Pagination (Challenges style) -->
+            <!-- Bottom Section: Pagination (matching LOAD tab style) -->
             <StackPanel Grid.Row="3"
                         Orientation="Horizontal"
                         HorizontalAlignment="Center"
-                        Spacing="4">
+                        Spacing="4"
+                        Margin="0,20,0,0">
                 <Button Content="&lt;"
                         Classes="btn-red"
                         Width="44"
                         Height="36"
                         FontSize="16"
-                        FontWeight="Bold"
                         Padding="0"
                         CornerRadius="8"
                         Command="{Binding PreviousPageCommand}"/>
@@ -103,16 +118,14 @@
                         BorderBrush="Transparent"
                         BorderThickness="0"
                         CornerRadius="8"
-                        Padding="12,8"
+                        Padding="16,8"
                         MinWidth="100"
                         VerticalAlignment="Center">
                     <TextBlock Text="{Binding PageIndicator}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="10"
-                               FontWeight="Bold"
+                               FontSize="14"
                                Foreground="White"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                               TextAlignment="Center"/>
                 </Border>
 
                 <Button Content="&gt;"
@@ -120,7 +133,6 @@
                         Width="44"
                         Height="36"
                         FontSize="16"
-                        FontWeight="Bold"
                         Padding="0"
                         CornerRadius="8"
                         Command="{Binding NextPageCommand}"/>
@@ -135,21 +147,6 @@
                 <RowDefinition Height="*"/>     <!-- Item Grid -->
             </Grid.RowDefinitions>
 
-            <!-- Header: Clear All button -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                <Button Content="🗑️ CLEAR ALL"
-                        ToolTip.Tip="Clear all drop zones"
-                        Click="OnClearAll"
-                        Height="36"
-                        Background="{StaticResource Red}"
-                        Foreground="White"
-                        FontFamily="{StaticResource BalatroFont}"
-                        FontSize="12"
-                        FontWeight="Bold"
-                        BorderThickness="0"
-                        CornerRadius="4"
-                        Padding="12,0"/>
-            </StackPanel>
 
             <!-- Item Cards Grid - Clean and flat -->
             <ScrollViewer Grid.Row="2"
@@ -164,8 +161,8 @@
                                        PointerPressed="OnItemPointerPressed"
                                        Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
                                 <i:Interaction.Behaviors>
-                                    <!-- Enabled: Cards sway on hover and when spawned -->
-                                    <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                    <!-- Enabled when NOT being dragged (disable sway on original while ghost is active) -->
+                                    <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
                                 </i:Interaction.Behaviors>
                                 <Grid>
                                     <!-- Main card image -->
@@ -222,7 +219,7 @@
                             <TextBlock Text="MUST HAVE"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="12"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="{StaticResource Green}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -250,7 +247,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    FontWeight="Bold"
+                                                    
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"
@@ -298,7 +295,7 @@
                             <TextBlock Text="SHOULD HAVE"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="12"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="{StaticResource Blue}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -326,7 +323,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    FontWeight="Bold"
+                                                    
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"
@@ -374,7 +371,7 @@
                             <TextBlock Text="MUST NOT HAVE"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="12"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="{StaticResource Red}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -402,7 +399,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    FontWeight="Bold"
+                                                    
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"

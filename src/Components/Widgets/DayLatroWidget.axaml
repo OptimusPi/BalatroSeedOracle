@@ -65,7 +65,7 @@
                             IsVisible="{Binding ShowNewDayBadge}">
                         <TextBlock Text="!"
                                    FontSize="12"
-                                   FontWeight="Bold"
+                                   
                                    Foreground="White"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
@@ -74,7 +74,7 @@
 
                 <TextBlock Text="Daylatro"
                            FontSize="10"
-                           FontWeight="Bold"
+                           
                            Foreground="White"
                            HorizontalAlignment="Center"/>
             </StackPanel>
@@ -103,7 +103,7 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -238,7 +238,7 @@
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding Initials}"
                                                            FontSize="12"
-                                                           FontWeight="Bold"/>
+                                                           />
 
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding Ante}"

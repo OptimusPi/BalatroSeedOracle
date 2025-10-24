@@ -42,7 +42,7 @@
             </Border>
             <TextBlock Text="FFT"
                        FontSize="10"
-                       FontWeight="Bold"
+                       
                        Foreground="White"
                        HorizontalAlignment="Center"/>
         </StackPanel>
@@ -69,7 +69,7 @@
                             <TextBlock Text="📊" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="Frequency Analyzer"
                                        FontSize="13"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -81,7 +81,7 @@
 
                     <!-- Track Selector -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Track" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="12"/>
+                        <TextBlock Text="Track" Foreground="{StaticResource Gold}"  FontSize="12"/>
                         <ComboBox SelectedIndex="{Binding SelectedTrackIndex}" HorizontalAlignment="Stretch" FontSize="11">
                             <ComboBoxItem Content="Bass1"/>
                             <ComboBoxItem Content="Bass2"/>
@@ -167,7 +167,7 @@
                     <Border BorderBrush="{StaticResource Gold}" BorderThickness="1" CornerRadius="4" Padding="8" Background="#1a1e21">
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="📈 CAPTURED MAX VALUES" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Grid.Column="0" Text="📈 CAPTURED MAX VALUES" Foreground="{StaticResource Gold}"  FontSize="11"/>
                                 <Button Grid.Column="1" Content="Reset" Classes="btn-red" FontSize="10" Padding="8,4" Command="{Binding ResetMaxValuesCommand}"/>
                             </Grid>
 

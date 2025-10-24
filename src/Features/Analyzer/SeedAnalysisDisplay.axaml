@@ -41,14 +41,14 @@
                                 <Grid ColumnDefinitions="*,*" Margin="0,6">
                                     <StackPanel Grid.Column="0" Spacing="4">
                                         <TextBlock Text="BOSS"
-                                                   FontWeight="Bold"
+                                                   
                                                    Foreground="{StaticResource TextInactive}"/>
                                         <TextBlock Text="{Binding BossName}"
                                                    Foreground="{StaticResource White}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4">
                                         <TextBlock Text="VOUCHER"
-                                                   FontWeight="Bold"
+                                                   
                                                    Foreground="{StaticResource TextInactive}"/>
                                         <TextBlock Text="{Binding VoucherName}"
                                                    Foreground="{StaticResource White}"/>
@@ -58,7 +58,7 @@
                                 <!-- Skip Tags with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="SKIP TAGS"
-                                               FontWeight="Bold"
+                                               
                                                FontSize="14"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <WrapPanel Orientation="Horizontal">
@@ -112,7 +112,7 @@
                                 <!-- Shop Queue with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="SHOP QUEUE"
-                                               FontWeight="Bold"
+                                               
                                                FontSize="14"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding ShopItems}">
@@ -151,7 +151,7 @@
                                 <!-- Booster Packs with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="BOOSTER PACKS"
-                                               FontWeight="Bold"
+                                               
                                                FontSize="14"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding BoosterPacks}">

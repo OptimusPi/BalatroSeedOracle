@@ -39,7 +39,7 @@
                             VerticalAlignment="Center">
                     <TextBlock Text="{Binding ResultCounter}"
                                FontSize="16"
-                               FontWeight="Bold"
+                               
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Right"
                                Width="180"/>
@@ -65,12 +65,12 @@
                 <TextBlock Grid.Column="0"
                            Text="SEED: "
                            FontSize="18"
-                           FontWeight="Bold"
+                           
                            Foreground="{StaticResource TextInactive}"/>
                 <TextBlock Grid.Column="1"
                            Text="{Binding CurrentSeed}"
                            FontSize="18"
-                           FontWeight="Bold"
+                           
                            Foreground="{StaticResource White}"
                            Margin="5,0,0,0"/>
             </Grid>
@@ -90,7 +90,7 @@
                     <TextBlock Text="🃏 Analyzing seed..."
                                Classes="info-badge-large"
                                FontSize="24"
-                               FontWeight="Bold"
+                               
                                HorizontalAlignment="Center"/>
                 </Border>
 
@@ -119,7 +119,7 @@
                             ToolTip.Tip="Previous Ante (↑)"/>
                     <TextBlock Text="{Binding AnteNavigationDisplay}"
                                FontSize="16"
-                               FontWeight="Bold"
+                               
                                Foreground="{StaticResource White}"
                                VerticalAlignment="Center"/>
                     <Button Content="Next Ante ▼"

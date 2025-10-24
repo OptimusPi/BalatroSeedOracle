@@ -84,7 +84,7 @@
                     <TextBlock Text="{Binding PreviewName}"
                                Foreground="{Binding PreviewColor}"
                                FontSize="16"
-                               FontWeight="Bold"
+                               
                                HorizontalAlignment="Center"/>
 
                     <TextBlock Text="{Binding PreviewEffect}"

@@ -158,7 +158,7 @@
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="13"
                                     Foreground="{StaticResource Gold}"
-                                    FontWeight="Bold"/>
+                                    />
 
                             <!-- Total Score Header -->
                             <Button Grid.Column="1"
@@ -168,7 +168,7 @@
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="13"
                                     Foreground="{StaticResource Gold}"
-                                    FontWeight="Bold"/>
+                                    />
 
                             <!-- Details Header -->
                             <TextBlock Grid.Column="2"
@@ -176,7 +176,6 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="13"
                                        Foreground="{StaticResource Gold}"
-                                       FontWeight="Bold"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                         </Grid>
@@ -209,7 +208,7 @@
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
                                                    Foreground="{StaticResource Green}"
-                                                   FontWeight="Bold"
+                                                   
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"/>
 

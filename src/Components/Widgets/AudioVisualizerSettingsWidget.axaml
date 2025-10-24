@@ -38,7 +38,6 @@
             </Border>
             <TextBlock Text="Audio"
                        FontSize="10"
-                       FontWeight="Bold"
                        Foreground="White"
                        HorizontalAlignment="Center"/>
         </StackPanel>
@@ -66,7 +65,7 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       FontWeight="Bold"
+                                       
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -82,7 +81,7 @@
 
                         <!-- THEME SELECTION -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Theme" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
+                            <TextBlock Text="Theme" Foreground="{StaticResource Gold}"  FontSize="14"/>
                             <ComboBox SelectedIndex="{Binding ThemeIndex}" HorizontalAlignment="Stretch" FontSize="12">
                                 <ComboBoxItem Content="Default"/>
                                 <ComboBoxItem Content="Wave Rider"/>
@@ -98,7 +97,7 @@
 
                         <!-- CUSTOM COLORS (only shown when CUSTOMIZE selected) -->
                         <StackPanel Spacing="10" IsVisible="{Binding IsCustomTheme}">
-                            <TextBlock Text="Custom Colors" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
+                            <TextBlock Text="Custom Colors" Foreground="{StaticResource Gold}"  FontSize="14"/>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Text="Main" Foreground="{StaticResource White}" FontSize="12"/>
@@ -133,7 +132,7 @@
 
                         <!-- SHADER PARAMETERS - DIRECT CONTROL WITH CUSTOMIZABLE RANGES -->
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Shader Parameters" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
+                            <TextBlock Text="Shader Parameters" Foreground="{StaticResource Gold}"  FontSize="14"/>
                             <TextBlock Text="Adjust ranges and values for complete control" Foreground="#80FFFFFF" FontSize="11" Margin="0,-4,0,0"/>
 
                             <!-- Time -->
@@ -142,7 +141,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding TimeMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding TimeMin}" Maximum="{Binding TimeMax}" Value="{Binding TimeValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding TimeMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding TimeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding TimeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- SpinTime -->
@@ -151,7 +150,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding SpinTimeMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding SpinTimeMin}" Maximum="{Binding SpinTimeMax}" Value="{Binding SpinTimeValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding SpinTimeMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding SpinTimeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding SpinTimeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- Contrast -->
@@ -160,7 +159,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding ContrastMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding ContrastMin}" Maximum="{Binding ContrastMax}" Value="{Binding ContrastValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding ContrastMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding ContrastValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding ContrastValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- SpinAmount -->
@@ -169,7 +168,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding SpinAmountMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding SpinAmountMin}" Maximum="{Binding SpinAmountMax}" Value="{Binding SpinAmountValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding SpinAmountMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding SpinAmountValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding SpinAmountValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- ParallaxX -->
@@ -178,7 +177,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding ParallaxXMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding ParallaxXMin}" Maximum="{Binding ParallaxXMax}" Value="{Binding ParallaxXValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding ParallaxXMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding ParallaxXValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding ParallaxXValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- ParallaxY -->
@@ -187,7 +186,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding ParallaxYMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding ParallaxYMin}" Maximum="{Binding ParallaxYMax}" Value="{Binding ParallaxYValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding ParallaxYMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding ParallaxYValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding ParallaxYValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- ZoomScale -->
@@ -196,7 +195,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding ZoomScaleMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding ZoomScaleMin}" Maximum="{Binding ZoomScaleMax}" Value="{Binding ZoomScaleValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding ZoomScaleMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding ZoomScaleValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding ZoomScaleValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- Saturation -->
@@ -205,7 +204,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding SaturationMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding SaturationMin}" Maximum="{Binding SaturationMax}" Value="{Binding SaturationValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding SaturationMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding SaturationValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding SaturationValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- PixelSize -->
@@ -214,7 +213,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding PixelSizeMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding PixelSizeMin}" Maximum="{Binding PixelSizeMax}" Value="{Binding PixelSizeValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding PixelSizeMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding PixelSizeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding PixelSizeValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- SpinEase -->
@@ -223,7 +222,7 @@
                                 <TextBox Grid.Column="1" Text="{Binding SpinEaseMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding SpinEaseMin}" Maximum="{Binding SpinEaseMax}" Value="{Binding SpinEaseValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding SpinEaseMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding SpinEaseValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding SpinEaseValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- LoopCount (Paint Complexity) -->
@@ -232,11 +231,11 @@
                                 <TextBox Grid.Column="1" Text="{Binding LoopCountMin}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
                                 <Slider Grid.Column="2" Minimum="{Binding LoopCountMin}" Maximum="{Binding LoopCountMax}" Value="{Binding LoopCountValue}" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="3" Text="{Binding LoopCountMax}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Padding="4,2"/>
-                                <TextBox Grid.Column="4" Text="{Binding LoopCountValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
+                                <TextBox Grid.Column="4" Text="{Binding LoopCountValue}" Foreground="{StaticResource Gold}" FontFamily="Consolas"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="4,2" TextAlignment="Right"/>
                             </Grid>
 
                             <!-- Audio Source Triggers -->
-                            <TextBlock Text="Audio Triggers" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14" Margin="0,12,0,4"/>
+                            <TextBlock Text="Audio Triggers" Foreground="{StaticResource Gold}"  FontSize="14" Margin="0,12,0,4"/>
                             <TextBlock Text="Map audio tracks to shader effects" Foreground="#80FFFFFF" FontSize="11" Margin="0,-4,0,4"/>
 
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
@@ -280,7 +279,7 @@
 
                         <!-- PRESETS -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Presets" Foreground="{StaticResource Gold}" FontWeight="Bold" FontSize="14"/>
+                            <TextBlock Text="Presets" Foreground="{StaticResource Gold}"  FontSize="14"/>
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
                                 <ComboBox Grid.Column="0" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" HorizontalAlignment="Stretch" FontSize="11">
                                     <ComboBox.ItemTemplate>
@@ -295,7 +294,7 @@
                         </StackPanel>
 
                         <!-- ADVANCED (EXPANDER) -->
-                        <Expander Header="⚙️ Advanced Settings" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Gold}">
+                        <Expander Header="⚙️ Advanced Settings" FontSize="13"  Foreground="{StaticResource Gold}">
                             <StackPanel Spacing="10" Margin="0,8,0,0">
 
                                 <!-- Audio Event Triggers -->

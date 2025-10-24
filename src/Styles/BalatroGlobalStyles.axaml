@@ -280,9 +280,11 @@
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover">
         <Setter Property="Background" Value="{StaticResource RedHover}" />
+        <Setter Property="Opacity" Value="1.0" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pressed">
         <Setter Property="Background" Value="{StaticResource RedHover}" />
+        <Setter Property="Opacity" Value="1.0" />
     </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple">
