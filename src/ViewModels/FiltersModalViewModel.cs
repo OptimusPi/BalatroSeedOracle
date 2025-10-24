@@ -409,7 +409,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=LoadSave, 1=Visual, 2=JSON, 3=Save</param>
+        /// <param name="tabIndex">0=Visual, 1=JSON, 2=Save (LOAD tab removed)</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log("FiltersModalViewModel", $"UpdateTabVisibility called with tabIndex={tabIndex}");
@@ -425,18 +425,14 @@ namespace BalatroSeedOracle.ViewModels
             switch (tabIndex)
             {
                 case 0:
-                    IsLoadSaveTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "LoadSave tab visible, all others hidden");
-                    break;
-                case 1:
                     IsVisualTabVisible = true;
                     DebugLogger.Log("FiltersModalViewModel", "Visual tab visible, all others hidden");
                     break;
-                case 2:
+                case 1:
                     IsJsonTabVisible = true;
                     DebugLogger.Log("FiltersModalViewModel", "JSON tab visible, all others hidden");
                     break;
-                case 3:
+                case 2:
                     IsSaveTabVisible = true;
                     DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
                     break;
@@ -444,7 +440,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Log final state
             DebugLogger.Log("FiltersModalViewModel",
-                $"Final visibility state - LoadSave:{IsLoadSaveTabVisible} Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}");
+                $"Final visibility state - Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}");
         }
 
         /// <summary>
@@ -775,8 +771,7 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             // Order must match UpdateTabVisibility mapping:
-            // 0=LoadSave, 1=Visual, 2=JSON, 3=Save (TEST tab removed)
-            TabItems.Add(new TabItemViewModel("LOAD", CreateLoadTabContent()));
+            // 0=Visual, 1=JSON, 2=Save (LOAD tab removed - now using FilterSelectionModal)
             TabItems.Add(new TabItemViewModel("VISUAL BUILDER", visualBuilderTab));
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
             // Separate SAVE header with SaveFilterTab content

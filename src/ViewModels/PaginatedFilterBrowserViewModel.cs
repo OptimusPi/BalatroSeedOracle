@@ -317,6 +317,7 @@ namespace BalatroSeedOracle.ViewModels
         public int MustNotCount { get; set; }
         public bool IsCreateNew { get; set; } = false;
 
+        public string FilterId => System.IO.Path.GetFileNameWithoutExtension(FilePath);
         public string AuthorText => $"by {Author}";
         public string DateText => DateCreated.ToString("MMM dd, yyyy");
         public string StatsText => IsCreateNew ? "Start with a blank filter" : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";

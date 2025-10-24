@@ -168,25 +168,59 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show search modal
+        /// Show search modal - now uses FilterSelectionModal as gateway
         /// </summary>
-        private void ShowSearchModal()
+        private async void ShowSearchModal()
         {
-            var searchModal = new Modals.SearchModal();
-            // Set the MainMenu reference so CREATE NEW FILTER button works
-            searchModal.ViewModel.MainMenu = this;
-
-            var modal = new StandardModal("🎰 SEED SEARCH");
-            modal.SetContent(searchModal);
-            modal.BackClicked += (s, e) => HideModalContent();
-
-            ShowModalContent(modal, "🎰 SEED SEARCH");
+            var result = await this.ShowFilterSelectionModal(enableSearch: true);
+            if (!result.Cancelled && result.Action == Models.FilterAction.Search && result.FilterId != null)
+            {
+                this.ShowSearchModal(result.FilterId);
+            }
         }
 
         /// <summary>
-        /// Show filters modal (for creating/managing filters)
+        /// Show filters modal (for creating/managing filters) - now uses FilterSelectionModal as gateway
         /// </summary>
-        public void ShowFiltersModal()
+        public async void ShowFiltersModal()
+        {
+            var result = await this.ShowFilterSelectionModal(
+                enableEdit: true, enableCopy: true, enableDelete: true);
+
+            if (result.Cancelled) return;
+
+            switch (result.Action)
+            {
+                case Models.FilterAction.CreateNew:
+                    // Open designer with blank filter
+                    ShowFiltersModalDirect();
+                    break;
+                case Models.FilterAction.Edit:
+                    // Open designer with selected filter loaded
+                    if (result.FilterId != null)
+                        ShowFiltersModalDirect(result.FilterId);
+                    break;
+                case Models.FilterAction.Copy:
+                    // Clone the filter and open designer
+                    if (result.FilterId != null)
+                    {
+                        var clonedId = await CloneFilter(result.FilterId);
+                        if (!string.IsNullOrEmpty(clonedId))
+                            ShowFiltersModalDirect(clonedId);
+                    }
+                    break;
+                case Models.FilterAction.Delete:
+                    // Delete the filter
+                    if (result.FilterId != null)
+                        await DeleteFilter(result.FilterId);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Show filters modal directly (internal use - called after filter selection)
+        /// </summary>
+        private void ShowFiltersModalDirect(string? filterId = null)
         {
             var filtersModal = new Modals.FiltersModal();
 
@@ -224,9 +258,21 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show analyze modal
+        /// Show analyze modal - now uses FilterSelectionModal as gateway
         /// </summary>
-        private void ShowAnalyzeModal()
+        private async void ShowAnalyzeModal()
+        {
+            var result = await this.ShowFilterSelectionModal(enableAnalyze: true);
+            if (!result.Cancelled && result.Action == Models.FilterAction.Analyze && result.FilterId != null)
+            {
+                OpenAnalyzer(result.FilterId);
+            }
+        }
+
+        /// <summary>
+        /// Open analyzer with the specified filter
+        /// </summary>
+        private void OpenAnalyzer(string filterId)
         {
             var analyzeModal = new AnalyzeModal();
             var modal = new StandardModal("ANALYZE");
@@ -1047,6 +1093,95 @@ namespace BalatroSeedOracle.Views
                 e.Handled = true;
             }
             */
+        }
+
+        #endregion
+
+        #region Filter Management Helpers
+
+        /// <summary>
+        /// Get the parent window (needed for modal dialogs)
+        /// </summary>
+        public Window GetWindow()
+        {
+            return TopLevel.GetTopLevel(this) as Window
+                ?? throw new InvalidOperationException("Could not find parent window");
+        }
+
+        /// <summary>
+        /// Clone a filter and return the new filter ID
+        /// </summary>
+        private async Task<string> CloneFilter(string filterId)
+        {
+            try
+            {
+                var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                    ?? System.AppDomain.CurrentDomain.BaseDirectory;
+                var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (!System.IO.File.Exists(filterPath))
+                {
+                    DebugLogger.LogError("BalatroMainMenu", $"Filter not found: {filterPath}");
+                    return string.Empty;
+                }
+
+                var json = await System.IO.File.ReadAllTextAsync(filterPath);
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+
+                if (config != null)
+                {
+                    config.Name = $"{config.Name} (Copy)";
+                    config.DateCreated = DateTime.UtcNow;
+                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+
+                    var newId = $"{filterId}_copy_{DateTime.UtcNow.Ticks}";
+                    var newPath = System.IO.Path.Combine(filtersDir, $"{newId}.json");
+
+                    var newJson = System.Text.Json.JsonSerializer.Serialize(config,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    await System.IO.File.WriteAllTextAsync(newPath, newJson);
+
+                    DebugLogger.Log("BalatroMainMenu", $"Filter cloned: {filterId} -> {newId}");
+                    return newId;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error cloning filter: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Delete a filter
+        /// </summary>
+        private async Task DeleteFilter(string filterId)
+        {
+            try
+            {
+                var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                    ?? System.AppDomain.CurrentDomain.BaseDirectory;
+                var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (System.IO.File.Exists(filterPath))
+                {
+                    System.IO.File.Delete(filterPath);
+                    DebugLogger.Log("BalatroMainMenu", $"Filter deleted: {filterId}");
+                }
+                else
+                {
+                    DebugLogger.Log("BalatroMainMenu", $"Filter not found for deletion: {filterPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error deleting filter: {ex.Message}");
+            }
+
+            await Task.CompletedTask;
         }
 
         #endregion

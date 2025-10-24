@@ -8,6 +8,7 @@ using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using System.Reflection;
 
 namespace BalatroSeedOracle.Helpers
@@ -31,6 +32,33 @@ namespace BalatroSeedOracle.Helpers
             modal.BackClicked += (s, ev) => menu.HideModalContent();
             menu.ShowModalContent(modal, title);
             return modal;
+        }
+
+        /// <summary>
+        /// Creates and shows the filter selection modal (gateway to Search, Designer, or Analyzer)
+        /// </summary>
+        /// <param name="menu">The main menu to show the modal on</param>
+        /// <param name="enableSearch">Show SEARCH button</param>
+        /// <param name="enableEdit">Show EDIT button</param>
+        /// <param name="enableCopy">Show COPY button</param>
+        /// <param name="enableDelete">Show DELETE button</param>
+        /// <param name="enableAnalyze">Show ANALYZE button</param>
+        /// <returns>The result from the modal</returns>
+        public static async Task<FilterSelectionResult> ShowFilterSelectionModal(
+            this Views.BalatroMainMenu menu,
+            bool enableSearch = false,
+            bool enableEdit = false,
+            bool enableCopy = false,
+            bool enableDelete = false,
+            bool enableAnalyze = false)
+        {
+            var modal = new FilterSelectionModal();
+            var vm = new FilterSelectionModalViewModel(
+                enableSearch, enableEdit, enableCopy, enableDelete, enableAnalyze);
+            modal.DataContext = vm;
+
+            var result = await modal.ShowDialog(menu.GetWindow());
+            return vm.Result;
         }
 
         /// <summary>
