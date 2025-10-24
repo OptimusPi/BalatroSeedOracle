@@ -219,7 +219,9 @@
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
                                              Foreground="{StaticResource VeryLightGrey}"
-                                             IsVisible="{Binding AuthorEditMode}"/>
+                                             IsVisible="{Binding AuthorEditMode}"
+                                             KeyDown="OnAuthorTextBoxKeyDown"
+                                             LostFocus="OnAuthorTextBoxLostFocus"/>
                                 </Grid>
                             </Button>
                         </StackPanel>
@@ -361,7 +363,7 @@
         <Grid x:Name="ModalContainer"
               IsVisible="False"
               ZIndex="100"
-              Background="{StaticResource VeryTransparentBlack}"
+              Background="{StaticResource SemiTransparentBlack}"
               VerticalAlignment="Stretch"
               HorizontalAlignment="Stretch"
               Margin="0"/>

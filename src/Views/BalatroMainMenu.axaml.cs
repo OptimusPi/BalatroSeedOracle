@@ -1050,6 +1050,39 @@ namespace BalatroSeedOracle.Views
         }
 
         #endregion
+
+        #region Author TextBox Handlers
+
+        private void OnAuthorTextBoxKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // Save and exit edit mode
+                ViewModel.SaveAuthorCommand.Execute(null);
+                e.Handled = true;
+
+                // Remove focus from textbox
+                if (sender is TextBox textBox)
+                {
+                    var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+                    focusManager?.ClearFocus();
+                }
+            }
+            else if (e.Key == Key.Escape)
+            {
+                // Cancel editing
+                ViewModel.CancelAuthorEditCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+        private void OnAuthorTextBoxLostFocus(object? sender, RoutedEventArgs e)
+        {
+            // Auto-save when losing focus
+            ViewModel.SaveAuthorCommand.Execute(null);
+        }
+
+        #endregion
     }
 }
 

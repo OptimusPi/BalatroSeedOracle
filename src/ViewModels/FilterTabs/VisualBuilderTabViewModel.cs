@@ -235,7 +235,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMust(FilterItem? item)
         {
-            if (item != null && !SelectedMust.Any(x => x.Name == item.Name))
+            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
+            if (item != null)
             {
                 SelectedMust.Add(item);
 
@@ -262,7 +263,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToShould(FilterItem? item)
         {
-            if (item != null && !SelectedShould.Any(x => x.Name == item.Name))
+            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
+            if (item != null)
             {
                 SelectedShould.Add(item);
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
@@ -274,7 +276,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMustNot(FilterItem? item)
         {
-            if (item != null && !SelectedMustNot.Any(x => x.Name == item.Name))
+            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
+            if (item != null)
             {
                 SelectedMustNot.Add(item);
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");

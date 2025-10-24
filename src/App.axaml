@@ -55,7 +55,7 @@
         <SolidColorBrush x:Key="LightGreyHover">#404c4e</SolidColorBrush>
         <SolidColorBrush x:Key="TarotPurple">#9e74ce</SolidColorBrush>
         <SolidColorBrush x:Key="SemiTransparentBlack">#22222222</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryTransparentBlack">#00000055</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryTransparentBlack">#000000CC</SolidColorBrush> <!-- 80% opacity modal overlay -->
         <SolidColorBrush x:Key="ContainerDarkPrecise">#4f6367</SolidColorBrush>
         <SolidColorBrush x:Key="LightCream">#f5e6d3</SolidColorBrush>
         <SolidColorBrush x:Key="DarkerGrey">#1e2b2d</SolidColorBrush>

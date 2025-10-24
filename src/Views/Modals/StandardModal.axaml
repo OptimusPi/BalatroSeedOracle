@@ -15,20 +15,20 @@
         <!-- Modal positioning grid -->
         <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="60"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style (RESPONSIVE!) -->
             <Border x:Name="ModalBorder"
                     Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource Grey}"
+                    Background="{StaticResource ModalGrey}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="4"

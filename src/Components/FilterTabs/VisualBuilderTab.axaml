@@ -12,7 +12,7 @@
             <ColumnDefinition Width="*"/>     <!-- Center: Item Grid -->
             <ColumnDefinition Width="300"/>   <!-- Right: Drop Zones -->
         </Grid.ColumnDefinitions>
-        
+
         <!-- LEFT: Clean Category Buttons (Flat Balatro style) -->
         <StackPanel Grid.Column="0" Spacing="1" Margin="0,0,8,0">
             <Button Content="🔥 Faves" Classes="nav-button" Click="OnCategoryClick" Tag="Favorites"/>
@@ -27,9 +27,8 @@
             <Button Content="🃏 Playing Cards" Classes="nav-button" Click="OnCategoryClick" Tag="PlayingCards"/>
             <Button Content="🏷️ Tag" Classes="nav-button" Click="OnCategoryClick" Tag="Tag"/>
             <Button Content="👹 Boss" Classes="nav-button" Click="OnCategoryClick" Tag="Boss"/>
-            <Button Content="🗑️ Clear ALL" Classes="nav-button" Click="OnClearAll" Background="{StaticResource Orange}"/>
         </StackPanel>
-        
+
         <!-- CENTER: Clean Item Grid (No borders, flat style) -->
         <Grid Grid.Column="1" Margin="8,0">
             <Grid.RowDefinitions>
@@ -37,25 +36,37 @@
                 <RowDefinition Height="16"/>    <!-- Spacer -->
                 <RowDefinition Height="*"/>     <!-- Item Grid -->
             </Grid.RowDefinitions>
-            
-            <!-- Header: Search only -->
+
+            <!-- Header: Search and Clear All -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
                 <TextBox Text="{Binding SearchFilter}"
                          Watermark="Search items..."
                          Width="200"
                          Height="32"
                          BorderThickness="0"
-                         Background="#2a2a2a"/>
+                         Background="{StaticResource SliderEmpty}"/>
                 <Button Content="×"
                         ToolTip.Tip="Clear search"
                         Click="OnClearSearch"
                         Width="32" Height="32"
                         Background="{StaticResource Orange}"
                         BorderThickness="0"/>
+                <Button Content="🗑️ CLEAR ALL"
+                        ToolTip.Tip="Clear all drop zones"
+                        Click="OnClearAll"
+                        Height="32"
+                        Background="{StaticResource Red}"
+                        Foreground="White"
+                        FontFamily="{StaticResource BalatroFont}"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        CornerRadius="4"
+                        Padding="12,0"/>
             </StackPanel>
-            
+
             <!-- Item Cards Grid - Clean and flat -->
-            <ScrollViewer Grid.Row="2" 
+            <ScrollViewer Grid.Row="2"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           Background="Transparent">
@@ -67,7 +78,7 @@
                                        PointerPressed="OnItemPointerPressed"
                                        Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
                                 <i:Interaction.Behaviors>
-                                    <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                    <behaviors:CardDragBehavior IsEnabled="False" JuiceAmount="0.4"/>
                                 </i:Interaction.Behaviors>
                                 <Grid>
                                     <!-- Main card image -->
@@ -85,9 +96,9 @@
                                            HorizontalAlignment="Center"
                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 </Grid>
-                                
+
                                 <!-- Simple name below -->
-                                <TextBlock Text="{Binding DisplayName}" 
+                                <TextBlock Text="{Binding DisplayName}"
                                            Foreground="{StaticResource White}"
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="10"
@@ -107,16 +118,9 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
-        
-        <!-- RIGHT: Drop Zones exactly like your screenshot -->
-        <Border Grid.Column="2"
-                Background="{StaticResource ContainerDarkPrecise}"
-                BorderThickness="2"
-                BorderBrush="{StaticResource ModalBorder}"
-                CornerRadius="8"
-                Padding="15">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="15">
+
+        <!-- RIGHT: Drop Zones (clean, no scrollbars!) -->
+        <StackPanel Grid.Column="2" Spacing="15" VerticalAlignment="Top">
                     <!-- MUST HAVE Zone -->
                     <StackPanel Spacing="4">
                         <TextBlock Text="MUST HAVE"
@@ -137,7 +141,7 @@
                             <ItemsControl ItemsSource="{Binding SelectedMust}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
                                                    Width="71"
@@ -150,9 +154,9 @@
                                                    Height="95"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                            
+
                                             <!-- Hover-only Remove Button -->
-                                            <Button Content="×" 
+                                            <Button Content="×"
                                                     Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
                                                     CommandParameter="{Binding}"
                                                     Background="{StaticResource Red}"
@@ -174,7 +178,7 @@
                                                     </Style>
                                                 </Button.Styles>
                                             </Button>
-                                            
+
                                             <Grid.Styles>
                                                 <Style Selector="Grid:pointerover Button#RemoveButton">
                                                     <Setter Property="IsVisible" Value="True"/>
@@ -212,7 +216,7 @@
                             <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
                                                    Width="71"
@@ -286,7 +290,7 @@
                             <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped">
+                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
                                                    Width="71"
@@ -340,8 +344,6 @@
                             </ItemsControl>
                         </Border>
                     </StackPanel>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
+        </StackPanel>
     </Grid>
 </UserControl>

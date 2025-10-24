@@ -27,6 +27,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private TopLevel? _topLevel;
         private bool _isDragging = false;
         private Avalonia.Point _dragStartPosition;
+        private Control? _originalDragSource; // Store the original control to animate back to
+        private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
 
         public VisualBuilderTab()
         {
@@ -90,15 +92,29 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     _draggedItem = item;
                     _isDragging = true;
-                    _dragStartPosition = e.GetPosition(this);
+                    _originalDragSource = sender as Control;
+                    _sourceDropZone = null; // This item is from the shelf, not a drop zone
+
+                    // Get position relative to TopLevel for absolute positioning
+                    var topLevel = TopLevel.GetTopLevel(this);
+                    if (topLevel != null && _originalDragSource != null)
+                    {
+                        var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                        _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+                    }
+                    else
+                    {
+                        _dragStartPosition = e.GetPosition(this);
+                    }
 
                     DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG START for item: {item.Name}");
 
-                    // BALATRO-STYLE: Make the card "disappear" from grid while dragging
-                    item.IsBeingDragged = true;
-
                     // Play card select sound
                     SoundEffectService.Instance.PlayCardSelect();
+
+                    // COMPLETELY hide the original card during drag (not just opacity)
+                    // This prevents CardDragBehavior from interfering with ghost movement
+                    item.IsBeingDragged = true;
 
                     // CREATE GHOST IMAGE
                     CreateDragAdorner(item, _dragStartPosition);
@@ -118,22 +134,92 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _isDragging = false;
             }
         }
-        
+
+        private void OnDropZoneItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        {
+            try
+            {
+                var grid = sender as Grid;
+                var item = grid?.DataContext as Models.FilterItem;
+
+                if (item == null)
+                {
+                    DebugLogger.Log("VisualBuilderTab", "No item found for drop zone drag");
+                    return;
+                }
+
+                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                if (vm == null) return;
+
+                // Figure out which drop zone this item is in by checking which collection contains it
+                // NOTE: We do NOT remove the item here! This allows:
+                // 1. Dragging duplicates (same item with different config to same zone)
+                // 2. Cancelling drag with rubber-band animation
+                // We only remove when successfully dropped to a DIFFERENT zone
+                if (vm.SelectedMust.Contains(item))
+                {
+                    _sourceDropZone = "MustDropZone";
+                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM MUST: {item.Name}");
+                }
+                else if (vm.SelectedShould.Contains(item))
+                {
+                    _sourceDropZone = "ShouldDropZone";
+                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM SHOULD: {item.Name}");
+                }
+                else if (vm.SelectedMustNot.Contains(item))
+                {
+                    _sourceDropZone = "MustNotDropZone";
+                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM MUST NOT: {item.Name}");
+                }
+
+                // Now start the drag operation
+                _draggedItem = item;
+                _isDragging = true;
+                _originalDragSource = grid;
+
+                // Get position relative to TopLevel
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel != null && _originalDragSource != null)
+                {
+                    var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                    _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+                }
+                else
+                {
+                    _dragStartPosition = e.GetPosition(this);
+                }
+
+                // Play sound
+                SoundEffectService.Instance.PlayCardSelect();
+
+                // Create ghost
+                CreateDragAdorner(item, _dragStartPosition);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Drop zone drag failed: {ex.Message}");
+                RemoveDragAdorner();
+                _isDragging = false;
+            }
+        }
+
         private void OnPointerMovedManualDrag(object? sender, PointerEventArgs e)
         {
             if (!_isDragging || _draggedItem == null) return;
 
             try
             {
-                DebugLogger.Log("VisualBuilderTab", $"🖱️ Pointer moved during drag");
-
-                // Update adorner position
-                if (_dragAdorner != null && _adornerTransform != null && _topLevel != null)
+                // Update adorner position using Margin for absolute positioning
+                if (_dragAdorner != null && _topLevel != null)
                 {
                     var position = e.GetPosition(_topLevel);
-                    _adornerTransform.X = position.X - 35; // Center on cursor
-                    _adornerTransform.Y = position.Y - 47;
-                    DebugLogger.Log("VisualBuilderTab", $"Ghost moved to ({position.X}, {position.Y})");
+                    _dragAdorner.Margin = new Thickness(position.X - 35, position.Y - 47, 0, 0);
+
+                    // Log less frequently to avoid spam
+                    if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 100 < 16) // ~10fps logging
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Ghost moved to ({position.X}, {position.Y})");
+                    }
                 }
 
                 // Check if we're over a drop zone and provide visual feedback
@@ -212,7 +298,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 mustNotZone?.Classes.Remove("drag-over");
         }
 
-        private void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
+        private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
         {
             if (!_isDragging || _draggedItem == null) return;
 
@@ -266,25 +352,73 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
 
-                    // Play card drop sound
-                    SoundEffectService.Instance.PlayCardDrop();
-
-                    switch (zoneName)
+                    // Check if we're dropping to the same zone we dragged from
+                    if (_sourceDropZone != null && zoneName == _sourceDropZone)
                     {
-                        case "MustDropZone":
-                            vm.AddToMustCommand.Execute(_draggedItem);
-                            break;
-                        case "ShouldDropZone":
-                            vm.AddToShouldCommand.Execute(_draggedItem);
-                            break;
-                        case "MustNotDropZone":
-                            vm.AddToMustNotCommand.Execute(_draggedItem);
-                            break;
+                        DebugLogger.Log("VisualBuilderTab", $"Dropped to same zone - canceling (item stays where it was)");
+                        // Item stays in original zone, just clean up
+                    }
+                    else
+                    {
+                        // If dragging from a drop zone, remove from source first
+                        if (_sourceDropZone != null)
+                        {
+                            DebugLogger.Log("VisualBuilderTab", $"Removing {_draggedItem.Name} from {_sourceDropZone}");
+                            switch (_sourceDropZone)
+                            {
+                                case "MustDropZone":
+                                    vm.SelectedMust.Remove(_draggedItem);
+                                    break;
+                                case "ShouldDropZone":
+                                    vm.SelectedShould.Remove(_draggedItem);
+                                    break;
+                                case "MustNotDropZone":
+                                    vm.SelectedMustNot.Remove(_draggedItem);
+                                    break;
+                            }
+                        }
+
+                        // Play card drop sound
+                        SoundEffectService.Instance.PlayCardDrop();
+
+                        // Add to target zone (allows duplicates from shelf!)
+                        switch (zoneName)
+                        {
+                            case "MustDropZone":
+                                vm.AddToMustCommand.Execute(_draggedItem);
+                                break;
+                            case "ShouldDropZone":
+                                vm.AddToShouldCommand.Execute(_draggedItem);
+                                break;
+                            case "MustNotDropZone":
+                                vm.AddToMustNotCommand.Execute(_draggedItem);
+                                break;
+                        }
                     }
                 }
                 else
                 {
                     DebugLogger.Log("VisualBuilderTab", "Drop cancelled - not over any drop zone");
+
+                    // IMPORTANT: Stop dragging BEFORE animation to prevent glitchy cursor following!
+                    _isDragging = false;
+
+                    // If this item came from a drop zone, animate back (it never left the collection)
+                    if (_sourceDropZone != null)
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Drag from {_sourceDropZone} cancelled - item stays in original zone");
+
+                        // BALATRO-STYLE: Animate back to show cancellation
+                        await AnimateGhostBackToOrigin();
+
+                        // Item was never removed, so no need to add it back!
+                    }
+                    else
+                    {
+                        // Item came from shelf - just animate back
+                        DebugLogger.Log("VisualBuilderTab", "Returning to shelf with rubber band animation");
+                        await AnimateGhostBackToOrigin();
+                    }
                 }
             }
             finally
@@ -297,9 +431,55 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 _isDragging = false;
                 _draggedItem = null;
+                _originalDragSource = null;
+                _sourceDropZone = null; // Clear the source zone
             }
         }
         
+        private async Task AnimateGhostBackToOrigin()
+        {
+            if (_dragAdorner == null || _topLevel == null) return;
+
+            try
+            {
+                // Get current position
+                var currentMargin = _dragAdorner.Margin;
+                var startX = currentMargin.Left;
+                var startY = currentMargin.Top;
+
+                // Target is the original position
+                var targetX = _dragStartPosition.X - 35;
+                var targetY = _dragStartPosition.Y - 47;
+
+                // Animate over 200ms with easing
+                var duration = 200; // milliseconds
+                var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                while (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime < duration)
+                {
+                    var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime;
+                    var progress = (double)elapsed / duration;
+
+                    // Ease out quad for smooth deceleration
+                    var eased = 1 - (1 - progress) * (1 - progress);
+
+                    var currentX = startX + (targetX - startX) * eased;
+                    var currentY = startY + (targetY - startY) * eased;
+
+                    _dragAdorner.Margin = new Thickness(currentX, currentY, 0, 0);
+
+                    await Task.Delay(16); // ~60fps
+                }
+
+                // Ensure final position is exact
+                _dragAdorner.Margin = new Thickness(targetX, targetY, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Error animating ghost back: {ex.Message}");
+            }
+        }
+
         private void OnItemDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
         {
             Models.FilterItem? item = null;
@@ -357,6 +537,41 @@ namespace BalatroSeedOracle.Components.FilterTabs
             };
 
             popup.IsOpen = true;
+        }
+
+        // Category list for pagination
+        private readonly string[] _categories = new[]
+        {
+            "Favorites", "Legendary", "Rare", "Uncommon", "Common",
+            "Voucher", "Tarot", "Planet", "Spectral", "PlayingCards", "Tag", "Boss"
+        };
+        private int _currentCategoryIndex = 1; // Start at Legendary
+
+        private void OnPreviousCategory(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            _currentCategoryIndex--;
+            if (_currentCategoryIndex < 0)
+                _currentCategoryIndex = _categories.Length - 1;
+
+            SetCurrentCategory();
+        }
+
+        private void OnNextCategory(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            _currentCategoryIndex++;
+            if (_currentCategoryIndex >= _categories.Length)
+                _currentCategoryIndex = 0;
+
+            SetCurrentCategory();
+        }
+
+        private void SetCurrentCategory()
+        {
+            var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm != null)
+            {
+                vm.SetCategory(_categories[_currentCategoryIndex]);
+            }
         }
 
         private void OnCategoryClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -537,11 +752,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
                 };
 
-                // Create transform and store reference so we can update it during drag
-                _adornerTransform = new TranslateTransform(startPosition.X, startPosition.Y);
-                _dragAdorner.RenderTransform = _adornerTransform;
+                // Use Margin for absolute positioning instead of RenderTransform
+                // This ensures the adorner appears exactly where we want it
+                _dragAdorner.Margin = new Thickness(startPosition.X - 35, startPosition.Y - 47, 0, 0);
+                _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
+                _dragAdorner.VerticalAlignment = VerticalAlignment.Top;
 
-                AdornerLayer.SetAdornedElement(_dragAdorner, this);
+                // Don't use SetAdornedElement - it causes relative positioning issues
                 _adornerLayer.Children.Add(_dragAdorner);
 
                 DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
