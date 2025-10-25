@@ -258,21 +258,17 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show analyze modal - now uses FilterSelectionModal as gateway
+        /// Show analyze modal - skips FilterSelectionModal and goes straight to analyzer
         /// </summary>
-        private async void ShowAnalyzeModal()
+        private void ShowAnalyzeModal()
         {
-            var result = await this.ShowFilterSelectionModal(enableAnalyze: true);
-            if (!result.Cancelled && result.Action == Models.FilterAction.Analyze && result.FilterId != null)
-            {
-                OpenAnalyzer(result.FilterId);
-            }
+            OpenAnalyzer(null);
         }
 
         /// <summary>
-        /// Open analyzer with the specified filter
+        /// Open analyzer with the specified filter (filter selection happens inside analyzer)
         /// </summary>
-        private void OpenAnalyzer(string filterId)
+        private void OpenAnalyzer(string? filterId)
         {
             var analyzeModal = new AnalyzeModal();
             var modal = new StandardModal("ANALYZE");
