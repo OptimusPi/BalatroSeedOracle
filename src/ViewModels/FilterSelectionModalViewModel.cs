@@ -165,6 +165,20 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void CreateNew()
+        {
+            // Create new filter directly (called from placeholder button)
+            Result = new FilterSelectionResult
+            {
+                Cancelled = false,
+                Action = FilterAction.CreateNew,
+                FilterId = null
+            };
+
+            ModalCloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        [RelayCommand]
         private void Copy()
         {
             if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;

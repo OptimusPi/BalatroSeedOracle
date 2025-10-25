@@ -59,38 +59,38 @@
 
                         <!-- LEFT SIDE: Filter List (inline implementation) -->
                         <Border Grid.Column="0"
-                                Background="{StaticResource DarkBackground}"
                                 BorderThickness="0"
                                 CornerRadius="8"
                                 Padding="20" ClipToBounds="False">
-                            <Grid>
+                            <Grid ClipToBounds="False">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>    <!-- Filter List -->
                                     <RowDefinition Height="Auto"/> <!-- Pagination -->
                                 </Grid.RowDefinitions>
 
                                 <!-- Filter List -->
-                                <ItemsControl Grid.Row="0" ItemsSource="{Binding FilterList.CurrentPageFilters}">
+                                <ItemsControl Grid.Row="0" ItemsSource="{Binding FilterList.CurrentPageFilters}" ClipToBounds="False">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Classes="filter-list-item"
-                                                    IsPressed="{Binding IsSelected}"
-                                                    Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <Grid>
-                                                    <!-- Triangle indicator (left side, shows when selected) -->
-                                                    <Polygon Points="0,0 15,10 0,20"
-                                                             Fill="{StaticResource Red}"
-                                                             Classes="balatro-bounce-horizontal"
-                                                             HorizontalAlignment="Left"
-                                                             Margin="-32,0,0,0"
-                                                             IsVisible="{Binding IsSelected}"/>
-                                                    <!-- Button text -->
-                                                    <TextBlock Text="{Binding DisplayText}"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"/>
-                                                </Grid>
-                                            </Button>
+                                            <!-- Wrapper with padding to reserve space for triangle -->
+                                            <Grid HorizontalAlignment="Center" Margin="20,0,0,0">
+                                                <!-- Button with text (always in same position) -->
+                                                <Button Classes="filter-list-item"
+                                                        Content="{Binding DisplayText}"
+                                                        IsPressed="{Binding IsSelected}"
+                                                        Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                        CommandParameter="{Binding}"/>
+
+                                                <!-- Triangle indicator (overlaid on left, doesn't push button) -->
+                                                <Polygon Points="0,0 15,10 0,20"
+                                                         Fill="{StaticResource Red}"
+                                                         Classes="balatro-bounce-horizontal"
+                                                         HorizontalAlignment="Left"
+                                                         VerticalAlignment="Center"
+                                                         Margin="-20,0,0,0"
+                                                         IsVisible="{Binding IsSelected}"
+                                                         IsHitTestVisible="False"/>
+                                            </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -100,7 +100,7 @@
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"
                                             Spacing="4"
-                                            Margin="0,20,0,0">
+                                            Margin="0,35,0,0">
                                     <Button Content="&lt;"
                                             Classes="btn-red"
                                             Width="44"
@@ -493,7 +493,7 @@
                                                 FontSize="16"
                                                 Height="50"
                                                 MinWidth="280"
-                                                Command="{Binding EditCommand}"/>
+                                                Command="{Binding CreateNewCommand}"/>
                                     </StackPanel>
                                 </Grid>
 
