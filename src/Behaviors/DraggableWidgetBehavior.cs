@@ -18,8 +18,6 @@ namespace BalatroSeedOracle.Behaviors
         private bool _isDragging;
         private Point _dragStartPoint;
         private Point _pointerPressedPoint;
-        private double _originalLeft;
-        private double _originalTop;
         // Tracks whether the initial press was on the configured drag handle
         private bool _pressOriginIsOnHandle;
 
@@ -233,10 +231,6 @@ namespace BalatroSeedOracle.Behaviors
                 if (distance > 20)
                 {
                     _isDragging = true;
-                    _dragStartPoint = _pointerPressedPoint;
-                    // Set original position when drag actually starts to avoid stale state
-                    _originalLeft = X;
-                    _originalTop = Y;
                     e.Pointer.Capture(AssociatedObject);
                 }
                 else
@@ -245,13 +239,13 @@ namespace BalatroSeedOracle.Behaviors
                 }
             }
 
-            // Calculate delta from the drag start position
-            var deltaX = currentPoint.X - _dragStartPoint.X;
-            var deltaY = currentPoint.Y - _dragStartPoint.Y;
+            // Calculate widget center offset (to position center at mouse)
+            var widgetCenterOffsetX = AssociatedObject.Bounds.Width / 2;
+            var widgetCenterOffsetY = AssociatedObject.Bounds.Height / 2;
 
-            // Apply delta to original position and clamp within parent bounds
-            var newX = _originalLeft + deltaX;
-            var newY = _originalTop + deltaY;
+            // Position widget so its center is at the mouse position
+            var newX = currentPoint.X - widgetCenterOffsetX;
+            var newY = currentPoint.Y - widgetCenterOffsetY;
             var clamped = ClampPosition(newX, newY);
             X = clamped.X;
             Y = clamped.Y;
@@ -266,30 +260,51 @@ namespace BalatroSeedOracle.Behaviors
                 _isDragging = false;
                 e.Pointer.Capture(null);
 
-                // Use collision detection for minimized widgets
-                if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
+                // Use collision-aware grid snapping for ALL widgets (minimized and expanded)
+                if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm)
                 {
-                    // Try to get the WidgetPositionService from the ServiceHelper
                     try
                     {
                         var positionService = ServiceHelper.GetService<WidgetPositionService>();
                         if (positionService != null)
                         {
-                            // Use collision-aware snapping
-                            var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(X, Y, vm);
+                            // Calculate widget's top-left position (consistent reference point)
+                            // This ensures grid snapping is based on widget position, not mouse position
+                            var widgetX = X;
+                            var widgetY = Y;
+                            
+                            // Get parent bounds for dynamic exclusion zones
+                            var parentWidth = 1200.0;  // Default fallback
+                            var parentHeight = 700.0;  // Default fallback
+                            
+                            var parentVisual = AssociatedObject.Parent as Visual;
+                            if (parentVisual != null)
+                            {
+                                parentWidth = parentVisual.Bounds.Width;
+                                parentHeight = parentVisual.Bounds.Height;
+                            }
+                            
+                            // Use the enhanced grid system that works anywhere on screen
+                            var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(widgetX, widgetY, vm, parentWidth, parentHeight);
                             var clamped = ClampPosition(newX, newY);
                             X = clamped.X;
                             Y = clamped.Y;
                         }
                         else
                         {
-                            // Fallback to original behavior if service not available
-                            const double xSnap = 20.0; // Always left edge
-                            const double yGridSize = 90.0; // Match widget spacing
-                            const double yOffset = 20.0; // Start position
-
-                            var snappedX = xSnap;
-                            var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
+                            // Fallback to simple grid snapping if service not available
+                            // Note: Using new 90px grid spacing instead of old 20px
+                            const double gridSpacing = 90.0;
+                            const double gridOriginX = 20.0;
+                            const double gridOriginY = 20.0;
+                            
+                            // Snap to grid using consistent reference point
+                            var offsetX = X - gridOriginX;
+                            var offsetY = Y - gridOriginY;
+                            var snappedOffsetX = Math.Round(offsetX / gridSpacing) * gridSpacing;
+                            var snappedOffsetY = Math.Round(offsetY / gridSpacing) * gridSpacing;
+                            var snappedX = snappedOffsetX + gridOriginX;
+                            var snappedY = snappedOffsetY + gridOriginY;
 
                             var clamped = ClampPosition(snappedX, snappedY);
                             X = clamped.X;
@@ -298,13 +313,18 @@ namespace BalatroSeedOracle.Behaviors
                     }
                     catch
                     {
-                        // Fallback to original behavior if service access fails
-                        const double xSnap = 20.0; // Always left edge
-                        const double yGridSize = 90.0; // Match widget spacing
-                        const double yOffset = 20.0; // Start position
-
-                        var snappedX = xSnap;
-                        var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
+                        // Fallback to simple grid snapping if service access fails
+                        const double gridSpacing = 90.0;
+                        const double gridOriginX = 20.0;
+                        const double gridOriginY = 20.0;
+                        
+                        // Snap to grid using consistent reference point
+                        var offsetX = X - gridOriginX;
+                        var offsetY = Y - gridOriginY;
+                        var snappedOffsetX = Math.Round(offsetX / gridSpacing) * gridSpacing;
+                        var snappedOffsetY = Math.Round(offsetY / gridSpacing) * gridSpacing;
+                        var snappedX = snappedOffsetX + gridOriginX;
+                        var snappedY = snappedOffsetY + gridOriginY;
 
                         var clamped = ClampPosition(snappedX, snappedY);
                         X = clamped.X;

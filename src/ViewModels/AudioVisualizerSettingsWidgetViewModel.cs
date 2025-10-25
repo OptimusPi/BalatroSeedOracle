@@ -37,7 +37,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Set fixed position for Audio widget - second position (90px spacing)
             PositionX = 20;
-            PositionY = 110;
+            PositionY = 170;
 
             // Initialize shader parameters with default values
             InitializeShaderParameters();

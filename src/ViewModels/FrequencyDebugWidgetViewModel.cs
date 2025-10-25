@@ -95,9 +95,9 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "📊";
             IsMinimized = true;
 
-            // Position below MusicMixer widget (with proper spacing!)
+            // Set fixed position for FrequencyDebug widget - fifth position (90px spacing)
             PositionX = 20;
-            PositionY = 420;
+            PositionY = 440;
         }
 
         public void OnAttached(Control ownerControl)

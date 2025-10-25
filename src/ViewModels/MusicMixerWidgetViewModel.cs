@@ -23,7 +23,7 @@ namespace BalatroSeedOracle.ViewModels
             IsMinimized = true; // Start minimized
             
             PositionX = 20;
-            PositionY = 290;
+            PositionY = 350;
 
             // Set custom size for mixer
             Width = 400;

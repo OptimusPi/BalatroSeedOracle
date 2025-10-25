@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Set fixed position for Genie widget - first position
             PositionX = 20;
-            PositionY = 20;
+            PositionY = 80;
         }
 
         [RelayCommand]

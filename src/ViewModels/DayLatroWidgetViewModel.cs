@@ -194,7 +194,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Set fixed position for DayLatro widget - third position (90px spacing)
             PositionX = 20;
-            PositionY = 200;
+            PositionY = 260;
 
             // Initialize commands
             SubmitScoreCommand = new RelayCommand(OnSubmitScore, CanSubmitScore);

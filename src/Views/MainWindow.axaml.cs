@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views;
@@ -37,6 +38,9 @@ public partial class MainWindow : Window
 
         // Handle window closing
         Closing += OnWindowClosing;
+        
+        // Handle window resize to reposition widgets
+        SizeChanged += OnWindowSizeChanged;
     }
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
@@ -134,6 +138,26 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             DebugLogger.LogError($"Error opening Balatro website: {ex.Message}");
+        }
+    }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        try
+        {
+            // Get the widget position service
+            var positionService = ServiceHelper.GetService<Services.WidgetPositionService>();
+            if (positionService != null)
+            {
+                // Handle window resize by repositioning widgets that are now out of bounds
+                positionService.HandleWindowResize(e.NewSize.Width, e.NewSize.Height);
+                
+                DebugLogger.Log("MainWindow", $"Window resized to {e.NewSize.Width}x{e.NewSize.Height}, widgets repositioned");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError($"Error handling window resize: {ex.Message}");
         }
     }
 
