@@ -15,8 +15,8 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class PaginatedFilterBrowserViewModel : ObservableObject
     {
-        // Fixed pagination size for stability
-        private const int ITEMS_PER_PAGE = 120;
+        // Fixed pagination size for stability (matches visible filter list height)
+        private const int ITEMS_PER_PAGE = 10;
 
         private List<FilterBrowserItem> _allFilters = new();
 
@@ -45,23 +45,6 @@ namespace BalatroSeedOracle.ViewModels
         public string PageIndicatorText => $"Page {_currentPage + 1}/{TotalPages}";
         public string StatusText => $"Total {_allFilters.Count} filters";
 
-        public double SelectedItemTriangleY
-        {
-            get
-            {
-                if (SelectedFilter == null) return 0;
-                var pageItems = GetCurrentPageItems();
-                var index = pageItems.FindIndex(f => f.FilePath == SelectedFilter.FilePath);
-                // Match visual row height with XAML style: Height 22 + vertical margin (2 top/bottom) = 26
-                const double RowButtonHeight = 22;
-                const double RowVerticalMarginTotal = 4; // 2 top + 2 bottom
-                const double TriangleHeight = 20;        // Polygon visual height
-                var rowHeight = RowButtonHeight + RowVerticalMarginTotal; // 26
-                var triangleTopOffset = (rowHeight - TriangleHeight) / 2; // center triangle in row
-                return index >= 0 ? (index * rowHeight) + triangleTopOffset : 0;
-            }
-        }
-
         private int TotalPages => (int)Math.Ceiling((double)_allFilters.Count / ITEMS_PER_PAGE);
 
         // Commands that parent ViewModels will set (using ICommand for Avalonia property compatibility)
@@ -80,7 +63,6 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSelectedFilterChanged(FilterBrowserItem? value)
         {
             OnPropertyChanged(nameof(HasSelectedFilter));
-            OnPropertyChanged(nameof(SelectedItemTriangleY));
             UpdateCurrentPageSelection();
         }
 
@@ -269,7 +251,6 @@ namespace BalatroSeedOracle.ViewModels
 
             OnPropertyChanged(nameof(PageIndicatorText));
             OnPropertyChanged(nameof(StatusText));
-            OnPropertyChanged(nameof(SelectedItemTriangleY));
 
             // Update command states
             PreviousPageCommand.NotifyCanExecuteChanged();

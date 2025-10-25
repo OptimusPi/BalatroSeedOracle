@@ -34,9 +34,9 @@
                     Width="64" Height="64"
                     Classes="widget-header"
                     Cursor="Hand">
-                <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Text="🎨" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
-            <TextBlock Text="Audio"
+            <TextBlock Text="Visual"
                        FontSize="10"
                        Foreground="White"
                        HorizontalAlignment="Center"/>
