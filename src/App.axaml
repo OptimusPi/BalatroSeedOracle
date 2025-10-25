@@ -11,6 +11,7 @@
         <SolidColorBrush x:Key="Red">#ff4c40</SolidColorBrush>
         <SolidColorBrush x:Key="RedHover">#a02721</SolidColorBrush>
         <SolidColorBrush x:Key="DarkRed">#a02721</SolidColorBrush>
+        <SolidColorBrush x:Key="BadgeRedEdge">#a92b23</SolidColorBrush>
         <SolidColorBrush x:Key="Blue">#0093ff</SolidColorBrush>
         <SolidColorBrush x:Key="BlueHover">#0057a1</SolidColorBrush>
         <SolidColorBrush x:Key="Orange">#ff9800</SolidColorBrush>

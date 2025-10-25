@@ -95,9 +95,9 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "📊";
             IsMinimized = true;
 
-            // Position below DayLatro widget (with proper spacing!)
+            // Position below MusicMixer widget (with proper spacing!)
             PositionX = 20;
-            PositionY = 370;
+            PositionY = 420;
         }
 
         public void OnAttached(Control ownerControl)

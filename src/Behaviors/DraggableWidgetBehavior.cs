@@ -264,13 +264,16 @@ namespace BalatroSeedOracle.Behaviors
                 _isDragging = false;
                 e.Pointer.Capture(null);
 
-                // Snap to 128px grid for minimized widgets (stateless using modulo %)
-                // Expanded windows don't snap - free positioning!
+                // Snap minimized widgets to 90px vertical grid (matches default spacing)
                 if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
                 {
-                    const double gridSize = 128.0;
-                    var snappedX = Math.Round(X / gridSize) * gridSize;  // Modulo magic!
-                    var snappedY = Math.Round(Y / gridSize) * gridSize;
+                    const double xSnap = 20.0; // Always left edge
+                    const double yGridSize = 90.0; // Match widget spacing
+                    const double yOffset = 20.0; // Start position
+
+                    var snappedX = xSnap;
+                    var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
+
                     var clamped = ClampPosition(snappedX, snappedY);
                     X = clamped.X;
                     Y = clamped.Y;

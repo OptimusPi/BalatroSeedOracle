@@ -1,33 +1,29 @@
 using System;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
-using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Components
 {
     /// <summary>
-    /// AudioVisualizerSettingsWidget - A movable, minimizable widget for audio visualizer settings
-    /// MVVM pattern - ALL business logic in ViewModel, drag handled by DraggableWidgetBehavior
+    /// Music Mixer Widget - 8-track volume and mute controls
+    /// Clean, simple interface following MVVM pattern
     /// </summary>
-    public partial class AudioVisualizerSettingsWidget : UserControl
+    public partial class MusicMixerWidget : UserControl
     {
-        public AudioVisualizerSettingsWidgetViewModel ViewModel { get; }
+        public MusicMixerWidgetViewModel ViewModel { get; }
 
         // Track click vs drag for minimized icon
         private Avalonia.Point _iconPressedPosition;
 
-        public AudioVisualizerSettingsWidget()
+        public MusicMixerWidget()
         {
             InitializeComponent();
 
             // Get ViewModel from DI container
-            ViewModel = ServiceHelper.GetService<AudioVisualizerSettingsWidgetViewModel>()
-                ?? throw new InvalidOperationException("AudioVisualizerSettingsWidgetViewModel service not registered in DI container");
+            ViewModel = ServiceHelper.GetService<MusicMixerWidgetViewModel>()
+                ?? throw new InvalidOperationException("MusicMixerWidgetViewModel service not registered in DI container");
             DataContext = ViewModel;
 
             // Update ZIndex when IsMinimized changes
@@ -35,7 +31,6 @@ namespace BalatroSeedOracle.Components
             {
                 if (e.PropertyName == nameof(ViewModel.IsMinimized))
                 {
-                    // Set ZIndex on this UserControl itself
                     // Expanded = 100, Minimized = 1
                     this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
                 }
@@ -43,29 +38,11 @@ namespace BalatroSeedOracle.Components
 
             // Set initial ZIndex
             this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
-
-            // REMOVED: Initialize() method no longer exists
-            // ViewModel.Initialize();
-
-            // Wire up cleanup
-            this.DetachedFromVisualTree += OnDetachedFromVisualTree;
-            this.AttachedToVisualTree += OnAttachedToVisualTree;
-        }
-
-        private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            // CRITICAL: Initialize ViewModel with ownerControl reference so it can find BalatroMainMenu
-            ViewModel.OnAttached(this);
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void OnDetachedFromVisualTree(object? sender, EventArgs e)
-        {
-            ViewModel.OnDetached();
         }
 
         /// <summary>

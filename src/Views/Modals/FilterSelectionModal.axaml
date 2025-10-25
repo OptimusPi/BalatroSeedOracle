@@ -64,7 +64,7 @@
                                 Background="{StaticResource DarkBackground}"
                                 BorderThickness="0"
                                 CornerRadius="8"
-                                Padding="20">
+                                Padding="20" ClipToBounds="False">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>    <!-- Filter List -->
@@ -72,13 +72,13 @@
                                 </Grid.RowDefinitions>
 
                                 <!-- Filter List with Selection Triangle -->
-                                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                                <Grid Grid.Row="0">
                                     <Grid>
                                         <!-- Triangle indicator for selected item -->
                                         <Canvas ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
                                             <Polygon Points="15,0 0,10 15,20"
                                                      Classes="balatro-triangle balatro-bounce-horizontal"
-                                                     Canvas.Left="0"
+                                                     Canvas.Left="-20"
                                                      Canvas.Top="{Binding FilterList.SelectedItemTriangleY}"
                                                      IsVisible="{Binding FilterList.HasSelectedFilter}"/>
                                         </Canvas>
@@ -90,13 +90,15 @@
                                                     <DataTemplate>
                                                         <Button Content="{Binding DisplayText}"
                                                                 Classes="filter-list-item"
-                                                                IsPressed="{Binding IsSelected}"/>
+                                                                IsPressed="{Binding IsSelected}"
+                                                                Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                                CommandParameter="{Binding}"/>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
                                         </StackPanel>
                                     </Grid>
-                                </ScrollViewer>
+                                </Grid>
 
                                 <!-- Pagination Controls -->
                                 <StackPanel Grid.Row="1"
@@ -145,128 +147,374 @@
                                 Background="{StaticResource DarkBackground}"
                                 BorderThickness="0"
                                 CornerRadius="8"
-                                Padding="20">
+                                Padding="20" ClipToBounds="False">
                             <Grid>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>    <!-- Filter Details -->
+                                    <RowDefinition Height="Auto"/> <!-- Header: Name/Author/Date -->
+                                    <RowDefinition Height="Auto"/> <!-- Tab Buttons with Triangle -->
+                                    <RowDefinition Height="*"/>    <!-- Tab Content Area -->
                                     <RowDefinition Height="Auto"/> <!-- Action Buttons -->
                                 </Grid.RowDefinitions>
 
-                                <!-- Filter Details Area -->
-                                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
-                                              IsVisible="{Binding ShowDetailsPanel}">
-                                    <StackPanel Spacing="15">
-                                        <!-- Filter Name -->
-                                        <TextBlock Text="{Binding FilterName}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="24"
-                                                   Foreground="{StaticResource Gold}"
-                                                   HorizontalAlignment="Center"
-                                                   TextWrapping="Wrap"/>
+                                <!-- HEADER SECTION (visible when filter selected) -->
+                                <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,15"
+                                            IsVisible="{Binding ShowDetailsPanel}">
 
-                                        <!-- Author -->
-                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center">
-                                            <Run Text="by "/>
-                                            <Run Text="{Binding FilterAuthor}"/>
-                                        </TextBlock>
-
-                                        <!-- Created Date -->
-                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource ModalGrey}"
-                                                   HorizontalAlignment="Center">
-                                            <Run Text="Created: "/>
-                                            <Run Text="{Binding CreatedDate}"/>
-                                        </TextBlock>
-
-                                        <!-- Description -->
-                                        <TextBlock Text="{Binding FilterDescription}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource White}"
-                                                   TextWrapping="Wrap"
-                                                   HorizontalAlignment="Center"
-                                                   TextAlignment="Center"
-                                                   Margin="0,10,0,0"/>
-
-                                        <!-- Filter Stats Section -->
-                                        <StackPanel Spacing="12" Margin="0,20,0,0">
-                                            <!-- Must Have -->
-                                            <StackPanel Spacing="5">
-                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                           FontSize="14"
-                                                           Foreground="{StaticResource White}"
-                                                           HorizontalAlignment="Center">
-                                                    <Run Text="Must Have: "/>
-                                                    <Run Text="{Binding MustHaveCount}"/>
-                                                    <Run Text=" items"/>
-                                                </TextBlock>
-                                                <!-- TODO: Add item sprites preview here using SpritesService -->
-                                            </StackPanel>
-
-                                            <!-- Should Have -->
-                                            <StackPanel Spacing="5">
-                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                           FontSize="14"
-                                                           Foreground="{StaticResource White}"
-                                                           HorizontalAlignment="Center">
-                                                    <Run Text="Should Have: "/>
-                                                    <Run Text="{Binding ShouldHaveCount}"/>
-                                                    <Run Text=" items"/>
-                                                </TextBlock>
-                                                <!-- TODO: Add item sprites preview here using SpritesService -->
-                                            </StackPanel>
-
-                                            <!-- Must Not -->
-                                            <StackPanel Spacing="5">
-                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                           FontSize="14"
-                                                           Foreground="{StaticResource White}"
-                                                           HorizontalAlignment="Center">
-                                                    <Run Text="Must Not: "/>
-                                                    <Run Text="{Binding MustNotCount}"/>
-                                                    <Run Text=" items"/>
-                                                </TextBlock>
-                                                <!-- TODO: Add item sprites preview here using SpritesService -->
-                                            </StackPanel>
+                                    <!-- Horizontal Sprite Strips for Must[] Items -->
+                                    <!-- JOKERS Strip -->
+                                    <Border Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="12,8"
+                                            Margin="0,8,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="JOKERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Gold}"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold"/>
+                                            <TextBlock Text="[Joker sprites]"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       VerticalAlignment="Center"
+                                                       FontStyle="Italic"/>
                                         </StackPanel>
-                                    </StackPanel>
-                                </ScrollViewer>
+                                    </Border>
 
-                                <!-- Placeholder Message -->
-                                <TextBlock Grid.Row="0"
-                                           Text="{Binding PlaceholderText}"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="18"
-                                           Foreground="{StaticResource ModalGrey}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"
-                                           IsVisible="{Binding ShowPlaceholder}"/>
+                                    <!-- CONSUMABLES Strip -->
+                                    <Border Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="12,8">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold"/>
+                                            <TextBlock Text="[Consumable sprites]"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       VerticalAlignment="Center"
+                                                       FontStyle="Italic"/>
+                                        </StackPanel>
+                                    </Border>
 
-                                <!-- Action Buttons -->
-                                <StackPanel Grid.Row="1"
+                                    <!-- VOUCHERS Strip -->
+                                    <Border Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="12,8">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold"/>
+                                            <TextBlock Text="[Voucher sprites]"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource White}"
+                                                       VerticalAlignment="Center"
+                                                       FontStyle="Italic"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- TAB NAVIGATION (visible when filter selected) -->
+                                <components:BalatroTabControl Grid.Row="1"
+                                                              DataContext="{Binding TabControl}"
+                                                              IsVisible="{Binding $parent[Grid].DataContext.ShowDetailsPanel}"
+                                                              Margin="0,0,0,10"/>
+
+                                <!-- TAB CONTENT AREA -->
+                                <Grid Grid.Row="2">
+                                    <!-- FILTER TAB CONTENT (two-column layout) -->
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  IsVisible="{Binding ShowFilterTab}">
+                                        <Grid ColumnDefinitions="*,15,*">
+                                            <!-- Left Column: Filter Description -->
+                                            <Border Grid.Column="0"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Filter Description"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                        <!-- Filter Name (title, big font) -->                                                        <TextBlock Text="{Binding FilterName}"                                                                   FontFamily="{StaticResource BalatroFont}"                                                                   FontSize="18"                                                                   FontWeight="Bold"                                                                   Foreground="Black"                                                                   TextWrapping="Wrap"/>
+                                                        <!-- Author (at top, bold, FontSize 16) -->
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="16"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="Black">
+                                                            <Run Text="by "/>
+                                                            <Run Text="{Binding FilterAuthor}"/>
+                                                        </TextBlock>
+
+                                                        <!-- Created Date (below author, lighter, FontSize 12) -->
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="12"
+                                                                   Foreground="#666666">
+                                                            <Run Text="Created: "/>
+                                                            <Run Text="{Binding CreatedDate}"/>
+                                                        </TextBlock>
+
+                                                        <!-- Description Text -->
+                                                        <TextBlock Text="{Binding FilterDescription}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Right Column: Filter Criteria (Must[]) -->
+                                            <Border Grid.Column="2"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Filter Criteria"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black">
+                                                            <Run Text="Must Have: "/>
+                                                            <Run Text="{Binding MustHaveCount}"/>
+                                                            <Run Text=" items"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="[Item sprites will display here]"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="#666666"
+                                                                   FontStyle="Italic"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </ScrollViewer>
+
+                                    <!-- SCORE TAB CONTENT (two-column layout) -->
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  IsVisible="{Binding ShowScoreTab}">
+                                        <Grid ColumnDefinitions="*,15,*">
+                                            <!-- Left Column: Scoring Description -->
+                                            <Border Grid.Column="0"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Scoring Description"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                        <TextBlock Text="Items in the Should[] clause contribute to the seed's score. Higher scores indicate seeds that better match your preferences."
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Right Column: Scoring Criteria (Should[]) -->
+                                            <Border Grid.Column="2"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Scoring Criteria"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black">
+                                                            <Run Text="Should Have: "/>
+                                                            <Run Text="{Binding ShouldHaveCount}"/>
+                                                            <Run Text=" items"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="[Item sprites will display here]"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="#666666"
+                                                                   FontStyle="Italic"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </ScrollViewer>
+
+                                    <!-- DECK TAB CONTENT (three-column layout) -->
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  IsVisible="{Binding ShowDeckTab}">
+                                        <Grid ColumnDefinitions="*,10,*,10,*">
+                                            <!-- Column 1: Jokers -->
+                                            <Border Grid.Column="0"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="JOKERS"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
+                                                        <TextBlock Text="[Joker sprites will display here]"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="#666666"
+                                                                   FontStyle="Italic"
+                                                                   TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Column 2: Consumables -->
+                                            <Border Grid.Column="2"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="CONSUMABLES"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
+                                                        <TextBlock Text="[Consumable sprites will display here]"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="#666666"
+                                                                   FontStyle="Italic"
+                                                                   TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Column 3: Vouchers -->
+                                            <Border Grid.Column="4"
+                                                    Background="#FFFFFF"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="VOUCHERS"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
+                                                        <TextBlock Text="[Voucher sprites will display here]"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="11"
+                                                                   Foreground="#666666"
+                                                                   FontStyle="Italic"
+                                                                   TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </ScrollViewer>
+
+                                    <!-- Placeholder Message when no filter selected -->
+                                    <TextBlock Text="{Binding PlaceholderText}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="18"
+                                               Foreground="{StaticResource ModalGrey}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               TextAlignment="Center"
+                                               IsVisible="{Binding ShowPlaceholder}"/>
+                                </Grid>
+
+                                <!-- ACTION BUTTONS (bottom right, BELOW tabs) -->
+                                <StackPanel Grid.Row="3"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
                                             Spacing="8"
                                             Margin="0,20,0,0"
                                             IsVisible="{Binding ShowDetailsPanel}">
 
-                                    <!-- SEARCH Button -->
-                                    <Button Content="SEARCH"
+                                    <!-- SEARCH Button (large, primary) -->
+                                    <Button Content="PLAY"
                                             Classes="btn-blue"
                                             Height="45"
                                             FontSize="16"
                                             Command="{Binding SearchCommand}"
                                             IsVisible="{Binding EnableSearch}"/>
 
-                                    <!-- EDIT Button -->
-                                    <Button Content="EDIT"
+                                    <!-- ANALYZE Button (large, primary) -->
+                                    <Button Content="PLAY"
                                             Classes="btn-blue"
                                             Height="45"
                                             FontSize="16"
+                                            Command="{Binding AnalyzeCommand}"
+                                            IsVisible="{Binding EnableAnalyze}"/>
+
+                                    <!-- EDIT Button -->
+                                    <Button Content="EDIT"
+                                            Classes="btn-blue"
+                                            Height="40"
+                                            FontSize="14"
                                             Command="{Binding EditCommand}"
                                             IsVisible="{Binding EnableEdit}"/>
 
@@ -285,14 +533,6 @@
                                             FontSize="14"
                                             Command="{Binding DeleteCommand}"
                                             IsVisible="{Binding EnableDelete}"/>
-
-                                    <!-- ANALYZE Button -->
-                                    <Button Content="ANALYZE"
-                                            Classes="btn-blue"
-                                            Height="45"
-                                            FontSize="16"
-                                            Command="{Binding AnalyzeCommand}"
-                                            IsVisible="{Binding EnableAnalyze}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -328,11 +568,11 @@
         </Style>
 
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+            <Setter Property="Background" Value="#8b0000"/>
         </Style>
 
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+            <Setter Property="Background" Value="#660000"/>
         </Style>
 
         <!-- Special blue styling for CREATE NEW FILTER -->

@@ -59,26 +59,50 @@ Create a **FilterSelectionModal** that acts as a gateway before opening Search, 
 - Show placeholder text: "Please select a filter or CREATE NEW" (if edit enabled) or "Please select a filter"
 
 **When filter selected:**
-- **Metadata Section:**
-  - Filter name (large, centered)
-  - "by {Author}" (below name)
+- **Header Section:**
+  - Filter name (large, gold text, top right corner)
+  - "by {Author}" (below name, smaller)
   - "Created: {Month Year}" format
-  - Description (wrapped text)
 
-- **Preview Section - Use SpritesService to render actual items:**
-  - Must Have: {count} items
-    - Show item sprites in horizontal row (like cards "in hand")
-  - Should Have: {count} items
-    - Show item sprites in horizontal row
-  - Must Not: {count} items
-    - Show item sprites in horizontal row
+- **Tab Navigation (CRITICAL - matches Balatro Challenges):**
+  - Three horizontal tab buttons at TOP:
+    1. **RULES** - Shows Must Have / Should Have / Must Not criteria
+    2. **JOKERS** - Shows joker requirements in 5-card horizontal display
+    3. **RESTRICTIONS** - Shows deck/voucher/consumable/other restrictions
 
-- **Action Buttons (at bottom):**
-  - SEARCH (visible when enableSearch=true)
-  - EDIT (visible when enableEdit=true)
-  - COPY (visible when enableCopy=true)
-  - DELETE (visible when enableDelete=true)
-  - ANALYZE (visible when enableAnalyze=true)
+  - **Triangle Indicator:** Red ▼ triangle points DOWN from active tab (NOT below content!)
+  - Tab buttons: Red when active, dark gray when inactive
+  - Position: Below filter name, above content area
+
+- **Tab Content Areas:**
+
+  **RULES Tab:**
+  - Must Have: {count} items (show item sprites in horizontal row)
+  - Should Have: {count} items (show item sprites in horizontal row)
+  - Must Not: {count} items (show item sprites in horizontal row)
+
+  **JOKERS Tab:**
+  - Display 5 joker slots horizontally (like Balatro's joker display)
+  - Show required jokers with sprites
+  - Empty slots show placeholder
+
+  **RESTRICTIONS Tab:**
+  - Custom Rules section (blue box with white text)
+  - Game Modifiers section showing:
+    - Start with $X
+    - X hands per round
+    - X discards per round
+    - X hand size
+    - X Joker Slots
+    - X Consumable Slots
+  - Deck restrictions
+  - Banned Cards/Tags/Other
+
+- **Action Buttons (bottom right, BELOW tabs):**
+  - **PLAY** button (large blue, primary action - for Search)
+  - EDIT (blue button, visible when enableEdit=true)
+  - COPY (orange button, visible when enableCopy=true)
+  - DELETE (red button, visible when enableDelete=true)
 
 #### 3. Bottom - Back Button
 - Orange Balatro-style button

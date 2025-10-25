@@ -74,26 +74,35 @@ public partial class App : Application
         try
         {
             DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
-            
-            // Stop audio first
+
+            // Flush user profile first to ensure all settings are saved
+            var userProfileService = _serviceProvider?.GetService<Services.UserProfileService>();
+            if (userProfileService != null)
+            {
+                DebugLogger.Log("App", "Flushing user profile...");
+                userProfileService.FlushProfile();
+                DebugLogger.Log("App", "User profile flushed");
+            }
+
+            // Stop audio
             var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
             audioManager?.Dispose();
-            
+
             // Get the search manager and stop all active searches
             var searchManager = _serviceProvider?.GetService<Services.SearchManager>();
             if (searchManager != null)
             {
                 DebugLogger.Log("App", "Stopping active searches...");
                 searchManager.StopAllSearches();
-                
+
                 // Give searches a moment to actually stop
                 System.Threading.Thread.Sleep(500);
-                
+
                 // Dispose the search manager which will dispose all searches
                 searchManager.Dispose();
                 DebugLogger.Log("App", "All searches stopped");
             }
-            
+
             // Now dispose the service provider
             _serviceProvider?.Dispose();
             DebugLogger.Log("App", "Services disposed");

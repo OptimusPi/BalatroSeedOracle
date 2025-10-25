@@ -19,13 +19,25 @@ namespace BalatroSeedOracle.ViewModels
         // Child ViewModel for paginated filter list
         public PaginatedFilterBrowserViewModel FilterList { get; }
 
+        // Tab navigation for details panel
+        public BalatroTabControlViewModel TabControl { get; }
+
         // Selected filter details
         [ObservableProperty]
         private FilterBrowserItem? _selectedFilter;
 
+        // Active tab index
+        [ObservableProperty]
+        private int _activeTabIndex = 0;
+
         // Details panel visibility
         public bool ShowDetailsPanel => SelectedFilter != null;
         public bool ShowPlaceholder => SelectedFilter == null;
+
+        // Tab content visibility
+        public bool ShowFilterTab => ActiveTabIndex == 0 && ShowDetailsPanel;
+        public bool ShowScoreTab => ActiveTabIndex == 1 && ShowDetailsPanel;
+        public bool ShowDeckTab => ActiveTabIndex == 2 && ShowDetailsPanel;
 
         // Filter details for display
         public string FilterName => SelectedFilter?.Name ?? "";
@@ -63,7 +75,11 @@ namespace BalatroSeedOracle.ViewModels
             EnableAnalyze = enableAnalyze;
 
             // Create child ViewModel for filter list
-            FilterList = new PaginatedFilterBrowserViewModel();
+            // Only show CREATE NEW when enableEdit or enableCopy is true (VISUAL BUILDER mode)
+            FilterList = new PaginatedFilterBrowserViewModel
+            {
+                ShowCreateNewFilter = enableEdit || enableCopy
+            };
 
             // Subscribe to filter selection changes
             FilterList.PropertyChanged += (s, e) =>
@@ -72,6 +88,23 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     SelectedFilter = FilterList.SelectedFilter;
                 }
+            };
+
+            // Initialize tab control with three tabs
+            TabControl = new BalatroTabControlViewModel
+            {
+                Tabs = new ObservableCollection<BalatroTabItem>
+                {
+                    new BalatroTabItem { Title = "FILTER", Index = 0, IsActive = true },
+                    new BalatroTabItem { Title = "SCORE", Index = 1 },
+                    new BalatroTabItem { Title = "DECK", Index = 2 }
+                }
+            };
+
+            // Subscribe to tab changes
+            TabControl.TabChanged += (s, tabIndex) =>
+            {
+                ActiveTabIndex = tabIndex;
             };
         }
 
@@ -86,6 +119,16 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(MustHaveCount));
             OnPropertyChanged(nameof(ShouldHaveCount));
             OnPropertyChanged(nameof(MustNotCount));
+            OnPropertyChanged(nameof(ShowFilterTab));
+            OnPropertyChanged(nameof(ShowScoreTab));
+            OnPropertyChanged(nameof(ShowDeckTab));
+        }
+
+        partial void OnActiveTabIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(ShowFilterTab));
+            OnPropertyChanged(nameof(ShowScoreTab));
+            OnPropertyChanged(nameof(ShowDeckTab));
         }
 
         [RelayCommand]

@@ -1,50 +1,46 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ==================================================================
-         BALATRO SLIDER STYLE
-         Mimics the Balatro game slider design:
-         - Empty dark gray track/slit
-         - Filled red bar that grows from left (like a thermometer!)
-         - No visible thumb (just drag anywhere on the bar)
-         ================================================================== -->
-
     <Style Selector="Slider:horizontal">
-        <Setter Property="Height" Value="16"/>
-        <Setter Property="MinHeight" Value="16"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="MinHeight" Value="20"/>
         <Setter Property="Template">
             <ControlTemplate TargetType="Slider">
                 <Grid>
-                    <!-- Background Track (empty dark slit) -->
                     <Border Background="{StaticResource SliderEmpty}"
-                            CornerRadius="3"
-                            Height="12"
+                            CornerRadius="4"
+                            Height="8"
                             VerticalAlignment="Center"/>
 
-                    <!-- Filled portion (red bar that grows) -->
-                    <Canvas VerticalAlignment="Center" Height="12">
-                        <Border x:Name="PART_SelectionRange"
-                                Background="{StaticResource Red}"
-                                CornerRadius="3"
-                                Height="12"
-                                Canvas.Left="0"
-                                Canvas.Top="0"/>
-                    </Canvas>
-
-                    <!-- Invisible thumb for interaction (covers whole track) -->
                     <Track x:Name="PART_Track"
                            Minimum="{TemplateBinding Minimum}"
                            Maximum="{TemplateBinding Maximum}"
                            Value="{TemplateBinding Value, Mode=TwoWay}"
                            Orientation="Horizontal">
                         <Track.DecreaseButton>
-                            <RepeatButton Classes="trackButton" Opacity="0"/>
+                            <RepeatButton Classes="trackButton"/>
                         </Track.DecreaseButton>
                         <Track.IncreaseButton>
-                            <RepeatButton Classes="trackButton" Opacity="0"/>
+                            <RepeatButton Classes="trackButton"/>
                         </Track.IncreaseButton>
                         <Track.Thumb>
-                            <Thumb Width="0" Height="0" Opacity="0"/>
+                            <Thumb>
+                                <Thumb.Template>
+                                    <ControlTemplate>
+                                        <Border Width="16"
+                                                Height="16"
+                                                Background="{StaticResource Red}"
+                                                CornerRadius="8"
+                                                Cursor="Hand">
+                                            <Border.Styles>
+                                                <Style Selector="Border:pointerover">
+                                                    <Setter Property="Background" Value="#8b0000"/>
+                                                </Style>
+                                            </Border.Styles>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
                         </Track.Thumb>
                     </Track>
                 </Grid>
@@ -52,7 +48,6 @@
         </Setter>
     </Style>
 
-    <!-- Hide the track buttons -->
     <Style Selector="Slider RepeatButton.trackButton">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Template">

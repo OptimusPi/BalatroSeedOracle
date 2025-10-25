@@ -112,6 +112,7 @@ namespace BalatroSeedOracle.Controls
         public void SetParallaxY(float value) => _renderer?.SetUniform("parallax_y", Math.Clamp(value, -1.0f, 1.0f));
         public void SetZoomScale(float value) => _renderer?.SetUniform("zoom_scale", Math.Clamp(value, -50.0f, 50.0f));
         public void SetSaturationAmount(float value) => _renderer?.SetUniform("saturation_amount", Math.Clamp(value, 0.0f, 1.0f));
+        public void SetSaturationAmount2(float value) => _renderer?.SetUniform("saturation_amount_2", Math.Clamp(value, 0.0f, 1.0f));
         public void SetPixelSize(float value) => _renderer?.SetUniform("pixel_size", Math.Clamp(value, 100.0f, 5000.0f));
         public void SetSpinEase(float value) => _renderer?.SetUniform("spin_ease", Math.Clamp(value, 0.0f, 2.0f));
         public void SetLoopCount(float value) => _renderer?.SetUniform("loop_count", Math.Clamp(value, 1.0f, 10.0f));
@@ -151,6 +152,7 @@ namespace BalatroSeedOracle.Controls
             private float _parallaxY = 0f;
             private float _zoomScale = 0f;
             private float _saturationAmount = 0f;
+            private float _saturationAmount2 = 0f;
             private float _pixelSize = 1440.0f;  // Default from const
             private float _spinEase = 0.5f;      // Default from const
             private float _loopCount = 5.0f;     // Default loop count for paint effect
@@ -183,6 +185,7 @@ namespace BalatroSeedOracle.Controls
                     case "parallax_y": _parallaxY = value; break;
                     case "zoom_scale": _zoomScale = value; break;
                     case "saturation_amount": _saturationAmount = value; break;
+                    case "saturation_amount_2": _saturationAmount2 = value; break;
                     case "pixel_size": _pixelSize = value; break;
                     case "spin_ease": _spinEase = value; break;
                     case "loop_count": _loopCount = value; break;
@@ -231,6 +234,7 @@ namespace BalatroSeedOracle.Controls
                     uniform float parallax_y;
                     uniform float zoom_scale;
                     uniform float saturation_amount;
+                    uniform float saturation_amount_2;
                     uniform float pixel_size;  // Was const, now uniform!
                     uniform float spin_ease;   // Was const, now uniform!
                     uniform float loop_count;  // Controls paint effect complexity (1-10)
@@ -294,8 +298,17 @@ namespace BalatroSeedOracle.Controls
                             adjusted_colour_1 = float4(hsv2rgb(hsv), colour_1.a);
                         }
 
+                        // Apply saturation boost to colour_2 if requested
+                        float4 adjusted_colour_2 = colour_2;
+                        if (saturation_amount_2 > 0.01) {
+                            float3 hsv2 = rgb2hsv(colour_2.rgb);
+                            float satBoost2 = saturation_amount_2 * 0.3;
+                            hsv2.y = clamp(hsv2.y + satBoost2, 0.0, 1.0);
+                            adjusted_colour_2 = float4(hsv2rgb(hsv2), colour_2.a);
+                        }
+
                         // Final color mixing
-                        float4 ret_col = (0.3 / contrast) * adjusted_colour_1 + (1.0 - 0.3 / contrast) * (adjusted_colour_1 * c1p + colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a));
+                        float4 ret_col = (0.3 / contrast) * adjusted_colour_1 + (1.0 - 0.3 / contrast) * (adjusted_colour_1 * c1p + adjusted_colour_2 * c2p + float4(c3p * colour_3.rgb, c3p * colour_1.a));
                         return ret_col;
                     }";
 
@@ -340,6 +353,7 @@ namespace BalatroSeedOracle.Controls
                 _shaderBuilder.Uniforms["parallax_y"] = _parallaxY;
                 _shaderBuilder.Uniforms["zoom_scale"] = _zoomScale;
                 _shaderBuilder.Uniforms["saturation_amount"] = _saturationAmount;
+                _shaderBuilder.Uniforms["saturation_amount_2"] = _saturationAmount2;
                 _shaderBuilder.Uniforms["pixel_size"] = _pixelSize;
                 _shaderBuilder.Uniforms["spin_ease"] = _spinEase;
                 _shaderBuilder.Uniforms["loop_count"] = _loopCount;

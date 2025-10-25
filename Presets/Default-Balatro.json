@@ -1,0 +1,26 @@
+{
+  "Id": "default-balatro",
+  "Name": "Default Balatro",
+  "ThemeIndex": 0,
+  "MainColor": null,
+  "AccentColor": null,
+  "AudioIntensity": 1.0,
+  "ParallaxStrength": 0.5,
+  "TimeSpeed": 1.0,
+  "SeedFoundTrigger": false,
+  "HighScoreSeedTrigger": false,
+  "SearchCompleteTrigger": false,
+  "SeedFoundAudioSource": 0,
+  "HighScoreAudioSource": 0,
+  "SearchCompleteAudioSource": 0,
+  "CustomEffects": {
+    "ShadowFlicker": 0,
+    "Spin": 0,
+    "Twirl": 0,
+    "ZoomThump": 0,
+    "ColorSaturation": 0,
+    "ColorSaturation2": 0
+  },
+  "CreatedAt": "2025-01-24T00:00:00Z",
+  "ModifiedAt": "2025-01-24T00:00:00Z"
+}

@@ -1,0 +1,418 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
+             x:DataType="vm:MusicMixerWidgetViewModel"
+             x:CompileBindings="True">
+
+    <!-- Single container with drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
+          ZIndex="{Binding WidgetZIndex}">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State -->
+        <StackPanel IsVisible="{Binding IsMinimized}"
+                    ZIndex="1"
+                    Spacing="4"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="64" Height="64"
+                    Classes="widget-header"
+                    Cursor="Hand">
+                <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Mixer"
+                       FontSize="10"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Expanded State -->
+        <Border Classes="widget-window"
+                IsVisible="{Binding !IsMinimized}"
+                ZIndex="100"
+                Width="400"
+                MaxHeight="550">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header with Title and Minimize Button -->
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"
+                                Margin="0,0,8,0"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontSize="13"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area with ScrollViewer -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+
+                    <StackPanel Margin="15" Spacing="12">
+
+                        <!-- Track: Drums1 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <!-- Mute Button -->
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Drums1Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+
+                                <!-- Track Name -->
+                                <TextBlock Grid.Column="1"
+                                           Text="Drums1"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+
+                                <!-- Volume Badge -->
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Drums1Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <!-- Slider -->
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Drums1Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Drums2 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Drums2Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Drums2"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Drums2Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Drums2Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Bass1 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Bass1Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Bass1"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Bass1Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Bass1Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Bass2 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Bass2Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Bass2"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Bass2Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Bass2Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Chords1 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Chords1Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Chords1"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Chords1Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Chords1Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Chords2 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Chords2Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Chords2"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Chords2Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Chords2Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Melody1 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Melody1Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Melody1"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Melody1Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Melody1Volume}"/>
+                        </StackPanel>
+
+                        <!-- Track: Melody2 -->
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Melody2Muted}"
+                                              Width="50"
+                                              Height="28"
+                                              FontSize="12"
+                                              Foreground="White">
+                                    <ToggleButton.Styles>
+                                        <Style Selector="ToggleButton">
+                                            <Setter Property="Background" Value="#404040"/>
+                                        </Style>
+                                        <Style Selector="ToggleButton:checked">
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </Style>
+                                    </ToggleButton.Styles>
+                                    <TextBlock Text="🔇" FontSize="14"/>
+                                </ToggleButton>
+                                <TextBlock Grid.Column="1"
+                                           Text="Melody2"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Red}"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        MinWidth="50">
+                                    <TextBlock Text="{Binding Melody2Volume, StringFormat='{}{0:0}'}"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Slider Minimum="0" Maximum="100" Value="{Binding Melody2Volume}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

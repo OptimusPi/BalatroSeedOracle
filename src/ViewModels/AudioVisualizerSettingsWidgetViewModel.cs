@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,16 +19,20 @@ namespace BalatroSeedOracle.ViewModels
     public partial class AudioVisualizerSettingsWidgetViewModel : BaseWidgetViewModel
     {
         private readonly AudioVisualizerSettingsModalViewModel _settingsViewModel;
+        private readonly UserProfileService _userProfileService;
         private Control? _ownerControl;
 
-        public AudioVisualizerSettingsWidgetViewModel()
+        public AudioVisualizerSettingsWidgetViewModel(UserProfileService userProfileService)
         {
+            // Inject UserProfileService via DI
+            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+
             // Create the underlying settings ViewModel (handles presets, themes, etc.)
             _settingsViewModel = new AudioVisualizerSettingsModalViewModel();
 
             // Configure base widget properties
-            WidgetTitle = "Music & Background";
-            WidgetIcon = "🎵";
+            WidgetTitle = "Visual Settings";
+            WidgetIcon = "🎨";
             IsMinimized = true; // Start minimized
 
             // Position below Genie widget
@@ -487,18 +493,18 @@ namespace BalatroSeedOracle.ViewModels
             set => _settingsViewModel.BeatPulseIntensity = value;
         }
 
-        // Presets
-        public System.Collections.ObjectModel.ObservableCollection<Models.VisualizerPreset> Presets => _settingsViewModel.Presets;
+        // Presets - Removed, we'll implement our own below
+        // public System.Collections.ObjectModel.ObservableCollection<Models.VisualizerPreset> Presets => _settingsViewModel.Presets;
 
-        public Models.VisualizerPreset? SelectedPreset
-        {
-            get => _settingsViewModel.SelectedPreset;
-            set => _settingsViewModel.SelectedPreset = value;
-        }
+        // public Models.VisualizerPreset? SelectedPreset
+        // {
+        //     get => _settingsViewModel.SelectedPreset;
+        //     set => _settingsViewModel.SelectedPreset = value;
+        // }
 
-        public System.Windows.Input.ICommand LoadPresetCommand => _settingsViewModel.LoadPresetCommand;
-        public System.Windows.Input.ICommand SavePresetCommand => _settingsViewModel.SavePresetCommand;
-        public System.Windows.Input.ICommand DeletePresetCommand => _settingsViewModel.DeletePresetCommand;
+        // public System.Windows.Input.ICommand LoadPresetCommand => _settingsViewModel.LoadPresetCommand;
+        // public System.Windows.Input.ICommand SavePresetCommand => _settingsViewModel.SavePresetCommand;
+        // public System.Windows.Input.ICommand DeletePresetCommand => _settingsViewModel.DeletePresetCommand;
 
         #endregion
 
@@ -584,6 +590,146 @@ namespace BalatroSeedOracle.ViewModels
             mainMenu.ApplySpinSource(SpinSource);
             mainMenu.ApplyBeatPulseSource(BeatPulseSource);
         }
+
+        #endregion
+
+        #region Preset Management
+
+        [ObservableProperty]
+        private string _currentPresetName = "Default Balatro";
+
+        [RelayCommand]
+        private async Task LoadPreset()
+        {
+            // Open file dialog
+            var window = GetMainWindow();
+            if (window == null) return;
+
+            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+            var dialog = new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                Title = "Load Visualizer Preset",
+                AllowMultiple = false,
+                FileTypeFilter = new[] {
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } }
+                },
+                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
+                    new Uri(presetsPath))
+            };
+
+            var result = await window.StorageProvider.OpenFilePickerAsync(dialog);
+            if (result.Count > 0)
+            {
+                var filePath = result[0].Path.LocalPath;
+                await LoadPresetFromFile(filePath);
+            }
+        }
+
+        [RelayCommand]
+        private async Task SavePreset()
+        {
+            // Open save dialog
+            var window = GetMainWindow();
+            if (window == null) return;
+
+            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+            var dialog = new Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Save Visualizer Preset",
+                SuggestedFileName = "MyPreset.json",
+                DefaultExtension = "json",
+                FileTypeChoices = new[] {
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } }
+                },
+                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
+                    new Uri(presetsPath))
+            };
+
+            var result = await window.StorageProvider.SaveFilePickerAsync(dialog);
+            if (result != null)
+            {
+                var filePath = result.Path.LocalPath;
+                await SavePresetToFile(filePath);
+            }
+        }
+
+        private async Task LoadPresetFromFile(string filePath)
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(filePath);
+                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(json);
+
+                if (preset != null)
+                {
+                    // Apply all settings from preset
+                    ThemeIndex = preset.ThemeIndex;
+                    if (preset.MainColor.HasValue) MainColor = preset.MainColor.Value;
+                    if (preset.AccentColor.HasValue) AccentColor = preset.AccentColor.Value;
+
+                    // Apply effect sources
+                    if (preset.CustomEffects != null)
+                    {
+                        if (preset.CustomEffects.TryGetValue("ShadowFlicker", out int sf)) ShadowFlickerSource = sf;
+                        if (preset.CustomEffects.TryGetValue("Spin", out int sp)) SpinSource = sp;
+                        if (preset.CustomEffects.TryGetValue("ZoomThump", out int zt)) _zoomThumpSource = zt;
+                        if (preset.CustomEffects.TryGetValue("ColorSaturation", out int cs)) _colorSaturationSource = cs;
+                    }
+
+                    CurrentPresetName = preset.Name;
+                    DebugLogger.Log("AudioVisualizerWidget", $"Loaded preset: {preset.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset: {ex.Message}");
+            }
+        }
+
+        private async Task SavePresetToFile(string filePath)
+        {
+            try
+            {
+                var preset = new Models.VisualizerPreset
+                {
+                    Name = Path.GetFileNameWithoutExtension(filePath),
+                    ThemeIndex = ThemeIndex,
+                    MainColor = MainColor,
+                    AccentColor = AccentColor,
+                    CustomEffects = new System.Collections.Generic.Dictionary<string, int>
+                    {
+                        ["ShadowFlicker"] = ShadowFlickerSource,
+                        ["Spin"] = SpinSource,
+                        ["ZoomThump"] = _zoomThumpSource,
+                        ["ColorSaturation"] = _colorSaturationSource
+                    }
+                };
+
+                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(preset, options);
+                await File.WriteAllTextAsync(filePath, json);
+
+                CurrentPresetName = preset.Name;
+                DebugLogger.Log("AudioVisualizerWidget", $"Saved preset: {preset.Name}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to save preset: {ex.Message}");
+            }
+        }
+
+        private Window? GetMainWindow()
+        {
+            if (_ownerControl != null)
+            {
+                return _ownerControl.FindAncestorOfType<Window>();
+            }
+            return null;
+        }
+
+        // Private fields for tracking effect sources not exposed as properties
+        private int _zoomThumpSource = 0;
+        private int _colorSaturationSource = 0;
 
         #endregion
 

@@ -24,6 +24,19 @@ namespace BalatroSeedOracle.ViewModels
         private readonly SoundFlowAudioManager? _soundFlowAudioManager;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
+        // Effect source tracking
+        private int _shadowFlickerSource = 0;
+        private int _spinSource = 0;
+        private int _twirlSource = 0;
+        private int _zoomThumpSource = 0;
+        private int _colorSaturationSource = 0;
+
+        // Effect state for decay (reserved for future audio-reactive implementation)
+        // private float _zoomThumpDecay = 0f;
+        // private float _spinDecay = 0f;
+        // private float _twirlDecay = 0f;
+        // private float _shadowFlickerDecay = 0f;
+
         /// <summary>
         /// Expose audio manager for widgets to access frequency data
         /// </summary>
@@ -678,7 +691,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyShadowFlickerSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            // Store for update loop to use
+            _shadowFlickerSource = sourceIndex;
         }
 
         /// <summary>
@@ -686,7 +700,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplySpinSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            _spinSource = sourceIndex;
         }
 
         /// <summary>
@@ -694,7 +708,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyTwirlSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            _twirlSource = sourceIndex;
         }
 
         /// <summary>
@@ -702,7 +716,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyZoomThumpSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            _zoomThumpSource = sourceIndex;
         }
 
         /// <summary>
@@ -710,7 +724,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyColorSaturationSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            _colorSaturationSource = sourceIndex;
         }
 
         /// <summary>
@@ -718,7 +732,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ApplyBeatPulseSource(BalatroShaderBackground? shader, int sourceIndex)
         {
-            // Removed - will be replaced by proper effect binding system
+            // DELETED - not used
         }
 
         #endregion
