@@ -73,31 +73,27 @@
 
                                 <!-- Filter List with Selection Triangle -->
                                 <Grid Grid.Row="0">
-                                    <Grid>
-                                        <!-- Triangle indicator for selected item -->
-                                        <Canvas ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
-                                            <Polygon Points="15,0 0,10 15,20"
-                                                     Classes="balatro-triangle balatro-bounce-horizontal"
-                                                     Canvas.Left="-20"
-                                                     Canvas.Top="{Binding FilterList.SelectedItemTriangleY}"
-                                                     IsVisible="{Binding FilterList.HasSelectedFilter}"/>
-                                        </Canvas>
+                                    <!-- Triangle indicator for selected item -->
+                                    <Canvas ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
+                                        <Polygon Points="15,0 0,10 15,20"
+                                                 Classes="balatro-triangle balatro-bounce-horizontal"
+                                                 Canvas.Left="-20"
+                                                 Canvas.Top="{Binding FilterList.SelectedItemTriangleY}"
+                                                 IsVisible="{Binding FilterList.HasSelectedFilter}"/>
+                                    </Canvas>
 
-                                        <!-- Filter List -->
-                                        <StackPanel Margin="0">
-                                            <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Button Content="{Binding DisplayText}"
-                                                                Classes="filter-list-item"
-                                                                IsPressed="{Binding IsSelected}"
-                                                                Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
-                                                                CommandParameter="{Binding}"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </Grid>
+                                    <!-- Filter List (no ScrollViewer - pagination handles display) -->
+                                    <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Content="{Binding DisplayText}"
+                                                        Classes="filter-list-item"
+                                                        IsPressed="{Binding IsSelected}"
+                                                        Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </Grid>
 
                                 <!-- Pagination Controls -->
@@ -474,16 +470,33 @@
                                         </Grid>
                                     </ScrollViewer>
 
-                                    <!-- Placeholder Message when no filter selected -->
-                                    <TextBlock Text="{Binding PlaceholderText}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="18"
-                                               Foreground="{StaticResource ModalGrey}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               TextWrapping="Wrap"
-                                               TextAlignment="Center"
-                                               IsVisible="{Binding ShowPlaceholder}"/>
+                                    <!-- Placeholder when no filter selected (Balatro Challenges style) -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Spacing="15"
+                                                IsVisible="{Binding ShowPlaceholder}">
+                                        <TextBlock Text="Select a Filter"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="20"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"/>
+
+                                        <TextBlock Text="— or —"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="16"
+                                                   Foreground="{StaticResource TextInactive}"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"/>
+
+                                        <Button Content="+ CREATE NEW FILTER"
+                                                Classes="btn-blue"
+                                                FontSize="16"
+                                                Height="50"
+                                                MinWidth="280"
+                                                Command="{Binding EditCommand}"
+                                                IsVisible="{Binding EnableEdit}"/>
+                                    </StackPanel>
                                 </Grid>
 
                                 <!-- ACTION BUTTONS (bottom right, BELOW tabs) -->

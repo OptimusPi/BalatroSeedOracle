@@ -75,11 +75,7 @@ namespace BalatroSeedOracle.ViewModels
             EnableAnalyze = enableAnalyze;
 
             // Create child ViewModel for filter list
-            // Only show CREATE NEW when enableEdit or enableCopy is true (VISUAL BUILDER mode)
-            FilterList = new PaginatedFilterBrowserViewModel
-            {
-                ShowCreateNewFilter = enableEdit || enableCopy
-            };
+            FilterList = new PaginatedFilterBrowserViewModel();
 
             // Subscribe to filter selection changes
             FilterList.PropertyChanged += (s, e) =>

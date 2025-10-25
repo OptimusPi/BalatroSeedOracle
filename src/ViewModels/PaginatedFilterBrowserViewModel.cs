@@ -170,21 +170,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 _allFilters.Clear();
-                
-                // Add CREATE NEW FILTER as first item (special blue item)
-                _allFilters.Add(new FilterBrowserItem
-                {
-                    Name = "CREATE NEW FILTER",
-                    Description = "Start with a blank filter",
-                    Author = "System",
-                    DateCreated = DateTime.Now,
-                    FilePath = "__CREATE_NEW__",
-                    MustCount = 0,
-                    ShouldCount = 0,
-                    MustNotCount = 0,
-                    IsCreateNew = true
-                });
-                
+
                 var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                 if (!Directory.Exists(filtersDir))
                 {
