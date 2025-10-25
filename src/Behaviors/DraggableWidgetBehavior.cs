@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Xaml.Interactivity;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -264,19 +266,50 @@ namespace BalatroSeedOracle.Behaviors
                 _isDragging = false;
                 e.Pointer.Capture(null);
 
-                // Snap minimized widgets to 90px vertical grid (matches default spacing)
+                // Use collision detection for minimized widgets
                 if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm && vm.IsMinimized)
                 {
-                    const double xSnap = 20.0; // Always left edge
-                    const double yGridSize = 90.0; // Match widget spacing
-                    const double yOffset = 20.0; // Start position
+                    // Try to get the WidgetPositionService from the ServiceHelper
+                    try
+                    {
+                        var positionService = ServiceHelper.GetService<WidgetPositionService>();
+                        if (positionService != null)
+                        {
+                            // Use collision-aware snapping
+                            var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(X, Y, vm);
+                            var clamped = ClampPosition(newX, newY);
+                            X = clamped.X;
+                            Y = clamped.Y;
+                        }
+                        else
+                        {
+                            // Fallback to original behavior if service not available
+                            const double xSnap = 20.0; // Always left edge
+                            const double yGridSize = 90.0; // Match widget spacing
+                            const double yOffset = 20.0; // Start position
 
-                    var snappedX = xSnap;
-                    var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
+                            var snappedX = xSnap;
+                            var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
 
-                    var clamped = ClampPosition(snappedX, snappedY);
-                    X = clamped.X;
-                    Y = clamped.Y;
+                            var clamped = ClampPosition(snappedX, snappedY);
+                            X = clamped.X;
+                            Y = clamped.Y;
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback to original behavior if service access fails
+                        const double xSnap = 20.0; // Always left edge
+                        const double yGridSize = 90.0; // Match widget spacing
+                        const double yOffset = 20.0; // Start position
+
+                        var snappedX = xSnap;
+                        var snappedY = yOffset + Math.Round((Y - yOffset) / yGridSize) * yGridSize;
+
+                        var clamped = ClampPosition(snappedX, snappedY);
+                        X = clamped.X;
+                        Y = clamped.Y;
+                    }
                 }
 
                 e.Handled = true;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -55,7 +56,7 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "🧞";
             IsMinimized = true;
 
-            // Position in top-left corner
+            // Set fixed position for Genie widget - first position
             PositionX = 20;
             PositionY = 20;
         }

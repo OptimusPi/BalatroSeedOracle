@@ -192,9 +192,9 @@ namespace BalatroSeedOracle.ViewModels
             WidgetTitle = "Daylatro";
             WidgetIcon = "📅";
 
-            // Position with other widgets on left side
+            // Set fixed position for DayLatro widget - third position (90px spacing)
             PositionX = 20;
-            PositionY = 240; // Below Audio widget (which is at Y=130)
+            PositionY = 200;
 
             // Initialize commands
             SubmitScoreCommand = new RelayCommand(OnSubmitScore, CanSubmitScore);

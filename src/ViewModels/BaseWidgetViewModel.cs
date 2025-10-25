@@ -1,6 +1,8 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -10,6 +12,24 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public partial class BaseWidgetViewModel : ObservableObject
     {
+        public BaseWidgetViewModel()
+        {
+            // Register with position service when created
+            RegisterWithPositionService();
+        }
+
+        private void RegisterWithPositionService()
+        {
+            try
+            {
+                var positionService = ServiceHelper.GetService<WidgetPositionService>();
+                positionService?.RegisterWidget(this);
+            }
+            catch
+            {
+                // Ignore if service is not available (e.g., during testing)
+            }
+        }
         [ObservableProperty]
         private bool _isMinimized = true;
 
@@ -103,7 +123,19 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Called when widget is closed - override in derived classes
         /// </summary>
-        protected virtual void OnClosed() { }
+        protected virtual void OnClosed() 
+        {
+            // Unregister from position service when closed
+            try
+            {
+                var positionService = ServiceHelper.GetService<WidgetPositionService>();
+                positionService?.UnregisterWidget(this);
+            }
+            catch
+            {
+                // Ignore if service is not available
+            }
+        }
 
         /// <summary>
         /// Set notification badge

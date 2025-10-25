@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.Extensions
             // ClipboardService is static, no DI registration needed
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
+            services.AddSingleton<WidgetPositionService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();

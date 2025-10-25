@@ -17,12 +17,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
 
-            // Configure widget appearance
+            // Configure widget appearance and position - fourth position (90px spacing)
             WidgetTitle = "Music Mixer";
             WidgetIcon = "🎵";
             IsMinimized = true; // Start minimized
+            
             PositionX = 20;
-            PositionY = 330; // Below DayLatro widget
+            PositionY = 290;
 
             // Set custom size for mixer
             Width = 400;

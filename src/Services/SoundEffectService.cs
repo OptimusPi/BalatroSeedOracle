@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using Avalonia.Threading;
 using NAudio.Wave;
+using NAudio.CoreAudioApi;
+using System.Linq;
 
 namespace BalatroSeedOracle.Services
 {

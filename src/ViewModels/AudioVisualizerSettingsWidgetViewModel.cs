@@ -35,9 +35,9 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "🎨";
             IsMinimized = true; // Start minimized
 
-            // Position below Genie widget
+            // Set fixed position for Audio widget - second position (90px spacing)
             PositionX = 20;
-            PositionY = 130;
+            PositionY = 110;
 
             // Initialize shader parameters with default values
             InitializeShaderParameters();
