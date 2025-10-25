@@ -111,10 +111,12 @@ namespace BalatroSeedOracle.Services
                 // 4. Load all 8 tracks as SoundPlayers
                 LoadTracks(format);
 
-                // 5. Start the device
+                // 5. Start the device MUTED (settings will restore user's volume preference)
+                _device.MasterMixer.Volume = 0f; // CRITICAL: Start muted to prevent audio blast on startup
+                _masterVolume = 0f; // Sync internal state
                 _device.Start();
 
-                Console.WriteLine($"[SoundFlowAudioManager] Device started with {_players.Count} independent tracks");
+                Console.WriteLine($"[SoundFlowAudioManager] Device started MUTED (waiting for user settings to restore volume) with {_players.Count} independent tracks");
 
                 // 6. Start analysis update loop
                 _cancellationTokenSource = new CancellationTokenSource();
