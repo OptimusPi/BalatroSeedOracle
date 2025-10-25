@@ -175,7 +175,10 @@ namespace BalatroSeedOracle.Views
             var result = await this.ShowFilterSelectionModal(enableSearch: true);
             if (!result.Cancelled && result.Action == Models.FilterAction.Search && result.FilterId != null)
             {
-                this.ShowSearchModal(result.FilterId);
+                // Resolve filter id (filename without extension) to full path in JsonItemFilters
+                var filtersDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemFilters");
+                var configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".json");
+                this.ShowSearchModal(configPath);
             }
         }
 

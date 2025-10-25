@@ -98,9 +98,9 @@ namespace BalatroSeedOracle.Views.Modals
                 // When the user clicks Select, jump to the Search tab
                 deckStakeSelector.DeckSelected += (s, _) =>
                 {
-                    ViewModel.SelectedTabIndex = 2; // Search tab
-                    ViewModel.UpdateTabVisibility(2);
-                    _tabHeader?.SwitchToTab(2);
+                    ViewModel.SelectedTabIndex = 1; // Search tab (indices shifted)
+                    ViewModel.UpdateTabVisibility(1);
+                    _tabHeader?.SwitchToTab(1);
                 };
             }
         }

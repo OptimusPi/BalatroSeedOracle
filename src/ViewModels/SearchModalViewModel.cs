@@ -44,18 +44,15 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private SearchProgress? _latestProgress;
 
-        // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
-        [ObservableProperty]
-        private bool _isSelectFilterTabVisible = true;
+    // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
+    [ObservableProperty]
+    private bool _isSettingsTabVisible = false;
 
-        [ObservableProperty]
-        private bool _isSettingsTabVisible = false;
+    [ObservableProperty]
+    private bool _isSearchTabVisible = false;
 
-        [ObservableProperty]
-        private bool _isSearchTabVisible = false;
-
-        [ObservableProperty]
-        private bool _isResultsTabVisible = false;
+    [ObservableProperty]
+    private bool _isResultsTabVisible = false;
 
         [ObservableProperty]
         private int _deckIndex = 0;
@@ -424,7 +421,6 @@ namespace BalatroSeedOracle.ViewModels
         public void UpdateTabVisibility(int tabIndex)
         {
             // Hide ALL tabs first
-            IsSelectFilterTabVisible = false;
             IsSettingsTabVisible = false;
             IsSearchTabVisible = false;
             IsResultsTabVisible = false;
@@ -433,15 +429,12 @@ namespace BalatroSeedOracle.ViewModels
             switch (tabIndex)
             {
                 case 0:
-                    IsSelectFilterTabVisible = true;
-                    break;
-                case 1:
                     IsSettingsTabVisible = true;
                     break;
-                case 2:
+                case 1:
                     IsSearchTabVisible = true;
                     break;
-                case 3:
+                case 2:
                     IsResultsTabVisible = true;
                     break;
             }
@@ -885,7 +878,7 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("SearchModalViewModel", $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})");
                     
                     // Switch to the Search tab so user can start searching
-                    SelectedTabIndex = 2; // Search tab
+                    SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
                 }
                 else
                 {
@@ -982,8 +975,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Initialize dynamic tabs for consistent Balatro styling
         /// </summary>
-        public object? FilterTabContent { get; private set; }
-        public object? SettingsTabContent { get; private set; }
+    public object? SettingsTabContent { get; private set; }
         public object? SearchTabContent { get; private set; }
         public object? ResultsTabContent { get; private set; }
 
@@ -991,64 +983,18 @@ namespace BalatroSeedOracle.ViewModels
         {
             TabItems.Clear();
 
-            // PROPER MVVM: Use XAML UserControls, not UI-in-code garbage
-            FilterTabContent = CreateFilterTabContent(); // Still needs programmatic setup for FilterSelector events
+            // PROPER MVVM: Use XAML UserControls
             SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 
-            TabItems.Add(new TabItemViewModel("Select Filter", FilterTabContent));
+            // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
             TabItems.Add(new TabItemViewModel("Deck/Stake", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
         }
 
-        private UserControl CreateFilterTabContent()
-        {
-            // Use the challenges-inspired FilterSelectorControl for the filter chooser
-            var filterSelector = new Components.FilterSelectorControl
-            {
-                Name = "FilterSelector",
-                IsInSearchModal = true
-            };
-
-            // Wire events directly so Select button advances to Search tab
-            filterSelector.FilterSelected += async (s, path) =>
-            {
-                DebugLogger.Log("SearchModalViewModel", $"Filter clicked in list! Path: {path}");
-                await LoadFilterAsync(path);
-                DebugLogger.Log("SearchModalViewModel", "Filter loaded for preview - staying on Select Filter tab");
-            };
-
-            filterSelector.FilterConfirmed += async (s, path) =>
-            {
-                DebugLogger.Log("SearchModalViewModel", $"SELECT THIS FILTER button clicked! Path: {path}");
-                await LoadFilterAsync(path);
-                DebugLogger.Log("SearchModalViewModel", "Filter confirmed, auto-advancing to Search tab");
-
-                // Advance to Search tab (index 2)
-                SelectedTabIndex = 2;
-                UpdateTabVisibility(2);
-            };
-
-            filterSelector.NewFilterRequested += (s, e) =>
-            {
-                _newFilterRequestedAction?.Invoke();
-            };
-
-            // Layout: simple container hosting the selector
-            var mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star)); // FilterSelector
-
-            Grid.SetRow(filterSelector, 0);
-            mainGrid.Children.Add(filterSelector);
-
-            // Return selector directly inside a simple container without hardcoded background
-            return new UserControl
-            {
-                Content = mainGrid
-            };
-        }
+        // NOTE: The old in-modal filter selector was removed. Use `FilterSelectionModal` instead.
 
         // DELETED: CreateSettingsTabContent() - replaced with XAML UserControl (SettingsTab.axaml)
         // DELETED: CreateSearchTabContent() - replaced with XAML UserControl (SearchTab.axaml)

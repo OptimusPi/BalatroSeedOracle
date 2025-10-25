@@ -107,13 +107,13 @@ namespace BalatroSeedOracle.Helpers
                     {
                         await searchContent.ViewModel.LoadFilterAsync(configPath);
                         // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 2);
+                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 1);
                     });
                 }
                 else
                 {
                     // No filter to load, go to search tab immediately
-                    searchContent.ViewModel.SelectedTabIndex = 2; // Search tab
+                    searchContent.ViewModel.SelectedTabIndex = 1; // Search tab
                 }
                 return menu.ShowModal("🎰 SEED SEARCH", searchContent);
             }
@@ -197,7 +197,7 @@ namespace BalatroSeedOracle.Helpers
                 _ = searchModal.ViewModel.ConnectToExistingSearch(searchId);
 
                 // AUTO-NAVIGATE: Take user directly to search tab after connection!
-                Dispatcher.UIThread.Post(() => searchModal.ViewModel.SelectedTabIndex = 2);
+                Dispatcher.UIThread.Post(() => searchModal.ViewModel.SelectedTabIndex = 1);
 
                 // Handle desktop icon creation when modal closes with active search
                 searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
