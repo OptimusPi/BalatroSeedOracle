@@ -60,7 +60,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _ => "JOKERS"
         };
 
-        public string PageIndicator => $"{CurrentPageIndex + 1}/4 - {CurrentPageTitle}";
+        public string PageIndicator => $"{CurrentPageIndex + 1}/4";
 
         // Page visibility helpers (for XAML binding)
         public bool IsJokersPage => CurrentPageIndex == 0;
@@ -469,9 +469,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 
                 foreach (var favoriteName in favoriteNames)
                 {
-                    var item = new FilterItem 
-                    { 
-                        Name = favoriteName, 
+                    var item = new FilterItem
+                    {
+                        Name = favoriteName,
                         Type = "Joker",
                         Category = "Favorite",
                         IsFavorite = true,

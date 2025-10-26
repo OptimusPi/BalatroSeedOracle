@@ -91,9 +91,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Tabs = new ObservableCollection<BalatroTabItem>
                 {
-                    new BalatroTabItem { Title = "FILTER", Index = 0, IsActive = true },
-                    new BalatroTabItem { Title = "SCORE", Index = 1 },
-                    new BalatroTabItem { Title = "DECK", Index = 2 }
+                    new BalatroTabItem { Title = "Filter Info", Index = 0, IsActive = true },
+                    new BalatroTabItem { Title = "Score Setup", Index = 1 },
+                    new BalatroTabItem { Title = "Preferred Deck", Index = 2 }
                 }
             };
 

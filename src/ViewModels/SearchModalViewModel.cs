@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Console
         [ObservableProperty]
-        private string _consoleText = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+        private string _consoleText = "> Motely Search Console\n> Ready to search...\n";
 
         [ObservableProperty]
         private string _jsonValidationStatus = "JSON: Valid ✓";
@@ -136,8 +136,8 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _rarity = "1 in 0";
 
-        // Cook button dynamic properties
-        public string CookButtonText => IsSearching ? "STOP COOKING" : "Let Jimbo COOK!";
+        // Search button dynamic properties
+        public string CookButtonText => IsSearching ? "STOP SEARCH" : "START SEARCH";
 
         // Results filtering
         [ObservableProperty]
@@ -480,7 +480,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ClearConsole()
         {
-            ConsoleText = "> Motely Search Console\n> Ready for Jimbo to cook...\n";
+            ConsoleText = "> Motely Search Console\n> Ready to search...\n";
             ConsoleOutput.Clear();
             _consoleBuffer.Clear();
             DebugLogger.Log("SearchModalViewModel", "Console cleared");

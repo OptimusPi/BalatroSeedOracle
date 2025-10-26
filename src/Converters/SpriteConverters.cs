@@ -122,4 +122,37 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts an item name string to its sprite image, automatically determining type.
+    /// Supports Jokers, Tarots, Planets, Spectrals, Vouchers, Tags, and Bosses.
+    /// </summary>
+    public class ItemNameToSpriteConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is not string itemName || string.IsNullOrEmpty(itemName))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+
+                // The parameter can optionally specify the type category
+                string? typeHint = parameter as string;
+
+                return spriteService.GetItemImage(itemName, typeHint);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ItemNameToSpriteConverter", $"Failed to get sprite for '{itemName}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

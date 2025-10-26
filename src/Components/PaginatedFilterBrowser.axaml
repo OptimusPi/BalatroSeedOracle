@@ -44,8 +44,8 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Content="{Binding DisplayText}"
-                                                Classes="filter-list-item" 
-                                                IsPressed="{Binding IsSelected}"/>
+                                                Classes="filter-list-item"
+                                                Classes.selected="{Binding IsSelected}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -222,7 +222,12 @@
         <Style Selector="Button.filter-list-item:pressed">
             <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
-        
+
+        <Style Selector="Button.filter-list-item.selected">
+            <Setter Property="Background" Value="#660000"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
         <!-- Special blue styling for CREATE NEW FILTER -->
         <Style Selector="Button.create-new-item">
             <Setter Property="Background" Value="{StaticResource Blue}"/>

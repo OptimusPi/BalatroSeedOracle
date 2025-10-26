@@ -1,8 +1,10 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media.Imaging;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Controls;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -12,12 +14,49 @@ namespace BalatroSeedOracle.Views.Modals
 
         public event EventHandler? CloseRequested;
 
+        private Image? _deckImage;
+        private Image? _stakeOverlayImage;
+
         public FilterSelectionModal()
         {
             InitializeComponent();
 
             // Subscribe to DataContext changes to wire up the ViewModel event
             this.DataContextChanged += OnDataContextChanged;
+
+            // Wire up deck/stake images when loaded
+            this.Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Find the deck and stake images in the XAML
+            _deckImage = this.FindControl<Image>("DeckImage");
+            _stakeOverlayImage = this.FindControl<Image>("StakeOverlayImage");
+
+            // Load default deck (Red Deck with White Stake)
+            LoadDeckAndStake("Red Deck", "White");
+        }
+
+        private void LoadDeckAndStake(string deckName, string stakeName)
+        {
+            // Get deck items with stake overlay from factory
+            var deckItems = PanelItemFactory.CreateDeckItemsWithStake(stakeName);
+
+            // Find the requested deck
+            var deckItem = deckItems.Find(item => item.Title == deckName);
+            if (deckItem != null && deckItem.GetImage != null)
+            {
+                var image = deckItem.GetImage();
+                if (_deckImage != null)
+                {
+                    _deckImage.Source = image;
+                }
+                if (_stakeOverlayImage != null)
+                {
+                    _stakeOverlayImage.Source = image;
+                }
+            }
         }
 
         private void InitializeComponent()

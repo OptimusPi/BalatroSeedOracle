@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              x:Class="BalatroSeedOracle.Components.FilterTabs.JsonEditorTab"
              x:DataType="vm:JsonEditorTabViewModel">
@@ -70,11 +70,11 @@
                 </Border>
                 
                 <!-- Editor Content -->
-                <avalonedit:TextEditor Grid.Row="1"
+                <AvaloniaEdit:TextEditor Grid.Row="1"
                                        Name="JsonEditor"
                                        SyntaxHighlighting="Json"
                                        ShowLineNumbers="True"
-                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
                                        FontSize="16"
                                        Background="#1e1e1e"
                                        Foreground="#ffffff"

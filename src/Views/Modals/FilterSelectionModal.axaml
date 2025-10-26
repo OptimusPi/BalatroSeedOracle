@@ -2,8 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Views.Modals.FilterSelectionModal"
              x:DataType="vm:FilterSelectionModalViewModel">
+
+    <UserControl.Resources>
+        <converters:ItemNameToSpriteConverter x:Key="ItemNameToSpriteConverter"/>
+    </UserControl.Resources>
 
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
@@ -62,45 +67,13 @@
                                 BorderThickness="0"
                                 CornerRadius="8"
                                 Padding="20" ClipToBounds="False">
-                            <Grid ClipToBounds="False">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>    <!-- Filter List -->
-                                    <RowDefinition Height="Auto"/> <!-- Pagination -->
-                                </Grid.RowDefinitions>
-
-                                <!-- Filter List -->
-                                <ItemsControl Grid.Row="0" ItemsSource="{Binding FilterList.CurrentPageFilters}" ClipToBounds="False">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <!-- Wrapper with padding to reserve space for triangle -->
-                                            <Grid HorizontalAlignment="Center" Margin="20,0,0,0">
-                                                <!-- Button with text (always in same position) -->
-                                                <Button Classes="filter-list-item"
-                                                        Content="{Binding DisplayText}"
-                                                        IsPressed="{Binding IsSelected}"
-                                                        Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
-                                                        CommandParameter="{Binding}"/>
-
-                                                <!-- Triangle indicator (overlaid on left, doesn't push button) -->
-                                                <Polygon Points="0,0 15,10 0,20"
-                                                         Fill="{StaticResource Red}"
-                                                         Classes="balatro-bounce-horizontal"
-                                                         HorizontalAlignment="Left"
-                                                         VerticalAlignment="Center"
-                                                         Margin="-20,0,0,0"
-                                                         IsVisible="{Binding IsSelected}"
-                                                         IsHitTestVisible="False"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <!-- Pagination Controls -->
-                                <StackPanel Grid.Row="1"
+                            <DockPanel ClipToBounds="False" LastChildFill="True">
+                                <!-- Pagination Controls - Docked to Bottom -->
+                                <StackPanel DockPanel.Dock="Bottom"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"
-                                            Spacing="4"
-                                            Margin="0,35,0,0">
+                                            Spacing="12"
+                                            Margin="0,20,0,0">
                                     <Button Content="&lt;"
                                             Classes="btn-red"
                                             Width="44"
@@ -108,6 +81,7 @@
                                             FontSize="16"
                                             Padding="0"
                                             CornerRadius="8"
+                                            VerticalAlignment="Center"
                                             Command="{Binding FilterList.PreviousPageCommand}"/>
 
                                     <!-- Page indicator -->
@@ -115,14 +89,15 @@
                                             BorderBrush="Transparent"
                                             BorderThickness="0"
                                             CornerRadius="8"
-                                            Padding="16,8"
-                                            MinWidth="100"
+                                            Height="36"
+                                            Padding="16,0"
                                             VerticalAlignment="Center">
                                         <TextBlock Text="{Binding FilterList.PageIndicatorText}"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
                                                    Foreground="White"
-                                                   TextAlignment="Center"/>
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"/>
                                     </Border>
 
                                     <Button Content="&gt;"
@@ -132,9 +107,42 @@
                                             FontSize="16"
                                             Padding="0"
                                             CornerRadius="8"
+                                            VerticalAlignment="Center"
                                             Command="{Binding FilterList.NextPageCommand}"/>
                                 </StackPanel>
-                            </Grid>
+
+                                <!-- Filter List - Takes remaining space with max height -->
+                                <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}" ClipToBounds="False">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Wrapper with button and arrow -->
+                                                <Grid>
+                                                    <!-- Button (style sets it to Center with MinWidth 210px) -->
+                                                    <Button Classes="filter-list-item"
+                                                            Classes.selected="{Binding IsSelected}"
+                                                            Content="{Binding DisplayText}"
+                                                            Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                            CommandParameter="{Binding}"/>
+
+                                                    <!-- Triangle attached to left edge of button -->
+                                                    <Polygon Points="0,0 18,11 0,22"
+                                                             Width="18"
+                                                             Height="22"
+                                                             Fill="{StaticResource Red}"
+                                                             Classes="balatro-bounce-horizontal"
+                                                             HorizontalAlignment="Left"
+                                                             VerticalAlignment="Center"
+                                                             Margin="-30,2,0,0"
+                                                             ZIndex="10"
+                                                             IsVisible="{Binding IsSelected}"
+                                                             IsHitTestVisible="False"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </DockPanel>
                         </Border>
 
                         <!-- RIGHT SIDE: Details Panel -->
@@ -151,78 +159,256 @@
                                     <RowDefinition Height="Auto"/> <!-- Action Buttons -->
                                 </Grid.RowDefinitions>
 
-                                <!-- HEADER SECTION (visible when filter selected) -->
-                                <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,15"
-                                            IsVisible="{Binding ShowDetailsPanel}">
+                                <!-- HEADER SECTION: Horizontal Sprite Strips (visible when filter selected) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowDetailsPanel}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <!-- Horizontal Sprite Strips for Must[] Items -->
-                                    <!-- JOKERS Strip -->
-                                    <Border Background="{StaticResource DarkTealGrey}"
+                                    <!-- JOKERS Strip (Left) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
                                             CornerRadius="6"
-                                            Padding="12,8"
-                                            Margin="0,8,0,0">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="JOKERS"
+                                            Padding="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="JOKERS"
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Gold}"
+                                                       FontWeight="Bold"
                                                        VerticalAlignment="Center"
-                                                       FontWeight="Bold"/>
-                                            <TextBlock Text="[Joker sprites]"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource White}"
-                                                       VerticalAlignment="Center"
-                                                       FontStyle="Italic"/>
-                                        </StackPanel>
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Must Jokers (normal sprites) -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Jokers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- MustNot Jokers (with red X) -->
+                                            <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Jokers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="2">
+                                                            <!-- Base sprite -->
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Stretch="Uniform"/>
+                                                            <!-- Red X overlay -->
+                                                            <Border Background="#88FF0000"
+                                                                    CornerRadius="4"
+                                                                    Opacity="0.6">
+                                                                <TextBlock Text="X"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="24"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="#FF0000"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
                                     </Border>
 
-                                    <!-- CONSUMABLES Strip -->
-                                    <Border Background="{StaticResource DarkTealGrey}"
+                                    <!-- VOUCHERS Strip (Center) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
                                             CornerRadius="6"
-                                            Padding="12,8">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="CONSUMABLES"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Purple}"
-                                                       VerticalAlignment="Center"
-                                                       FontWeight="Bold"/>
-                                            <TextBlock Text="[Consumable sprites]"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource White}"
-                                                       VerticalAlignment="Center"
-                                                       FontStyle="Italic"/>
-                                        </StackPanel>
-                                    </Border>
+                                            Padding="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                    <!-- VOUCHERS Strip -->
-                                    <Border Background="{StaticResource DarkTealGrey}"
-                                            CornerRadius="6"
-                                            Padding="12,8">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="VOUCHERS"
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource VoucherOrange}"
+                                                       FontWeight="Bold"
                                                        VerticalAlignment="Center"
-                                                       FontWeight="Bold"/>
-                                            <TextBlock Text="[Voucher sprites]"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource White}"
-                                                       VerticalAlignment="Center"
-                                                       FontStyle="Italic"/>
-                                        </StackPanel>
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Must Vouchers (normal sprites) -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- MustNot Vouchers (with red X) -->
+                                            <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Vouchers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="2">
+                                                            <!-- Base sprite -->
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Stretch="Uniform"/>
+                                                            <!-- Red X overlay -->
+                                                            <Border Background="#88FF0000"
+                                                                    CornerRadius="4"
+                                                                    Opacity="0.6">
+                                                                <TextBlock Text="X"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="24"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="#FF0000"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
                                     </Border>
-                                </StackPanel>
+
+                                    <!-- CONSUMABLES Strip (Right) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Must Consumables (normal sprites) -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- MustNot Consumables (with red X) -->
+                                            <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Consumables}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="2">
+                                                            <!-- Base sprite -->
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Stretch="Uniform"/>
+                                                            <!-- Red X overlay -->
+                                                            <Border Background="#88FF0000"
+                                                                    CornerRadius="4"
+                                                                    Opacity="0.6">
+                                                                <TextBlock Text="X"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="24"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="#FF0000"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
 
                                 <!-- TAB NAVIGATION (visible when filter selected) -->
                                 <components:BalatroTabControl Grid.Row="1"
                                                               DataContext="{Binding TabControl}"
-                                                              IsVisible="{Binding $parent[Grid].DataContext.ShowDetailsPanel}"
-                                                              Margin="0,0,0,10"/>
+                                                              Margin="0,0,0,10">
+                                    <components:BalatroTabControl.IsVisible>
+                                        <Binding Path="DataContext.ShowDetailsPanel" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    </components:BalatroTabControl.IsVisible>
+                                </components:BalatroTabControl>
 
                                 <!-- TAB CONTENT AREA -->
                                 <Grid Grid.Row="2">
@@ -230,7 +416,7 @@
                                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                   IsVisible="{Binding ShowFilterTab}">
                                         <Grid ColumnDefinitions="*,15,*">
-                                            <!-- Left Column: Filter Description -->
+                                            <!-- Filter Description Box (LEFT COLUMN) -->
                                             <Border Grid.Column="0"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
@@ -248,22 +434,34 @@
                                                     </Border>
                                                     <!-- Content -->
                                                     <StackPanel Grid.Row="1" Margin="15" Spacing="10">
-                                                        <!-- Filter Name (title, big font) -->                                                        <TextBlock Text="{Binding FilterName}"                                                                   FontFamily="{StaticResource BalatroFont}"                                                                   FontSize="18"                                                                   FontWeight="Bold"                                                                   Foreground="Black"                                                                   TextWrapping="Wrap"/>
-                                                        <!-- Author (at top, bold, FontSize 16) -->
+                                                        <!-- Filter Name and Date (Title Row) -->
+                                                        <Grid Margin="0,0,0,5">
+                                                            <TextBlock Text="{Binding FilterName}"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="18"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="Black"
+                                                                       HorizontalAlignment="Left"
+                                                                       VerticalAlignment="Top"/>
+
+                                                            <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="11"
+                                                                       Foreground="#666666"
+                                                                       HorizontalAlignment="Right"
+                                                                       VerticalAlignment="Top"
+                                                                       Margin="0,2,0,0">
+                                                                <Run Text="Created: "/>
+                                                                <Run Text="{Binding CreatedDate}"/>
+                                                            </TextBlock>
+                                                        </Grid>
+
+                                                        <!-- Author -->
                                                         <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="16"
-                                                                   FontWeight="Bold"
-                                                                   Foreground="Black">
+                                                                   FontSize="14"
+                                                                   Foreground="#333333"
+                                                                   Margin="0,0,0,8">
                                                             <Run Text="by "/>
                                                             <Run Text="{Binding FilterAuthor}"/>
-                                                        </TextBlock>
-
-                                                        <!-- Created Date (below author, lighter, FontSize 12) -->
-                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="12"
-                                                                   Foreground="#666666">
-                                                            <Run Text="Created: "/>
-                                                            <Run Text="{Binding CreatedDate}"/>
                                                         </TextBlock>
 
                                                         <!-- Description Text -->
@@ -276,7 +474,7 @@
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Right Column: Filter Criteria (Must[]) -->
+                                            <!-- Filter Criteria Box (Must[]) (RIGHT COLUMN) -->
                                             <Border Grid.Column="2"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
@@ -379,11 +577,11 @@
                                         </Grid>
                                     </ScrollViewer>
 
-                                    <!-- DECK TAB CONTENT (three-column layout) -->
+                                    <!-- PREFERRED DECK TAB CONTENT (two-column layout) -->
                                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                   IsVisible="{Binding ShowDeckTab}">
-                                        <Grid ColumnDefinitions="*,10,*,10,*">
-                                            <!-- Column 1: Jokers -->
+                                        <Grid ColumnDefinitions="*,15,*">
+                                            <!-- LEFT: Deck & Stake Preview -->
                                             <Border Grid.Column="0"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
@@ -393,25 +591,38 @@
                                                             Background="{StaticResource Blue}"
                                                             CornerRadius="8,8,0,0"
                                                             Padding="12,8">
-                                                        <TextBlock Text="JOKERS"
+                                                        <TextBlock Text="Deck &amp; Stake"
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="14"
                                                                    Foreground="White"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Content -->
-                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
-                                                        <TextBlock Text="[Joker sprites will display here]"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="11"
-                                                                   Foreground="#666666"
-                                                                   FontStyle="Italic"
-                                                                   TextAlignment="Center"/>
-                                                    </StackPanel>
+                                                    <!-- Content: Deck sprite with Stake sticker overlay -->
+                                                    <Grid Grid.Row="1"
+                                                          Margin="15"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center">
+                                                        <Viewbox Stretch="Uniform"
+                                                                 MaxHeight="128"
+                                                                 HorizontalAlignment="Center"
+                                                                 VerticalAlignment="Center">
+                                                            <Grid Width="400" Height="200">
+                                                                <!-- Base deck image -->
+                                                                <Image Name="DeckImage"
+                                                                       Width="400"
+                                                                       Height="200"/>
+                                                                <!-- Stake chip overlay (top-right corner) -->
+                                                                <Image Name="StakeOverlayImage"
+                                                                       Width="400"
+                                                                       Height="200"
+                                                                       IsVisible="True"/>
+                                                            </Grid>
+                                                        </Viewbox>
+                                                    </Grid>
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Column 2: Consumables -->
+                                            <!-- RIGHT: Deck Information -->
                                             <Border Grid.Column="2"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
@@ -421,49 +632,28 @@
                                                             Background="{StaticResource Blue}"
                                                             CornerRadius="8,8,0,0"
                                                             Padding="12,8">
-                                                        <TextBlock Text="CONSUMABLES"
+                                                        <TextBlock Text="Deck Information"
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="14"
                                                                    Foreground="White"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Content -->
-                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
-                                                        <TextBlock Text="[Consumable sprites will display here]"
+                                                    <!-- Content: Explanation text -->
+                                                    <ScrollViewer Grid.Row="1"
+                                                                  VerticalScrollBarVisibility="Auto">
+                                                        <TextBlock Margin="15"
                                                                    FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="11"
-                                                                   Foreground="#666666"
-                                                                   FontStyle="Italic"
-                                                                   TextAlignment="Center"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
-                                            <!-- Column 3: Vouchers -->
-                                            <Border Grid.Column="4"
-                                                    Background="#FFFFFF"
-                                                    CornerRadius="8">
-                                                <Grid RowDefinitions="Auto,*">
-                                                    <!-- Header -->
-                                                    <Border Grid.Row="0"
-                                                            Background="{StaticResource Blue}"
-                                                            CornerRadius="8,8,0,0"
-                                                            Padding="12,8">
-                                                        <TextBlock Text="VOUCHERS"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="14"
-                                                                   Foreground="White"
-                                                                   HorizontalAlignment="Center"/>
-                                                    </Border>
-                                                    <!-- Content -->
-                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="8">
-                                                        <TextBlock Text="[Voucher sprites will display here]"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="11"
-                                                                   Foreground="#666666"
-                                                                   FontStyle="Italic"
-                                                                   TextAlignment="Center"/>
-                                                    </StackPanel>
+                                                                   FontSize="12"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap"
+                                                                   LineHeight="18">
+                                                            <Run Text="Note: Certain Filter criteria are influenced by the Deck and Stake selected when running a search. Filter Designers should select the preferred deck if it is important."/>
+                                                            <LineBreak/><LineBreak/>
+                                                            <Run Text="Example: You can ONLY find Spectral Cards in the Shop Slots of a Balatro run if you are on Ghost Deck! Also, Stickers such as Eternal are only found on Black Stake! Etc."/>
+                                                            <LineBreak/><LineBreak/>
+                                                            <Run Text="Additionally, the vouchers that are automatically activated for some decks, do take effect during a MotelyJSON Search!"/>
+                                                        </TextBlock>
+                                                    </ScrollViewer>
                                                 </Grid>
                                             </Border>
                                         </Grid>
@@ -511,7 +701,7 @@
                                             Classes="btn-blue"
                                             Height="45"
                                             MinWidth="280"
-                                            FontSize="15"
+                                            FontSize="18"
                                             Command="{Binding CopyCommand}"
                                             IsVisible="{Binding EnableCopy}"/>
 
@@ -520,7 +710,7 @@
                                             Classes="btn-blue"
                                             Height="45"
                                             MinWidth="280"
-                                            FontSize="15"
+                                            FontSize="18"
                                             Command="{Binding SearchCommand}"
                                             IsVisible="{Binding EnableSearch}"/>
 
@@ -530,7 +720,7 @@
                                             Classes="btn-orange"
                                             Height="45"
                                             MinWidth="160"
-                                            FontSize="14"
+                                            FontSize="18"
                                             Command="{Binding EditCommand}"
                                             IsVisible="{Binding EnableEdit}"/>
 
@@ -539,7 +729,7 @@
                                             Classes="btn-red"
                                             Height="45"
                                             MinWidth="160"
-                                            FontSize="14"
+                                            FontSize="18"
                                             Command="{Binding DeleteCommand}"
                                             IsVisible="{Binding EnableDelete}"/>
                                 </StackPanel>
@@ -566,7 +756,7 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Height" Value="26"/>
+            <Setter Property="Height" Value="22"/>
             <Setter Property="Margin" Value="0,2"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="MinWidth" Value="210"/>
@@ -582,6 +772,11 @@
 
         <Style Selector="Button.filter-list-item:pressed">
             <Setter Property="Background" Value="#660000"/>
+        </Style>
+
+        <Style Selector="Button.filter-list-item.selected">
+            <Setter Property="Background" Value="#660000"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
         <!-- Special blue styling for CREATE NEW FILTER -->

@@ -202,7 +202,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (config == null || string.IsNullOrEmpty(config.Name))
                     return null;
 
-                return new FilterBrowserItem
+                var item = new FilterBrowserItem
                 {
                     Name = config.Name,
                     Description = config.Description ?? "",
@@ -213,11 +213,114 @@ namespace BalatroSeedOracle.ViewModels
                     ShouldCount = config.Should?.Count ?? 0,
                     MustNotCount = config.MustNot?.Count ?? 0
                 };
+
+                // Parse Must items
+                if (config.Must != null)
+                {
+                    item.Must = ParseItemCollections(config.Must);
+                }
+
+                // Parse Should items
+                if (config.Should != null)
+                {
+                    item.Should = ParseItemCollections(config.Should);
+                }
+
+                // Parse MustNot items
+                if (config.MustNot != null)
+                {
+                    item.MustNot = ParseItemCollections(config.MustNot);
+                }
+
+                return item;
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("PaginatedFilterBrowserViewModel", $"Error parsing filter {filePath}: {ex.Message}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Extracts item names from filter clauses and groups them by category
+        /// </summary>
+        private FilterItemCollections ParseItemCollections(List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses)
+        {
+            var collections = new FilterItemCollections();
+
+            foreach (var clause in clauses)
+            {
+                var itemType = clause.Type?.ToLowerInvariant() ?? "";
+                var itemValue = clause.Value;
+
+                // Handle single value
+                if (!string.IsNullOrEmpty(itemValue))
+                {
+                    AddItemToCollection(collections, itemType, itemValue);
+                }
+
+                // Handle multiple values
+                if (clause.Values != null)
+                {
+                    foreach (var value in clause.Values)
+                    {
+                        AddItemToCollection(collections, itemType, value);
+                    }
+                }
+
+                // Recursively handle nested And/Or clauses
+                if (clause.Clauses != null && clause.Clauses.Count > 0)
+                {
+                    var nestedCollections = ParseItemCollections(clause.Clauses);
+                    collections.Jokers.AddRange(nestedCollections.Jokers);
+                    collections.Consumables.AddRange(nestedCollections.Consumables);
+                    collections.Vouchers.AddRange(nestedCollections.Vouchers);
+                    collections.Tags.AddRange(nestedCollections.Tags);
+                    collections.Bosses.AddRange(nestedCollections.Bosses);
+                }
+            }
+
+            // Remove duplicates while preserving order
+            collections.Jokers = collections.Jokers.Distinct().ToList();
+            collections.Consumables = collections.Consumables.Distinct().ToList();
+            collections.Vouchers = collections.Vouchers.Distinct().ToList();
+            collections.Tags = collections.Tags.Distinct().ToList();
+            collections.Bosses = collections.Bosses.Distinct().ToList();
+
+            return collections;
+        }
+
+        /// <summary>
+        /// Adds an item to the appropriate collection based on its type
+        /// </summary>
+        private void AddItemToCollection(FilterItemCollections collections, string itemType, string itemValue)
+        {
+            switch (itemType)
+            {
+                case "joker":
+                case "souljoker":
+                    collections.Jokers.Add(itemValue);
+                    break;
+
+                case "tarotcard":
+                case "planetcard":
+                case "spectralcard":
+                    collections.Consumables.Add(itemValue);
+                    break;
+
+                case "voucher":
+                    collections.Vouchers.Add(itemValue);
+                    break;
+
+                case "tag":
+                case "smallblindtag":
+                case "bigblindtag":
+                    collections.Tags.Add(itemValue);
+                    break;
+
+                case "boss":
+                    collections.Bosses.Add(itemValue);
+                    break;
             }
         }
 
@@ -284,10 +387,32 @@ namespace BalatroSeedOracle.ViewModels
         public int MustNotCount { get; set; }
         public bool IsCreateNew { get; set; } = false;
 
+        // Item collections for sprite display
+        public FilterItemCollections Must { get; set; } = new();
+        public FilterItemCollections Should { get; set; } = new();
+        public FilterItemCollections MustNot { get; set; } = new();
+
+        // Visibility helpers
+        public bool HasJokers => Must.Jokers.Count > 0 || MustNot.Jokers.Count > 0;
+        public bool HasConsumables => Must.Consumables.Count > 0 || MustNot.Consumables.Count > 0;
+        public bool HasVouchers => Must.Vouchers.Count > 0 || MustNot.Vouchers.Count > 0;
+
         public string FilterId => System.IO.Path.GetFileNameWithoutExtension(FilePath);
         public string AuthorText => $"by {Author}";
         public string DateText => DateCreated.ToString("MMM dd, yyyy");
         public string StatsText => IsCreateNew ? "Start with a blank filter" : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
+    }
+
+    /// <summary>
+    /// Collections of items grouped by category for sprite display
+    /// </summary>
+    public class FilterItemCollections
+    {
+        public List<string> Jokers { get; set; } = new();
+        public List<string> Consumables { get; set; } = new(); // Tarots + Planets + Spectrals
+        public List<string> Vouchers { get; set; } = new();
+        public List<string> Tags { get; set; } = new();
+        public List<string> Bosses { get; set; } = new();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

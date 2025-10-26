@@ -20,7 +20,7 @@
                     <StackPanel Orientation="Vertical" Spacing="2" HorizontalAlignment="Center">
                         <!-- Fixed-height indicator lane to prevent content reflow -->
                         <Grid Height="16" ClipToBounds="True">
-                            <TextBlock Classes="balatro-triangle"
+                            <TextBlock Classes="balatro-triangle balatro-bounce-vertical"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Bottom"
                                        IsVisible="{Binding IsActive}"/>

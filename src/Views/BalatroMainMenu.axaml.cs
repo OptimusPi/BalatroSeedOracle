@@ -173,12 +173,25 @@ namespace BalatroSeedOracle.Views
         private async void ShowSearchModal()
         {
             var result = await this.ShowFilterSelectionModal(enableSearch: true);
-            if (!result.Cancelled && result.Action == Models.FilterAction.Search && result.FilterId != null)
+
+            if (result.Cancelled) return;
+
+            switch (result.Action)
             {
-                // Resolve filter id (filename without extension) to full path in JsonItemFilters
-                var filtersDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemFilters");
-                var configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".json");
-                this.ShowSearchModal(configPath);
+                case Models.FilterAction.Search:
+                    if (result.FilterId != null)
+                    {
+                        // Resolve filter id (filename without extension) to full path in JsonItemFilters
+                        var filtersDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemFilters");
+                        var configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".json");
+                        this.ShowSearchModal(configPath);
+                    }
+                    break;
+
+                case Models.FilterAction.CreateNew:
+                    // User clicked "Create New Filter" from search modal - open designer
+                    ShowFiltersModalDirect();
+                    break;
             }
         }
 

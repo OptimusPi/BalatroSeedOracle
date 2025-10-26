@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Components;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -14,25 +15,32 @@ namespace BalatroSeedOracle.Views.Modals
         public FiltersModal()
         {
             InitializeComponent();
-            
+
             // Create ViewModel directly for now - avoid DI complexity
-            try 
+            try
             {
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
-                
+
                 if (configService == null || filterService == null)
                 {
                     // Create defaults if DI fails
                     configService = new ConfigurationService();
                     filterService = new FilterService(configService);
                 }
-                
+
                 var viewModel = new FiltersModalViewModel(configService, filterService);
                 DataContext = viewModel;
-                
+
                 // Initialize tabs now that we're on the UI thread
                 viewModel.InitializeTabs();
+
+                // Wire up the TabHeader control
+                var tabHeader = this.FindControl<BalatroTabControl>("TabHeader");
+                if (tabHeader != null)
+                {
+                    tabHeader.DataContext = viewModel.TabControl;
+                }
             }
             catch (Exception ex)
             {

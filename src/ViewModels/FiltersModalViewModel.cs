@@ -141,6 +141,9 @@ namespace BalatroSeedOracle.ViewModels
         public Dictionary<string, List<string>> ItemCategories => _itemCategories;
         public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
 
+        // BalatroTabControl ViewModel for RED NAV TABS
+        public BalatroTabControlViewModel TabControl { get; } = new();
+
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
         public object? JsonEditorTab { get; set; }
@@ -776,6 +779,20 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
             // Separate SAVE header with SaveFilterTab content
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
+
+            // Populate BalatroTabControl for RED NAV TABS
+            TabControl.Tabs.Clear();
+            TabControl.Tabs.Add(new BalatroTabItem { Title = "VISUAL BUILDER", Index = 0, IsActive = true });
+            TabControl.Tabs.Add(new BalatroTabItem { Title = "JSON EDITOR", Index = 1 });
+            TabControl.Tabs.Add(new BalatroTabItem { Title = "SAVE", Index = 2 });
+
+            // Wire up tab selection
+            TabControl.TabChanged += (sender, newIndex) =>
+            {
+                SelectedTabIndex = newIndex;
+                UpdateTabVisibility(newIndex);
+                OnPropertyChanged(nameof(CurrentTabContent));
+            };
 
             // Ensure initial tab content and visibility are set
             UpdateTabVisibility(SelectedTabIndex);
