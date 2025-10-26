@@ -5,13 +5,73 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel">
 
-    <Border Padding="25">
-        <StackPanel Spacing="25" VerticalAlignment="Center">
-            <!-- Deck and Stake Selection (no label needed - it's obvious!) -->
-            <components:DeckAndStakeSelector Name="DeckStakeSelector"
-                                            HorizontalAlignment="Center"/>
+    <UserControl.Styles>
+        <Style Selector="Border.info-box">
+            <Setter Property="Background" Value="{StaticResource DarkTealGrey}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </UserControl.Styles>
 
-            <!-- Select button handled by the DeckAndStakeSelector component itself -->
+    <Border Padding="25">
+        <StackPanel Spacing="20" VerticalAlignment="Center" MaxWidth="600">
+            <TextBlock Text="Preferred Deck (Read-Only)"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+            <Border Classes="info-box">
+                <StackPanel Spacing="15">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                        <StackPanel>
+                            <TextBlock Text="Deck"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding DeckSelection, FallbackValue='Red'}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource LightCream}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Stake"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding StakeSelection, FallbackValue='White'}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource LightCream}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="info-box" Background="{StaticResource ContainerDarkPrecise}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="⚠️ Important"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Orange}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="This filter's criteria includes deck-specific items. Search results will match the preferred deck and stake shown above. To override these settings for the current search, use the Deck/Stake spinners on the Search tab."
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               Foreground="{StaticResource MediumGrey}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </Border>
 </UserControl>

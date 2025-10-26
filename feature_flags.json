@@ -1,8 +1,8 @@
 {
-  "GenieEnabled": true,
-  "DaylatroEnabled": true,
-  "ShaderBackgrounds": true,
-  "VibeAudioEnabled": true,
-  "ExperimentalSearch": true,
-  "DebugMode": true
+  "GenieEnabled": false,
+  "DaylatroEnabled": false,
+  "ShaderBackgrounds": false,
+  "VibeAudioEnabled": false,
+  "ExperimentalSearch": false,
+  "DebugMode": false
 }

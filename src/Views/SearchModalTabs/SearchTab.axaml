@@ -115,6 +115,30 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Spacing="10">
+                        <!-- Deck Spinner -->
+                        <controls:SpinnerControl Name="DeckSpinner"
+                                                Label="Deck"
+                                                SpinnerType="deck"
+                                                Value="{Binding SelectedDeckIndex}"
+                                                Minimum="0"
+                                                Maximum="14"
+                                                ReadOnly="True"
+                                                DisplayValues="{Binding DeckDisplayValues}"
+                                                HorizontalAlignment="Stretch"
+                                                ShadowDirection="south-east"/>
+
+                        <!-- Stake Spinner -->
+                        <controls:SpinnerControl Name="StakeSpinner"
+                                                Label="Stake"
+                                                SpinnerType="stake"
+                                                Value="{Binding SelectedStakeIndex}"
+                                                Minimum="0"
+                                                Maximum="7"
+                                                ReadOnly="True"
+                                                DisplayValues="{Binding StakeDisplayValues}"
+                                                HorizontalAlignment="Stretch"
+                                                ShadowDirection="south-east"/>
+
                         <!-- Threads -->
                         <controls:SpinnerControl Name="ThreadsSpinner"
                                                 Label="CPU Threads"

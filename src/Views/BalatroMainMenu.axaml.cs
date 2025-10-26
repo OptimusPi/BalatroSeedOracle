@@ -240,6 +240,15 @@ namespace BalatroSeedOracle.Views
         {
             var filtersModal = new Modals.FiltersModal();
 
+            if (!string.IsNullOrEmpty(filterId) && filtersModal.ViewModel != null)
+            {
+                var filtersDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "JsonItemFilters");
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                filtersModal.ViewModel.CurrentFilterPath = filterPath;
+                _ = filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
+            }
+
             var modal = new StandardModal("🎨 FILTER DESIGNER");
             modal.SetContent(filtersModal);
             modal.BackClicked += (s, e) => HideModalContent();

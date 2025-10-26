@@ -8,14 +8,23 @@ namespace BalatroSeedOracle.Models;
 public class SearchCriteria
 {
     public string? ConfigPath { get; set; }
-    public int ThreadCount { get; set; } = Environment.ProcessorCount;
+    public int ThreadCount { get; set; } = Math.Max(Environment.ProcessorCount / 2, 1);
     public int MinScore { get; set; } = 0;
+
+    // Tip: this is the seed digits (BatchCharacterCount in Motely)
     public int BatchSize { get; set; } = 2; // Default batch size to 2 digits, 35^2 seeds.
     public ulong StartBatch { get; set; } = 0;
     public ulong EndBatch { get; set; } = ulong.MaxValue;
     public string? Deck { get; set; } = "Red";
     public string? Stake { get; set; } = "White";
-    public string? WordList { get; set; } // --wordlist parameter (e.g., "sick" -> WordLists/sick.txt)
+
+    // Similar to MotelyCLI --wordlist parameter (e.g., "leet" for the 1337-Speak Wordlist I made..)
+    // e.g. `--wordlist leet` would use this file: `./WordLists/sick.txt`
+    public string? WordList { get; set; }
+
+    // similar to MotelyCLI --debug parameter
     public bool EnableDebugOutput { get; set; } = false;
+
+    // similar to MotelyCLI --seed parameter
     public string? DebugSeed { get; set; }
 }

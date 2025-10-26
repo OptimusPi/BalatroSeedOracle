@@ -77,10 +77,29 @@ namespace BalatroSeedOracle.ViewModels
         private int _timeoutSeconds = 300;
 
         [ObservableProperty]
-        private string _deckSelection = "All Decks";
+        private string _deckSelection = "Red Deck";
 
         [ObservableProperty]
-        private string _stakeSelection = "All Stakes";
+        private string _stakeSelection = "White";
+
+        [ObservableProperty]
+        private int _selectedDeckIndex = 0;
+
+        [ObservableProperty]
+        private int _selectedStakeIndex = 0;
+
+        public string[] DeckDisplayValues { get; } = new[]
+        {
+            "Red Deck", "Blue Deck", "Yellow Deck", "Green Deck", "Black Deck",
+            "Magic Deck", "Nebula Deck", "Ghost Deck", "Abandoned Deck",
+            "Checkered Deck", "Zodiac Deck", "Painted Deck", "Anaglyph Deck",
+            "Plasma Deck", "Erratic Deck"
+        };
+
+        public string[] StakeDisplayValues { get; } = new[]
+        {
+            "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold"
+        };
 
         [ObservableProperty]
         private string _selectedWordList = "None";
@@ -342,6 +361,22 @@ namespace BalatroSeedOracle.ViewModels
                 AddConsoleMessage($"Error loading filter: {ex.Message}");
                 DebugLogger.LogError("SearchModalViewModel", $"Error loading filter: {ex.Message}");
                 return Task.CompletedTask;
+            }
+        }
+
+        partial void OnSelectedDeckIndexChanged(int value)
+        {
+            if (value >= 0 && value < DeckDisplayValues.Length)
+            {
+                DeckSelection = DeckDisplayValues[value].Replace(" Deck", "");
+            }
+        }
+
+        partial void OnSelectedStakeIndexChanged(int value)
+        {
+            if (value >= 0 && value < StakeDisplayValues.Length)
+            {
+                StakeSelection = StakeDisplayValues[value];
             }
         }
 
@@ -868,11 +903,13 @@ namespace BalatroSeedOracle.ViewModels
                     if (!string.IsNullOrEmpty(config.Deck))
                     {
                         DeckSelection = config.Deck;
+                        SelectedDeckIndex = Array.FindIndex(DeckDisplayValues, d => d.Contains(config.Deck.Replace(" Deck", "")));
                     }
                     
                     if (!string.IsNullOrEmpty(config.Stake))
                     {
                         StakeSelection = config.Stake;
+                        SelectedStakeIndex = Array.FindIndex(StakeDisplayValues, s => s == config.Stake);
                     }
                     
                     DebugLogger.Log("SearchModalViewModel", $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})");
@@ -989,7 +1026,7 @@ namespace BalatroSeedOracle.ViewModels
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
-            TabItems.Add(new TabItemViewModel("Deck/Stake", SettingsTabContent));
+            TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
         }
