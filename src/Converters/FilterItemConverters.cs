@@ -58,21 +58,33 @@ namespace BalatroSeedOracle.Converters
             return string.Join(" ", parts);
         }
 
-        private static string FormatItemNameWithWildcards(string itemName)
+        private static string FormatItemNameWithWildcards(string? itemName)
         {
+            if (string.IsNullOrWhiteSpace(itemName))
+                return "Any";
+
             // Handle wildcards: AnyJoker -> "Any Joker", AnyRare -> "Any Rare Joker"
-            return itemName switch
-            {
-                "AnyJoker" => "Any Joker",
-                "AnyCommon" => "Any Common Joker",
-                "AnyUncommon" => "Any Uncommon Joker",
-                "AnyRare" => "Any Rare Joker",
-                "AnyLegendary" => "Any Legendary Joker",
-                "AnyTarot" => "Any Tarot",
-                "AnySpectral" => "Any Spectral",
-                "AnyPlanet" => "Any Planet",
-                _ => FormatUtils.FormatDisplayName(itemName)
-            };
+            // Use case-insensitive comparison to catch variations
+            var normalized = itemName.Trim();
+
+            if (normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase))
+                return "Any Joker";
+            if (normalized.Equals("AnyCommon", StringComparison.OrdinalIgnoreCase))
+                return "Any Common Joker";
+            if (normalized.Equals("AnyUncommon", StringComparison.OrdinalIgnoreCase))
+                return "Any Uncommon Joker";
+            if (normalized.Equals("AnyRare", StringComparison.OrdinalIgnoreCase))
+                return "Any Rare Joker";
+            if (normalized.Equals("AnyLegendary", StringComparison.OrdinalIgnoreCase))
+                return "Any Legendary Joker";
+            if (normalized.Equals("AnyTarot", StringComparison.OrdinalIgnoreCase))
+                return "Any Tarot";
+            if (normalized.Equals("AnySpectral", StringComparison.OrdinalIgnoreCase))
+                return "Any Spectral";
+            if (normalized.Equals("AnyPlanet", StringComparison.OrdinalIgnoreCase))
+                return "Any Planet";
+
+            return FormatUtils.FormatDisplayName(itemName);
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

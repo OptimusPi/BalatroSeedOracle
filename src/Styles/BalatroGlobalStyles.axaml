@@ -68,11 +68,6 @@
         </Setter>
     </Style>
 
-    <!-- Button hover - darken background slightly on hover -->
-    <Style Selector="Button:not(.SystemCaptionButton):pointerover">
-        <Setter Property="Opacity" Value="0.85" />
-    </Style>
-
     <!-- Button hover - enhanced shadow effects for red buttons -->
     <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
@@ -516,18 +511,29 @@
              to get the 3D drop shadow and pressed translateY animation -->
     </Style>
 
-    <Style Selector="Button.tab-button:pointerover">
+    <!-- Hover and Pressed states for INACTIVE tabs only -->
+    <Style Selector="Button.tab-button:not(.active):pointerover">
         <Setter Property="Background" Value="{StaticResource RedHover}"/>
     </Style>
 
-    <!-- Pressed state should match hover: stay dark red -->
-    <Style Selector="Button.tab-button:pressed">
+    <Style Selector="Button.tab-button:not(.active):pressed">
         <Setter Property="Background" Value="{StaticResource RedHover}"/>
     </Style>
 
-    <!-- Active tab style: keep default weight (no bold) -->
+    <!-- Active tab overrides: .active class prevents hover/pressed from applying -->
+    <!-- Active tab base style: keep normal red, triangle shows selection -->
     <Style Selector="Button.tab-button.active">
-        <!-- Intentionally empty to avoid bold text -->
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+    </Style>
+
+    <!-- Explicitly ensure active tabs stay red on hover -->
+    <Style Selector="Button.tab-button.active:pointerover">
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+    </Style>
+
+    <!-- Explicitly ensure active tabs stay red when pressed -->
+    <Style Selector="Button.tab-button.active:pressed">
+        <Setter Property="Background" Value="{StaticResource Red}"/>
     </Style>
 
 </Styles>

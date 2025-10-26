@@ -190,6 +190,105 @@ namespace BalatroSeedOracle.Services
             return stoppedCount;
         }
 
+        /// <summary>
+        /// Runs a quick synchronous search for testing filters
+        /// Returns results directly instead of fire-and-forget
+        /// </summary>
+        public async Task<QuickSearchResults> RunQuickSearchAsync(
+            SearchCriteria criteria,
+            MotelyJsonConfig config)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var seeds = new List<string>();
+            var batchesChecked = 0;
+
+            try
+            {
+                DebugLogger.Log("SearchManager", $"Starting quick search with BatchSize={criteria.BatchSize}, MaxResults={criteria.MaxResults}");
+
+                // Ensure MaxResults is set to limit search time
+                var maxResults = criteria.MaxResults > 0 ? criteria.MaxResults : 10;
+
+                // Create a temporary search instance for the quick test
+                var tempSearchId = $"QuickTest_{Guid.NewGuid():N}";
+                var tempDbPath = System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(),
+                    $"{tempSearchId}.db"
+                );
+
+                SearchInstance? searchInstance = null;
+
+                try
+                {
+                    searchInstance = new SearchInstance(tempSearchId, tempDbPath);
+
+                    // Start the search with the criteria
+                    var searchTask = searchInstance.StartSearchAsync(criteria);
+
+                    // Wait for either completion or max results
+                    var timeoutTask = Task.Delay(5000); // 5 second timeout for quick test
+                    var completedTask = await Task.WhenAny(searchTask, timeoutTask);
+
+                    if (completedTask == timeoutTask)
+                    {
+                        DebugLogger.Log("SearchManager", "Quick search timed out after 5 seconds");
+                        searchInstance.StopSearch();
+                    }
+
+                    // Get results from the database
+                    if (searchInstance.IsDatabaseInitialized)
+                    {
+                        var results = await searchInstance.GetTopResultsAsync("score", false, maxResults);
+                        seeds = results.Select(r => r.Seed).ToList();
+                        DebugLogger.Log("SearchManager", $"Quick search found {seeds.Count} seeds");
+                    }
+                }
+                finally
+                {
+                    // Clean up the temporary search instance
+                    searchInstance?.Dispose();
+
+                    // Delete the temporary database file
+                    try
+                    {
+                        if (System.IO.File.Exists(tempDbPath))
+                        {
+                            System.IO.File.Delete(tempDbPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("SearchManager", $"Failed to delete temp DB: {ex.Message}");
+                    }
+                }
+
+                stopwatch.Stop();
+
+                return new QuickSearchResults
+                {
+                    Seeds = seeds,
+                    Count = seeds.Count,
+                    BatchesChecked = batchesChecked,
+                    ElapsedTime = stopwatch.Elapsed.TotalSeconds,
+                    Success = true
+                };
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                DebugLogger.LogError("SearchManager", $"Quick search failed: {ex.Message}");
+                return new QuickSearchResults
+                {
+                    Seeds = new List<string>(),
+                    Count = 0,
+                    BatchesChecked = batchesChecked,
+                    ElapsedTime = stopwatch.Elapsed.TotalSeconds,
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         public void Dispose()
         {
             StopAllSearches();
@@ -201,5 +300,18 @@ namespace BalatroSeedOracle.Services
 
             _activeSearches.Clear();
         }
+    }
+
+    /// <summary>
+    /// Results from a quick test search
+    /// </summary>
+    public class QuickSearchResults
+    {
+        public List<string> Seeds { get; set; } = new();
+        public int Count { get; set; }
+        public int BatchesChecked { get; set; }
+        public double ElapsedTime { get; set; }
+        public bool Success { get; set; }
+        public string Error { get; set; } = "";
     }
 }

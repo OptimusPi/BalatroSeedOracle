@@ -1,8 +1,8 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
              MinWidth="600"
-             MinHeight="500">
+             MinHeight="400">
 
     <!-- NO BORDER! StandardModal already provides the border! -->
     <Grid Margin="20">
@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header (Balatro style - simple centered text) -->
+        <!-- Header -->
         <TextBlock Grid.Row="0"
                    Text="SETTINGS"
                    FontFamily="{StaticResource BalatroFont}"
@@ -27,9 +27,9 @@
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="24">
 
-                <!-- Resources Section (NO BORDER - cleaner!) -->
+                <!-- Resources Section -->
                 <StackPanel Spacing="12">
-                    <TextBlock Text="📚 RESOURCES"
+                    <TextBlock Text="RESOURCES"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="18"
                                Foreground="{StaticResource Gold}"/>
@@ -60,9 +60,9 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- Experimental Features Section (NO BORDER - cleaner!) -->
+                <!-- File Locations Section -->
                 <StackPanel Spacing="12">
-                    <TextBlock Text="🧪 EXPERIMENTAL FEATURES"
+                    <TextBlock Text="FILE LOCATIONS"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="18"
                                Foreground="{StaticResource Gold}"/>
@@ -72,84 +72,80 @@
                                Opacity="0.3"
                                Margin="0,4,0,12"/>
 
-                    <TextBlock Text="Toggle experimental and beta features"
+                    <TextBlock Text="Access important application directories"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
                                Foreground="White"
                                Opacity="0.6"
                                Margin="0,0,0,6"/>
 
-                    <!-- Feature Toggles -->
-                    <ItemsControl Name="FeatureToggles">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,4"
-                                        Padding="12"
-                                        Background="{StaticResource DarkBackground}"
-                                        CornerRadius="6">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="14"
-                                                       Foreground="{StaticResource White}"/>
+                        <Button Grid.Column="0"
+                                Content="Open Filters Folder"
+                                Classes="btn-blue"
+                                HorizontalAlignment="Stretch"
+                                Click="OnOpenFiltersDirectoryClick"/>
 
-                                            <TextBlock Text="{Binding Description}"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="11"
-                                                       Foreground="White"
-                                                       Opacity="0.6"
-                                                       Margin="0,2,0,0"/>
-                                        </StackPanel>
+                        <Button Grid.Column="2"
+                                Content="Open App Folder"
+                                Classes="btn-blue"
+                                HorizontalAlignment="Stretch"
+                                Click="OnOpenAppDirectoryClick"/>
+                    </Grid>
+                </StackPanel>
 
-                                        <CheckBox Grid.Column="1"
-                                                  IsChecked="{Binding IsEnabled}"
-                                                  VerticalAlignment="Center"
-                                                  Margin="8,0,0,0"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- Info Text -->
-                    <TextBlock Text="⚠️ Experimental features may be unstable or incomplete. The AI Genie requires significant resources."
+                <!-- Info Section -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="ABOUT"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="11"
-                               Foreground="{StaticResource Orange}"
-                               TextWrapping="Wrap"
-                               Margin="0,8,0,0"/>
+                               FontSize="18"
+                               Foreground="{StaticResource Gold}"/>
+
+                    <Rectangle Height="1"
+                               Fill="{StaticResource ModalBorder}"
+                               Opacity="0.3"
+                               Margin="0,4,0,12"/>
+
+                    <Border Padding="12"
+                            Background="{StaticResource DarkBackground}"
+                            CornerRadius="6">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Balatro Seed Oracle"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource White}"/>
+
+                            <TextBlock Text="A powerful seed filtering and analysis tool for Balatro"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="White"
+                                       Opacity="0.6"
+                                       TextWrapping="Wrap"/>
+
+                            <TextBlock Text="All features are enabled and ready to use."
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource Green}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Footer Buttons -->
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="8"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                    Name="ResetButton"
-                    Content="Reset to Defaults"
-                    Classes="btn-orange"
-                    HorizontalAlignment="Stretch"
-                    Click="OnResetClick"/>
-
-            <Button Grid.Column="2"
-                    Name="SaveButton"
-                    Content="Save Settings"
-                    Classes="btn-blue"
-                    HorizontalAlignment="Stretch"
-                    Click="OnSaveClick"/>
-        </Grid>
+        <!-- Footer Button -->
+        <Button Grid.Row="4"
+                Name="CloseButton"
+                Content="Close"
+                Classes="btn-blue"
+                HorizontalAlignment="Stretch"
+                Click="OnCloseClick"/>
     </Grid>
 </UserControl>

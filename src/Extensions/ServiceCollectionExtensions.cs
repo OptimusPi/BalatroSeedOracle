@@ -19,7 +19,6 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SoundFlowAudioManager>();
             // FavoritesService uses a private constructor and singleton Instance
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-            services.AddSingleton<FeatureFlagsService>(_ => FeatureFlagsService.Instance);
             // ClipboardService is static, no DI registration needed
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();

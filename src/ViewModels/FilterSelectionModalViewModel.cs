@@ -7,7 +7,7 @@ using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public partial class FilterSelectionModalViewModel : ObservableObject
+    public partial class FilterSelectionModalViewModel : ObservableObject, IModalBackNavigable
     {
         // Configuration passed in constructor
         public bool EnableSearch { get; }
@@ -241,6 +241,22 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Implements IModalBackNavigable - Navigate back through tabs
+        /// </summary>
+        public bool TryGoBack()
+        {
+            // If we're not on the first tab, go back one tab
+            if (ActiveTabIndex > 0)
+            {
+                TabControl.SwitchTabCommand.Execute(ActiveTabIndex - 1);
+                return true; // We handled the back navigation
+            }
+
+            // We're on the first tab, can't go back further
+            return false; // Let the modal close
         }
     }
 }

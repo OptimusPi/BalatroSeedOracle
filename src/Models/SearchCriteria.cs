@@ -27,4 +27,7 @@ public class SearchCriteria
 
     // similar to MotelyCLI --seed parameter
     public string? DebugSeed { get; set; }
+
+    // Maximum number of results to find before stopping (for quick tests)
+    public int MaxResults { get; set; } = 0; // 0 = unlimited
 }

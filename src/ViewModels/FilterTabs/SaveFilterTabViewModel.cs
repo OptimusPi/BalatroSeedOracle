@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Media;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
@@ -27,6 +28,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _statusMessage = "Ready to save filter";
         private IBrush _statusColor = Brushes.Gray;
 
+        // Test feedback properties
+        private bool _isTestRunning = false;
+        private bool _showTestSuccess = false;
+        private bool _showTestError = false;
+        private string _testResultMessage = "";
+
         public SaveFilterTabViewModel(FiltersModalViewModel parentViewModel, IConfigurationService configurationService, IFilterService filterService, IFilterConfigurationService filterConfigurationService)
         {
             _parentViewModel = parentViewModel;
@@ -38,7 +45,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SaveCommand = new AsyncRelayCommand(SaveCurrentFilterAsync, CanSave);
             SaveAsCommand = new AsyncRelayCommand(SaveAsAsync, CanSave);
             ExportCommand = new AsyncRelayCommand(ExportFilterAsync, CanSave);
-            TestFilterCommand = new RelayCommand(TestFilter);
+            TestFilterCommand = new AsyncRelayCommand(TestFilterAsync);
         }
 
         #region Properties
@@ -85,6 +92,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             get => _statusColor;
             set => SetProperty(ref _statusColor, value);
+        }
+
+        public bool IsTestRunning
+        {
+            get => _isTestRunning;
+            set => SetProperty(ref _isTestRunning, value);
+        }
+
+        public bool ShowTestSuccess
+        {
+            get => _showTestSuccess;
+            set => SetProperty(ref _showTestSuccess, value);
+        }
+
+        public bool ShowTestError
+        {
+            get => _showTestError;
+            set => SetProperty(ref _showTestError, value);
+        }
+
+        public string TestResultMessage
+        {
+            get => _testResultMessage;
+            set => SetProperty(ref _testResultMessage, value);
         }
 
         #endregion
@@ -230,26 +261,38 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         // Logic moved to shared FilterConfigurationService
-        
-        private void TestFilter()
+
+        private async Task TestFilterAsync()
         {
             try
             {
+                // Reset UI state
+                IsTestRunning = true;
+                ShowTestSuccess = false;
+                ShowTestError = false;
+                TestResultMessage = "";
+
                 // Build the filter configuration from current selections
                 var config = BuildConfigFromCurrentState();
 
                 // Validate the filter name
                 if (string.IsNullOrWhiteSpace(config?.Name))
                 {
+                    IsTestRunning = false;
+                    ShowTestError = true;
+                    TestResultMessage = "Please enter a filter name before testing";
                     UpdateStatus("Please enter a filter name before testing", true);
                     return;
                 }
 
                 // Persist config to a temp file so search can load it
                 var tempPath = _configurationService.GetTempFilterPath();
-                var saved = _configurationService.SaveFilterAsync(tempPath, config).GetAwaiter().GetResult();
+                var saved = await _configurationService.SaveFilterAsync(tempPath, config);
                 if (!saved)
                 {
+                    IsTestRunning = false;
+                    ShowTestError = true;
+                    TestResultMessage = "Failed to save temp filter for testing";
                     UpdateStatus("Failed to save temp filter for testing", true);
                     return;
                 }
@@ -258,32 +301,54 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                // Build small-batch search criteria; 2-character batch => 35^6 batches
+                // Build quick test search criteria: BatchSize=7 => only 35 batches total
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
                     ConfigPath = tempPath,
-                    BatchSize = 2,
+                    BatchSize = 7, // 7-char batch = only 35 batches total (not billions!)
                     StartBatch = 0,
-                    EndBatch = GetMaxBatchesForBatchSize(2),
+                    EndBatch = Math.Min(50, GetMaxBatchesForBatchSize(7)), // Stop after 50 batches max
                     Deck = deckName,
                     Stake = stakeName,
                     MinScore = 0,
+                    MaxResults = 10, // Stop after finding 10 seeds
                 };
 
-                // Start search via SearchManager
+                // Start search via SearchManager and wait for results
                 var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
+                    IsTestRunning = false;
+                    ShowTestError = true;
+                    TestResultMessage = "SearchManager not available";
                     UpdateStatus("SearchManager not available", true);
                     return;
                 }
 
-                // Kick off the search asynchronously and update status
-                _ = searchManager.StartSearchAsync(criteria, config);
-                UpdateStatus($"🔍 Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
+                // Run quick search and get results
+                UpdateStatus($"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
+                var results = await searchManager.RunQuickSearchAsync(criteria, config);
+
+                // Update UI with results
+                IsTestRunning = false;
+                if (results.Success)
+                {
+                    ShowTestSuccess = true;
+                    TestResultMessage = $"Found {results.Count} seeds in {results.ElapsedTime:F1}s";
+                    UpdateStatus($"Test passed: Found {results.Count} seeds in {results.ElapsedTime:F1}s", false);
+                }
+                else
+                {
+                    ShowTestError = true;
+                    TestResultMessage = $"Test failed: {results.Error}";
+                    UpdateStatus($"Test failed: {results.Error}", true);
+                }
             }
             catch (Exception ex)
             {
+                IsTestRunning = false;
+                ShowTestError = true;
+                TestResultMessage = $"Error: {ex.Message}";
                 UpdateStatus($"Error testing filter: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Test filter error: {ex.Message}");
             }

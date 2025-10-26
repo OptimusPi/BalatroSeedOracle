@@ -172,7 +172,7 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private async void ShowSearchModal()
         {
-            var result = await this.ShowFilterSelectionModal(enableSearch: true);
+            var result = await this.ShowFilterSelectionModal(enableSearch: true, enableEdit: true);
 
             if (result.Cancelled) return;
 
@@ -186,6 +186,12 @@ namespace BalatroSeedOracle.Views
                         var configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".json");
                         this.ShowSearchModal(configPath);
                     }
+                    break;
+
+                case Models.FilterAction.Edit:
+                    // User clicked "Edit this Filter" from search modal - open designer
+                    if (result.FilterId != null)
+                        ShowFiltersModalDirect(result.FilterId);
                     break;
 
                 case Models.FilterAction.CreateNew:

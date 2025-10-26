@@ -22,13 +22,6 @@ namespace BalatroSeedOracle.Components
 
         public DayLatroWidget()
         {
-            // Check feature flag - hide widget if disabled
-            if (!FeatureFlagsService.Instance.IsEnabled(FeatureFlagsService.DAYLATRO_ENABLED))
-            {
-                IsVisible = false;
-                return;
-            }
-
             // Initialize ViewModel with dependency injection
             ViewModel = new DayLatroWidgetViewModel(
                 DaylatroHighScoreService.Instance,

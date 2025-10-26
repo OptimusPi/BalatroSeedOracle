@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
@@ -73,6 +74,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (oldVm != null)
                 {
                     oldVm.ModalCloseRequested -= OnModalCloseRequested;
+                    oldVm.PropertyChanged -= OnViewModelPropertyChanged;
                 }
 
                 // Subscribe to new ViewModel
@@ -80,8 +82,44 @@ namespace BalatroSeedOracle.Views.Modals
                 if (newVm != null)
                 {
                     newVm.ModalCloseRequested += OnModalCloseRequested;
+                    newVm.PropertyChanged += OnViewModelPropertyChanged;
+
+                    // Load initial deck/stake if filter is already selected
+                    if (newVm.SelectedFilter != null)
+                    {
+                        UpdateDeckAndStake(newVm.SelectedFilter);
+                    }
                 }
             }
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FilterSelectionModalViewModel.SelectedFilter))
+            {
+                var vm = sender as FilterSelectionModalViewModel;
+                if (vm?.SelectedFilter != null)
+                {
+                    UpdateDeckAndStake(vm.SelectedFilter);
+                }
+            }
+        }
+
+        private void UpdateDeckAndStake(FilterBrowserItem filter)
+        {
+            // Extract deck and stake names with fallbacks
+            var deckName = filter.DeckName ?? "Red";
+            var stakeName = filter.StakeName ?? "White";
+
+            // Convert short deck names to full display names (e.g., "Red" -> "Red Deck")
+            // PanelItemFactory expects full names like "Red Deck", but config stores "Red"
+            if (!deckName.EndsWith(" Deck", StringComparison.OrdinalIgnoreCase))
+            {
+                deckName = $"{deckName} Deck";
+            }
+
+            DebugLogger.Log("FilterSelectionModal", $"Loading deck: {deckName}, stake: {stakeName}");
+            LoadDeckAndStake(deckName, stakeName);
         }
 
         private void OnModalCloseRequested(object? sender, EventArgs e)
