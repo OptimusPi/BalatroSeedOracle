@@ -13,54 +13,31 @@
             <ColumnDefinition Width="300"/>   <!-- Right: Drop Zones -->
         </Grid.ColumnDefinitions>
 
-        <!-- LEFT: Search + Category Buttons + Pagination -->
+        <!-- LEFT: Category Buttons + Pagination -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- Search -->
+                <RowDefinition Height="Auto"/>  <!-- Start Over Button -->
                 <RowDefinition Height="*"/>     <!-- Category Buttons -->
                 <RowDefinition Height="16"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Pagination -->
             </Grid.RowDefinitions>
 
-            <!-- Top Section: Search -->
-            <StackPanel Grid.Row="0" Spacing="1">
-                <!-- Search Box (matches nav-button dimensions) -->
-                <TextBox Text="{Binding SearchFilter}"
-                         Watermark="Search items..."
-                         MinHeight="45"
-                         FontSize="16"
-                         BorderThickness="0"
-                         Background="{StaticResource SliderEmpty}"
-                         VerticalContentAlignment="Center"
-                         Padding="8,4"
-                         Margin="0,0,8,0"/>
-
-                <!-- Search Button (matches nav-button dimensions) -->
-                <Button Content="SEARCH"
-                        Classes="btn-blue"
-                        MinHeight="45"
-                        FontSize="16"
-                        
-                        Padding="8,4"
-                        Margin="0,0,8,0"
-                        HorizontalAlignment="Stretch"/>
-
+            <!-- Top Section: Start Over Button -->
+            <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,8,12">
                 <!-- Start Over Button (matches nav-button dimensions) -->
                 <Button Content="START OVER"
                         Classes="btn-orange"
                         MinHeight="45"
                         FontSize="16"
-                        
+
                         Padding="8,4"
-                        Margin="0,0,8,0"
                         HorizontalAlignment="Stretch"
                         Click="OnStartOverClick"/>
 
                 <!-- Divider -->
                 <Rectangle Height="2"
                            Fill="{StaticResource ModalBorder}"
-                           Opacity="0.3"
-                           Margin="0,8,8,8"/>
+                           Opacity="0.3"/>
             </StackPanel>
 
             <!-- Category Buttons (filtered by current page) -->
@@ -139,92 +116,112 @@
             </StackPanel>
         </Grid>
 
-        <!-- CENTER: Clean Item Grid (No borders, flat style) -->
+        <!-- CENTER: Item Grid with Search -->
         <Grid Grid.Column="1" Margin="8,0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- Category Title + Search -->
-                <RowDefinition Height="16"/>    <!-- Spacer -->
+                <RowDefinition Height="Auto"/>  <!-- Search Box -->
+                <RowDefinition Height="12"/>    <!-- Spacer -->
                 <RowDefinition Height="*"/>     <!-- Item Grid -->
             </Grid.RowDefinitions>
 
+            <!-- Search Box (moved from left panel) -->
+            <TextBox Grid.Row="0"
+                     Text="{Binding SearchFilter}"
+                     Watermark="Search items..."
+                     MinHeight="45"
+                     FontSize="16"
+                     BorderThickness="2"
+                     BorderBrush="{StaticResource ModalBorder}"
+                     Background="{StaticResource DarkBackground}"
+                     CornerRadius="8"
+                     VerticalContentAlignment="Center"
+                     Padding="12,8"/>
 
-            <!-- Item Cards Grid - Clean and flat -->
-            <ScrollViewer Grid.Row="2"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Background="Transparent">
-                <ItemsControl ItemsSource="{Binding FilteredItems}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="8"
-                                       Cursor="Hand"
-                                       PointerPressed="OnItemPointerPressed"
-                                       Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
-                                <i:Interaction.Behaviors>
-                                    <!-- Enabled when NOT being dragged (disable sway on original while ghost is active) -->
-                                    <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
-                                </i:Interaction.Behaviors>
-                                <Grid>
-                                    <!-- Main card image -->
-                                    <Image Source="{Binding ItemImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           HorizontalAlignment="Center"/>
+            <!-- Item Grid - Dark inner panel with border -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource DarkTealGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="12"
+                    BoxShadow="inset 0 2 4 #00000040">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding FilteredItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="8"
+                                           Cursor="Hand"
+                                           PointerPressed="OnItemPointerPressed"
+                                           Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
+                                    <i:Interaction.Behaviors>
+                                        <!-- Enabled when NOT being dragged (disable sway on original while ghost is active) -->
+                                        <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
+                                    </i:Interaction.Behaviors>
+                                    <Grid>
+                                        <!-- Main card image -->
+                                        <Image Source="{Binding ItemImage}"
+                                               Width="71"
+                                               Height="95"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Center"/>
 
-                                    <!-- Legendary soul face overlay (only for SoulJoker type) -->
-                                    <Image Source="{Binding SoulFaceImage}"
-                                           Width="71"
-                                           Height="95"
-                                           Stretch="Uniform"
-                                           HorizontalAlignment="Center"
-                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                </Grid>
+                                        <!-- Legendary soul face overlay (only for SoulJoker type) -->
+                                        <Image Source="{Binding SoulFaceImage}"
+                                               Width="71"
+                                               Height="95"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Center"
+                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    </Grid>
 
-                                <!-- Simple name below -->
-                                <TextBlock Text="{Binding DisplayName}"
-                                           Foreground="{StaticResource White}"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="10"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"
-                                           Margin="0,4,0,0"
-                                           MaxWidth="80"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </ScrollViewer>
+                                    <!-- Simple name below -->
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               Foreground="{StaticResource White}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="0,4,0,0"
+                                               MaxWidth="80"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
         </Grid>
 
-        <!-- RIGHT: Drop Zones (clean, no scrollbars!) -->
-        <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Top">
+        <!-- RIGHT: Drop Zones with Proper Visual Containers -->
+        <StackPanel Grid.Column="2" Spacing="12" VerticalAlignment="Top">
                     <!-- MUST HAVE Zone -->
                     <Border Name="MustDropZone"
-                            Background="{StaticResource VeryDarkBackground}"
-                            BorderThickness="0"
+                            Background="{StaticResource DarkTealGrey}"
+                            BorderBrush="{StaticResource Green}"
+                            BorderThickness="2"
                             CornerRadius="8"
-                            MinHeight="100"
-                            MaxHeight="200"
-                            Padding="8"
-                            Margin="0"
+                            MinHeight="120"
+                            MaxHeight="220"
+                            Padding="12"
+                            BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="MUST HAVE"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       
-                                       Foreground="{StaticResource Green}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <ItemsControl ItemsSource="{Binding SelectedMust}">
-                                <ItemsControl.ItemTemplate>
+                        <Grid>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="MUST HAVE"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+
+                                           Foreground="{StaticResource Green}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,4"/>
+                                <ItemsControl ItemsSource="{Binding SelectedMust}">
+                                    <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
@@ -279,27 +276,40 @@
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
                         </StackPanel>
+
+                        <!-- Empty State Placeholder -->
+                        <TextBlock Text="Drop items here"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource LightGrey}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.5"
+                                   IsVisible="{Binding !SelectedMust.Count}"/>
+                    </Grid>
                     </Border>
 
                     <!-- SHOULD HAVE Zone -->
                     <Border Name="ShouldDropZone"
-                            Background="{StaticResource VeryDarkBackground}"
-                            BorderThickness="0"
+                            Background="{StaticResource DarkTealGrey}"
+                            BorderBrush="{StaticResource Blue}"
+                            BorderThickness="2"
                             CornerRadius="8"
-                            MinHeight="100"
-                            MaxHeight="200"
-                            Padding="8"
-                            Margin="0"
+                            MinHeight="120"
+                            MaxHeight="220"
+                            Padding="12"
+                            BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="SHOULD HAVE"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       
-                                       Foreground="{StaticResource Blue}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <ItemsControl ItemsSource="{Binding SelectedShould}">
+                        <Grid>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="SHOULD HAVE"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+
+                                           Foreground="{StaticResource Blue}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,4"/>
+                                <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
@@ -355,27 +365,40 @@
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
                         </StackPanel>
+
+                        <!-- Empty State Placeholder -->
+                        <TextBlock Text="Drop items here"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource LightGrey}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.5"
+                                   IsVisible="{Binding !SelectedShould.Count}"/>
+                    </Grid>
                     </Border>
 
                     <!-- MUST NOT HAVE Zone -->
                     <Border Name="MustNotDropZone"
-                            Background="{StaticResource VeryDarkBackground}"
-                            BorderThickness="0"
+                            Background="{StaticResource DarkTealGrey}"
+                            BorderBrush="{StaticResource Red}"
+                            BorderThickness="2"
                             CornerRadius="8"
-                            MinHeight="100"
-                            MaxHeight="200"
-                            Padding="8"
-                            Margin="0"
+                            MinHeight="120"
+                            MaxHeight="220"
+                            Padding="12"
+                            BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="MUST NOT HAVE"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       
-                                       Foreground="{StaticResource Red}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                        <Grid>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="MUST NOT HAVE"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+
+                                           Foreground="{StaticResource Red}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,4"/>
+                                <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
@@ -431,6 +454,17 @@
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
                         </StackPanel>
+
+                        <!-- Empty State Placeholder -->
+                        <TextBlock Text="Drop items here"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource LightGrey}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.5"
+                                   IsVisible="{Binding !SelectedMustNot.Count}"/>
+                    </Grid>
                     </Border>
         </StackPanel>
     </Grid>
