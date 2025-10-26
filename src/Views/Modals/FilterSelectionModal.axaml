@@ -112,7 +112,7 @@
                                 </StackPanel>
 
                                 <!-- Filter List - Takes remaining space with max height -->
-                                <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Disabled">
+                                <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Disabled">
                                     <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}" ClipToBounds="False">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
