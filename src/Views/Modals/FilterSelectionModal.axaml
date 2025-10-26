@@ -66,14 +66,14 @@
                         <Border Grid.Column="0"
                                 BorderThickness="0"
                                 CornerRadius="8"
-                                Padding="20" ClipToBounds="False">
+                                Padding="20,20,20,0" ClipToBounds="False">
                             <DockPanel ClipToBounds="False" LastChildFill="True">
                                 <!-- Pagination Controls - Docked to Bottom -->
                                 <StackPanel DockPanel.Dock="Bottom"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Center"
-                                            Spacing="12"
-                                            Margin="0,20,0,0">
+                                            Spacing="6"
+                                            Margin="0,8,0,0">
                                     <Button Content="&lt;"
                                             Classes="btn-red"
                                             Width="44"
@@ -111,37 +111,36 @@
                                             Command="{Binding FilterList.NextPageCommand}"/>
                                 </StackPanel>
 
-                                <!-- Filter List - Takes remaining space with max height -->
-                                <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Disabled">
-                                    <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}" ClipToBounds="False">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <!-- Wrapper with button and arrow -->
-                                                <Grid>
-                                                    <!-- Button (style sets it to Center with MinWidth 210px) -->
-                                                    <Button Classes="filter-list-item"
-                                                            Classes.selected="{Binding IsSelected}"
-                                                            Content="{Binding DisplayText}"
-                                                            Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
-                                                            CommandParameter="{Binding}"/>
+                                <!-- Filter List - No scrolling, just pagination -->
+                                <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}"
+                                              ClipToBounds="False">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!-- Wrapper with button and arrow -->
+                                            <Grid>
+                                                <!-- Button (style sets it to Center with MinWidth 210px) -->
+                                                <Button Classes="filter-list-item"
+                                                        Classes.selected="{Binding IsSelected}"
+                                                        Content="{Binding DisplayText}"
+                                                        Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                        CommandParameter="{Binding}"/>
 
-                                                    <!-- Triangle attached to left edge of button -->
-                                                    <Polygon Points="0,0 18,11 0,22"
-                                                             Width="18"
-                                                             Height="22"
-                                                             Fill="{StaticResource Red}"
-                                                             Classes="balatro-bounce-horizontal"
-                                                             HorizontalAlignment="Left"
-                                                             VerticalAlignment="Center"
-                                                             Margin="-30,2,0,0"
-                                                             ZIndex="10"
-                                                             IsVisible="{Binding IsSelected}"
-                                                             IsHitTestVisible="False"/>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
+                                                <!-- Triangle attached to left edge of button -->
+                                                <Polygon Points="0,0 14,8.5 0,17"
+                                                         Width="14"
+                                                         Height="17"
+                                                         Fill="{StaticResource Red}"
+                                                         Classes="balatro-bounce-horizontal"
+                                                         HorizontalAlignment="Left"
+                                                         VerticalAlignment="Center"
+                                                         Margin="-17,2,0,0"
+                                                         ZIndex="10"
+                                                         IsVisible="{Binding IsSelected}"
+                                                         IsHitTestVisible="False"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </DockPanel>
                         </Border>
 
@@ -691,8 +690,8 @@
                                 <StackPanel Grid.Row="3"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right"
-                                            Spacing="8"
-                                            Margin="0,20,0,0"
+                                            Spacing="6"
+                                            Margin="0,12,0,0"
                                             IsVisible="{Binding ShowDetailsPanel}">
 
                                     <!-- PRIMARY ACTION BUTTON (context-specific) -->
@@ -721,8 +720,7 @@
                                             Height="45"
                                             MinWidth="160"
                                             FontSize="18"
-                                            Command="{Binding EditCommand}"
-                                            IsVisible="{Binding EnableEdit}"/>
+                                            Command="{Binding EditCommand}"/>
 
                                     <!-- Delete Button (red) -->
                                     <Button Content="Delete this Filter"
@@ -730,8 +728,7 @@
                                             Height="45"
                                             MinWidth="160"
                                             FontSize="18"
-                                            Command="{Binding DeleteCommand}"
-                                            IsVisible="{Binding EnableDelete}"/>
+                                            Command="{Binding DeleteCommand}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -756,8 +753,8 @@
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Height" Value="22"/>
-            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,1"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="MinWidth" Value="210"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>

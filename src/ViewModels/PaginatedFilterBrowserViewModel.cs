@@ -15,10 +15,9 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class PaginatedFilterBrowserViewModel : ObservableObject
     {
-        // Fixed pagination size for stability (matches visible filter list height)
         private const int ITEMS_PER_PAGE = 10;
 
-        private List<FilterBrowserItem> _allFilters = new();
+        private readonly List<FilterBrowserItem> _allFilters = [];
 
         [ObservableProperty]
         private FilterBrowserItem? _selectedFilter;
@@ -86,7 +85,10 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("PaginatedFilterBrowserViewModel", $"Failed to create temp filter: {ex.Message}");
+                        DebugLogger.LogError(
+                            "PaginatedFilterBrowserViewModel",
+                            $"Failed to create temp filter: {ex.Message}"
+                        );
                     }
                 }
                 else
@@ -96,30 +98,41 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
         }
-        
+
         private async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir =
+                System.IO.Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location
+                ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
             var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
             System.IO.Directory.CreateDirectory(filtersDir);
-            
+
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
-            
+
             // Create basic empty filter structure
             var emptyFilter = new Motely.Filters.MotelyJsonConfig
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author = ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                Author =
+                    ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
+                    ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
-                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+                Must =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Should =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                MustNot =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
             };
-            
-            var json = System.Text.Json.JsonSerializer.Serialize(emptyFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                emptyFilter,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+            );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
-            
+
             return tempPath;
         }
 
@@ -161,7 +174,8 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var filterFiles = Directory.GetFiles(filtersDir, "*.json")
+                var filterFiles = Directory
+                    .GetFiles(filtersDir, "*.json")
                     .Where(f => Path.GetFileName(f) != "_UNSAVED_CREATION.json") // Skip temp files
                     .OrderByDescending(File.GetLastWriteTime)
                     .ToList();
@@ -179,7 +193,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("PaginatedFilterBrowserViewModel", $"Error loading filters: {ex.Message}");
+                DebugLogger.LogError(
+                    "PaginatedFilterBrowserViewModel",
+                    $"Error loading filters: {ex.Message}"
+                );
             }
         }
 
@@ -195,10 +212,13 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
+                    AllowTrailingCommas = true,
                 };
 
-                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(content, options);
+                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    content,
+                    options
+                );
                 if (config == null || string.IsNullOrEmpty(config.Name))
                     return null;
 
@@ -211,7 +231,7 @@ namespace BalatroSeedOracle.ViewModels
                     FilePath = filePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
-                    MustNotCount = config.MustNot?.Count ?? 0
+                    MustNotCount = config.MustNot?.Count ?? 0,
                 };
 
                 // Parse Must items
@@ -236,7 +256,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("PaginatedFilterBrowserViewModel", $"Error parsing filter {filePath}: {ex.Message}");
+                DebugLogger.LogError(
+                    "PaginatedFilterBrowserViewModel",
+                    $"Error parsing filter {filePath}: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -244,7 +267,9 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
-        private FilterItemCollections ParseItemCollections(List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses)
+        private FilterItemCollections ParseItemCollections(
+            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses
+        )
         {
             var collections = new FilterItemCollections();
 
@@ -293,7 +318,11 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Adds an item to the appropriate collection based on its type
         /// </summary>
-        private void AddItemToCollection(FilterItemCollections collections, string itemType, string itemValue)
+        private void AddItemToCollection(
+            FilterItemCollections collections,
+            string itemType,
+            string itemValue
+        )
         {
             switch (itemType)
             {
@@ -333,21 +362,17 @@ namespace BalatroSeedOracle.ViewModels
         private void UpdateCurrentPage()
         {
             CurrentPageFilters.Clear();
-            
+
             var pageItems = GetCurrentPageItems();
             for (int i = 0; i < pageItems.Count; i++)
             {
                 var filter = pageItems[i];
-                string displayText;
-                
-                // Match Balatro Challenges style: no in-button number, just the name
-                displayText = filter.Name;
-                
+
                 var itemViewModel = new FilterBrowserItemViewModel
                 {
                     FilterBrowserItem = filter,
-                    DisplayText = displayText,
-                    IsSelected = SelectedFilter?.FilePath == filter.FilePath
+                    DisplayText = filter.Name,
+                    IsSelected = SelectedFilter?.FilePath == filter.FilePath,
                 };
                 CurrentPageFilters.Add(itemViewModel);
             }
@@ -400,7 +425,10 @@ namespace BalatroSeedOracle.ViewModels
         public string FilterId => System.IO.Path.GetFileNameWithoutExtension(FilePath);
         public string AuthorText => $"by {Author}";
         public string DateText => DateCreated.ToString("MMM dd, yyyy");
-        public string StatsText => IsCreateNew ? "Start with a blank filter" : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
+        public string StatsText =>
+            IsCreateNew
+                ? "Start with a blank filter"
+                : $"Must: {MustCount}, Should: {ShouldCount}, Must Not: {MustNotCount}";
     }
 
     /// <summary>
@@ -423,6 +451,7 @@ namespace BalatroSeedOracle.ViewModels
         public FilterBrowserItem FilterBrowserItem { get; set; } = null!;
         public string DisplayText { get; set; } = "";
 
-        public string ItemClasses => FilterBrowserItem.IsCreateNew ? "filter-list-item create-new-item" : "filter-list-item";
+        public string ItemClasses =>
+            FilterBrowserItem.IsCreateNew ? "filter-list-item create-new-item" : "filter-list-item";
     }
 }
