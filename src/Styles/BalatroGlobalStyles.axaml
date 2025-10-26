@@ -312,7 +312,7 @@
         <Setter Property="Margin" Value="0,1" />
         <Setter Property="MinHeight" Value="45" />
         <Setter Property="Padding" Value="8,4" />
-        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="MaxWidth" Value="160" />
         <Setter Property="Focusable" Value="False" />
     </Style>

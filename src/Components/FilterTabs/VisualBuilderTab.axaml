@@ -161,15 +161,15 @@
                                     <Grid>
                                         <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
-                                               Width="71"
-                                               Height="95"
+                                               Width="36"
+                                               Height="48"
                                                Stretch="Uniform"
                                                HorizontalAlignment="Center"/>
 
                                         <!-- Legendary soul face overlay (only for SoulJoker type) -->
                                         <Image Source="{Binding SoulFaceImage}"
-                                               Width="71"
-                                               Height="95"
+                                               Width="36"
+                                               Height="48"
                                                Stretch="Uniform"
                                                HorizontalAlignment="Center"
                                                IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
