@@ -5,7 +5,8 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.DayLatroWidget"
              x:DataType="vm:DayLatroWidgetViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
 
     <UserControl.Styles>
         <!-- Local style overrides for DayLatro-specific widgets -->
@@ -20,8 +21,7 @@
     </UserControl.Styles>
 
     <!-- Single container with the drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
-          ZIndex="{Binding WidgetZIndex}">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}"
@@ -30,8 +30,7 @@
 
         <!-- Minimized State - Calendar Icon -->
         <Grid Name="MinimizedView"
-              IsVisible="{Binding IsMinimized}"
-              ZIndex="1">
+              IsVisible="{Binding IsMinimized}">
             <i:Interaction.Behaviors>
                 <!-- BALATRO SWAY ANIMATION! -->
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
@@ -83,7 +82,6 @@
         <!-- Expanded State -->
         <Border Name="ExpandedView"
                 Classes="widget-window"
-                ZIndex="100"
                 Width="350"
                 MaxHeight="360"
                 IsVisible="{Binding !IsMinimized}">

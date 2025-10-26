@@ -26,18 +26,11 @@ namespace BalatroSeedOracle.Components
                 ?? throw new InvalidOperationException("MusicMixerWidgetViewModel service not registered in DI container");
             DataContext = ViewModel;
 
-            // Update ZIndex when IsMinimized changes
-            ViewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(ViewModel.IsMinimized))
-                {
-                    // Expanded = 100, Minimized = 1
-                    this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
-                }
-            };
+            // Update ZIndex when IsMinimized changes - now handled by XAML binding to WidgetZIndex
+            // ViewModel.PropertyChanged += (s, e) => { ... }; // REMOVED - use XAML binding instead
 
-            // Set initial ZIndex
-            this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
+            // Set initial ZIndex - now handled by XAML binding to WidgetZIndex
+            // this.ZIndex = ViewModel.IsMinimized ? 1 : 100; // REMOVED - use XAML binding instead
         }
 
         private void InitializeComponent()

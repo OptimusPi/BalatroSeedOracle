@@ -141,6 +141,12 @@ namespace BalatroSeedOracle.Behaviors
             var props = e.GetCurrentPoint(AssociatedObject).Properties;
             if (!props.IsLeftButtonPressed) return;
 
+            // Ensure the widget moves to front as soon as it is interacted with
+            if (AssociatedObject.DataContext is ViewModels.BaseWidgetViewModel vm)
+            {
+                vm.BringToFront();
+            }
+
             // PROPER MVVM: Check if clicking the configured drag handle class
             // Default is "widget-header" but can be customized via XAML property
             if (!string.IsNullOrEmpty(DragHandleClass))
@@ -176,7 +182,7 @@ namespace BalatroSeedOracle.Behaviors
             _isDragging = false;
 
             // Store press position - DON'T start dragging yet (wait for movement)
-            var parent = AssociatedObject.Parent as Visual;
+            var parent = AssociatedObject?.Parent as Visual;
             if (parent != null)
             {
                 _pointerPressedPoint = e.GetPosition(parent);
@@ -232,6 +238,19 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
+                    
+                    // Bring widget to front when dragging starts
+                    if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm)
+                    {
+                        vm.BringToFront();
+                    }
+                    
+                    // Calculate the initial offset from the widget's top-left corner to the mouse position
+                    // This allows us to maintain the relative position during drag
+                    _dragStartPoint = new Point(
+                        _pointerPressedPoint.X - X,
+                        _pointerPressedPoint.Y - Y
+                    );
                 }
                 else
                 {
@@ -239,13 +258,9 @@ namespace BalatroSeedOracle.Behaviors
                 }
             }
 
-            // Calculate widget center offset (to position center at mouse)
-            var widgetCenterOffsetX = AssociatedObject.Bounds.Width / 2;
-            var widgetCenterOffsetY = AssociatedObject.Bounds.Height / 2;
-
-            // Position widget so its center is at the mouse position
-            var newX = currentPoint.X - widgetCenterOffsetX;
-            var newY = currentPoint.Y - widgetCenterOffsetY;
+            // Use the initial click offset to maintain relative position during drag
+            var newX = currentPoint.X - _dragStartPoint.X;
+            var newY = currentPoint.Y - _dragStartPoint.Y;
             var clamped = ClampPosition(newX, newY);
             X = clamped.X;
             Y = clamped.Y;
@@ -284,11 +299,22 @@ namespace BalatroSeedOracle.Behaviors
                                 parentHeight = parentVisual.Bounds.Height;
                             }
                             
-                            // Use the enhanced grid system that works anywhere on screen
-                            var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(widgetX, widgetY, vm, parentWidth, parentHeight);
-                            var clamped = ClampPosition(newX, newY);
-                            X = clamped.X;
-                            Y = clamped.Y;
+                            // Different positioning behavior for minimized vs expanded widgets
+                            if (vm.IsMinimized)
+                            {
+                                // Minimized widgets: Use grid snapping with collision avoidance
+                                var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(widgetX, widgetY, vm, parentWidth, parentHeight);
+                                var clamped = ClampPosition(newX, newY);
+                                X = clamped.X;
+                                Y = clamped.Y;
+                            }
+                            else
+                            {
+                                // Expanded widgets: Use free positioning (just clamp to screen bounds)
+                                var clamped = ClampPosition(widgetX, widgetY);
+                                X = clamped.X;
+                                Y = clamped.Y;
+                            }
                         }
                         else
                         {

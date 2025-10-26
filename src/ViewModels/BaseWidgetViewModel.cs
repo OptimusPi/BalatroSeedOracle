@@ -12,10 +12,16 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public partial class BaseWidgetViewModel : ObservableObject
     {
+        // Static counter to ensure unique Z-indexes for proper layering
+        private static int _nextZIndexCounter = 0;
+
         public BaseWidgetViewModel()
         {
             // Register with position service when created
             RegisterWithPositionService();
+            
+            // Initialize with base Z-index offset (will be updated when brought to front)
+            _zIndexOffset = 0;
         }
 
         private void RegisterWithPositionService()
@@ -58,9 +64,34 @@ namespace BalatroSeedOracle.ViewModels
         private double _height = 450;
 
         /// <summary>
-        /// Dynamic Z-index: minimized widgets = 1, expanded widgets = 100
+        /// Z-index offset for this specific widget instance
         /// </summary>
-        public int WidgetZIndex => IsMinimized ? 1 : 100;
+        private int _zIndexOffset;
+
+        /// <summary>
+        /// Dynamic Z-index: minimized = 1, expanded = 100 + unique offset
+        /// Each widget gets unique Z-index to prevent XAML order conflicts
+        /// </summary>
+        public int WidgetZIndex 
+        { 
+            get 
+            {
+                var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
+                #if DEBUG
+                Console.WriteLine($"[{WidgetTitle}] ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})");
+                #endif
+                return zIndex;
+            }
+        }
+
+        /// <summary>
+        /// Brings this widget to front by giving it the highest Z-index
+        /// </summary>
+        public void BringToFront()
+        {
+            _zIndexOffset = ++_nextZIndexCounter;
+            OnPropertyChanged(nameof(WidgetZIndex));
+        }
 
         partial void OnIsMinimizedChanged(bool value)
         {
@@ -72,6 +103,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Expand()
         {
             IsMinimized = false;
+            BringToFront(); // Ensure expanded widget comes to front
             OnExpanded();
         }
 

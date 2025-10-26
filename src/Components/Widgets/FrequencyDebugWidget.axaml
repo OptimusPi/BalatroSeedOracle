@@ -6,15 +6,15 @@
              xmlns:conv="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
              x:DataType="vm:FrequencyDebugWidgetViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
 
     <UserControl.Resources>
         <conv:BoolToLedColorConverter x:Key="BoolToLedColor"/>
     </UserControl.Resources>
 
     <!-- Single container with drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
-          ZIndex="{Binding WidgetZIndex}">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}"
@@ -23,7 +23,6 @@
 
         <!-- Minimized State - Compact Icon -->
         <StackPanel IsVisible="{Binding IsMinimized}"
-                    ZIndex="1"
                     Spacing="4"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
@@ -50,7 +49,6 @@
         <!-- Expanded State - Frequency Debug Panel -->
         <Border Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
-                ZIndex="100"
                 MinWidth="320"
                 MaxWidth="380">
 

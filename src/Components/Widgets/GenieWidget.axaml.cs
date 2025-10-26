@@ -31,19 +31,11 @@ namespace BalatroSeedOracle.Components
 
             InitializeComponent();
 
-            // Update ZIndex when IsMinimized changes
-            ViewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(ViewModel.IsMinimized))
-                {
-                    // Set ZIndex on this UserControl itself
-                    // Expanded = 100, Minimized = 1
-                    this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
-                }
-            };
-
-            // Set initial ZIndex
-            this.ZIndex = ViewModel.IsMinimized ? 1 : 100;
+            // Update ZIndex when IsMinimized changes - now handled by XAML binding to WidgetZIndex
+            // ViewModel.PropertyChanged += (s, e) => { ... }; // REMOVED - use XAML binding instead
+            
+            // Set initial ZIndex - now handled by XAML binding to WidgetZIndex
+            // this.ZIndex = ViewModel.IsMinimized ? 1 : 100; // REMOVED - use XAML binding instead
 
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }

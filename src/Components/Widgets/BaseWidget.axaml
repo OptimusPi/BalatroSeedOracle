@@ -10,7 +10,6 @@
     <Grid>
         <!-- Minimized State -->
         <Grid Name="MinimizedView"
-              ZIndex="0"
               IsVisible="{Binding IsMinimized}">
             <Button Classes="widget-icon"
                     Width="100" Height="100"
