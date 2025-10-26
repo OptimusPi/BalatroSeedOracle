@@ -9,6 +9,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.ViewModels
@@ -232,6 +233,8 @@ namespace BalatroSeedOracle.ViewModels
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
                     MustNotCount = config.MustNot?.Count ?? 0,
+                    DeckName = config.Deck ?? "Red",
+                    StakeName = config.Stake ?? "White",
                 };
 
                 // Parse Must items
@@ -268,7 +271,8 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses
+            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses,
+            int? scoreOverride = null
         )
         {
             var collections = new FilterItemCollections();
@@ -281,7 +285,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Handle single value
                 if (!string.IsNullOrEmpty(itemValue))
                 {
-                    AddItemToCollection(collections, itemType, itemValue);
+                    AddItemToCollection(collections, clause, itemValue, scoreOverride);
                 }
 
                 // Handle multiple values
@@ -289,71 +293,111 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var value in clause.Values)
                     {
-                        AddItemToCollection(collections, itemType, value);
+                        AddItemToCollection(collections, clause, value, scoreOverride);
                     }
                 }
 
                 // Recursively handle nested And/Or clauses
                 if (clause.Clauses != null && clause.Clauses.Count > 0)
                 {
-                    var nestedCollections = ParseItemCollections(clause.Clauses);
+                    var nestedCollections = ParseItemCollections(clause.Clauses, scoreOverride ?? clause.Score);
                     collections.Jokers.AddRange(nestedCollections.Jokers);
                     collections.Consumables.AddRange(nestedCollections.Consumables);
                     collections.Vouchers.AddRange(nestedCollections.Vouchers);
                     collections.Tags.AddRange(nestedCollections.Tags);
                     collections.Bosses.AddRange(nestedCollections.Bosses);
+                    collections.StandardCards.AddRange(nestedCollections.StandardCards);
                 }
             }
 
-            // Remove duplicates while preserving order
-            collections.Jokers = collections.Jokers.Distinct().ToList();
-            collections.Consumables = collections.Consumables.Distinct().ToList();
-            collections.Vouchers = collections.Vouchers.Distinct().ToList();
-            collections.Tags = collections.Tags.Distinct().ToList();
-            collections.Bosses = collections.Bosses.Distinct().ToList();
-            collections.StandardCards = collections.StandardCards.Distinct().ToList();
+            // Remove duplicates by ItemName while preserving first occurrence's data
+            collections.Jokers = collections.Jokers
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
+            collections.Consumables = collections.Consumables
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
+            collections.Vouchers = collections.Vouchers
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
+            collections.Tags = collections.Tags
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
+            collections.Bosses = collections.Bosses
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
+            collections.StandardCards = collections.StandardCards
+                .GroupBy(x => x.ItemName)
+                .Select(g => g.First())
+                .ToList();
 
             return collections;
         }
 
         /// <summary>
         /// Adds an item to the appropriate collection based on its type
+        /// Creates a full ItemConfig from the clause data
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            string itemType,
-            string itemValue
+            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause clause,
+            string itemValue,
+            int? scoreOverride = null
         )
         {
+            var itemType = clause.Type?.ToLowerInvariant() ?? "";
+
+            // Create ItemConfig from clause data
+            var itemConfig = new ItemConfig
+            {
+                ItemKey = itemValue,
+                ItemType = clause.Type ?? "",
+                ItemName = itemValue,
+                Antes = clause.Antes?.ToList(),
+                Edition = clause.Edition ?? "none",
+                Seal = clause.Seal ?? "None",
+                Enhancement = clause.Enhancement ?? "None",
+                Rank = clause.Rank,
+                Suit = clause.Suit,
+                Score = scoreOverride ?? clause.Score,
+                Label = clause.Label,
+                Stickers = clause.Stickers
+            };
+
             switch (itemType)
             {
                 case "joker":
                 case "souljoker":
-                    collections.Jokers.Add(itemValue);
+                    collections.Jokers.Add(itemConfig);
                     break;
 
                 case "tarotcard":
                 case "planetcard":
                 case "spectralcard":
-                    collections.Consumables.Add(itemValue);
+                    collections.Consumables.Add(itemConfig);
                     break;
 
                 case "voucher":
-                    collections.Vouchers.Add(itemValue);
+                    collections.Vouchers.Add(itemConfig);
                     break;
 
                 case "tag":
                 case "smallblindtag":
                 case "bigblindtag":
-                    collections.Tags.Add(itemValue);
+                    collections.Tags.Add(itemConfig);
                     break;
 
                 case "boss":
-                    collections.Bosses.Add(itemValue);
+                    collections.Bosses.Add(itemConfig);
                     break;
 
                 case "standardcard":
-                    collections.StandardCards.Add(itemValue);
+                    collections.StandardCards.Add(itemConfig);
                     break;
             }
         }
@@ -416,6 +460,8 @@ namespace BalatroSeedOracle.ViewModels
         public int ShouldCount { get; set; }
         public int MustNotCount { get; set; }
         public bool IsCreateNew { get; set; } = false;
+        public string DeckName { get; set; } = "Red";
+        public string StakeName { get; set; } = "White";
 
         // Item collections for sprite display
         public FilterItemCollections Must { get; set; } = new();
@@ -441,12 +487,12 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class FilterItemCollections
     {
-        public List<string> Jokers { get; set; } = new();
-        public List<string> Consumables { get; set; } = new();
-        public List<string> Vouchers { get; set; } = new();
-        public List<string> Tags { get; set; } = new();
-        public List<string> Bosses { get; set; } = new();
-        public List<string> StandardCards { get; set; } = new();
+        public List<ItemConfig> Jokers { get; set; } = new();
+        public List<ItemConfig> Consumables { get; set; } = new();
+        public List<ItemConfig> Vouchers { get; set; } = new();
+        public List<ItemConfig> Tags { get; set; } = new();
+        public List<ItemConfig> Bosses { get; set; } = new();
+        public List<ItemConfig> StandardCards { get; set; } = new();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

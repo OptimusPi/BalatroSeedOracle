@@ -131,7 +131,14 @@ namespace BalatroSeedOracle.Converters
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not string itemName || string.IsNullOrEmpty(itemName))
+            string? itemName = value switch
+            {
+                string str => str,
+                ItemConfig config => config.ItemName,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(itemName))
                 return null;
 
             try
@@ -160,7 +167,14 @@ namespace BalatroSeedOracle.Converters
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not string itemName || string.IsNullOrEmpty(itemName))
+            string? itemName = value switch
+            {
+                string str => str,
+                ItemConfig config => config.ItemName,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(itemName))
                 return null;
 
             try
