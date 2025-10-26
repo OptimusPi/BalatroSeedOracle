@@ -158,8 +158,8 @@
                                     <RowDefinition Height="Auto"/> <!-- Action Buttons -->
                                 </Grid.RowDefinitions>
 
-                                <!-- HEADER SECTION: Horizontal Sprite Strips (visible when filter selected) -->
-                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowDetailsPanel}">
+                                <!-- HEADER SECTION: Horizontal Sprite Strips (visible on Filter Info tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowFilterTab}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="10"/>
@@ -172,7 +172,9 @@
                                     <Border Grid.Column="0"
                                             Background="{StaticResource DarkTealGrey}"
                                             CornerRadius="6"
-                                            Padding="8">
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -249,7 +251,9 @@
                                     <Border Grid.Column="2"
                                             Background="{StaticResource DarkTealGrey}"
                                             CornerRadius="6"
-                                            Padding="8">
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -326,7 +330,9 @@
                                     <Border Grid.Column="4"
                                             Background="{StaticResource DarkTealGrey}"
                                             CornerRadius="6"
-                                            Padding="8">
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -396,6 +402,271 @@
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
                                             </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- SCORE SETUP HEADER: Show "Should Have" items (visible on Score Setup tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowScoreTab}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- JOKERS Strip (Left) -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="JOKERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Gold}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Jokers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- VOUCHERS Strip (Center) -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Vouchers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- CONSUMABLES Strip (Right) -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Consumables}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                               Width="36" Height="48"
+                                                               Margin="2"
+                                                               Stretch="Uniform"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- PREFERRED DECK HEADER: Show deck defaults (visible on Preferred Deck tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowDeckTab}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- DECK DEFAULTS Strip (Left) - Jokers/Items that come with deck -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="Defaults for Deck:"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="10"
+                                                       Foreground="{StaticResource Gold}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Placeholder - will be populated when deck defaults are implemented -->
+                                            <ItemsControl Grid.Column="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- VOUCHERS Strip (Center) - Auto-activated vouchers for deck -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Placeholder - will be populated when deck defaults are implemented -->
+                                            <ItemsControl Grid.Column="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- CONSUMABLES Strip (Right) - Default consumables for deck -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Placeholder - will be populated when deck defaults are implemented -->
+                                            <ItemsControl Grid.Column="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
                                         </Grid>
                                     </Border>
                                 </Grid>
@@ -558,18 +829,11 @@
                                                     </Border>
                                                     <!-- Content -->
                                                     <StackPanel Grid.Row="1" Margin="15" Spacing="8">
-                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="13"
-                                                                   Foreground="Black">
-                                                            <Run Text="Should Have: "/>
-                                                            <Run Text="{Binding ShouldHaveCount}"/>
-                                                            <Run Text=" items"/>
-                                                        </TextBlock>
-                                                        <TextBlock Text="[Item sprites will display here]"
+                                                        <TextBlock Text="Items in the Should[] clause are displayed in the strip above. These items contribute to the seed's score when found."
                                                                    FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="11"
-                                                                   Foreground="#666666"
-                                                                   FontStyle="Italic"/>
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
@@ -646,11 +910,22 @@
                                                                    Foreground="Black"
                                                                    TextWrapping="Wrap"
                                                                    LineHeight="18">
-                                                            <Run Text="Note: Certain Filter criteria are influenced by the Deck and Stake selected when running a search. Filter Designers should select the preferred deck if it is important."/>
-                                                            <LineBreak/><LineBreak/>
-                                                            <Run Text="Example: You can ONLY find Spectral Cards in the Shop Slots of a Balatro run if you are on Ghost Deck! Also, Stickers such as Eternal are only found on Black Stake! Etc."/>
-                                                            <LineBreak/><LineBreak/>
-                                                            <Run Text="Additionally, the vouchers that are automatically activated for some decks, do take effect during a MotelyJSON Search!"/>
+                                                            <Run Text="Note: Certain Filter criteria are influenced by the Selected Deck:"/>
+                                                            <LineBreak/>
+                                                            <Run Text=" - You can ONLY find Spectral Cards in the Shop Slots using Ghost Deck" />
+                                                            <LineBreak/>
+                                                            <Run Text=" - Some decks start with a voucher already obtained" />
+                                                            <LineBreak/>
+                                                            <Run Text=" - Start with Voucher based on Deck" />
+                                                            <LineBreak/>
+                                                            <LineBreak/>
+                                                            <Run Text="Note: Certain Filter criteria are influenced by the Selected Stake:"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -Black Stake or Higher is required to filter for Jokers with Eternal Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -Orange Stake or Higher is required to filter for Jokers with Perishable Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -Gold Stake, the highest, is required to filter for Jokers with Rental Sticker"/>
                                                         </TextBlock>
                                                     </ScrollViewer>
                                                 </Grid>

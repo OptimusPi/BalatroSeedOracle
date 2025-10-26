@@ -9,8 +9,8 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>   <!-- Left: Category Buttons (Red Sidebar) -->
-            <ColumnDefinition Width="*"/>     <!-- Center: Item Grid -->
-            <ColumnDefinition Width="300"/>   <!-- Right: Drop Zones -->
+            <ColumnDefinition Width="550"/>   <!-- Center: Item Grid (narrower) -->
+            <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones (wider) -->
         </Grid.ColumnDefinitions>
 
         <!-- LEFT: Category Buttons + Pagination -->
@@ -161,15 +161,15 @@
                                     <Grid>
                                         <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
-                                               Width="36"
-                                               Height="48"
+                                               Width="71"
+                                               Height="95"
                                                Stretch="Uniform"
                                                HorizontalAlignment="Center"/>
 
                                         <!-- Legendary soul face overlay (only for SoulJoker type) -->
                                         <Image Source="{Binding SoulFaceImage}"
-                                               Width="36"
-                                               Height="48"
+                                               Width="71"
+                                               Height="95"
                                                Stretch="Uniform"
                                                HorizontalAlignment="Center"
                                                IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
@@ -223,17 +223,17 @@
                                 <ItemsControl ItemsSource="{Binding SelectedMust}">
                                     <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"/>
 
                                             <!-- Soul face overlay for legendary jokers -->
                                             <Image Source="{Binding SoulFaceImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
@@ -312,17 +312,17 @@
                                 <ItemsControl ItemsSource="{Binding SelectedShould}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"/>
 
                                             <!-- Soul face overlay for legendary jokers -->
                                             <Image Source="{Binding SoulFaceImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
@@ -401,17 +401,17 @@
                                 <ItemsControl ItemsSource="{Binding SelectedMustNot}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="4" Width="71" Height="95" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
                                             <Image Source="{Binding ItemImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"/>
 
                                             <!-- Soul face overlay for legendary jokers -->
                                             <Image Source="{Binding SoulFaceImage}"
-                                                   Width="71"
-                                                   Height="95"
+                                                   Width="36"
+                                                   Height="48"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
