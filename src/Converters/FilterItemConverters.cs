@@ -52,10 +52,27 @@ namespace BalatroSeedOracle.Converters
                 parts.AddRange(config.Stickers);
             }
 
-            // Add formatted item name (handles Rank/Suit for StandardCard)
-            parts.Add(FormatUtils.FormatDisplayName(config.ItemName));
+            // Add formatted item name with wildcard handling
+            parts.Add(FormatItemNameWithWildcards(config.ItemName));
 
             return string.Join(" ", parts);
+        }
+
+        private static string FormatItemNameWithWildcards(string itemName)
+        {
+            // Handle wildcards: AnyJoker -> "Any Joker", AnyRare -> "Any Rare Joker"
+            return itemName switch
+            {
+                "AnyJoker" => "Any Joker",
+                "AnyCommon" => "Any Common Joker",
+                "AnyUncommon" => "Any Uncommon Joker",
+                "AnyRare" => "Any Rare Joker",
+                "AnyLegendary" => "Any Legendary Joker",
+                "AnyTarot" => "Any Tarot",
+                "AnySpectral" => "Any Spectral",
+                "AnyPlanet" => "Any Planet",
+                _ => FormatUtils.FormatDisplayName(itemName)
+            };
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
