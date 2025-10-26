@@ -5,11 +5,11 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
 
     <!-- Single container with drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
-          ZIndex="{Binding WidgetZIndex}">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}"
@@ -18,7 +18,6 @@
 
         <!-- Minimized State -->
         <StackPanel IsVisible="{Binding IsMinimized}"
-                    ZIndex="1"
                     Spacing="4"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
@@ -44,7 +43,6 @@
         <!-- Expanded State -->
         <Border Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
-                ZIndex="100"
                 Width="400"
                 MaxHeight="550">
 

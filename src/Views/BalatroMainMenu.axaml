@@ -128,9 +128,13 @@
             </Border>
         </Popup>
         
-        <!-- Desktop widgets layer - BELOW modals (ZIndex 50) -->
-        <Grid x:Name="DesktopCanvas" ZIndex="50" ClipToBounds="False">
+        <!-- Desktop widgets layer - widgets use their own ZIndex bindings -->
+        <Grid x:Name="DesktopCanvas" ClipToBounds="False">
             <!-- Search Widgets will be added dynamically here -->
+
+            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
+            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
+                                            ClipToBounds="False"/>
 
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
@@ -148,10 +152,6 @@
             <!-- 🎵 MUSIC MIXER WIDGET - 8-track volume and mute controls -->
             <components:MusicMixerWidget x:Name="MusicMixerWidget"
                                         ClipToBounds="False"/>
-
-            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
-            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
-                                            ClipToBounds="False"/>
 
         </Grid>
         

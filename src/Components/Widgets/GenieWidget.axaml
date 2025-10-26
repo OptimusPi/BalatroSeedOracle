@@ -5,11 +5,11 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.GenieWidget"
              x:DataType="vm:GenieWidgetViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
 
     <!-- Single container with the drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
-          ZIndex="{Binding WidgetZIndex}">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}"
@@ -47,7 +47,6 @@
         <Border Name="ExpandedView"
                 Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
-                ZIndex="100"
                 Width="420"
                 MaxHeight="600">
 

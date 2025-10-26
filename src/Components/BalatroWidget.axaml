@@ -19,10 +19,9 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid>
+    <Grid ZIndex="{Binding WidgetZIndex}">
         <!-- Minimized State - Icon -->
         <Grid IsVisible="{Binding IsMinimized}"
-              ZIndex="1"
               Width="128"
               Height="128"
               Margin="{Binding PositionX, Converter={StaticResource PositionConverter}}">
@@ -65,7 +64,6 @@
         <!-- Expanded State - Draggable Window -->
         <Border IsVisible="{Binding !IsMinimized}"
                 Classes="widget-container"
-                ZIndex="100"
                 Width="{Binding Width}"
                 Height="{Binding Height}">
             <Grid>

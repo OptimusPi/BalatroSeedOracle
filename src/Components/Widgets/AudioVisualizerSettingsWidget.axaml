@@ -5,11 +5,11 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
 
     <!-- Single container with the drag behavior -->
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top"
-          ZIndex="{Binding WidgetZIndex}">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <i:Interaction.Behaviors>
             <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
                                                Y="{Binding PositionY, Mode=TwoWay}"
@@ -18,7 +18,6 @@
 
         <!-- Minimized State - Compact Music Icon -->
         <StackPanel IsVisible="{Binding IsMinimized}"
-                    ZIndex="1"
                     Spacing="4"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
@@ -45,7 +44,6 @@
         <!-- Expanded State - Full Settings Panel -->
         <Border Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
-                ZIndex="100"
                 MinWidth="420"
                 MaxWidth="520"
                 MaxHeight="650">
