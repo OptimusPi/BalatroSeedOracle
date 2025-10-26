@@ -311,6 +311,7 @@ namespace BalatroSeedOracle.ViewModels
             collections.Vouchers = collections.Vouchers.Distinct().ToList();
             collections.Tags = collections.Tags.Distinct().ToList();
             collections.Bosses = collections.Bosses.Distinct().ToList();
+            collections.StandardCards = collections.StandardCards.Distinct().ToList();
 
             return collections;
         }
@@ -349,6 +350,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 case "boss":
                     collections.Bosses.Add(itemValue);
+                    break;
+
+                case "standardcard":
+                    collections.StandardCards.Add(itemValue);
                     break;
             }
         }
@@ -437,10 +442,11 @@ namespace BalatroSeedOracle.ViewModels
     public class FilterItemCollections
     {
         public List<string> Jokers { get; set; } = new();
-        public List<string> Consumables { get; set; } = new(); // Tarots + Planets + Spectrals
+        public List<string> Consumables { get; set; } = new();
         public List<string> Vouchers { get; set; } = new();
         public List<string> Tags { get; set; } = new();
         public List<string> Bosses { get; set; } = new();
+        public List<string> StandardCards { get; set; } = new();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

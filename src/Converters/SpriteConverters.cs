@@ -155,4 +155,90 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class ItemNameToSoulFaceConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is not string itemName || string.IsNullOrEmpty(itemName))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetJokerSoulImage(itemName);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class StandardCardToSpriteConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is not string cardString || string.IsNullOrEmpty(cardString))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+
+                var parts = cardString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 3) return null;
+
+                string? seal = null;
+                string? edition = null;
+                string rank = "";
+                string suit = "";
+
+                int rankIndex = -1;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (parts[i].ToLowerInvariant() == "of")
+                    {
+                        rank = parts[i - 1];
+                        suit = parts[i + 1];
+                        rankIndex = i - 1;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(rank) || string.IsNullOrEmpty(suit))
+                    return null;
+
+                for (int i = 0; i < rankIndex; i++)
+                {
+                    var part = parts[i].ToLowerInvariant();
+                    if (part == "red" || part == "blue" || part == "gold" || part == "purple")
+                    {
+                        seal = parts[i];
+                    }
+                    else if (part == "foil" || part == "holographic" || part == "polychrome" || part == "negative")
+                    {
+                        edition = parts[i];
+                    }
+                }
+
+                return spriteService.GetPlayingCardImage(suit, rank, null, seal, edition);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("StandardCardToSpriteConverter", $"Failed to parse card '{value}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

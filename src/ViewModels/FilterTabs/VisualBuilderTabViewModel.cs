@@ -339,6 +339,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null)
             {
                 SelectedShould.Add(item);
+
+                // Sync with parent ViewModel if available
+                if (_parentViewModel != null)
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = item.Type,
+                        ItemName = item.Name
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedShould.Add(itemKey);
+                }
+
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
 
                 // Trigger auto-sync to JSON Editor
@@ -352,6 +367,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null)
             {
                 SelectedMustNot.Add(item);
+
+                // Sync with parent ViewModel if available
+                if (_parentViewModel != null)
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = item.Type,
+                        ItemName = item.Name
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedMustNot.Add(itemKey);
+                }
+
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
 
                 // Trigger auto-sync to JSON Editor

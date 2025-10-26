@@ -466,6 +466,25 @@
                                    IsVisible="{Binding !SelectedMustNot.Count}"/>
                     </Grid>
                     </Border>
+
+                    <!-- TRASH Zone - Drop to delete -->
+                    <Border Name="TrashDropZone"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{StaticResource DarkGrey}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Height="60"
+                            Padding="12"
+                            Margin="0,8,0,0"
+                            DragDrop.AllowDrop="True">
+                        <TextBlock Text="🗑️ DROP HERE TO DELETE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource DarkGrey}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.7"/>
+                    </Border>
         </StackPanel>
     </Grid>
 </UserControl>

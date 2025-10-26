@@ -234,13 +234,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var mustZone = this.FindControl<Border>("MustDropZone");
                 var shouldZone = this.FindControl<Border>("ShouldDropZone");
                 var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+                var trashZone = this.FindControl<Border>("TrashDropZone");
 
                 if (_topLevel == null) return;
                 var cursorPos = e.GetPosition(_topLevel);
 
                 Border? targetZone = null;
 
-                if (IsPointOverControl(cursorPos, mustZone, _topLevel))
+                if (IsPointOverControl(cursorPos, trashZone, _topLevel))
+                {
+                    targetZone = trashZone;
+                }
+                else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
                 {
                     targetZone = mustZone;
                 }
@@ -297,6 +302,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var mustZone = this.FindControl<Border>("MustDropZone");
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
             var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+            var trashZone = this.FindControl<Border>("TrashDropZone");
 
             if (mustZone != exceptZone)
                 mustZone?.Classes.Remove("drag-over");
@@ -304,6 +310,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 shouldZone?.Classes.Remove("drag-over");
             if (mustNotZone != exceptZone)
                 mustNotZone?.Classes.Remove("drag-over");
+            if (trashZone != exceptZone)
+                trashZone?.Classes.Remove("drag-over");
         }
 
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
@@ -336,11 +344,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var mustZone = this.FindControl<Border>("MustDropZone");
                 var shouldZone = this.FindControl<Border>("ShouldDropZone");
                 var mustNotZone = this.FindControl<Border>("MustNotDropZone");
+                var trashZone = this.FindControl<Border>("TrashDropZone");
 
                 Border? targetZone = null;
                 string? zoneName = null;
 
-                if (IsPointOverControl(cursorPos, mustZone, _topLevel))
+                if (IsPointOverControl(cursorPos, trashZone, _topLevel))
+                {
+                    targetZone = trashZone;
+                    zoneName = "TrashDropZone";
+                }
+                else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
                 {
                     targetZone = mustZone;
                     zoneName = "MustDropZone";
@@ -360,8 +374,34 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
 
+                    // SPECIAL CASE: Trash zone - just delete the item
+                    if (zoneName == "TrashDropZone")
+                    {
+                        if (_sourceDropZone != null)
+                        {
+                            DebugLogger.Log("VisualBuilderTab", $"🗑️ TRASHING {_draggedItem.Name} from {_sourceDropZone}");
+                            switch (_sourceDropZone)
+                            {
+                                case "MustDropZone":
+                                    vm.SelectedMust.Remove(_draggedItem);
+                                    break;
+                                case "ShouldDropZone":
+                                    vm.SelectedShould.Remove(_draggedItem);
+                                    break;
+                                case "MustNotDropZone":
+                                    vm.SelectedMustNot.Remove(_draggedItem);
+                                    break;
+                            }
+                            // Play trash sound (or card drop)
+                            SoundEffectService.Instance.PlayCardDrop();
+                        }
+                        else
+                        {
+                            DebugLogger.Log("VisualBuilderTab", "Can't trash item from shelf (it was never added)");
+                        }
+                    }
                     // Check if we're dropping to the same zone we dragged from
-                    if (_sourceDropZone != null && zoneName == _sourceDropZone)
+                    else if (_sourceDropZone != null && zoneName == _sourceDropZone)
                     {
                         DebugLogger.Log("VisualBuilderTab", $"Dropped to same zone - canceling (item stays where it was)");
                         // Item stays in original zone, just clean up
