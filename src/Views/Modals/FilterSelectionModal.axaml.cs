@@ -6,6 +6,8 @@ using Avalonia.Media.Imaging;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Controls;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -75,6 +77,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     oldVm.ModalCloseRequested -= OnModalCloseRequested;
                     oldVm.PropertyChanged -= OnViewModelPropertyChanged;
+                    oldVm.DeleteConfirmationRequested -= OnDeleteConfirmationRequested;
                 }
 
                 // Subscribe to new ViewModel
@@ -83,6 +86,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     newVm.ModalCloseRequested += OnModalCloseRequested;
                     newVm.PropertyChanged += OnViewModelPropertyChanged;
+                    newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
 
                     // Load initial deck/stake if filter is already selected
                     if (newVm.SelectedFilter != null)
@@ -90,6 +94,21 @@ namespace BalatroSeedOracle.Views.Modals
                         UpdateDeckAndStake(newVm.SelectedFilter);
                     }
                 }
+            }
+        }
+
+        private async void OnDeleteConfirmationRequested(object? sender, string filterName)
+        {
+            var result = await MessageBoxManager
+                .GetMessageBoxStandard("Delete Filter?",
+                    $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
+                    ButtonEnum.YesNo,
+                    Icon.Warning)
+                .ShowAsync();
+
+            if (result == ButtonResult.Yes && ViewModel != null)
+            {
+                ViewModel.ConfirmDelete();
             }
         }
 

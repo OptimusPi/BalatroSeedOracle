@@ -79,6 +79,10 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isVolumePopupOpen = false;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SeedSearchCommand))]
+        [NotifyCanExecuteChangedFor(nameof(EditorCommand))]
+        [NotifyCanExecuteChangedFor(nameof(AnalyzeCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ToolCommand))]
         private bool _isModalVisible = false;
 
         [ObservableProperty]
@@ -169,40 +173,74 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Command Implementations
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanOpenModal))]
         private void SeedSearch()
         {
             PlayButtonClickSound();
             try
             {
+                IsModalVisible = true;
                 ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Search));
             }
             catch (Exception ex)
             {
+                IsModalVisible = false;
                 DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open search modal: {ex}");
                 ShowErrorModal($"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
             }
         }
 
-        [RelayCommand]
+        private bool CanOpenModal() => !IsModalVisible;
+
+        [RelayCommand(CanExecute = nameof(CanOpenModal))]
         private void Editor()
         {
             PlayButtonClickSound();
-            ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Filters));
+            try
+            {
+                IsModalVisible = true;
+                ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Filters));
+            }
+            catch (Exception ex)
+            {
+                IsModalVisible = false;
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open filters modal: {ex}");
+                ShowErrorModal($"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+            }
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanOpenModal))]
         private void Analyze()
         {
             PlayButtonClickSound();
-            ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Analyze));
+            try
+            {
+                IsModalVisible = true;
+                ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Analyze));
+            }
+            catch (Exception ex)
+            {
+                IsModalVisible = false;
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open analyze modal: {ex}");
+                ShowErrorModal($"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+            }
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanOpenModal))]
         private void Tool()
         {
             PlayButtonClickSound();
-            ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Settings));
+            try
+            {
+                IsModalVisible = true;
+                ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Settings));
+            }
+            catch (Exception ex)
+            {
+                IsModalVisible = false;
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open settings modal: {ex}");
+                ShowErrorModal($"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+            }
         }
 
         [RelayCommand]

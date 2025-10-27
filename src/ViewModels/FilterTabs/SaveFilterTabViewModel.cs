@@ -145,14 +145,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Name = FilterName;
                 config.Description = FilterDescription;
 
-                var filePath = _configurationService.GetTempFilterPath();
+                // Generate proper filename in JsonItemFilters folder (same as Save As)
+                var filePath = _filterService.GenerateFilterFileName(FilterName);
                 var success = await _configurationService.SaveFilterAsync(filePath, config);
 
                 if (success)
                 {
                     CurrentFileName = Path.GetFileName(filePath);
                     LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-                    UpdateStatus($"Filter saved: {CurrentFileName}", false);
+                    UpdateStatus($"✓ Filter saved: {CurrentFileName}", false);
+                    DebugLogger.Log("SaveFilterTab", $"Filter saved to: {filePath}");
                 }
                 else
                 {

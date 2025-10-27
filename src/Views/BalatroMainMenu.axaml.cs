@@ -174,6 +174,12 @@ namespace BalatroSeedOracle.Views
         {
             var result = await this.ShowFilterSelectionModal(enableSearch: true, enableEdit: true);
 
+            // CRITICAL: Reset IsModalVisible when FilterSelectionModal closes, even if cancelled
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = false;
+            }
+
             if (result.Cancelled) return;
 
             switch (result.Action)
@@ -208,6 +214,12 @@ namespace BalatroSeedOracle.Views
         {
             var result = await this.ShowFilterSelectionModal(
                 enableEdit: true, enableCopy: true, enableDelete: true);
+
+            // CRITICAL: Reset IsModalVisible when FilterSelectionModal closes, even if cancelled
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = false;
+            }
 
             if (result.Cancelled) return;
 
@@ -594,6 +606,12 @@ namespace BalatroSeedOracle.Views
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
             SetTitle("Welcome!");
+
+            // Re-enable buttons by clearing modal state
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = false;
+            }
 
             // Clear on background thread to avoid blocking audio
             Dispatcher.UIThread.Post(() =>

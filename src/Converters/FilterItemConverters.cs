@@ -52,21 +52,41 @@ namespace BalatroSeedOracle.Converters
                 parts.AddRange(config.Stickers);
             }
 
-            // Add formatted item name with wildcard handling
-            parts.Add(FormatItemNameWithWildcards(config.ItemName));
+            // Add formatted item name with wildcard handling (check for Soul Joker)
+            parts.Add(FormatItemNameWithWildcards(config.ItemName, config.IsSoulJoker));
 
             return string.Join(" ", parts);
         }
 
-        private static string FormatItemNameWithWildcards(string? itemName)
+        private static string FormatItemNameWithWildcards(string? itemName, bool isSoulJoker = false)
         {
             if (string.IsNullOrWhiteSpace(itemName))
-                return "Any";
+            {
+                // If it's a Soul Joker with no specific name, it's "Any Soul Joker"
+                return isSoulJoker ? "Any Soul Joker" : "Any";
+            }
 
             // Handle wildcards: AnyJoker -> "Any Joker", AnyRare -> "Any Rare Joker"
             // Use case-insensitive comparison to catch variations
             var normalized = itemName.Trim();
 
+            // Handle Soul Joker wildcards
+            if (isSoulJoker)
+            {
+                if (normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase) ||
+                    normalized.Equals("Any", StringComparison.OrdinalIgnoreCase))
+                    return "Any Soul Joker";
+                if (normalized.Equals("AnyCommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Common Soul Joker";
+                if (normalized.Equals("AnyUncommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Uncommon Soul Joker";
+                if (normalized.Equals("AnyRare", StringComparison.OrdinalIgnoreCase))
+                    return "Any Rare Soul Joker";
+                if (normalized.Equals("AnyLegendary", StringComparison.OrdinalIgnoreCase))
+                    return "Any Legendary Soul Joker";
+            }
+
+            // Handle regular joker wildcards
             if (normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase))
                 return "Any Joker";
             if (normalized.Equals("AnyCommon", StringComparison.OrdinalIgnoreCase))

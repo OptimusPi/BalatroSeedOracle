@@ -208,20 +208,36 @@
                             CornerRadius="8"
                             MinHeight="120"
                             MaxHeight="220"
-                            Padding="12"
+                            Padding="0"
                             BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
                         <Grid>
-                            <StackPanel Spacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="*"/>    <!-- Drop area -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: Rotated Label Spine -->
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderBrush="{StaticResource Green}"
+                                    BorderThickness="0,0,2,0"
+                                    CornerRadius="8,0,0,8">
                                 <TextBlock Text="MUST HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="14"
-
                                            Foreground="{StaticResource Green}"
                                            HorizontalAlignment="Center"
-                                           Margin="0,0,0,4"/>
-                                <ItemsControl ItemsSource="{Binding SelectedMust}">
-                                    <ItemsControl.ItemTemplate>
+                                           VerticalAlignment="Center">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- Right: Drop Area -->
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMust}" Margin="12">
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
                                             <!-- Main card image (NO BORDER!) -->
@@ -244,7 +260,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    
+
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"
@@ -275,18 +291,7 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </StackPanel>
-
-                        <!-- Empty State Placeholder -->
-                        <TextBlock Text="Drop items here"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource LightGrey}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Opacity="0.5"
-                                   IsVisible="{Binding !SelectedMust.Count}"/>
-                    </Grid>
+                        </Grid>
                     </Border>
 
                     <!-- SHOULD HAVE Zone -->
@@ -297,19 +302,35 @@
                             CornerRadius="8"
                             MinHeight="120"
                             MaxHeight="220"
-                            Padding="12"
+                            Padding="0"
                             BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
                         <Grid>
-                            <StackPanel Spacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="*"/>    <!-- Drop area -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: Rotated Label Spine -->
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderBrush="{StaticResource Blue}"
+                                    BorderThickness="0,0,2,0"
+                                    CornerRadius="8,0,0,8">
                                 <TextBlock Text="SHOULD HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="14"
-
                                            Foreground="{StaticResource Blue}"
                                            HorizontalAlignment="Center"
-                                           Margin="0,0,0,4"/>
-                                <ItemsControl ItemsSource="{Binding SelectedShould}">
+                                           VerticalAlignment="Center">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- Right: Drop Area -->
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedShould}" Margin="12">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
@@ -333,7 +354,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    
+
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"
@@ -364,18 +385,7 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </StackPanel>
-
-                        <!-- Empty State Placeholder -->
-                        <TextBlock Text="Drop items here"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource LightGrey}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Opacity="0.5"
-                                   IsVisible="{Binding !SelectedShould.Count}"/>
-                    </Grid>
+                        </Grid>
                     </Border>
 
                     <!-- MUST NOT HAVE Zone -->
@@ -386,19 +396,35 @@
                             CornerRadius="8"
                             MinHeight="120"
                             MaxHeight="220"
-                            Padding="12"
+                            Padding="0"
                             BoxShadow="inset 0 2 4 #00000040"
                             DragDrop.AllowDrop="True">
                         <Grid>
-                            <StackPanel Spacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="*"/>    <!-- Drop area -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: Rotated Label Spine -->
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderBrush="{StaticResource Red}"
+                                    BorderThickness="0,0,2,0"
+                                    CornerRadius="8,0,0,8">
                                 <TextBlock Text="MUST NOT HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
-
+                                           FontSize="13"
                                            Foreground="{StaticResource Red}"
                                            HorizontalAlignment="Center"
-                                           Margin="0,0,0,4"/>
-                                <ItemsControl ItemsSource="{Binding SelectedMustNot}">
+                                           VerticalAlignment="Center">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- Right: Drop Area -->
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
@@ -422,7 +448,7 @@
                                                     Background="{StaticResource Red}"
                                                     Foreground="White"
                                                     FontSize="12"
-                                                    
+
                                                     Width="18"
                                                     Height="18"
                                                     CornerRadius="9"
@@ -453,18 +479,7 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
-                        </StackPanel>
-
-                        <!-- Empty State Placeholder -->
-                        <TextBlock Text="Drop items here"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource LightGrey}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Opacity="0.5"
-                                   IsVisible="{Binding !SelectedMustNot.Count}"/>
-                    </Grid>
+                        </Grid>
                     </Border>
 
                     <!-- TRASH Zone - Drop to delete -->

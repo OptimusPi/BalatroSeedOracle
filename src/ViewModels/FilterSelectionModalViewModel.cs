@@ -60,6 +60,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Events
         public event EventHandler? ModalCloseRequested;
+        public event EventHandler<string>? DeleteConfirmationRequested;
 
         public FilterSelectionModalViewModel(
             bool enableSearch = false,
@@ -198,7 +199,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;
 
-            // TODO: Show confirmation dialog
+            // Request confirmation from View (code-behind will show dialog)
+            DeleteConfirmationRequested?.Invoke(this, SelectedFilter.Name);
+        }
+
+        /// <summary>
+        /// Called by View after user confirms delete
+        /// </summary>
+        public void ConfirmDelete()
+        {
+            if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;
+
             Result = new FilterSelectionResult
             {
                 Cancelled = false,
