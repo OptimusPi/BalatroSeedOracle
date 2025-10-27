@@ -234,16 +234,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var mustZone = this.FindControl<Border>("MustDropZone");
                 var shouldZone = this.FindControl<Border>("ShouldDropZone");
                 var mustNotZone = this.FindControl<Border>("MustNotDropZone");
-                var trashZone = this.FindControl<Border>("TrashDropZone");
+                var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
+                var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
                 if (_topLevel == null) return;
                 var cursorPos = e.GetPosition(_topLevel);
 
                 Border? targetZone = null;
 
-                if (IsPointOverControl(cursorPos, trashZone, _topLevel))
+                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
                 {
-                    targetZone = trashZone;
+                    targetZone = itemGridBorder;
+                    // Show overlay if dragging FROM drop zones
+                    if (returnOverlay != null && _draggedItem?.IsInDropZone == true)
+                    {
+                        returnOverlay.IsVisible = true;
+                    }
                 }
                 else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
                 {
@@ -302,7 +308,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var mustZone = this.FindControl<Border>("MustDropZone");
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
             var mustNotZone = this.FindControl<Border>("MustNotDropZone");
-            var trashZone = this.FindControl<Border>("TrashDropZone");
+            var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
+            var returnOverlay = this.FindControl<Border>("ReturnOverlay");
+
+            // Hide the return overlay if we're not over the item grid
+            if (returnOverlay != null && exceptZone != itemGridBorder)
+            {
+                returnOverlay.IsVisible = false;
+            }
 
             if (mustZone != exceptZone)
                 mustZone?.Classes.Remove("drag-over");
@@ -310,8 +323,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 shouldZone?.Classes.Remove("drag-over");
             if (mustNotZone != exceptZone)
                 mustNotZone?.Classes.Remove("drag-over");
-            if (trashZone != exceptZone)
-                trashZone?.Classes.Remove("drag-over");
+            if (itemGridBorder != exceptZone)
+                itemGridBorder?.Classes.Remove("drag-over");
         }
 
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
@@ -344,15 +357,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var mustZone = this.FindControl<Border>("MustDropZone");
                 var shouldZone = this.FindControl<Border>("ShouldDropZone");
                 var mustNotZone = this.FindControl<Border>("MustNotDropZone");
-                var trashZone = this.FindControl<Border>("TrashDropZone");
+                var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
+                var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
                 Border? targetZone = null;
                 string? zoneName = null;
 
-                if (IsPointOverControl(cursorPos, trashZone, _topLevel))
+                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
                 {
-                    targetZone = trashZone;
-                    zoneName = "TrashDropZone";
+                    targetZone = itemGridBorder;
+                    zoneName = "ItemGridBorder";
                 }
                 else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
                 {
@@ -374,12 +388,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
 
-                    // SPECIAL CASE: Trash zone - just delete the item
-                    if (zoneName == "TrashDropZone")
+                    // Hide overlay after drop
+                    if (returnOverlay != null)
+                    {
+                        returnOverlay.IsVisible = false;
+                    }
+
+                    // SPECIAL CASE: ItemGridBorder (return to shelf) - remove from drop zone if dragging from one
+                    if (zoneName == "ItemGridBorder")
                     {
                         if (_sourceDropZone != null)
                         {
-                            DebugLogger.Log("VisualBuilderTab", $"🗑️ TRASHING {_draggedItem.Name} from {_sourceDropZone}");
+                            DebugLogger.Log("VisualBuilderTab", $"↩️ RETURNING {_draggedItem.Name} from {_sourceDropZone} to shelf");
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":

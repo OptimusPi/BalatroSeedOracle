@@ -137,65 +137,86 @@
                      VerticalContentAlignment="Center"
                      Padding="12,8"/>
 
-            <!-- Item Grid - Dark inner panel with border -->
-            <Border Grid.Row="2"
-                    Background="{StaticResource DarkTealGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Padding="12"
-                    BoxShadow="inset 0 2 4 #00000040">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding FilteredItems}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="8"
-                                           Cursor="Hand"
-                                           PointerPressed="OnItemPointerPressed"
-                                           Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
-                                    <i:Interaction.Behaviors>
-                                        <!-- Enabled when NOT being dragged (disable sway on original while ghost is active) -->
-                                        <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
-                                    </i:Interaction.Behaviors>
-                                    <Grid>
-                                        <!-- Main card image -->
-                                        <Image Source="{Binding ItemImage}"
-                                               Width="71"
-                                               Height="95"
-                                               Stretch="Uniform"
-                                               HorizontalAlignment="Center"/>
+            <!-- Item Grid - Dark inner panel with border + overlay -->
+            <Grid Grid.Row="2">
+                <Border Name="ItemGridBorder"
+                        Background="{StaticResource DarkTealGrey}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Padding="12"
+                        BoxShadow="inset 0 2 4 #00000040"
+                        DragDrop.AllowDrop="True">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding FilteredItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="8"
+                                               Cursor="Hand"
+                                               PointerPressed="OnItemPointerPressed"
+                                               Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
+                                        <i:Interaction.Behaviors>
+                                            <!-- Enabled when NOT being dragged (disable sway on original while ghost is active) -->
+                                            <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
+                                        </i:Interaction.Behaviors>
+                                        <Grid>
+                                            <!-- Main card image -->
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"
+                                                   HorizontalAlignment="Center"/>
 
-                                        <!-- Legendary soul face overlay (only for SoulJoker type) -->
-                                        <Image Source="{Binding SoulFaceImage}"
-                                               Width="71"
-                                               Height="95"
-                                               Stretch="Uniform"
-                                               HorizontalAlignment="Center"
-                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                    </Grid>
+                                            <!-- Legendary soul face overlay (only for SoulJoker type) -->
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"
+                                                   HorizontalAlignment="Center"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                        </Grid>
 
-                                    <!-- Simple name below -->
-                                    <TextBlock Text="{Binding DisplayName}"
-                                               Foreground="{StaticResource White}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="12"
-                                               HorizontalAlignment="Center"
-                                               TextAlignment="Center"
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="0,4,0,0"
-                                               MaxWidth="80"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Border>
+                                        <!-- Simple name below -->
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   Foreground="{StaticResource White}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,4,0,0"
+                                                   MaxWidth="80"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Return Overlay - Shows when dragging from drop zones -->
+                <Border Name="ReturnOverlay"
+                        Background="#CC1A1D23"
+                        BorderBrush="{StaticResource Orange}"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False">
+                    <TextBlock Text="↩️ Drop here to remove from filter"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource Orange}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               TextAlignment="Center"/>
+                </Border>
+            </Grid>
         </Grid>
 
         <!-- RIGHT: Drop Zones with Proper Visual Containers -->
@@ -485,24 +506,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- TRASH Zone - Drop to delete -->
-                    <Border Name="TrashDropZone"
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource DarkGrey}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            Height="60"
-                            Padding="12"
-                            Margin="0,8,0,0"
-                            DragDrop.AllowDrop="True">
-                        <TextBlock Text="🗑️ DROP HERE TO DELETE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   Foreground="{StaticResource DarkGrey}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Opacity="0.7"/>
-                    </Border>
         </StackPanel>
     </Grid>
 </UserControl>
