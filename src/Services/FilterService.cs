@@ -83,8 +83,7 @@ namespace BalatroSeedOracle.Services
         public string GenerateFilterFileName(string baseName)
         {
             var filtersDir = _configurationService.GetFiltersDirectory();
-            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var fileName = $"{baseName}_{timestamp}.json";
+            var fileName = $"{baseName}.json";
             return Path.Combine(filtersDir, fileName);
         }
     }
