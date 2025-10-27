@@ -179,7 +179,7 @@
                                     <TextBlock Text="{Binding DisplayName}"
                                                Foreground="{StaticResource White}"
                                                FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="10"
+                                               FontSize="12"
                                                HorizontalAlignment="Center"
                                                TextAlignment="Center"
                                                TextTrimming="CharacterEllipsis"

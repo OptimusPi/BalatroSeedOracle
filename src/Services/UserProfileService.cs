@@ -143,7 +143,7 @@ namespace BalatroSeedOracle.Services
             // Perform synchronous save for immediate flush
             try
             {
-                SaveProfileToDiskAsync().GetAwaiter().GetResult();
+                SaveProfileToDiskSync();
                 DebugLogger.Log("UserProfileService", "Profile flushed to disk");
             }
             catch (Exception ex)
@@ -267,7 +267,7 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Performs the actual disk I/O to save the profile
+        /// Performs the actual disk I/O to save the profile (async version)
         /// </summary>
         private async Task SaveProfileToDiskAsync()
         {
@@ -292,6 +292,44 @@ namespace BalatroSeedOracle.Services
                     new JsonSerializerOptions { WriteIndented = true }
                 );
                 await File.WriteAllTextAsync(_profilePath, json).ConfigureAwait(false);
+                ThrottledLogSaveSuccess();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    $"Error saving profile to {_profilePath}: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Performs the actual disk I/O to save the profile (synchronous version).
+        /// Used only for FlushProfile() and Dispose() to avoid blocking async calls.
+        /// </summary>
+        private void SaveProfileToDiskSync()
+        {
+            try
+            {
+                // Ensure directory exists
+                var directory = Path.GetDirectoryName(_profilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Create a snapshot of the current profile to avoid race conditions
+                UserProfile profileSnapshot;
+                lock (_saveLock)
+                {
+                    profileSnapshot = _currentProfile;
+                }
+
+                var json = JsonSerializer.Serialize(
+                    profileSnapshot,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
+                File.WriteAllText(_profilePath, json);
                 ThrottledLogSaveSuccess();
             }
             catch (Exception ex)
@@ -351,7 +389,7 @@ namespace BalatroSeedOracle.Services
 
                     try
                     {
-                        SaveProfileToDiskAsync().GetAwaiter().GetResult();
+                        SaveProfileToDiskSync();
                     }
                     catch (Exception ex)
                     {

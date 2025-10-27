@@ -63,41 +63,8 @@
     </UserControl.Styles>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Current Filter Display -->
-        <Border Grid.Row="0"
-                Classes="modal-content-box"
-                Margin="10,10,10,4"
-                Padding="12,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="0"
-                           Text="Active Filter:"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="14"
-                           Foreground="{StaticResource MediumGrey}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"/>
-
-                <TextBlock Grid.Column="1"
-                           Text="{Binding LoadedConfig.Name, FallbackValue='No filter loaded'}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="14"
-                           Foreground="{StaticResource LightCream}"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
-
         <!-- 3 Column Layout -->
-        <Grid Grid.Row="1" Margin="10,0,10,10">
+        <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/> <!-- Left column for parameters -->
                 <ColumnDefinition Width="*"/>   <!-- Middle for console -->
@@ -168,40 +135,6 @@
                                                 HorizontalAlignment="Stretch"
                                                 ShadowDirection="south-east"/>
 
-                        <!-- Debug seed input -->
-                        <StackPanel Orientation="Vertical" Margin="0,10,0,5">
-                            <TextBlock Text="Debug Seed:"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
-                                       Foreground="{StaticResource MediumGrey}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <TextBox Name="DebugSeedInput"
-                                     Text="{Binding DebugSeed}"
-                                     Watermark="Enter seed..."
-                                     MaxLength="8"
-                                     Width="140"
-                                     Height="32"
-                                     HorizontalAlignment="Center"
-                                     FontFamily="{StaticResource BalatroFont}"
-                                     FontSize="14"
-                                     TextAlignment="Center"
-                                     Background="{StaticResource DarkTealGrey}"
-                                     BorderBrush="{StaticResource DarkBorder}"
-                                     BorderThickness="1"
-                                     IsEnabled="{Binding IsDebugMode}"
-                                     CornerRadius="4"/>
-                        </StackPanel>
-
-                        <!-- Debug checkbox -->
-                        <CheckBox Name="DebugCheckBox"
-                                  Content="Debug Mode"
-                                  IsChecked="{Binding IsDebugMode}"
-                                  Foreground="White"
-                                  HorizontalAlignment="Center"
-                                  FontFamily="{StaticResource BalatroFont}"
-                                  FontSize="12"
-                                  Margin="0,5,0,10"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -212,12 +145,28 @@
                     Margin="0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBox Grid.Row="0"
+                    <!-- Active Filter Display -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal"
+                                HorizontalAlignment="Center" Margin="0,0,0,6">
+                        <TextBlock Text="Active Filter:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource MediumGrey}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No filter loaded'}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBox Grid.Row="1"
                              Name="ConsoleOutput"
                              Classes="terminal"
                              IsReadOnly="True"
@@ -227,27 +176,45 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              Text="{Binding ConsoleText}"/>
 
-                    <!-- JSON Validation Status -->
-                    <Border Grid.Row="1"
-                            Background="{StaticResource ContainerDarkPrecise}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="0,1,0,0"
-                            Padding="8,4"
-                            Margin="0,4,0,0">
-                        <TextBlock Name="JsonValidationStatus"
-                                   Text="{Binding JsonValidationStatus}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{Binding JsonValidationColor}"
-                                   HorizontalAlignment="Left"/>
-                    </Border>
-
                     <!-- Buttons row -->
                     <StackPanel Grid.Row="2"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Spacing="12"
                                 Margin="0,12,0,0">
+                        <!-- Debug seed input (moved from left column) -->
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                            <TextBlock Text="Debug Seed:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,2"/>
+                            <TextBox Name="DebugSeedInput"
+                                     Text="{Binding DebugSeed}"
+                                     Watermark="Enter seed..."
+                                     MaxLength="8"
+                                     Width="110"
+                                     Height="32"
+                                     FontFamily="{StaticResource BalatroFont}"
+                                     FontSize="12"
+                                     TextAlignment="Center"
+                                     Background="{StaticResource DarkTealGrey}"
+                                     BorderBrush="{StaticResource DarkBorder}"
+                                     BorderThickness="2"
+                                     IsEnabled="{Binding IsDebugMode}"
+                                     CornerRadius="4"
+                                     VerticalContentAlignment="Center"/>
+                            <CheckBox Name="DebugCheckBox"
+                                      Content="Debug"
+                                      IsChecked="{Binding IsDebugMode}"
+                                      Foreground="White"
+                                      HorizontalAlignment="Center"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="10"
+                                      Margin="0,2,0,0"/>
+                        </StackPanel>
+
                         <!-- COOK button -->
                         <Button Name="CookButton"
                                 Content="{Binding CookButtonText}"
