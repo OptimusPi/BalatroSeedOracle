@@ -245,8 +245,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
                 {
                     targetZone = itemGridBorder;
-                    // Show overlay if dragging FROM drop zones
-                    if (returnOverlay != null && _draggedItem?.IsInDropZone == true)
+                    // Show overlay if dragging FROM drop zones (sourceDropZone != null)
+                    if (returnOverlay != null && _sourceDropZone != null)
                     {
                         returnOverlay.IsVisible = true;
                     }
