@@ -37,6 +37,11 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
+        <!-- Keep same background when focused -->
+        <Style Selector="TextBox.terminal:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
+        </Style>
+
         <!-- Modal content styles -->
         <Style Selector="Border.modal-content-box">
             <Setter Property="Background" Value="{StaticResource DarkTealGrey}"/>

@@ -213,7 +213,7 @@
                             DragDrop.AllowDrop="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="50"/>   <!-- Rotated label spine (increased from 30) -->
                                 <ColumnDefinition Width="*"/>    <!-- Drop area -->
                             </Grid.ColumnDefinitions>
 
@@ -225,10 +225,11 @@
                                     CornerRadius="8,0,0,8">
                                 <TextBlock Text="MUST HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
+                                           FontSize="13"
                                            Foreground="{StaticResource Green}"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center">
+                                           VerticalAlignment="Center"
+                                           Width="100">
                                     <TextBlock.RenderTransform>
                                         <RotateTransform Angle="-90"/>
                                     </TextBlock.RenderTransform>
@@ -307,7 +308,7 @@
                             DragDrop.AllowDrop="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="50"/>   <!-- Rotated label spine (increased from 30) -->
                                 <ColumnDefinition Width="*"/>    <!-- Drop area -->
                             </Grid.ColumnDefinitions>
 
@@ -319,10 +320,11 @@
                                     CornerRadius="8,0,0,8">
                                 <TextBlock Text="SHOULD HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
+                                           FontSize="13"
                                            Foreground="{StaticResource Blue}"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center">
+                                           VerticalAlignment="Center"
+                                           Width="110">
                                     <TextBlock.RenderTransform>
                                         <RotateTransform Angle="-90"/>
                                     </TextBlock.RenderTransform>
@@ -401,7 +403,7 @@
                             DragDrop.AllowDrop="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="30"/>   <!-- Rotated label spine -->
+                                <ColumnDefinition Width="50"/>   <!-- Rotated label spine (increased from 30) -->
                                 <ColumnDefinition Width="*"/>    <!-- Drop area -->
                             </Grid.ColumnDefinitions>
 
@@ -413,10 +415,11 @@
                                     CornerRadius="8,0,0,8">
                                 <TextBlock Text="MUST NOT HAVE"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="13"
+                                           FontSize="12"
                                            Foreground="{StaticResource Red}"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center">
+                                           VerticalAlignment="Center"
+                                           Width="120">
                                     <TextBlock.RenderTransform>
                                         <RotateTransform Angle="-90"/>
                                     </TextBlock.RenderTransform>
