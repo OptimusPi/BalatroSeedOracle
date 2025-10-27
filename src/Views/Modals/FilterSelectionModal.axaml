@@ -724,11 +724,9 @@
                                 <!-- TAB CONTENT AREA -->
                                 <Grid Grid.Row="2">
                                     <!-- FILTER TAB CONTENT (two-column layout) -->
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  IsVisible="{Binding ShowFilterTab}">
-                                        <Grid ColumnDefinitions="*,15,*">
-                                            <!-- Filter Description Box (LEFT COLUMN) -->
-                                            <Border Grid.Column="0"
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowFilterTab}">
+                                        <!-- Filter Description Box (LEFT COLUMN - NO SCROLL) -->
+                                        <Border Grid.Column="0"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
@@ -782,10 +780,10 @@
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Filter Criteria Box (Must[]) (RIGHT COLUMN) -->
-                                            <Border Grid.Column="2"
-                                                    Background="#FFFFFF"
-                                                    CornerRadius="8">
+                                            <!-- Filter Criteria Box (Must[]) (RIGHT COLUMN - WITH SCROLL) -->
+                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                                                <Border Background="#FFFFFF"
+                                                        CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
                                                     <Border Grid.Row="0"
@@ -957,13 +955,11 @@
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
+                                            </ScrollViewer>
                                         </Grid>
-                                    </ScrollViewer>
 
                                     <!-- SCORE TAB CONTENT (two-column layout) -->
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  IsVisible="{Binding ShowScoreTab}">
-                                        <Grid ColumnDefinitions="*,15,*">
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowScoreTab}">
                                             <!-- Left Column: Scoring Description -->
                                             <Border Grid.Column="0"
                                                     Background="#FFFFFF"
@@ -1016,10 +1012,10 @@
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Right Column: Scoring Criteria (Should[]) -->
-                                            <Border Grid.Column="2"
-                                                    Background="#FFFFFF"
-                                                    CornerRadius="8">
+                                            <!-- Right Column: Scoring Criteria (Should[]) - WITH SCROLL -->
+                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                                                <Border Background="#FFFFFF"
+                                                        CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
                                                     <Border Grid.Row="0"
@@ -1141,13 +1137,11 @@
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
+                                            </ScrollViewer>
                                         </Grid>
-                                    </ScrollViewer>
 
                                     <!-- PREFERRED DECK TAB CONTENT (two-column layout) -->
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  IsVisible="{Binding ShowDeckTab}">
-                                        <Grid ColumnDefinitions="*,15,*">
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowDeckTab}">
                                             <Border Grid.Column="0"
                                                     Background="#FFFFFF"
                                                     CornerRadius="8">
@@ -1201,9 +1195,10 @@
                                                 </Grid>
                                             </Border>
 
-                                            <Border Grid.Column="2"
-                                                    Background="#FFFFFF"
-                                                    CornerRadius="8">
+                                            <!-- Right Column: Deck Defaults - WITH SCROLL -->
+                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                                                <Border Background="#FFFFFF"
+                                                        CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
                                                     <Border Grid.Row="0"
@@ -1240,8 +1235,8 @@
                                                     </ScrollViewer>
                                                 </Grid>
                                             </Border>
+                                            </ScrollViewer>
                                         </Grid>
-                                    </ScrollViewer>
 
                                     <!-- Placeholder when no filter selected (Balatro Challenges style) -->
                                     <StackPanel HorizontalAlignment="Center"
