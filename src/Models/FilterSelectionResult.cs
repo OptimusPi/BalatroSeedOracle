@@ -21,6 +21,6 @@ namespace BalatroSeedOracle.Models
         Edit,
         Copy,
         Delete,
-        Analyze
+        Analyze,
     }
 }

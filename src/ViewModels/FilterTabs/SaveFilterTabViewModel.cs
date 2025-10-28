@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Media;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
@@ -34,7 +34,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private bool _showTestError = false;
         private string _testResultMessage = "";
 
-        public SaveFilterTabViewModel(FiltersModalViewModel parentViewModel, IConfigurationService configurationService, IFilterService filterService, IFilterConfigurationService filterConfigurationService)
+        public SaveFilterTabViewModel(
+            FiltersModalViewModel parentViewModel,
+            IConfigurationService configurationService,
+            IFilterService filterService,
+            IFilterConfigurationService filterConfigurationService
+        )
         {
             _parentViewModel = parentViewModel;
             _configurationService = configurationService;
@@ -259,7 +264,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 selectedMustNot,
                 itemConfigs,
                 FilterName,
-                FilterDescription);
+                FilterDescription
+            );
         }
 
         // Logic moved to shared FilterConfigurationService
@@ -317,7 +323,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 };
 
                 // Start search via SearchManager and wait for results
-                var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager =
+                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
                     IsTestRunning = false;
@@ -328,7 +335,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Run quick search and get results
-                UpdateStatus($"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
+                UpdateStatus(
+                    $"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...",
+                    false
+                );
                 var results = await searchManager.RunQuickSearchAsync(criteria, config);
 
                 // Update UI with results
@@ -337,7 +347,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     ShowTestSuccess = true;
                     TestResultMessage = $"Found {results.Count} seeds in {results.ElapsedTime:F1}s";
-                    UpdateStatus($"Test passed: Found {results.Count} seeds in {results.ElapsedTime:F1}s", false);
+                    UpdateStatus(
+                        $"Test passed: Found {results.Count} seeds in {results.ElapsedTime:F1}s",
+                        false
+                    );
                 }
                 else
                 {
@@ -369,20 +382,48 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 6 => 1_225UL,
                 7 => 35UL,
                 8 => 1UL,
-                _ => throw new ArgumentException($"Invalid batch size: {batchSize}. Valid range is 1-8."),
+                _ => throw new ArgumentException(
+                    $"Invalid batch size: {batchSize}. Valid range is 1-8."
+                ),
             };
         }
 
         private string GetDeckName(int index)
         {
-            var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                                    "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+            var deckNames = new[]
+            {
+                "Red",
+                "Blue",
+                "Yellow",
+                "Green",
+                "Black",
+                "Magic",
+                "Nebula",
+                "Ghost",
+                "Abandoned",
+                "Checkered",
+                "Zodiac",
+                "Painted",
+                "Anaglyph",
+                "Plasma",
+                "Erratic",
+            };
             return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
         }
 
         private string GetStakeName(int index)
         {
-            var stakeNames = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
+            var stakeNames = new[]
+            {
+                "white",
+                "red",
+                "green",
+                "black",
+                "blue",
+                "purple",
+                "orange",
+                "gold",
+            };
             return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
         }
 
@@ -390,7 +431,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             StatusMessage = message;
             StatusColor = isError ? Brushes.Red : Brushes.Green;
-            
+
             DebugLogger.Log("SaveFilterTab", $"Status: {message} (Error: {isError})");
         }
 

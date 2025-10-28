@@ -1,13 +1,13 @@
 using System;
+using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Components;
-using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
-using System.IO;
+using BalatroSeedOracle.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -27,35 +27,39 @@ namespace BalatroSeedOracle.Views.Modals
         {
             ViewModel = new FilterCreationModalViewModel();
             DataContext = ViewModel;
-            
+
             InitializeComponent();
 
             // Get the FilterSelectorControl from XAML
             _filterSelector = this.FindControl<FilterSelectorControl>("FilterSelector");
-            
+
             // Wire up ViewModel events to external events
             ViewModel.FilterSelectedForEdit += (s, e) => FilterSelectedForEdit?.Invoke(this, e);
-            ViewModel.FilterCloneRequested += (s, filterPath) => 
+            ViewModel.FilterCloneRequested += (s, filterPath) =>
             {
                 FilterImported?.Invoke(this, filterPath);
             };
             ViewModel.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             ViewModel.FilterImported += (s, e) => FilterImported?.Invoke(this, e);
-            
+
             // Configure FilterSelectorControl for creation modal and wire events
             if (_filterSelector != null)
             {
                 // Not in SearchModal; use default mode
                 _filterSelector.IsInSearchModal = false;
 
-                _filterSelector.FilterEditRequested += (s, path) => FilterSelectedForEdit?.Invoke(this, path);
-                _filterSelector.FilterCopyRequested += (s, path) => FilterImported?.Invoke(this, path);
+                _filterSelector.FilterEditRequested += (s, path) =>
+                    FilterSelectedForEdit?.Invoke(this, path);
+                _filterSelector.FilterCopyRequested += (s, path) =>
+                    FilterImported?.Invoke(this, path);
                 _filterSelector.FilterDeleteRequested += OnFilterDeleteRequested;
                 _filterSelector.NewFilterRequested += (s, e) => NewFilterRequested?.Invoke(this, e);
             }
-            
+
             // Handle ImportJsonCommand since it needs file picker access
-            ViewModel.ImportJsonCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(async () => await OnBrowse());
+            ViewModel.ImportJsonCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(async () =>
+                await OnBrowse()
+            );
         }
 
         private void InitializeComponent()
@@ -73,10 +77,12 @@ namespace BalatroSeedOracle.Views.Modals
                 var filterName = Path.GetFileNameWithoutExtension(filterPath);
 
                 var result = await MessageBoxManager
-                    .GetMessageBoxStandard("Delete Filter?",
+                    .GetMessageBoxStandard(
+                        "Delete Filter?",
                         $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
                         ButtonEnum.YesNo,
-                        Icon.Warning)
+                        Icon.Warning
+                    )
                     .ShowAsync();
 
                 if (result == ButtonResult.Yes)
@@ -85,7 +91,11 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         File.Delete(filterPath);
 
-                        var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults", $"{filterName}.db");
+                        var dbPath = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "SearchResults",
+                            $"{filterName}.db"
+                        );
                         if (File.Exists(dbPath))
                         {
                             File.Delete(dbPath);
@@ -107,7 +117,8 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var window = this.GetVisualRoot() as Window;
-                if (window == null) return;
+                if (window == null)
+                    return;
 
                 var storageProvider = window.StorageProvider;
                 var filePickerOptions = new FilePickerOpenOptions
@@ -116,15 +127,9 @@ namespace BalatroSeedOracle.Views.Modals
                     AllowMultiple = false,
                     FileTypeFilter = new[]
                     {
-                        new FilePickerFileType("JSON Files")
-                        {
-                            Patterns = new[] { "*.json" }
-                        },
-                        new FilePickerFileType("All Files")
-                        {
-                            Patterns = new[] { "*" }
-                        }
-                    }
+                        new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType("All Files") { Patterns = new[] { "*" } },
+                    },
                 };
 
                 var files = await storageProvider.OpenFilePickerAsync(filePickerOptions);
@@ -137,7 +142,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterCreationModal", $"Error browsing for file: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCreationModal",
+                    $"Error browsing for file: {ex.Message}"
+                );
             }
         }
 

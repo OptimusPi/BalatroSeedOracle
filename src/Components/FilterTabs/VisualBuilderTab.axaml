@@ -14,7 +14,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- LEFT: Category Buttons + Pagination -->
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0" Margin="16,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>  <!-- Start Over Button -->
                 <RowDefinition Height="*"/>     <!-- Category Buttons -->

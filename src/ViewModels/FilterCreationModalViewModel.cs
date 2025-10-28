@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -64,11 +64,15 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!Directory.Exists(filtersDir))
                 {
-                    DebugLogger.LogError("FilterCreationModalViewModel", $"Filters directory not found: {filtersDir}");
+                    DebugLogger.LogError(
+                        "FilterCreationModalViewModel",
+                        $"Filters directory not found: {filtersDir}"
+                    );
                     return;
                 }
 
-                var filterFiles = Directory.GetFiles(filtersDir, "*.json")
+                var filterFiles = Directory
+                    .GetFiles(filtersDir, "*.json")
                     .OrderBy(f => System.IO.Path.GetFileNameWithoutExtension(f))
                     .ToList();
 
@@ -79,20 +83,25 @@ namespace BalatroSeedOracle.ViewModels
                     var filterName = System.IO.Path.GetFileNameWithoutExtension(filterPath);
                     var author = GetFilterAuthor(filterPath);
 
-                    Filters.Add(new FilterListItem
-                    {
-                        Number = i + 1,
-                        Name = filterName,
-                        Author = author,
-                        FilePath = filterPath
-                    });
+                    Filters.Add(
+                        new FilterListItem
+                        {
+                            Number = i + 1,
+                            Name = filterName,
+                            Author = author,
+                            FilePath = filterPath,
+                        }
+                    );
                 }
 
                 DebugLogger.Log("FilterCreationModalViewModel", $"Loaded {Filters.Count} filters");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterCreationModalViewModel", $"Error loading filters: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCreationModalViewModel",
+                    $"Error loading filters: {ex.Message}"
+                );
             }
         }
 
@@ -115,11 +124,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
-                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot delete filter: no filter selected");
+                DebugLogger.LogError(
+                    "FilterCreationModalViewModel",
+                    "Cannot delete filter: no filter selected"
+                );
                 return;
             }
 
-            DebugLogger.Log("FilterCreationModalViewModel", $"Delete filter requested: {_selectedFilterPath}");
+            DebugLogger.Log(
+                "FilterCreationModalViewModel",
+                $"Delete filter requested: {_selectedFilterPath}"
+            );
             FilterDeleteRequested?.Invoke(this, _selectedFilterPath);
         }
 
@@ -128,11 +143,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
-                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot edit filter: no filter selected");
+                DebugLogger.LogError(
+                    "FilterCreationModalViewModel",
+                    "Cannot edit filter: no filter selected"
+                );
                 return;
             }
 
-            DebugLogger.Log("FilterCreationModalViewModel", $"Edit filter requested: {_selectedFilterPath}");
+            DebugLogger.Log(
+                "FilterCreationModalViewModel",
+                $"Edit filter requested: {_selectedFilterPath}"
+            );
             FilterSelectedForEdit?.Invoke(this, _selectedFilterPath);
         }
 
@@ -141,11 +162,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (string.IsNullOrEmpty(_selectedFilterPath))
             {
-                DebugLogger.LogError("FilterCreationModalViewModel", "Cannot clone filter: no filter selected");
+                DebugLogger.LogError(
+                    "FilterCreationModalViewModel",
+                    "Cannot clone filter: no filter selected"
+                );
                 return;
             }
 
-            DebugLogger.Log("FilterCreationModalViewModel", $"Clone filter requested: {_selectedFilterPath}");
+            DebugLogger.Log(
+                "FilterCreationModalViewModel",
+                $"Clone filter requested: {_selectedFilterPath}"
+            );
             FilterCloneRequested?.Invoke(this, _selectedFilterPath);
         }
 
@@ -188,7 +215,10 @@ namespace BalatroSeedOracle.ViewModels
                 if (System.IO.File.Exists(filterPath))
                 {
                     var json = System.IO.File.ReadAllText(filterPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                    var config =
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            json
+                        );
                     return config?.Author ?? "Unknown";
                 }
             }
@@ -206,24 +236,30 @@ namespace BalatroSeedOracle.ViewModels
                 // Update UI to show file path
                 ImportPath = $"...{Path.GetFileName(filePath)}";
                 ImportStatusIcon = ""; // Clear previous status
-                
+
                 // Read and validate JSON
                 var jsonContent = await File.ReadAllTextAsync(filePath);
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
+                    AllowTrailingCommas = true,
                 };
-                
-                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(jsonContent, options);
-                
+
+                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    jsonContent,
+                    options
+                );
+
                 if (config != null)
                 {
                     // Validation successful
                     ImportStatusIcon = "";
                     ImportSuccess = true;
-                    DebugLogger.Log("FilterCreationModalViewModel", $"Successfully imported filter: {config.Name ?? "Unnamed"}");
+                    DebugLogger.Log(
+                        "FilterCreationModalViewModel",
+                        $"Successfully imported filter: {config.Name ?? "Unnamed"}"
+                    );
                     FilterImported?.Invoke(this, filePath);
                 }
                 else
@@ -233,7 +269,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (JsonException ex)
             {
-                DebugLogger.LogError("FilterCreationModalViewModel", $"JSON validation error: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCreationModalViewModel",
+                    $"JSON validation error: {ex.Message}"
+                );
                 ShowImportError($"Invalid JSON: {ex.Message}");
             }
             catch (Exception ex)
@@ -247,9 +286,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             ImportStatusIcon = "";
             ImportSuccess = false;
-            
+
             // Log error - View can handle showing user dialog if needed
-            DebugLogger.LogError("FilterCreationModalViewModel", $"Import validation failed: {errorMessage}");
+            DebugLogger.LogError(
+                "FilterCreationModalViewModel",
+                $"Import validation failed: {errorMessage}"
+            );
         }
     }
 

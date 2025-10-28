@@ -22,8 +22,11 @@ namespace BalatroSeedOracle.Components
             InitializeComponent();
 
             // Get ViewModel from DI container
-            ViewModel = ServiceHelper.GetService<MusicMixerWidgetViewModel>()
-                ?? throw new InvalidOperationException("MusicMixerWidgetViewModel service not registered in DI container");
+            ViewModel =
+                ServiceHelper.GetService<MusicMixerWidgetViewModel>()
+                ?? throw new InvalidOperationException(
+                    "MusicMixerWidgetViewModel service not registered in DI container"
+                );
             DataContext = ViewModel;
 
             // Update ZIndex when IsMinimized changes - now handled by XAML binding to WidgetZIndex
@@ -41,7 +44,10 @@ namespace BalatroSeedOracle.Components
         /// <summary>
         /// Track pointer pressed position to detect drag vs click
         /// </summary>
-        private void OnMinimizedIconPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnMinimizedIconPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
         {
             _iconPressedPosition = e.GetPosition((Control)sender!);
         }
@@ -49,10 +55,15 @@ namespace BalatroSeedOracle.Components
         /// <summary>
         /// On release: if no drag happened, expand the widget
         /// </summary>
-        private void OnMinimizedIconReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        private void OnMinimizedIconReleased(
+            object? sender,
+            Avalonia.Input.PointerReleasedEventArgs e
+        )
         {
             var releasePosition = e.GetPosition((Control)sender!);
-            var distance = Math.Abs(releasePosition.X - _iconPressedPosition.X) + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
+            var distance =
+                Math.Abs(releasePosition.X - _iconPressedPosition.X)
+                + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
 
             // If pointer moved less than 20 pixels, treat as click (not drag)
             if (distance < 20)

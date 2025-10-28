@@ -36,12 +36,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             InitializeComponent();
 
             // Set DataContext to the VisualBuilderTabViewModel
-            DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+            DataContext =
+                ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
 
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
         }
-        
+
         private void SetupDropZones()
         {
             // Find drop zones - we'll check them manually via hit testing
@@ -49,7 +50,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
             var mustNotZone = this.FindControl<Border>("MustNotDropZone");
 
-            DebugLogger.Log("VisualBuilderTab", $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}"
+            );
 
             // Attach pointer handlers to TopLevel so we get events even when pointer moves outside the control
             var topLevel = TopLevel.GetTopLevel(this);
@@ -57,18 +61,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 topLevel.PointerMoved += OnPointerMovedManualDrag;
                 topLevel.PointerReleased += OnPointerReleasedManualDrag;
-                DebugLogger.Log("VisualBuilderTab", "Manual drag pointer handlers attached to TopLevel");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    "Manual drag pointer handlers attached to TopLevel"
+                );
             }
             else
             {
-                DebugLogger.LogError("VisualBuilderTab", "Failed to attach pointer handlers - no TopLevel");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    "Failed to attach pointer handlers - no TopLevel"
+                );
             }
         }
-        
+
         private void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             // Prevent starting a new drag if one is already in progress or animating
-            if (_isDragging || _isAnimating) return;
+            if (_isDragging || _isAnimating)
+                return;
 
             try
             {
@@ -94,6 +105,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item != null)
                 {
+                    // RIGHT-CLICK: Open config popup instead of dragging
+                    var properties = e.GetCurrentPoint(sender as Control).Properties;
+                    if (properties.IsRightButtonPressed)
+                    {
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"🎯 RIGHT-CLICK on item: {item.Name} - Opening config popup"
+                        );
+                        ShowItemConfigPopup(item, sender as Control);
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // LEFT-CLICK: Start drag operation
                     _draggedItem = item;
                     _isDragging = true;
                     _originalDragSource = sender as Control;
@@ -103,7 +128,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var topLevel = TopLevel.GetTopLevel(this);
                     if (topLevel != null && _originalDragSource != null)
                     {
-                        var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                        var sourcePos = _originalDragSource.TranslatePoint(
+                            new Avalonia.Point(0, 0),
+                            topLevel
+                        );
                         _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
                     }
                     else
@@ -111,7 +139,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _dragStartPosition = e.GetPosition(this);
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG START for item: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"🎯 MANUAL DRAG START for item: {item.Name}"
+                    );
 
                     // Play card select sound
                     SoundEffectService.Instance.PlayCardSelect();
@@ -139,10 +170,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnDropZoneItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnDropZoneItemPointerPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
         {
             // Prevent starting a new drag if one is already in progress or animating
-            if (_isDragging || _isAnimating) return;
+            if (_isDragging || _isAnimating)
+                return;
 
             try
             {
@@ -156,7 +191,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                if (vm == null) return;
+                if (vm == null)
+                    return;
 
                 // Figure out which drop zone this item is in by checking which collection contains it
                 // NOTE: We do NOT remove the item here! This allows:
@@ -188,7 +224,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel != null && _originalDragSource != null)
                 {
-                    var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                    var sourcePos = _originalDragSource.TranslatePoint(
+                        new Avalonia.Point(0, 0),
+                        topLevel
+                    );
                     _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
                 }
                 else
@@ -201,6 +240,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Create ghost
                 CreateDragAdorner(item, _dragStartPosition);
+
+                // Show "Return to shelf" overlay IMMEDIATELY when dragging from drop zones
+                if (_sourceDropZone != null)
+                {
+                    var returnOverlay = this.FindControl<Border>("ReturnOverlay");
+                    if (returnOverlay != null)
+                    {
+                        returnOverlay.IsVisible = true;
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "✅ Showing return overlay immediately on drag start"
+                        );
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -212,7 +265,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnPointerMovedManualDrag(object? sender, PointerEventArgs e)
         {
-            if (!_isDragging || _draggedItem == null) return;
+            if (!_isDragging || _draggedItem == null)
+                return;
 
             try
             {
@@ -226,7 +280,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Log less frequently to avoid spam
                     if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 100 < 16) // ~10fps logging
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Ghost moved to ({position.X}, {position.Y})");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Ghost moved to ({position.X}, {position.Y})"
+                        );
                     }
                 }
 
@@ -237,7 +294,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
-                if (_topLevel == null) return;
+                if (_topLevel == null)
+                    return;
                 var cursorPos = e.GetPosition(_topLevel);
 
                 Border? targetZone = null;
@@ -280,21 +338,29 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Error in OnPointerMovedManualDrag: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Error in OnPointerMovedManualDrag: {ex.Message}"
+                );
             }
         }
 
         private bool IsPointOverControl(Avalonia.Point point, Control? control, TopLevel topLevel)
         {
-            if (control == null) return false;
+            if (control == null)
+                return false;
 
             try
             {
                 // Transform point from TopLevel coordinates to control coordinates
                 var controlPos = control.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
-                if (!controlPos.HasValue) return false;
+                if (!controlPos.HasValue)
+                    return false;
 
-                var bounds = new Avalonia.Rect(controlPos.Value, new Avalonia.Size(control.Bounds.Width, control.Bounds.Height));
+                var bounds = new Avalonia.Rect(
+                    controlPos.Value,
+                    new Avalonia.Size(control.Bounds.Width, control.Bounds.Height)
+                );
                 return bounds.Contains(point);
             }
             catch
@@ -311,8 +377,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
             var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
-            // Hide the return overlay if we're not over the item grid
-            if (returnOverlay != null && exceptZone != itemGridBorder)
+            // Keep overlay visible when dragging from drop zones
+            // If dragging from shelf (_sourceDropZone == null), hide it normally
+            if (returnOverlay != null && exceptZone != itemGridBorder && _sourceDropZone == null)
             {
                 returnOverlay.IsVisible = false;
             }
@@ -329,7 +396,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
         {
-            if (!_isDragging || _draggedItem == null) return;
+            if (!_isDragging || _draggedItem == null)
+                return;
 
             try
             {
@@ -338,7 +406,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Remove all visual feedback
                 RemoveDragOverClassExcept(null);
 
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm =
+                    DataContext
+                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 if (vm == null)
                 {
                     DebugLogger.Log("VisualBuilderTab", "Drop failed - no ViewModel");
@@ -386,7 +456,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (targetZone != null && zoneName != null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"✅ Dropping {_draggedItem.Name} into {zoneName}"
+                    );
 
                     // Hide overlay after drop
                     if (returnOverlay != null)
@@ -399,7 +472,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     {
                         if (_sourceDropZone != null)
                         {
-                            DebugLogger.Log("VisualBuilderTab", $"↩️ RETURNING {_draggedItem.Name} from {_sourceDropZone} to shelf");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"↩️ RETURNING {_draggedItem.Name} from {_sourceDropZone} to shelf"
+                            );
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":
@@ -417,13 +493,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
                         else
                         {
-                            DebugLogger.Log("VisualBuilderTab", "Can't trash item from shelf (it was never added)");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                "Can't trash item from shelf (it was never added)"
+                            );
                         }
                     }
                     // Check if we're dropping to the same zone we dragged from
                     else if (_sourceDropZone != null && zoneName == _sourceDropZone)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped to same zone - canceling (item stays where it was)");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Dropped to same zone - canceling (item stays where it was)"
+                        );
                         // Item stays in original zone, just clean up
                     }
                     else
@@ -431,7 +513,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // If dragging from a drop zone, remove from source first
                         if (_sourceDropZone != null)
                         {
-                            DebugLogger.Log("VisualBuilderTab", $"Removing {_draggedItem.Name} from {_sourceDropZone}");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"Removing {_draggedItem.Name} from {_sourceDropZone}"
+                            );
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":
@@ -474,7 +559,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // If this item came from a drop zone, animate back (it never left the collection)
                     if (_sourceDropZone != null)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Drag from {_sourceDropZone} cancelled - item stays in original zone");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Drag from {_sourceDropZone} cancelled - item stays in original zone"
+                        );
 
                         // BALATRO-STYLE: Animate back to show cancellation
                         await AnimateGhostBackToOrigin();
@@ -484,7 +572,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else
                     {
                         // Item came from shelf - just animate back
-                        DebugLogger.Log("VisualBuilderTab", "Returning to shelf with rubber band animation");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "Returning to shelf with rubber band animation"
+                        );
                         await AnimateGhostBackToOrigin();
                     }
                 }
@@ -503,16 +594,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _sourceDropZone = null; // Clear the source zone
             }
         }
-        
+
         private async Task AnimateGhostBackToOrigin()
         {
-            if (_dragAdorner == null || _topLevel == null) return;
+            if (_dragAdorner == null || _topLevel == null)
+                return;
 
             _isAnimating = true; // Prevent new drags during animation
 
             try
             {
-                if (_adornerTransform == null) return;
+                if (_adornerTransform == null)
+                    return;
 
                 // Get current position
                 var startX = _adornerTransform.X;
@@ -549,7 +642,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Error animating ghost back: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Error animating ghost back: {ex.Message}"
+                );
             }
             finally
             {
@@ -570,10 +666,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 item = border.DataContext as Models.FilterItem;
             }
 
-            if (item == null) return;
+            if (item != null)
+            {
+                ShowItemConfigPopup(item, sender as Control);
+            }
+        }
 
+        private void ShowItemConfigPopup(Models.FilterItem item, Control? sourceControl)
+        {
             var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm == null) return;
+            if (vm == null)
+                return;
 
             var config = vm.ItemConfigs.TryGetValue(item.ItemKey, out var existingConfig)
                 ? existingConfig
@@ -582,18 +685,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             popupViewModel.ItemName = item.DisplayName;
             popupViewModel.ItemImage = item.ItemImage;
 
-
             // Create the View
-            var configPopup = new Controls.ItemConfigPopup
-            {
-                DataContext = popupViewModel
-            };
+            var configPopup = new Controls.ItemConfigPopup { DataContext = popupViewModel };
 
             var popup = new Avalonia.Controls.Primitives.Popup
             {
                 Child = configPopup,
                 Placement = Avalonia.Controls.PlacementMode.Pointer,
-                IsLightDismissEnabled = false
+                PlacementTarget = sourceControl,
+                IsLightDismissEnabled = true,
             };
 
             popupViewModel.ConfigApplied += (appliedConfig) =>
@@ -619,8 +719,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
         // Category list for pagination
         private readonly string[] _categories = new[]
         {
-            "Favorites", "Legendary", "Rare", "Uncommon", "Common",
-            "Voucher", "Tarot", "Planet", "Spectral", "PlayingCards", "Tag", "Boss"
+            "Favorites",
+            "Legendary",
+            "Rare",
+            "Uncommon",
+            "Common",
+            "Voucher",
+            "Tarot",
+            "Planet",
+            "Spectral",
+            "PlayingCards",
+            "Tag",
+            "Boss",
         };
         private int _currentCategoryIndex = 1; // Start at Legendary
 
@@ -644,7 +754,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void SetCurrentCategory()
         {
-            var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm =
+                DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
             if (vm != null)
             {
                 vm.SetCategory(_categories[_currentCategoryIndex]);
@@ -658,7 +769,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // WORKAROUND FOR AVALONIA ISSUE #15593 - Populate from code-behind
                 try
                 {
-                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    var vm =
+                        DataContext
+                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                     if (vm != null)
                     {
                         // Disable reactive updates temporarily
@@ -667,11 +780,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("VisualBuilderTab", $"Category click failed: {ex.Message}");
+                    DebugLogger.LogError(
+                        "VisualBuilderTab",
+                        $"Category click failed: {ex.Message}"
+                    );
                 }
             }
         }
-        
+
         private void OnClearSearch(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
@@ -680,7 +796,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.SearchFilter = "";
             }
         }
-        
+
         private void OnClearAll(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
@@ -692,13 +808,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private async void OnStartOverClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void OnStartOverClick(
+            object? sender,
+            Avalonia.Interactivity.RoutedEventArgs e
+        )
         {
             // Get Balatro color resources from App.axaml
-            var darkBg = Application.Current?.FindResource("DarkBackground") as Avalonia.Media.SolidColorBrush;
-            var modalGrey = Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
+            var darkBg =
+                Application.Current?.FindResource("DarkBackground")
+                as Avalonia.Media.SolidColorBrush;
+            var modalGrey =
+                Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
             var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
-            var white = Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
+            var white =
+                Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
 
             // Show confirmation dialog with Balatro-style colors
             var dialog = new Window
@@ -707,17 +830,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Height = 200,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background = darkBg ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
+                Background =
+                    darkBg
+                    ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
                 Title = "Start Over?",
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
-                SystemDecorations = SystemDecorations.Full
+                SystemDecorations = SystemDecorations.Full,
             };
 
-            var panel = new StackPanel
-            {
-                Margin = new Avalonia.Thickness(20),
-                Spacing = 20
-            };
+            var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 20 };
 
             var label = new TextBlock
             {
@@ -725,14 +846,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 FontSize = 16,
                 Foreground = white,
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
+                TextAlignment = Avalonia.Media.TextAlignment.Center,
             };
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Avalonia.Layout.Orientation.Horizontal,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Spacing = 15
+                Spacing = 15,
             };
 
             var cancelButton = new Button
@@ -744,7 +865,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Background = modalGrey,
                 Foreground = white,
                 HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
 
             var confirmButton = new Button
@@ -756,7 +877,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Background = red,
                 Foreground = white,
                 HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
 
             cancelButton.Click += (s, ev) => dialog.Close();
@@ -787,7 +908,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             dialog.Content = panel;
 
-            var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+            var owner = Avalonia.Application.Current?.ApplicationLifetime
+                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow
                 : null;
 
@@ -801,7 +923,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {
             DebugLogger.Log("VisualBuilderTab", $"🫡 CreateDragAdorner beginning,.......");
@@ -830,29 +952,47 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (_topLevel != null)
                 {
                     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    DebugLogger.Log("VisualBuilderTab", $"🔍 ADORNER SEARCH [{timestamp}] TopLevel type: {_topLevel.GetType().Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"🔍 ADORNER SEARCH [{timestamp}] TopLevel type: {_topLevel.GetType().Name}"
+                    );
 
                     // First try standard GetAdornerLayer
                     _adornerLayer = AdornerLayer.GetAdornerLayer(_topLevel);
-                    DebugLogger.Log("VisualBuilderTab", $"GetAdornerLayer result: {_adornerLayer != null}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"GetAdornerLayer result: {_adornerLayer != null}"
+                    );
 
                     if (_adornerLayer == null && _topLevel is Window window)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Window.Content type: {window.Content?.GetType().Name ?? "null"}");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Window.Content type: {window.Content?.GetType().Name ?? "null"}"
+                        );
 
                         if (window.Content is Panel panel)
                         {
-                            DebugLogger.Log("VisualBuilderTab", $"Panel has {panel.Children.Count} children");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"Panel has {panel.Children.Count} children"
+                            );
 
                             // Fallback: Find AdornerLayer in the Panel's children
                             foreach (var child in panel.Children)
                             {
-                                DebugLogger.Log("VisualBuilderTab", $"Panel child: {child.GetType().Name}");
+                                DebugLogger.Log(
+                                    "VisualBuilderTab",
+                                    $"Panel child: {child.GetType().Name}"
+                                );
 
                                 if (child is AdornerLayer layer)
                                 {
                                     _adornerLayer = layer;
-                                    DebugLogger.Log("VisualBuilderTab", "✅ Found AdornerLayer in MainWindow Panel");
+                                    DebugLogger.Log(
+                                        "VisualBuilderTab",
+                                        "✅ Found AdornerLayer in MainWindow Panel"
+                                    );
                                     break;
                                 }
                             }
@@ -862,46 +1002,49 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (_adornerLayer == null)
                 {
-                    DebugLogger.LogError("VisualBuilderTab", $"Failed to find adorner layer! TopLevel: {_topLevel != null}");
+                    DebugLogger.LogError(
+                        "VisualBuilderTab",
+                        $"Failed to find adorner layer! TopLevel: {_topLevel != null}"
+                    );
                     return;
                 }
 
                 // Create ghost image - 80% opacity with subtle sway like Balatro
                 // For legendary jokers, layer the soul face on top
-                var imageGrid = new Grid
-                {
-                    Width = 71,
-                    Height = 95
-                };
+                var imageGrid = new Grid { Width = 71, Height = 95 };
 
                 // Main card image
-                imageGrid.Children.Add(new Image
-                {
-                    Source = item.ItemImage,
-                    Width = 71,
-                    Height = 95,
-                    Stretch = Stretch.Uniform,
-                    Opacity = 0.8 // BALATRO-STYLE 80% OPACITY
-                });
+                imageGrid.Children.Add(
+                    new Image
+                    {
+                        Source = item.ItemImage,
+                        Width = 71,
+                        Height = 95,
+                        Stretch = Stretch.Uniform,
+                        Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
+                    }
+                );
 
                 // Soul face overlay for legendary jokers
                 if (item.SoulFaceImage != null)
                 {
-                    imageGrid.Children.Add(new Image
-                    {
-                        Source = item.SoulFaceImage,
-                        Width = 71,
-                        Height = 95,
-                        Stretch = Stretch.Uniform,
-                        Opacity = 1.0
-                    });
+                    imageGrid.Children.Add(
+                        new Image
+                        {
+                            Source = item.SoulFaceImage,
+                            Width = 71,
+                            Height = 95,
+                            Stretch = Stretch.Uniform,
+                            Opacity = 1.0,
+                        }
+                    );
                 }
 
                 // Create card content that will have physics applied
                 var cardContent = new Border
                 {
                     Background = Brushes.Transparent,
-                    Child = imageGrid
+                    Child = imageGrid,
                 };
 
                 // ADD BALATRO-STYLE SWAY PHYSICS TO THE CARD!
@@ -909,7 +1052,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var dragBehavior = new Behaviors.CardDragBehavior
                 {
                     IsEnabled = true,
-                    JuiceAmount = 0.4 // Balatro default juice on pickup
+                    JuiceAmount = 0.4, // Balatro default juice on pickup
                 };
                 Avalonia.Xaml.Interactivity.Interaction.GetBehaviors(cardContent).Add(dragBehavior);
 
@@ -917,28 +1060,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     Background = Brushes.Transparent,
                     Child = new StackPanel
+                    {
+                        Children =
                         {
-                            Children =
+                            cardContent, // Card with physics
+                            new TextBlock
                             {
-                                cardContent, // Card with physics
-                                new TextBlock
-                                {
-                                    Text = item.DisplayName,
-                                    Foreground = Brushes.White,
-                                    FontSize = 10,
-                                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                    Margin = new Avalonia.Thickness(0, 4, 0, 0),
-                                    Opacity = 0.9
-                                }
-                            }
-                        }
+                                Text = item.DisplayName,
+                                Foreground = Brushes.White,
+                                FontSize = 10,
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                                Margin = new Avalonia.Thickness(0, 4, 0, 0),
+                                Opacity = 0.9,
+                            },
+                        },
+                    },
                 };
 
                 // Create TranslateTransform for positioning (allows CardDragBehavior sway to work)
                 _adornerTransform = new TranslateTransform
                 {
                     X = startPosition.X,
-                    Y = startPosition.Y
+                    Y = startPosition.Y,
                 };
                 _dragAdorner.RenderTransform = _adornerTransform;
                 _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
@@ -957,17 +1100,27 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _topLevel,
                         new Avalonia.Point(35, 47), // Center of the card
                         (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                        new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
-                        KeyModifiers.None);
+                        new PointerPointProperties(
+                            RawInputModifiers.None,
+                            PointerUpdateKind.LeftButtonPressed
+                        ),
+                        KeyModifiers.None
+                    );
 
                     cardContent.RaiseEvent(fakePointerArgs);
                 }
 
-                DebugLogger.Log("VisualBuilderTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y}) with sway animation triggered");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Ghost image created at ({startPosition.X}, {startPosition.Y}) with sway animation triggered"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Failed to create drag adorner: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Failed to create drag adorner: {ex.Message}"
+                );
             }
         }
 
@@ -1001,7 +1154,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Failed to remove drag adorner: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Failed to remove drag adorner: {ex.Message}"
+                );
             }
         }
 

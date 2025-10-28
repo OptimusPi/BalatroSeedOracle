@@ -3,9 +3,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Extensions;
+using BalatroSeedOracle.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle;
 
@@ -43,7 +43,8 @@ public partial class App : Application
                 // Initialize background music with SoundFlow (8-track)
                 try
                 {
-                    var audioManager = _serviceProvider.GetRequiredService<Services.SoundFlowAudioManager>();
+                    var audioManager =
+                        _serviceProvider.GetRequiredService<Services.SoundFlowAudioManager>();
                     DebugLogger.Log("App", "🎵 Starting 8-track audio with SoundFlow...");
                     DebugLogger.Log("App", $"🎵 Audio manager initialized: {audioManager}");
                 }
@@ -117,7 +118,7 @@ public partial class App : Application
     {
         // Register all MVVM services and ViewModels
         services.AddBalatroSeedOracleServices();
-        
+
         // Register existing singleton services
         services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
         // ClipboardService is static, no need to register

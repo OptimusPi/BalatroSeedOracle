@@ -110,47 +110,47 @@ namespace BalatroSeedOracle.Models
         /// Path to the filter config file (always required)
         /// </summary>
         public string? ConfigPath { get; set; }
-        
+
         /// <summary>
         /// The last completed batch index
         /// </summary>
         public ulong LastCompletedBatch { get; set; }
-        
+
         /// <summary>
         /// The end batch index
         /// </summary>
         public ulong EndBatch { get; set; }
-        
+
         /// <summary>
         /// The batch size
         /// </summary>
         public int BatchSize { get; set; }
-        
+
         /// <summary>
         /// Thread count
         /// </summary>
         public int ThreadCount { get; set; }
-        
+
         /// <summary>
         /// Minimum score filter
         /// </summary>
         public int MinScore { get; set; }
-        
+
         /// <summary>
         /// Selected deck
         /// </summary>
         public string? Deck { get; set; }
-        
+
         /// <summary>
         /// Selected stake
         /// </summary>
         public string? Stake { get; set; }
-        
+
         /// <summary>
         /// When the search was last active
         /// </summary>
         public DateTime LastActiveTime { get; set; }
-        
+
         /// <summary>
         /// Total batches in the search
         /// </summary>

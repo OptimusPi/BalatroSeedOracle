@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Avalonia.Threading;
-using NAudio.Wave;
-using NAudio.CoreAudioApi;
 using System.Linq;
+using Avalonia.Threading;
+using NAudio.CoreAudioApi;
+using NAudio.Wave;
 
 namespace BalatroSeedOracle.Services
 {
@@ -13,10 +13,10 @@ namespace BalatroSeedOracle.Services
     {
         private static SoundEffectService? _instance;
         public static SoundEffectService Instance => _instance ??= new SoundEffectService();
-        
+
         private bool _soundEnabled = true;
         private string? _soundsPath;
-        
+
         // Map our sound effects to Balatro sound file names
         private readonly Dictionary<string, string> _soundMap = new()
         {
@@ -30,15 +30,15 @@ namespace BalatroSeedOracle.Services
             { "success", "chips2.ogg" },
             { "error", "error.ogg" },
             { "coin", "coin3.ogg" },
-            { "whoosh", "whoosh1.ogg" }
+            { "whoosh", "whoosh1.ogg" },
         };
-        
+
         public bool SoundEnabled
         {
             get => _soundEnabled;
             set => _soundEnabled = value;
         }
-        
+
         public void SetSoundsPath(string path)
         {
             if (Directory.Exists(path))
@@ -46,47 +46,47 @@ namespace BalatroSeedOracle.Services
                 _soundsPath = path;
             }
         }
-        
+
         public void PlayCardHover()
         {
             PlaySound("card_hover");
         }
-        
+
         public void PlayCardSelect()
         {
             PlaySound("card_select");
         }
-        
+
         public void PlayCardDrop()
         {
             PlaySound("card_drop");
         }
-        
+
         public void PlayButtonClick()
         {
             PlaySound("button_click");
         }
-        
+
         public void PlayFilterSwitch()
         {
             PlaySound("filter_switch");
         }
-        
+
         public void PlayModalOpen()
         {
             PlaySound("modal_open");
         }
-        
+
         public void PlayModalClose()
         {
             PlaySound("modal_close");
         }
-        
+
         public void PlaySuccess()
         {
             PlaySound("success");
         }
-        
+
         public void PlayError()
         {
             PlaySound("error");
@@ -96,11 +96,12 @@ namespace BalatroSeedOracle.Services
         {
             PlaySound("whoosh");
         }
-        
+
         private void PlaySound(string soundName)
         {
-            if (!_soundEnabled) return;
-            
+            if (!_soundEnabled)
+                return;
+
             Dispatcher.UIThread.Post(() =>
             {
                 // Try to get the mapped sound file
@@ -108,12 +109,26 @@ namespace BalatroSeedOracle.Services
                 {
                     // Check if we have a local sounds path first (from external/Balatro)
                     var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                    var localSoundPath = Path.Combine(baseDir, "external", "Balatro", "resources", "sounds", soundFile);
-                    
+                    var localSoundPath = Path.Combine(
+                        baseDir,
+                        "external",
+                        "Balatro",
+                        "resources",
+                        "sounds",
+                        soundFile
+                    );
+
                     // Try absolute path if relative doesn't exist
                     if (!File.Exists(localSoundPath))
                     {
-                        localSoundPath = Path.Combine(@"X:\BalatroSeedOracle", "external", "Balatro", "resources", "sounds", soundFile);
+                        localSoundPath = Path.Combine(
+                            @"X:\BalatroSeedOracle",
+                            "external",
+                            "Balatro",
+                            "resources",
+                            "sounds",
+                            soundFile
+                        );
                     }
                     if (File.Exists(localSoundPath))
                     {
@@ -128,37 +143,33 @@ namespace BalatroSeedOracle.Services
                             PlaySoundFile(customSoundPath);
                         }
                     }
-                    else
-                    {
-                    }
+                    else { }
                 }
-                else
-                {
-                }
+                else { }
             });
         }
-        
+
         private void PlaySoundFile(string filePath)
         {
             AudioFileReader? reader = null;
             WaveOutEvent? waveOut = null;
-            
+
             try
             {
                 // Fire and forget - play the sound effect without blocking
                 reader = new AudioFileReader(filePath) { Volume = 0.3f };
                 waveOut = new WaveOutEvent();
-                
+
                 // Capture references in closure to ensure disposal
                 var readerToDispose = reader;
                 var waveOutToDispose = waveOut;
-                
+
                 waveOut.PlaybackStopped += (s, e) =>
                 {
                     waveOutToDispose?.Dispose();
                     readerToDispose?.Dispose();
                 };
-                
+
                 waveOut.Init(reader);
                 waveOut.Play();
             }

@@ -15,20 +15,15 @@ public class Program
     {
         // Initialize Velopack
         VelopackApp.Build().Run();
-            
+
         // Enable debug logging
         Helpers.DebugLogger.SetDebugEnabled(true);
 
         // Start Avalonia
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
     }
 
     // Avalonia configuration, this method is called by the platform-specific entry points
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder
-            .Configure<App>()
-            .UsePlatformDetect()
-            .LogToTrace()
-;
+        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }

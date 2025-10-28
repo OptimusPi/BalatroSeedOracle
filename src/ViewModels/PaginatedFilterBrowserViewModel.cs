@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -300,7 +300,10 @@ namespace BalatroSeedOracle.ViewModels
                 // Recursively handle nested And/Or clauses
                 if (clause.Clauses != null && clause.Clauses.Count > 0)
                 {
-                    var nestedCollections = ParseItemCollections(clause.Clauses, scoreOverride ?? clause.Score);
+                    var nestedCollections = ParseItemCollections(
+                        clause.Clauses,
+                        scoreOverride ?? clause.Score
+                    );
                     collections.Jokers.AddRange(nestedCollections.Jokers);
                     collections.Consumables.AddRange(nestedCollections.Consumables);
                     collections.Vouchers.AddRange(nestedCollections.Vouchers);
@@ -311,28 +314,28 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Remove duplicates by ItemName while preserving first occurrence's data
-            collections.Jokers = collections.Jokers
-                .GroupBy(x => x.ItemName)
+            collections.Jokers = collections
+                .Jokers.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
-            collections.Consumables = collections.Consumables
-                .GroupBy(x => x.ItemName)
+            collections.Consumables = collections
+                .Consumables.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
-            collections.Vouchers = collections.Vouchers
-                .GroupBy(x => x.ItemName)
+            collections.Vouchers = collections
+                .Vouchers.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
-            collections.Tags = collections.Tags
-                .GroupBy(x => x.ItemName)
+            collections.Tags = collections
+                .Tags.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
-            collections.Bosses = collections.Bosses
-                .GroupBy(x => x.ItemName)
+            collections.Bosses = collections
+                .Bosses.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
-            collections.StandardCards = collections.StandardCards
-                .GroupBy(x => x.ItemName)
+            collections.StandardCards = collections
+                .StandardCards.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
                 .ToList();
 
@@ -366,7 +369,7 @@ namespace BalatroSeedOracle.ViewModels
                 Suit = clause.Suit,
                 Score = scoreOverride ?? clause.Score,
                 Label = clause.Label,
-                Stickers = clause.Stickers
+                Stickers = clause.Stickers,
             };
 
             switch (itemType)

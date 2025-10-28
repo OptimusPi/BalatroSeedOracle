@@ -140,10 +140,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public int[] GetSelectedAntes()
         {
-            return Antes
-                .Where(a => a.IsSelected)
-                .Select(a => a.AnteNumber)
-                .ToArray();
+            return Antes.Where(a => a.IsSelected).Select(a => a.AnteNumber).ToArray();
         }
 
         public void SetSelectedAntes(int[] antes)

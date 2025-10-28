@@ -120,7 +120,8 @@ namespace BalatroSeedOracle.Controls
         private SKRuntimeShaderBuilder? _shaderBuilder;
         private bool _isDisposed;
         private bool _isAnimating = true;
-        private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        private readonly System.Diagnostics.Stopwatch _stopwatch =
+            System.Diagnostics.Stopwatch.StartNew();
 
         // Shader parameters
         private float _speed = 1.0f;
@@ -140,13 +141,21 @@ namespace BalatroSeedOracle.Controls
         private float _mouseY = 0.5f;
 
         public void SetAnimating(bool animating) => _isAnimating = animating;
+
         public void SetSpeed(float speed) => _speed = Math.Clamp(speed, 0.1f, 3.0f);
-        public void SetFractalComplexity(float complexity) => _fractalComplexity = Math.Clamp(complexity, 1.0f, 10.0f);
+
+        public void SetFractalComplexity(float complexity) =>
+            _fractalComplexity = Math.Clamp(complexity, 1.0f, 10.0f);
+
         public void SetColorCycle(float cycle) => _colorCycle = Math.Clamp(cycle, 0.1f, 5.0f);
-        public void SetKaleidoscope(float strength) => _kaleidoscope = Math.Clamp(strength, 0.0f, 12.0f);
+
+        public void SetKaleidoscope(float strength) =>
+            _kaleidoscope = Math.Clamp(strength, 0.0f, 12.0f);
+
         public void SetFluidFlow(float flow) => _fluidFlow = Math.Clamp(flow, 0.0f, 5.0f);
 
-        public void SetVibeIntensity(float intensity) => _vibeIntensity = Math.Clamp(intensity, 0f, 1f);
+        public void SetVibeIntensity(float intensity) =>
+            _vibeIntensity = Math.Clamp(intensity, 0f, 1f);
 
         public void SetMelodicFFT(float mid, float treble, float peak)
         {
@@ -168,9 +177,13 @@ namespace BalatroSeedOracle.Controls
 
         public override void OnRender(ImmediateDrawingContext context)
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
 
-            if (context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature)) is ISkiaSharpApiLeaseFeature leaseFeature)
+            if (
+                context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature))
+                is ISkiaSharpApiLeaseFeature leaseFeature
+            )
             {
                 using var lease = leaseFeature.Lease();
                 var canvas = lease.SkCanvas;
@@ -187,10 +200,12 @@ namespace BalatroSeedOracle.Controls
 
         private void InitializeShader()
         {
-            if (_shaderBuilder != null) return;
+            if (_shaderBuilder != null)
+                return;
 
             // Psychedelic fractal shader - MilkDrop inspired
-            var sksl = @"
+            var sksl =
+                @"
                 uniform float2 resolution;
                 uniform float time;
                 uniform float speed;
@@ -344,7 +359,8 @@ namespace BalatroSeedOracle.Controls
 
         private void RenderShader(SKCanvas canvas)
         {
-            if (_shaderBuilder == null) return;
+            if (_shaderBuilder == null)
+                return;
 
             var bounds = GetRenderBounds();
             var time = (float)_stopwatch.Elapsed.TotalSeconds;
@@ -385,7 +401,8 @@ namespace BalatroSeedOracle.Controls
 
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
             _isDisposed = true;
 
             _shaderBuilder?.Dispose();

@@ -267,8 +267,7 @@
                     <!-- Description (FULL, not truncated!) - Dark Balatro style -->
                     <Border Grid.Row="2"
                             Background="#1A3A3A"
-                            BorderBrush="{StaticResource Border}"
-                            BorderThickness="2"
+                            BorderThickness="0"
                             CornerRadius="6"
                             Padding="12,8"
                             Margin="0,0,0,12"
@@ -334,8 +333,7 @@
                         <!-- Must Have -->
                         <TabItem Header="Must Have">
                             <Border Background="#F4E4C1"
-                                    BorderBrush="{StaticResource Border}"
-                                    BorderThickness="2"
+                                    BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
                                     MinHeight="200">
@@ -384,8 +382,7 @@
                         <!-- Should Have -->
                         <TabItem Header="Should Have">
                             <Border Background="#F4E4C1"
-                                    BorderBrush="{StaticResource Border}"
-                                    BorderThickness="2"
+                                    BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
                                     MinHeight="200">
@@ -432,8 +429,7 @@
                         <!-- Must Not -->
                         <TabItem Header="Must Not">
                             <Border Background="#F4E4C1"
-                                    BorderBrush="{StaticResource Border}"
-                                    BorderThickness="2"
+                                    BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
                                     MinHeight="200">

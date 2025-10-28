@@ -1,7 +1,7 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
-using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -15,13 +15,14 @@ namespace BalatroSeedOracle.ViewModels
 
         public MusicMixerWidgetViewModel(UserProfileService userProfileService)
         {
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _userProfileService =
+                userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
 
             // Configure widget appearance and position - fourth position (90px spacing)
             WidgetTitle = "Music Mixer";
             WidgetIcon = "🎵";
             IsMinimized = true; // Start minimized
-            
+
             PositionX = 20;
             PositionY = 350;
 
@@ -208,7 +209,10 @@ namespace BalatroSeedOracle.ViewModels
             var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
             if (audioManager == null)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", "SoundFlowAudioManager service not found!");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    "SoundFlowAudioManager service not found!"
+                );
                 return;
             }
 

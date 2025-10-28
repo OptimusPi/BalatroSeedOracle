@@ -126,9 +126,13 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         EnhancementVisible = config.ItemType == "PlayingCard";
         RankVisible = config.ItemType == "PlayingCard";
         SuitVisible = config.ItemType == "PlayingCard";
-        SourcesVisible = config.ItemType == "Joker" || config.ItemType == "SoulJoker" ||
-                         config.ItemType == "Tarot" || config.ItemType == "Spectral" ||
-                         config.ItemType == "Planet" || config.ItemType == "PlayingCard";
+        SourcesVisible =
+            config.ItemType == "Joker"
+            || config.ItemType == "SoulJoker"
+            || config.ItemType == "Tarot"
+            || config.ItemType == "Spectral"
+            || config.ItemType == "Planet"
+            || config.ItemType == "PlayingCard";
 
         if (config.Antes != null)
         {
@@ -173,22 +177,50 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         SkipBlindTags = config.SkipBlindTags;
         IsMegaArcana = config.IsMegaArcana;
 
-        ShopSlotsText = config.ShopSlots != null && config.ShopSlots.Count > 0
-            ? string.Join(",", config.ShopSlots)
-            : "";
-        PackSlotsText = config.PackSlots != null && config.PackSlots.Count > 0
-            ? string.Join(",", config.PackSlots)
-            : "";
+        ShopSlotsText =
+            config.ShopSlots != null && config.ShopSlots.Count > 0
+                ? string.Join(",", config.ShopSlots)
+                : "";
+        PackSlotsText =
+            config.PackSlots != null && config.PackSlots.Count > 0
+                ? string.Join(",", config.PackSlots)
+                : "";
     }
 
     private void InitLists()
     {
         // Populate ranks and suits from metadata layout
-        Ranks = new List<string> { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
+        Ranks = new List<string>
+        {
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "Jack",
+            "Queen",
+            "King",
+            "Ace",
+        };
         Suits = new List<string> { "Hearts", "Clubs", "Diamonds", "Spades" };
 
         // Include "None" option for enhancements
-        Enhancements = new List<string> { "None", "Bonus", "Mult", "Wild", "Lucky", "Glass", "Steel", "Stone", "Gold" };
+        Enhancements = new List<string>
+        {
+            "None",
+            "Bonus",
+            "Mult",
+            "Wild",
+            "Lucky",
+            "Glass",
+            "Steel",
+            "Stone",
+            "Gold",
+        };
 
         // Edition images for selector
         var ss = SpriteService.Instance;
@@ -225,7 +257,10 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
         // Base card: enhancement or blank
         IImage? baseCard = null;
-        if (!string.IsNullOrWhiteSpace(SelectedEnhancement) && !string.Equals(SelectedEnhancement, "None", StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.IsNullOrWhiteSpace(SelectedEnhancement)
+            && !string.Equals(SelectedEnhancement, "None", StringComparison.OrdinalIgnoreCase)
+        )
         {
             baseCard = ss.GetEnhancementImage(SelectedEnhancement);
         }
@@ -256,7 +291,10 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             }
 
             // Optional: overlay seal if present
-            if (!string.IsNullOrWhiteSpace(SelectedSeal) && !string.Equals(SelectedSeal, "None", StringComparison.OrdinalIgnoreCase))
+            if (
+                !string.IsNullOrWhiteSpace(SelectedSeal)
+                && !string.Equals(SelectedSeal, "None", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 var sealImg = ss.GetSealImage(SelectedSeal, width, height);
                 if (sealImg != null)
@@ -288,7 +326,7 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             Seal = SelectedSeal,
             Enhancement = SelectedEnhancement,
             Rank = SelectedRank,
-            Suit = SelectedSuit
+            Suit = SelectedSuit,
         };
 
         // Apply sources if supported
@@ -328,14 +366,18 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
     // Update preview when selections change
     partial void OnSelectedRankChanged(string value) => UpdatePreview();
+
     partial void OnSelectedSuitChanged(string value) => UpdatePreview();
+
     partial void OnSelectedEnhancementChanged(string value) => UpdatePreview();
+
     partial void OnSelectedSealChanged(string value) => UpdatePreview();
 
     private static List<int> ParseSlots(string text)
     {
         var result = new List<int>();
-        if (string.IsNullOrWhiteSpace(text)) return result;
+        if (string.IsNullOrWhiteSpace(text))
+            return result;
         foreach (var part in text.Split(',', StringSplitOptions.RemoveEmptyEntries))
         {
             if (int.TryParse(part.Trim(), out var value))

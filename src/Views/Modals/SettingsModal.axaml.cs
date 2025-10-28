@@ -42,7 +42,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
 
@@ -58,7 +61,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
 
@@ -67,8 +73,9 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var filtersDir = System.IO.Path.Combine(
-                    System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                    ?? AppDomain.CurrentDomain.BaseDirectory,
+                    System.IO.Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) ?? AppDomain.CurrentDomain.BaseDirectory,
                     "JsonItemFilters"
                 );
 
@@ -95,7 +102,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SettingsModal", $"Error opening filters directory: {ex.Message}");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    $"Error opening filters directory: {ex.Message}"
+                );
             }
         }
 
@@ -103,8 +113,10 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var appDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                    ?? AppDomain.CurrentDomain.BaseDirectory;
+                var appDir =
+                    System.IO.Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) ?? AppDomain.CurrentDomain.BaseDirectory;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())

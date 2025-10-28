@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SoundFlow.Abstracts;
+using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio;
 using SoundFlow.Components;
 using SoundFlow.Enums;
 using SoundFlow.Providers;
 using SoundFlow.Structs;
 using SoundFlow.Visualization;
-using SoundFlow.Abstracts.Devices;
 
 namespace BalatroSeedOracle.Services
 {
@@ -33,10 +33,14 @@ namespace BalatroSeedOracle.Services
         // Track names
         private readonly string[] _trackNames =
         {
-            "Bass1", "Bass2",
-            "Drums1", "Drums2",
-            "Chords1", "Chords2",
-            "Melody1", "Melody2"
+            "Bass1",
+            "Bass2",
+            "Drums1",
+            "Drums2",
+            "Chords1",
+            "Chords2",
+            "Melody1",
+            "Melody2",
         };
 
         // Update loop
@@ -94,7 +98,9 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                Console.WriteLine("[SoundFlowAudioManager] Initializing cross-platform audio engine...");
+                Console.WriteLine(
+                    "[SoundFlowAudioManager] Initializing cross-platform audio engine..."
+                );
 
                 // 1. Create audio engine (cross-platform)
                 _engine = new MiniAudioEngine();
@@ -106,7 +112,9 @@ namespace BalatroSeedOracle.Services
                 var defaultDevice = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
                 _device = _engine.InitializePlaybackDevice(defaultDevice, format);
 
-                Console.WriteLine($"[SoundFlowAudioManager] Initialized playback device: {_device.Info?.Name ?? "Default"}");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] Initialized playback device: {_device.Info?.Name ?? "Default"}"
+                );
 
                 // 4. Load all 8 tracks as SoundPlayers
                 LoadTracks(format);
@@ -116,17 +124,23 @@ namespace BalatroSeedOracle.Services
                 _masterVolume = 0f; // Sync internal state
                 _device.Start();
 
-                Console.WriteLine($"[SoundFlowAudioManager] Device started MUTED (waiting for user settings to restore volume) with {_players.Count} independent tracks");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] Device started MUTED (waiting for user settings to restore volume) with {_players.Count} independent tracks"
+                );
 
                 // 6. Start analysis update loop
                 _cancellationTokenSource = new CancellationTokenSource();
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
 
-                Console.WriteLine($"[SoundFlowAudioManager] ✓ Initialized with {_players.Count} tracks and REAL FFT analysis");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] ✓ Initialized with {_players.Count} tracks and REAL FFT analysis"
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SoundFlowAudioManager] ERROR: Failed to initialize: {ex.Message}");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] ERROR: Failed to initialize: {ex.Message}"
+                );
                 Console.WriteLine($"[SoundFlowAudioManager] Stack trace: {ex.StackTrace}");
             }
         }
@@ -143,7 +157,9 @@ namespace BalatroSeedOracle.Services
             string? audioDir = possiblePaths.FirstOrDefault(Directory.Exists);
             if (audioDir == null)
             {
-                Console.WriteLine("[SoundFlowAudioManager] ERROR: Could not find Assets/Audio directory");
+                Console.WriteLine(
+                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio directory"
+                );
                 return;
             }
 
@@ -153,14 +169,20 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(audioDir, $"{trackName}.flac");
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine($"[SoundFlowAudioManager] ERROR: Missing {trackName}.flac - FLAC files required!");
-                    Console.WriteLine($"[SoundFlowAudioManager] Convert OGG files with: ffmpeg -i {trackName}.ogg -c:a flac {trackName}.flac");
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ERROR: Missing {trackName}.flac - FLAC files required!"
+                    );
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] Convert OGG files with: ffmpeg -i {trackName}.ogg -c:a flac {trackName}.flac"
+                    );
                     continue;
                 }
 
                 try
                 {
-                    Console.WriteLine($"[SoundFlowAudioManager] Loading {trackName} from {filePath}");
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] Loading {trackName} from {filePath}"
+                    );
 
                     // Create StreamDataProvider - this will auto-detect format and decode
                     var fileStream = File.OpenRead(filePath);
@@ -189,11 +211,15 @@ namespace BalatroSeedOracle.Services
                     _analyzers[trackName] = analyzer;
 
                     var extension = Path.GetExtension(filePath);
-                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded and playing: {trackName}{extension}");
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ✓ Loaded and playing: {trackName}{extension}"
+                    );
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[SoundFlowAudioManager] ERROR loading {trackName}: {ex.Message}");
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ERROR loading {trackName}: {ex.Message}"
+                    );
                     Console.WriteLine($"[SoundFlowAudioManager]   Stack: {ex.StackTrace}");
                 }
             }
@@ -293,7 +319,7 @@ namespace BalatroSeedOracle.Services
                 MidAvg = CalculateBandAverage(fftData, bassEnd, midEnd),
                 MidPeak = CalculateBandPeak(fftData, bassEnd, midEnd),
                 HighAvg = CalculateBandAverage(fftData, midEnd, highEnd),
-                HighPeak = CalculateBandPeak(fftData, midEnd, highEnd)
+                HighPeak = CalculateBandPeak(fftData, midEnd, highEnd),
             };
         }
 
@@ -406,11 +432,11 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public struct FrequencyBands
     {
-        public float BassAvg { get; set; }   // Average magnitude in bass range
-        public float BassPeak { get; set; }  // Peak magnitude in bass range
-        public float MidAvg { get; set; }    // Average magnitude in mid range
-        public float MidPeak { get; set; }   // Peak magnitude in mid range
-        public float HighAvg { get; set; }   // Average magnitude in high range
-        public float HighPeak { get; set; }  // Peak magnitude in high range
+        public float BassAvg { get; set; } // Average magnitude in bass range
+        public float BassPeak { get; set; } // Peak magnitude in bass range
+        public float MidAvg { get; set; } // Average magnitude in mid range
+        public float MidPeak { get; set; } // Peak magnitude in mid range
+        public float HighAvg { get; set; } // Average magnitude in high range
+        public float HighPeak { get; set; } // Peak magnitude in high range
     }
 }

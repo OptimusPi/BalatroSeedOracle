@@ -8,10 +8,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -40,6 +40,7 @@ namespace BalatroSeedOracle.ViewModels
         #region Observable Properties
 
         private string _filterName = "No Filter";
+
         /// <summary>
         /// Display name of the filter
         /// </summary>
@@ -50,6 +51,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private int _resultCount = 0;
+
         /// <summary>
         /// Number of results found
         /// </summary>
@@ -66,6 +68,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private bool _isSearching = false;
+
         /// <summary>
         /// Whether search is currently running
         /// </summary>
@@ -82,6 +85,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private double _searchProgress = 0;
+
         /// <summary>
         /// Search progress percentage (0-100)
         /// </summary>
@@ -99,6 +103,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private IImage? _stateIcon;
+
         /// <summary>
         /// State icon image (running, paused, completed, etc.)
         /// </summary>
@@ -109,6 +114,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private Control? _filterPreview;
+
         /// <summary>
         /// Filter preview control (fanned cards)
         /// </summary>
@@ -119,6 +125,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private bool _showStateIcon = true;
+
         /// <summary>
         /// Whether to show state icon (hide when showing preview)
         /// </summary>
@@ -163,11 +170,14 @@ namespace BalatroSeedOracle.ViewModels
         public SearchDesktopIconViewModel(
             SearchManager? searchManager,
             UserProfileService userProfileService,
-            SpriteService spriteService)
+            SpriteService spriteService
+        )
         {
             _searchManager = searchManager;
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
-            _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+            _userProfileService =
+                userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _spriteService =
+                spriteService ?? throw new ArgumentNullException(nameof(spriteService));
 
             // Initialize widget properties
             WidgetTitle = "Search";
@@ -188,9 +198,8 @@ namespace BalatroSeedOracle.ViewModels
             : this(
                 App.GetService<SearchManager>(),
                 new UserProfileService(),
-                ServiceHelper.GetRequiredService<SpriteService>())
-        {
-        }
+                ServiceHelper.GetRequiredService<SpriteService>()
+            ) { }
 
         #endregion
 
@@ -305,7 +314,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SearchDesktopIconViewModel", $"Failed to create filter preview: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SearchDesktopIconViewModel",
+                        $"Failed to create filter preview: {ex.Message}"
+                    );
                     // Fallback to telescope icon
                     ShowStateIcon = true;
                     FilterPreview = null;
@@ -335,25 +347,34 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var item in mustItems.EnumerateArray())
                     {
-                        if (item.TryGetProperty("value", out var value) &&
-                            item.TryGetProperty("type", out var type))
+                        if (
+                            item.TryGetProperty("value", out var value)
+                            && item.TryGetProperty("type", out var type)
+                        )
                         {
                             previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 3) break;
+                            if (previewItems.Count >= 3)
+                                break;
                         }
                     }
                 }
 
                 // Add should items if we have space
-                if (previewItems.Count < 3 && filterRoot.TryGetProperty("should", out var shouldItems))
+                if (
+                    previewItems.Count < 3
+                    && filterRoot.TryGetProperty("should", out var shouldItems)
+                )
                 {
                     foreach (var item in shouldItems.EnumerateArray())
                     {
-                        if (item.TryGetProperty("value", out var value) &&
-                            item.TryGetProperty("type", out var type))
+                        if (
+                            item.TryGetProperty("value", out var value)
+                            && item.TryGetProperty("type", out var type)
+                        )
                         {
                             previewItems.Add((value.GetString() ?? "", type.GetString()));
-                            if (previewItems.Count >= 3) break;
+                            if (previewItems.Count >= 3)
+                                break;
                         }
                     }
                 }
@@ -405,7 +426,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchDesktopIconViewModel", $"Error creating preview: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchDesktopIconViewModel",
+                    $"Error creating preview: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -438,9 +462,11 @@ namespace BalatroSeedOracle.ViewModels
                 case "consumable":
                     // Could be tarot, planet, or spectral
                     var tarot = _spriteService.GetTarotImage(value);
-                    if (tarot != null) return tarot;
+                    if (tarot != null)
+                        return tarot;
                     var planet = _spriteService.GetPlanetCardImage(value);
-                    if (planet != null) return planet;
+                    if (planet != null)
+                        return planet;
                     var spectral = _spriteService.GetSpectralImage(value);
                     return spectral;
                 case "playingcard":
@@ -510,7 +536,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task OnViewResultsAsync()
         {
-            DebugLogger.Log("SearchDesktopIconViewModel", $"ViewResults called - SearchId: {_searchId}, ConfigPath: {_configPath}");
+            DebugLogger.Log(
+                "SearchDesktopIconViewModel",
+                $"ViewResults called - SearchId: {_searchId}, ConfigPath: {_configPath}"
+            );
 
             // Raise event for view to handle
             ViewResultsRequested?.Invoke(this, (_searchId, _configPath));
@@ -568,24 +597,36 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void OnDeleteIcon()
         {
-            DebugLogger.Log("SearchDesktopIconViewModel", $"DeleteIcon called for search {_searchId}, isSearching={IsSearching}");
+            DebugLogger.Log(
+                "SearchDesktopIconViewModel",
+                $"DeleteIcon called for search {_searchId}, isSearching={IsSearching}"
+            );
 
             // FIRST stop the search BEFORE clearing state!
             if (_searchInstance != null)
             {
-                DebugLogger.Log("SearchDesktopIconViewModel", "Stopping search instance without saving state");
+                DebugLogger.Log(
+                    "SearchDesktopIconViewModel",
+                    "Stopping search instance without saving state"
+                );
                 _searchInstance.StopSearch(true); // Stop without saving state
             }
 
             // Remove search from manager if it exists
             if (!string.IsNullOrEmpty(_searchId) && _searchManager != null)
             {
-                DebugLogger.Log("SearchDesktopIconViewModel", $"Removing search {_searchId} from manager");
+                DebugLogger.Log(
+                    "SearchDesktopIconViewModel",
+                    $"Removing search {_searchId} from manager"
+                );
                 _searchManager.RemoveSearch(_searchId);
             }
 
             // Clear the saved search state
-            DebugLogger.Log("SearchDesktopIconViewModel", "Clearing saved search state from user profile");
+            DebugLogger.Log(
+                "SearchDesktopIconViewModel",
+                "Clearing saved search state from user profile"
+            );
             _userProfileService.ClearSearchState();
             _userProfileService.FlushProfile();
 
@@ -600,7 +641,8 @@ namespace BalatroSeedOracle.ViewModels
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
 
             // Unsubscribe from events
             if (_searchInstance != null)

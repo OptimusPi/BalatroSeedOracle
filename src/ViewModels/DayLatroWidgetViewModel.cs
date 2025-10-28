@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -37,6 +37,7 @@ namespace BalatroSeedOracle.ViewModels
         #region Observable Properties
 
         private bool _showNewDayBadge;
+
         /// <summary>
         /// Whether to show the new day notification badge
         /// </summary>
@@ -47,6 +48,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _dateText = "Daylatro";
+
         /// <summary>
         /// Formatted date text (e.g., "Daylatro - Jan 01, 2025")
         /// </summary>
@@ -57,6 +59,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _todaySeed = "LOADING...";
+
         /// <summary>
         /// Today's daily challenge seed
         /// </summary>
@@ -67,6 +70,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _scoreInput = string.Empty;
+
         /// <summary>
         /// User input for score submission
         /// </summary>
@@ -83,6 +87,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _initialsInput = string.Empty;
+
         /// <summary>
         /// User input for initials (max 3 characters)
         /// </summary>
@@ -99,6 +104,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _anteInput = string.Empty;
+
         /// <summary>
         /// User input for ante level
         /// </summary>
@@ -115,6 +121,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private ObservableCollection<HighScoreDisplayItem> _highScores = new();
+
         /// <summary>
         /// Collection of high scores to display
         /// </summary>
@@ -125,6 +132,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private string _submissionMessage = string.Empty;
+
         /// <summary>
         /// Message to display after score submission
         /// </summary>
@@ -135,6 +143,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private bool _submissionMessageIsError;
+
         /// <summary>
         /// Whether the submission message is an error
         /// </summary>
@@ -145,6 +154,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private bool _isLoadingScores;
+
         /// <summary>
         /// Whether scores are currently being loaded
         /// </summary>
@@ -183,10 +193,12 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public DayLatroWidgetViewModel(
             DaylatroHighScoreService scoreService,
-            UserProfileService profileService)
+            UserProfileService profileService
+        )
         {
             _scoreService = scoreService ?? throw new ArgumentNullException(nameof(scoreService));
-            _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
+            _profileService =
+                profileService ?? throw new ArgumentNullException(nameof(profileService));
 
             // Initialize widget properties
             WidgetTitle = "Daylatro";
@@ -203,10 +215,7 @@ namespace BalatroSeedOracle.ViewModels
             AnalyzeSeedCommand = new RelayCommand(OnAnalyzeSeed);
 
             // Set up auto-refresh timer (5 minutes)
-            _autoRefreshTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMinutes(5)
-            };
+            _autoRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
             _autoRefreshTimer.Tick += async (s, e) =>
             {
                 if (!IsMinimized)
@@ -230,9 +239,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Parameterless constructor for design-time support
         /// </summary>
         public DayLatroWidgetViewModel()
-            : this(DaylatroHighScoreService.Instance, new UserProfileService())
-        {
-        }
+            : this(DaylatroHighScoreService.Instance, new UserProfileService()) { }
 
         #endregion
 
@@ -286,19 +293,23 @@ namespace BalatroSeedOracle.ViewModels
                 // Show loading state
                 IsLoadingScores = true;
                 HighScores.Clear();
-                HighScores.Add(new HighScoreDisplayItem
-                {
-                    Rank = 0,
-                    Initials = "Loading...",
-                    Ante = 0,
-                    Score = string.Empty
-                });
+                HighScores.Add(
+                    new HighScoreDisplayItem
+                    {
+                        Rank = 0,
+                        Initials = "Loading...",
+                        Ante = 0,
+                        Score = string.Empty,
+                    }
+                );
 
                 var scores = await _scoreService.FetchDaylatroScoresAsync(
                     DateTime.UtcNow.ToString("yyyy-MM-dd"),
-                    forceRefresh);
+                    forceRefresh
+                );
 
-                if (token.IsCancellationRequested) return;
+                if (token.IsCancellationRequested)
+                    return;
 
                 // Update UI with scores
                 HighScores.Clear();
@@ -306,45 +317,60 @@ namespace BalatroSeedOracle.ViewModels
                 if (scores.Count == 0)
                 {
                     // Show empty state
-                    HighScores.Add(new HighScoreDisplayItem
-                    {
-                        Rank = 0,
-                        Initials = "No scores yet",
-                        Ante = 0,
-                        Score = "Be the first!"
-                    });
+                    HighScores.Add(
+                        new HighScoreDisplayItem
+                        {
+                            Rank = 0,
+                            Initials = "No scores yet",
+                            Ante = 0,
+                            Score = "Be the first!",
+                        }
+                    );
                 }
                 else
                 {
-                    var displayScores = scores.Select((s, index) => new HighScoreDisplayItem
-                    {
-                        Rank = index + 1,
-                        Initials = s.Player,
-                        Ante = s.Ante,
-                        Score = s.Score.ToString("N0")
-                    }).Take(10); // Show top 10
+                    var displayScores = scores
+                        .Select(
+                            (s, index) =>
+                                new HighScoreDisplayItem
+                                {
+                                    Rank = index + 1,
+                                    Initials = s.Player,
+                                    Ante = s.Ante,
+                                    Score = s.Score.ToString("N0"),
+                                }
+                        )
+                        .Take(10); // Show top 10
 
                     foreach (var score in displayScores)
                     {
                         HighScores.Add(score);
                     }
 
-                    DebugLogger.Log("DayLatroWidgetViewModel", $"Displayed {HighScores.Count} high scores");
+                    DebugLogger.Log(
+                        "DayLatroWidgetViewModel",
+                        $"Displayed {HighScores.Count} high scores"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DayLatroWidgetViewModel", $"Failed to fetch high scores: {ex.Message}");
+                DebugLogger.LogError(
+                    "DayLatroWidgetViewModel",
+                    $"Failed to fetch high scores: {ex.Message}"
+                );
 
                 // Show error state
                 HighScores.Clear();
-                HighScores.Add(new HighScoreDisplayItem
-                {
-                    Rank = 0,
-                    Initials = "Error loading",
-                    Ante = 0,
-                    Score = "Check connection"
-                });
+                HighScores.Add(
+                    new HighScoreDisplayItem
+                    {
+                        Rank = 0,
+                        Initials = "Error loading",
+                        Ante = 0,
+                        Score = "Check connection",
+                    }
+                );
             }
             finally
             {
@@ -402,9 +428,9 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private bool CanSubmitScore()
         {
-            return !string.IsNullOrWhiteSpace(ScoreInput) &&
-                   !string.IsNullOrWhiteSpace(InitialsInput) &&
-                   !string.IsNullOrWhiteSpace(AnteInput);
+            return !string.IsNullOrWhiteSpace(ScoreInput)
+                && !string.IsNullOrWhiteSpace(InitialsInput)
+                && !string.IsNullOrWhiteSpace(AnteInput);
         }
 
         /// <summary>
@@ -434,12 +460,18 @@ namespace BalatroSeedOracle.ViewModels
                 initials = initials.Substring(0, 3);
 
             // Submit to Daylatro
-            var (success, message) = await _scoreService.SubmitToDaylatroAsync(initials, ante, score);
+            var (success, message) = await _scoreService.SubmitToDaylatroAsync(
+                initials,
+                ante,
+                score
+            );
 
             if (success)
             {
-                DebugLogger.Log("DayLatroWidgetViewModel",
-                    $"Successfully submitted to Daylatro: {initials} - Ante {ante} - {score}");
+                DebugLogger.Log(
+                    "DayLatroWidgetViewModel",
+                    $"Successfully submitted to Daylatro: {initials} - Ante {ante} - {score}"
+                );
 
                 // Clear score and ante inputs (keep initials for convenience)
                 ScoreInput = string.Empty;
@@ -455,7 +487,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Show error/info message
                 ShowSubmissionMessage(message, true);
-                DebugLogger.Log("DayLatroWidgetViewModel", $"Submission blocked or failed: {message}");
+                DebugLogger.Log(
+                    "DayLatroWidgetViewModel",
+                    $"Submission blocked or failed: {message}"
+                );
             }
         }
 
@@ -493,7 +528,8 @@ namespace BalatroSeedOracle.ViewModels
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
 
             _autoRefreshTimer?.Stop();
             _autoRefreshTimer = null;

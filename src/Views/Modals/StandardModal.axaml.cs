@@ -102,7 +102,6 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-
         private void OnTopLevelBackRequested(object? sender, RoutedEventArgs e)
         {
             // Try in-modal back first; if not possible, close the modal
@@ -163,8 +162,8 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     Property = Border.OpacityProperty,
                     Duration = TimeSpan.FromMilliseconds(200),
-                    Easing = new CubicEaseOut()
-                }
+                    Easing = new CubicEaseOut(),
+                },
             };
 
             modalBorder.Transitions = new Transitions
@@ -173,14 +172,14 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     Property = Border.OpacityProperty,
                     Duration = TimeSpan.FromMilliseconds(250),
-                    Easing = new CubicEaseOut()
+                    Easing = new CubicEaseOut(),
                 },
                 new ThicknessTransition
                 {
                     Property = Border.MarginProperty,
                     Duration = TimeSpan.FromMilliseconds(320),
-                    Easing = new BackEaseOut()
-                }
+                    Easing = new BackEaseOut(),
+                },
             };
 
             // Start from offscreen and transparent
@@ -189,12 +188,15 @@ namespace BalatroSeedOracle.Views.Modals
             modalBorder.Margin = new Thickness(0, -24, 0, 24);
 
             // Animate to final state on next UI tick
-            Dispatcher.UIThread.Post(() =>
-            {
-                overlay.Opacity = 1;
-                modalBorder.Opacity = 1;
-                modalBorder.Margin = new Thickness(0, 0, 0, 0);
-            }, DispatcherPriority.Render);
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    overlay.Opacity = 1;
+                    modalBorder.Opacity = 1;
+                    modalBorder.Margin = new Thickness(0, 0, 0, 0);
+                },
+                DispatcherPriority.Render
+            );
         }
 
         /// <summary>
@@ -209,13 +211,19 @@ namespace BalatroSeedOracle.Views.Modals
                 var content = contentPresenter?.Content;
 
                 // Try view-level implementation first
-                if (content is BalatroSeedOracle.Helpers.IModalBackNavigable viewNav && viewNav.TryGoBack())
+                if (
+                    content is BalatroSeedOracle.Helpers.IModalBackNavigable viewNav
+                    && viewNav.TryGoBack()
+                )
                 {
                     return true;
                 }
 
                 // Then try DataContext-level implementation (common for MVVM ViewModels)
-                if (content is Control control && control.DataContext is BalatroSeedOracle.Helpers.IModalBackNavigable vmNav)
+                if (
+                    content is Control control
+                    && control.DataContext is BalatroSeedOracle.Helpers.IModalBackNavigable vmNav
+                )
                 {
                     if (vmNav.TryGoBack())
                         return true;
@@ -223,7 +231,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("StandardModal", $"Error during back navigation attempt: {ex.Message}");
+                DebugLogger.LogError(
+                    "StandardModal",
+                    $"Error during back navigation attempt: {ex.Message}"
+                );
             }
 
             return false;

@@ -3,13 +3,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using AudioSource = BalatroSeedOracle.Controls.BalatroShaderBackground.AudioSource;
 
 namespace BalatroSeedOracle.ViewModels
@@ -96,14 +96,17 @@ namespace BalatroSeedOracle.ViewModels
         public BalatroMainMenuViewModel()
         {
             // Initialize services
-            _userProfileService = App.GetService<UserProfileService>()
+            _userProfileService =
+                App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
 
             // Get SoundFlow audio manager (8 independent tracks)
             _soundFlowAudioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
             if (_soundFlowAudioManager != null)
             {
-                Console.WriteLine("[ViewModel] 🎵 Using SoundFlowAudioManager (8 independent tracks)");
+                Console.WriteLine(
+                    "[ViewModel] 🎵 Using SoundFlowAudioManager (8 independent tracks)"
+                );
             }
 
             // Load settings
@@ -185,8 +188,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open search modal: {ex}");
-                ShowErrorModal($"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open search modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -204,8 +212,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open filters modal: {ex}");
-                ShowErrorModal($"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open filters modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -221,8 +234,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open analyze modal: {ex}");
-                ShowErrorModal($"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open analyze modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -238,8 +256,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open settings modal: {ex}");
-                ShowErrorModal($"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open settings modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -316,7 +339,6 @@ namespace BalatroSeedOracle.ViewModels
             AuthorEditMode = false;
         }
 
-
         [RelayCommand]
         private void BuyBalatro()
         {
@@ -327,7 +349,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error opening Balatro website: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error opening Balatro website: {ex.Message}"
+                );
             }
         }
 
@@ -397,11 +422,17 @@ namespace BalatroSeedOracle.ViewModels
                     Volume = 0;
                 }
 
-                DebugLogger.Log("BalatroMainMenuViewModel", $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}");
+                DebugLogger.Log(
+                    "BalatroMainMenuViewModel",
+                    $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error loading settings: {ex.Message}"
+                );
             }
         }
 
@@ -413,11 +444,17 @@ namespace BalatroSeedOracle.ViewModels
                 profile.MusicVolume = (float)(Volume / 100.0); // Convert 0-100 to 0-1
                 profile.IsMusicMuted = Volume == 0;
                 _userProfileService.SaveProfile();
-                DebugLogger.Log("BalatroMainMenuViewModel", $"Volume saved: {profile.MusicVolume}, Muted: {profile.IsMusicMuted}");
+                DebugLogger.Log(
+                    "BalatroMainMenuViewModel",
+                    $"Volume saved: {profile.MusicVolume}, Muted: {profile.IsMusicMuted}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error saving volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error saving volume: {ex.Message}"
+                );
             }
         }
 
@@ -426,7 +463,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void LoadAndApplyVisualizerSettings(BalatroShaderBackground? shader)
         {
-            if (shader == null) return;
+            if (shader == null)
+                return;
 
             try
             {
@@ -464,7 +502,10 @@ namespace BalatroSeedOracle.ViewModels
                 ApplySpinSource(shader, Math.Clamp(settings.SpinSource, 0, 4));
                 ApplyTwirlSource(shader, Math.Clamp(settings.TwirlSource, 0, 4));
                 ApplyZoomThumpSource(shader, Math.Clamp(settings.ZoomThumpSource, 0, 4));
-                ApplyColorSaturationSource(shader, Math.Clamp(settings.ColorSaturationSource, 0, 4));
+                ApplyColorSaturationSource(
+                    shader,
+                    Math.Clamp(settings.ColorSaturationSource, 0, 4)
+                );
                 ApplyBeatPulseSource(shader, Math.Clamp(settings.BeatPulseSource, 0, 4));
 
                 // Per-track volume balancing for SoundFlow audio stems
@@ -487,7 +528,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading visualizer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error loading visualizer settings: {ex.Message}"
+                );
             }
         }
 
@@ -502,25 +546,40 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     // User will close searches they don't want - no need for auto-cleanup!
                     var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
-                    DebugLogger.Log("BalatroMainMenuViewModel", $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago");
+                    DebugLogger.Log(
+                        "BalatroMainMenuViewModel",
+                        $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
+                    );
 
-                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
+                    if (
+                        !string.IsNullOrEmpty(resumeState.ConfigPath)
+                        && File.Exists(resumeState.ConfigPath)
+                    )
                     {
                         var placeholderSearchId = Guid.NewGuid().ToString();
                         showIconCallback?.Invoke(placeholderSearchId, resumeState.ConfigPath);
 
-                        DebugLogger.Log("BalatroMainMenuViewModel", $"Restored desktop icon for search (not started yet): {resumeState.ConfigPath}");
+                        DebugLogger.Log(
+                            "BalatroMainMenuViewModel",
+                            $"Restored desktop icon for search (not started yet): {resumeState.ConfigPath}"
+                        );
                     }
                     else
                     {
-                        DebugLogger.Log("BalatroMainMenuViewModel", $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}");
+                        DebugLogger.Log(
+                            "BalatroMainMenuViewModel",
+                            $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}"
+                        );
                         _userProfileService.ClearSearchState();
                     }
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error checking for resumable search: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error checking for resumable search: {ex.Message}"
+                );
             }
         }
 
@@ -539,7 +598,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to play button click sound: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to play button click sound: {ex.Message}"
+                );
             }
         }
 
@@ -559,7 +621,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to apply volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to apply volume: {ex.Message}"
+                );
             }
         }
 
@@ -574,7 +639,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to set track volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to set track volume: {ex.Message}"
+                );
             }
         }
 
@@ -587,19 +655,23 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_soundFlowAudioManager != null)
                 {
-                    _audioAnalysisHandler = (bass, mid, treble, peak) =>
-                    {
+                    _audioAnalysisHandler = (bass, mid, treble, peak) => {
                         // Audio reactivity will be handled by proper effect binding system
                         // TODO: Implement effect bindings that map tracks to shader parameters
                     };
 
                     _soundFlowAudioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-                    Console.WriteLine("[ViewModel] ✅ Audio analysis handler connected (awaiting effect binding system)");
+                    Console.WriteLine(
+                        "[ViewModel] ✅ Audio analysis handler connected (awaiting effect binding system)"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to wire audio analysis: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to wire audio analysis: {ex.Message}"
+                );
             }
         }
 
@@ -640,16 +712,16 @@ namespace BalatroSeedOracle.ViewModels
         {
             return index switch
             {
-                0 => new SkiaSharp.SKColor(255, 76, 64),    // Red (Balatro Red)
-                1 => new SkiaSharp.SKColor(255, 165, 0),    // Orange
-                2 => new SkiaSharp.SKColor(255, 215, 0),    // Yellow (Gold)
-                3 => new SkiaSharp.SKColor(0, 255, 127),    // Green (Spring Green)
-                4 => new SkiaSharp.SKColor(0, 147, 255),    // Blue (Balatro Blue)
-                5 => new SkiaSharp.SKColor(147, 51, 234),   // Purple
-                6 => new SkiaSharp.SKColor(139, 69, 19),    // Brown (Saddle Brown)
-                7 => new SkiaSharp.SKColor(255, 255, 255),  // White
-                8 => new SkiaSharp.SKColor(30, 43, 45),     // None (Dark background)
-                _ => new SkiaSharp.SKColor(255, 76, 64),    // Default to Red
+                0 => new SkiaSharp.SKColor(255, 76, 64), // Red (Balatro Red)
+                1 => new SkiaSharp.SKColor(255, 165, 0), // Orange
+                2 => new SkiaSharp.SKColor(255, 215, 0), // Yellow (Gold)
+                3 => new SkiaSharp.SKColor(0, 255, 127), // Green (Spring Green)
+                4 => new SkiaSharp.SKColor(0, 147, 255), // Blue (Balatro Blue)
+                5 => new SkiaSharp.SKColor(147, 51, 234), // Purple
+                6 => new SkiaSharp.SKColor(139, 69, 19), // Brown (Saddle Brown)
+                7 => new SkiaSharp.SKColor(255, 255, 255), // White
+                8 => new SkiaSharp.SKColor(30, 43, 45), // None (Dark background)
+                _ => new SkiaSharp.SKColor(255, 76, 64), // Default to Red
             };
         }
 
@@ -810,7 +882,7 @@ namespace BalatroSeedOracle.ViewModels
         Analyze,
         Tools,
         Settings,
-        Custom
+        Custom,
     }
 
     #endregion

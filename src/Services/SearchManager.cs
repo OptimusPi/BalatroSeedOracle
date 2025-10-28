@@ -17,7 +17,6 @@ namespace BalatroSeedOracle.Services
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
 
-
         public SearchManager()
         {
             _activeSearches = new ConcurrentDictionary<string, SearchInstance>();
@@ -34,9 +33,12 @@ namespace BalatroSeedOracle.Services
         public string CreateSearch(string filterNameNormalized, string deckName, string stakeName)
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
-    
+
             // Preallocate a database file path so SearchInstance always has a connection string
-            var searchResultsDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SearchResults");
+            var searchResultsDir = System.IO.Path.Combine(
+                System.IO.Directory.GetCurrentDirectory(),
+                "SearchResults"
+            );
             System.IO.Directory.CreateDirectory(searchResultsDir);
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
             var searchInstance = new SearchInstance(searchId, dbPath);
@@ -63,13 +65,17 @@ namespace BalatroSeedOracle.Services
             }
             return null;
         }
-        
+
         /// <summary>
         /// Gets an existing search instance
         /// </summary>
         /// <param name="searchId">The ID of the search to retrieve</param>
         /// <returns>The search instance if found, null otherwise</returns>
-        public SearchInstance? GetSearch(string filterNameNormalized, string deckName, string stakeName)
+        public SearchInstance? GetSearch(
+            string filterNameNormalized,
+            string deckName,
+            string stakeName
+        )
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
             return GetSearch(searchId);
@@ -112,20 +118,41 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Starts a new search with the given criteria and config
         /// </summary>
-        public async Task<SearchInstance> StartSearchAsync(SearchCriteria criteria, Motely.Filters.MotelyJsonConfig config)
+        public async Task<SearchInstance> StartSearchAsync(
+            SearchCriteria criteria,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
+            DebugLogger.Log("SearchManager", $"StartSearchAsync called for filter: {config.Name}");
+            DebugLogger.Log("SearchManager", $"  ConfigPath: {criteria.ConfigPath}");
+            DebugLogger.Log("SearchManager", $"  ThreadCount: {criteria.ThreadCount}");
+            DebugLogger.Log("SearchManager", $"  BatchSize: {criteria.BatchSize}");
+
             var filterId = config.Name?.Replace(" ", "_") ?? "unknown";
-            
+
             // First create the search instance
-            var createdSearchId = CreateSearch(filterId, criteria.Deck ?? "Red", criteria.Stake ?? "White");
+            DebugLogger.Log("SearchManager", $"Creating search instance with ID: {filterId}_{criteria.Deck}_{criteria.Stake}");
+            var createdSearchId = CreateSearch(
+                filterId,
+                criteria.Deck ?? "Red",
+                criteria.Stake ?? "White"
+            );
             var searchInstance = GetSearch(createdSearchId);
-            
+
             if (searchInstance == null)
-                throw new InvalidOperationException("Failed to create search instance");
-            
+            {
+                var errorMsg = $"Failed to create search instance for filter '{config.Name}'";
+                DebugLogger.LogError("SearchManager", errorMsg);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            DebugLogger.Log("SearchManager", $"Search instance created: {createdSearchId}");
+            DebugLogger.Log("SearchManager", $"Starting search with config path: {criteria.ConfigPath}");
+
             // Start the search with just criteria - config is handled separately
             await searchInstance.StartSearchAsync(criteria);
-            
+
+            DebugLogger.Log("SearchManager", $"Search started successfully!");
             return searchInstance;
         }
 
@@ -164,18 +191,21 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         DebugLogger.Log("SearchManager", $"🛑 Stopping search: {searchId}");
-                        
+
                         searchInstance.StopSearch();
                         searchInstance.Dispose();
-                        
+
                         searchesToRemove.Add(searchId);
                         stoppedCount++;
-                        
+
                         DebugLogger.Log("SearchManager", $"✅ Stopped search: {searchId}");
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("SearchManager", $"Error stopping search {searchId}: {ex.Message}");
+                        DebugLogger.LogError(
+                            "SearchManager",
+                            $"Error stopping search {searchId}: {ex.Message}"
+                        );
                     }
                 }
             }
@@ -186,7 +216,10 @@ namespace BalatroSeedOracle.Services
                 _activeSearches.TryRemove(searchId, out _);
             }
 
-            DebugLogger.Log("SearchManager", $"🧹 Filter cleanup complete - stopped {stoppedCount} searches");
+            DebugLogger.Log(
+                "SearchManager",
+                $"🧹 Filter cleanup complete - stopped {stoppedCount} searches"
+            );
             return stoppedCount;
         }
 
@@ -196,7 +229,8 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public async Task<QuickSearchResults> RunQuickSearchAsync(
             SearchCriteria criteria,
-            MotelyJsonConfig config)
+            MotelyJsonConfig config
+        )
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var seeds = new List<string>();
@@ -204,7 +238,10 @@ namespace BalatroSeedOracle.Services
 
             try
             {
-                DebugLogger.Log("SearchManager", $"Starting quick search with BatchSize={criteria.BatchSize}, MaxResults={criteria.MaxResults}");
+                DebugLogger.Log(
+                    "SearchManager",
+                    $"Starting quick search with BatchSize={criteria.BatchSize}, MaxResults={criteria.MaxResults}"
+                );
 
                 // Ensure MaxResults is set to limit search time
                 var maxResults = criteria.MaxResults > 0 ? criteria.MaxResults : 10;
@@ -238,7 +275,11 @@ namespace BalatroSeedOracle.Services
                     // Get results from the database
                     if (searchInstance.IsDatabaseInitialized)
                     {
-                        var results = await searchInstance.GetTopResultsAsync("score", false, maxResults);
+                        var results = await searchInstance.GetTopResultsAsync(
+                            "score",
+                            false,
+                            maxResults
+                        );
                         seeds = results.Select(r => r.Seed).ToList();
                         DebugLogger.Log("SearchManager", $"Quick search found {seeds.Count} seeds");
                     }
@@ -258,7 +299,10 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("SearchManager", $"Failed to delete temp DB: {ex.Message}");
+                        DebugLogger.LogError(
+                            "SearchManager",
+                            $"Failed to delete temp DB: {ex.Message}"
+                        );
                     }
                 }
 
@@ -270,7 +314,7 @@ namespace BalatroSeedOracle.Services
                     Count = seeds.Count,
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
-                    Success = true
+                    Success = true,
                 };
             }
             catch (Exception ex)
@@ -284,7 +328,7 @@ namespace BalatroSeedOracle.Services
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
                     Success = false,
-                    Error = ex.Message
+                    Error = ex.Message,
                 };
             }
         }

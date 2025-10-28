@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
@@ -15,11 +15,12 @@ namespace BalatroSeedOracle.Services
     {
         MotelyJsonConfig BuildConfigFromSelections(
             List<string> selectedMust,
-            List<string> selectedShould, 
+            List<string> selectedShould,
             List<string> selectedMustNot,
             Dictionary<string, ItemConfig> itemConfigs,
             string filterName = "",
-            string filterDescription = "");
+            string filterDescription = ""
+        );
     }
 
     public class FilterConfigurationService : IFilterConfigurationService
@@ -37,7 +38,8 @@ namespace BalatroSeedOracle.Services
             List<string> selectedMustNot,
             Dictionary<string, ItemConfig> itemConfigs,
             string filterName = "",
-            string filterDescription = "")
+            string filterDescription = ""
+        )
         {
             var config = new MotelyJsonConfig
             {
@@ -46,7 +48,7 @@ namespace BalatroSeedOracle.Services
                 Name = string.IsNullOrEmpty(filterName) ? "Untitled Filter" : filterName,
                 Description = filterDescription,
                 DateCreated = DateTime.UtcNow,
-                Author = _userProfileService.GetAuthorName()
+                Author = _userProfileService.GetAuthorName(),
             };
 
             // Initialize collections
@@ -59,7 +61,10 @@ namespace BalatroSeedOracle.Services
             FixUniqueKeyParsing(selectedShould, config.Should, itemConfigs, 1);
             FixUniqueKeyParsing(selectedMustNot, config.MustNot, itemConfigs, 0);
 
-            DebugLogger.Log("FilterConfigurationService", $"Built config: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} mustNot");
+            DebugLogger.Log(
+                "FilterConfigurationService",
+                $"Built config: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} mustNot"
+            );
             return config;
         }
 
@@ -82,7 +87,10 @@ namespace BalatroSeedOracle.Services
 
                     // Remove the unique key suffix if present
                     var hashIndex = itemNameWithSuffix.IndexOf('#');
-                    var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
+                    var itemName =
+                        hashIndex > 0
+                            ? itemNameWithSuffix.Substring(0, hashIndex)
+                            : itemNameWithSuffix;
 
                     var hasConfig = itemConfigs.ContainsKey(item);
                     var itemConfig = hasConfig ? itemConfigs[item] : new ItemConfig();
@@ -102,12 +110,13 @@ namespace BalatroSeedOracle.Services
         private MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterItemFromSelection(
             string category,
             string itemName,
-            ItemConfig config)
+            ItemConfig config
+        )
         {
             var filterItem = new MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min
+                Min = config.Min,
             };
 
             var normalizedCategory = category.ToLower();
@@ -165,17 +174,21 @@ namespace BalatroSeedOracle.Services
                     break;
 
                 default:
-                    DebugLogger.LogError("FilterConfigurationService", $"Unknown category: {category}");
+                    DebugLogger.LogError(
+                        "FilterConfigurationService",
+                        $"Unknown category: {category}"
+                    );
                     return null;
             }
 
             // Add Sources for items that support them
-            bool canHaveSources = normalizedCategory == "jokers" ||
-                                  normalizedCategory == "souljokers" ||
-                                  normalizedCategory == "tarots" ||
-                                  normalizedCategory == "spectrals" ||
-                                  normalizedCategory == "planets" ||
-                                  normalizedCategory == "playingcards";
+            bool canHaveSources =
+                normalizedCategory == "jokers"
+                || normalizedCategory == "souljokers"
+                || normalizedCategory == "tarots"
+                || normalizedCategory == "spectrals"
+                || normalizedCategory == "planets"
+                || normalizedCategory == "playingcards";
 
             if (canHaveSources && config.Sources != null)
             {

@@ -74,7 +74,10 @@ namespace BalatroSeedOracle.Components
 
                 if (mainMenu == null)
                 {
-                    DebugLogger.LogError("DayLatroWidget", "Could not find BalatroMainMenu in visual tree");
+                    DebugLogger.LogError(
+                        "DayLatroWidget",
+                        "Could not find BalatroMainMenu in visual tree"
+                    );
                     return;
                 }
 
@@ -107,7 +110,10 @@ namespace BalatroSeedOracle.Components
         /// <summary>
         /// Track pointer pressed position to detect drag vs click
         /// </summary>
-        private void OnMinimizedIconPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnMinimizedIconPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
         {
             _iconPressedPosition = e.GetPosition((Control)sender!);
         }
@@ -115,10 +121,15 @@ namespace BalatroSeedOracle.Components
         /// <summary>
         /// On release: if no drag happened, expand the widget
         /// </summary>
-        private void OnMinimizedIconReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        private void OnMinimizedIconReleased(
+            object? sender,
+            Avalonia.Input.PointerReleasedEventArgs e
+        )
         {
             var releasePosition = e.GetPosition((Control)sender!);
-            var distance = Math.Abs(releasePosition.X - _iconPressedPosition.X) + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
+            var distance =
+                Math.Abs(releasePosition.X - _iconPressedPosition.X)
+                + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
 
             // If pointer moved less than 20 pixels, treat as click (not drag)
             if (distance < 20 && ViewModel != null)

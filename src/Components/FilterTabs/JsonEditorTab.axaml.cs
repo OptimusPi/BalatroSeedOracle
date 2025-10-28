@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -11,8 +11,8 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
-using BalatroSeedOracle.ViewModels.FilterTabs;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels.FilterTabs;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {
@@ -28,7 +28,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         public JsonEditorTab()
         {
             InitializeComponent();
-            
+
             // Setup JSON editor after initialization
             _jsonEditor = this.FindControl<TextEditor>("JsonEditor");
             if (_jsonEditor != null)
@@ -77,7 +77,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void LoadCustomJsonSyntaxHighlighting()
         {
-            if (_jsonEditor == null) return;
+            if (_jsonEditor == null)
+                return;
 
             try
             {
@@ -88,26 +89,45 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     using (var reader = new XmlTextReader(xshdPath))
                     {
-                        var definition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                        var definition = HighlightingLoader.Load(
+                            reader,
+                            HighlightingManager.Instance
+                        );
                         _jsonEditor.SyntaxHighlighting = definition;
                     }
-                    DebugLogger.Log("JsonEditorTab", "Custom JSON dark mode syntax highlighting loaded");
+                    DebugLogger.Log(
+                        "JsonEditorTab",
+                        "Custom JSON dark mode syntax highlighting loaded"
+                    );
                 }
                 else
                 {
                     // Fallback to default JSON highlighting with custom colors
-                    DebugLogger.LogError("JsonEditorTab", $"JsonDark.xshd not found at {xshdPath}, using default");
+                    DebugLogger.LogError(
+                        "JsonEditorTab",
+                        $"JsonDark.xshd not found at {xshdPath}, using default"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("JsonEditorTab", $"Failed to load custom syntax highlighting: {ex.Message}");
+                DebugLogger.LogError(
+                    "JsonEditorTab",
+                    $"Failed to load custom syntax highlighting: {ex.Message}"
+                );
             }
         }
-        
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
-            if (e.PropertyName == nameof(JsonEditorTabViewModel.JsonContent) && _jsonEditor != null && ViewModel != null)
+            if (
+                e.PropertyName == nameof(JsonEditorTabViewModel.JsonContent)
+                && _jsonEditor != null
+                && ViewModel != null
+            )
             {
                 // Only update if different to avoid infinite loop
                 if (_jsonEditor.Text != ViewModel.JsonContent)
@@ -116,7 +136,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
             }
         }
-        
+
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
             // Ctrl+Space triggers autocomplete
@@ -134,7 +154,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnTextEntered(object? sender, TextInputEventArgs e)
         {
-            if (_jsonEditor?.TextArea == null) return;
+            if (_jsonEditor?.TextArea == null)
+                return;
 
             // Show autocomplete on quote or after colon
             if (e.Text == "\"" || e.Text == ":")
@@ -142,17 +163,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 ShowJsonCompletions();
             }
         }
-        
+
         private void ShowJsonCompletions()
         {
-            if (_jsonEditor?.TextArea == null) return;
+            if (_jsonEditor?.TextArea == null)
+                return;
 
             // Get text before cursor for context-aware completions
             var offset = _jsonEditor.CaretOffset;
-            var textBeforeCursor = _jsonEditor.Text.Substring(0, Math.Min(offset, _jsonEditor.Text.Length));
+            var textBeforeCursor = _jsonEditor.Text.Substring(
+                0,
+                Math.Min(offset, _jsonEditor.Text.Length)
+            );
 
             // Get SMART context-aware completions
-            var smartCompletions = JsonAutocompletionHelper.GetCompletionsForContext(textBeforeCursor);
+            var smartCompletions = JsonAutocompletionHelper.GetCompletionsForContext(
+                textBeforeCursor
+            );
 
             if (smartCompletions.Count == 0)
                 return; // No completions available

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
@@ -22,7 +22,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
-            
+
             // Initialize commands
             GenerateFromVisualCommand = new RelayCommand(GenerateFromVisual);
             ApplyToVisualCommand = new RelayCommand(ApplyToVisual);
@@ -89,54 +89,74 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     DateCreated = DateTime.UtcNow,
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
-                    Must = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Should = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                    Must =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.Must.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.Should.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
                 // Generate MustNot clauses from visual builder
                 foreach (var item in visualTab.SelectedMustNot)
                 {
-                    config.MustNot.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.MustNot.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
                 // Update JSON content silently
-                JsonContent = JsonSerializer.Serialize(config, new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
+                JsonContent = JsonSerializer.Serialize(
+                    config,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        DefaultIgnoreCondition = System
+                            .Text
+                            .Json
+                            .Serialization
+                            .JsonIgnoreCondition
+                            .WhenWritingNull,
+                    }
+                );
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count + config.MustNot.Count;
                 ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
                 ValidationStatusColor = Brushes.Gray;
 
-                DebugLogger.Log("JsonEditorTab", $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not");
+                DebugLogger.Log(
+                    "JsonEditorTab",
+                    $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not"
+                );
             }
             catch (Exception ex)
             {
@@ -171,51 +191,72 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     DateCreated = DateTime.UtcNow,
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
-                    Must = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Should = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                    Must =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot =
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.Must.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.Should.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
                 // Generate MustNot clauses from visual builder
                 foreach (var item in visualTab.SelectedMustNot)
                 {
-                    config.MustNot.Add(new MotelyJsonConfig.MotleyJsonFilterClause
-                    {
-                        Type = item.Type,
-                        Value = item.Name
-                    });
+                    config.MustNot.Add(
+                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        {
+                            Type = item.Type,
+                            Value = item.Name,
+                        }
+                    );
                 }
 
-                JsonContent = JsonSerializer.Serialize(config, new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
+                JsonContent = JsonSerializer.Serialize(
+                    config,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        DefaultIgnoreCondition = System
+                            .Text
+                            .Json
+                            .Serialization
+                            .JsonIgnoreCondition
+                            .WhenWritingNull,
+                    }
+                );
 
-                ValidationStatus = $"✓ Generated from visual ({config.Must.Count + config.Should.Count + config.MustNot.Count} items)";
+                ValidationStatus =
+                    $"✓ Generated from visual ({config.Must.Count + config.Should.Count + config.MustNot.Count} items)";
                 ValidationStatusColor = Brushes.Green;
 
-                DebugLogger.Log("JsonEditorTab", $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not items");
+                DebugLogger.Log(
+                    "JsonEditorTab",
+                    $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not items"
+                );
             }
             catch (Exception ex)
             {
@@ -253,10 +294,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the JSON
-                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(JsonContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(
+                    JsonContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
 
                 if (config == null)
                 {
@@ -306,7 +347,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var clause in config.MustNot)
                     {
                         var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (item != null && !visualTab.SelectedMustNot.Any(x => x.Name == item.Name))
+                        if (
+                            item != null
+                            && !visualTab.SelectedMustNot.Any(x => x.Name == item.Name)
+                        )
                         {
                             visualTab.SelectedMustNot.Add(item);
                             itemsAdded++;
@@ -316,8 +360,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 ValidationStatus = $"✓ Applied to visual ({itemsAdded} items)";
                 ValidationStatusColor = Brushes.Green;
-                
-                DebugLogger.Log("JsonEditorTab", $"Applied JSON to visual builder: {itemsAdded} items");
+
+                DebugLogger.Log(
+                    "JsonEditorTab",
+                    $"Applied JSON to visual builder: {itemsAdded} items"
+                );
             }
             catch (Exception ex)
             {
@@ -348,11 +395,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (ValidateJsonSyntax())
                 {
                     var parsed = JsonSerializer.Deserialize<object>(JsonContent);
-                    JsonContent = JsonSerializer.Serialize(parsed, new JsonSerializerOptions
-                    {
-                        WriteIndented = true
-                    });
-                    
+                    JsonContent = JsonSerializer.Serialize(
+                        parsed,
+                        new JsonSerializerOptions { WriteIndented = true }
+                    );
+
                     ValidationStatus = "✓ JSON formatted";
                     ValidationStatusColor = Brushes.Green;
                 }
@@ -396,7 +443,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
   ""name"": ""New Filter"",
   ""description"": ""Created with visual filter builder"",
   ""author"": ""pifreak"",
-  ""dateCreated"": """ + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ") + @""",
+  ""dateCreated"": """
+                + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ")
+                + @""",
   ""deck"": ""Red"",
   ""stake"": ""White"",
   ""must"": [
@@ -408,13 +457,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 }";
         }
 
-        private Models.FilterItem? FindOrCreateFilterItem(VisualBuilderTabViewModel visualTab, string? type, string? name)
+        private Models.FilterItem? FindOrCreateFilterItem(
+            VisualBuilderTabViewModel visualTab,
+            string? type,
+            string? name
+        )
         {
-            if (string.IsNullOrEmpty(name)) return null;
+            if (string.IsNullOrEmpty(name))
+                return null;
 
             // Search in all collections based on type
             Models.FilterItem? item = null;
-            
+
             switch (type?.ToLower())
             {
                 case "joker":
@@ -455,8 +509,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         "tarot" => spriteService.GetTarotImage(name),
                         "planet" => spriteService.GetPlanetCardImage(name),
                         "spectral" => spriteService.GetSpectralImage(name),
-                        _ => null
-                    }
+                        _ => null,
+                    },
                 };
 
                 // Add to the appropriate collection
@@ -464,33 +518,57 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     case "joker":
                         visualTab.AllJokers.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredJokers.Add(item);
                         break;
                     case "tag":
                     case "smallblindtag":
                         visualTab.AllTags.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredTags.Add(item);
                         break;
                     case "voucher":
                         visualTab.AllVouchers.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredVouchers.Add(item);
                         break;
                     case "tarot":
                         visualTab.AllTarots.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredTarots.Add(item);
                         break;
                     case "planet":
                         visualTab.AllPlanets.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredPlanets.Add(item);
                         break;
                     case "spectral":
                         visualTab.AllSpectrals.Add(item);
-                        if (string.IsNullOrEmpty(visualTab.SearchFilter) || item.Name.ToLowerInvariant().Contains(visualTab.SearchFilter.ToLowerInvariant()))
+                        if (
+                            string.IsNullOrEmpty(visualTab.SearchFilter)
+                            || item.Name.ToLowerInvariant()
+                                .Contains(visualTab.SearchFilter.ToLowerInvariant())
+                        )
                             visualTab.FilteredSpectrals.Add(item);
                         break;
                 }
@@ -498,12 +576,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             return item;
         }
-        
+
         private string FormatDisplayName(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return name;
-                
+
             var words = name.Replace('_', ' ').Split(' ');
             for (int i = 0; i < words.Length; i++)
             {
@@ -514,18 +592,44 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             return string.Join(" ", words);
         }
-        
+
         private string GetDeckName(int index)
         {
-            var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", 
-                                   "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", 
-                                   "Erratic", "Challenge" };
+            var deckNames = new[]
+            {
+                "Red",
+                "Blue",
+                "Yellow",
+                "Green",
+                "Black",
+                "Magic",
+                "Nebula",
+                "Ghost",
+                "Abandoned",
+                "Checkered",
+                "Zodiac",
+                "Painted",
+                "Anaglyph",
+                "Plasma",
+                "Erratic",
+                "Challenge",
+            };
             return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
         }
-        
+
         private string GetStakeName(int index)
         {
-            var stakeNames = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
+            var stakeNames = new[]
+            {
+                "white",
+                "red",
+                "green",
+                "black",
+                "blue",
+                "purple",
+                "orange",
+                "gold",
+            };
             return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
         }
 

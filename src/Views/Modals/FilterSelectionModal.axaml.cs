@@ -3,9 +3,9 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -13,7 +13,8 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterSelectionModal : UserControl
     {
-        public FilterSelectionModalViewModel? ViewModel => DataContext as FilterSelectionModalViewModel;
+        public FilterSelectionModalViewModel? ViewModel =>
+            DataContext as FilterSelectionModalViewModel;
 
         public event EventHandler? CloseRequested;
 
@@ -100,10 +101,12 @@ namespace BalatroSeedOracle.Views.Modals
         private async void OnDeleteConfirmationRequested(object? sender, string filterName)
         {
             var result = await MessageBoxManager
-                .GetMessageBoxStandard("Delete Filter?",
+                .GetMessageBoxStandard(
+                    "Delete Filter?",
                     $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
                     ButtonEnum.YesNo,
-                    Icon.Warning)
+                    Icon.Warning
+                )
                 .ShowAsync();
 
             if (result == ButtonResult.Yes && ViewModel != null)
@@ -112,7 +115,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
             if (e.PropertyName == nameof(FilterSelectionModalViewModel.SelectedFilter))
             {
@@ -137,7 +143,10 @@ namespace BalatroSeedOracle.Views.Modals
                 deckName = $"{deckName} Deck";
             }
 
-            DebugLogger.Log("FilterSelectionModal", $"Loading deck: {deckName}, stake: {stakeName}");
+            DebugLogger.Log(
+                "FilterSelectionModal",
+                $"Loading deck: {deckName}, stake: {stakeName}"
+            );
             LoadDeckAndStake(deckName, stakeName);
         }
 
@@ -172,7 +181,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("FilterSelectionModal", "Parent window content is not a Panel");
+                DebugLogger.LogError(
+                    "FilterSelectionModal",
+                    "Parent window content is not a Panel"
+                );
                 tcs.SetResult(false);
             }
 

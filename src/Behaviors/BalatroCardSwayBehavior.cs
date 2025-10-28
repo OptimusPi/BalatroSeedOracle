@@ -34,20 +34,25 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnAttached();
 
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Generate unique card ID for timing variation (like Balatro)
             _cardId = new Random().NextDouble() * 100;
             _startTime = DateTime.Now;
 
             // Set up render transform
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                0.5,
+                0.5,
+                RelativeUnit.Relative
+            );
             AssociatedObject.RenderTransform = new RotateTransform();
 
             // Start animation timer (60 FPS like Balatro)
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67) // ~60 FPS
+                Interval = TimeSpan.FromMilliseconds(16.67), // ~60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
             _animationTimer.Start();

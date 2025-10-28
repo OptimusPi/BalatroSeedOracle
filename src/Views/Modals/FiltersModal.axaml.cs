@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Components;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {

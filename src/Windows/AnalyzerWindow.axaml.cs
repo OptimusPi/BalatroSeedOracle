@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Features.Analyzer;
-using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Windows
 {
@@ -16,24 +16,26 @@ namespace BalatroSeedOracle.Windows
         {
             InitializeComponent();
             _analyzerView = this.FindControl<AnalyzerView>("AnalyzerViewContent");
-            
+
             // Get ViewModel from DI
             _viewModel = ServiceHelper.GetRequiredService<AnalyzerViewModel>();
             DataContext = _viewModel;
-            
+
             if (_analyzerView != null)
             {
                 _analyzerView.DataContext = _viewModel;
             }
         }
 
-        public AnalyzerWindow(string seed) : this()
+        public AnalyzerWindow(string seed)
+            : this()
         {
             // Set the seed after initialization
             SetSeedAndAnalyze(seed);
         }
 
-        public AnalyzerWindow(IEnumerable<string> seeds) : this()
+        public AnalyzerWindow(IEnumerable<string> seeds)
+            : this()
         {
             // Set multiple seeds for navigation
             _viewModel?.SetSeeds(seeds);

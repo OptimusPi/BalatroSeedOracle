@@ -141,7 +141,7 @@
                                                          Classes="balatro-bounce-horizontal"
                                                          HorizontalAlignment="Left"
                                                          VerticalAlignment="Center"
-                                                         Margin="-17,2,0,0"
+                                                         Margin="-23,2,0,0"
                                                          ZIndex="10"
                                                          IsVisible="{Binding IsSelected}"
                                                          IsHitTestVisible="False"/>
@@ -1143,7 +1143,7 @@
                                     <!-- PREFERRED DECK TAB CONTENT (two-column layout) -->
                                     <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowDeckTab}">
                                             <Border Grid.Column="0"
-                                                    Background="#FFFFFF"
+                                                    Background="{StaticResource White}"
                                                     CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
@@ -1154,7 +1154,7 @@
                                                         <TextBlock Text="Deck &amp; Stake"
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="14"
-                                                                   Foreground="White"
+                                                                   Foreground="{StaticResource White}"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
                                                     <Grid Grid.Row="1" Margin="15" ColumnDefinitions="Auto,*">
@@ -1176,31 +1176,29 @@
                                                         </Viewbox>
 
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
-                                                            <TextBlock Text="Yellow Deck"
+                                                            <TextBlock Name="DeckNameText"
+                                                                       Text="Red Deck"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="16"
                                                                        FontWeight="Bold"
                                                                        Foreground="{StaticResource Black}"/>
-                                                            <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                            <TextBlock Name="DeckDescriptionText"
+                                                                       FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="14"
                                                                        Foreground="{StaticResource LightGrey}"
-                                                                       TextWrapping="Wrap">
-                                                                <Run Text="Start with"/>
-                                                                <LineBreak/>
-                                                                <Run Text="extra " Foreground="{StaticResource Black}"/>
-                                                                <Run Text="$10" Foreground="{StaticResource Gold}" FontWeight="Bold"/>
-                                                            </TextBlock>
+                                                                       TextWrapping="Wrap"
+                                                                       Text="Start with no extra bonuses"/>
                                                         </StackPanel>
                                                     </Grid>
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Right Column: Deck Defaults - WITH SCROLL -->
-                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                                                <Border Background="#FFFFFF"
-                                                        CornerRadius="8">
+                                            <!-- Right Column: Deck Information with Sticky Header -->
+                                            <Border Grid.Column="2"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
-                                                    <!-- Header -->
+                                                    <!-- Sticky Header -->
                                                     <Border Grid.Row="0"
                                                             Background="{StaticResource Blue}"
                                                             CornerRadius="8,8,0,0"
@@ -1208,16 +1206,16 @@
                                                         <TextBlock Text="Deck Information"
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="14"
-                                                                   Foreground="White"
+                                                                   Foreground="{StaticResource White}"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Content: Explanation text -->
+                                                    <!-- Scrollable Content -->
                                                     <ScrollViewer Grid.Row="1"
                                                                   VerticalScrollBarVisibility="Auto">
                                                         <TextBlock Margin="15"
                                                                    FontFamily="{StaticResource BalatroFont}"
                                                                    FontSize="12"
-                                                                   Foreground="Black"
+                                                                   Foreground="{StaticResource Black}"
                                                                    TextWrapping="Wrap"
                                                                    LineHeight="18">
                                                             <Run Text=" - Spectral Cards in Shop Slots are Ghost Deck ONLY" />
@@ -1235,7 +1233,6 @@
                                                     </ScrollViewer>
                                                 </Grid>
                                             </Border>
-                                            </ScrollViewer>
                                         </Grid>
 
                                     <!-- Placeholder when no filter selected (Balatro Challenges style) -->
@@ -1349,7 +1346,7 @@
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">
-            <Setter Property="Background" Value="#660000"/>
+            <!-- No background change - only triangle indicates selection -->
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 

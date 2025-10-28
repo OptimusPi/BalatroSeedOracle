@@ -1,10 +1,10 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Components;
 using Motely;
 
 namespace BalatroSeedOracle.Features.Analyzer;
@@ -27,7 +27,8 @@ public partial class AnalyzerView : UserControl
         {
             deckStakeSelector.SelectionChanged += (s, selection) =>
             {
-                if (ViewModel == null) return;
+                if (ViewModel == null)
+                    return;
 
                 var deckEnums = new[]
                 {
@@ -45,7 +46,7 @@ public partial class AnalyzerView : UserControl
                     MotelyDeck.Painted,
                     MotelyDeck.Anaglyph,
                     MotelyDeck.Plasma,
-                    MotelyDeck.Erratic
+                    MotelyDeck.Erratic,
                 };
 
                 var stakeEnums = new[]
@@ -57,7 +58,7 @@ public partial class AnalyzerView : UserControl
                     MotelyStake.Blue,
                     MotelyStake.Purple,
                     MotelyStake.Orange,
-                    MotelyStake.Gold
+                    MotelyStake.Gold,
                 };
 
                 if (selection.deckIndex >= 0 && selection.deckIndex < deckEnums.Length)
@@ -78,7 +79,10 @@ public partial class AnalyzerView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        Helpers.DebugLogger.Log("AnalyzerView", $"DataContext changed, ViewModel is {(ViewModel == null ? "NULL" : "SET")}");
+        Helpers.DebugLogger.Log(
+            "AnalyzerView",
+            $"DataContext changed, ViewModel is {(ViewModel == null ? "NULL" : "SET")}"
+        );
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -86,12 +90,17 @@ public partial class AnalyzerView : UserControl
         }
     }
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void ViewModel_PropertyChanged(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs e
+    )
     {
         Helpers.DebugLogger.Log("AnalyzerView", $"Property changed: {e.PropertyName}");
         // Re-render images when ante changes or analysis updates
-        if (e.PropertyName == nameof(AnalyzerViewModel.CurrentBoss) ||
-            e.PropertyName == nameof(AnalyzerViewModel.CurrentVoucher))
+        if (
+            e.PropertyName == nameof(AnalyzerViewModel.CurrentBoss)
+            || e.PropertyName == nameof(AnalyzerViewModel.CurrentVoucher)
+        )
         {
             Helpers.DebugLogger.Log("AnalyzerView", "Triggering RenderImages()");
             RenderImages();
@@ -161,7 +170,8 @@ public partial class AnalyzerView : UserControl
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+            return;
 
         switch (e.Key)
         {

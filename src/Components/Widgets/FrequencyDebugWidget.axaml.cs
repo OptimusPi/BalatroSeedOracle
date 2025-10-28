@@ -38,15 +38,23 @@ namespace BalatroSeedOracle.Components
             ViewModel.OnDetached();
         }
 
-        private void OnMinimizedIconPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnMinimizedIconPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
         {
             _iconPressedPosition = e.GetPosition((Control)sender!);
         }
 
-        private void OnMinimizedIconReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        private void OnMinimizedIconReleased(
+            object? sender,
+            Avalonia.Input.PointerReleasedEventArgs e
+        )
         {
             var releasePosition = e.GetPosition((Control)sender!);
-            var distance = Math.Abs(releasePosition.X - _iconPressedPosition.X) + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
+            var distance =
+                Math.Abs(releasePosition.X - _iconPressedPosition.X)
+                + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
 
             if (distance < 20)
             {

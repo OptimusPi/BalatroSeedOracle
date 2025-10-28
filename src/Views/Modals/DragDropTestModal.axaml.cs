@@ -27,10 +27,18 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (DropZone != null)
             {
-                DropZone.AddHandler(DragDrop.DragOverEvent, OnDropZoneDragOver,
-                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
-                DropZone.AddHandler(DragDrop.DropEvent, OnDropZoneDrop,
-                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+                DropZone.AddHandler(
+                    DragDrop.DragOverEvent,
+                    OnDropZoneDragOver,
+                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+                    handledEventsToo: true
+                );
+                DropZone.AddHandler(
+                    DragDrop.DropEvent,
+                    OnDropZoneDrop,
+                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+                    handledEventsToo: true
+                );
             }
         }
 

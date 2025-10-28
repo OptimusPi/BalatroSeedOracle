@@ -9,6 +9,6 @@ namespace BalatroSeedOracle.Models
     {
         MustHave,
         ShouldHave,
-        MustNotHave
+        MustNotHave,
     }
 }

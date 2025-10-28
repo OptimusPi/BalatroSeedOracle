@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Motely.Filters;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels;
+using Motely.Filters;
 using ItemConfig = BalatroSeedOracle.Models.ItemConfig;
 
 namespace BalatroSeedOracle.Services
@@ -32,12 +32,18 @@ namespace BalatroSeedOracle.Services
         public string SerializeConfig(MotelyJsonConfig config)
         {
             using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            using var writer = new Utf8JsonWriter(
+                stream,
+                new JsonWriterOptions { Indented = true }
+            );
 
             writer.WriteStartObject();
 
             // Metadata
-            writer.WriteString("name", !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter");
+            writer.WriteString(
+                "name",
+                !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter"
+            );
             writer.WriteString("description", config.Description ?? string.Empty);
 
             var authorName = !string.IsNullOrWhiteSpace(config.Author)
@@ -64,7 +70,9 @@ namespace BalatroSeedOracle.Services
 
             // Should array
             writer.WriteStartArray("should");
-            foreach (var item in config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            foreach (
+                var item in config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+            )
             {
                 WriteFilterItem(writer, item, includeScore: true);
             }
@@ -72,7 +80,9 @@ namespace BalatroSeedOracle.Services
 
             // MustNot array
             writer.WriteStartArray("mustNot");
-            foreach (var item in config.MustNot ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            foreach (
+                var item in config.MustNot ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+            )
             {
                 WriteFilterItem(writer, item);
             }
@@ -98,21 +108,27 @@ namespace BalatroSeedOracle.Services
         private string CompactNumberArrays(string json)
         {
             // Regex pattern: "arrayName": [\n  numbers\n]  →  "arrayName": [1,2,3,...]
-            var pattern = @"""(antes|shopSlots|packSlots)"":\s*\[\s*\n\s*((?:\d+,?\s*\n?\s*)*)\s*\]";
+            var pattern =
+                @"""(antes|shopSlots|packSlots)"":\s*\[\s*\n\s*((?:\d+,?\s*\n?\s*)*)\s*\]";
 
-            return System.Text.RegularExpressions.Regex.Replace(json, pattern, match =>
-            {
-                var arrayName = match.Groups[1].Value;
-                var numbersText = match.Groups[2].Value;
+            return System.Text.RegularExpressions.Regex.Replace(
+                json,
+                pattern,
+                match =>
+                {
+                    var arrayName = match.Groups[1].Value;
+                    var numbersText = match.Groups[2].Value;
 
-                // Extract all numbers
-                var numbers = System.Text.RegularExpressions.Regex.Matches(numbersText, @"\d+")
-                    .Cast<System.Text.RegularExpressions.Match>()
-                    .Select(m => m.Value);
+                    // Extract all numbers
+                    var numbers = System
+                        .Text.RegularExpressions.Regex.Matches(numbersText, @"\d+")
+                        .Cast<System.Text.RegularExpressions.Match>()
+                        .Select(m => m.Value);
 
-                // Format as: "antes": [1,2,3,4,5,6,7,8]
-                return $"\"{arrayName}\": [{string.Join(",", numbers)}]";
-            });
+                    // Format as: "antes": [1,2,3,4,5,6,7,8]
+                    return $"\"{arrayName}\": [{string.Join(",", numbers)}]";
+                }
+            );
         }
 
         /// <summary>
@@ -127,23 +143,32 @@ namespace BalatroSeedOracle.Services
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
+                    AllowTrailingCommas = true,
                 };
 
                 var config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
                 if (config == null)
                 {
-                    DebugLogger.LogError("FilterSerializationService", "DeserializeConfig returned null");
+                    DebugLogger.LogError(
+                        "FilterSerializationService",
+                        "DeserializeConfig returned null"
+                    );
                     return null;
                 }
 
                 // Basic sanity logging to aid debugging malformed files
-                DebugLogger.Log("FilterSerializationService", $"Deserialized config: Name='{config.Name}', Must={(config.Must?.Count ?? 0)}, Should={(config.Should?.Count ?? 0)}, MustNot={(config.MustNot?.Count ?? 0)}");
+                DebugLogger.Log(
+                    "FilterSerializationService",
+                    $"Deserialized config: Name='{config.Name}', Must={(config.Must?.Count ?? 0)}, Should={(config.Should?.Count ?? 0)}, MustNot={(config.MustNot?.Count ?? 0)}"
+                );
                 return config;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSerializationService", $"Failed to deserialize config: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterSerializationService",
+                    $"Failed to deserialize config: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -158,13 +183,19 @@ namespace BalatroSeedOracle.Services
             {
                 if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 {
-                    DebugLogger.LogError("FilterSerializationService", $"File not found: {filePath}");
+                    DebugLogger.LogError(
+                        "FilterSerializationService",
+                        $"File not found: {filePath}"
+                    );
                     return null;
                 }
 
                 if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
                 {
-                    DebugLogger.Log("FilterSerializationService", $"Loaded config via Motely loader: {Path.GetFileName(filePath)}");
+                    DebugLogger.Log(
+                        "FilterSerializationService",
+                        $"Loaded config via Motely loader: {Path.GetFileName(filePath)}"
+                    );
                     return config;
                 }
 
@@ -173,13 +204,19 @@ namespace BalatroSeedOracle.Services
                 var fallback = DeserializeConfig(json);
                 if (fallback == null)
                 {
-                    DebugLogger.LogError("FilterSerializationService", $"Fallback deserialization failed for {filePath}");
+                    DebugLogger.LogError(
+                        "FilterSerializationService",
+                        $"Fallback deserialization failed for {filePath}"
+                    );
                 }
                 return fallback;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSerializationService", $"Error loading config from file '{filePath}': {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterSerializationService",
+                    $"Error loading config from file '{filePath}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -190,12 +227,13 @@ namespace BalatroSeedOracle.Services
         public MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterClause(
             string category,
             string itemName,
-            ItemConfig config)
+            ItemConfig config
+        )
         {
             var filterItem = new MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min
+                Min = config.Min,
             };
 
             var normalizedCategory = category.ToLower();
@@ -210,7 +248,7 @@ namespace BalatroSeedOracle.Services
                     ShopSlots = config.ShopSlots?.ToArray(),
                     PackSlots = config.PackSlots?.ToArray(),
                     Tags = config.SkipBlindTags ? true : null,
-                    RequireMega = config.IsMegaArcana ? true : null
+                    RequireMega = config.IsMegaArcana ? true : null,
                 };
             }
 
@@ -249,7 +287,8 @@ namespace BalatroSeedOracle.Services
             ObservableCollection<string> items,
             Dictionary<string, ItemConfig> itemConfigs,
             List<MotelyJsonConfig.MotleyJsonFilterClause> targetList,
-            int defaultScore = 0)
+            int defaultScore = 0
+        )
         {
             foreach (var item in items)
             {
@@ -262,9 +301,10 @@ namespace BalatroSeedOracle.Services
 
                     // Remove the unique key suffix if present
                     var hashIndex = itemNameWithSuffix.IndexOf('#');
-                    var itemName = hashIndex > 0
-                        ? itemNameWithSuffix.Substring(0, hashIndex)
-                        : itemNameWithSuffix;
+                    var itemName =
+                        hashIndex > 0
+                            ? itemNameWithSuffix.Substring(0, hashIndex)
+                            : itemNameWithSuffix;
 
                     var itemConfig = itemConfigs.ContainsKey(item)
                         ? itemConfigs[item]
@@ -274,9 +314,10 @@ namespace BalatroSeedOracle.Services
                     if (filterItem != null)
                     {
                         // Apply score from config if specified, otherwise use antes-based default
-                        filterItem.Score = itemConfig.Score > 0
-                            ? itemConfig.Score
-                            : (itemConfig.Antes?.Count ?? Math.Max(defaultScore, 1));
+                        filterItem.Score =
+                            itemConfig.Score > 0
+                                ? itemConfig.Score
+                                : (itemConfig.Antes?.Count ?? Math.Max(defaultScore, 1));
                         targetList.Add(filterItem);
                     }
                 }
@@ -288,7 +329,8 @@ namespace BalatroSeedOracle.Services
         private void WriteFilterItem(
             Utf8JsonWriter writer,
             MotelyJsonConfig.MotleyJsonFilterClause item,
-            bool includeScore = false)
+            bool includeScore = false
+        )
         {
             writer.WriteStartObject();
 
@@ -326,10 +368,11 @@ namespace BalatroSeedOracle.Services
             }
 
             // Sources (only for applicable item types)
-            bool canHaveSources = item.Type != null &&
-                !item.Type.Equals("tag", StringComparison.OrdinalIgnoreCase) &&
-                !item.Type.Equals("voucher", StringComparison.OrdinalIgnoreCase) &&
-                !item.Type.Equals("boss", StringComparison.OrdinalIgnoreCase);
+            bool canHaveSources =
+                item.Type != null
+                && !item.Type.Equals("tag", StringComparison.OrdinalIgnoreCase)
+                && !item.Type.Equals("voucher", StringComparison.OrdinalIgnoreCase)
+                && !item.Type.Equals("boss", StringComparison.OrdinalIgnoreCase);
 
             if (canHaveSources && item.Sources != null)
             {
@@ -417,20 +460,20 @@ namespace BalatroSeedOracle.Services
 
         private bool IsSourceCapableCategory(string category)
         {
-            return category == "jokers" ||
-                   category == "souljokers" ||
-                   category == "tarots" ||
-                   category == "spectrals" ||
-                   category == "planets" ||
-                   category == "playingcards";
+            return category == "jokers"
+                || category == "souljokers"
+                || category == "tarots"
+                || category == "spectrals"
+                || category == "planets"
+                || category == "playingcards";
         }
 
         private bool HasValidSources(ItemConfig config)
         {
-            return (config.ShopSlots?.Count > 0) ||
-                   (config.PackSlots?.Count > 0) ||
-                   config.SkipBlindTags ||
-                   config.IsMegaArcana;
+            return (config.ShopSlots?.Count > 0)
+                || (config.PackSlots?.Count > 0)
+                || config.SkipBlindTags
+                || config.IsMegaArcana;
         }
 
         private string MapCategoryToType(string category, string itemName)

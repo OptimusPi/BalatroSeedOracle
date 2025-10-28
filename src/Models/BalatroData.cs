@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Motely;
 using BalatroSeedOracle.Helpers;
+using Motely;
 
 namespace BalatroSeedOracle.Models
 {
@@ -28,23 +28,24 @@ namespace BalatroSeedOracle.Models
 
             // Initialize compatibility collections
             InitializeCompatibilityCollections();
-
         }
 
         public static readonly Dictionary<string, string> Jokers = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> TarotCards = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> TarotCards =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> SpectralCards =
             new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> Vouchers = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> Vouchers =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Tags = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> BossBlinds = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> BossBlinds =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> PlanetCards =
             new Dictionary<string, string>();
         public static readonly Dictionary<string, string> BoosterPacks =
             new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Decks = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Stakes = new Dictionary<string, string>();
-
 
         public static readonly Dictionary<string, string> Editions = new()
         {

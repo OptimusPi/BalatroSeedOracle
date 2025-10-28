@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Services
         public Task<List<string>> GetAvailableFiltersAsync()
         {
             var filters = new List<string>();
-            
+
             try
             {
                 var filtersDir = _configurationService.GetFiltersDirectory();
@@ -34,7 +34,10 @@ namespace BalatroSeedOracle.Services
                     var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
                     foreach (var file in jsonFiles)
                     {
-                        if (!Path.GetFileName(file).StartsWith("_UNSAVED_") && !Path.GetFileName(file).StartsWith("__TEMP_"))
+                        if (
+                            !Path.GetFileName(file).StartsWith("_UNSAVED_")
+                            && !Path.GetFileName(file).StartsWith("__TEMP_")
+                        )
                         {
                             filters.Add(file);
                         }
@@ -71,7 +74,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(filePath);
+                var config =
+                    await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
+                        filePath
+                    );
                 return config != null;
             }
             catch

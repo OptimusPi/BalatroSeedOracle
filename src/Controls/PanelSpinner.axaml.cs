@@ -8,9 +8,9 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Controls;
 
@@ -47,8 +47,10 @@ public partial class PanelSpinner : UserControl
             o => o.SelectedItem
         );
 
-    public static readonly StyledProperty<bool> ShowArrowsProperty =
-        AvaloniaProperty.Register<PanelSpinner, bool>(nameof(ShowArrows), defaultValue: true);
+    public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<
+        PanelSpinner,
+        bool
+    >(nameof(ShowArrows), defaultValue: true);
 
     public bool ShowArrows
     {
@@ -109,23 +111,28 @@ public partial class PanelSpinner : UserControl
         {
             if (e.Property == ShowArrowsProperty)
             {
-                if (_prevButton != null) _prevButton.IsVisible = ShowArrows;
-                if (_nextButton != null) _nextButton.IsVisible = ShowArrows;
+                if (_prevButton != null)
+                    _prevButton.IsVisible = ShowArrows;
+                if (_nextButton != null)
+                    _nextButton.IsVisible = ShowArrows;
             }
         };
 
         // Set initial visibility
-        if (_prevButton != null) _prevButton.IsVisible = ShowArrows;
-        if (_nextButton != null) _nextButton.IsVisible = ShowArrows;
+        if (_prevButton != null)
+            _prevButton.IsVisible = ShowArrows;
+        if (_nextButton != null)
+            _nextButton.IsVisible = ShowArrows;
     }
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)
     {
-        if (_items.Count == 0) return;
-        
+        if (_items.Count == 0)
+            return;
+
         // Play filter switch sound
         SoundEffectService.Instance.PlayFilterSwitch();
-        
+
         // Circular navigation: if at beginning, wrap to end
         if (_currentIndex > 0)
         {
@@ -140,11 +147,12 @@ public partial class PanelSpinner : UserControl
 
     private void OnNextClick(object? sender, RoutedEventArgs e)
     {
-        if (_items.Count == 0) return;
-        
+        if (_items.Count == 0)
+            return;
+
         // Play filter switch sound
         SoundEffectService.Instance.PlayFilterSwitch();
-        
+
         // Circular navigation: if at end, wrap to beginning
         if (_currentIndex < _items.Count - 1)
         {
@@ -223,10 +231,12 @@ public partial class PanelSpinner : UserControl
             var pageIndicator = new TextBlock
             {
                 Text = $"{_currentIndex + 1}/{_items.Count}",
-                FontFamily = Application.Current?.Resources["BalatroFont"] as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.Resources["BalatroFont"] as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 14,
                 Foreground = Brushes.White,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             };
             _dotsPanel.Children.Add(pageIndicator);
         }
@@ -308,7 +318,8 @@ public static class PanelItemFactory
                         ? desc
                         : "",
                     Value = $"{deckKey}_Deck",
-                    GetImage = () => SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
+                    GetImage = () =>
+                        SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
                 }
             );
         }

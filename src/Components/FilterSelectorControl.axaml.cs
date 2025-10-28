@@ -2,9 +2,9 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Models;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components
 {
@@ -12,7 +12,10 @@ namespace BalatroSeedOracle.Components
     {
         // IsInSearchModal Dependency Property
         public static readonly StyledProperty<bool> IsInSearchModalProperty =
-            AvaloniaProperty.Register<FilterSelectorControl, bool>(nameof(IsInSearchModal), defaultValue: false);
+            AvaloniaProperty.Register<FilterSelectorControl, bool>(
+                nameof(IsInSearchModal),
+                defaultValue: false
+            );
 
         public bool IsInSearchModal
         {
@@ -21,9 +24,9 @@ namespace BalatroSeedOracle.Components
         }
 
         // Events that parent controls can subscribe to
-        public event EventHandler<string>? FilterSelected;       // When a filter is clicked in list (for preview)
-        public event EventHandler<string>? FilterConfirmed;      // When "SELECT THIS FILTER" button is clicked (confirm and advance)
-        public event EventHandler<string>? FilterEditRequested;   // When Edit button is clicked
+        public event EventHandler<string>? FilterSelected; // When a filter is clicked in list (for preview)
+        public event EventHandler<string>? FilterConfirmed; // When "SELECT THIS FILTER" button is clicked (confirm and advance)
+        public event EventHandler<string>? FilterEditRequested; // When Edit button is clicked
         public event EventHandler<string>? FilterCopyRequested;
         public event EventHandler<string>? FilterDeleteRequested; // When Delete button is clicked
         public event EventHandler? NewFilterRequested;
@@ -146,7 +149,9 @@ namespace BalatroSeedOracle.Components
                             var spacing = stackPanel != null ? stackPanel.Spacing : 0;
 
                             // Add a small safety buffer to avoid off‑by‑one clipping
-                            return Math.Ceiling(measuredHeight + marginTop + marginBottom + spacing + 2);
+                            return Math.Ceiling(
+                                measuredHeight + marginTop + marginBottom + spacing + 2
+                            );
                         }
                     }
                 }
@@ -187,12 +192,18 @@ namespace BalatroSeedOracle.Components
                     // In FiltersModal context: just show preview (requires explicit "EDIT" click)
                     if (IsInSearchModal)
                     {
-                        Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter clicked in SearchModal - auto-advancing with: {filterPath}");
+                        Helpers.DebugLogger.Log(
+                            "FilterSelectorControl",
+                            $"Filter clicked in SearchModal - auto-advancing with: {filterPath}"
+                        );
                         FilterConfirmed?.Invoke(this, filterPath);
                     }
                     else
                     {
-                        Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter clicked in FiltersModal - showing preview: {filterPath}");
+                        Helpers.DebugLogger.Log(
+                            "FilterSelectorControl",
+                            $"Filter clicked in FiltersModal - showing preview: {filterPath}"
+                        );
                         FilterSelected?.Invoke(this, filterPath);
                     }
                 }
@@ -229,17 +240,26 @@ namespace BalatroSeedOracle.Components
         {
             Helpers.DebugLogger.Log("FilterSelectorControl", "SELECT THIS FILTER button clicked!");
             var filterPath = _viewModel?.GetSelectedFilterPath();
-            Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter path: {filterPath ?? "null"}");
+            Helpers.DebugLogger.Log(
+                "FilterSelectorControl",
+                $"Filter path: {filterPath ?? "null"}"
+            );
 
             if (!string.IsNullOrEmpty(filterPath))
             {
-                Helpers.DebugLogger.Log("FilterSelectorControl", $"Firing FilterConfirmed event with path: {filterPath}");
+                Helpers.DebugLogger.Log(
+                    "FilterSelectorControl",
+                    $"Firing FilterConfirmed event with path: {filterPath}"
+                );
                 // Fire FilterConfirmed event (NOT FilterSelected) so SearchModal knows to advance
                 FilterConfirmed?.Invoke(this, filterPath);
             }
             else
             {
-                Helpers.DebugLogger.LogError("FilterSelectorControl", "No filter selected or path is empty!");
+                Helpers.DebugLogger.LogError(
+                    "FilterSelectorControl",
+                    "No filter selected or path is empty!"
+                );
             }
         }
 

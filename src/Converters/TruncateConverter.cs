@@ -6,7 +6,12 @@ namespace BalatroSeedOracle.Converters
 {
     public class TruncateConverter : IValueConverter
     {
-        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             var input = value as string ?? string.Empty;
 
@@ -30,7 +35,12 @@ namespace BalatroSeedOracle.Converters
             return input.Substring(0, take) + "…";
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             return value ?? string.Empty;
         }

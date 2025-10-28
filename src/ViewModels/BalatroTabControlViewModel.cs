@@ -31,7 +31,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void SwitchTab(int tabIndex)
         {
-            if (tabIndex < 0 || tabIndex >= Tabs.Count) return;
+            if (tabIndex < 0 || tabIndex >= Tabs.Count)
+                return;
 
             // Update all tab states
             for (int i = 0; i < Tabs.Count; i++)

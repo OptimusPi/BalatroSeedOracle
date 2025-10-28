@@ -1,10 +1,10 @@
+using System;
+using System.Collections;
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Xaml.Interactivity;
-using System;
-using System.Collections;
-using System.Collections.Specialized;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -65,45 +65,55 @@ namespace BalatroSeedOracle.Behaviors
                 }
 
                 var count = itemList.Count;
-                if (count == 0) return;
+                if (count == 0)
+                    return;
 
                 // Wait for items to be realized
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    var panel = AssociatedObject.GetValue(ItemsControl.ItemsPanelProperty)?
-                        .Build() as Canvas;
-
-                    if (panel == null) return;
-
-                    var index = 0;
-                    foreach (var visual in AssociatedObject.GetRealizedContainers())
+                Avalonia.Threading.Dispatcher.UIThread.Post(
+                    () =>
                     {
-                        if (visual is Control control && index < count)
+                        var panel =
+                            AssociatedObject.GetValue(ItemsControl.ItemsPanelProperty)?.Build()
+                            as Canvas;
+
+                        if (panel == null)
+                            return;
+
+                        var index = 0;
+                        foreach (var visual in AssociatedObject.GetRealizedContainers())
                         {
-                            // Calculate position and rotation for fanned effect
-                            var centerIndex = (count - 1) / 2.0;
-                            var offsetFromCenter = index - centerIndex;
+                            if (visual is Control control && index < count)
+                            {
+                                // Calculate position and rotation for fanned effect
+                                var centerIndex = (count - 1) / 2.0;
+                                var offsetFromCenter = index - centerIndex;
 
-                            // X position: overlapping cards
-                            var x = index * CardSpacing;
+                                // X position: overlapping cards
+                                var x = index * CardSpacing;
 
-                            // Y position: slight arc (cards in middle slightly higher)
-                            var normalizedOffset = Math.Abs(offsetFromCenter / centerIndex);
-                            var y = normalizedOffset * normalizedOffset * 12; // Parabolic curve
+                                // Y position: slight arc (cards in middle slightly higher)
+                                var normalizedOffset = Math.Abs(offsetFromCenter / centerIndex);
+                                var y = normalizedOffset * normalizedOffset * 12; // Parabolic curve
 
-                            // Rotation: fan out from center
-                            var rotation = (offsetFromCenter / centerIndex) * MaxRotation;
+                                // Rotation: fan out from center
+                                var rotation = (offsetFromCenter / centerIndex) * MaxRotation;
 
-                            // Apply transformsCanvas.SetLeft(control, x);
-                            Canvas.SetTop(control, y);
+                                // Apply transformsCanvas.SetLeft(control, x);
+                                Canvas.SetTop(control, y);
 
-                            control.RenderTransform = new RotateTransform(rotation);
-                            control.RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative);
+                                control.RenderTransform = new RotateTransform(rotation);
+                                control.RenderTransformOrigin = new RelativePoint(
+                                    0.5,
+                                    1.0,
+                                    RelativeUnit.Relative
+                                );
 
-                            index++;
+                                index++;
+                            }
                         }
-                    }
-                }, Avalonia.Threading.DispatcherPriority.Loaded);
+                    },
+                    Avalonia.Threading.DispatcherPriority.Loaded
+                );
             }
         }
     }

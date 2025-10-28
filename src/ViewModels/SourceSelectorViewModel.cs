@@ -63,13 +63,62 @@ namespace BalatroSeedOracle.ViewModels
 
         private void InitializeSources()
         {
-            Sources.Add(new SourceOptionViewModel("", "Any Source", "Any source - item can come from anywhere in the run", "🌟"));
-            Sources.Add(new SourceOptionViewModel("SmallBlindTag", "🏷️ Small Blind Tag", "Small Blind Skip Tag - obtained by skipping small blinds", "🏷️"));
-            Sources.Add(new SourceOptionViewModel("BigBlindTag", "🏷️ Big Blind Tag", "Big Blind Skip Tag - obtained by skipping big blinds", "🏷️"));
-            Sources.Add(new SourceOptionViewModel("StandardPack", "📦 Standard Pack", "Standard Booster Pack - contains random cards/items", "📦"));
-            Sources.Add(new SourceOptionViewModel("BuffoonPack", "🃏 Buffoon Pack", "Buffoon Pack - contains 2 jokers + 1 consumable", "🃏"));
-            Sources.Add(new SourceOptionViewModel("Shop", "🛒 Shop", "Shop - purchasable from the shop during blinds", "🛒"));
-            Sources.Add(new SourceOptionViewModel("StartingItems", "⭐ Starting Items", "Starting Items - items that come with the deck/stake", "⭐"));
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "",
+                    "Any Source",
+                    "Any source - item can come from anywhere in the run",
+                    "🌟"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "SmallBlindTag",
+                    "🏷️ Small Blind Tag",
+                    "Small Blind Skip Tag - obtained by skipping small blinds",
+                    "🏷️"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "BigBlindTag",
+                    "🏷️ Big Blind Tag",
+                    "Big Blind Skip Tag - obtained by skipping big blinds",
+                    "🏷️"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "StandardPack",
+                    "📦 Standard Pack",
+                    "Standard Booster Pack - contains random cards/items",
+                    "📦"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "BuffoonPack",
+                    "🃏 Buffoon Pack",
+                    "Buffoon Pack - contains 2 jokers + 1 consumable",
+                    "🃏"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "Shop",
+                    "🛒 Shop",
+                    "Shop - purchasable from the shop during blinds",
+                    "🛒"
+                )
+            );
+            Sources.Add(
+                new SourceOptionViewModel(
+                    "StartingItems",
+                    "⭐ Starting Items",
+                    "Starting Items - items that come with the deck/stake",
+                    "⭐"
+                )
+            );
         }
 
         #endregion
@@ -103,7 +152,7 @@ namespace BalatroSeedOracle.ViewModels
                     "BuffoonPack" => "Buffoon Pack",
                     "Shop" => "Shop Purchase",
                     "StartingItems" => "Starting Item",
-                    _ => "Unknown Source"
+                    _ => "Unknown Source",
                 };
 
                 PreviewText = $"{SelectedSource.Emoji} Searching for items from: {sourceName}";
@@ -112,10 +161,10 @@ namespace BalatroSeedOracle.ViewModels
                 PreviewColor = SelectedSource.Tag switch
                 {
                     "SmallBlindTag" or "BigBlindTag" => "#FFD700", // Gold for tags
-                    "StandardPack" or "BuffoonPack" => "#00BFFF",  // Blue for packs
-                    "Shop" => "#32CD32",                            // Green for shop
-                    "StartingItems" => "#FF69B4",                   // Pink for starting
-                    _ => "#CCCCCC"                                  // Gray for any
+                    "StandardPack" or "BuffoonPack" => "#00BFFF", // Blue for packs
+                    "Shop" => "#32CD32", // Green for shop
+                    "StartingItems" => "#FF69B4", // Pink for starting
+                    _ => "#CCCCCC", // Gray for any
                 };
             }
         }
@@ -154,7 +203,7 @@ namespace BalatroSeedOracle.ViewModels
                 "BuffoonPack" => "Buffoon Pack",
                 "Shop" => "Shop",
                 "StartingItems" => "Starting Items",
-                _ => "Unknown"
+                _ => "Unknown",
             };
         }
 
@@ -168,7 +217,7 @@ namespace BalatroSeedOracle.ViewModels
                 "StandardPack",
                 "BuffoonPack",
                 "Shop",
-                "StartingItems"
+                "StartingItems",
             };
         }
 
@@ -180,7 +229,12 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class SourceOptionViewModel
     {
-        public SourceOptionViewModel(string tag, string displayName, string description, string emoji)
+        public SourceOptionViewModel(
+            string tag,
+            string displayName,
+            string description,
+            string emoji
+        )
         {
             Tag = tag;
             DisplayName = displayName;

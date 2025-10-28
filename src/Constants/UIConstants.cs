@@ -19,7 +19,6 @@ public static class UIConstants
     public const int UIAssetSpriteWidth = 18;
     public const int UIAssetSpriteHeight = 18;
 
-
     // Font Sizes
     public const int SmallFontSize = 12;
     public const int DefaultFontSize = 14;

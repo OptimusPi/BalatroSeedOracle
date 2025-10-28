@@ -17,6 +17,7 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
-        public AudioVisualizerSettingsModalViewModel? ViewModel => DataContext as AudioVisualizerSettingsModalViewModel;
+        public AudioVisualizerSettingsModalViewModel? ViewModel =>
+            DataContext as AudioVisualizerSettingsModalViewModel;
     }
 }

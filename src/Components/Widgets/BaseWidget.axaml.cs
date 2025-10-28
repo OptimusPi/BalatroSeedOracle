@@ -65,7 +65,10 @@ namespace BalatroSeedOracle.Components
             while (clickedElement != null)
             {
                 // Don't drag if clicking on window control buttons
-                if (clickedElement is Button && clickedElement.Classes.Contains("widget-minimize-btn"))
+                if (
+                    clickedElement is Button
+                    && clickedElement.Classes.Contains("widget-minimize-btn")
+                )
                 {
                     return;
                 }
@@ -117,12 +120,14 @@ namespace BalatroSeedOracle.Components
                     var selfBounds = expandedView.Bounds;
 
                     // Fallbacks if bounds aren't available yet
-                    var maxX = parentBounds.Width > 0 && selfBounds.Width > 0
-                        ? Math.Max(0, parentBounds.Width - selfBounds.Width)
-                        : double.MaxValue;
-                    var maxY = parentBounds.Height > 0 && selfBounds.Height > 0
-                        ? Math.Max(0, parentBounds.Height - selfBounds.Height)
-                        : double.MaxValue;
+                    var maxX =
+                        parentBounds.Width > 0 && selfBounds.Width > 0
+                            ? Math.Max(0, parentBounds.Width - selfBounds.Width)
+                            : double.MaxValue;
+                    var maxY =
+                        parentBounds.Height > 0 && selfBounds.Height > 0
+                            ? Math.Max(0, parentBounds.Height - selfBounds.Height)
+                            : double.MaxValue;
 
                     var clampedLeft = Math.Clamp(newMargin.Left, 0, maxX);
                     var clampedTop = Math.Clamp(newMargin.Top, 0, maxY);

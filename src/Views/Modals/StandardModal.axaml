@@ -25,22 +25,23 @@
                 <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container - Balatro style (RESPONSIVE!) -->
-            <Border x:Name="ModalBorder"
-                    Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource ModalGrey}"
-                    CornerRadius="20"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="4"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    MinWidth="600"
-                    MinHeight="400"
-                    MaxWidth="1400"
-                    MaxHeight="900"
-                    BoxShadow="{StaticResource StandardModalShadow}"
-                    ClipToBounds="False"
-                    Padding="4,4,4,0">
+            <!-- Main modal container - Balatro style with subtle south edge -->
+            <Grid Grid.Column="1" Grid.Row="1"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  MinWidth="600"
+                  MinHeight="400"
+                  MaxWidth="1400"
+                  MaxHeight="900">
+                <!-- Main border with standard edge -->
+                <Border x:Name="ModalBorder"
+                        Background="{StaticResource ModalGrey}"
+                        CornerRadius="20"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="4"
+                        BoxShadow="{StaticResource StandardModalShadow}"
+                        ClipToBounds="False"
+                        Padding="4,4,4,0">
                 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -64,6 +65,16 @@
                             Margin="0"/>
                 </Grid>
             </Border>
+
+            <!-- Subtle silver/light grey bottom edge (Balatro style) -->
+            <Rectangle VerticalAlignment="Bottom"
+                       Height="1"
+                       Fill="{StaticResource ModalBorderSouth}"
+                       Margin="4,0,4,4"
+                       RadiusX="20"
+                       RadiusY="20"
+                       IsHitTestVisible="False"/>
+        </Grid>
         </Grid>
     </Grid>
 

@@ -65,6 +65,70 @@
             <Setter Property="Foreground" Value="{StaticResource LightCream}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
+
+        <!-- Balatro Stat Strip Styles -->
+        <Style Selector="Border.balatro-stat-strip">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#4A5A6A"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="BoxShadow" Value="0 2 0 0 #20000000, inset 0 -1 0 0 #30FFFFFF, inset 0 1 2 0 #40000000"/>
+        </Style>
+
+        <Style Selector="Border.strip-label">
+            <Setter Property="Background" Value="#8FA5B0"/>
+            <Setter Property="CornerRadius" Value="4,0,0,4"/>
+            <Setter Property="Padding" Value="12,0,12,0"/>
+        </Style>
+
+        <Style Selector="Border.strip-value">
+            <Setter Property="Background" Value="#1A1D23"/>
+            <Setter Property="CornerRadius" Value="0,4,4,0"/>
+            <Setter Property="Padding" Value="12,0,12,0"/>
+        </Style>
+
+        <Style Selector="TextBlock.strip-label-text">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1A1D23"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="TextBlock.strip-value-text">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource LightCream}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Color variants for different stat types -->
+        <Style Selector="Border.strip-label.gold">
+            <Setter Property="Background" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Border.strip-label.green">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+
+        <Style Selector="Border.strip-label.cyan">
+            <Setter Property="Background" Value="#6ECFFF"/>
+        </Style>
+
+        <Style Selector="TextBlock.strip-value-text.gold">
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="TextBlock.strip-value-text.green">
+            <Setter Property="Foreground" Value="{StaticResource Green}"/>
+        </Style>
+
+        <Style Selector="TextBlock.strip-value-text.cyan">
+            <Setter Property="Foreground" Value="#6ECFFF"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid>
@@ -80,14 +144,50 @@
             <Border Grid.Column="0"
                     Classes="modal-content-box"
                     Margin="0,0,6,0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="0">
 
-                    <StackPanel Grid.Row="0" Spacing="10">
-                        <!-- Deck Spinner -->
+                        <!-- Active Filter Display -->
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Active Filter"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No filter loaded'}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource Gold}"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+                        </StackPanel>
+
+                        <Rectangle Height="1"
+                                   Fill="{StaticResource DarkBorder}"
+                                   Margin="0,0,0,8"
+                                   HorizontalAlignment="Stretch"/>
+
+                        <!-- Search Mode Spinner -->
+                        <controls:SpinnerControl Name="SearchModeSpinner"
+                                                Label="Search Mode"
+                                                SpinnerType="default"
+                                                Value="{Binding SelectedSearchMode}"
+                                                Minimum="0"
+                                                Maximum="2"
+                                                ReadOnly="True"
+                                                DisplayValues="{Binding SearchModeDisplayValues}"
+                                                HorizontalAlignment="Stretch"
+                                                ShadowDirection="south-east"
+                                                Margin="0,0,0,8"/>
+
+                        <Rectangle Height="1"
+                                   Fill="{StaticResource DarkBorder}"
+                                   Margin="0,0,0,8"
+                                   HorizontalAlignment="Stretch"/>
+
+                        <!-- Deck & Stake (Always Visible) -->
                         <controls:SpinnerControl Name="DeckSpinner"
                                                 Label="Deck"
                                                 SpinnerType="deck"
@@ -97,9 +197,9 @@
                                                 ReadOnly="True"
                                                 DisplayValues="{Binding DeckDisplayValues}"
                                                 HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"/>
+                                                ShadowDirection="south-east"
+                                                Margin="0,0,0,8"/>
 
-                        <!-- Stake Spinner -->
                         <controls:SpinnerControl Name="StakeSpinner"
                                                 Label="Stake"
                                                 SpinnerType="stake"
@@ -109,27 +209,92 @@
                                                 ReadOnly="True"
                                                 DisplayValues="{Binding StakeDisplayValues}"
                                                 HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"/>
+                                                ShadowDirection="south-east"
+                                                Margin="0,0,0,8"/>
 
-                        <!-- Threads -->
+                        <Rectangle Height="1"
+                                   Fill="{StaticResource DarkBorder}"
+                                   Margin="0,0,0,8"
+                                   HorizontalAlignment="Stretch"/>
+
+                        <!-- Mode-Specific Settings -->
+
+                        <!-- Threads (All Seeds, Word List) -->
                         <controls:SpinnerControl Name="ThreadsSpinner"
                                                 Label="CPU Threads"
                                                 Value="{Binding ThreadCount}"
                                                 Minimum="1"
                                                 Maximum="{Binding MaxThreadCount}"
                                                 HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"/>
+                                                ShadowDirection="south-east"
+                                                IsVisible="{Binding IsThreadsVisible}"
+                                                Margin="0,0,0,8"/>
 
-                        <!-- Batch Size -->
+                        <!-- Batch Size (All Seeds, Word List) -->
                         <controls:SpinnerControl Name="BatchSizeSpinner"
                                                 Label="Batch Size (35^n)"
                                                 Value="{Binding BatchSize}"
                                                 Minimum="0"
                                                 Maximum="3"
                                                 HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"/>
+                                                ShadowDirection="south-east"
+                                                IsVisible="{Binding IsBatchSizeVisible}"
+                                                Margin="0,0,0,8"/>
 
-                        <!-- Min Score -->
+                        <!-- Continue Checkbox (All Seeds only) -->
+                        <CheckBox Name="ContinueCheckBox"
+                                  Content="Continue from last position"
+                                  IsChecked="{Binding ContinueFromLast}"
+                                  Foreground="{StaticResource White}"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="11"
+                                  IsVisible="{Binding IsContinueVisible}"
+                                  Margin="0,0,0,8"/>
+
+                        <!-- Seed Input (Single Seed only) -->
+                        <StackPanel IsVisible="{Binding IsSeedInputVisible}"
+                                    Margin="0,0,0,8">
+                            <TextBlock Text="Seed Name"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <TextBox Name="SeedInputBox"
+                                     Text="{Binding SeedInput}"
+                                     Watermark="Enter seed..."
+                                     MaxLength="8"
+                                     FontFamily="{StaticResource BalatroFont}"
+                                     FontSize="14"
+                                     TextAlignment="Center"
+                                     Background="{StaticResource DarkTealGrey}"
+                                     BorderBrush="{StaticResource DarkBorder}"
+                                     BorderThickness="2"
+                                     CornerRadius="4"
+                                     Height="36"
+                                     VerticalContentAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- WordList Dropdown (Word List only) -->
+                        <controls:SpinnerControl Name="WordListSpinner"
+                                                Label="Word List"
+                                                SpinnerType="default"
+                                                Value="{Binding SelectedWordListIndex}"
+                                                Minimum="0"
+                                                Maximum="{Binding WordListMaxIndex}"
+                                                ReadOnly="True"
+                                                DisplayValues="{Binding AvailableWordLists}"
+                                                HorizontalAlignment="Stretch"
+                                                ShadowDirection="south-east"
+                                                IsVisible="{Binding IsWordListVisible}"
+                                                Margin="0,0,0,8"/>
+
+                        <Rectangle Height="1"
+                                   Fill="{StaticResource DarkBorder}"
+                                   Margin="0,0,0,8"
+                                   HorizontalAlignment="Stretch"/>
+
+                        <!-- Min Score (Always Visible) -->
                         <controls:SpinnerControl Name="MinScoreSpinner"
                                                 Label="Min Score"
                                                 SpinnerType="min-score"
@@ -138,10 +303,10 @@
                                                 Maximum="5"
                                                 AllowAuto="True"
                                                 HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"/>
-
+                                                ShadowDirection="south-east"
+                                                Margin="0,0,0,0"/>
                     </StackPanel>
-                </Grid>
+                </ScrollViewer>
             </Border>
 
             <!-- Middle Column - Console -->
@@ -150,28 +315,11 @@
                     Margin="0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Active Filter Display -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal"
-                                HorizontalAlignment="Center" Margin="0,0,0,6">
-                        <TextBlock Text="Active Filter:"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource MediumGrey}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0"/>
-                        <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No filter loaded'}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <TextBox Grid.Row="1"
+                    <TextBox Grid.Row="0"
                              Name="ConsoleOutput"
                              Classes="terminal"
                              IsReadOnly="True"
@@ -182,44 +330,11 @@
                              Text="{Binding ConsoleText}"/>
 
                     <!-- Buttons row -->
-                    <StackPanel Grid.Row="2"
+                    <StackPanel Grid.Row="1"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Spacing="12"
                                 Margin="0,12,0,0">
-                        <!-- Debug seed input (moved from left column) -->
-                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="Debug Seed:"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="10"
-                                       Foreground="{StaticResource MediumGrey}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,2"/>
-                            <TextBox Name="DebugSeedInput"
-                                     Text="{Binding DebugSeed}"
-                                     Watermark="Enter seed..."
-                                     MaxLength="8"
-                                     Width="110"
-                                     Height="32"
-                                     FontFamily="{StaticResource BalatroFont}"
-                                     FontSize="12"
-                                     TextAlignment="Center"
-                                     Background="{StaticResource DarkTealGrey}"
-                                     BorderBrush="{StaticResource DarkBorder}"
-                                     BorderThickness="2"
-                                     IsEnabled="{Binding IsDebugMode}"
-                                     CornerRadius="4"
-                                     VerticalContentAlignment="Center"/>
-                            <CheckBox Name="DebugCheckBox"
-                                      Content="Debug"
-                                      IsChecked="{Binding IsDebugMode}"
-                                      Foreground="White"
-                                      HorizontalAlignment="Center"
-                                      FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="10"
-                                      Margin="0,2,0,0"/>
-                        </StackPanel>
-
                         <!-- COOK button -->
                         <Button Name="CookButton"
                                 Content="{Binding CookButtonText}"
@@ -250,73 +365,117 @@
             <Border Grid.Column="2"
                     Classes="modal-content-box"
                     Margin="6,0,0,0">
-                <StackPanel Spacing="8">
+                <StackPanel Spacing="0">
                     <TextBlock Text="Search Progress"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="14"
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
-                               Margin="0,0,0,8"/>
+                               Margin="0,0,0,12"/>
 
-                    <!-- Progress % -->
-                    <StackPanel>
-                        <TextBlock Text="Progress %" Classes="stat-label"/>
-                        <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0.00}%'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Progress % Strip (Gold) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label gold">
+                                <TextBlock Text="Progress" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0.00}%', FallbackValue='0.00%'}"
+                                           Classes="strip-value-text gold"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Speed -->
-                    <StackPanel>
-                        <TextBlock Text="Speed" Classes="stat-label"/>
-                        <TextBlock Text="{Binding SearchSpeed, FallbackValue='0 seeds/s'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Speed Strip (Gold) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label gold">
+                                <TextBlock Text="Speed" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding SearchSpeed, FallbackValue='0 seeds/s'}"
+                                           Classes="strip-value-text gold"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Current Batch -->
-                    <StackPanel>
-                        <TextBlock Text="Current Batch" Classes="stat-label"/>
-                        <TextBlock Text="{Binding CurrentBatch, FallbackValue='0'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Seeds Processed Strip (White) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label">
+                                <TextBlock Text="Seeds" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding SeedsProcessed, StringFormat='{}{0:N0}', FallbackValue='0'}"
+                                           Classes="strip-value-text"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Max Batch -->
-                    <StackPanel>
-                        <TextBlock Text="Max Batch" Classes="stat-label"/>
-                        <TextBlock Text="{Binding MaxBatch, FallbackValue='0'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Time Elapsed Strip (White) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label">
+                                <TextBlock Text="Time" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding TimeElapsed, FallbackValue='00:00:00'}"
+                                           Classes="strip-value-text"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Seeds Processed -->
-                    <StackPanel>
-                        <TextBlock Text="Seeds" Classes="stat-label"/>
-                        <TextBlock Text="{Binding SeedsProcessed, FallbackValue='0'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- ETA Strip (Cyan) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label cyan">
+                                <TextBlock Text="ETA" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding EstimatedTimeRemaining, FallbackValue='--:--:--'}"
+                                           Classes="strip-value-text cyan"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Time Elapsed -->
-                    <StackPanel>
-                        <TextBlock Text="Time" Classes="stat-label"/>
-                        <TextBlock Text="{Binding TimeElapsed, FallbackValue='00:00:00'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Results Found Strip (Green) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label green">
+                                <TextBlock Text="Found" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding ResultsCount, StringFormat='{}{0:N0}', FallbackValue='0'}"
+                                           Classes="strip-value-text green"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- ETA -->
-                    <StackPanel>
-                        <TextBlock Text="ETA" Classes="stat-label"/>
-                        <TextBlock Text="{Binding EstimatedTimeRemaining, FallbackValue='--:--:--'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Find Rate Strip (White) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label">
+                                <TextBlock Text="Rate" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding FindRate, FallbackValue='0.00%'}"
+                                           Classes="strip-value-text"/>
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <!-- Results Found -->
-                    <StackPanel>
-                        <TextBlock Text="Found" Classes="stat-label"/>
-                        <TextBlock Text="{Binding ResultsCount, FallbackValue='0'}" Classes="stat-value" Foreground="{StaticResource Green}"/>
-                    </StackPanel>
-
-                    <!-- Find Rate -->
-                    <StackPanel>
-                        <TextBlock Text="Rate" Classes="stat-label"/>
-                        <TextBlock Text="{Binding FindRate, FallbackValue='0.00%'}" Classes="stat-value"/>
-                    </StackPanel>
-
-                    <!-- Rarity -->
-                    <StackPanel>
-                        <TextBlock Text="Rarity" Classes="stat-label"/>
-                        <TextBlock Text="{Binding Rarity, FallbackValue='1 in 0'}" Classes="stat-value"/>
-                    </StackPanel>
+                    <!-- Rarity Strip (Gold) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0" Classes="strip-label gold">
+                                <TextBlock Text="Rarity" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value">
+                                <TextBlock Text="{Binding Rarity, FallbackValue='--'}"
+                                           Classes="strip-value-text gold"/>
+                            </Border>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </Border>
         </Grid>

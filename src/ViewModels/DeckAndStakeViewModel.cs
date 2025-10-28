@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Media;
+using BalatroSeedOracle.Components;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Components;
-using Avalonia.Media;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -26,11 +26,11 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int stakeIndex;
 
-    [ObservableProperty]
-    private IImage? deckImage;
+        [ObservableProperty]
+        private IImage? deckImage;
 
-    [ObservableProperty]
-    private IImage? stakeImage;
+        [ObservableProperty]
+        private IImage? stakeImage;
 
         public IRelayCommand PreviousDeckCommand => _inner.PreviousDeckCommand;
         public IRelayCommand NextDeckCommand => _inner.NextDeckCommand;

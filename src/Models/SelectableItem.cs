@@ -79,7 +79,7 @@ namespace BalatroSeedOracle.Models
                 }
             }
         }
-        
+
         public IImage? SoulFaceImage
         {
             get
@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.Models
                 return null;
             }
         }
-        
+
         public bool IsFavorite { get; set; }
 
         public string DisplayName
@@ -106,7 +106,7 @@ namespace BalatroSeedOracle.Models
                 }
             }
         }
-        
+
         public string ItemKey
         {
             get => string.IsNullOrEmpty(_itemKey) ? $"{_type}_{_name}" : _itemKey;
@@ -119,7 +119,7 @@ namespace BalatroSeedOracle.Models
                 }
             }
         }
-        
+
         public string ItemType => _type;
 
         public bool IsBeingDragged

@@ -15,13 +15,13 @@ namespace BalatroSeedOracle.Views;
 public partial class MainWindow : Window
 {
     private BalatroMainMenu? _mainMenu;
-    
+
     public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
     {
         InitializeComponent();
-        
+
         // Set DataContext to ViewModel from DI
         DataContext = ServiceHelper.GetRequiredService<MainWindowViewModel>();
 
@@ -32,13 +32,12 @@ public partial class MainWindow : Window
             buyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
 
-
         // Get reference to main menu for cleanup
         _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
 
         // Handle window closing
         Closing += OnWindowClosing;
-        
+
         // Handle window resize to reposition widgets
         SizeChanged += OnWindowSizeChanged;
     }
@@ -58,13 +57,17 @@ public partial class MainWindow : Window
                 DebugLogger.Log("MainWindow", "Starting cleanup");
 
                 // First ensure any running search state is saved
-                var userProfileService = BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
+                var userProfileService =
+                    BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
                 if (userProfileService != null)
                 {
-                    DebugLogger.LogImportant("MainWindow", "Flushing user profile to save search state...");
+                    DebugLogger.LogImportant(
+                        "MainWindow",
+                        "Flushing user profile to save search state..."
+                    );
                     userProfileService.FlushProfile();
                 }
-                
+
                 // Stop any running Motely searches first
                 if (_mainMenu != null)
                 {
@@ -96,20 +99,21 @@ public partial class MainWindow : Window
             finally
             {
                 // Trigger the App shutdown handler FIRST
-                var searchManager = BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager =
+                    BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager != null)
                 {
                     DebugLogger.Log("MainWindow", "Stopping all searches via SearchManager...");
                     searchManager.StopAllSearches();
-                    
+
                     // Give searches a moment to actually stop
                     await Task.Delay(500);
-                    
+
                     // Dispose the search manager which will dispose all searches
                     searchManager.Dispose();
                     DebugLogger.Log("MainWindow", "SearchManager disposed");
                 }
-                
+
                 // Close the window on UI thread
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
@@ -151,8 +155,11 @@ public partial class MainWindow : Window
             {
                 // Handle window resize by repositioning widgets that are now out of bounds
                 positionService.HandleWindowResize(e.NewSize.Width, e.NewSize.Height);
-                
-                DebugLogger.Log("MainWindow", $"Window resized to {e.NewSize.Width}x{e.NewSize.Height}, widgets repositioned");
+
+                DebugLogger.Log(
+                    "MainWindow",
+                    $"Window resized to {e.NewSize.Width}x{e.NewSize.Height}, widgets repositioned"
+                );
             }
         }
         catch (Exception ex)
@@ -160,6 +167,4 @@ public partial class MainWindow : Window
             DebugLogger.LogError($"Error handling window resize: {ex.Message}");
         }
     }
-
-    
 }

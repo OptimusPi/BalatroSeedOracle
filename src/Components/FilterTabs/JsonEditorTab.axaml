@@ -11,14 +11,13 @@
             <RowDefinition Height="Auto"/>  <!-- Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- JSON Editor - Slick Design -->
+        <!-- JSON Editor - Balatro Style (NO BORDER!) -->
         <Border Grid.Row="0"
                 Background="#1e1e1e"
-                BorderThickness="3"
-                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0"
                 CornerRadius="12"
                 Padding="0"
-                BoxShadow="inset 0 2 4 #00000040, 0 4 8 #00000020">
+                BoxShadow="inset 0 2 4 #00000040">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -86,11 +85,10 @@
             </Grid>
         </Border>
         
-        <!-- Status Bar (cleaned up - only essential buttons) -->
+        <!-- Status Bar (Balatro flat style) -->
         <Border Grid.Row="1"
                 Background="#252526"
-                BorderBrush="#3e3e42"
-                BorderThickness="0,1,0,0"
+                BorderThickness="0"
                 Padding="12,6"
                 Margin="0,8,0,0"
                 CornerRadius="8">

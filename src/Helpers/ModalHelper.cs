@@ -1,15 +1,15 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Threading;
-using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Components;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-using System.Reflection;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Views.Modals;
 
 namespace BalatroSeedOracle.Helpers
 {
@@ -25,7 +25,11 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="title">The modal title</param>
         /// <param name="content">The content to display in the modal</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowModal(this Views.BalatroMainMenu menu, string title, UserControl content)
+        public static StandardModal ShowModal(
+            this Views.BalatroMainMenu menu,
+            string title,
+            UserControl content
+        )
         {
             var modal = new StandardModal(title);
             modal.SetContent(content);
@@ -50,11 +54,17 @@ namespace BalatroSeedOracle.Helpers
             bool enableEdit = false,
             bool enableCopy = false,
             bool enableDelete = false,
-            bool enableAnalyze = false)
+            bool enableAnalyze = false
+        )
         {
             var modal = new FilterSelectionModal();
             var vm = new FilterSelectionModalViewModel(
-                enableSearch, enableEdit, enableCopy, enableDelete, enableAnalyze);
+                enableSearch,
+                enableEdit,
+                enableCopy,
+                enableDelete,
+                enableAnalyze
+            );
             modal.DataContext = vm;
 
             var result = await modal.ShowDialog(menu.GetWindow());
@@ -72,26 +82,32 @@ namespace BalatroSeedOracle.Helpers
             var filtersContent = new Views.Modals.FiltersModal();
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
-    
+
         /// <summary>
         /// Creates and shows a search modal
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="configPath">Optional config path to load</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu, string? configPath = null)
+        public static StandardModal ShowSearchModal(
+            this Views.BalatroMainMenu menu,
+            string? configPath = null
+        )
         {
             try
             {
                 var searchContent = new SearchModal();
-            
+
                 // Handle modal close
                 searchContent.CloseRequested += (sender, e) => menu.HideModalContent();
-                
+
                 // Handle desktop icon creation when modal closes with active search
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                        "ModalHelper",
+                        $"Desktop icon requested for config: {cfgPath}"
+                    );
                     // Get the search ID from the modal
                     var searchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(searchId))
@@ -107,7 +123,8 @@ namespace BalatroSeedOracle.Helpers
                     {
                         await searchContent.ViewModel.LoadFilterAsync(configPath);
                         // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 1);
+                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 1
+                        );
                     });
                 }
                 else
@@ -119,21 +136,29 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                    "ModalHelper",
+                    $"Failed to create SearchModal: {ex}"
+                );
                 throw;
             }
         }
-    
+
         /// <summary>
         /// Creates and shows a search modal with a config object (no temp files!)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="config">The MotelyJsonConfig object to search with</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowSearchModalWithConfig(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
+        public static StandardModal ShowSearchModalWithConfig(
+            this Views.BalatroMainMenu menu,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
             // This method should not be used - filters must be saved first!
-            throw new NotSupportedException("Filters must be saved before searching. Use ShowSearchModal with a file path instead.");
+            throw new NotSupportedException(
+                "Filters must be saved before searching. Use ShowSearchModal with a file path instead."
+            );
         }
 
         /// <summary>
@@ -146,7 +171,6 @@ namespace BalatroSeedOracle.Helpers
             var ToolView = new ToolsModal();
             return menu.ShowModal("MORE", ToolView);
         }
-
 
         /// <summary>
         /// Creates and shows a search modal
@@ -164,7 +188,10 @@ namespace BalatroSeedOracle.Helpers
             {
                 searchModal.ViewModel.CreateShortcutRequested += (sender, configPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {configPath}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                        "ModalHelper",
+                        $"Desktop icon requested for config: {configPath}"
+                    );
                     // Get the search ID from the modal
                     var searchId = searchModal.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(searchId))
@@ -184,7 +211,11 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="searchId">The ID of the search instance to reconnect to</param>
         /// <param name="configPath">The config path for context</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowSearchModalForInstance(this Views.BalatroMainMenu menu, string searchId, string? configPath = null)
+        public static StandardModal ShowSearchModalForInstance(
+            this Views.BalatroMainMenu menu,
+            string searchId,
+            string? configPath = null
+        )
         {
             var searchModal = new SearchModal();
 
@@ -202,7 +233,10 @@ namespace BalatroSeedOracle.Helpers
                 // Handle desktop icon creation when modal closes with active search
                 searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log("ModalHelper", $"Desktop icon requested for search: {searchId}");
+                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                        "ModalHelper",
+                        $"Desktop icon requested for search: {searchId}"
+                    );
                     menu.ShowSearchDesktopIcon(searchId, cfgPath);
                 };
             }
@@ -236,7 +270,9 @@ namespace BalatroSeedOracle.Helpers
         /// Creates and shows the advanced audio visualizer settings modal
         /// Note: The ViewModel handles settings persistence; MainMenu handles applying to shader
         /// </summary>
-        public static StandardModal ShowAudioVisualizerSettingsModal(this Views.BalatroMainMenu menu)
+        public static StandardModal ShowAudioVisualizerSettingsModal(
+            this Views.BalatroMainMenu menu
+        )
         {
             var audioVisualizerView = new AudioVisualizerSettingsModal();
 
@@ -248,50 +284,74 @@ namespace BalatroSeedOracle.Helpers
                 // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
                 vm.ThemeChangedEvent += (s, themeIndex) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Theme changed to {themeIndex}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Theme changed to {themeIndex}"
+                    );
                     menu.ApplyVisualizerTheme(themeIndex);
                 };
 
                 vm.MainColorChangedEvent += (s, colorIndex) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Main color changed to {colorIndex}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Main color changed to {colorIndex}"
+                    );
                     menu.ApplyMainColor(colorIndex);
                 };
 
                 vm.AccentColorChangedEvent += (s, colorIndex) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Accent color changed to {colorIndex}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Accent color changed to {colorIndex}"
+                    );
                     menu.ApplyAccentColor(colorIndex);
                 };
 
                 vm.AudioIntensityChangedEvent += (s, intensity) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Audio intensity changed to {intensity}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Audio intensity changed to {intensity}"
+                    );
                     menu.ApplyAudioIntensity(intensity);
                 };
 
                 vm.ParallaxStrengthChangedEvent += (s, strength) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Parallax changed to {strength}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Parallax changed to {strength}"
+                    );
                     menu.ApplyParallaxStrength(strength);
                 };
 
                 vm.TimeSpeedChangedEvent += (s, speed) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Advanced modal: Time speed changed to {speed}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Advanced modal: Time speed changed to {speed}"
+                    );
                     menu.ApplyTimeSpeed(speed);
                 };
 
                 // Wire up shader debug controls
                 vm.ShaderContrastChangedEvent += (s, contrast) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Contrast changed to {contrast}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"[SHADER DEBUG] Contrast changed to {contrast}"
+                    );
                     menu.ApplyShaderContrast(contrast);
                 };
 
                 vm.ShaderSpinAmountChangedEvent += (s, spinAmount) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Spin amount changed to {spinAmount}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"[SHADER DEBUG] Spin amount changed to {spinAmount}"
+                    );
                     menu.ApplyShaderSpinAmount(spinAmount);
                 };
 
@@ -303,14 +363,20 @@ namespace BalatroSeedOracle.Helpers
 
                 vm.ShaderMelodySaturationChangedEvent += (s, saturation) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Melody saturation changed to {saturation}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"[SHADER DEBUG] Melody saturation changed to {saturation}"
+                    );
                     menu.ApplyShaderMelodySaturation(saturation);
                 };
 
                 // Wire up shader effect audio source mappings
                 vm.ShadowFlickerSourceChangedEvent += (s, sourceIndex) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Shadow flicker source changed to {sourceIndex}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Shadow flicker source changed to {sourceIndex}"
+                    );
                     menu.ApplyShadowFlickerSource(sourceIndex);
                 };
 
@@ -334,7 +400,10 @@ namespace BalatroSeedOracle.Helpers
 
                 vm.ColorSaturationSourceChangedEvent += (s, sourceIndex) =>
                 {
-                    DebugLogger.Log("ModalHelper", $"Color saturation source changed to {sourceIndex}");
+                    DebugLogger.Log(
+                        "ModalHelper",
+                        $"Color saturation source changed to {sourceIndex}"
+                    );
                     menu.ApplyColorSaturationSource(sourceIndex);
                 };
 
@@ -387,64 +456,89 @@ namespace BalatroSeedOracle.Helpers
         /// </summary>
         private static async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir =
+                System.IO.Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location
+                ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
             var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
             System.IO.Directory.CreateDirectory(filtersDir);
-            
+
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
-            
+
             // Create basic empty filter structure
             var emptyFilter = new Motely.Filters.MotelyJsonConfig
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                Author =
+                    ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
-                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
-                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+                Must =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Should =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                MustNot =
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
             };
-            
-            var json = System.Text.Json.JsonSerializer.Serialize(emptyFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                emptyFilter,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+            );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
-            
+
             return tempPath;
         }
 
         /// <summary>
         /// Creates a cloned copy of an existing filter
         /// </summary>
-        private static async System.Threading.Tasks.Task<string> CreateClonedFilter(string originalPath)
+        private static async System.Threading.Tasks.Task<string> CreateClonedFilter(
+            string originalPath
+        )
         {
             try
             {
                 var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(originalJson);
-                
+                var config =
+                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        originalJson
+                    );
+
                 if (config != null)
                 {
                     // Update clone metadata
                     config.Name = $"{config.Name} (Copy)";
-                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+                    config.Author =
+                        ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
+                        ?? "Unknown";
                     config.DateCreated = System.DateTime.UtcNow;
-                    
-                    var baseDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? System.AppDomain.CurrentDomain.BaseDirectory;
+
+                    var baseDir =
+                        System.IO.Path.GetDirectoryName(
+                            System.Reflection.Assembly.GetExecutingAssembly().Location
+                        ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
                     var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
                     var clonedPath = System.IO.Path.Combine(filtersDir, $"{config.Name}.json");
-                    
-                    var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+                    var json = System.Text.Json.JsonSerializer.Serialize(
+                        config,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                    );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);
-                    
+
                     return clonedPath;
                 }
             }
             catch (System.Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to clone filter: {ex.Message}");
+                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                    "ModalHelper",
+                    $"Failed to clone filter: {ex.Message}"
+                );
             }
-            
+
             return string.Empty;
         }
-
     }
 }

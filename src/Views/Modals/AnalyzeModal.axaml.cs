@@ -47,7 +47,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Forward header changes to ViewModel
                 _tabHeader.TabChanged += (s, tabIndex) =>
                 {
-                    if (ViewModel == null) return;
+                    if (ViewModel == null)
+                        return;
                     _suppressHeaderSync = true;
                     ViewModel.ActiveTab = (Models.AnalyzeModalTab)tabIndex;
                     _suppressHeaderSync = false;
@@ -103,7 +104,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    DebugLogger.LogError("AnalyzeModal", "ViewModel is null, cannot set seed and analyze");
+                    DebugLogger.LogError(
+                        "AnalyzeModal",
+                        "ViewModel is null, cannot set seed and analyze"
+                    );
                 }
             }
 

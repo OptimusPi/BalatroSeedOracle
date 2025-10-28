@@ -2,12 +2,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
 using Motely;
-using Avalonia.Media;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -38,7 +38,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private SeedAnalysisModel? _currentAnalysis;
 
-        public AnalyzeModalViewModel(SpriteService spriteService, UserProfileService userProfileService)
+        public AnalyzeModalViewModel(
+            SpriteService spriteService,
+            UserProfileService userProfileService
+        )
         {
             _spriteService = spriteService;
             _userProfileService = userProfileService;
@@ -57,10 +60,12 @@ namespace BalatroSeedOracle.ViewModels
         public MotelyDeck SelectedDeck => (MotelyDeck)DeckIndex;
         public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
 
-        public bool HasAnalysisResults => CurrentAnalysis != null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
-        public string AnalysisHeader => CurrentAnalysis != null
-            ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
-            : "";
+        public bool HasAnalysisResults =>
+            CurrentAnalysis != null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
+        public string AnalysisHeader =>
+            CurrentAnalysis != null
+                ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
+                : "";
 
         public ObservableCollection<AnteAnalysisModel> Antes { get; }
 
@@ -119,7 +124,10 @@ namespace BalatroSeedOracle.ViewModels
                 IsAnalyzing = true;
                 ShowPlaceholder = false;
 
-                DebugLogger.Log("AnalyzeModalViewModel", $"Starting analysis for seed: {SeedInput}");
+                DebugLogger.Log(
+                    "AnalyzeModalViewModel",
+                    $"Starting analysis for seed: {SeedInput}"
+                );
 
                 // Clear previous results
                 Antes.Clear();
@@ -142,12 +150,15 @@ namespace BalatroSeedOracle.ViewModels
                     Seed = seed,
                     Deck = deck,
                     Stake = stake,
-                    Error = analysisData.Error
+                    Error = analysisData.Error,
                 };
 
                 if (!string.IsNullOrEmpty(analysisData.Error))
                 {
-                    DebugLogger.LogError("AnalyzeModalViewModel", $"Analysis error: {analysisData.Error}");
+                    DebugLogger.LogError(
+                        "AnalyzeModalViewModel",
+                        $"Analysis error: {analysisData.Error}"
+                    );
                 }
                 else
                 {
@@ -162,24 +173,26 @@ namespace BalatroSeedOracle.ViewModels
                             SmallBlindTag = new TagModel
                             {
                                 BlindType = "Small Blind",
-                                Tag = motelyAnte.SmallBlindTag
+                                Tag = motelyAnte.SmallBlindTag,
                             },
                             BigBlindTag = new TagModel
                             {
                                 BlindType = "Big Blind",
-                                Tag = motelyAnte.BigBlindTag
-                            }
+                                Tag = motelyAnte.BigBlindTag,
+                            },
                         };
 
                         // Convert shop items
                         foreach (var shopItem in motelyAnte.ShopQueue)
                         {
-                            anteModel.ShopItems.Add(new ShopItemModel
-                            {
-                                TypeCategory = shopItem.TypeCategory,
-                                ItemValue = shopItem.Value,
-                                Edition = shopItem.Edition
-                            });
+                            anteModel.ShopItems.Add(
+                                new ShopItemModel
+                                {
+                                    TypeCategory = shopItem.TypeCategory,
+                                    ItemValue = shopItem.Value,
+                                    Edition = shopItem.Edition,
+                                }
+                            );
                         }
 
                         // Convert booster packs
@@ -187,7 +200,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             var packModel = new BoosterPackModel
                             {
-                                PackType = (MotelyBoosterPackType)pack.Type
+                                PackType = (MotelyBoosterPackType)pack.Type,
                             };
 
                             foreach (var item in pack.Items)
@@ -207,21 +220,27 @@ namespace BalatroSeedOracle.ViewModels
                         CurrentAnalysis.Antes = Antes;
                     }
 
-                    DebugLogger.Log("AnalyzeModalViewModel", $"Analysis completed successfully: {Antes.Count} antes");
+                    DebugLogger.Log(
+                        "AnalyzeModalViewModel",
+                        $"Analysis completed successfully: {Antes.Count} antes"
+                    );
                 }
 
                 UpdatePlaceholderVisibility();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AnalyzeModalViewModel", $"Error analyzing seed: {ex.Message}");
+                DebugLogger.LogError(
+                    "AnalyzeModalViewModel",
+                    $"Error analyzing seed: {ex.Message}"
+                );
 
                 CurrentAnalysis = new SeedAnalysisModel
                 {
                     Seed = SeedInput.Trim(),
                     Deck = SelectedDeck,
                     Stake = SelectedStake,
-                    Error = $"Failed to analyze seed: {ex.Message}"
+                    Error = $"Failed to analyze seed: {ex.Message}",
                 };
             }
             finally
@@ -266,11 +285,17 @@ namespace BalatroSeedOracle.ViewModels
                 var analyzerWindow = new Windows.AnalyzerWindow(seed);
                 analyzerWindow.Show();
 
-                DebugLogger.Log("AnalyzeModalViewModel", $"Opened pop-out analyzer window for seed: {seed}");
+                DebugLogger.Log(
+                    "AnalyzeModalViewModel",
+                    $"Opened pop-out analyzer window for seed: {seed}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AnalyzeModalViewModel", $"Error opening pop-out analyzer: {ex.Message}");
+                DebugLogger.LogError(
+                    "AnalyzeModalViewModel",
+                    $"Error opening pop-out analyzer: {ex.Message}"
+                );
             }
         }
 
@@ -313,7 +338,7 @@ namespace BalatroSeedOracle.ViewModels
                 MotelyItemTypeCategory.TarotCard => _spriteService.GetTarotImage(item.ItemName),
                 MotelyItemTypeCategory.PlanetCard => _spriteService.GetTarotImage(item.ItemName),
                 MotelyItemTypeCategory.SpectralCard => _spriteService.GetTarotImage(item.ItemName),
-                _ => null
+                _ => null,
             };
         }
 

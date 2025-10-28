@@ -6,8 +6,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
-using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using SkiaSharp;
 
 namespace BalatroSeedOracle.Views.Modals
@@ -55,7 +55,8 @@ namespace BalatroSeedOracle.Views.Modals
             var drumsSlider = this.FindControl<Slider>("DrumsResponseSlider");
 
             if (hueSlider != null)
-                hueSlider.PropertyChanged += (s, e) => {
+                hueSlider.PropertyChanged += (s, e) =>
+                {
                     if (e.Property == Slider.ValueProperty)
                         UpdateShaderColors();
                 };
@@ -63,19 +64,22 @@ namespace BalatroSeedOracle.Views.Modals
             // intensitySlider removed - audio reactivity handled by effect bindings now
 
             if (speedSlider != null)
-                speedSlider.PropertyChanged += (s, e) => {
+                speedSlider.PropertyChanged += (s, e) =>
+                {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
                         _shaderPreview.SetTime((float)speedSlider.Value); // Now controls animation speed
                 };
 
             if (twistSlider != null)
-                twistSlider.PropertyChanged += (s, e) => {
+                twistSlider.PropertyChanged += (s, e) =>
+                {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
                         _shaderPreview.SetSpinAmount((float)twistSlider.Value);
                 };
 
             if (zoomSlider != null)
-                zoomSlider.PropertyChanged += (s, e) => {
+                zoomSlider.PropertyChanged += (s, e) =>
+                {
                     if (e.Property == Slider.ValueProperty && _shaderPreview != null)
                         _shaderPreview.SetZoomScale((float)zoomSlider.Value);
                 };
@@ -83,10 +87,12 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void UpdateShaderColors()
         {
-            if (_shaderPreview == null) return;
+            if (_shaderPreview == null)
+                return;
 
             var hueSlider = this.FindControl<Slider>("HueSlider");
-            if (hueSlider == null) return;
+            if (hueSlider == null)
+                return;
 
             float hue = (float)hueSlider.Value / 360f;
 
@@ -112,15 +118,41 @@ namespace BalatroSeedOracle.Views.Modals
             float q = v * (1 - f * s);
             float t = v * (1 - (1 - f) * s);
 
-            float r, g, b;
+            float r,
+                g,
+                b;
             switch (i % 6)
             {
-                case 0: r = v; g = t; b = p; break;
-                case 1: r = q; g = v; b = p; break;
-                case 2: r = p; g = v; b = t; break;
-                case 3: r = p; g = q; b = v; break;
-                case 4: r = t; g = p; b = v; break;
-                default: r = v; g = p; b = q; break;
+                case 0:
+                    r = v;
+                    g = t;
+                    b = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = v;
+                    b = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = v;
+                    b = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    b = v;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    b = v;
+                    break;
+                default:
+                    r = v;
+                    g = p;
+                    b = q;
+                    break;
             }
 
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
@@ -249,11 +281,12 @@ namespace BalatroSeedOracle.Views.Modals
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Content = new TextBlock
                 {
-                    Text = "Your beautiful creation has been saved!\n\nKeep creating - you're doing amazing!",
+                    Text =
+                        "Your beautiful creation has been saved!\n\nKeep creating - you're doing amazing!",
                     TextAlignment = TextAlignment.Center,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                    Margin = new Thickness(20)
-                }
+                    Margin = new Thickness(20),
+                },
             };
             messageBox.ShowDialog(GetWindow());
         }

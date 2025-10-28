@@ -3,22 +3,33 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Views.Modals;
-using BalatroSeedOracle.Helpers;
-using Motely.Filters;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 using Avalonia.Input;
+using Avalonia.Layout;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Views.Modals;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {
-    public partial class SearchModalViewModel : ObservableObject, IDisposable, BalatroSeedOracle.Helpers.IModalBackNavigable
+    // Search mode enum
+    public enum SearchMode
+    {
+        AllSeeds = 0,
+        SingleSeed = 1,
+        WordList = 2,
+    }
+
+    public partial class SearchModalViewModel
+        : ObservableObject,
+            IDisposable,
+            BalatroSeedOracle.Helpers.IModalBackNavigable
     {
         private readonly SearchManager _searchManager;
         private readonly CircularConsoleBuffer _consoleBuffer;
@@ -44,15 +55,15 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private SearchProgress? _latestProgress;
 
-    // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
-    [ObservableProperty]
-    private bool _isSettingsTabVisible = false;
+        // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
+        [ObservableProperty]
+        private bool _isSettingsTabVisible = false;
 
-    [ObservableProperty]
-    private bool _isSearchTabVisible = false;
+        [ObservableProperty]
+        private bool _isSearchTabVisible = false;
 
-    [ObservableProperty]
-    private bool _isResultsTabVisible = false;
+        [ObservableProperty]
+        private bool _isResultsTabVisible = false;
 
         [ObservableProperty]
         private int _deckIndex = 0;
@@ -88,24 +99,69 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _selectedStakeIndex = 0;
 
-        public string[] DeckDisplayValues { get; } = new[]
-        {
-            "Red Deck", "Blue Deck", "Yellow Deck", "Green Deck", "Black Deck",
-            "Magic Deck", "Nebula Deck", "Ghost Deck", "Abandoned Deck",
-            "Checkered Deck", "Zodiac Deck", "Painted Deck", "Anaglyph Deck",
-            "Plasma Deck", "Erratic Deck"
-        };
+        public string[] DeckDisplayValues { get; } =
+            new[]
+            {
+                "Red Deck",
+                "Blue Deck",
+                "Yellow Deck",
+                "Green Deck",
+                "Black Deck",
+                "Magic Deck",
+                "Nebula Deck",
+                "Ghost Deck",
+                "Abandoned Deck",
+                "Checkered Deck",
+                "Zodiac Deck",
+                "Painted Deck",
+                "Anaglyph Deck",
+                "Plasma Deck",
+                "Erratic Deck",
+            };
 
-        public string[] StakeDisplayValues { get; } = new[]
-        {
-            "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold"
-        };
+        public string[] StakeDisplayValues { get; } =
+            new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
 
         [ObservableProperty]
         private string _selectedWordList = "None";
 
         [ObservableProperty]
         private ObservableCollection<string> _availableWordLists = new();
+
+        // Search Mode Properties
+        [ObservableProperty]
+        private SearchMode _selectedSearchMode = SearchMode.AllSeeds;
+
+        public string[] SearchModeDisplayValues { get; } =
+            new[] { "All Seeds", "Single Seed", "Word List" };
+
+        [ObservableProperty]
+        private string _seedInput = string.Empty;
+
+        [ObservableProperty]
+        private bool _continueFromLast = false;
+
+        // Visibility properties for mode-specific controls
+        [ObservableProperty]
+        private bool _isThreadsVisible = true;
+
+        [ObservableProperty]
+        private bool _isBatchSizeVisible = true;
+
+        [ObservableProperty]
+        private bool _isContinueVisible = true;
+
+        [ObservableProperty]
+        private bool _isSeedInputVisible = false;
+
+        [ObservableProperty]
+        private bool _isWordListVisible = false;
+
+        // WordList index properties for SpinnerControl binding
+        [ObservableProperty]
+        private int _selectedWordListIndex = 0;
+
+        public int WordListMaxIndex => Math.Max(0, AvailableWordLists.Count - 1);
 
         // Search parameters
         [ObservableProperty]
@@ -173,11 +229,18 @@ namespace BalatroSeedOracle.ViewModels
             SearchResults = new ObservableCollection<Models.SearchResult>();
             ConsoleOutput = new ObservableCollection<string>();
 
+            // Set default values
+            ThreadCount = Environment.ProcessorCount / 2;
+            BatchSize = 1; // Default batch size (35^2)
+
             // Initialize dynamic tabs
             InitializeSearchTabs();
 
             // Load available wordlists
             LoadAvailableWordLists();
+
+            // Initialize control visibility
+            UpdateControlVisibility();
 
             // Events will be subscribed to individual SearchInstance when created
         }
@@ -200,9 +263,10 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Properties
 
-        public object? CurrentTabContent => SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count
-            ? TabItems[SelectedTabIndex].Content
-            : null;
+        public object? CurrentTabContent =>
+            SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count
+                ? TabItems[SelectedTabIndex].Content
+                : null;
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int MaxThreadCount { get; } = Environment.ProcessorCount; // Auto-detect CPU cores
@@ -226,7 +290,11 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? CreateShortcutRequested;
         public event EventHandler? CloseRequested;
         public event EventHandler? MaximizeToggleRequested;
-        public event EventHandler<(string searchId, string? configPath, string filterName)>? MinimizeToDesktopRequested;
+        public event EventHandler<(
+            string searchId,
+            string? configPath,
+            string filterName
+        )>? MinimizeToDesktopRequested;
 
         #endregion
 
@@ -237,20 +305,58 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
+                AddConsoleMessage("Starting search...");
+
                 if (LoadedConfig == null)
                 {
-                    AddConsoleMessage("No filter configuration loaded. Please load a filter first.");
+                    AddConsoleMessage(
+                        "No filter configuration loaded. Please load a filter first."
+                    );
+                    return;
+                }
+
+                AddConsoleMessage($"Filter loaded: {LoadedConfig.Name}");
+                AddConsoleMessage($"Search mode: {SearchModeDisplayValues[(int)SelectedSearchMode]}");
+
+                // Validate mode-specific requirements
+                if (
+                    SelectedSearchMode == SearchMode.SingleSeed
+                    && string.IsNullOrWhiteSpace(SeedInput)
+                )
+                {
+                    AddConsoleMessage("Please enter a seed name for Single Seed mode.");
+                    return;
+                }
+
+                if (
+                    SelectedSearchMode == SearchMode.WordList
+                    && (string.IsNullOrEmpty(SelectedWordList) || SelectedWordList == "None")
+                )
+                {
+                    AddConsoleMessage("Please select a wordlist for Word List mode.");
                     return;
                 }
 
                 IsSearching = true;
 
                 ClearResults();
-                AddConsoleMessage("Starting search...");
+                AddConsoleMessage(
+                    $"Starting search in {SearchModeDisplayValues[(int)SelectedSearchMode]} mode..."
+                );
                 PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
+                AddConsoleMessage($"Building search criteria...");
                 var searchCriteria = BuildSearchCriteria();
-                _searchInstance = await _searchManager.StartSearchAsync(searchCriteria, LoadedConfig);
+                AddConsoleMessage($"Filter path: {searchCriteria.ConfigPath}");
+                AddConsoleMessage($"Thread count: {searchCriteria.ThreadCount}");
+                AddConsoleMessage($"Batch size: {searchCriteria.BatchSize}");
+
+                AddConsoleMessage($"Creating search instance...");
+                _searchInstance = await _searchManager.StartSearchAsync(
+                    searchCriteria,
+                    LoadedConfig
+                );
+                AddConsoleMessage($"Search instance created successfully!");
 
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
                 _currentSearchId = _searchInstance.SearchId;
@@ -259,13 +365,19 @@ namespace BalatroSeedOracle.ViewModels
                 _searchInstance.SearchCompleted += OnSearchCompleted;
                 _searchInstance.ProgressUpdated += OnProgressUpdated;
 
-                DebugLogger.Log("SearchModalViewModel", $"Search started with ID: {_currentSearchId}");
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Search started with ID: {_currentSearchId}"
+                );
             }
             catch (Exception ex)
             {
                 IsSearching = false;
                 AddConsoleMessage($"Error starting search: {ex.Message}");
-                DebugLogger.LogError("SearchModalViewModel", $"Error starting search: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error starting search: {ex.Message}"
+                );
             }
         }
 
@@ -285,13 +397,16 @@ namespace BalatroSeedOracle.ViewModels
                     AddConsoleMessage("Search stopped by user.");
                     DebugLogger.Log("SearchModalViewModel", "Search stopped by user");
                 }
-                
+
                 IsSearching = false;
             }
             catch (Exception ex)
             {
                 AddConsoleMessage($"Error stopping search: {ex.Message}");
-                DebugLogger.LogError("SearchModalViewModel", $"Error stopping search: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error stopping search: {ex.Message}"
+                );
             }
         }
 
@@ -307,22 +422,34 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_searchInstance == null || string.IsNullOrEmpty(_currentSearchId))
                 {
-                    DebugLogger.LogError("SearchModalViewModel", "Cannot minimize - no active search instance");
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        "Cannot minimize - no active search instance"
+                    );
                     return;
                 }
 
                 var filterName = LoadedConfig?.Name ?? "Unknown Filter";
 
-                DebugLogger.Log("SearchModalViewModel", $"Minimizing search to desktop: SearchID={_currentSearchId}, Filter={filterName}, ConfigPath={CurrentFilterPath}");
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Minimizing search to desktop: SearchID={_currentSearchId}, Filter={filterName}, ConfigPath={CurrentFilterPath}"
+                );
 
                 // Raise event for View to handle (creates SearchDesktopIcon and closes modal)
-                MinimizeToDesktopRequested?.Invoke(this, (_currentSearchId, CurrentFilterPath, filterName));
+                MinimizeToDesktopRequested?.Invoke(
+                    this,
+                    (_currentSearchId, CurrentFilterPath, filterName)
+                );
 
                 AddConsoleMessage($"Search '{filterName}' minimized to desktop widget");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Error minimizing search: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error minimizing search: {ex.Message}"
+                );
                 AddConsoleMessage($"Error minimizing search: {ex.Message}");
             }
         }
@@ -380,17 +507,74 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        partial void OnSelectedSearchModeChanged(SearchMode value)
+        {
+            UpdateControlVisibility();
+
+            // Force thread/batch values for Single Seed mode
+            if (value == SearchMode.SingleSeed)
+            {
+                ThreadCount = 1;
+                BatchSize = 1;
+            }
+        }
+
+        partial void OnSelectedWordListIndexChanged(int value)
+        {
+            if (value >= 0 && value < AvailableWordLists.Count)
+            {
+                SelectedWordList = AvailableWordLists[value];
+            }
+        }
+
+        private void UpdateControlVisibility()
+        {
+            switch (SelectedSearchMode)
+            {
+                case SearchMode.AllSeeds:
+                    IsThreadsVisible = true;
+                    IsBatchSizeVisible = true;
+                    IsContinueVisible = true;
+                    IsSeedInputVisible = false;
+                    IsWordListVisible = false;
+                    break;
+
+                case SearchMode.SingleSeed:
+                    IsThreadsVisible = false;
+                    IsBatchSizeVisible = false;
+                    IsContinueVisible = false;
+                    IsSeedInputVisible = true;
+                    IsWordListVisible = false;
+                    break;
+
+                case SearchMode.WordList:
+                    IsThreadsVisible = true;
+                    IsBatchSizeVisible = true;
+                    IsContinueVisible = false; // Wordlists don't support continue
+                    IsSeedInputVisible = false;
+                    IsWordListVisible = true;
+                    break;
+            }
+
+            // Notify property changed for WordListMaxIndex
+            OnPropertyChanged(nameof(WordListMaxIndex));
+        }
+
         public async Task LoadFilterAsync(string configPath)
         {
             try
             {
                 LoadConfigFromPath(configPath);
-                PanelText = $"Filter loaded: {LoadedConfig?.Name ?? System.IO.Path.GetFileNameWithoutExtension(configPath)}";
+                PanelText =
+                    $"Filter loaded: {LoadedConfig?.Name ?? System.IO.Path.GetFileNameWithoutExtension(configPath)}";
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Error loading filter from path: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error loading filter from path: {ex.Message}"
+                );
             }
         }
 
@@ -434,7 +618,10 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedTabIndex = tabIndex;
                 UpdateTabVisibility(tabIndex);
             }
-            else if (parameter is string tabIndexStr && int.TryParse(tabIndexStr, out int parsedIndex))
+            else if (
+                parameter is string tabIndexStr
+                && int.TryParse(tabIndexStr, out int parsedIndex)
+            )
             {
                 SelectedTabIndex = parsedIndex;
                 UpdateTabVisibility(parsedIndex);
@@ -565,7 +752,10 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         await clipboard.SetTextAsync(seeds);
                         AddConsoleMessage($"Copied {FilteredResults.Count} seeds to clipboard");
-                        DebugLogger.Log("SearchModalViewModel", $"Copied {FilteredResults.Count} seeds to clipboard");
+                        DebugLogger.Log(
+                            "SearchModalViewModel",
+                            $"Copied {FilteredResults.Count} seeds to clipboard"
+                        );
                     }
                 }
             }
@@ -591,7 +781,11 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Filter by seed name
                 var filter = ResultsFilterText.ToLowerInvariant();
-                foreach (var result in SearchResults.Where(r => r.Seed.ToLowerInvariant().Contains(filter)))
+                foreach (
+                    var result in SearchResults.Where(r =>
+                        r.Seed.ToLowerInvariant().Contains(filter)
+                    )
+                )
                 {
                     FilteredResults.Add(result);
                 }
@@ -604,10 +798,16 @@ namespace BalatroSeedOracle.ViewModels
 
         private void OnSearchCompleted(object? sender, EventArgs e)
         {
-            IsSearching = false;
-            AddConsoleMessage($"Search completed. Found {SearchResults.Count} results.");
-            PanelText = $"Search complete: {SearchResults.Count} seeds";
-            DebugLogger.Log("SearchModalViewModel", $"Search completed with {SearchResults.Count} results");
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                IsSearching = false;
+                AddConsoleMessage($"Search completed. Found {SearchResults.Count} results.");
+                PanelText = $"Search complete: {SearchResults.Count} seeds";
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Search completed with {SearchResults.Count} results"
+                );
+            });
         }
 
         #endregion
@@ -618,17 +818,92 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (string.IsNullOrEmpty(CurrentFilterPath))
             {
-                throw new InvalidOperationException("No filter path available - filter must be loaded first!");
+                throw new InvalidOperationException(
+                    "No filter path available - filter must be loaded first!"
+                );
             }
 
-            return new SearchCriteria
+            var criteria = new SearchCriteria
             {
-                ConfigPath = CurrentFilterPath, // CRITICAL: Pass the filter path!
-                ThreadCount = Environment.ProcessorCount,
+                ConfigPath = CurrentFilterPath,
                 Deck = DeckSelection == "All Decks" ? null : DeckSelection,
                 Stake = StakeSelection == "All Stakes" ? null : StakeSelection,
-                WordList = SelectedWordList == "None" ? null : SelectedWordList // Pass wordlist if selected
+                MinScore = MinScore,
             };
+
+            // Build CLI arguments based on search mode
+            switch (SelectedSearchMode)
+            {
+                case SearchMode.AllSeeds:
+                    // Normal sequential search
+                    criteria.ThreadCount = ThreadCount;
+                    criteria.BatchSize = BatchSize;
+
+                    // Handle Continue feature
+                    if (ContinueFromLast && !string.IsNullOrEmpty(CurrentFilterPath))
+                    {
+                        // CRITICAL FIX: Convert JSON filter path to database path
+                        // CurrentFilterPath is like: "JsonItemFilters/MyFilter.json"
+                        // Database path should be: "SearchResults/MyFilter.db"
+                        var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+                        var searchResultsDir = System.IO.Path.Combine(
+                            System.IO.Directory.GetCurrentDirectory(),
+                            "SearchResults"
+                        );
+                        var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+
+                        AddConsoleMessage($"Checking for saved state at: {dbPath}");
+                        var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
+                        if (savedState != null)
+                        {
+                            int resumeBatch = savedState.LastCompletedBatch;
+
+                            // If user changed batch size, convert the batch number
+                            if (savedState.BatchSize != BatchSize)
+                            {
+                                resumeBatch = Services.SearchStateManager.ConvertBatchNumber(
+                                    savedState.LastCompletedBatch,
+                                    savedState.BatchSize,
+                                    BatchSize
+                                );
+
+                                DebugLogger.Log(
+                                    "SearchModalViewModel",
+                                    $"Converted batch {savedState.LastCompletedBatch} (size {savedState.BatchSize}) "
+                                        + $"to batch {resumeBatch} (size {BatchSize})"
+                                );
+                                AddConsoleMessage($"Batch size changed - converted to batch {resumeBatch}");
+                            }
+
+                            criteria.StartBatch = (ulong)(resumeBatch + 1); // +1 to start AFTER last completed
+                            AddConsoleMessage($"Resuming from batch {resumeBatch + 1}");
+                        }
+                        else
+                        {
+                            AddConsoleMessage($"No saved state found - starting from batch 0");
+                        }
+                    }
+                    break;
+
+                case SearchMode.SingleSeed:
+                    // Single seed debug mode
+                    criteria.DebugSeed = SeedInput;
+                    criteria.ThreadCount = 1;
+                    criteria.BatchSize = 1;
+                    criteria.EnableDebugOutput = true;
+                    break;
+
+                case SearchMode.WordList:
+                    // Wordlist filtering mode
+                    // Remove .txt extension for CLI
+                    var listName = Path.GetFileNameWithoutExtension(SelectedWordList);
+                    criteria.WordList = listName;
+                    criteria.ThreadCount = ThreadCount;
+                    criteria.BatchSize = BatchSize;
+                    break;
+            }
+
+            return criteria;
         }
 
         private void AddConsoleMessage(string message)
@@ -686,14 +961,14 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("SearchModalViewModel", "No results to export");
                     return;
                 }
-                
+
                 // Create export text
                 var exportText = $"Balatro Seed Search Results\n";
                 exportText += $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n";
                 exportText += $"Filter: {LoadedConfig?.Name ?? "Unknown"}\n";
                 exportText += $"Total Results: {SearchResults.Count}\n";
                 exportText += new string('=', 50) + "\n\n";
-                
+
                 foreach (var result in SearchResults)
                 {
                     exportText += $"Seed: {result.Seed}\n";
@@ -704,14 +979,14 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     exportText += "\n";
                 }
-                
+
                 // Save to file
                 var fileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
                 var filePath = System.IO.Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                     fileName
                 );
-                
+
                 await System.IO.File.WriteAllTextAsync(filePath, exportText);
                 DebugLogger.Log("SearchModalViewModel", $"Results exported to: {filePath}");
             }
@@ -733,7 +1008,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _currentSearchId = searchId;
                 _searchInstance = _searchManager.GetSearch(searchId);
-                
+
                 if (_searchInstance != null)
                 {
                     // Subscribe to search events for live updates
@@ -743,26 +1018,35 @@ namespace BalatroSeedOracle.ViewModels
 
                     // CRITICAL: Update UI state from existing search
                     IsSearching = _searchInstance?.IsRunning ?? false;
-                    
+
                     // CRITICAL: Load existing results to show current progress
                     await LoadExistingResults();
-                    
+
                     // CRITICAL: Get current search progress/stats
                     RefreshSearchStats();
-                    
+
                     // Switch to Results tab to show the reconnected search
                     SelectedTabIndex = 3; // Results tab
-                    
-                    DebugLogger.Log("SearchModalViewModel", $"Successfully reconnected to search: {searchId}, Running: {_searchInstance?.IsRunning ?? false}, Results: {SearchResults.Count}");
+
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Successfully reconnected to search: {searchId}, Running: {_searchInstance?.IsRunning ?? false}, Results: {SearchResults.Count}"
+                    );
                 }
                 else
                 {
-                    DebugLogger.LogError("SearchModalViewModel", $"Search instance not found: {searchId}");
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        $"Search instance not found: {searchId}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to connect to existing search: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to connect to existing search: {ex.Message}"
+                );
             }
         }
 
@@ -771,20 +1055,22 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task LoadExistingResults()
         {
-            if (_searchInstance == null) return;
+            if (_searchInstance == null)
+                return;
 
             try
             {
                 SearchResults.Clear();
-                
+
                 // Load results from the search instance using async API
                 var existingResults = await _searchInstance.GetResultsPageAsync(0, 1000);
                 if (existingResults != null)
                 {
                     // Inject tally labels from SearchInstance column names (seed, score, then tallies)
-                    var labels = _searchInstance.ColumnNames.Count > 2
-                        ? _searchInstance.ColumnNames.Skip(2).ToArray()
-                        : Array.Empty<string>();
+                    var labels =
+                        _searchInstance.ColumnNames.Count > 2
+                            ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                            : Array.Empty<string>();
 
                     int idx = 0;
                     foreach (var result in existingResults)
@@ -798,12 +1084,18 @@ namespace BalatroSeedOracle.ViewModels
                         idx++;
                     }
                 }
-                
-                DebugLogger.Log("SearchModalViewModel", $"Loaded {SearchResults.Count} existing results");
+
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Loaded {SearchResults.Count} existing results"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to load existing results: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load existing results: {ex.Message}"
+                );
             }
         }
 
@@ -813,7 +1105,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void RefreshSearchStats()
         {
-            if (_searchInstance == null) return;
+            if (_searchInstance == null)
+                return;
 
             try
             {
@@ -829,14 +1122,20 @@ namespace BalatroSeedOracle.ViewModels
                 OnPropertyChanged(nameof(ProgressText));
                 OnPropertyChanged(nameof(ResultsCount));
 
-                DebugLogger.Log("SearchModalViewModel", $"🔄 RECONNECTED to search - Running: {IsSearching}, Results: {LastKnownResultCount}");
-                
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"🔄 RECONNECTED to search - Running: {IsSearching}, Results: {LastKnownResultCount}"
+                );
+
                 // Start a timer to periodically refresh stats for live updates
                 StartStatsRefreshTimer();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to refresh search stats: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to refresh search stats: {ex.Message}"
+                );
             }
         }
 
@@ -845,7 +1144,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void StartStatsRefreshTimer()
         {
-            if (_searchInstance == null || !IsSearching) return;
+            if (_searchInstance == null || !IsSearching)
+                return;
 
             // Use a simple timer to refresh stats every 500ms while search is active
             Task.Run(async () =>
@@ -864,7 +1164,7 @@ namespace BalatroSeedOracle.ViewModels
                                 OnPropertyChanged(nameof(ResultsCount));
                             });
                         }
-                        
+
                         await Task.Delay(500); // Refresh every 500ms
                     }
                     catch
@@ -883,136 +1183,221 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 DebugLogger.Log("SearchModalViewModel", $"Loading config from: {configPath}");
-                
+
                 if (!System.IO.File.Exists(configPath))
                 {
-                    DebugLogger.LogError("SearchModalViewModel", $"Filter file not found: {configPath}");
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        $"Filter file not found: {configPath}"
+                    );
                     return;
                 }
-                
+
                 // Read and parse the filter configuration
                 var json = System.IO.File.ReadAllText(configPath);
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                var config =
+                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        json
+                    );
 
                 if (config != null)
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
-                    
+
                     // Update deck and stake from the loaded config
                     if (!string.IsNullOrEmpty(config.Deck))
                     {
                         DeckSelection = config.Deck;
-                        SelectedDeckIndex = Array.FindIndex(DeckDisplayValues, d => d.Contains(config.Deck.Replace(" Deck", "")));
+                        SelectedDeckIndex = Array.FindIndex(
+                            DeckDisplayValues,
+                            d => d.Contains(config.Deck.Replace(" Deck", ""))
+                        );
                     }
-                    
+
                     if (!string.IsNullOrEmpty(config.Stake))
                     {
                         StakeSelection = config.Stake;
-                        SelectedStakeIndex = Array.FindIndex(StakeDisplayValues, s => s == config.Stake);
+                        SelectedStakeIndex = Array.FindIndex(
+                            StakeDisplayValues,
+                            s => s == config.Stake
+                        );
                     }
-                    
-                    DebugLogger.Log("SearchModalViewModel", $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})");
-                    
+
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})"
+                    );
+
                     // Switch to the Search tab so user can start searching
                     SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
                 }
                 else
                 {
-                    DebugLogger.LogError("SearchModalViewModel", "Failed to deserialize filter config");
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        "Failed to deserialize filter config"
+                    );
                 }
             }
             catch (Exception ex)
             {
                 var filename = configPath != null ? Path.GetFileName(configPath) : "unknown";
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to load config from '{filename}': {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load config from '{filename}': {ex.Message}"
+                );
             }
         }
 
         // Missing event handlers for search events
         private void OnSearchStarted(object? sender, EventArgs e)
         {
-            IsSearching = true;
-            DebugLogger.Log("SearchModalViewModel", "Search started");
-            // TODO AFTER pifreak configures the visualizer THEN we can make the search mode audio!
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                IsSearching = true;
+                DebugLogger.Log("SearchModalViewModel", "Search started");
+                // TODO AFTER pifreak configures the visualizer THEN we can make the search mode audio!
+            });
         }
 
         private void OnProgressUpdated(object? sender, SearchProgress e)
         {
+            // Store immutable data on background thread (safe)
             LatestProgress = e;
             LastKnownResultCount = e.ResultsFound;
 
-            // Update all stats properties
-            ProgressPercent = e.PercentComplete;
-
-            // Calculate seeds per second from SeedsPerMillisecond
-            double seedsPerSecond = e.SeedsPerMillisecond * 1000.0;
-            SearchSpeed = $"{seedsPerSecond:N0} seeds/s";
-
-            // Use the search instance for additional stats if available
-            if (_searchInstance != null)
+            // Save state periodically (only for AllSeeds mode)
+            // Calculate current batch from seeds searched
+            if (SelectedSearchMode == SearchMode.AllSeeds && e.SeedsSearched > 0)
             {
-                SeedsProcessed = (long)e.SeedsSearched;
-                TimeElapsed = _searchInstance.SearchDuration.ToString(@"hh\:mm\:ss");
+                long batchSizeInSeeds = (long)Math.Pow(35, BatchSize + 1);
+                int currentBatch = (int)(e.SeedsSearched / (ulong)batchSizeInSeeds);
 
-                // Estimate time remaining based on progress
-                if (e.PercentComplete > 0 && e.PercentComplete < 100)
+                // Save state every 10 batches
+                if (
+                    currentBatch > 0
+                    && currentBatch % 10 == 0
+                    && !string.IsNullOrEmpty(CurrentFilterPath)
+                )
                 {
-                    var elapsed = _searchInstance.SearchDuration;
-                    var totalEstimated = TimeSpan.FromSeconds(elapsed.TotalSeconds / (e.PercentComplete / 100.0));
-                    var remaining = totalEstimated - elapsed;
-                    EstimatedTimeRemaining = remaining.ToString(@"hh\:mm\:ss");
+                    // CRITICAL FIX: Convert JSON filter path to database path for saving state
+                    var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+                    var searchResultsDir = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        "SearchResults"
+                    );
+                    var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+
+                    var state = new SearchState
+                    {
+                        Id = 1,
+                        DeckIndex = SelectedDeckIndex,
+                        StakeIndex = SelectedStakeIndex,
+                        BatchSize = BatchSize,
+                        LastCompletedBatch = currentBatch,
+                        SearchMode = (int)SelectedSearchMode,
+                        WordListName = null,
+                        UpdatedAt = DateTime.Now,
+                    };
+                    Services.SearchStateManager.SaveSearchState(dbPath, state);
+                }
+            }
+
+            // Marshal ALL property updates to UI thread
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                // Update all stats properties
+                ProgressPercent = e.PercentComplete;
+
+                // Calculate seeds per second from SeedsPerMillisecond
+                double seedsPerSecond = e.SeedsPerMillisecond * 1000.0;
+                SearchSpeed = $"{seedsPerSecond:N0} seeds/s";
+
+                // Use the search instance for additional stats if available
+                if (_searchInstance != null)
+                {
+                    SeedsProcessed = (long)e.SeedsSearched;
+                    TimeElapsed = _searchInstance.SearchDuration.ToString(@"hh\:mm\:ss");
+
+                    // Estimate time remaining based on progress
+                    if (e.PercentComplete > 0 && e.PercentComplete < 100)
+                    {
+                        var elapsed = _searchInstance.SearchDuration;
+                        var totalEstimated = TimeSpan.FromSeconds(
+                            elapsed.TotalSeconds / (e.PercentComplete / 100.0)
+                        );
+                        var remaining = totalEstimated - elapsed;
+                        EstimatedTimeRemaining = remaining.ToString(@"hh\:mm\:ss");
+                    }
+                    else
+                    {
+                        EstimatedTimeRemaining = "--:--:--";
+                    }
                 }
                 else
                 {
+                    SeedsProcessed = (long)e.SeedsSearched;
+                    TimeElapsed = "00:00:00";
                     EstimatedTimeRemaining = "--:--:--";
                 }
-            }
-            else
-            {
-                SeedsProcessed = (long)e.SeedsSearched;
-                TimeElapsed = "00:00:00";
-                EstimatedTimeRemaining = "--:--:--";
-            }
 
-            // Batch info - we'll need to calculate these or leave as placeholders
-            // These aren't in the SearchProgress model currently
-            CurrentBatch = 0;
-            MaxBatch = 0;
+                // Batch info - we'll need to calculate these or leave as placeholders
+                // These aren't in the SearchProgress model currently
+                CurrentBatch = 0;
+                MaxBatch = 0;
 
-            // Calculate find rate and rarity
-            if (e.SeedsSearched > 0)
-            {
-                double rate = (double)e.ResultsFound / e.SeedsSearched * 100.0;
-                FindRate = $"{rate:0.00}%";
-
-                if (e.ResultsFound > 0)
+                // Smart Rate Formatting - Adaptive precision based on rarity tier
+                if (e.SeedsSearched > 0 && e.ResultsFound > 0)
                 {
-                    ulong rarity = e.SeedsSearched / (ulong)e.ResultsFound;
-                    Rarity = $"1 in {rarity:N0}";
+                    double rate = (double)e.ResultsFound / e.SeedsSearched * 100.0;
+                    if (rate >= 1.0)
+                        FindRate = $"{rate:0.00}%"; // Common: 5.67%
+                    else if (rate >= 0.01)
+                        FindRate = $"{rate:0.000}%"; // Uncommon: 0.234%
+                    else if (rate >= 0.0001)
+                        FindRate = $"{rate:0.0000}%"; // Rare: 0.0123%
+                    else if (rate > 0)
+                        FindRate = $"{rate:0.00000}%"; // Mythical: 0.00023%
+                    else
+                        FindRate = "0.00%";
                 }
                 else
                 {
-                    Rarity = "1 in ∞";
+                    FindRate = "0.00%";
                 }
-            }
-            else
-            {
-                FindRate = "0.00%";
-                Rarity = "1 in 0";
-            }
 
-            OnPropertyChanged(nameof(SearchProgress));
-            OnPropertyChanged(nameof(ProgressText));
-            OnPropertyChanged(nameof(ResultsCount));
-            PanelText = $"{e.ResultsFound} seeds | {e.PercentComplete:0}%";
+                // Smart Rarity Formatting with K/M/B/T suffixes (NO SPM!)
+                if (e.ResultsFound > 0 && e.SeedsSearched > 0)
+                {
+                    ulong rarity = e.SeedsSearched / (ulong)e.ResultsFound;
+                    if (rarity >= 1_000_000_000_000)
+                        Rarity = $"1 in {rarity / 1_000_000_000_000.0:0.00}T"; // 1 in 2.67T
+                    else if (rarity >= 1_000_000_000)
+                        Rarity = $"1 in {rarity / 1_000_000_000.0:0.00}B"; // 1 in 42.67B
+                    else if (rarity >= 1_000_000)
+                        Rarity = $"1 in {rarity / 1_000_000.0:0.00}M"; // 1 in 42.67M
+                    else if (rarity >= 10_000)
+                        Rarity = $"1 in {rarity / 1_000.0:0.0}K"; // 1 in 42.7K
+                    else
+                        Rarity = $"1 in {rarity:N0}"; // 1 in 427
+                }
+                else
+                {
+                    Rarity = "--"; // Show placeholder until first result
+                }
+
+                OnPropertyChanged(nameof(SearchProgress));
+                OnPropertyChanged(nameof(ProgressText));
+                OnPropertyChanged(nameof(ResultsCount));
+                PanelText = $"{e.ResultsFound} seeds | {e.PercentComplete:0}%";
+            });
         }
-
 
         /// <summary>
         /// Initialize dynamic tabs for consistent Balatro styling
         /// </summary>
-    public object? SettingsTabContent { get; private set; }
+        public object? SettingsTabContent { get; private set; }
         public object? SearchTabContent { get; private set; }
         public object? ResultsTabContent { get; private set; }
 
@@ -1031,49 +1416,52 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
         }
 
-        // NOTE: The old in-modal filter selector was removed. Use `FilterSelectionModal` instead.
-
-        // DELETED: CreateSettingsTabContent() - replaced with XAML UserControl (SettingsTab.axaml)
-        // DELETED: CreateSearchTabContent() - replaced with XAML UserControl (SearchTab.axaml)
-        // DELETED: CreateResultsTabContent() - replaced with XAML UserControl (ResultsTab.axaml)
-        // These methods were 235 lines of anti-MVVM UI-in-code garbage!
-
-        // CreateShortcutRequested already exists - removed duplicate
-        
-        /// <summary>
-        /// Create simple ante selector
-        /// </summary>
-
         private void LoadAvailableWordLists()
         {
             try
             {
-                var wordListsPath = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "WordLists"
-                );
-
-                AvailableWordLists.Clear();
-                AvailableWordLists.Add("None"); // Default option
-
-                if (System.IO.Directory.Exists(wordListsPath))
+                var wordListDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WordLists");
+                if (Directory.Exists(wordListDir))
                 {
-                    var files = System.IO.Directory.GetFiles(wordListsPath, "*.txt")
-                        .Select(f => System.IO.Path.GetFileNameWithoutExtension(f))
+                    var files = Directory
+                        .GetFiles(wordListDir, "*.txt")
+                        .Select(Path.GetFileName)
+                        .Where(f => f != null)
+                        .Cast<string>()
                         .OrderBy(f => f);
 
+                    AvailableWordLists.Clear();
                     foreach (var file in files)
                     {
                         AvailableWordLists.Add(file);
                     }
-                }
 
-                SelectedWordList = "None";
-                DebugLogger.Log("SearchModalViewModel", $"Loaded {AvailableWordLists.Count - 1} word lists");
+                    // Select first one by default
+                    if (AvailableWordLists.Count > 0)
+                    {
+                        SelectedWordList = AvailableWordLists[0];
+                        SelectedWordListIndex = 0;
+                    }
+
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Loaded {AvailableWordLists.Count} word lists"
+                    );
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"WordLists directory not found: {wordListDir}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to load word lists: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load wordlists: {ex.Message}"
+                );
             }
         }
 

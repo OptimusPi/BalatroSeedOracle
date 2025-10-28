@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -11,16 +11,20 @@ namespace BalatroSeedOracle.Views.Modals
     /// </summary>
     public partial class ComprehensiveFiltersModal : UserControl
     {
-        public ComprehensiveFiltersModalViewModel? ViewModel => DataContext as ComprehensiveFiltersModalViewModel;
+        public ComprehensiveFiltersModalViewModel? ViewModel =>
+            DataContext as ComprehensiveFiltersModalViewModel;
 
         public ComprehensiveFiltersModal()
         {
             InitializeComponent();
-            
+
             // Set up MVVM ViewModel
             DataContext = ServiceHelper.GetRequiredService<ComprehensiveFiltersModalViewModel>();
-            
-            DebugLogger.Log("ComprehensiveFiltersModal", "Clean MVVM FiltersModal created - code-behind minimal!");
+
+            DebugLogger.Log(
+                "ComprehensiveFiltersModal",
+                "Clean MVVM FiltersModal created - code-behind minimal!"
+            );
         }
 
         private void InitializeComponent()

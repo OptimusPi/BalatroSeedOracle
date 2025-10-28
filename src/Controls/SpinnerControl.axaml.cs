@@ -43,30 +43,24 @@ namespace BalatroSeedOracle.Controls
                 nameof(ShadowDirection),
                 "south-west"
             );
-            
+
         public static readonly StyledProperty<string[]?> DisplayValuesProperty =
-            AvaloniaProperty.Register<SpinnerControl, string[]?>(
-                nameof(DisplayValues),
-                null
-            );
-            
-        public static readonly StyledProperty<bool> AllowAutoProperty =
-            AvaloniaProperty.Register<SpinnerControl, bool>(
-                nameof(AllowAuto),
-                false
-            );
+            AvaloniaProperty.Register<SpinnerControl, string[]?>(nameof(DisplayValues), null);
 
-        public static readonly StyledProperty<bool> IsEditingProperty =
-            AvaloniaProperty.Register<SpinnerControl, bool>(
-                nameof(IsEditing),
-                false
-            );
+        public static readonly StyledProperty<bool> AllowAutoProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            bool
+        >(nameof(AllowAuto), false);
 
-        public static readonly StyledProperty<bool> ReadOnlyProperty =
-            AvaloniaProperty.Register<SpinnerControl, bool>(
-                nameof(ReadOnly),
-                false
-            );
+        public static readonly StyledProperty<bool> IsEditingProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            bool
+        >(nameof(IsEditing), false);
+
+        public static readonly StyledProperty<bool> ReadOnlyProperty = AvaloniaProperty.Register<
+            SpinnerControl,
+            bool
+        >(nameof(ReadOnly), false);
 
         public string Label
         {
@@ -109,13 +103,13 @@ namespace BalatroSeedOracle.Controls
             get => GetValue(ShadowDirectionProperty);
             set => SetValue(ShadowDirectionProperty, value);
         }
-        
+
         public string[]? DisplayValues
         {
             get => GetValue(DisplayValuesProperty);
             set => SetValue(DisplayValuesProperty, value);
         }
-        
+
         public bool AllowAuto
         {
             get => GetValue(AllowAutoProperty);
@@ -123,7 +117,6 @@ namespace BalatroSeedOracle.Controls
         }
 
         public event EventHandler<int>? ValueChanged;
-
 
         public bool IsEditing
         {
@@ -168,10 +161,14 @@ namespace BalatroSeedOracle.Controls
             bool circularStake = IsCircularStakeSpinner();
 
             if (decrementButton != null)
-                decrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value > Minimum;
+                decrementButton.IsEnabled = circularStake
+                    ? HasMultipleValuesForCircular()
+                    : Value > Minimum;
 
             if (incrementButton != null)
-                incrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value < Maximum;
+                incrementButton.IsEnabled = circularStake
+                    ? HasMultipleValuesForCircular()
+                    : Value < Maximum;
         }
 
         private void InitializeComponent()
@@ -186,14 +183,14 @@ namespace BalatroSeedOracle.Controls
             {
                 return "Auto";
             }
-            
+
             // Use provided DisplayValues if available
             if (DisplayValues != null && DisplayValues.Length > 0)
             {
                 var index = Math.Max(0, Math.Min(Value, DisplayValues.Length - 1));
                 return DisplayValues[index];
             }
-            
+
             // Default to showing the numeric value
             return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
@@ -243,10 +240,14 @@ namespace BalatroSeedOracle.Controls
                     bool circularStake = IsCircularStakeSpinner();
 
                     if (decrementButton != null)
-                        decrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue > Minimum;
+                        decrementButton.IsEnabled = circularStake
+                            ? HasMultipleValuesForCircular()
+                            : newValue > Minimum;
 
                     if (incrementButton != null)
-                        incrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue < Maximum;
+                        incrementButton.IsEnabled = circularStake
+                            ? HasMultipleValuesForCircular()
+                            : newValue < Maximum;
                 }
             }
         }
@@ -345,7 +346,7 @@ namespace BalatroSeedOracle.Controls
             if (valueEdit != null && IsEditing)
             {
                 var inputText = valueEdit.Text?.Trim();
-                
+
                 if (!string.IsNullOrEmpty(inputText))
                 {
                     // Try to parse as integer
@@ -355,22 +356,26 @@ namespace BalatroSeedOracle.Controls
                         Value = Math.Max(Minimum, Math.Min(Maximum, newValue));
                     }
                     // Check for "Auto" if allowed
-                    else if (AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         Value = 0; // Auto value
                     }
                     // Try to find in display values if available
                     else if (DisplayValues != null)
                     {
-                        var index = Array.FindIndex(DisplayValues, v => 
-                            v.Equals(inputText, StringComparison.OrdinalIgnoreCase));
+                        var index = Array.FindIndex(
+                            DisplayValues,
+                            v => v.Equals(inputText, StringComparison.OrdinalIgnoreCase)
+                        );
                         if (index >= 0)
                         {
                             Value = index;
                         }
                     }
                 }
-                
+
                 IsEditing = false;
             }
         }
@@ -385,7 +390,8 @@ namespace BalatroSeedOracle.Controls
         private bool HasMultipleValuesForCircular()
         {
             // Prefer DisplayValues length if provided; otherwise use range check
-            if (DisplayValues != null) return DisplayValues.Length > 1;
+            if (DisplayValues != null)
+                return DisplayValues.Length > 1;
             return Maximum > Minimum;
         }
     }

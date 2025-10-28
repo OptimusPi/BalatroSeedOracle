@@ -5,73 +5,96 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel">
 
-    <UserControl.Styles>
-        <Style Selector="Border.info-box">
-            <Setter Property="Background" Value="{StaticResource DarkTealGrey}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-    </UserControl.Styles>
-
-    <Border Padding="25">
-        <StackPanel Spacing="20" VerticalAlignment="Center" MaxWidth="600">
-            <TextBlock Text="Preferred Deck (Read-Only)"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
-                       Foreground="{StaticResource Gold}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,10"/>
-
-            <Border Classes="info-box">
-                <StackPanel Spacing="15">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
-                        <StackPanel>
-                            <TextBlock Text="Deck"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding DeckSelection, FallbackValue='Red'}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
-                                       Foreground="{StaticResource LightCream}"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel>
-                            <TextBlock Text="Stake"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource MediumGrey}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding StakeSelection, FallbackValue='White'}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
-                                       Foreground="{StaticResource LightCream}"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <Border Classes="info-box" Background="{StaticResource ContainerDarkPrecise}">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="⚠️ Important"
+    <!-- Preferred Deck Tab - Two-Column Layout (copied from FilterSelectionModal) -->
+    <Grid Margin="20" ColumnDefinitions="*,15,*">
+        <!-- Left Column: Deck & Stake Display -->
+        <Border Grid.Column="0"
+                Background="{StaticResource White}"
+                CornerRadius="8"
+                BorderThickness="0">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource Blue}"
+                        CornerRadius="8,8,0,0"
+                        Padding="12,8">
+                    <TextBlock Text="Deck &amp; Stake"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="14"
-                               Foreground="{StaticResource Orange}"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="15" ColumnDefinitions="Auto,*">
+                    <!-- Deck sprite with stake overlay -->
+                    <Viewbox Grid.Column="0"
+                             Stretch="Uniform"
+                             MaxHeight="120"
+                             MaxWidth="160"
+                             VerticalAlignment="Center"
+                             Margin="0,0,15,0">
+                        <Grid Width="400" Height="200">
+                            <Image Name="DeckImage"
+                                   Width="400"
+                                   Height="200"/>
+                            <Image Name="StakeOverlayImage"
+                                   Width="400"
+                                   Height="200"
+                                   IsVisible="True"/>
+                        </Grid>
+                    </Viewbox>
+
+                    <!-- Deck name and description -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
+                        <TextBlock Name="DeckNameText"
+                                   Text="{Binding DeckSelection, FallbackValue='Red Deck'}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Black}"/>
+                        <TextBlock Name="DeckDescriptionText"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource LightGrey}"
+                                   TextWrapping="Wrap"
+                                   Text="Start with no extra bonuses"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Right Column: Important Warning Box -->
+        <Border Grid.Column="2"
+                Background="{StaticResource White}"
+                CornerRadius="8"
+                BorderThickness="0">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource Blue}"
+                        CornerRadius="8,8,0,0"
+                        Padding="12,8">
+                    <TextBlock Text="Important"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Warning content -->
+                <StackPanel Grid.Row="1" Margin="15" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="⚠️"
+                               FontSize="32"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="This filter's criteria includes deck-specific items. Search results will match the preferred deck and stake shown above. To override these settings for the current search, use the Deck/Stake spinners on the Search tab."
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="13"
-                               Foreground="{StaticResource MediumGrey}"
+                               FontSize="12"
+                               Foreground="{StaticResource Black}"
                                TextWrapping="Wrap"
-                               TextAlignment="Center"/>
+                               TextAlignment="Center"
+                               LineHeight="18"/>
                 </StackPanel>
-            </Border>
-        </StackPanel>
-    </Border>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

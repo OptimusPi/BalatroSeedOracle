@@ -78,12 +78,60 @@ namespace BalatroSeedOracle.ViewModels
 
         private void InitializeEditions()
         {
-            Editions.Add(new EditionOptionViewModel("", "Any Edition", "⚪", "Card can have any edition type", "#CCCCCC"));
-            Editions.Add(new EditionOptionViewModel("Normal", "⚪ Normal", "⚪", "No special effect - base card", "#FFFFFF"));
-            Editions.Add(new EditionOptionViewModel("Foil", "✨ Foil (+50 chips)", "✨", "+50 chips when scored", "#C0C0C0"));
-            Editions.Add(new EditionOptionViewModel("Holographic", "🌈 Holographic (+10 mult)", "🌈", "+10 mult when scored", "#FF69B4"));
-            Editions.Add(new EditionOptionViewModel("Polychrome", "🎭 Polychrome (x1.5 mult)", "🎭", "x1.5 mult when scored", "#FF4500"));
-            Editions.Add(new EditionOptionViewModel("Negative", "🖤 Negative (+1 joker slot)", "🖤", "+1 joker slot (permanent)", "#8B008B"));
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "",
+                    "Any Edition",
+                    "⚪",
+                    "Card can have any edition type",
+                    "#CCCCCC"
+                )
+            );
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "Normal",
+                    "⚪ Normal",
+                    "⚪",
+                    "No special effect - base card",
+                    "#FFFFFF"
+                )
+            );
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "Foil",
+                    "✨ Foil (+50 chips)",
+                    "✨",
+                    "+50 chips when scored",
+                    "#C0C0C0"
+                )
+            );
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "Holographic",
+                    "🌈 Holographic (+10 mult)",
+                    "🌈",
+                    "+10 mult when scored",
+                    "#FF69B4"
+                )
+            );
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "Polychrome",
+                    "🎭 Polychrome (x1.5 mult)",
+                    "🎭",
+                    "x1.5 mult when scored",
+                    "#FF4500"
+                )
+            );
+            Editions.Add(
+                new EditionOptionViewModel(
+                    "Negative",
+                    "🖤 Negative (+1 joker slot)",
+                    "🖤",
+                    "+1 joker slot (permanent)",
+                    "#8B008B"
+                )
+            );
         }
 
         #endregion
@@ -192,21 +240,13 @@ namespace BalatroSeedOracle.ViewModels
                 "Holographic" => "Holographic (+10 mult)",
                 "Polychrome" => "Polychrome (x1.5 mult)",
                 "Negative" => "Negative (+1 joker slot)",
-                _ => "Unknown"
+                _ => "Unknown",
             };
         }
 
         public static string[] GetAllEditions()
         {
-            return new[]
-            {
-                "",
-                "Normal",
-                "Foil",
-                "Holographic",
-                "Polychrome",
-                "Negative"
-            };
+            return new[] { "", "Normal", "Foil", "Holographic", "Polychrome", "Negative" };
         }
 
         public static int GetEditionPowerLevel(string edition)
@@ -218,7 +258,7 @@ namespace BalatroSeedOracle.ViewModels
                 "Holographic" => 3,
                 "Polychrome" => 4,
                 "Negative" => 5,
-                _ => 0
+                _ => 0,
             };
         }
 
@@ -230,7 +270,13 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class EditionOptionViewModel
     {
-        public EditionOptionViewModel(string tag, string displayName, string emoji, string description, string color)
+        public EditionOptionViewModel(
+            string tag,
+            string displayName,
+            string emoji,
+            string description,
+            string color
+        )
         {
             Tag = tag;
             DisplayName = displayName;

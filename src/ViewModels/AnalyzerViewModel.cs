@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Analysis;
-using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels;
 
@@ -200,16 +200,21 @@ public partial class AnalyzerViewModel : ObservableObject
 
     public MotelyAnteAnalysis? GetCurrentAnte()
     {
-        if (CurrentAnalysis == null || CurrentAnteIndex < 0 || CurrentAnteIndex >= CurrentAnalysis.Antes.Count)
+        if (
+            CurrentAnalysis == null
+            || CurrentAnteIndex < 0
+            || CurrentAnteIndex >= CurrentAnalysis.Antes.Count
+        )
             return null;
 
         return CurrentAnalysis.Antes[CurrentAnteIndex];
     }
 
     // Properties for UI binding
-    public string CurrentAnteDisplay => CurrentAnteIndex >= 0 && CurrentAnalysis?.Antes.Count > 0
-        ? $"== ANTE {CurrentAnalysis.Antes[CurrentAnteIndex].Ante} =="
-        : "";
+    public string CurrentAnteDisplay =>
+        CurrentAnteIndex >= 0 && CurrentAnalysis?.Antes.Count > 0
+            ? $"== ANTE {CurrentAnalysis.Antes[CurrentAnteIndex].Ante} =="
+            : "";
 
     public string CurrentBossDisplay => GetCurrentAnte()?.Boss.ToString() ?? "";
 
@@ -228,10 +233,11 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null) return [];
+            if (ante == null)
+                return [];
 
-            return ante.ShopQueue
-                .Select((item, i) => $"{i + 1}) {FormatUtils.FormatItem(item)}")
+            return ante
+                .ShopQueue.Select((item, i) => $"{i + 1}) {FormatUtils.FormatItem(item)}")
                 .ToList();
         }
     }
@@ -241,18 +247,21 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null) return [];
+            if (ante == null)
+                return [];
 
             var items = new ObservableCollection<ShopItemViewModel>();
             for (int i = 0; i < ante.ShopQueue.Count; i++)
             {
                 var item = ante.ShopQueue[i];
-                items.Add(new ShopItemViewModel
-                {
-                    Index = i + 1,
-                    ItemType = item.Type.ToString(),
-                    DisplayName = FormatUtils.FormatItem(item)
-                });
+                items.Add(
+                    new ShopItemViewModel
+                    {
+                        Index = i + 1,
+                        ItemType = item.Type.ToString(),
+                        DisplayName = FormatUtils.FormatItem(item),
+                    }
+                );
             }
             return items;
         }
@@ -263,7 +272,8 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null) return [];
+            if (ante == null)
+                return [];
             return ante.ShopQueue.ToList();
         }
     }
@@ -273,7 +283,8 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null) return [];
+            if (ante == null)
+                return [];
 
             var packs = new ObservableCollection<PackViewModel>();
             foreach (var pack in ante.Packs)
@@ -282,28 +293,32 @@ public partial class AnalyzerViewModel : ObservableObject
                 for (int i = 0; i < pack.Items.Count; i++)
                 {
                     var item = pack.Items[i];
-                    packItems.Add(new ShopItemViewModel
-                    {
-                        Index = i + 1,
-                        ItemType = item.Type.ToString(),
-                        DisplayName = FormatUtils.FormatItem(item)
-                    });
+                    packItems.Add(
+                        new ShopItemViewModel
+                        {
+                            Index = i + 1,
+                            ItemType = item.Type.ToString(),
+                            DisplayName = FormatUtils.FormatItem(item),
+                        }
+                    );
                 }
 
-                packs.Add(new PackViewModel
-                {
-                    Name = FormatUtils.FormatPackName(pack.Type),
-                    PackColor = pack.Type.GetPackType() switch
+                packs.Add(
+                    new PackViewModel
                     {
-                        MotelyBoosterPackType.Arcana => "#9370DB",
-                        MotelyBoosterPackType.Celestial => "#4169E1",
-                        MotelyBoosterPackType.Spectral => "#20B2AA",
-                        MotelyBoosterPackType.Buffoon => "#FF6347",
-                        MotelyBoosterPackType.Standard => "#4682B4",
-                        _ => "#FFFFFF"
-                    },
-                    Items = packItems
-                });
+                        Name = FormatUtils.FormatPackName(pack.Type),
+                        PackColor = pack.Type.GetPackType() switch
+                        {
+                            MotelyBoosterPackType.Arcana => "#9370DB",
+                            MotelyBoosterPackType.Celestial => "#4169E1",
+                            MotelyBoosterPackType.Spectral => "#20B2AA",
+                            MotelyBoosterPackType.Buffoon => "#FF6347",
+                            MotelyBoosterPackType.Standard => "#4682B4",
+                            _ => "#FFFFFF",
+                        },
+                        Items = packItems,
+                    }
+                );
             }
             return packs;
         }
@@ -314,21 +329,25 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null) return [];
+            if (ante == null)
+                return [];
 
-            return ante.Packs.Select(pack => new PackDisplayInfo
-            {
-                Name = FormatUtils.FormatPackName(pack.Type),
-                Items = pack.Items.Select(item => FormatUtils.FormatItem(item)).ToList(),
-                RawItems = pack.Items.ToList(),
-                PackType = pack.Type.GetPackType()
-            }).ToList();
+            return ante
+                .Packs.Select(pack => new PackDisplayInfo
+                {
+                    Name = FormatUtils.FormatPackName(pack.Type),
+                    Items = pack.Items.Select(item => FormatUtils.FormatItem(item)).ToList(),
+                    RawItems = pack.Items.ToList(),
+                    PackType = pack.Type.GetPackType(),
+                })
+                .ToList();
         }
     }
 
-    public string AnteNavigationDisplay => CurrentAnalysis != null && CurrentAnalysis.Antes.Count > 0
-        ? $"ANTE {(GetCurrentAnte()?.Ante ?? 1)} of {CurrentAnalysis.Antes.Count}"
-        : "ANTE 1 of 8";
+    public string AnteNavigationDisplay =>
+        CurrentAnalysis != null && CurrentAnalysis.Antes.Count > 0
+            ? $"ANTE {(GetCurrentAnte()?.Ante ?? 1)} of {CurrentAnalysis.Antes.Count}"
+            : "ANTE 1 of 8";
 
     partial void OnCurrentAnteIndexChanged(int value)
     {
@@ -382,7 +401,7 @@ public partial class AnalyzerViewModel : ObservableObject
             Seed = CurrentSeed,
             Deck = SelectedDeck,
             Stake = SelectedStake,
-            Error = CurrentAnalysis.Error
+            Error = CurrentAnalysis.Error,
         };
 
         foreach (var ante in CurrentAnalysis.Antes)
@@ -395,31 +414,26 @@ public partial class AnalyzerViewModel : ObservableObject
                 SmallBlindTag = new TagModel
                 {
                     BlindType = "Small Blind",
-                    Tag = ante.SmallBlindTag
+                    Tag = ante.SmallBlindTag,
                 },
-                BigBlindTag = new TagModel
-                {
-                    BlindType = "Big Blind",
-                    Tag = ante.BigBlindTag
-                }
+                BigBlindTag = new TagModel { BlindType = "Big Blind", Tag = ante.BigBlindTag },
             };
 
             foreach (var item in ante.ShopQueue)
             {
-                anteModel.ShopItems.Add(new ShopItemModel
-                {
-                    TypeCategory = item.TypeCategory,
-                    ItemValue = item.Value,
-                    Edition = item.Edition
-                });
+                anteModel.ShopItems.Add(
+                    new ShopItemModel
+                    {
+                        TypeCategory = item.TypeCategory,
+                        ItemValue = item.Value,
+                        Edition = item.Edition,
+                    }
+                );
             }
 
             foreach (var pack in ante.Packs)
             {
-                var packModel = new BoosterPackModel
-                {
-                    PackType = pack.Type.GetPackType()
-                };
+                var packModel = new BoosterPackModel { PackType = pack.Type.GetPackType() };
 
                 foreach (var packItem in pack.Items)
                 {
@@ -458,13 +472,14 @@ public class PackDisplayInfo
     public required List<MotelyItem> RawItems { get; init; }
     public required MotelyBoosterPackType PackType { get; init; }
 
-    public string PackColor => PackType switch
-    {
-        MotelyBoosterPackType.Arcana => "#9370DB",
-        MotelyBoosterPackType.Celestial => "#4169E1",
-        MotelyBoosterPackType.Spectral => "#20B2AA",
-        MotelyBoosterPackType.Buffoon => "#FF6347",
-        MotelyBoosterPackType.Standard => "#4682B4",
-        _ => "#FFFFFF"
-    };
+    public string PackColor =>
+        PackType switch
+        {
+            MotelyBoosterPackType.Arcana => "#9370DB",
+            MotelyBoosterPackType.Celestial => "#4169E1",
+            MotelyBoosterPackType.Spectral => "#20B2AA",
+            MotelyBoosterPackType.Buffoon => "#FF6347",
+            MotelyBoosterPackType.Standard => "#4682B4",
+            _ => "#FFFFFF",
+        };
 }

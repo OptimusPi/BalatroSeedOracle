@@ -1,12 +1,14 @@
-using Microsoft.Extensions.DependencyInjection;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddBalatroSeedOracleServices(this IServiceCollection services)
+        public static IServiceCollection AddBalatroSeedOracleServices(
+            this IServiceCollection services
+        )
         {
             // Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();

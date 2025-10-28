@@ -26,7 +26,6 @@ namespace BalatroSeedOracle.Views.Modals
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
 
         private async void OnImportFilesClick(object? sender, RoutedEventArgs e)
         {
@@ -209,33 +208,34 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Create confirmation modal
             var confirmModal = new StandardModal("⚠️ CONFIRM NUKE ⚠️");
-            var confirmPanel = new StackPanel
-            {
-                Spacing = 20,
-                Margin = new Avalonia.Thickness(20),
-            };
+            var confirmPanel = new StackPanel { Spacing = 20, Margin = new Avalonia.Thickness(20) };
 
-            confirmPanel.Children.Add(new TextBlock
-            {
-                Text = "This will DELETE ALL:",
-                FontSize = 18,
-                TextAlignment = Avalonia.Media.TextAlignment.Center,
-                Foreground = Avalonia.Media.Brushes.Red
-            });
+            confirmPanel.Children.Add(
+                new TextBlock
+                {
+                    Text = "This will DELETE ALL:",
+                    FontSize = 18,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Red,
+                }
+            );
 
-            confirmPanel.Children.Add(new TextBlock
-            {
-                Text = "• All filter files in JsonItemFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!",
-                FontSize = 16,
-                TextAlignment = Avalonia.Media.TextAlignment.Center,
-            });
+            confirmPanel.Children.Add(
+                new TextBlock
+                {
+                    Text =
+                        "• All filter files in JsonItemFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!",
+                    FontSize = 16,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                }
+            );
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Avalonia.Layout.Orientation.Horizontal,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Spacing = 20,
-                Margin = new Avalonia.Thickness(0, 20, 0, 0)
+                Margin = new Avalonia.Thickness(0, 20, 0, 0),
             };
 
             var cancelButton = new Button
@@ -243,7 +243,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Content = "Cancel",
                 Classes = { "btn-green" },
                 MinWidth = 100,
-                MinHeight = 40
+                MinHeight = 40,
             };
 
             var nukeButton = new Button
@@ -252,7 +252,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Classes = { "btn-red" },
                 MinWidth = 150,
                 MinHeight = 40,
-                Background = Avalonia.Media.Brushes.DarkRed
+                Background = Avalonia.Media.Brushes.DarkRed,
             };
 
             cancelButton.Click += (s, ev) =>
@@ -269,7 +269,10 @@ namespace BalatroSeedOracle.Views.Modals
                     int deletedResults = 0;
 
                     // Delete all files in JsonItemFilters
-                    var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                    var filtersDir = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "JsonItemFilters"
+                    );
                     if (Directory.Exists(filtersDir))
                     {
                         var filterFiles = Directory.GetFiles(filtersDir, "*.json");
@@ -282,7 +285,10 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
                             }
                         }
                     }
@@ -291,7 +297,11 @@ namespace BalatroSeedOracle.Views.Modals
                     var resultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
                     if (Directory.Exists(resultsDir))
                     {
-                        var resultFiles = Directory.GetFiles(resultsDir, "*.*", SearchOption.AllDirectories);
+                        var resultFiles = Directory.GetFiles(
+                            resultsDir,
+                            "*.*",
+                            SearchOption.AllDirectories
+                        );
                         foreach (var file in resultFiles)
                         {
                             try
@@ -301,7 +311,10 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
                             }
                         }
 
@@ -315,18 +328,22 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("NukeEverything", $"Failed to delete directory {dir}: {ex.Message}");
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete directory {dir}: {ex.Message}"
+                                );
                             }
                         }
                     }
 
                     // Show results
                     mainMenu.HideModalContent();
-                    
+
                     var resultModal = new StandardModal("💥 NUKE COMPLETE 💥");
                     var resultText = new TextBlock
                     {
-                        Text = $"Deleted:\n{deletedFilters} filter files\n{deletedResults} search result files\n\npifreak loves you!",
+                        Text =
+                            $"Deleted:\n{deletedFilters} filter files\n{deletedResults} search result files\n\npifreak loves you!",
                         FontSize = 16,
                         Margin = new Avalonia.Thickness(20),
                         TextAlignment = Avalonia.Media.TextAlignment.Center,
@@ -339,12 +356,15 @@ namespace BalatroSeedOracle.Views.Modals
                     };
                     mainMenu.ShowModalContent(resultModal, "NUKE COMPLETE");
 
-                    DebugLogger.Log("NukeEverything", $"Nuked {deletedFilters} filters and {deletedResults} results");
+                    DebugLogger.Log(
+                        "NukeEverything",
+                        $"Nuked {deletedFilters} filters and {deletedResults} results"
+                    );
                 }
                 catch (Exception ex)
                 {
                     DebugLogger.LogError("NukeEverything", $"Nuke operation failed: {ex.Message}");
-                    
+
                     mainMenu.HideModalContent();
                     var errorModal = new StandardModal("ERROR");
                     var errorText = new TextBlock
@@ -353,7 +373,7 @@ namespace BalatroSeedOracle.Views.Modals
                         FontSize = 16,
                         Margin = new Avalonia.Thickness(20),
                         TextAlignment = Avalonia.Media.TextAlignment.Center,
-                        Foreground = Avalonia.Media.Brushes.Red
+                        Foreground = Avalonia.Media.Brushes.Red,
                     };
                     errorModal.SetContent(errorText);
                     errorModal.BackClicked += (s, ev) =>

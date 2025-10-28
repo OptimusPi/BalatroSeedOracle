@@ -1,11 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -23,7 +23,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string? _currentModalType;
 
-        public MainWindowViewModel(UserProfileService userProfileService, SearchManager searchManager)
+        public MainWindowViewModel(
+            UserProfileService userProfileService,
+            SearchManager searchManager
+        )
         {
             _userProfileService = userProfileService;
             _searchManager = searchManager;
@@ -94,7 +97,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MainWindowViewModel", $"Error initializing MainWindow: {ex.Message}");
+                DebugLogger.LogError(
+                    "MainWindowViewModel",
+                    $"Error initializing MainWindow: {ex.Message}"
+                );
             }
         }
 
@@ -114,7 +120,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MainWindowViewModel", $"Error loading user profile: {ex.Message}");
+                DebugLogger.LogError(
+                    "MainWindowViewModel",
+                    $"Error loading user profile: {ex.Message}"
+                );
             }
         }
 

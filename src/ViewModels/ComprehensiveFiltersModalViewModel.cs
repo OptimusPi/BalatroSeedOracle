@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Constants;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
@@ -57,7 +57,10 @@ namespace BalatroSeedOracle.ViewModels
         public ObservableCollection<FilterItem> SelectedShould { get; }
         public ObservableCollection<FilterItem> SelectedMustNot { get; }
 
-        public ComprehensiveFiltersModalViewModel(IConfigurationService configurationService, IFilterService filterService)
+        public ComprehensiveFiltersModalViewModel(
+            IConfigurationService configurationService,
+            IFilterService filterService
+        )
         {
             _configurationService = configurationService;
             _filterService = filterService;
@@ -86,13 +89,13 @@ namespace BalatroSeedOracle.ViewModels
             FilterName = "";
             FilterDescription = "";
             CurrentFilterPath = "";
-            
+
             SelectedMust.Clear();
             SelectedShould.Clear();
             SelectedMustNot.Clear();
-            
+
             ResetTestDisplay();
-            
+
             DebugLogger.Log("FiltersModalViewModel", "New filter created");
         }
 
@@ -117,13 +120,19 @@ namespace BalatroSeedOracle.ViewModels
                     CurrentFilterPath = _filterService.GenerateFilterFileName(FilterName);
                 }
 
-                var success = await _configurationService.SaveFilterAsync(CurrentFilterPath, config);
-                
+                var success = await _configurationService.SaveFilterAsync(
+                    CurrentFilterPath,
+                    config
+                );
+
                 if (success)
                 {
                     TestStatus = $"Filter saved: {System.IO.Path.GetFileName(CurrentFilterPath)}";
                     ShowTestSuccess = true;
-                    DebugLogger.Log("FiltersModalViewModel", $"Filter saved to: {CurrentFilterPath}");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        $"Filter saved to: {CurrentFilterPath}"
+                    );
                 }
                 else
                 {
@@ -161,11 +170,21 @@ namespace BalatroSeedOracle.ViewModels
                 var selectedPath = filters
                     .OrderByDescending(f =>
                     {
-                        try { return File.GetLastWriteTime(f); } catch { return DateTime.MinValue; }
+                        try
+                        {
+                            return File.GetLastWriteTime(f);
+                        }
+                        catch
+                        {
+                            return DateTime.MinValue;
+                        }
                     })
                     .First();
 
-                var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(selectedPath);
+                var config =
+                    await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
+                        selectedPath
+                    );
                 if (config == null)
                 {
                     TestStatus = "Failed to load filter config";
@@ -186,21 +205,26 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedMustNot.Clear();
 
                 // Helper to convert a clause to FilterItem(s)
-                void AddClauseTo(ObservableCollection<FilterItem> target, Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause clause)
+                void AddClauseTo(
+                    ObservableCollection<FilterItem> target,
+                    Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause clause
+                )
                 {
                     // Single value
                     if (!string.IsNullOrWhiteSpace(clause.Value))
                     {
-                        target.Add(new FilterItem
-                        {
-                            Name = clause.Value,
-                            DisplayName = clause.Value,
-                            Type = clause.Type ?? "",
-                            Value = clause.Value,
-                            Label = clause.Label,
-                            Antes = clause.Antes,
-                            Edition = clause.Edition
-                        });
+                        target.Add(
+                            new FilterItem
+                            {
+                                Name = clause.Value,
+                                DisplayName = clause.Value,
+                                Type = clause.Type ?? "",
+                                Value = clause.Value,
+                                Label = clause.Label,
+                                Antes = clause.Antes,
+                                Edition = clause.Edition,
+                            }
+                        );
                     }
 
                     // Multi-values
@@ -208,31 +232,43 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         foreach (var val in clause.Values)
                         {
-                            if (string.IsNullOrWhiteSpace(val)) continue;
-                            target.Add(new FilterItem
-                            {
-                                Name = val,
-                                DisplayName = val,
-                                Type = clause.Type ?? "",
-                                Value = val,
-                                Label = clause.Label,
-                                Antes = clause.Antes,
-                                Edition = clause.Edition
-                            });
+                            if (string.IsNullOrWhiteSpace(val))
+                                continue;
+                            target.Add(
+                                new FilterItem
+                                {
+                                    Name = val,
+                                    DisplayName = val,
+                                    Type = clause.Type ?? "",
+                                    Value = val,
+                                    Label = clause.Label,
+                                    Antes = clause.Antes,
+                                    Edition = clause.Edition,
+                                }
+                            );
                         }
                     }
                 }
 
                 // Populate selections from config
-                foreach (var clause in config.Must ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>())
+                foreach (
+                    var clause in config.Must
+                        ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+                )
                 {
                     AddClauseTo(SelectedMust, clause);
                 }
-                foreach (var clause in config.Should ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>())
+                foreach (
+                    var clause in config.Should
+                        ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+                )
                 {
                     AddClauseTo(SelectedShould, clause);
                 }
-                foreach (var clause in config.MustNot ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>())
+                foreach (
+                    var clause in config.MustNot
+                        ?? new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>()
+                )
                 {
                     AddClauseTo(SelectedMustNot, clause);
                 }
@@ -260,7 +296,10 @@ namespace BalatroSeedOracle.ViewModels
                 TestStatus = "Testing filter...";
 
                 // Auto-save for testing if needed
-                if (string.IsNullOrEmpty(CurrentFilterPath) && !string.IsNullOrWhiteSpace(FilterName))
+                if (
+                    string.IsNullOrEmpty(CurrentFilterPath)
+                    && !string.IsNullOrWhiteSpace(FilterName)
+                )
                 {
                     await SaveFilterAsync();
                 }
@@ -275,7 +314,8 @@ namespace BalatroSeedOracle.ViewModels
                 // Simulate filter test (replace with actual Motely integration)
                 await Task.Delay(2000);
 
-                var hasItems = SelectedMust.Count > 0 || SelectedShould.Count > 0 || SelectedMustNot.Count > 0;
+                var hasItems =
+                    SelectedMust.Count > 0 || SelectedShould.Count > 0 || SelectedMustNot.Count > 0;
                 if (hasItems)
                 {
                     TestStatus = "✓ Filter test passed!";
@@ -397,7 +437,7 @@ namespace BalatroSeedOracle.ViewModels
                 DateCreated = DateTime.UtcNow,
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
             };
 
             // Convert selected items to clauses
@@ -419,12 +459,15 @@ namespace BalatroSeedOracle.ViewModels
             return config;
         }
 
-        private Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause CreateClauseFromItem(FilterItem item)
+        private Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause CreateClauseFromItem(
+            FilterItem item
+        )
         {
             // Normalize type if needed (support common aliases)
             string NormalizeType(string? t)
             {
-                if (string.IsNullOrWhiteSpace(t)) return "";
+                if (string.IsNullOrWhiteSpace(t))
+                    return "";
                 var s = t.Trim();
                 return s switch
                 {
@@ -438,7 +481,7 @@ namespace BalatroSeedOracle.ViewModels
                     "SmallBlindTag" => "SmallBlindTag",
                     "BigBlindTag" => "BigBlindTag",
                     // Fallback to given
-                    _ => s
+                    _ => s,
                 };
             }
 
@@ -448,11 +491,12 @@ namespace BalatroSeedOracle.ViewModels
                 Value = item.Value ?? item.Name,
                 Label = item.Label,
                 // Use provided antes if present, else default all
-                Antes = (item.Antes != null && item.Antes.Length > 0)
-                    ? item.Antes
-                    : new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                Antes =
+                    (item.Antes != null && item.Antes.Length > 0)
+                        ? item.Antes
+                        : new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 // Include edition when set and not blank
-                Edition = string.IsNullOrWhiteSpace(item.Edition) ? null : item.Edition
+                Edition = string.IsNullOrWhiteSpace(item.Edition) ? null : item.Edition,
             };
 
             return clause;

@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -68,7 +68,10 @@ namespace BalatroSeedOracle.Views.Modals
                 // Sync header when ViewModel changes tab programmatically (e.g., after search)
                 ViewModel.PropertyChanged += (s, e) =>
                 {
-                    if (!_suppressHeaderSync && e.PropertyName == nameof(ViewModel.SelectedTabIndex))
+                    if (
+                        !_suppressHeaderSync
+                        && e.PropertyName == nameof(ViewModel.SelectedTabIndex)
+                    )
                     {
                         _tabHeader.SwitchToTab(ViewModel.SelectedTabIndex);
                     }
@@ -79,14 +82,42 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel.SetNewFilterRequestedCallback(OpenFiltersModal);
 
             // DeckAndStakeSelector → ViewModel properties
-            var deckStakeSelector = this.FindControl<Components.DeckAndStakeSelector>("DeckStakeSelector");
+            var deckStakeSelector = this.FindControl<Components.DeckAndStakeSelector>(
+                "DeckStakeSelector"
+            );
             if (deckStakeSelector != null)
             {
                 deckStakeSelector.SelectionChanged += (s, selection) =>
                 {
-                    var deckNames = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                                           "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                    var stakeNames = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                    var deckNames = new[]
+                    {
+                        "Red",
+                        "Blue",
+                        "Yellow",
+                        "Green",
+                        "Black",
+                        "Magic",
+                        "Nebula",
+                        "Ghost",
+                        "Abandoned",
+                        "Checkered",
+                        "Zodiac",
+                        "Painted",
+                        "Anaglyph",
+                        "Plasma",
+                        "Erratic",
+                    };
+                    var stakeNames = new[]
+                    {
+                        "White",
+                        "Red",
+                        "Green",
+                        "Black",
+                        "Blue",
+                        "Purple",
+                        "Orange",
+                        "Gold",
+                    };
 
                     if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
                         ViewModel.DeckSelection = deckNames[selection.deckIndex];
@@ -123,7 +154,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't open FiltersModal");
+                    DebugLogger.LogError(
+                        "SearchModal",
+                        "ViewModel.MainMenu is NULL! Can't open FiltersModal"
+                    );
                 }
             }
             catch (Exception ex)
@@ -135,15 +169,24 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// Handle minimize to desktop request - creates SearchDesktopIcon and closes modal
         /// </summary>
-        private void OnMinimizeToDesktopRequested(object? sender, (string searchId, string? configPath, string filterName) args)
+        private void OnMinimizeToDesktopRequested(
+            object? sender,
+            (string searchId, string? configPath, string filterName) args
+        )
         {
             try
             {
-                DebugLogger.Log("SearchModal", $"OnMinimizeToDesktopRequested: SearchID={args.searchId}, Filter={args.filterName}");
+                DebugLogger.Log(
+                    "SearchModal",
+                    $"OnMinimizeToDesktopRequested: SearchID={args.searchId}, Filter={args.filterName}"
+                );
 
                 if (ViewModel.MainMenu == null)
                 {
-                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't create desktop icon");
+                    DebugLogger.LogError(
+                        "SearchModal",
+                        "ViewModel.MainMenu is NULL! Can't create desktop icon"
+                    );
                     return;
                 }
 
@@ -157,7 +200,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModal", $"Error minimizing search to desktop: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModal",
+                    $"Error minimizing search to desktop: {ex.Message}"
+                );
             }
         }
     }

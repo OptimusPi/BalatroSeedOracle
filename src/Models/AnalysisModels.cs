@@ -73,7 +73,7 @@ namespace BalatroSeedOracle.Models
                     MotelyItemTypeCategory.TarotCard => $"tarot_{ItemValue?.ToString()}",
                     MotelyItemTypeCategory.PlanetCard => $"planet_{ItemValue?.ToString()}",
                     MotelyItemTypeCategory.SpectralCard => $"spectral_{ItemValue?.ToString()}",
-                    _ => ""
+                    _ => "",
                 };
             }
         }
@@ -88,7 +88,7 @@ namespace BalatroSeedOracle.Models
                     MotelyItemEdition.Holographic => new SolidColorBrush(Color.Parse("#FF8FFF")),
                     MotelyItemEdition.Polychrome => new SolidColorBrush(Color.Parse("#FFD700")),
                     MotelyItemEdition.Negative => new SolidColorBrush(Color.Parse("#FF5555")),
-                    _ => Brushes.White
+                    _ => Brushes.White,
                 };
             }
         }
@@ -126,6 +126,6 @@ namespace BalatroSeedOracle.Models
     public enum AnalyzeModalTab
     {
         Settings,
-        Analyzer
+        Analyzer,
     }
 }

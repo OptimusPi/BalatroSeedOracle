@@ -2,10 +2,10 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Xaml.Interactivity;
 using Avalonia.VisualTree;
-using BalatroSeedOracle.Services;
+using Avalonia.Xaml.Interactivity;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -18,6 +18,7 @@ namespace BalatroSeedOracle.Behaviors
         private bool _isDragging;
         private Point _dragStartPoint;
         private Point _pointerPressedPoint;
+
         // Tracks whether the initial press was on the configured drag handle
         private bool _pressOriginIsOnHandle;
 
@@ -35,7 +36,12 @@ namespace BalatroSeedOracle.Behaviors
             var selfBounds = AssociatedObject.Bounds;
 
             // If bounds are not available yet, avoid clamping to prevent jumpy behavior
-            if (parentBounds.Width <= 0 || parentBounds.Height <= 0 || selfBounds.Width <= 0 || selfBounds.Height <= 0)
+            if (
+                parentBounds.Width <= 0
+                || parentBounds.Height <= 0
+                || selfBounds.Width <= 0
+                || selfBounds.Height <= 0
+            )
                 return (Math.Max(0, x), Math.Max(0, y));
 
             var maxX = Math.Max(0, parentBounds.Width - selfBounds.Width);
@@ -50,8 +56,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Dependency property for X position (Canvas.Left or Margin.Left binding)
         /// </summary>
-        public static readonly StyledProperty<double> XProperty =
-            AvaloniaProperty.Register<DraggableWidgetBehavior, double>(nameof(X));
+        public static readonly StyledProperty<double> XProperty = AvaloniaProperty.Register<
+            DraggableWidgetBehavior,
+            double
+        >(nameof(X));
 
         public double X
         {
@@ -62,8 +70,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Dependency property for Y position (Canvas.Top or Margin.Top binding)
         /// </summary>
-        public static readonly StyledProperty<double> YProperty =
-            AvaloniaProperty.Register<DraggableWidgetBehavior, double>(nameof(Y));
+        public static readonly StyledProperty<double> YProperty = AvaloniaProperty.Register<
+            DraggableWidgetBehavior,
+            double
+        >(nameof(Y));
 
         public double Y
         {
@@ -77,7 +87,10 @@ namespace BalatroSeedOracle.Behaviors
         /// If empty/null, allows drag from anywhere (entire control)
         /// </summary>
         public static readonly StyledProperty<string?> DragHandleClassProperty =
-            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(nameof(DragHandleClass), null);
+            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(
+                nameof(DragHandleClass),
+                null
+            );
 
         public string? DragHandleClass
         {
@@ -89,19 +102,24 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnAttached();
 
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Listen for property changes to update Margin when X or Y changes
-            XProperty.Changed.AddClassHandler<DraggableWidgetBehavior>((sender, args) =>
-            {
-                if (sender == this)
-                    UpdatePosition();
-            });
-            YProperty.Changed.AddClassHandler<DraggableWidgetBehavior>((sender, args) =>
-            {
-                if (sender == this)
-                    UpdatePosition();
-            });
+            XProperty.Changed.AddClassHandler<DraggableWidgetBehavior>(
+                (sender, args) =>
+                {
+                    if (sender == this)
+                        UpdatePosition();
+                }
+            );
+            YProperty.Changed.AddClassHandler<DraggableWidgetBehavior>(
+                (sender, args) =>
+                {
+                    if (sender == this)
+                        UpdatePosition();
+                }
+            );
 
             // Apply initial position from ViewModel binding
             UpdatePosition();
@@ -125,7 +143,8 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnDetaching();
 
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Clean up events
             AssociatedObject.PointerPressed -= OnPointerPressed;
@@ -136,10 +155,12 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             var props = e.GetCurrentPoint(AssociatedObject).Properties;
-            if (!props.IsLeftButtonPressed) return;
+            if (!props.IsLeftButtonPressed)
+                return;
 
             // Ensure the widget moves to front as soon as it is interacted with
             if (AssociatedObject.DataContext is ViewModels.BaseWidgetViewModel vm)
@@ -197,7 +218,8 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // CRITICAL: Only process if left button is ACTUALLY PRESSED (not just hovering!)
             var props = e.GetCurrentPoint(AssociatedObject).Properties;
@@ -231,20 +253,22 @@ namespace BalatroSeedOracle.Behaviors
             // If not dragging yet, check if we've moved far enough to start
             if (!_isDragging)
             {
-                var distance = Math.Abs(currentPoint.X - _pointerPressedPoint.X) + Math.Abs(currentPoint.Y - _pointerPressedPoint.Y);
+                var distance =
+                    Math.Abs(currentPoint.X - _pointerPressedPoint.X)
+                    + Math.Abs(currentPoint.Y - _pointerPressedPoint.Y);
 
                 // Only start dragging if moved more than 20 pixels
                 if (distance > 20)
                 {
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
-                    
+
                     // Bring widget to front when dragging starts
                     if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm)
                     {
                         vm.BringToFront();
                     }
-                    
+
                     // Calculate the initial offset from the widget's top-left corner to the mouse position
                     // This allows us to maintain the relative position during drag
                     _dragStartPoint = new Point(
@@ -287,23 +311,29 @@ namespace BalatroSeedOracle.Behaviors
                             // This ensures grid snapping is based on widget position, not mouse position
                             var widgetX = X;
                             var widgetY = Y;
-                            
+
                             // Get parent bounds for dynamic exclusion zones
-                            var parentWidth = 1200.0;  // Default fallback
-                            var parentHeight = 700.0;  // Default fallback
-                            
+                            var parentWidth = 1200.0; // Default fallback
+                            var parentHeight = 700.0; // Default fallback
+
                             var parentVisual = AssociatedObject.Parent as Visual;
                             if (parentVisual != null)
                             {
                                 parentWidth = parentVisual.Bounds.Width;
                                 parentHeight = parentVisual.Bounds.Height;
                             }
-                            
+
                             // Different positioning behavior for minimized vs expanded widgets
                             if (vm.IsMinimized)
                             {
                                 // Minimized widgets: Use grid snapping with collision avoidance
-                                var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(widgetX, widgetY, vm, parentWidth, parentHeight);
+                                var (newX, newY) = positionService.SnapToGridWithCollisionAvoidance(
+                                    widgetX,
+                                    widgetY,
+                                    vm,
+                                    parentWidth,
+                                    parentHeight
+                                );
                                 var clamped = ClampPosition(newX, newY);
                                 X = clamped.X;
                                 Y = clamped.Y;
@@ -323,7 +353,7 @@ namespace BalatroSeedOracle.Behaviors
                             const double gridSpacing = 90.0;
                             const double gridOriginX = 20.0;
                             const double gridOriginY = 20.0;
-                            
+
                             // Snap to grid using consistent reference point
                             var offsetX = X - gridOriginX;
                             var offsetY = Y - gridOriginY;
@@ -343,7 +373,7 @@ namespace BalatroSeedOracle.Behaviors
                         const double gridSpacing = 90.0;
                         const double gridOriginX = 20.0;
                         const double gridOriginY = 20.0;
-                        
+
                         // Snap to grid using consistent reference point
                         var offsetX = X - gridOriginX;
                         var offsetY = Y - gridOriginY;

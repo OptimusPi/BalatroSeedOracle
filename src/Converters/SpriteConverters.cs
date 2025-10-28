@@ -13,7 +13,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ShopItemSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not ShopItemModel item)
                 return null;
@@ -23,11 +28,19 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return item.TypeCategory switch
                 {
-                    Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(item.ItemName),
-                    Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(item.ItemName),
-                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetTarotImage(item.ItemName),
-                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetTarotImage(item.ItemName),
-                    _ => null
+                    Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(
+                        item.ItemName
+                    ),
+                    Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
+                        item.ItemName
+                    ),
+                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetTarotImage(
+                        item.ItemName
+                    ),
+                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetTarotImage(
+                        item.ItemName
+                    ),
+                    _ => null,
                 };
             }
             catch
@@ -36,7 +49,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -47,7 +65,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class BoosterPackSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not BoosterPackModel pack)
                 return null;
@@ -63,7 +86,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -74,7 +102,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class TagSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not TagModel tag)
                 return null;
@@ -90,7 +123,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -101,7 +139,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemTypeToSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not string itemType || string.IsNullOrEmpty(itemType))
                 return null;
@@ -117,7 +160,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -129,13 +177,18 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemNameToSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             string? itemName = value switch
             {
                 string str => str,
                 ItemConfig config => config.ItemName,
-                _ => null
+                _ => null,
             };
 
             if (string.IsNullOrEmpty(itemName))
@@ -152,12 +205,20 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ItemNameToSpriteConverter", $"Failed to get sprite for '{itemName}': {ex.Message}");
+                DebugLogger.LogError(
+                    "ItemNameToSpriteConverter",
+                    $"Failed to get sprite for '{itemName}': {ex.Message}"
+                );
                 return null;
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -165,13 +226,18 @@ namespace BalatroSeedOracle.Converters
 
     public class ItemNameToSoulFaceConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             string? itemName = value switch
             {
                 string str => str,
                 ItemConfig config => config.ItemName,
-                _ => null
+                _ => null,
             };
 
             if (string.IsNullOrEmpty(itemName))
@@ -188,7 +254,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -196,7 +267,12 @@ namespace BalatroSeedOracle.Converters
 
     public class StandardCardToSpriteConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not string cardString || string.IsNullOrEmpty(cardString))
                 return null;
@@ -206,7 +282,8 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
 
                 var parts = cardString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 3) return null;
+                if (parts.Length < 3)
+                    return null;
 
                 string? seal = null;
                 string? edition = null;
@@ -235,7 +312,12 @@ namespace BalatroSeedOracle.Converters
                     {
                         seal = parts[i];
                     }
-                    else if (part == "foil" || part == "holographic" || part == "polychrome" || part == "negative")
+                    else if (
+                        part == "foil"
+                        || part == "holographic"
+                        || part == "polychrome"
+                        || part == "negative"
+                    )
                     {
                         edition = parts[i];
                     }
@@ -245,12 +327,20 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("StandardCardToSpriteConverter", $"Failed to parse card '{value}': {ex.Message}");
+                DebugLogger.LogError(
+                    "StandardCardToSpriteConverter",
+                    $"Failed to parse card '{value}': {ex.Message}"
+                );
                 return null;
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }

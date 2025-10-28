@@ -29,14 +29,16 @@ namespace BalatroSeedOracle.Behaviors
         private const double AMBIENT_TILT = 0.2;
 
         // Balatro juice effect frequencies (from card.lua)
-        private const double JUICE_BOUNCE_FREQUENCY = 50.8;  // Scale oscillation frequency
-        private const double JUICE_WOBBLE_FREQUENCY = 40.8;  // Rotation wobble frequency
+        private const double JUICE_BOUNCE_FREQUENCY = 50.8; // Scale oscillation frequency
+        private const double JUICE_WOBBLE_FREQUENCY = 40.8; // Rotation wobble frequency
 
         /// <summary>
         /// Enable/disable all animations
         /// </summary>
-        public static readonly StyledProperty<bool> IsEnabledProperty =
-            AvaloniaProperty.Register<CardDragBehavior, bool>(nameof(IsEnabled), true);
+        public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<
+            CardDragBehavior,
+            bool
+        >(nameof(IsEnabled), true);
 
         public bool IsEnabled
         {
@@ -60,7 +62,8 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnAttached();
 
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Generate unique card ID for timing variation
             _cardId = new Random().NextDouble() * 100;
@@ -73,7 +76,11 @@ namespace BalatroSeedOracle.Behaviors
             _transformGroup.Children.Add(_scaleTransform);
             _transformGroup.Children.Add(_rotateTransform);
 
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                0.5,
+                0.5,
+                RelativeUnit.Relative
+            );
             AssociatedObject.RenderTransform = _transformGroup;
 
             // Attach pointer events
@@ -86,7 +93,7 @@ namespace BalatroSeedOracle.Behaviors
             // Create animation timer but don't start it yet
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67) // 60 FPS
+                Interval = TimeSpan.FromMilliseconds(16.67), // 60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
         }
@@ -130,7 +137,8 @@ namespace BalatroSeedOracle.Behaviors
             {
                 _animationTimer.Stop();
                 // Reset transforms to neutral state
-                if (_rotateTransform != null) _rotateTransform.Angle = 0;
+                if (_rotateTransform != null)
+                    _rotateTransform.Angle = 0;
                 if (_scaleTransform != null)
                 {
                     _scaleTransform.ScaleX = 1.0;
@@ -172,7 +180,8 @@ namespace BalatroSeedOracle.Behaviors
             {
                 _animationTimer.Stop();
                 // Reset transforms to neutral state
-                if (_rotateTransform != null) _rotateTransform.Angle = 0;
+                if (_rotateTransform != null)
+                    _rotateTransform.Angle = 0;
                 if (_scaleTransform != null)
                 {
                     _scaleTransform.ScaleX = 1.0;
@@ -183,7 +192,12 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnAnimationTick(object? sender, EventArgs e)
         {
-            if (!IsEnabled || AssociatedObject == null || _rotateTransform == null || _scaleTransform == null)
+            if (
+                !IsEnabled
+                || AssociatedObject == null
+                || _rotateTransform == null
+                || _scaleTransform == null
+            )
                 return;
 
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
@@ -204,8 +218,11 @@ namespace BalatroSeedOracle.Behaviors
                 var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
 
                 // Drag delta from initial press
-                var dx = (_lastPointerPosition.Value.X - _pointerPressedPosition.Value.X) / bounds.Width;
-                var dy = (_lastPointerPosition.Value.Y - _pointerPressedPosition.Value.Y) / bounds.Height;
+                var dx =
+                    (_lastPointerPosition.Value.X - _pointerPressedPosition.Value.X) / bounds.Width;
+                var dy =
+                    (_lastPointerPosition.Value.Y - _pointerPressedPosition.Value.Y)
+                    / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
                 tiltAmount = Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * TILT_FACTOR;
@@ -256,12 +273,16 @@ namespace BalatroSeedOracle.Behaviors
                     var decayRotation = Math.Max(0, Math.Pow(1 - progress, 2));
 
                     // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
-                    var scaleJuice = JuiceAmount * Math.Sin(JUICE_BOUNCE_FREQUENCY * juiceElapsed) * decayScale;
+                    var scaleJuice =
+                        JuiceAmount * Math.Sin(JUICE_BOUNCE_FREQUENCY * juiceElapsed) * decayScale;
                     _scaleTransform.ScaleX = 1.0 + scaleJuice;
                     _scaleTransform.ScaleY = 1.0 + scaleJuice;
 
                     // Rotation wobble: r_amt * sin(FREQUENCY*t) * decay^2
-                    var rotationJuice = (JuiceAmount * 0.6) * Math.Sin(JUICE_WOBBLE_FREQUENCY * juiceElapsed) * decayRotation;
+                    var rotationJuice =
+                        (JuiceAmount * 0.6)
+                        * Math.Sin(JUICE_WOBBLE_FREQUENCY * juiceElapsed)
+                        * decayRotation;
                     _rotateTransform.Angle += rotationJuice * 10; // Add to tilt rotation
                 }
                 else

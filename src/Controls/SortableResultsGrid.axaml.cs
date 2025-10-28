@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Specialized;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using BalatroSeedOracle.Models;
+using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.Input;
-using System.Windows.Input;
-using Avalonia.Data;
-using Avalonia.Controls.Templates;
-using Avalonia.Media;
 
 namespace BalatroSeedOracle.Controls
 {
@@ -38,14 +38,14 @@ namespace BalatroSeedOracle.Controls
         public ICommand AddToFavoritesCommand { get; }
         public ICommand ExportSeedCommand { get; }
         public ICommand AnalyzeSeedCommand { get; }
-        
+
         public event EventHandler<SearchResult>? SeedCopied;
         public event EventHandler<SearchResult>? SearchSimilarRequested;
         public event EventHandler<SearchResult>? AddToFavoritesRequested;
         public event EventHandler<SearchResult>? ExportSeedRequested;
         public event EventHandler<IEnumerable<SearchResult>>? ExportAllRequested;
         public event EventHandler<SearchResult>? AnalyzeRequested;
-        
+
         public SortableResultsGrid()
         {
             InitializeComponent();
@@ -92,7 +92,7 @@ namespace BalatroSeedOracle.Controls
                 }
             });
         }
-        
+
         private void InitializeDataGrid()
         {
             var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid")!;
@@ -105,38 +105,53 @@ namespace BalatroSeedOracle.Controls
 
         private void EnsureTallyColumns()
         {
-            if (_tallyColumnsInitialized) return;
+            if (_tallyColumnsInitialized)
+                return;
             var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
-            if (dataGrid == null) return;
+            if (dataGrid == null)
+                return;
 
             var first = _allResults.FirstOrDefault();
             if (first?.Scores == null || first.Scores.Length == 0)
             {
                 // Try items source if allResults empty
                 first = _itemsSource?.FirstOrDefault();
-                if (first?.Scores == null || first.Scores.Length == 0) return;
+                if (first?.Scores == null || first.Scores.Length == 0)
+                    return;
             }
 
             for (int i = 0; i < first!.Scores!.Length; i++)
             {
                 // UPPERCASE header from Labels (from SearchInstance.ColumnNames)
-                var header = (first.Labels != null && i < first.Labels.Length && !string.IsNullOrWhiteSpace(first.Labels[i]))
-                    ? first.Labels[i].ToUpperInvariant()
-                    : $"TALLY{i + 1}";
+                var header =
+                    (
+                        first.Labels != null
+                        && i < first.Labels.Length
+                        && !string.IsNullOrWhiteSpace(first.Labels[i])
+                    )
+                        ? first.Labels[i].ToUpperInvariant()
+                        : $"TALLY{i + 1}";
 
                 var col = new DataGridTemplateColumn
                 {
                     Header = header,
-                    Width = new DataGridLength(80)
+                    Width = new DataGridLength(80),
                 };
 
                 // Bind TextBlock to Scores[i]
-                var template = new FuncDataTemplate<Models.SearchResult>((item, _) =>
-                {
-                    var tb = new TextBlock { FontFamily = new FontFamily("Consolas"), FontSize = 11 };
-                    tb.Bind(TextBlock.TextProperty, new Binding($"Scores[{i}]"));
-                    return tb;
-                }, true);
+                var template = new FuncDataTemplate<Models.SearchResult>(
+                    (item, _) =>
+                    {
+                        var tb = new TextBlock
+                        {
+                            FontFamily = new FontFamily("Consolas"),
+                            FontSize = 11,
+                        };
+                        tb.Bind(TextBlock.TextProperty, new Binding($"Scores[{i}]"));
+                        return tb;
+                    },
+                    true
+                );
 
                 col.CellTemplate = template;
                 dataGrid.Columns.Add(col);
@@ -179,7 +194,7 @@ namespace BalatroSeedOracle.Controls
             ApplySorting();
             UpdateDisplay();
         }
-        
+
         /// <summary>
         /// Clear all results
         /// </summary>
@@ -192,7 +207,7 @@ namespace BalatroSeedOracle.Controls
             UpdatePageInfo();
             UpdateStats();
         }
-        
+
         /// <summary>
         /// Get all results (for export)
         /// </summary>
@@ -200,7 +215,7 @@ namespace BalatroSeedOracle.Controls
         {
             return _allResults.ToList();
         }
-        
+
         /// <summary>
         /// Get currently displayed results
         /// </summary>
@@ -208,20 +223,20 @@ namespace BalatroSeedOracle.Controls
         {
             return _displayedResults.ToList();
         }
-        
+
         private void ApplySorting()
         {
             var sortedResults = _currentSortColumn switch
             {
-                "Seed" => _sortDescending 
+                "Seed" => _sortDescending
                     ? _allResults.OrderByDescending(r => r.Seed)
                     : _allResults.OrderBy(r => r.Seed),
-                "TotalScore" => _sortDescending 
+                "TotalScore" => _sortDescending
                     ? _allResults.OrderByDescending(r => r.TotalScore)
                     : _allResults.OrderBy(r => r.TotalScore),
-                _ => _allResults.OrderByDescending(r => r.TotalScore)
+                _ => _allResults.OrderByDescending(r => r.TotalScore),
             };
-            
+
             // Update the all results collection
             _allResults.Clear();
             foreach (var result in sortedResults)
@@ -229,34 +244,34 @@ namespace BalatroSeedOracle.Controls
                 _allResults.Add(result);
             }
         }
-        
+
         private void UpdateDisplay()
         {
             // Calculate pagination
             _totalPages = Math.Max(1, (int)Math.Ceiling((double)_allResults.Count / _itemsPerPage));
             _currentPage = Math.Min(_currentPage, _totalPages);
-            
+
             // Get current page items
             var startIndex = (_currentPage - 1) * _itemsPerPage;
             var pageItems = _allResults.Skip(startIndex).Take(_itemsPerPage);
-            
+
             // Update displayed results
             _displayedResults.Clear();
             foreach (var item in pageItems)
             {
                 _displayedResults.Add(item);
             }
-            
+
             UpdateResultsCount();
             UpdatePageInfo();
             UpdateStats();
             UpdatePaginationButtons();
         }
-        
+
         private void UpdateResultsCount()
         {
             var resultsCountText = this.FindControl<TextBlock>("ResultsCountText")!;
-            
+
             if (_allResults.Count == 0)
             {
                 resultsCountText.Text = "No results";
@@ -270,7 +285,7 @@ namespace BalatroSeedOracle.Controls
                 resultsCountText.Text = $"{_allResults.Count:N0} results";
             }
         }
-        
+
         private void UpdatePageInfo()
         {
             // Support either legacy TextBlock or new badge-style Button
@@ -286,39 +301,40 @@ namespace BalatroSeedOracle.Controls
                 pageInfoText.Text = $"Page {_currentPage} of {_totalPages}";
             }
         }
-        
+
         private void UpdateStats()
         {
             var statsText = this.FindControl<TextBlock>("StatsText")!;
-            
+
             if (_allResults.Count == 0)
             {
                 statsText.Text = "Ready to search";
                 return;
             }
-            
+
             var highestScore = _allResults.Max(r => r.TotalScore);
             var averageScore = _allResults.Average(r => r.TotalScore);
-            
-            statsText.Text = $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {_allResults.Count}";
+
+            statsText.Text =
+                $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {_allResults.Count}";
         }
-        
+
         private void UpdatePaginationButtons()
         {
             var previousButton = this.FindControl<Button>("PreviousButton")!;
             var nextButton = this.FindControl<Button>("NextButton")!;
-            
+
             previousButton.IsEnabled = _currentPage > 1;
             nextButton.IsEnabled = _currentPage < _totalPages;
         }
-        
+
         // Event handlers
         private void SortComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem selectedItem)
             {
                 var sortTag = selectedItem.Tag?.ToString() ?? "";
-                
+
                 if (sortTag.EndsWith("_Desc"))
                 {
                     _currentSortColumn = sortTag.Replace("_Desc", "");
@@ -334,19 +350,22 @@ namespace BalatroSeedOracle.Controls
                     _currentSortColumn = sortTag;
                     _sortDescending = false;
                 }
-                
+
                 ApplySorting();
                 UpdateDisplay();
-                
-                DebugLogger.Log("SortableResultsGrid", $"Sorted by {_currentSortColumn} ({(_sortDescending ? "desc" : "asc")})");
+
+                DebugLogger.Log(
+                    "SortableResultsGrid",
+                    $"Sorted by {_currentSortColumn} ({(_sortDescending ? "desc" : "asc")})"
+                );
             }
         }
-        
+
         private void ExportButton_Click(object? sender, RoutedEventArgs e)
         {
             ExportAllRequested?.Invoke(this, _allResults);
         }
-        
+
         private void ResultsDataGrid_DoubleTapped(object? sender, TappedEventArgs e)
         {
             var dataGrid = sender as DataGrid;
@@ -356,7 +375,7 @@ namespace BalatroSeedOracle.Controls
                 CopySeed(selectedResult.Seed);
             }
         }
-        
+
         private void PreviousButton_Click(object? sender, RoutedEventArgs e)
         {
             if (_currentPage > 1)
@@ -365,7 +384,7 @@ namespace BalatroSeedOracle.Controls
                 UpdateDisplay();
             }
         }
-        
+
         private void NextButton_Click(object? sender, RoutedEventArgs e)
         {
             if (_currentPage < _totalPages)
@@ -374,7 +393,7 @@ namespace BalatroSeedOracle.Controls
                 UpdateDisplay();
             }
         }
-        
+
         // Public methods for commands (called from templates)
         public async void CopySeed(string seed)
         {
@@ -382,7 +401,7 @@ namespace BalatroSeedOracle.Controls
             {
                 await ClipboardService.CopyToClipboardAsync(seed);
                 DebugLogger.Log("SortableResultsGrid", $"Copied seed to clipboard: {seed}");
-                
+
                 // Find the result and fire event
                 var result = _allResults.FirstOrDefault(r => r.Seed == seed);
                 if (result != null)
@@ -395,17 +414,23 @@ namespace BalatroSeedOracle.Controls
                 DebugLogger.LogError("SortableResultsGrid", $"Failed to copy seed: {ex.Message}");
             }
         }
-        
+
         public void SearchSimilar(SearchResult result)
         {
             SearchSimilarRequested?.Invoke(this, result);
-            DebugLogger.Log("SortableResultsGrid", $"Search similar requested for seed: {result.Seed}");
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                $"Search similar requested for seed: {result.Seed}"
+            );
         }
-        
+
         public void AddToFavorites(SearchResult result)
         {
             AddToFavoritesRequested?.Invoke(this, result);
-            DebugLogger.Log("SortableResultsGrid", $"Add to favorites requested for seed: {result.Seed}");
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                $"Add to favorites requested for seed: {result.Seed}"
+            );
         }
 
         public void Analyze(SearchResult result)
@@ -419,7 +444,7 @@ namespace BalatroSeedOracle.Controls
             ExportSeedRequested?.Invoke(this, result);
             DebugLogger.Log("SortableResultsGrid", $"Export seed requested for: {result.Seed}");
         }
-        
+
         /// <summary>
         /// Set items per page
         /// </summary>
@@ -429,7 +454,7 @@ namespace BalatroSeedOracle.Controls
             _currentPage = 1; // Reset to first page
             UpdateDisplay();
         }
-        
+
         /// <summary>
         /// Go to specific page
         /// </summary>
@@ -438,24 +463,25 @@ namespace BalatroSeedOracle.Controls
             _currentPage = Math.Max(1, Math.Min(page, _totalPages));
             UpdateDisplay();
         }
-        
+
         /// <summary>
         /// Filter results by minimum score
         /// </summary>
         public void FilterByMinScore(int minScore)
         {
             var filteredResults = _allResults.Where(r => r.TotalScore >= minScore).ToList();
-            
+
             _displayedResults.Clear();
             foreach (var result in filteredResults.Take(_itemsPerPage))
             {
                 _displayedResults.Add(result);
             }
-            
+
             var resultsCountText = this.FindControl<TextBlock>("ResultsCountText")!;
-            resultsCountText.Text = $"{filteredResults.Count} of {_allResults.Count} results (score ≥ {minScore})";
+            resultsCountText.Text =
+                $"{filteredResults.Count} of {_allResults.Count} results (score ≥ {minScore})";
         }
-        
+
         /// <summary>
         /// Clear any active filters
         /// </summary>
@@ -463,7 +489,7 @@ namespace BalatroSeedOracle.Controls
         {
             UpdateDisplay(); // This will show all results again
         }
-        
+
         /// <summary>
         /// Get current sort information
         /// </summary>
@@ -471,7 +497,7 @@ namespace BalatroSeedOracle.Controls
         {
             return (_currentSortColumn, _sortDescending);
         }
-        
+
         // Bind an external collection of results. Updates grid as collection changes.
         public ObservableCollection<SearchResult>? ItemsSource
         {
@@ -526,7 +552,9 @@ namespace BalatroSeedOracle.Controls
                         {
                             if (item is SearchResult r)
                             {
-                                var existing = _allResults.FirstOrDefault(x => x.Seed == r.Seed && x.TotalScore == r.TotalScore);
+                                var existing = _allResults.FirstOrDefault(x =>
+                                    x.Seed == r.Seed && x.TotalScore == r.TotalScore
+                                );
                                 if (existing != null)
                                 {
                                     _allResults.Remove(existing);

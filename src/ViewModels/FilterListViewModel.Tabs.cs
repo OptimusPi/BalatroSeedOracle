@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.ViewModels
                 0 => "must_have",
                 1 => "should_have",
                 2 => "must_not_have",
-                _ => "must_have"
+                _ => "must_have",
             };
 
             SelectedTabType = tabType;
@@ -28,10 +28,10 @@ namespace BalatroSeedOracle.ViewModels
             // Each tab has Margin="4,0", Padding="16,8"
             SelectedTabTriangleX = value switch
             {
-                0 => 46,      // "Must Have" tab center at ~54px → 54-8=46
-                1 => 158,     // "Should Have" tab center at ~166px → 166-8=158
-                2 => 272,     // "Must Not" tab center at ~280px → 280-8=272
-                _ => 46
+                0 => 46, // "Must Have" tab center at ~54px → 54-8=46
+                1 => 158, // "Should Have" tab center at ~166px → 166-8=158
+                2 => 272, // "Must Not" tab center at ~280px → 280-8=272
+                _ => 46,
             };
         }
 
@@ -42,7 +42,7 @@ namespace BalatroSeedOracle.ViewModels
                 "must_have" => 0,
                 "should_have" => 1,
                 "must_not_have" => 2,
-                _ => SelectedTabIndex
+                _ => SelectedTabIndex,
             };
         }
     }

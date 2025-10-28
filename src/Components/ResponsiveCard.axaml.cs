@@ -507,7 +507,6 @@ namespace BalatroSeedOracle.Components
             // For jokers, check if we have a sprite name that needs display name lookup
             if (Category == "Jokers")
             {
-
                 // Otherwise try to get display name from sprite mapping
                 var displayName = BalatroData.GetDisplayNameFromSprite(name);
                 BalatroSeedOracle.Helpers.DebugLogger.Log(

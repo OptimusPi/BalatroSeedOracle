@@ -1,8 +1,8 @@
 using System;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -23,7 +23,8 @@ namespace BalatroSeedOracle.ViewModels
 
         public SettingsModalViewModel()
         {
-            _userProfileService = App.GetService<UserProfileService>()
+            _userProfileService =
+                App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
 
             LoadSettings();
@@ -43,7 +44,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
-            DebugLogger.Log("SettingsModalViewModel", $"Settings loaded - Visualizer theme: {VisualizerTheme}");
+            DebugLogger.Log(
+                "SettingsModalViewModel",
+                $"Settings loaded - Visualizer theme: {VisualizerTheme}"
+            );
         }
 
         private void SaveVisualizerTheme()

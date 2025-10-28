@@ -1,7 +1,7 @@
 using System;
-using NAudio.Wave;
-using NAudio.CoreAudioApi;
 using System.Linq;
+using NAudio.CoreAudioApi;
+using NAudio.Wave;
 
 namespace BalatroSeedOracle.Features.VibeOut
 {
@@ -41,7 +41,11 @@ namespace BalatroSeedOracle.Features.VibeOut
 
             while (totalBytesRead < count)
             {
-                int bytesRead = _sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+                int bytesRead = _sourceStream.Read(
+                    buffer,
+                    offset + totalBytesRead,
+                    count - totalBytesRead
+                );
                 if (bytesRead == 0)
                 {
                     if (_enableLooping)

@@ -10,7 +10,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _header = string.Empty;
 
-        [ObservableProperty] 
+        [ObservableProperty]
         private object? _content;
 
         [ObservableProperty]

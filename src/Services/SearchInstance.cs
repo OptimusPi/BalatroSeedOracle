@@ -1410,8 +1410,11 @@ namespace BalatroSeedOracle.Services
                     compositeSettings = compositeSettings
                         .WithThreadCount(criteria.ThreadCount)
                         .WithBatchCharacterCount(criteria.BatchSize)
-                        .WithStartBatchIndex((long)criteria.StartBatch)
-                        .WithEndBatchIndex((long)criteria.EndBatch);
+                        .WithStartBatchIndex((long)criteria.StartBatch);
+
+                    // Only set EndBatch if specified (ulong.MaxValue means infinite)
+                    if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                        compositeSettings = compositeSettings.WithEndBatchIndex((long)criteria.EndBatch);
 
                     // Apply deck/stake if specified
                     if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck compositeDeck))
@@ -1455,9 +1458,13 @@ namespace BalatroSeedOracle.Services
                         .Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
                         .WithThreadCount(criteria.ThreadCount)
                         .WithBatchCharacterCount(criteria.BatchSize)
-                        .WithStartBatchIndex((long)criteria.StartBatch)
-                        .WithEndBatchIndex((long)criteria.EndBatch)
-                        .WithSeedScoreProvider(scoreDesc);
+                        .WithStartBatchIndex((long)criteria.StartBatch);
+
+                    // Only set EndBatch if specified (ulong.MaxValue means infinite)
+                    if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                        searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
+
+                    searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
 
                     DebugLogger.LogImportant(
                         $"SearchInstance[{_searchId}]",

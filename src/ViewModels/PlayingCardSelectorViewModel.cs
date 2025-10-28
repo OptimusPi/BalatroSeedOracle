@@ -54,7 +54,12 @@ namespace BalatroSeedOracle.ViewModels
             CardSuits.Add(CreateSuitGroup("Clubs", "♣", "#000000", ranks));
         }
 
-        private CardSuitGroup CreateSuitGroup(string suit, string suitSymbol, string colorHex, string[] ranks)
+        private CardSuitGroup CreateSuitGroup(
+            string suit,
+            string suitSymbol,
+            string colorHex,
+            string[] ranks
+        )
         {
             var cards = new ObservableCollection<PlayingCardViewModel>();
 
@@ -197,7 +202,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private void RaiseSelectionChanged()
         {
-            SelectionChanged?.Invoke(this, new PlayingCardSelectionEventArgs(_selectedCardKeys.ToList()));
+            SelectionChanged?.Invoke(
+                this,
+                new PlayingCardSelectionEventArgs(_selectedCardKeys.ToList())
+            );
         }
 
         #endregion
@@ -293,7 +301,11 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class CardSuitGroup
     {
-        public CardSuitGroup(string suit, string suitSymbol, ObservableCollection<PlayingCardViewModel> cards)
+        public CardSuitGroup(
+            string suit,
+            string suitSymbol,
+            ObservableCollection<PlayingCardViewModel> cards
+        )
         {
             Suit = suit;
             SuitSymbol = suitSymbol;

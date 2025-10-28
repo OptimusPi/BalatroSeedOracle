@@ -22,7 +22,7 @@ namespace BalatroSeedOracle.Helpers
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         static PresetHelper()
@@ -138,7 +138,10 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("PresetHelper", $"Error loading preset from {filePath}: {ex.Message}");
+                DebugLogger.Log(
+                    "PresetHelper",
+                    $"Error loading preset from {filePath}: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -155,7 +158,10 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (!Directory.Exists(PresetsDirectory))
                 {
-                    DebugLogger.Log("PresetHelper", "Presets directory does not exist, returning empty list");
+                    DebugLogger.Log(
+                        "PresetHelper",
+                        "Presets directory does not exist, returning empty list"
+                    );
                     return presets;
                 }
 
@@ -242,8 +248,8 @@ namespace BalatroSeedOracle.Helpers
             {
                 var presets = LoadAllPresets();
                 return presets.Any(p =>
-                    p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
-                    p.Id != excludeId);
+                    p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && p.Id != excludeId
+                );
             }
             catch
             {

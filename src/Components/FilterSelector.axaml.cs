@@ -84,8 +84,10 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        public static readonly StyledProperty<string> TitleProperty =
-            AvaloniaProperty.Register<FilterSelector, string>(nameof(Title), "Select Filter");
+        public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<
+            FilterSelector,
+            string
+        >(nameof(Title), "Select Filter");
 
         public string Title
         {
@@ -148,6 +150,5 @@ namespace BalatroSeedOracle.Components
                 await ViewModel.RefreshFiltersAsync();
             }
         }
-
     }
 }

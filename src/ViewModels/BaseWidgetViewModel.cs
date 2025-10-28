@@ -1,8 +1,8 @@
 using System;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Register with position service when created
             RegisterWithPositionService();
-            
+
             // Initialize with base Z-index offset (will be updated when brought to front)
             _zIndexOffset = 0;
         }
@@ -36,6 +36,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Ignore if service is not available (e.g., during testing)
             }
         }
+
         [ObservableProperty]
         private bool _isMinimized = true;
 
@@ -72,14 +73,16 @@ namespace BalatroSeedOracle.ViewModels
         /// Dynamic Z-index: minimized = 1, expanded = 100 + unique offset
         /// Each widget gets unique Z-index to prevent XAML order conflicts
         /// </summary>
-        public int WidgetZIndex 
-        { 
-            get 
+        public int WidgetZIndex
+        {
+            get
             {
                 var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
-                #if DEBUG
-                Console.WriteLine($"[{WidgetTitle}] ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})");
-                #endif
+#if DEBUG
+                Console.WriteLine(
+                    $"[{WidgetTitle}] ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})"
+                );
+#endif
                 return zIndex;
             }
         }
@@ -155,7 +158,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Called when widget is closed - override in derived classes
         /// </summary>
-        protected virtual void OnClosed() 
+        protected virtual void OnClosed()
         {
             // Unregister from position service when closed
             try

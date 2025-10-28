@@ -13,7 +13,8 @@ namespace BalatroSeedOracle.Controls
             public string ItemType { get; set; } = "";
             public int Score { get; set; } = 10;
             public int[] SearchAntes { get; set; } = new int[] { 1, 2, 3 };
-            public string[] Sources { get; set; } = new string[] { "Shop", "SmallBlindTag", "BigBlindTag" };
+            public string[] Sources { get; set; } =
+                new string[] { "Shop", "SmallBlindTag", "BigBlindTag" };
             public string Edition { get; set; } = "Any";
         }
 
@@ -69,13 +70,17 @@ namespace BalatroSeedOracle.Controls
             };
         }
 
-        public void ConfigureItem(string itemName, string itemType, Avalonia.Media.IImage? itemImage = null)
+        public void ConfigureItem(
+            string itemName,
+            string itemType,
+            Avalonia.Media.IImage? itemImage = null
+        )
         {
             var itemNameBlock = this.FindControl<TextBlock>("ItemName")!;
             var itemImageControl = this.FindControl<Image>("ItemImage")!;
 
             itemNameBlock.Text = $"Configure {itemName}";
-            
+
             if (itemImage != null)
             {
                 itemImageControl.Source = itemImage;

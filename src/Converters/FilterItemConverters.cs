@@ -14,13 +14,18 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemNameToFormattedStringConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             return value switch
             {
                 ItemConfig config => FormatItemConfig(config),
                 string str => FormatUtils.FormatDisplayName(str),
-                _ => value?.ToString() ?? ""
+                _ => value?.ToString() ?? "",
             };
         }
 
@@ -58,7 +63,10 @@ namespace BalatroSeedOracle.Converters
             return string.Join(" ", parts);
         }
 
-        private static string FormatItemNameWithWildcards(string? itemName, bool isSoulJoker = false)
+        private static string FormatItemNameWithWildcards(
+            string? itemName,
+            bool isSoulJoker = false
+        )
         {
             if (string.IsNullOrWhiteSpace(itemName))
             {
@@ -73,8 +81,10 @@ namespace BalatroSeedOracle.Converters
             // Handle Soul Joker wildcards
             if (isSoulJoker)
             {
-                if (normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase) ||
-                    normalized.Equals("Any", StringComparison.OrdinalIgnoreCase))
+                if (
+                    normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase)
+                    || normalized.Equals("Any", StringComparison.OrdinalIgnoreCase)
+                )
                     return "Any Soul Joker";
                 if (normalized.Equals("AnyCommon", StringComparison.OrdinalIgnoreCase))
                     return "Any Common Soul Joker";
@@ -107,7 +117,12 @@ namespace BalatroSeedOracle.Converters
             return FormatUtils.FormatDisplayName(itemName);
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -120,14 +135,19 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class AntesFormatterConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             List<int>? antes = value switch
             {
                 ItemConfig config => config.Antes,
                 List<int> list => list,
                 int[] array => array.ToList(),
-                _ => null
+                _ => null,
             };
 
             if (antes == null || antes.Count == 0)
@@ -144,15 +164,22 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
 
         private static string FormatAntesWithRanges(List<int> sorted)
         {
-            if (sorted.Count == 0) return "Any";
-            if (sorted.Count == 1) return sorted[0].ToString();
+            if (sorted.Count == 0)
+                return "Any";
+            if (sorted.Count == 1)
+                return sorted[0].ToString();
 
             var result = new List<string>();
             int rangeStart = sorted[0];
@@ -195,22 +222,36 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class IsErraticDeckConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is string deckName)
             {
-                bool isErratic = deckName?.Equals("Erratic Deck", StringComparison.OrdinalIgnoreCase) == true;
-                bool shouldInvert = parameter is string param && param.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+                bool isErratic =
+                    deckName?.Equals("Erratic Deck", StringComparison.OrdinalIgnoreCase) == true;
+                bool shouldInvert =
+                    parameter is string param
+                    && param.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
                 return shouldInvert ? !isErratic : isErratic;
             }
 
             // Default: if no deck name, it's not erratic
             bool defaultResult = false;
-            bool shouldInvertDefault = parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+            bool shouldInvertDefault =
+                parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
             return shouldInvertDefault ? !defaultResult : defaultResult;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -221,7 +262,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class InverseBoolConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is bool boolValue)
             {
@@ -230,7 +276,12 @@ namespace BalatroSeedOracle.Converters
             return true;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is bool boolValue)
             {

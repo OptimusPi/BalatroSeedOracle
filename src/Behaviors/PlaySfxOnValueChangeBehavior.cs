@@ -9,14 +9,21 @@ namespace BalatroSeedOracle.Behaviors
 {
     public class PlaySfxOnValueChangeBehavior : Behavior<Slider>
     {
-        public static readonly StyledProperty<string> SoundProperty =
-            AvaloniaProperty.Register<PlaySfxOnValueChangeBehavior, string>(nameof(Sound), "whoosh");
+        public static readonly StyledProperty<string> SoundProperty = AvaloniaProperty.Register<
+            PlaySfxOnValueChangeBehavior,
+            string
+        >(nameof(Sound), "whoosh");
 
-        public static readonly StyledProperty<double> ThresholdProperty =
-            AvaloniaProperty.Register<PlaySfxOnValueChangeBehavior, double>(nameof(Threshold), 1.0);
+        public static readonly StyledProperty<double> ThresholdProperty = AvaloniaProperty.Register<
+            PlaySfxOnValueChangeBehavior,
+            double
+        >(nameof(Threshold), 1.0);
 
         public static readonly StyledProperty<int> MinIntervalMsProperty =
-            AvaloniaProperty.Register<PlaySfxOnValueChangeBehavior, int>(nameof(MinIntervalMs), 150);
+            AvaloniaProperty.Register<PlaySfxOnValueChangeBehavior, int>(
+                nameof(MinIntervalMs),
+                150
+            );
 
         private DateTime _lastPlayTime = DateTime.MinValue;
         private double _lastValue;

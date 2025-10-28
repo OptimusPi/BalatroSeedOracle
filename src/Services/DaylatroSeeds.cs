@@ -80,7 +80,12 @@ namespace BalatroSeedOracle.Services
         {
             public readonly ulong Seed;
             public readonly ulong Gamma;
-            private StdGen(ulong seed, ulong gamma) { Seed = seed; Gamma = gamma; }
+
+            private StdGen(ulong seed, ulong gamma)
+            {
+                Seed = seed;
+                Gamma = gamma;
+            }
 
             public static StdGen FromSeed(ulong rawSeed)
             {
@@ -170,7 +175,11 @@ namespace BalatroSeedOracle.Services
 #else
                 // Fallback popcount
                 int c = 0;
-                while (v != 0) { v &= v - 1; c++; }
+                while (v != 0)
+                {
+                    v &= v - 1;
+                    c++;
+                }
                 return c;
 #endif
             }

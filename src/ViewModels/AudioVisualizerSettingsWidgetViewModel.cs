@@ -3,11 +3,11 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -25,7 +25,8 @@ namespace BalatroSeedOracle.ViewModels
         public AudioVisualizerSettingsWidgetViewModel(UserProfileService userProfileService)
         {
             // Inject UserProfileService via DI
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _userProfileService =
+                userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
 
             // Create the underlying settings ViewModel (handles presets, themes, etc.)
             _settingsViewModel = new AudioVisualizerSettingsModalViewModel();
@@ -235,7 +236,7 @@ namespace BalatroSeedOracle.ViewModels
         #region Shader Parameters - LoopCount
 
         [ObservableProperty]
-        private double _loopCountValue = 5;  // Default 5 (original hardcoded value)
+        private double _loopCountValue = 5; // Default 5 (original hardcoded value)
 
         [ObservableProperty]
         private double _loopCountMin = 1;
@@ -466,12 +467,18 @@ namespace BalatroSeedOracle.ViewModels
             var audioManager = Helpers.ServiceHelper.GetService<SoundFlowAudioManager>();
             if (audioManager == null)
             {
-                DebugLogger.LogError("AudioVisualizerSettingsWidgetViewModel", "SoundFlowAudioManager service not found!");
+                DebugLogger.LogError(
+                    "AudioVisualizerSettingsWidgetViewModel",
+                    "SoundFlowAudioManager service not found!"
+                );
                 return;
             }
 
             audioManager.SetTrackVolume(trackName, volume);
-            DebugLogger.Log("AudioVisualizerSettingsWidgetViewModel", $"Volume slider: {trackName} → {volume:F2}");
+            DebugLogger.Log(
+                "AudioVisualizerSettingsWidgetViewModel",
+                $"Volume slider: {trackName} → {volume:F2}"
+            );
         }
 
         // Shader Effect Intensities
@@ -545,7 +552,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyShaderParameter(Action<BalatroMainMenu> applyAction)
         {
-            if (_ownerControl == null) return;
+            if (_ownerControl == null)
+                return;
 
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
             if (mainMenu != null)
@@ -559,10 +567,12 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyAllShaderParameters()
         {
-            if (_ownerControl == null) return;
+            if (_ownerControl == null)
+                return;
 
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu == null) return;
+            if (mainMenu == null)
+                return;
 
             // Apply all shader parameters
             mainMenu.ApplyShaderTime((float)TimeValue);
@@ -603,18 +613,24 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Open file dialog
             var window = GetMainWindow();
-            if (window == null) return;
+            if (window == null)
+                return;
 
             var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
             var dialog = new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
                 Title = "Load Visualizer Preset",
                 AllowMultiple = false,
-                FileTypeFilter = new[] {
-                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } }
+                FileTypeFilter = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files")
+                    {
+                        Patterns = new[] { "*.json" },
+                    },
                 },
                 SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
-                    new Uri(presetsPath))
+                    new Uri(presetsPath)
+                ),
             };
 
             var result = await window.StorageProvider.OpenFilePickerAsync(dialog);
@@ -630,7 +646,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Open save dialog
             var window = GetMainWindow();
-            if (window == null) return;
+            if (window == null)
+                return;
 
             var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
             var dialog = new Avalonia.Platform.Storage.FilePickerSaveOptions
@@ -638,11 +655,16 @@ namespace BalatroSeedOracle.ViewModels
                 Title = "Save Visualizer Preset",
                 SuggestedFileName = "MyPreset.json",
                 DefaultExtension = "json",
-                FileTypeChoices = new[] {
-                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } }
+                FileTypeChoices = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files")
+                    {
+                        Patterns = new[] { "*.json" },
+                    },
                 },
                 SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
-                    new Uri(presetsPath))
+                    new Uri(presetsPath)
+                ),
             };
 
             var result = await window.StorageProvider.SaveFilePickerAsync(dialog);
@@ -658,22 +680,30 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(json);
+                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    json
+                );
 
                 if (preset != null)
                 {
                     // Apply all settings from preset
                     ThemeIndex = preset.ThemeIndex;
-                    if (preset.MainColor.HasValue) MainColor = preset.MainColor.Value;
-                    if (preset.AccentColor.HasValue) AccentColor = preset.AccentColor.Value;
+                    if (preset.MainColor.HasValue)
+                        MainColor = preset.MainColor.Value;
+                    if (preset.AccentColor.HasValue)
+                        AccentColor = preset.AccentColor.Value;
 
                     // Apply effect sources
                     if (preset.CustomEffects != null)
                     {
-                        if (preset.CustomEffects.TryGetValue("ShadowFlicker", out int sf)) ShadowFlickerSource = sf;
-                        if (preset.CustomEffects.TryGetValue("Spin", out int sp)) SpinSource = sp;
-                        if (preset.CustomEffects.TryGetValue("ZoomThump", out int zt)) _zoomThumpSource = zt;
-                        if (preset.CustomEffects.TryGetValue("ColorSaturation", out int cs)) _colorSaturationSource = cs;
+                        if (preset.CustomEffects.TryGetValue("ShadowFlicker", out int sf))
+                            ShadowFlickerSource = sf;
+                        if (preset.CustomEffects.TryGetValue("Spin", out int sp))
+                            SpinSource = sp;
+                        if (preset.CustomEffects.TryGetValue("ZoomThump", out int zt))
+                            _zoomThumpSource = zt;
+                        if (preset.CustomEffects.TryGetValue("ColorSaturation", out int cs))
+                            _colorSaturationSource = cs;
                     }
 
                     CurrentPresetName = preset.Name;
@@ -682,7 +712,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load preset: {ex.Message}"
+                );
             }
         }
 
@@ -701,8 +734,8 @@ namespace BalatroSeedOracle.ViewModels
                         ["ShadowFlicker"] = ShadowFlickerSource,
                         ["Spin"] = SpinSource,
                         ["ZoomThump"] = _zoomThumpSource,
-                        ["ColorSaturation"] = _colorSaturationSource
-                    }
+                        ["ColorSaturation"] = _colorSaturationSource,
+                    },
                 };
 
                 var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
@@ -714,7 +747,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to save preset: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to save preset: {ex.Message}"
+                );
             }
         }
 

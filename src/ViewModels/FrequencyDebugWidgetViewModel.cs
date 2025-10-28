@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.VisualTree;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.VisualTree;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -20,10 +20,14 @@ namespace BalatroSeedOracle.ViewModels
 
         private readonly string[] _trackNames =
         {
-            "Bass1", "Bass2",
-            "Drums1", "Drums2",
-            "Chords1", "Chords2",
-            "Melody1", "Melody2"
+            "Bass1",
+            "Bass2",
+            "Drums1",
+            "Drums2",
+            "Chords1",
+            "Chords2",
+            "Melody1",
+            "Melody2",
         };
 
         [ObservableProperty]
@@ -126,73 +130,85 @@ namespace BalatroSeedOracle.ViewModels
                 return;
 
             _updateCancellation = new CancellationTokenSource();
-            _updateTask = Task.Run(async () =>
-            {
-                while (!_updateCancellation.Token.IsCancellationRequested)
+            _updateTask = Task.Run(
+                async () =>
                 {
-                    try
+                    while (!_updateCancellation.Token.IsCancellationRequested)
                     {
-                        // Check if audio manager is still available (prevents crash during shutdown)
-                        if (_audioManager == null)
-                            break;
-
-                        var trackName = _trackNames[SelectedTrackIndex];
-                        var bands = _audioManager.GetFrequencyBands(trackName);
-
-                        // Update UI on UI thread
-                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        try
                         {
-                            BassAvg = bands.BassAvg;
-                            BassPeak = bands.BassPeak;
-                            MidAvg = bands.MidAvg;
-                            MidPeak = bands.MidPeak;
-                            HighAvg = bands.HighAvg;
-                            HighPeak = bands.HighPeak;
+                            // Check if audio manager is still available (prevents crash during shutdown)
+                            if (_audioManager == null)
+                                break;
 
-                            // Capture max values
-                            if (bands.BassAvg > BassAvgMax) BassAvgMax = bands.BassAvg;
-                            if (bands.BassPeak > BassPeakMax) BassPeakMax = bands.BassPeak;
-                            if (bands.MidAvg > MidAvgMax) MidAvgMax = bands.MidAvg;
-                            if (bands.MidPeak > MidPeakMax) MidPeakMax = bands.MidPeak;
-                            if (bands.HighAvg > HighAvgMax) HighAvgMax = bands.HighAvg;
-                            if (bands.HighPeak > HighPeakMax) HighPeakMax = bands.HighPeak;
+                            var trackName = _trackNames[SelectedTrackIndex];
+                            var bands = _audioManager.GetFrequencyBands(trackName);
 
-                            // Beat detection with decay
-                            // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
-                            if (bands.BassPeak > BassThreshold)
-                                BassBeatBrightness = 1.0;
-                            else
-                                BassBeatBrightness *= DECAY_RATE;
+                            // Update UI on UI thread
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                BassAvg = bands.BassAvg;
+                                BassPeak = bands.BassPeak;
+                                MidAvg = bands.MidAvg;
+                                MidPeak = bands.MidPeak;
+                                HighAvg = bands.HighAvg;
+                                HighPeak = bands.HighPeak;
 
-                            if (bands.MidPeak > MidThreshold)
-                                MidBeatBrightness = 1.0;
-                            else
-                                MidBeatBrightness *= DECAY_RATE;
+                                // Capture max values
+                                if (bands.BassAvg > BassAvgMax)
+                                    BassAvgMax = bands.BassAvg;
+                                if (bands.BassPeak > BassPeakMax)
+                                    BassPeakMax = bands.BassPeak;
+                                if (bands.MidAvg > MidAvgMax)
+                                    MidAvgMax = bands.MidAvg;
+                                if (bands.MidPeak > MidPeakMax)
+                                    MidPeakMax = bands.MidPeak;
+                                if (bands.HighAvg > HighAvgMax)
+                                    HighAvgMax = bands.HighAvg;
+                                if (bands.HighPeak > HighPeakMax)
+                                    HighPeakMax = bands.HighPeak;
 
-                            if (bands.HighPeak > HighThreshold)
-                                HighBeatBrightness = 1.0;
-                            else
-                                HighBeatBrightness *= DECAY_RATE;
-                        });
+                                // Beat detection with decay
+                                // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
+                                if (bands.BassPeak > BassThreshold)
+                                    BassBeatBrightness = 1.0;
+                                else
+                                    BassBeatBrightness *= DECAY_RATE;
 
-                        // ~60 FPS update rate
-                        await Task.Delay(16, _updateCancellation.Token);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Audio manager was disposed during update - exit cleanly
-                        if (_audioManager == null)
+                                if (bands.MidPeak > MidThreshold)
+                                    MidBeatBrightness = 1.0;
+                                else
+                                    MidBeatBrightness *= DECAY_RATE;
+
+                                if (bands.HighPeak > HighThreshold)
+                                    HighBeatBrightness = 1.0;
+                                else
+                                    HighBeatBrightness *= DECAY_RATE;
+                            });
+
+                            // ~60 FPS update rate
+                            await Task.Delay(16, _updateCancellation.Token);
+                        }
+                        catch (TaskCanceledException)
+                        {
                             break;
+                        }
+                        catch (Exception ex)
+                        {
+                            // Audio manager was disposed during update - exit cleanly
+                            if (_audioManager == null)
+                                break;
 
-                        Helpers.DebugLogger.LogError("FrequencyDebugWidget", $"Update error: {ex.Message}");
-                        await Task.Delay(100, _updateCancellation.Token);
+                            Helpers.DebugLogger.LogError(
+                                "FrequencyDebugWidget",
+                                $"Update error: {ex.Message}"
+                            );
+                            await Task.Delay(100, _updateCancellation.Token);
+                        }
                     }
-                }
-            }, _updateCancellation.Token);
+                },
+                _updateCancellation.Token
+            );
         }
 
         private void StopFrequencyUpdates()

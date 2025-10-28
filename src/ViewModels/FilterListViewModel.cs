@@ -5,19 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Avalonia.Media;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterListViewModel : ObservableObject
     {
-    // Fixed page size for stability in the UI.
-    // 10 items requested; we will render exactly 10 per page.
-    private const int DEFAULT_FILTERS_PER_PAGE = 10;
+        // Fixed page size for stability in the UI.
+        // 10 items requested; we will render exactly 10 per page.
+        private const int DEFAULT_FILTERS_PER_PAGE = 10;
         private const double ITEM_HEIGHT = 23.0; // default fallback: 22px button + 1px safety
 
         [ObservableProperty]
@@ -122,7 +122,10 @@ namespace BalatroSeedOracle.ViewModels
             ShowSelectButton = isInSearchModal;
             ShowActionButtons = !isInSearchModal;
             UpdateSelectButtonText();
-            DebugLogger.Log("FilterListViewModel", $"Mode changed: ShowSelectButton={ShowSelectButton}, ShowActionButtons={ShowActionButtons}");
+            DebugLogger.Log(
+                "FilterListViewModel",
+                $"Mode changed: ShowSelectButton={ShowSelectButton}, ShowActionButtons={ShowActionButtons}"
+            );
         }
 
         public void LoadFilters()
@@ -133,11 +136,15 @@ namespace BalatroSeedOracle.ViewModels
                 var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                 if (!Directory.Exists(filtersDir))
                 {
-                    DebugLogger.LogError("FilterListViewModel", $"Filters directory not found: {filtersDir}");
+                    DebugLogger.LogError(
+                        "FilterListViewModel",
+                        $"Filters directory not found: {filtersDir}"
+                    );
                     return;
                 }
 
-                var filterFiles = Directory.GetFiles(filtersDir, "*.json")
+                var filterFiles = Directory
+                    .GetFiles(filtersDir, "*.json")
                     .OrderBy(f => Path.GetFileNameWithoutExtension(f))
                     .ToList();
 
@@ -149,14 +156,16 @@ namespace BalatroSeedOracle.ViewModels
                     var author = GetFilterAuthor(filterPath);
                     var description = GetFilterDescription(filterPath);
 
-                    _allFilters.Add(new FilterListItem
-                    {
-                        Number = i + 1,
-                        Name = filterName,
-                        Author = author,
-                        Description = description,
-                        FilePath = filterPath
-                    });
+                    _allFilters.Add(
+                        new FilterListItem
+                        {
+                            Number = i + 1,
+                            Name = filterName,
+                            Author = author,
+                            Description = description,
+                            FilePath = filterPath,
+                        }
+                    );
                 }
 
                 CurrentPage = 0;
@@ -202,7 +211,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (ShowSelectButton)
             {
-                SelectButtonText = SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+                SelectButtonText =
+                    SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
             }
             else
             {
@@ -221,36 +231,49 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (string.IsNullOrEmpty(filterPath) || !File.Exists(filterPath))
                 {
-                    DebugLogger.Log("FilterListViewModel", "Cannot auto-select tab - no filter path");
+                    DebugLogger.Log(
+                        "FilterListViewModel",
+                        "Cannot auto-select tab - no filter path"
+                    );
                     return;
                 }
 
                 var json = File.ReadAllText(filterPath);
-                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                var options = new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                };
                 using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
-                if (root.TryGetProperty("must", out var must) &&
-                    must.ValueKind == JsonValueKind.Array &&
-                    must.GetArrayLength() > 0)
+                if (
+                    root.TryGetProperty("must", out var must)
+                    && must.ValueKind == JsonValueKind.Array
+                    && must.GetArrayLength() > 0
+                )
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_have' tab");
                     SelectTab("must_have");
                     return;
                 }
 
-                if (root.TryGetProperty("should", out var should) &&
-                    should.ValueKind == JsonValueKind.Array &&
-                    should.GetArrayLength() > 0)
+                if (
+                    root.TryGetProperty("should", out var should)
+                    && should.ValueKind == JsonValueKind.Array
+                    && should.GetArrayLength() > 0
+                )
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'should_have' tab");
                     SelectTab("should_have");
                     return;
                 }
 
-                if (root.TryGetProperty("mustNot", out var mustNot) &&
-                    mustNot.ValueKind == JsonValueKind.Array &&
-                    mustNot.GetArrayLength() > 0)
+                if (
+                    root.TryGetProperty("mustNot", out var mustNot)
+                    && mustNot.ValueKind == JsonValueKind.Array
+                    && mustNot.GetArrayLength() > 0
+                )
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_not_have' tab");
                     SelectTab("must_not_have");
@@ -266,7 +289,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterListViewModel", $"Error auto-selecting tab: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterListViewModel",
+                    $"Error auto-selecting tab: {ex.Message}"
+                );
             }
         }
 
@@ -315,7 +341,11 @@ namespace BalatroSeedOracle.ViewModels
             {
                 SelectedFilterDescription = "";
                 var json = File.ReadAllText(filterPath);
-                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                var options = new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                };
                 using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
@@ -329,18 +359,35 @@ namespace BalatroSeedOracle.ViewModels
                 if (root.TryGetProperty("description", out var descProp))
                 {
                     var desc = descProp.GetString() ?? "N/A";
-                    SelectedFilterStats.Add(new FilterStat { Label = "Description", Value = desc, Color = "#FFFFFF" });
+                    SelectedFilterStats.Add(
+                        new FilterStat
+                        {
+                            Label = "Description",
+                            Value = desc,
+                            Color = "#FFFFFF",
+                        }
+                    );
                     SelectedFilterDescription = desc;
                 }
 
                 var spriteService = ServiceHelper.GetService<SpriteService>();
 
                 // Load Must Have items
-                if (root.TryGetProperty("must", out var mustProp) && mustProp.ValueKind == JsonValueKind.Array)
+                if (
+                    root.TryGetProperty("must", out var mustProp)
+                    && mustProp.ValueKind == JsonValueKind.Array
+                )
                 {
                     LoadItemsIntoCollection(mustProp, MustHaveItems, spriteService);
                     HasMustHaveItems = MustHaveItems.Count > 0;
-                    SelectedFilterStats.Add(new FilterStat { Label = "Must Have", Value = $"{mustProp.GetArrayLength()} items", Color = "#ff4c40" });
+                    SelectedFilterStats.Add(
+                        new FilterStat
+                        {
+                            Label = "Must Have",
+                            Value = $"{mustProp.GetArrayLength()} items",
+                            Color = "#ff4c40",
+                        }
+                    );
                 }
                 else
                 {
@@ -348,11 +395,21 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load Should Have items
-                if (root.TryGetProperty("should", out var shouldProp) && shouldProp.ValueKind == JsonValueKind.Array)
+                if (
+                    root.TryGetProperty("should", out var shouldProp)
+                    && shouldProp.ValueKind == JsonValueKind.Array
+                )
                 {
                     LoadItemsIntoCollection(shouldProp, ShouldHaveItems, spriteService);
                     HasShouldHaveItems = ShouldHaveItems.Count > 0;
-                    SelectedFilterStats.Add(new FilterStat { Label = "Should Have", Value = $"{shouldProp.GetArrayLength()} items", Color = "#0093ff" });
+                    SelectedFilterStats.Add(
+                        new FilterStat
+                        {
+                            Label = "Should Have",
+                            Value = $"{shouldProp.GetArrayLength()} items",
+                            Color = "#0093ff",
+                        }
+                    );
                 }
                 else
                 {
@@ -360,11 +417,21 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load Must Not Have items
-                if (root.TryGetProperty("mustNot", out var mustNotProp) && mustNotProp.ValueKind == JsonValueKind.Array)
+                if (
+                    root.TryGetProperty("mustNot", out var mustNotProp)
+                    && mustNotProp.ValueKind == JsonValueKind.Array
+                )
                 {
                     LoadItemsIntoCollection(mustNotProp, MustNotHaveItems, spriteService);
                     HasMustNotHaveItems = MustNotHaveItems.Count > 0;
-                    SelectedFilterStats.Add(new FilterStat { Label = "Must Not Have", Value = $"{mustNotProp.GetArrayLength()} items", Color = "#ff9800" });
+                    SelectedFilterStats.Add(
+                        new FilterStat
+                        {
+                            Label = "Must Not Have",
+                            Value = $"{mustNotProp.GetArrayLength()} items",
+                            Color = "#ff9800",
+                        }
+                    );
                 }
                 else
                 {
@@ -372,12 +439,22 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 if (root.TryGetProperty("seed_count", out var seedCountProp))
-                    SelectedFilterStats.Add(new FilterStat { Label = "Target Seeds", Value = seedCountProp.GetInt32().ToString(), Color = "#ffd700" });
+                    SelectedFilterStats.Add(
+                        new FilterStat
+                        {
+                            Label = "Target Seeds",
+                            Value = seedCountProp.GetInt32().ToString(),
+                            Color = "#ffd700",
+                        }
+                    );
             }
             catch (Exception ex)
             {
                 var filename = Path.GetFileName(filterPath);
-                DebugLogger.LogError("FilterListViewModel", $"Error loading filter stats from '{filename}': {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterListViewModel",
+                    $"Error loading filter stats from '{filename}': {ex.Message}"
+                );
                 SelectedFilterDescription = "";
                 HasMustHaveItems = false;
                 HasShouldHaveItems = false;
@@ -385,7 +462,11 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void LoadItemsIntoCollection(JsonElement itemsArray, ObservableCollection<FilterItemViewModel> collection, SpriteService? spriteService)
+        private void LoadItemsIntoCollection(
+            JsonElement itemsArray,
+            ObservableCollection<FilterItemViewModel> collection,
+            SpriteService? spriteService
+        )
         {
             var items = new List<string>();
             foreach (var item in itemsArray.EnumerateArray())
@@ -394,7 +475,10 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     items.Add(item.GetString() ?? "");
                 }
-                else if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty("item", out var itemProp))
+                else if (
+                    item.ValueKind == JsonValueKind.Object
+                    && item.TryGetProperty("item", out var itemProp)
+                )
                 {
                     items.Add(itemProp.GetString() ?? "");
                 }
@@ -407,11 +491,9 @@ namespace BalatroSeedOracle.ViewModels
                     var sprite = GetItemSprite(itemName, spriteService);
                     if (sprite != null)
                     {
-                        collection.Add(new FilterItemViewModel
-                        {
-                            ItemName = itemName,
-                            ItemImage = sprite
-                        });
+                        collection.Add(
+                            new FilterItemViewModel { ItemName = itemName, ItemImage = sprite }
+                        );
                     }
                 }
             }
@@ -440,7 +522,11 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var json = File.ReadAllText(filterPath);
-                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                var options = new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                };
                 using var doc = JsonDocument.Parse(json, options);
                 if (doc.RootElement.TryGetProperty("description", out var descProp))
                 {
@@ -482,13 +568,19 @@ namespace BalatroSeedOracle.ViewModels
             var oldFiltersPerPage = FiltersPerPage;
 
             FiltersPerPage = computed;
-            DebugLogger.Log("FilterListViewModel", $"Dynamic FiltersPerPage set to {FiltersPerPage} (rowHeight={rowHeight:F1}, available={availableHeight:F1})");
+            DebugLogger.Log(
+                "FilterListViewModel",
+                $"Dynamic FiltersPerPage set to {FiltersPerPage} (rowHeight={rowHeight:F1}, available={availableHeight:F1})"
+            );
 
             // If a filter was selected, jump to the page containing it
             if (selectedIndex >= 0)
             {
                 CurrentPage = selectedIndex / FiltersPerPage;
-                DebugLogger.Log("FilterListViewModel", $"Preserved selected filter at index {selectedIndex}, jumping to page {CurrentPage + 1}");
+                DebugLogger.Log(
+                    "FilterListViewModel",
+                    $"Preserved selected filter at index {selectedIndex}, jumping to page {CurrentPage + 1}"
+                );
             }
 
             UpdatePage();
@@ -510,10 +602,10 @@ namespace BalatroSeedOracle.ViewModels
             // These values match the original hardcoded positions
             TriangleOffset = tabType switch
             {
-                "must_have" => -113,     // Left tab
-                "should_have" => 0,      // Middle tab (centered)
-                "must_not_have" => 105,  // Right tab
-                _ => 0
+                "must_have" => -113, // Left tab
+                "should_have" => 0, // Middle tab (centered)
+                "must_not_have" => 105, // Right tab
+                _ => 0,
             };
 
             // Note: SelectedTabTriangleX is calculated in FilterListViewModel.Tabs.cs OnSelectedTabIndexChanged
@@ -526,14 +618,21 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (string.IsNullOrEmpty(filterPath) || !File.Exists(filterPath))
                 {
-                    DebugLogger.Log("FilterListViewModel", "No filter selected or filter file not found");
+                    DebugLogger.Log(
+                        "FilterListViewModel",
+                        "No filter selected or filter file not found"
+                    );
                     FilterItems.Clear();
                     HasFilterItems = false;
                     return;
                 }
 
                 var json = File.ReadAllText(filterPath);
-                var options = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+                var options = new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                };
                 using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
 
@@ -545,11 +644,14 @@ namespace BalatroSeedOracle.ViewModels
                     "must_have" => "must",
                     "should_have" => "should",
                     "must_not_have" => "mustNot",
-                    _ => tabType
+                    _ => tabType,
                 };
 
                 // Get the items array for the selected tab
-                if (root.TryGetProperty(jsonPropertyName, out var itemsArray) && itemsArray.ValueKind == JsonValueKind.Array)
+                if (
+                    root.TryGetProperty(jsonPropertyName, out var itemsArray)
+                    && itemsArray.ValueKind == JsonValueKind.Array
+                )
                 {
                     var items = new List<string>();
                     foreach (var item in itemsArray.EnumerateArray())
@@ -558,7 +660,10 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             items.Add(item.GetString() ?? "");
                         }
-                        else if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty("item", out var itemProp))
+                        else if (
+                            item.ValueKind == JsonValueKind.Object
+                            && item.TryGetProperty("item", out var itemProp)
+                        )
                         {
                             items.Add(itemProp.GetString() ?? "");
                         }
@@ -575,11 +680,13 @@ namespace BalatroSeedOracle.ViewModels
                                 var sprite = GetItemSprite(itemName, spriteService);
                                 if (sprite != null)
                                 {
-                                    FilterItems.Add(new FilterItemViewModel
-                                    {
-                                        ItemName = itemName,
-                                        ItemImage = sprite
-                                    });
+                                    FilterItems.Add(
+                                        new FilterItemViewModel
+                                        {
+                                            ItemName = itemName,
+                                            ItemImage = sprite,
+                                        }
+                                    );
                                 }
                             }
                         }
@@ -599,7 +706,10 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 var filename = filterPath != null ? Path.GetFileName(filterPath) : "unknown";
-                DebugLogger.LogError("FilterListViewModel", $"Error loading filter items from '{filename}': {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterListViewModel",
+                    $"Error loading filter items from '{filename}': {ex.Message}"
+                );
                 FilterItems.Clear();
                 HasFilterItems = false;
             }
@@ -614,11 +724,16 @@ namespace BalatroSeedOracle.ViewModels
             IImage? sprite = null;
 
             sprite = spriteService.GetJokerImage(spriteName);
-            if (sprite == null) sprite = spriteService.GetTarotImage(spriteName);
-            if (sprite == null) sprite = spriteService.GetItemImage(spriteName, "Planet");
-            if (sprite == null) sprite = spriteService.GetSpectralImage(spriteName);
-            if (sprite == null) sprite = spriteService.GetVoucherImage(spriteName);
-            if (sprite == null) sprite = spriteService.GetTagImage(spriteName);
+            if (sprite == null)
+                sprite = spriteService.GetTarotImage(spriteName);
+            if (sprite == null)
+                sprite = spriteService.GetItemImage(spriteName, "Planet");
+            if (sprite == null)
+                sprite = spriteService.GetSpectralImage(spriteName);
+            if (sprite == null)
+                sprite = spriteService.GetVoucherImage(spriteName);
+            if (sprite == null)
+                sprite = spriteService.GetTagImage(spriteName);
 
             return sprite;
         }

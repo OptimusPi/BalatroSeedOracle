@@ -1,9 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -51,9 +51,10 @@ namespace BalatroSeedOracle.ViewModels
         public int MustNotCount => SelectedFilter?.MustNotCount ?? 0;
 
         // Placeholder text when nothing selected
-        public string PlaceholderText => EnableEdit || EnableCopy
-            ? "Please select a filter or CREATE NEW"
-            : "Please select a filter";
+        public string PlaceholderText =>
+            EnableEdit || EnableCopy
+                ? "Please select a filter or CREATE NEW"
+                : "Please select a filter";
 
         // Result to return when modal closes
         public FilterSelectionResult Result { get; private set; } = new() { Cancelled = true };
@@ -67,7 +68,8 @@ namespace BalatroSeedOracle.ViewModels
             bool enableEdit = false,
             bool enableCopy = false,
             bool enableDelete = false,
-            bool enableAnalyze = false)
+            bool enableAnalyze = false
+        )
         {
             EnableSearch = enableSearch;
             EnableEdit = enableEdit;
@@ -92,10 +94,15 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Tabs = new ObservableCollection<BalatroTabItem>
                 {
-                    new BalatroTabItem { Title = "Filter Info", Index = 0, IsActive = true },
+                    new BalatroTabItem
+                    {
+                        Title = "Filter Info",
+                        Index = 0,
+                        IsActive = true,
+                    },
                     new BalatroTabItem { Title = "Score Setup", Index = 1 },
-                    new BalatroTabItem { Title = "Preferred Deck", Index = 2 }
-                }
+                    new BalatroTabItem { Title = "Preferred Deck", Index = 2 },
+                },
             };
 
             // Subscribe to tab changes
@@ -131,7 +138,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Search()
         {
-            if (SelectedFilter == null) return;
+            if (SelectedFilter == null)
+                return;
 
             if (SelectedFilter.IsCreateNew)
             {
@@ -144,7 +152,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Cancelled = false,
                 Action = FilterAction.Search,
-                FilterId = SelectedFilter.FilterId
+                FilterId = SelectedFilter.FilterId,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -153,13 +161,14 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Edit()
         {
-            if (SelectedFilter == null) return;
+            if (SelectedFilter == null)
+                return;
 
             Result = new FilterSelectionResult
             {
                 Cancelled = false,
                 Action = SelectedFilter.IsCreateNew ? FilterAction.CreateNew : FilterAction.Edit,
-                FilterId = SelectedFilter.IsCreateNew ? null : SelectedFilter.FilterId
+                FilterId = SelectedFilter.IsCreateNew ? null : SelectedFilter.FilterId,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -173,7 +182,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Cancelled = false,
                 Action = FilterAction.CreateNew,
-                FilterId = null
+                FilterId = null,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -182,13 +191,14 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Copy()
         {
-            if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;
+            if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+                return;
 
             Result = new FilterSelectionResult
             {
                 Cancelled = false,
                 Action = FilterAction.Copy,
-                FilterId = SelectedFilter.FilterId
+                FilterId = SelectedFilter.FilterId,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -197,7 +207,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Delete()
         {
-            if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;
+            if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+                return;
 
             // Request confirmation from View (code-behind will show dialog)
             DeleteConfirmationRequested?.Invoke(this, SelectedFilter.Name);
@@ -208,13 +219,14 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void ConfirmDelete()
         {
-            if (SelectedFilter == null || SelectedFilter.IsCreateNew) return;
+            if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+                return;
 
             Result = new FilterSelectionResult
             {
                 Cancelled = false,
                 Action = FilterAction.Delete,
-                FilterId = SelectedFilter.FilterId
+                FilterId = SelectedFilter.FilterId,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -223,7 +235,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Analyze()
         {
-            if (SelectedFilter == null) return;
+            if (SelectedFilter == null)
+                return;
 
             if (SelectedFilter.IsCreateNew)
             {
@@ -236,7 +249,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Cancelled = false,
                 Action = FilterAction.Analyze,
-                FilterId = SelectedFilter.FilterId
+                FilterId = SelectedFilter.FilterId,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
@@ -248,7 +261,7 @@ namespace BalatroSeedOracle.ViewModels
             Result = new FilterSelectionResult
             {
                 Cancelled = true,
-                Action = FilterAction.Cancelled
+                Action = FilterAction.Cancelled,
             };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);

@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using BalatroSeedOracle.ViewModels.FilterTabs;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels.FilterTabs;
 
 namespace BalatroSeedOracle.Components.FilterTabs
 {

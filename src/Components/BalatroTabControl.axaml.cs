@@ -39,13 +39,15 @@ namespace BalatroSeedOracle.Components
             ViewModel.Tabs.Clear();
             for (int i = 0; i < tabTitles.Length; i++)
             {
-                ViewModel.Tabs.Add(new BalatroTabItem
-                {
-                    Title = tabTitles[i],
-                    Index = i,
-                    IsActive = (i == 0),
-                    IsEnabled = true
-                });
+                ViewModel.Tabs.Add(
+                    new BalatroTabItem
+                    {
+                        Title = tabTitles[i],
+                        Index = i,
+                        IsActive = (i == 0),
+                        IsEnabled = true,
+                    }
+                );
             }
         }
 

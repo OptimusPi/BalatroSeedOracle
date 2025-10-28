@@ -21,10 +21,15 @@ namespace BalatroSeedOracle.Views
 
             // Create ViewModel
             var searchManager = App.GetService<SearchManager>();
-            var userProfileService = ServiceHelper.GetService<UserProfileService>() ?? new UserProfileService();
+            var userProfileService =
+                ServiceHelper.GetService<UserProfileService>() ?? new UserProfileService();
             var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
 
-            DataContext = new SearchDesktopIconViewModel(searchManager, userProfileService, spriteService);
+            DataContext = new SearchDesktopIconViewModel(
+                searchManager,
+                userProfileService,
+                spriteService
+            );
 
             // Subscribe to ViewModel events
             if (ViewModel != null)
@@ -49,9 +54,15 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Handle ViewResultsRequested event from ViewModel
         /// </summary>
-        private void OnViewResultsRequested(object? sender, (string searchId, string configPath) args)
+        private void OnViewResultsRequested(
+            object? sender,
+            (string searchId, string configPath) args
+        )
         {
-            DebugLogger.Log("SearchDesktopIcon", $"ViewResultsRequested - SearchId: {args.searchId}, ConfigPath: {args.configPath}");
+            DebugLogger.Log(
+                "SearchDesktopIcon",
+                $"ViewResultsRequested - SearchId: {args.searchId}, ConfigPath: {args.configPath}"
+            );
 
             // Find the BalatroMainMenu by traversing up the visual tree
             BalatroMainMenu? mainMenu = null;
@@ -63,19 +74,28 @@ namespace BalatroSeedOracle.Views
                 mainMenu = current as BalatroMainMenu;
             }
 
-            DebugLogger.Log("SearchDesktopIcon", $"MainMenu found via parent traversal: {mainMenu != null}");
+            DebugLogger.Log(
+                "SearchDesktopIcon",
+                $"MainMenu found via parent traversal: {mainMenu != null}"
+            );
 
             if (mainMenu == null)
             {
                 // Try window content as fallback
                 var window = TopLevel.GetTopLevel(this) as Window;
                 mainMenu = window?.Content as BalatroMainMenu;
-                DebugLogger.Log("SearchDesktopIcon", $"MainMenu found via window content: {mainMenu != null}");
+                DebugLogger.Log(
+                    "SearchDesktopIcon",
+                    $"MainMenu found via window content: {mainMenu != null}"
+                );
             }
 
             if (mainMenu == null)
             {
-                DebugLogger.LogError("SearchDesktopIcon", "Could not find BalatroMainMenu to show search modal");
+                DebugLogger.LogError(
+                    "SearchDesktopIcon",
+                    "Could not find BalatroMainMenu to show search modal"
+                );
                 return;
             }
 
@@ -83,7 +103,10 @@ namespace BalatroSeedOracle.Views
             {
                 // Open search modal and load the filter using existing method
                 mainMenu.ShowSearchModalForInstance(args.searchId, args.configPath);
-                DebugLogger.Log("SearchDesktopIcon", "Opened search modal with filter loaded successfully");
+                DebugLogger.Log(
+                    "SearchDesktopIcon",
+                    "Opened search modal with filter loaded successfully"
+                );
 
                 // Remove this desktop icon since we're returning to the modal
                 RemoveDesktopIcon();
@@ -99,14 +122,15 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+                return;
 
             var contextMenu = new ContextMenu();
 
             var viewResultsItem = new MenuItem
             {
                 Header = "View Results",
-                Command = ViewModel.ViewResultsCommand
+                Command = ViewModel.ViewResultsCommand,
             };
             contextMenu.Items.Add(viewResultsItem);
 
@@ -117,14 +141,14 @@ namespace BalatroSeedOracle.Views
                 var pauseItem = new MenuItem
                 {
                     Header = "Pause Search",
-                    Command = ViewModel.PauseSearchCommand
+                    Command = ViewModel.PauseSearchCommand,
                 };
                 contextMenu.Items.Add(pauseItem);
 
                 var stopItem = new MenuItem
                 {
                     Header = "Stop Search",
-                    Command = ViewModel.StopSearchCommand
+                    Command = ViewModel.StopSearchCommand,
                 };
                 contextMenu.Items.Add(stopItem);
             }
@@ -133,7 +157,7 @@ namespace BalatroSeedOracle.Views
                 var resumeItem = new MenuItem
                 {
                     Header = "Resume Search",
-                    Command = ViewModel.ResumeSearchCommand
+                    Command = ViewModel.ResumeSearchCommand,
                 };
                 contextMenu.Items.Add(resumeItem);
             }
@@ -143,7 +167,7 @@ namespace BalatroSeedOracle.Views
             var deleteItem = new MenuItem
             {
                 Header = "Remove Icon",
-                Command = ViewModel.DeleteIconCommand
+                Command = ViewModel.DeleteIconCommand,
             };
             contextMenu.Items.Add(deleteItem);
 

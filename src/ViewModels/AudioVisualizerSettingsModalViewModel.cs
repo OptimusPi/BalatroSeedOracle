@@ -2,12 +2,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Helpers;
-using Avalonia.Controls;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -171,40 +171,41 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private float _shaderMelodySaturation = 0.0f;
 
-    // Range settings for mapping audio into shader parameter ranges
-    [ObservableProperty]
-    private float _contrastRangeMin = 1.0f;
+        // Range settings for mapping audio into shader parameter ranges
+        [ObservableProperty]
+        private float _contrastRangeMin = 1.0f;
 
-    [ObservableProperty]
-    private float _contrastRangeMax = 4.0f;
+        [ObservableProperty]
+        private float _contrastRangeMax = 4.0f;
 
-    [ObservableProperty]
-    private float _spinRangeMin = 0.0f;
+        [ObservableProperty]
+        private float _spinRangeMin = 0.0f;
 
-    [ObservableProperty]
-    private float _spinRangeMax = 1.0f;
+        [ObservableProperty]
+        private float _spinRangeMax = 1.0f;
 
-    [ObservableProperty]
-    private float _twirlRangeMin = 0.0f;
+        [ObservableProperty]
+        private float _twirlRangeMin = 0.0f;
 
-    [ObservableProperty]
-    private float _twirlRangeMax = 0.5f;
+        [ObservableProperty]
+        private float _twirlRangeMax = 0.5f;
 
-    [ObservableProperty]
-    private float _zoomPunchRangeMin = 0.0f;
+        [ObservableProperty]
+        private float _zoomPunchRangeMin = 0.0f;
 
-    [ObservableProperty]
-    private float _zoomPunchRangeMax = 10.0f;
+        [ObservableProperty]
+        private float _zoomPunchRangeMax = 10.0f;
 
-    [ObservableProperty]
-    private float _melodySatRangeMin = 0.0f;
+        [ObservableProperty]
+        private float _melodySatRangeMin = 0.0f;
 
-    [ObservableProperty]
-    private float _melodySatRangeMax = 1.0f;
+        [ObservableProperty]
+        private float _melodySatRangeMax = 1.0f;
 
         public AudioVisualizerSettingsModalViewModel()
         {
-            _userProfileService = App.GetService<UserProfileService>()
+            _userProfileService =
+                App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
 
             // Load settings from profile
@@ -228,15 +229,15 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-    #region Range Events
+        #region Range Events
 
-    public event EventHandler<(float min, float max)>? ContrastRangeChangedEvent;
-    public event EventHandler<(float min, float max)>? SpinRangeChangedEvent;
-    public event EventHandler<(float min, float max)>? TwirlRangeChangedEvent;
-    public event EventHandler<(float min, float max)>? ZoomPunchRangeChangedEvent;
-    public event EventHandler<(float min, float max)>? MelodySatRangeChangedEvent;
+        public event EventHandler<(float min, float max)>? ContrastRangeChangedEvent;
+        public event EventHandler<(float min, float max)>? SpinRangeChangedEvent;
+        public event EventHandler<(float min, float max)>? TwirlRangeChangedEvent;
+        public event EventHandler<(float min, float max)>? ZoomPunchRangeChangedEvent;
+        public event EventHandler<(float min, float max)>? MelodySatRangeChangedEvent;
 
-    #endregion
+        #endregion
 
         #region Generated Property Changed Methods
 
@@ -540,7 +541,10 @@ namespace BalatroSeedOracle.ViewModels
             ColorSaturationIntensity = vibeSettings.ColorSaturationIntensity;
             BeatPulseIntensity = vibeSettings.BeatPulseIntensity;
 
-            DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Settings loaded - Theme: {ThemeIndex}, Audio: {AudioIntensity}");
+            DebugLogger.Log(
+                "AudioVisualizerSettingsModalViewModel",
+                $"Settings loaded - Theme: {ThemeIndex}, Audio: {AudioIntensity}"
+            );
         }
 
         private void SaveSettings()
@@ -593,7 +597,10 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("AudioVisualizerSettingsModalViewModel", $"Failed to save settings: {ex.Message}");
+                        DebugLogger.LogError(
+                            "AudioVisualizerSettingsModalViewModel",
+                            $"Failed to save settings: {ex.Message}"
+                        );
                     }
                 };
             }
@@ -619,7 +626,7 @@ namespace BalatroSeedOracle.ViewModels
                 <= 0.5f => "Calm",
                 <= 1.0f => "Mild",
                 <= 1.5f => "Strong",
-                _ => "Wild"
+                _ => "Wild",
             };
         }
 
@@ -631,7 +638,7 @@ namespace BalatroSeedOracle.ViewModels
                 <= 0.1f => "Off",
                 <= 0.8f => "Subtle",
                 <= 1.5f => "Medium",
-                _ => "Strong"
+                _ => "Strong",
             };
         }
 
@@ -644,7 +651,7 @@ namespace BalatroSeedOracle.ViewModels
                 <= 0.7f => "Slow",
                 <= 1.3f => "Normal",
                 <= 2.0f => "Fast",
-                _ => "Hyper"
+                _ => "Hyper",
             };
         }
 
@@ -665,11 +672,17 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     Presets.Add(preset);
                 }
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Loaded {Presets.Count} presets");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Loaded {Presets.Count} presets"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Error loading presets: {ex.Message}");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Error loading presets: {ex.Message}"
+                );
             }
         }
 
@@ -685,14 +698,18 @@ namespace BalatroSeedOracle.ViewModels
                 var presetName = await ShowPresetNameDialog();
                 if (string.IsNullOrWhiteSpace(presetName))
                 {
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", "Save preset cancelled - no name provided");
+                    DebugLogger.Log(
+                        "AudioVisualizerSettingsModalViewModel",
+                        "Save preset cancelled - no name provided"
+                    );
                     return;
                 }
 
                 // Check if name already exists
                 if (PresetHelper.PresetNameExists(presetName))
                 {
-                    ErrorMessage = $"Preset '{presetName}' already exists. Please choose a different name.";
+                    ErrorMessage =
+                        $"Preset '{presetName}' already exists. Please choose a different name.";
                     return;
                 }
 
@@ -714,23 +731,32 @@ namespace BalatroSeedOracle.ViewModels
                     SearchCompleteTrigger = SearchCompleteTrigger,
                     SeedFoundAudioSource = SeedFoundAudioSource,
                     HighScoreAudioSource = HighScoreAudioSource,
-                    SearchCompleteAudioSource = SearchCompleteAudioSource
+                    SearchCompleteAudioSource = SearchCompleteAudioSource,
                 };
 
                 // Save to disk
                 if (PresetHelper.SavePreset(preset))
                 {
                     Presets.Add(preset);
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Saved preset '{presetName}'");
+                    DebugLogger.Log(
+                        "AudioVisualizerSettingsModalViewModel",
+                        $"Saved preset '{presetName}'"
+                    );
                 }
                 else
                 {
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Failed to save preset '{presetName}'");
+                    DebugLogger.Log(
+                        "AudioVisualizerSettingsModalViewModel",
+                        $"Failed to save preset '{presetName}'"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Error saving preset: {ex.Message}");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Error saving preset: {ex.Message}"
+                );
             }
         }
 
@@ -748,7 +774,10 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Loading preset '{preset.Name}'");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Loading preset '{preset.Name}'"
+                );
 
                 // Apply preset settings
                 ThemeIndex = preset.ThemeIndex;
@@ -764,11 +793,17 @@ namespace BalatroSeedOracle.ViewModels
                 HighScoreAudioSource = preset.HighScoreAudioSource;
                 SearchCompleteAudioSource = preset.SearchCompleteAudioSource;
 
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Loaded preset '{preset.Name}' successfully");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Loaded preset '{preset.Name}' successfully"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Error loading preset: {ex.Message}");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Error loading preset: {ex.Message}"
+                );
             }
         }
 
@@ -780,7 +815,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (preset == null)
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", "Cannot delete null preset");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    "Cannot delete null preset"
+                );
                 return;
             }
 
@@ -789,16 +827,25 @@ namespace BalatroSeedOracle.ViewModels
                 if (PresetHelper.DeletePreset(preset))
                 {
                     Presets.Remove(preset);
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Deleted preset '{preset.Name}'");
+                    DebugLogger.Log(
+                        "AudioVisualizerSettingsModalViewModel",
+                        $"Deleted preset '{preset.Name}'"
+                    );
                 }
                 else
                 {
-                    DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Failed to delete preset '{preset.Name}'");
+                    DebugLogger.Log(
+                        "AudioVisualizerSettingsModalViewModel",
+                        $"Failed to delete preset '{preset.Name}'"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("AudioVisualizerSettingsModalViewModel", $"Error deleting preset: {ex.Message}");
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Error deleting preset: {ex.Message}"
+                );
             }
         }
 
@@ -816,42 +863,42 @@ namespace BalatroSeedOracle.ViewModels
                     Height = 200,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
-                    Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#0D0D0D"))
+                    Background = new Avalonia.Media.SolidColorBrush(
+                        Avalonia.Media.Color.Parse("#0D0D0D")
+                    ),
                 };
 
-                var panel = new StackPanel
-                {
-                    Margin = new Avalonia.Thickness(20),
-                    Spacing = 15
-                };
+                var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 15 };
 
                 var label = new TextBlock
                 {
                     Text = "Enter a name for this preset:",
-                    Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FFD700")),
+                    Foreground = new Avalonia.Media.SolidColorBrush(
+                        Avalonia.Media.Color.Parse("#FFD700")
+                    ),
                     FontWeight = Avalonia.Media.FontWeight.Bold,
-                    FontSize = 14
+                    FontSize = 14,
                 };
 
                 var textBox = new TextBox
                 {
                     Watermark = "My Awesome Preset",
                     FontSize = 14,
-                    Padding = new Avalonia.Thickness(10)
+                    Padding = new Avalonia.Thickness(10),
                 };
 
                 var buttonPanel = new StackPanel
                 {
                     Orientation = Avalonia.Layout.Orientation.Horizontal,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                    Spacing = 10
+                    Spacing = 10,
                 };
 
                 var cancelButton = new Button
                 {
                     Content = "Cancel",
                     Width = 100,
-                    Padding = new Avalonia.Thickness(10, 5)
+                    Padding = new Avalonia.Thickness(10, 5),
                 };
 
                 var saveButton = new Button
@@ -859,8 +906,12 @@ namespace BalatroSeedOracle.ViewModels
                     Content = "Save",
                     Width = 100,
                     Padding = new Avalonia.Thickness(10, 5),
-                    Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FFD700")),
-                    Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#0D0D0D"))
+                    Background = new Avalonia.Media.SolidColorBrush(
+                        Avalonia.Media.Color.Parse("#FFD700")
+                    ),
+                    Foreground = new Avalonia.Media.SolidColorBrush(
+                        Avalonia.Media.Color.Parse("#0D0D0D")
+                    ),
                 };
 
                 string? result = null;
@@ -878,7 +929,10 @@ namespace BalatroSeedOracle.ViewModels
                 // Enter key saves
                 textBox.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Avalonia.Input.Key.Enter && !string.IsNullOrWhiteSpace(textBox.Text))
+                    if (
+                        e.Key == Avalonia.Input.Key.Enter
+                        && !string.IsNullOrWhiteSpace(textBox.Text)
+                    )
                     {
                         result = textBox.Text;
                         dialog.Close();
@@ -901,7 +955,8 @@ namespace BalatroSeedOracle.ViewModels
                 // Focus the textbox when dialog opens
                 dialog.Opened += (s, e) => textBox.Focus();
 
-                var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
 
@@ -914,7 +969,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerSettingsModalViewModel", $"Failed to show preset name dialog: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Failed to show preset name dialog: {ex.Message}"
+                );
                 return $"Preset_{DateTime.Now:yyyyMMdd_HHmmss}";
             }
         }

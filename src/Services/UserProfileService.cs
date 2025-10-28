@@ -39,7 +39,7 @@ namespace BalatroSeedOracle.Services
             // Initialize debounce timer (not started yet)
             _debounceSaveTimer = new System.Timers.Timer(SaveDebounceMs)
             {
-                AutoReset = false // One-shot timer
+                AutoReset = false, // One-shot timer
             };
             _debounceSaveTimer.Elapsed += OnDebounceSaveTimerElapsed;
         }
@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.Services
                 $"Saved search state: Batch {state.LastCompletedBatch}/{state.TotalBatches}"
             );
         }
-        
+
         /// <summary>
         /// Update search state batch number without writing to disk
         /// </summary>
@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.Services
                 _currentProfile.LastSearchState.LastActiveTime = DateTime.UtcNow;
             }
         }
-        
+
         /// <summary>
         /// Force save the current profile to disk immediately, bypassing debounce.
         /// Use this when the application is shutting down or when you need to ensure
@@ -122,7 +122,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_disposed)
             {
-                DebugLogger.LogError("UserProfileService", "Cannot flush profile - service disposed");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    "Cannot flush profile - service disposed"
+                );
                 return;
             }
 
@@ -148,10 +151,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "UserProfileService",
-                    $"Error flushing profile: {ex.Message}"
-                );
+                DebugLogger.LogError("UserProfileService", $"Error flushing profile: {ex.Message}");
             }
         }
 
@@ -215,7 +215,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_disposed)
             {
-                DebugLogger.LogError("UserProfileService", "Cannot save profile - service disposed");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    "Cannot save profile - service disposed"
+                );
                 return;
             }
 
@@ -241,11 +244,13 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnDebounceSaveTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
 
             lock (_saveLock)
             {
-                if (!_hasPendingSave) return;
+                if (!_hasPendingSave)
+                    return;
                 _hasPendingSave = false;
             }
 
@@ -375,7 +380,8 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
 
             lock (_saveLock)
             {

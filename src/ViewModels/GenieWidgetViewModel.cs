@@ -3,10 +3,10 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -95,22 +95,30 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // Extract filter info
                         GeneratedFilterName = result.config.name ?? "Generated Filter";
-                        GeneratedJson = JsonSerializer.Serialize(result.config, new JsonSerializerOptions { WriteIndented = true });
+                        GeneratedJson = JsonSerializer.Serialize(
+                            result.config,
+                            new JsonSerializerOptions { WriteIndented = true }
+                        );
 
                         // Create summary
                         int mustCount = result.config.must?.Count ?? 0;
                         int shouldCount = result.config.should?.Count ?? 0;
                         int mustNotCount = result.config.mustNot?.Count ?? 0;
 
-                        GeneratedFilterSummary = $"Deck: {result.config.deck ?? "Any"} | Stake: {result.config.stake ?? "Any"}\n";
-                        GeneratedFilterSummary += $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
+                        GeneratedFilterSummary =
+                            $"Deck: {result.config.deck ?? "Any"} | Stake: {result.config.stake ?? "Any"}\n";
+                        GeneratedFilterSummary +=
+                            $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
 
                         HasGeneratedConfig = true;
                         SetStatus("✅ Filter generated!", "#22C55E");
                     }
                     else
                     {
-                        SetStatus($"❌ Generation failed: {result?.error ?? "Unknown error"}", "#EF4444");
+                        SetStatus(
+                            $"❌ Generation failed: {result?.error ?? "Unknown error"}",
+                            "#EF4444"
+                        );
                     }
                 }
                 else
@@ -189,7 +197,10 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Parse the generated JSON into a MotelyJsonConfig
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(GeneratedJson);
+                var config =
+                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        GeneratedJson
+                    );
 
                 if (config == null)
                 {
@@ -206,7 +217,7 @@ namespace BalatroSeedOracle.ViewModels
                     Deck = config.Deck ?? "Red",
                     Stake = config.Stake ?? "White",
                     ThreadCount = Environment.ProcessorCount,
-                    BatchSize = 3
+                    BatchSize = 3,
                 };
 
                 // Start the search

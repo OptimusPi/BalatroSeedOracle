@@ -5,18 +5,17 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using BalatroSeedOracle.Features.VibeOut;
+using BalatroSeedOracle.Helpers;
+using NAudio.CoreAudioApi;
+using NAudio.Dsp;
+using NAudio.Vorbis;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NAudio.Dsp;
-using NAudio.CoreAudioApi;
 using Complex = NAudio.Dsp.Complex;
-using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Features.VibeOut;
-using NAudio.Vorbis;
 
 namespace BalatroSeedOracle.Services
 {
-
     public class VibeAudioManager : IDisposable
     {
         private WaveOutEvent? _waveOut;
@@ -30,7 +29,7 @@ namespace BalatroSeedOracle.Services
 
         // SFX support
         private float _sfxVolume = 1.0f;
-        
+
         // FFT Analysis for drums (beat detection)
         private readonly float[] _fftBuffer = new float[2048];
         private readonly Complex[] _fftComplex = new Complex[2048];
@@ -43,11 +42,11 @@ namespace BalatroSeedOracle.Services
         private int _melodicFftPos = 0;
 
         // Audio analysis results (for shader integration)
-        public float AudioBass { get; private set; } = 0f;      // 0-300 Hz (drums)
-        public float AudioMid { get; private set; } = 0f;       // 300-3000 Hz (melodic)
-        public float AudioTreble { get; private set; } = 0f;    // 3000+ Hz (melodic)
-        public float AudioPeak { get; private set; } = 0f;      // Overall volume (melodic)
-        public float BeatDetection { get; private set; } = 0f;  // Beat pulse for visual effects
+        public float AudioBass { get; private set; } = 0f; // 0-300 Hz (drums)
+        public float AudioMid { get; private set; } = 0f; // 300-3000 Hz (melodic)
+        public float AudioTreble { get; private set; } = 0f; // 3000+ Hz (melodic)
+        public float AudioPeak { get; private set; } = 0f; // Overall volume (melodic)
+        public float BeatDetection { get; private set; } = 0f; // Beat pulse for visual effects
 
         // Individual track intensities - use FFT analysis weighted by track volume
         public float DrumsIntensity => GetTrackIntensity("Drums1", "Drums2", AudioBass); // Drums = bass frequencies
@@ -61,9 +60,9 @@ namespace BalatroSeedOracle.Services
         private const int BEAT_COOLDOWN_FRAMES = 20; // ~400ms between beats (prevent doubles)
 
         // Adaptive peak tracking for normalization (0.0 = quiet, 1.0 = max peak)
-        private float _bassPeak = 10f;    // Track recent peak for bass (start at reasonable value)
-        private float _midPeak = 10f;     // Track recent peak for mid
-        private float _treblePeak = 10f;  // Track recent peak for treble
+        private float _bassPeak = 10f; // Track recent peak for bass (start at reasonable value)
+        private float _midPeak = 10f; // Track recent peak for mid
+        private float _treblePeak = 10f; // Track recent peak for treble
         private const float PEAK_DECAY = 0.9995f; // Very slow decay to adapt to quieter/louder sections
         private const float PEAK_ATTACK = 0.1f; // Fast attack when new peak detected
         private const float PEAK_FLOOR = 1.0f; // Minimum peak value to prevent division by zero
@@ -82,12 +81,12 @@ namespace BalatroSeedOracle.Services
                 volume += t2.CurrentVolume;
 
             // If no tracks playing, return 0
-            if (volume < 0.01f) return 0f;
+            if (volume < 0.01f)
+                return 0f;
 
             // Return FFT intensity weighted by track volume (normalize to 0-1)
             return Math.Clamp(fftIntensity * (volume / 2f), 0f, 1f);
         }
-        
 
         public VibeAudioManager()
         {
@@ -117,7 +116,7 @@ namespace BalatroSeedOracle.Services
             {
                 _waveOut = new WaveOutEvent
                 {
-                    DesiredLatency = 100  // 100ms buffer (prevents crackle/pops)
+                    DesiredLatency = 100, // 100ms buffer (prevents crackle/pops)
                 };
             }
             catch (Exception ex)
@@ -125,7 +124,7 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.LogError("VibeAudioManager", $"Audio init failed: {ex.Message}");
             }
         }
-        
+
         private void LoadAllTracks()
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -137,7 +136,17 @@ namespace BalatroSeedOracle.Services
                 return;
             }
 
-            var trackNames = new[] { "Drums1", "Drums2", "Bass1", "Bass2", "Chords1", "Chords2", "Melody1", "Melody2" };
+            var trackNames = new[]
+            {
+                "Drums1",
+                "Drums2",
+                "Bass1",
+                "Bass2",
+                "Chords1",
+                "Chords2",
+                "Melody1",
+                "Melody2",
+            };
 
             // STEP 1: Load all track files (DON'T add to mixer yet!)
             foreach (var trackName in trackNames)
@@ -159,7 +168,10 @@ namespace BalatroSeedOracle.Services
                             if (_mixer == null && _waveOut != null)
                             {
                                 var waveFormat = track.SampleProvider.WaveFormat;
-                                DebugLogger.Log("VibeAudioManager", $"Auto-detected audio format: {waveFormat.SampleRate}Hz, {waveFormat.Channels} channels");
+                                DebugLogger.Log(
+                                    "VibeAudioManager",
+                                    $"Auto-detected audio format: {waveFormat.SampleRate}Hz, {waveFormat.Channels} channels"
+                                );
                                 _mixer = new MixingSampleProvider(waveFormat);
                                 _mixer.ReadFully = true;
                                 _waveOut.Init(_mixer);
@@ -172,14 +184,20 @@ namespace BalatroSeedOracle.Services
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError("VibeAudioManager", $"Failed to load {trackName}{ext}: {ex.Message}");
+                            DebugLogger.LogError(
+                                "VibeAudioManager",
+                                $"Failed to load {trackName}{ext}: {ex.Message}"
+                            );
                         }
                     }
                 }
 
                 if (!loaded)
                 {
-                    DebugLogger.Log("VibeAudioManager", $"⚠️ No compatible audio file found for {trackName}.");
+                    DebugLogger.Log(
+                        "VibeAudioManager",
+                        $"⚠️ No compatible audio file found for {trackName}."
+                    );
                 }
             }
 
@@ -194,7 +212,11 @@ namespace BalatroSeedOracle.Services
                     {
                         provider = new AudioAnalyzerProvider(track.SampleProvider, this, true);
                     }
-                    else if (trackName.StartsWith("Bass") || trackName.StartsWith("Chords") || trackName.StartsWith("Melody"))
+                    else if (
+                        trackName.StartsWith("Bass")
+                        || trackName.StartsWith("Chords")
+                        || trackName.StartsWith("Melody")
+                    )
                     {
                         provider = new AudioAnalyzerProvider(track.SampleProvider, this, false);
                     }
@@ -215,7 +237,7 @@ namespace BalatroSeedOracle.Services
                 _waveOut.Play();
             }
         }
-        
+
         /// <summary>
         /// Initialize all 8 tracks to play simultaneously at user-defined volumes
         /// No more state machine bullshit - user controls everything!
@@ -271,9 +293,7 @@ namespace BalatroSeedOracle.Services
             {
                 track.SetTarget(targetVolume, targetPan);
             }
-            else
-            {
-            }
+            else { }
         }
 
         private void UpdateAllVolumes()
@@ -283,7 +303,7 @@ namespace BalatroSeedOracle.Services
                 track.UpdateVolume(0.15f);
             }
         }
-        
+
         // Called by AudioAnalyzerProvider during audio processing
         internal void ProcessDrumSample(float left, float right)
         {
@@ -310,7 +330,7 @@ namespace BalatroSeedOracle.Services
                 PerformMelodicFFTAnalysis();
             }
         }
-        
+
         private void PerformDrumFFTAnalysis()
         {
             // Copy buffer to complex array
@@ -318,23 +338,30 @@ namespace BalatroSeedOracle.Services
             {
                 _fftComplex[i] = new Complex { X = _fftBuffer[i], Y = 0 };
             }
-            
+
             // Perform FFT
             FastFourierTransform.FFT(true, (int)Math.Log2(_fftComplex.Length), _fftComplex);
-            
+
             // Extract frequency bands
             var sampleRate = 44100f;
             var frequencyStep = sampleRate / _fftComplex.Length;
-            
+
             // Calculate bass (0-300 Hz), mid (300-3000 Hz), treble (3000+ Hz)
-            float bassSum = 0f, midSum = 0f, trebleSum = 0f;
-            int bassCount = 0, midCount = 0, trebleCount = 0;
-            
+            float bassSum = 0f,
+                midSum = 0f,
+                trebleSum = 0f;
+            int bassCount = 0,
+                midCount = 0,
+                trebleCount = 0;
+
             for (int i = 1; i < _fftComplex.Length / 2; i++) // Skip DC component
             {
                 var frequency = i * frequencyStep;
-                var magnitude = (float)Math.Sqrt(_fftComplex[i].X * _fftComplex[i].X + _fftComplex[i].Y * _fftComplex[i].Y);
-                
+                var magnitude = (float)
+                    Math.Sqrt(
+                        _fftComplex[i].X * _fftComplex[i].X + _fftComplex[i].Y * _fftComplex[i].Y
+                    );
+
                 if (frequency < 300)
                 {
                     bassSum += magnitude;
@@ -351,7 +378,7 @@ namespace BalatroSeedOracle.Services
                     trebleCount++;
                 }
             }
-            
+
             // Update audio analysis (with smoothing)
             var bassLevel = bassCount > 0 ? bassSum / bassCount : 0f;
             var midLevel = midCount > 0 ? midSum / midCount : 0f;
@@ -364,15 +391,21 @@ namespace BalatroSeedOracle.Services
             _treblePeak = Math.Max(PEAK_FLOOR, _treblePeak * PEAK_DECAY);
 
             // Fast attack when new peak detected
-            if (bassLevel > _bassPeak) _bassPeak = _bassPeak * (1f - PEAK_ATTACK) + bassLevel * PEAK_ATTACK;
-            if (midLevel > _midPeak) _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
-            if (trebleLevel > _treblePeak) _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
+            if (bassLevel > _bassPeak)
+                _bassPeak = _bassPeak * (1f - PEAK_ATTACK) + bassLevel * PEAK_ATTACK;
+            if (midLevel > _midPeak)
+                _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
+            if (trebleLevel > _treblePeak)
+                _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
 
             // Normalize to 0.0-1.0 range using adaptive peaks (safe division with floor)
             float normalizedBass = Math.Clamp(bassLevel / _bassPeak, 0f, 1f);
             float normalizedMid = Math.Clamp(midLevel / _midPeak, 0f, 1f);
             float normalizedTreble = Math.Clamp(trebleLevel / _treblePeak, 0f, 1f);
-            float normalizedPeak = Math.Max(Math.Max(normalizedBass, normalizedMid), normalizedTreble);
+            float normalizedPeak = Math.Max(
+                Math.Max(normalizedBass, normalizedMid),
+                normalizedTreble
+            );
 
             // Smooth the values (exponential moving average)
             const float smoothing = 0.8f;
@@ -380,7 +413,7 @@ namespace BalatroSeedOracle.Services
             AudioMid = AudioMid * smoothing + normalizedMid * (1f - smoothing);
             AudioTreble = AudioTreble * smoothing + normalizedTreble * (1f - smoothing);
             AudioPeak = AudioPeak * smoothing + normalizedPeak * (1f - smoothing);
-            
+
             // Beat detection: Look for sudden bass increase
             _beatCooldown = Math.Max(0, _beatCooldown - 1);
 
@@ -394,10 +427,13 @@ namespace BalatroSeedOracle.Services
 
                     // Fire event on UI thread to prevent cross-thread exceptions
                     var beatValue = BeatDetection;
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        BeatDetected?.Invoke(beatValue);
-                    }, DispatcherPriority.Normal);
+                    Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            BeatDetected?.Invoke(beatValue);
+                        },
+                        DispatcherPriority.Normal
+                    );
 
                     _beatCooldown = BEAT_COOLDOWN_FRAMES;
                 }
@@ -416,20 +452,30 @@ namespace BalatroSeedOracle.Services
             }
 
             // Perform FFT
-            FastFourierTransform.FFT(true, (int)Math.Log2(_melodicFftComplex.Length), _melodicFftComplex);
+            FastFourierTransform.FFT(
+                true,
+                (int)Math.Log2(_melodicFftComplex.Length),
+                _melodicFftComplex
+            );
 
             // Extract frequency bands
             var sampleRate = 44100f;
             var frequencyStep = sampleRate / _melodicFftComplex.Length;
 
             // Calculate mid and treble for color intensity
-            float midSum = 0f, trebleSum = 0f;
-            int midCount = 0, trebleCount = 0;
+            float midSum = 0f,
+                trebleSum = 0f;
+            int midCount = 0,
+                trebleCount = 0;
 
             for (int i = 1; i < _melodicFftComplex.Length / 2; i++)
             {
                 var frequency = i * frequencyStep;
-                var magnitude = (float)Math.Sqrt(_melodicFftComplex[i].X * _melodicFftComplex[i].X + _melodicFftComplex[i].Y * _melodicFftComplex[i].Y);
+                var magnitude = (float)
+                    Math.Sqrt(
+                        _melodicFftComplex[i].X * _melodicFftComplex[i].X
+                            + _melodicFftComplex[i].Y * _melodicFftComplex[i].Y
+                    );
 
                 if (frequency >= 300 && frequency < 3000)
                 {
@@ -452,8 +498,10 @@ namespace BalatroSeedOracle.Services
             _treblePeak = Math.Max(PEAK_FLOOR, _treblePeak * PEAK_DECAY);
 
             // Fast attack when new peak detected
-            if (midLevel > _midPeak) _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
-            if (trebleLevel > _treblePeak) _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
+            if (midLevel > _midPeak)
+                _midPeak = _midPeak * (1f - PEAK_ATTACK) + midLevel * PEAK_ATTACK;
+            if (trebleLevel > _treblePeak)
+                _treblePeak = _treblePeak * (1f - PEAK_ATTACK) + trebleLevel * PEAK_ATTACK;
 
             // Normalize to 0.0-1.0 range using adaptive peaks (safe division with floor)
             float normalizedMid = Math.Clamp(midLevel / _midPeak, 0f, 1f);
@@ -471,12 +519,15 @@ namespace BalatroSeedOracle.Services
             var mid = AudioMid;
             var treble = AudioTreble;
             var peak = AudioPeak;
-            Dispatcher.UIThread.Post(() =>
-            {
-                AudioAnalysisUpdated?.Invoke(bass, mid, treble, peak);
-            }, DispatcherPriority.Normal);
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    AudioAnalysisUpdated?.Invoke(bass, mid, treble, peak);
+                },
+                DispatcherPriority.Normal
+            );
         }
-        
+
         public void SetMasterVolume(float volume)
         {
             if (_waveOut != null)
@@ -486,6 +537,7 @@ namespace BalatroSeedOracle.Services
         }
 
         public void SetMusicVolume(float volume) => SetMasterVolume(volume);
+
         public void SetSfxVolume(float volume)
         {
             _sfxVolume = Math.Clamp(volume, 0f, 1f);
@@ -508,7 +560,10 @@ namespace BalatroSeedOracle.Services
 
                         if (!File.Exists(sfxPath))
                         {
-                            DebugLogger.LogError("VibeAudioManager", $"SFX file not found: {sfxPath}");
+                            DebugLogger.LogError(
+                                "VibeAudioManager",
+                                $"SFX file not found: {sfxPath}"
+                            );
                             return;
                         }
 
@@ -527,28 +582,34 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("VibeAudioManager", $"Failed to play click sound: {ex.Message}");
+                        DebugLogger.LogError(
+                            "VibeAudioManager",
+                            $"Failed to play click sound: {ex.Message}"
+                        );
                     }
                 });
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VibeAudioManager", $"Failed to start click sound playback: {ex.Message}");
+                DebugLogger.LogError(
+                    "VibeAudioManager",
+                    $"Failed to start click sound playback: {ex.Message}"
+                );
             }
         }
-        
+
         public void Pause()
         {
             _waveOut?.Pause();
         }
-        
+
         public void Resume()
         {
             _waveOut?.Play();
         }
-        
+
         public bool IsPaused => _waveOut?.PlaybackState == PlaybackState.Paused;
-        
+
         public void Dispose()
         {
             _volumeFadeTimer?.Stop();
@@ -564,7 +625,7 @@ namespace BalatroSeedOracle.Services
             _tracks.Clear();
         }
     }
-    
+
     // Helper class for individual audio tracks with smooth volume + pan control
     internal class AudioTrack : IDisposable
     {
@@ -581,14 +642,14 @@ namespace BalatroSeedOracle.Services
         private readonly VolumeSampleProvider _volumeProvider;
         private readonly LowpassFilterSampleProvider _lowpassFilter;
         private readonly StereoBalanceSampleProvider _panProvider;
-        
+
         public AudioTrack(string filePath, string name)
         {
             Name = name;
-            
+
             // Check file extension to determine how to load
             var extension = Path.GetExtension(filePath).ToLower();
-            
+
             if (extension == ".ogg")
             {
                 // Use NAudio.Vorbis for OGG files
@@ -599,7 +660,7 @@ namespace BalatroSeedOracle.Services
                 // Use NAudio for WAV/MP3
                 _reader = new AudioFileReader(filePath);
             }
-            
+
             _loopStream = new LoopStream(_reader);
 
             // Auto-detect format from file (usually 48kHz or 44.1kHz stereo) - chain volume → lowpass → stereo balance
@@ -609,7 +670,7 @@ namespace BalatroSeedOracle.Services
             _panProvider = new StereoBalanceSampleProvider(_lowpassFilter); // Custom stereo balance
             SampleProvider = _panProvider;
         }
-        
+
         public void SetTarget(float volume, float pan)
         {
             TargetVolume = Math.Clamp(volume, 0f, 1f);
@@ -680,14 +741,14 @@ namespace BalatroSeedOracle.Services
                 _panProvider.Pan = CurrentPan;
             }
         }
-        
+
         public void Dispose()
         {
             _reader?.Dispose();
             _loopStream?.Dispose();
         }
     }
-    
+
     // Custom sample provider that performs audio analysis
     internal class AudioAnalyzerProvider : ISampleProvider
     {
@@ -738,11 +799,21 @@ namespace BalatroSeedOracle.Services
         private float _targetCutoffFrequency = 20000f;
 
         // Biquad filter coefficients
-        private float _a0, _a1, _a2, _b1, _b2;
+        private float _a0,
+            _a1,
+            _a2,
+            _b1,
+            _b2;
 
         // Filter state for left and right channels
-        private float _x1L, _x2L, _y1L, _y2L; // Left channel history
-        private float _x1R, _x2R, _y1R, _y2R; // Right channel history
+        private float _x1L,
+            _x2L,
+            _y1L,
+            _y2L; // Left channel history
+        private float _x1R,
+            _x2R,
+            _y1R,
+            _y2R; // Right channel history
 
         public WaveFormat WaveFormat => _source.WaveFormat;
 
@@ -757,10 +828,7 @@ namespace BalatroSeedOracle.Services
         public float CutoffFrequency
         {
             get => _targetCutoffFrequency;
-            set
-            {
-                _targetCutoffFrequency = Math.Clamp(value, 200f, 20000f);
-            }
+            set { _targetCutoffFrequency = Math.Clamp(value, 200f, 20000f); }
         }
 
         private void UpdateCoefficients()

@@ -1,14 +1,15 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace BalatroSeedOracle.Services
 {
     public interface IConfigurationService
     {
         Task<bool> SaveFilterAsync(string filePath, object config);
-        Task<T?> LoadFilterAsync<T>(string filePath) where T : class;
+        Task<T?> LoadFilterAsync<T>(string filePath)
+            where T : class;
         string GetTempFilterPath();
         string GetFiltersDirectory();
         bool FileExists(string filePath);
@@ -22,18 +23,26 @@ namespace BalatroSeedOracle.Services
             try
             {
                 EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
-                
+
                 if (config is Motely.Filters.MotelyJsonConfig motelyConfig)
                 {
-                    var json = System.Text.Json.JsonSerializer.Serialize(motelyConfig, new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                    });
+                    var json = System.Text.Json.JsonSerializer.Serialize(
+                        motelyConfig,
+                        new System.Text.Json.JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                            DefaultIgnoreCondition = System
+                                .Text
+                                .Json
+                                .Serialization
+                                .JsonIgnoreCondition
+                                .WhenWritingNull,
+                        }
+                    );
                     await File.WriteAllTextAsync(filePath, json);
                     return true;
                 }
-                
+
                 return false;
             }
             catch
@@ -43,7 +52,8 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public async Task<T?> LoadFilterAsync<T>(string filePath) where T : class
+        public async Task<T?> LoadFilterAsync<T>(string filePath)
+            where T : class
         {
             try
             {
@@ -54,7 +64,12 @@ namespace BalatroSeedOracle.Services
                 {
                     if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                     {
-                        if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
+                        if (
+                            Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
+                                filePath,
+                                out var config
+                            )
+                        )
                         {
                             return config as T;
                         }
@@ -71,8 +86,9 @@ namespace BalatroSeedOracle.Services
 
         public string GetTempFilterPath()
         {
-            var baseDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) 
-                         ?? AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir =
+                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                ?? AppDomain.CurrentDomain.BaseDirectory;
             var filtersDir = Path.Combine(baseDir, "JsonItemFilters");
             EnsureDirectoryExists(filtersDir);
             return Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
@@ -80,8 +96,9 @@ namespace BalatroSeedOracle.Services
 
         public string GetFiltersDirectory()
         {
-            var baseDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) 
-                         ?? AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir =
+                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                ?? AppDomain.CurrentDomain.BaseDirectory;
             return Path.Combine(baseDir, "JsonItemFilters");
         }
 

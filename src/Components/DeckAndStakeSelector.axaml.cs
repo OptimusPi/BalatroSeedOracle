@@ -1,12 +1,12 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using BalatroSeedOracle.Controls;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
-using Avalonia;
 using Avalonia.Media;
+using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 
@@ -24,20 +24,26 @@ public partial class DeckAndStakeSelector : UserControl
     {
         InitializeComponent();
         // Create internal ViewModel and set DataContext to the ViewModel for pure MVVM binding
-        _viewModel = new DeckAndStakeSelectorViewModel(ServiceHelper.GetRequiredService<SpriteService>());
+        _viewModel = new DeckAndStakeSelectorViewModel(
+            ServiceHelper.GetRequiredService<SpriteService>()
+        );
         DataContext = _viewModel;
         // Initialize styled properties from ViewModel
         DeckIndex = _viewModel.DeckIndex;
         StakeIndex = _viewModel.StakeIndex;
-    DeckImage = _viewModel.DeckImage;
-    StakeImage = _viewModel.StakeImage;
+        DeckImage = _viewModel.DeckImage;
+        StakeImage = _viewModel.StakeImage;
         // Subscribe to ViewModel property changes to keep exposed styled properties in sync (compatibility)
         _viewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_viewModel.DeckIndex)) DeckIndex = _viewModel.DeckIndex;
-            if (e.PropertyName == nameof(_viewModel.StakeIndex)) StakeIndex = _viewModel.StakeIndex;
-            if (e.PropertyName == nameof(_viewModel.DeckImage)) DeckImage = _viewModel.DeckImage;
-            if (e.PropertyName == nameof(_viewModel.StakeImage)) StakeImage = _viewModel.StakeImage;
+            if (e.PropertyName == nameof(_viewModel.DeckIndex))
+                DeckIndex = _viewModel.DeckIndex;
+            if (e.PropertyName == nameof(_viewModel.StakeIndex))
+                StakeIndex = _viewModel.StakeIndex;
+            if (e.PropertyName == nameof(_viewModel.DeckImage))
+                DeckImage = _viewModel.DeckImage;
+            if (e.PropertyName == nameof(_viewModel.StakeImage))
+                StakeImage = _viewModel.StakeImage;
         };
 
         // Forward inner ViewModel events to control-level events for compatibility
@@ -54,15 +60,19 @@ public partial class DeckAndStakeSelector : UserControl
         // Ensure sane initial indices
         if (_viewModel != null)
         {
-            if (_viewModel.DeckIndex < 0) _viewModel.DeckIndex = 0;
-            if (_viewModel.StakeIndex < 0) _viewModel.StakeIndex = 0;
+            if (_viewModel.DeckIndex < 0)
+                _viewModel.DeckIndex = 0;
+            if (_viewModel.StakeIndex < 0)
+                _viewModel.StakeIndex = 0;
         }
         // Pure MVVM: bindings handle synchronization; no manual event hookups required
     }
 
     // DeckIndex property for MVVM two-way binding
-    public static readonly StyledProperty<int> DeckIndexProperty =
-        AvaloniaProperty.Register<DeckAndStakeSelector, int>(nameof(DeckIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+    public static readonly StyledProperty<int> DeckIndexProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        int
+    >(nameof(DeckIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int DeckIndex
     {
         get => GetValue(DeckIndexProperty);
@@ -74,8 +84,10 @@ public partial class DeckAndStakeSelector : UserControl
     }
 
     // StakeIndex property for MVVM two-way binding
-    public static readonly StyledProperty<int> StakeIndexProperty =
-        AvaloniaProperty.Register<DeckAndStakeSelector, int>(nameof(StakeIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+    public static readonly StyledProperty<int> StakeIndexProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        int
+    >(nameof(StakeIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int StakeIndex
     {
         get => GetValue(StakeIndexProperty);
@@ -87,15 +99,19 @@ public partial class DeckAndStakeSelector : UserControl
     }
 
     // Expose ViewModel-selected image paths as IImage for binding to Image.Source
-    public static readonly StyledProperty<IImage?> DeckImageProperty =
-        AvaloniaProperty.Register<DeckAndStakeSelector, IImage?>(nameof(DeckImage));
+    public static readonly StyledProperty<IImage?> DeckImageProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        IImage?
+    >(nameof(DeckImage));
     public IImage? DeckImage
     {
         get => GetValue(DeckImageProperty);
         private set => SetValue(DeckImageProperty, value);
     }
-    public static readonly StyledProperty<IImage?> StakeImageProperty =
-        AvaloniaProperty.Register<DeckAndStakeSelector, IImage?>(nameof(StakeImage));
+    public static readonly StyledProperty<IImage?> StakeImageProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        IImage?
+    >(nameof(StakeImage));
     public IImage? StakeImage
     {
         get => GetValue(StakeImageProperty);
@@ -113,6 +129,7 @@ public partial class DeckAndStakeSelector : UserControl
     {
         _viewModel?.SetStake(stakeName);
     }
+
     public void SetDeck(string deckName)
     {
         _viewModel?.SetDeck(deckName);

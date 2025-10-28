@@ -4,9 +4,9 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Skia;
-using SkiaSharp;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
+using SkiaSharp;
 
 namespace BalatroSeedOracle.Services
 {
@@ -56,7 +56,7 @@ namespace BalatroSeedOracle.Services
             Drums,
             Bass,
             Chords,
-            Melody
+            Melody,
         }
 
         private AudioSource _shadowFlickerSource = AudioSource.Drums;
@@ -81,7 +81,8 @@ namespace BalatroSeedOracle.Services
         private float _rotationVelocity = 0f;
         private float _spinDirection = 1f;
         private int _beatCounter = 0;
-        private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        private readonly System.Diagnostics.Stopwatch _stopwatch =
+            System.Diagnostics.Stopwatch.StartNew();
         private double _lastUpdateTime = 0;
 
         // Mouse parallax
@@ -169,8 +170,10 @@ namespace BalatroSeedOracle.Services
         public void UpdateParallax(float normalizedX, float normalizedY)
         {
             const float smoothing = 0.85f;
-            _parallaxOffsetX = _parallaxOffsetX * smoothing + (normalizedX * _parallaxStrength) * (1f - smoothing);
-            _parallaxOffsetY = _parallaxOffsetY * smoothing + (normalizedY * _parallaxStrength) * (1f - smoothing);
+            _parallaxOffsetX =
+                _parallaxOffsetX * smoothing + (normalizedX * _parallaxStrength) * (1f - smoothing);
+            _parallaxOffsetY =
+                _parallaxOffsetY * smoothing + (normalizedY * _parallaxStrength) * (1f - smoothing);
         }
 
         // Range configuration
@@ -252,7 +255,8 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
-                if (audioManager == null) return 0f;
+                if (audioManager == null)
+                    return 0f;
 
                 return source switch
                 {
@@ -261,7 +265,7 @@ namespace BalatroSeedOracle.Services
                     AudioSource.Bass => audioManager.BassIntensity,
                     AudioSource.Chords => audioManager.ChordsIntensity,
                     AudioSource.Melody => audioManager.MelodyIntensity,
-                    _ => 0f
+                    _ => 0f,
                 };
             }
             catch
@@ -277,21 +281,22 @@ namespace BalatroSeedOracle.Services
         {
             return index switch
             {
-                0 => new float[] { 1.0f, 0.0f, 0.0f, 1.0f },      // Red
-                1 => new float[] { 1.0f, 0.5f, 0.0f, 1.0f },      // Orange
-                2 => new float[] { 1.0f, 1.0f, 0.0f, 1.0f },      // Yellow
-                3 => new float[] { 0.0f, 1.0f, 0.0f, 1.0f },      // Green
-                4 => new float[] { 0.0f, 0.42f, 0.706f, 1.0f },   // Blue
-                5 => new float[] { 0.6f, 0.2f, 0.8f, 1.0f },      // Purple
-                6 => new float[] { 0.6f, 0.4f, 0.2f, 1.0f },      // Brown
-                7 => new float[] { 1.0f, 1.0f, 1.0f, 1.0f },      // White
-                _ => new float[] { 1.0f, 0.0f, 0.0f, 1.0f }       // Default to Red
+                0 => new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, // Red
+                1 => new float[] { 1.0f, 0.5f, 0.0f, 1.0f }, // Orange
+                2 => new float[] { 1.0f, 1.0f, 0.0f, 1.0f }, // Yellow
+                3 => new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, // Green
+                4 => new float[] { 0.0f, 0.42f, 0.706f, 1.0f }, // Blue
+                5 => new float[] { 0.6f, 0.2f, 0.8f, 1.0f }, // Purple
+                6 => new float[] { 0.6f, 0.4f, 0.2f, 1.0f }, // Brown
+                7 => new float[] { 1.0f, 1.0f, 1.0f, 1.0f }, // White
+                _ => new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, // Default to Red
             };
         }
 
         public override void OnRender(ImmediateDrawingContext context)
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
 
             // Update time and animations when animating
             if (_isAnimating)
@@ -307,7 +312,10 @@ namespace BalatroSeedOracle.Services
                 _musicAccumulatedRotation += _rotationVelocity * deltaTime;
             }
 
-            if (context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature)) is ISkiaSharpApiLeaseFeature leaseFeature)
+            if (
+                context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature))
+                is ISkiaSharpApiLeaseFeature leaseFeature
+            )
             {
                 using var lease = leaseFeature.Lease();
                 var canvas = lease.SkCanvas;
@@ -324,10 +332,12 @@ namespace BalatroSeedOracle.Services
 
         private void InitializeShader()
         {
-            if (_shaderBuilder != null) return;
+            if (_shaderBuilder != null)
+                return;
 
             // Pure Balatro paint-mixing shader
-            var sksl = @"
+            var sksl =
+                @"
                 uniform float2 resolution;
                 uniform float time;
                 uniform float spin_time;
@@ -411,13 +421,17 @@ namespace BalatroSeedOracle.Services
             }
             else
             {
-                DebugLogger.LogError("MusicToVisualizerHandler", $"Shader compilation failed: {error}");
+                DebugLogger.LogError(
+                    "MusicToVisualizerHandler",
+                    $"Shader compilation failed: {error}"
+                );
             }
         }
 
         private void UpdateColors()
         {
-            if (_shaderBuilder == null) return;
+            if (_shaderBuilder == null)
+                return;
 
             var mainColor = GetColorFromIndex(_mainColorIndex);
             var accentColor = GetColorFromIndex(_accentColorIndex);
@@ -432,7 +446,8 @@ namespace BalatroSeedOracle.Services
 
         private void RenderShader(SKCanvas canvas)
         {
-            if (_shaderBuilder == null) return;
+            if (_shaderBuilder == null)
+                return;
 
             var bounds = GetRenderBounds();
             var time = (float)_stopwatch.Elapsed.TotalSeconds;
@@ -467,19 +482,31 @@ namespace BalatroSeedOracle.Services
                 float audioContrast = _contrast;
                 if (_contrastRangeMax != _contrastRangeMin)
                 {
-                    audioContrast = Lerp(_contrastRangeMin, _contrastRangeMax, shadowFlickerIntensity * intensityScale);
+                    audioContrast = Lerp(
+                        _contrastRangeMin,
+                        _contrastRangeMax,
+                        shadowFlickerIntensity * intensityScale
+                    );
                 }
 
                 float audioSpinAmount = _spinAmount;
                 if (_spinRangeMax != _spinRangeMin)
                 {
-                    audioSpinAmount = Lerp(_spinRangeMin, _spinRangeMax, spinIntensity * intensityScale);
+                    audioSpinAmount = Lerp(
+                        _spinRangeMin,
+                        _spinRangeMax,
+                        spinIntensity * intensityScale
+                    );
                 }
 
                 float audioSpeedBoost = (twirlIntensity * intensityScale);
                 if (_twirlRangeMax != _twirlRangeMin)
                 {
-                    audioSpeedBoost = Lerp(_twirlRangeMin, _twirlRangeMax, twirlIntensity * intensityScale);
+                    audioSpeedBoost = Lerp(
+                        _twirlRangeMin,
+                        _twirlRangeMax,
+                        twirlIntensity * intensityScale
+                    );
                 }
 
                 // Zoom punch effect
@@ -495,9 +522,14 @@ namespace BalatroSeedOracle.Services
                 float targetSaturation = saturationIntensity * intensityScale;
                 if (_melodySatRangeMax != _melodySatRangeMin)
                 {
-                    targetSaturation = Lerp(_melodySatRangeMin, _melodySatRangeMax, saturationIntensity * intensityScale);
+                    targetSaturation = Lerp(
+                        _melodySatRangeMin,
+                        _melodySatRangeMax,
+                        saturationIntensity * intensityScale
+                    );
                 }
-                _smoothedMelodySaturation = _smoothedMelodySaturation * 0.95f + targetSaturation * 0.05f;
+                _smoothedMelodySaturation =
+                    _smoothedMelodySaturation * 0.95f + targetSaturation * 0.05f;
 
                 float totalSpeed = _baseTimeSpeed + audioSpeedBoost;
 
@@ -510,7 +542,11 @@ namespace BalatroSeedOracle.Services
                 _shaderBuilder.Uniforms["parallax_x"] = _parallaxOffsetX;
                 _shaderBuilder.Uniforms["parallax_y"] = _parallaxOffsetY;
                 _shaderBuilder.Uniforms["zoom_scale"] = _zoomPunch;
-                _shaderBuilder.Uniforms["saturation_amount"] = Math.Clamp(_smoothedMelodySaturation, 0.0f, 1.0f);
+                _shaderBuilder.Uniforms["saturation_amount"] = Math.Clamp(
+                    _smoothedMelodySaturation,
+                    0.0f,
+                    1.0f
+                );
 
                 using var shader = _shaderBuilder.Build();
                 using var paint = new SKPaint { Shader = shader };
@@ -531,7 +567,8 @@ namespace BalatroSeedOracle.Services
 
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
             _isDisposed = true;
             _shaderBuilder?.Dispose();
             _shaderBuilder = null;

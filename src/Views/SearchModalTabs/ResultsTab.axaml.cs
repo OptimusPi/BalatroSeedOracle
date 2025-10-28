@@ -4,10 +4,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Controls;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Views.Modals;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.Views.Modals;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
@@ -50,7 +50,8 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var header = "SEED,TOTALSCORE";
                         if (labels.Length > 0)
                         {
-                            header += "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                            header +=
+                                "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
                         }
 
                         // Build CSV rows
@@ -68,12 +69,18 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         }
 
                         // Save to publish/results.csv
-                        var publishDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "publish");
+                        var publishDir = System.IO.Path.Combine(
+                            System.IO.Directory.GetCurrentDirectory(),
+                            "publish"
+                        );
                         System.IO.Directory.CreateDirectory(publishDir);
                         var csvPath = System.IO.Path.Combine(publishDir, "results.csv");
 
                         await System.IO.File.WriteAllTextAsync(csvPath, csv.ToString());
-                        DebugLogger.Log("ResultsTab", $"Exported {results.Count()} results to {csvPath}");
+                        DebugLogger.Log(
+                            "ResultsTab",
+                            $"Exported {results.Count()} results to {csvPath}"
+                        );
                     }
                     catch (System.Exception ex)
                     {

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Motely;
 
 namespace BalatroSeedOracle.ViewModels
@@ -52,7 +52,7 @@ namespace BalatroSeedOracle.ViewModels
                 "Blue Stake",
                 "Purple Stake",
                 "Orange Stake",
-                "Gold Stake"
+                "Gold Stake",
             };
 
             // Initialize enum selections to defaults
@@ -115,7 +115,7 @@ namespace BalatroSeedOracle.ViewModels
                     5 => "Required score scales faster for each Ante",
                     6 => "Shop can have Perishable Jokers (Debuffed after 5 rounds)",
                     7 => "Shop can have Rental Jokers (Costs $3 per round)",
-                    _ => "Base Difficulty"
+                    _ => "Base Difficulty",
                 };
             }
         }
@@ -212,7 +212,8 @@ namespace BalatroSeedOracle.ViewModels
         private void NextDeck()
         {
             var next = DeckIndex + 1;
-            if (next > 14) next = 0; // wrap
+            if (next > 14)
+                next = 0; // wrap
             DeckIndex = next;
         }
 
@@ -220,7 +221,8 @@ namespace BalatroSeedOracle.ViewModels
         private void PreviousDeck()
         {
             var prev = DeckIndex - 1;
-            if (prev < 0) prev = 14; // wrap
+            if (prev < 0)
+                prev = 14; // wrap
             DeckIndex = prev;
         }
 
@@ -229,7 +231,8 @@ namespace BalatroSeedOracle.ViewModels
         private void NextStake()
         {
             var next = StakeIndex + 1;
-            if (next > 7) next = 0; // wrap
+            if (next > 7)
+                next = 0; // wrap
             StakeIndex = next;
         }
 
@@ -237,7 +240,8 @@ namespace BalatroSeedOracle.ViewModels
         private void PreviousStake()
         {
             var prev = StakeIndex - 1;
-            if (prev < 0) prev = 7; // wrap
+            if (prev < 0)
+                prev = 7; // wrap
             StakeIndex = prev;
         }
 
@@ -279,7 +283,7 @@ namespace BalatroSeedOracle.ViewModels
                 12 => "Anaglyph",
                 13 => "Plasma",
                 14 => "Erratic",
-                _ => "Red"
+                _ => "Red",
             };
         }
 
@@ -341,7 +345,7 @@ namespace BalatroSeedOracle.ViewModels
                 5 => "Purple",
                 6 => "Orange",
                 7 => "Gold",
-                _ => "White"
+                _ => "White",
             };
         }
 

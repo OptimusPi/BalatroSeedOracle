@@ -12,20 +12,27 @@ namespace BalatroSeedOracle.Helpers
     {
         private readonly TextWriter _originalWriter;
         private readonly Action<string>? _onOutput;
-    private readonly bool _filterSeedLines;
-        
+        private readonly bool _filterSeedLines;
+
         // Regex to match Motely's CSV output format: SEED,SCORE,TALLY1,TALLY2,...
-        private static readonly Regex SeedLineRegex = new Regex(@"^[A-Z0-9]+,\d+(?:,\d+)*$", RegexOptions.Compiled);
-        
-        public FilteredConsoleWriter(TextWriter originalWriter, Action<string>? onOutput = null, bool filterSeedLines = true)
+        private static readonly Regex SeedLineRegex = new Regex(
+            @"^[A-Z0-9]+,\d+(?:,\d+)*$",
+            RegexOptions.Compiled
+        );
+
+        public FilteredConsoleWriter(
+            TextWriter originalWriter,
+            Action<string>? onOutput = null,
+            bool filterSeedLines = true
+        )
         {
             _originalWriter = originalWriter;
             _onOutput = onOutput;
             _filterSeedLines = filterSeedLines;
         }
-        
+
         public override Encoding Encoding => _originalWriter.Encoding;
-        
+
         public override void WriteLine(string? value)
         {
             // ALWAYS send to the callback first (for SearchInstance to process)
@@ -33,7 +40,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 _onOutput?.Invoke(value + Environment.NewLine);
             }
-            
+
             if (_filterSeedLines && value != null)
             {
                 // Filter out seed result lines from console display only
@@ -43,11 +50,11 @@ namespace BalatroSeedOracle.Helpers
                     return;
                 }
             }
-            
+
             // Pass through all other output to console
             _originalWriter.WriteLine(value);
         }
-        
+
         public override void Write(string? value)
         {
             // For partial writes, just pass through
@@ -57,13 +64,13 @@ namespace BalatroSeedOracle.Helpers
                 _onOutput?.Invoke(value);
             }
         }
-        
+
         public override void Write(char value)
         {
             _originalWriter.Write(value);
             _onOutput?.Invoke(value.ToString());
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
