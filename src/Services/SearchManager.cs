@@ -131,7 +131,10 @@ namespace BalatroSeedOracle.Services
             var filterId = config.Name?.Replace(" ", "_") ?? "unknown";
 
             // First create the search instance
-            DebugLogger.Log("SearchManager", $"Creating search instance with ID: {filterId}_{criteria.Deck}_{criteria.Stake}");
+            DebugLogger.Log(
+                "SearchManager",
+                $"Creating search instance with ID: {filterId}_{criteria.Deck}_{criteria.Stake}"
+            );
             var createdSearchId = CreateSearch(
                 filterId,
                 criteria.Deck ?? "Red",
@@ -147,7 +150,10 @@ namespace BalatroSeedOracle.Services
             }
 
             DebugLogger.Log("SearchManager", $"Search instance created: {createdSearchId}");
-            DebugLogger.Log("SearchManager", $"Starting search with config path: {criteria.ConfigPath}");
+            DebugLogger.Log(
+                "SearchManager",
+                $"Starting search with config path: {criteria.ConfigPath}"
+            );
 
             // Start the search with just criteria - config is handled separately
             await searchInstance.StartSearchAsync(criteria);

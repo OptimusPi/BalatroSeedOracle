@@ -731,10 +731,12 @@ namespace BalatroSeedOracle.Services
             }
 
             // Handle wildcard values (Any, *, etc.) - return a placeholder or null
-            if (name.Equals("Any", StringComparison.OrdinalIgnoreCase) ||
-                name == "*" ||
-                name == "." ||
-                name.Equals("None", StringComparison.OrdinalIgnoreCase))
+            if (
+                name.Equals("Any", StringComparison.OrdinalIgnoreCase)
+                || name == "*"
+                || name == "."
+                || name.Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 // TODO: Return a wildcard placeholder image
                 return null;

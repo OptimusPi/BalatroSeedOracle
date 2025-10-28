@@ -316,7 +316,9 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 AddConsoleMessage($"Filter loaded: {LoadedConfig.Name}");
-                AddConsoleMessage($"Search mode: {SearchModeDisplayValues[(int)SelectedSearchMode]}");
+                AddConsoleMessage(
+                    $"Search mode: {SearchModeDisplayValues[(int)SelectedSearchMode]}"
+                );
 
                 // Validate mode-specific requirements
                 if (
@@ -845,7 +847,9 @@ namespace BalatroSeedOracle.ViewModels
                         // CRITICAL FIX: Convert JSON filter path to database path
                         // CurrentFilterPath is like: "JsonItemFilters/MyFilter.json"
                         // Database path should be: "SearchResults/MyFilter.db"
-                        var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+                        var filterName = System.IO.Path.GetFileNameWithoutExtension(
+                            CurrentFilterPath
+                        );
                         var searchResultsDir = System.IO.Path.Combine(
                             System.IO.Directory.GetCurrentDirectory(),
                             "SearchResults"
@@ -872,7 +876,9 @@ namespace BalatroSeedOracle.ViewModels
                                     $"Converted batch {savedState.LastCompletedBatch} (size {savedState.BatchSize}) "
                                         + $"to batch {resumeBatch} (size {BatchSize})"
                                 );
-                                AddConsoleMessage($"Batch size changed - converted to batch {resumeBatch}");
+                                AddConsoleMessage(
+                                    $"Batch size changed - converted to batch {resumeBatch}"
+                                );
                             }
 
                             criteria.StartBatch = (ulong)(resumeBatch + 1); // +1 to start AFTER last completed

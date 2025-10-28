@@ -843,7 +843,10 @@ namespace BalatroSeedOracle.Services
                 throw new Exception(errorMsg);
             }
 
-            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Config loaded successfully: {config.Name}");
+            DebugLogger.Log(
+                $"SearchInstance[{_searchId}]",
+                $"Config loaded successfully: {config.Name}"
+            );
 
             // DEBUG: Log what was actually deserialized
             DebugLogger.LogImportant(
@@ -1202,9 +1205,15 @@ namespace BalatroSeedOracle.Services
             foreach (var clause in clauses)
             {
                 // Skip logical operators (And/Or) - they're handled in scoring, not filtering
-                if (clause.ItemTypeEnum == MotelyFilterItemType.And || clause.ItemTypeEnum == MotelyFilterItemType.Or)
+                if (
+                    clause.ItemTypeEnum == MotelyFilterItemType.And
+                    || clause.ItemTypeEnum == MotelyFilterItemType.Or
+                )
                 {
-                    DebugLogger.Log($"SearchInstance[{_searchId}]", $"Skipping logical operator clause: {clause.ItemTypeEnum}");
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Skipping logical operator clause: {clause.ItemTypeEnum}"
+                    );
                     continue;
                 }
 
@@ -1364,7 +1373,7 @@ namespace BalatroSeedOracle.Services
                         {
                             Seed = result.Seed,
                             TotalScore = result.Score,
-                            Scores = result.TallyColumns?.ToArray()
+                            Scores = result.TallyColumns?.ToArray(),
                         };
 
                         // Write to DuckDB
@@ -1401,10 +1410,14 @@ namespace BalatroSeedOracle.Services
                     );
 
                     // Get MUST clauses only (no Should/MustNot for filtering)
-                    var mustClauses = config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                    var mustClauses =
+                        config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
 
                     var compositeFilter = new MotelyCompositeFilterDesc(mustClauses);
-                    var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
+                    var compositeSettings =
+                        new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(
+                            compositeFilter
+                        );
 
                     // Apply all search settings
                     compositeSettings = compositeSettings
@@ -1414,12 +1427,20 @@ namespace BalatroSeedOracle.Services
 
                     // Only set EndBatch if specified (ulong.MaxValue means infinite)
                     if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                        compositeSettings = compositeSettings.WithEndBatchIndex((long)criteria.EndBatch);
+                        compositeSettings = compositeSettings.WithEndBatchIndex(
+                            (long)criteria.EndBatch
+                        );
 
                     // Apply deck/stake if specified
-                    if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck compositeDeck))
+                    if (
+                        !string.IsNullOrEmpty(criteria.Deck)
+                        && Enum.TryParse(criteria.Deck, true, out MotelyDeck compositeDeck)
+                    )
                         compositeSettings = compositeSettings.WithDeck(compositeDeck);
-                    if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake compositeStake))
+                    if (
+                        !string.IsNullOrEmpty(criteria.Stake)
+                        && Enum.TryParse(criteria.Stake, true, out MotelyStake compositeStake)
+                    )
                         compositeSettings = compositeSettings.WithStake(compositeStake);
 
                     // Apply scoring if needed
