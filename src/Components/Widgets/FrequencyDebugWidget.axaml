@@ -79,7 +79,7 @@
 
                     <!-- Track Selector -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="TRACK" Foreground="{StaticResource White}" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock Text="TRACK" Foreground="{StaticResource White}" FontSize="16"/>
                         <ComboBox SelectedIndex="{Binding SelectedTrackIndex}" HorizontalAlignment="Stretch" FontSize="14">
                             <ComboBoxItem Content="Bass1"/>
                             <ComboBoxItem Content="Bass2"/>
@@ -94,7 +94,7 @@
 
                     <!-- BASS RANGE: 20-250 Hz -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="BASS (20-250 Hz)" Foreground="{StaticResource White}" FontWeight="SemiBold" FontSize="15"/>
+                        <TextBlock Text="BASS (20-250 Hz)" Foreground="{StaticResource White}" FontSize="15"/>
 
                         <!-- Bass Average -->
                         <Grid ColumnDefinitions="60,*,60">
@@ -117,7 +117,7 @@
 
                     <!-- MID RANGE: 250-2000 Hz -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="MID (250-2000 Hz)" Foreground="{StaticResource White}" FontWeight="SemiBold" FontSize="15"/>
+                        <TextBlock Text="MID (250-2000 Hz)" Foreground="{StaticResource White}" FontSize="15"/>
 
                         <!-- Mid Average -->
                         <Grid ColumnDefinitions="60,*,60">
@@ -140,7 +140,7 @@
 
                     <!-- HIGH RANGE: 2000-20000 Hz -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="HIGH (2000-20000 Hz)" Foreground="{StaticResource White}" FontWeight="SemiBold" FontSize="15"/>
+                        <TextBlock Text="HIGH (2000-20000 Hz)" Foreground="{StaticResource White}" FontSize="15"/>
 
                         <!-- High Average -->
                         <Grid ColumnDefinitions="60,*,60">
@@ -165,14 +165,14 @@
                     <Border BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="6" Padding="10" Background="{StaticResource VeryDarkGrey}">
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="CAPTURED MAX VALUES" Foreground="{StaticResource White}" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="0" Text="CAPTURED MAX VALUES" Foreground="{StaticResource White}" FontSize="14"/>
                                 <Button Grid.Column="1" Content="Reset" Classes="btn-red" FontSize="12" Padding="8,4" Command="{Binding ResetMaxValuesCommand}"/>
                             </Grid>
 
                             <!-- Bass Max Values with LED and Threshold -->
                             <StackPanel Spacing="4">
                                 <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
-                                    <TextBlock Grid.Column="0" Text="BASS" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Column="0" Text="BASS" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1" Text="{Binding BassAvgMax, StringFormat='Avg: {0:F3}'}"
                                                Foreground="{StaticResource White}" FontFamily="Consolas" FontSize="12" Margin="4,0"/>
                                     <TextBlock Grid.Column="2" Text="{Binding BassPeakMax, StringFormat='Peak: {0:F3}'}"
@@ -195,7 +195,7 @@
                             <!-- Mid Max Values with LED and Threshold -->
                             <StackPanel Spacing="4">
                                 <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
-                                    <TextBlock Grid.Column="0" Text="MID" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Column="0" Text="MID" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1" Text="{Binding MidAvgMax, StringFormat='Avg: {0:F3}'}"
                                                Foreground="{StaticResource White}" FontFamily="Consolas" FontSize="12" Margin="4,0"/>
                                     <TextBlock Grid.Column="2" Text="{Binding MidPeakMax, StringFormat='Peak: {0:F3}'}"
@@ -218,7 +218,7 @@
                             <!-- High Max Values with LED and Threshold -->
                             <StackPanel Spacing="4">
                                 <Grid ColumnDefinitions="45,*,*,32" RowDefinitions="Auto">
-                                    <TextBlock Grid.Column="0" Text="HIGH" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Column="0" Text="HIGH" Foreground="{StaticResource White}" FontSize="13" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1" Text="{Binding HighAvgMax, StringFormat='Avg: {0:F3}'}"
                                                Foreground="{StaticResource White}" FontFamily="Consolas" FontSize="12" Margin="4,0"/>
                                     <TextBlock Grid.Column="2" Text="{Binding HighPeakMax, StringFormat='Peak: {0:F3}'}"

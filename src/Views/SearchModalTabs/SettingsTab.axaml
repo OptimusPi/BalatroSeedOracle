@@ -50,7 +50,7 @@
                                    Text="{Binding DeckSelection, FallbackValue='Red Deck'}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="16"
-                                   FontWeight="Bold"
+                                  
                                    Foreground="{StaticResource Black}"/>
                         <TextBlock Name="DeckDescriptionText"
                                    FontFamily="{StaticResource BalatroFont}"

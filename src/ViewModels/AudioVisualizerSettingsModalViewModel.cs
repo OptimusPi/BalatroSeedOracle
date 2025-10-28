@@ -876,7 +876,6 @@ namespace BalatroSeedOracle.ViewModels
                     Foreground = new Avalonia.Media.SolidColorBrush(
                         Avalonia.Media.Color.Parse("#FFD700")
                     ),
-                    FontWeight = Avalonia.Media.FontWeight.Bold,
                     FontSize = 14,
                 };
 

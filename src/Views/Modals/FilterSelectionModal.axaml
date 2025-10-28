@@ -195,7 +195,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Gold}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -246,7 +246,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource VoucherOrange}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -298,7 +298,7 @@
                                                                 <TextBlock Text="X"
                                                                            FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="24"
-                                                                           FontWeight="Bold"
+                                                                          
                                                                            Foreground="#FF0000"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"/>
@@ -330,7 +330,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Purple}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -382,7 +382,7 @@
                                                                 <TextBlock Text="X"
                                                                            FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="24"
-                                                                           FontWeight="Bold"
+                                                                          
                                                                            Foreground="#FF0000"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"/>
@@ -424,7 +424,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Gold}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -473,7 +473,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource VoucherOrange}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -522,7 +522,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Purple}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -582,7 +582,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Gold}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -611,7 +611,7 @@
                                                                FontFamily="{StaticResource BalatroFont}"
                                                                FontSize="11"
                                                                Foreground="{StaticResource VoucherOrange}"
-                                                               FontWeight="Bold"
+                                                              
                                                                TextAlignment="Center"/>
                                                 </Border>
 
@@ -630,7 +630,7 @@
                                                                FontFamily="{StaticResource BalatroFont}"
                                                                FontSize="11"
                                                                Foreground="{StaticResource Blue}"
-                                                               FontWeight="Bold"
+                                                              
                                                                TextAlignment="Center"/>
                                                 </Border>
                                             </Grid>
@@ -655,7 +655,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource VoucherOrange}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -692,7 +692,7 @@
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="12"
                                                        Foreground="{StaticResource Purple}"
-                                                       FontWeight="Bold"
+                                                      
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0">
                                                 <TextBlock.RenderTransform>
@@ -748,7 +748,7 @@
                                                             <TextBlock Text="{Binding FilterName}"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="18"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="Black"
                                                                        HorizontalAlignment="Left"
                                                                        VerticalAlignment="Top"/>
@@ -804,13 +804,13 @@
                                                                        Text="Item"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="{StaticResource DarkGrey}"/>
                                                             <TextBlock Grid.Column="1"
                                                                        Text="Antes"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="{StaticResource DarkGrey}"
                                                                        HorizontalAlignment="Left"/>
                                                         </Grid>
@@ -891,7 +891,7 @@
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
                                                                                    TextWrapping="Wrap">
-                                                                            <Run Text="NOT " FontWeight="Bold"/>
+                                                                            <Run Text="NOT "/>
                                                                             <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
                                                                         </TextBlock>
                                                                         <TextBlock Grid.Column="1"
@@ -915,7 +915,7 @@
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
                                                                                    TextWrapping="Wrap">
-                                                                            <Run Text="NOT " FontWeight="Bold"/>
+                                                                            <Run Text="NOT "/>
                                                                             <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
                                                                         </TextBlock>
                                                                         <TextBlock Grid.Column="1"
@@ -939,7 +939,7 @@
                                                                                    FontSize="13"
                                                                                    Foreground="{StaticResource Red}"
                                                                                    TextWrapping="Wrap">
-                                                                            <Run Text="NOT " FontWeight="Bold"/>
+                                                                            <Run Text="NOT "/>
                                                                             <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
                                                                         </TextBlock>
                                                                         <TextBlock Grid.Column="1"
@@ -990,7 +990,7 @@
                                                                    Foreground="Black"
                                                                    TextWrapping="Wrap">
                                                             <Run Text="Recommended Cutoff value: "/>
-                                                            <Run Text="Unknown (TODO)" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
+                                                            <Run Text="Unknown (TODO)" Foreground="{StaticResource Blue}"/>
                                                         </TextBlock>
 
                                                         <TextBlock FontFamily="{StaticResource BalatroFont}"
@@ -998,7 +998,7 @@
                                                                    Foreground="Black"
                                                                    TextWrapping="Wrap">
                                                             <Run Text="Seed Rarity: "/>
-                                                            <Run Text="Unknown" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
+                                                            <Run Text="Unknown" Foreground="{StaticResource Blue}"/>
                                                         </TextBlock>
 
                                                         <TextBlock FontFamily="{StaticResource BalatroFont}"
@@ -1006,7 +1006,7 @@
                                                                    Foreground="Black"
                                                                    TextWrapping="Wrap">
                                                             <Run Text="Verified Seeds: "/>
-                                                            <Run Text="0" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
+                                                            <Run Text="0" Foreground="{StaticResource Blue}"/>
                                                         </TextBlock>
                                                     </StackPanel>
                                                 </Grid>
@@ -1036,13 +1036,13 @@
                                                                        Text="Item"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="{StaticResource DarkGrey}"/>
                                                             <TextBlock Grid.Column="1"
                                                                        Text="Antes"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="{StaticResource DarkGrey}"
                                                                        HorizontalAlignment="Left"/>
                                                         </Grid>
@@ -1180,7 +1180,7 @@
                                                                        Text="Red Deck"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="16"
-                                                                       FontWeight="Bold"
+                                                                      
                                                                        Foreground="{StaticResource Black}"/>
                                                             <TextBlock Name="DeckDescriptionText"
                                                                        FontFamily="{StaticResource BalatroFont}"

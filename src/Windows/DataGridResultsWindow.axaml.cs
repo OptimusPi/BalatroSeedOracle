@@ -630,7 +630,6 @@ LIMIT 50;",
                 for (int i = 0; i < headers.Count; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = headers[i];
-                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
                 }
 
                 // Data

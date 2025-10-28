@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.Behaviors
         private TransformGroup? _transformGroup;
         private RotateTransform? _rotateTransform;
         private ScaleTransform? _scaleTransform;
+        private Control? _visualChild; // The actual visual content that gets transformed
         private const double TILT_FACTOR = 0.3;
         private const double AMBIENT_TILT = 0.2;
 
@@ -69,6 +70,23 @@ namespace BalatroSeedOracle.Behaviors
             _cardId = new Random().NextDouble() * 100;
             _startTime = DateTime.Now;
 
+            // PROPER SOLUTION: Find the first child control to apply transforms to
+            // The parent (AssociatedObject) keeps its static hitbox for pointer events
+            // Only the visual child gets transformed, preventing hitbox rotation issues
+            if (AssociatedObject is Avalonia.Controls.Decorator decorator && decorator.Child is Control child)
+            {
+                _visualChild = child;
+            }
+            else if (AssociatedObject is Avalonia.Controls.Panel panel && panel.Children.Count > 0)
+            {
+                _visualChild = panel.Children[0] as Control;
+            }
+            else
+            {
+                // Fallback: if no child found, transform the AssociatedObject itself (old behavior)
+                _visualChild = AssociatedObject;
+            }
+
             // Set up transform group with rotation and scale
             _rotateTransform = new RotateTransform();
             _scaleTransform = new ScaleTransform(1.0, 1.0);
@@ -76,14 +94,15 @@ namespace BalatroSeedOracle.Behaviors
             _transformGroup.Children.Add(_scaleTransform);
             _transformGroup.Children.Add(_rotateTransform);
 
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(
+            // Apply transforms to the VISUAL CHILD, not the parent container
+            _visualChild.RenderTransformOrigin = new RelativePoint(
                 0.5,
                 0.5,
                 RelativeUnit.Relative
             );
-            AssociatedObject.RenderTransform = _transformGroup;
+            _visualChild.RenderTransform = _transformGroup;
 
-            // Attach pointer events
+            // Attach pointer events to the PARENT (which has static hitbox)
             AssociatedObject.PointerEntered += OnPointerEntered;
             AssociatedObject.PointerExited += OnPointerExited;
             AssociatedObject.PointerMoved += OnPointerMoved;

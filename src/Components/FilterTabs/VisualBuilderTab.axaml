@@ -266,7 +266,6 @@
                                             <TextBlock Text="{Binding GroupName}"
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="14"
-                                                       FontWeight="Bold"
                                                        Foreground="{StaticResource Orange}"
                                                        TextAlignment="Left"/>
                                         </Border>
@@ -279,9 +278,6 @@
                                                                Cursor="Hand"
                                                                PointerPressed="OnItemPointerPressed"
                                                                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
-                                                        <i:Interaction.Behaviors>
-                                                            <behaviors:CardDragBehavior IsEnabled="{Binding !IsBeingDragged}" JuiceAmount="0.4"/>
-                                                        </i:Interaction.Behaviors>
                                                         <Grid>
                                                             <!-- Main card image -->
                                                             <Image Source="{Binding ItemImage}"
@@ -339,7 +335,6 @@
                                Foreground="{StaticResource Orange}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               FontWeight="Bold"
                                TextAlignment="Center"/>
                 </Border>
             </Grid>
@@ -386,7 +381,7 @@
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMust}" Margin="12">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="36"
@@ -480,7 +475,7 @@
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedShould}" Margin="12">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="36"
@@ -574,7 +569,7 @@
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" DoubleTapped="OnItemDoubleTapped" PointerPressed="OnDropZoneItemPointerPressed">
+                                    <Grid Margin="4" Width="36" Height="48" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="36"

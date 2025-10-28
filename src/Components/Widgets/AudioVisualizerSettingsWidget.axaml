@@ -87,7 +87,7 @@
                             <TextBlock Text="{Binding CurrentPresetName}"
                                        Foreground="{StaticResource Gold}"
                                        FontSize="14"
-                                       FontWeight="Bold"
+                                      
                                        VerticalAlignment="Center"
                                        MinWidth="150"/>
                             <Button Content="Load..."
@@ -104,7 +104,7 @@
 
                         <!-- THEME SELECTION -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="THEME" Foreground="{StaticResource White}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="THEME" Foreground="{StaticResource White}" FontSize="16"/>
                             <ComboBox SelectedIndex="{Binding ThemeIndex}" HorizontalAlignment="Stretch" FontSize="14">
                                 <ComboBoxItem Content="Default"/>
                                 <ComboBoxItem Content="Wave Rider"/>
@@ -120,7 +120,7 @@
 
                         <!-- CUSTOM COLORS (only shown when CUSTOMIZE selected) -->
                         <StackPanel Spacing="10" IsVisible="{Binding IsCustomTheme}">
-                            <TextBlock Text="CUSTOM COLORS" Foreground="{StaticResource White}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="CUSTOM COLORS" Foreground="{StaticResource White}" FontSize="16"/>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Text="Main" Foreground="{StaticResource White}" FontSize="14"/>
@@ -155,7 +155,7 @@
 
                         <!-- SHADER PARAMETERS - DIRECT CONTROL WITH CUSTOMIZABLE RANGES -->
                         <StackPanel Spacing="4">
-                            <TextBlock Text="SHADER PARAMETERS" Foreground="{StaticResource White}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="SHADER PARAMETERS" Foreground="{StaticResource White}" FontSize="16"/>
                             <TextBlock Text="Adjust ranges and values for complete control" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,0"/>
 
                             <!-- Time -->
@@ -190,7 +190,7 @@
                                          Text="{Binding TimeValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -228,7 +228,7 @@
                                          Text="{Binding SpinTimeValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -266,7 +266,7 @@
                                          Text="{Binding ContrastValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -304,7 +304,7 @@
                                          Text="{Binding SpinAmountValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -342,7 +342,7 @@
                                          Text="{Binding ParallaxXValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -380,7 +380,7 @@
                                          Text="{Binding ParallaxYValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -418,7 +418,7 @@
                                          Text="{Binding ZoomScaleValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -456,7 +456,7 @@
                                          Text="{Binding SaturationValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -494,7 +494,7 @@
                                          Text="{Binding PixelSizeValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -532,7 +532,7 @@
                                          Text="{Binding SpinEaseValue, StringFormat='{}{0:0.0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
@@ -570,14 +570,14 @@
                                          Text="{Binding LoopCountValue, StringFormat='{}{0:0}'}"
                                          Foreground="{StaticResource Gold}"
                                          FontSize="12"
-                                         FontWeight="Bold"
+                                        
                                          FontFamily="{StaticResource BalatroFont}"
                                          Padding="4,2"
                                          TextAlignment="Right"/>
                             </Grid>
 
                             <!-- Audio Source Triggers -->
-                            <TextBlock Text="AUDIO TRIGGERS" Foreground="{StaticResource White}" FontSize="16" FontWeight="SemiBold" Margin="0,12,0,4"/>
+                            <TextBlock Text="AUDIO TRIGGERS" Foreground="{StaticResource White}" FontSize="16" Margin="0,12,0,4"/>
                             <TextBlock Text="Map audio tracks to shader effects" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,4"/>
 
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
@@ -625,7 +625,7 @@
 
                                 <!-- Audio Event Triggers -->
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="AUDIO EVENTS" Foreground="{StaticResource White}" FontWeight="SemiBold" FontSize="15"/>
+                                    <TextBlock Text="AUDIO EVENTS" Foreground="{StaticResource White}" FontSize="15"/>
                                     <CheckBox Content="Seed Found" IsChecked="{Binding SeedFoundTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
                                     <CheckBox Content="High Score" IsChecked="{Binding HighScoreSeedTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
                                     <CheckBox Content="Search Done" IsChecked="{Binding SearchCompleteTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
@@ -633,7 +633,7 @@
 
                                 <!-- Per-Track Volume Controls -->
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="TRACK VOLUMES" Foreground="{StaticResource White}" FontWeight="SemiBold" FontSize="15"/>
+                                    <TextBlock Text="TRACK VOLUMES" Foreground="{StaticResource White}" FontSize="15"/>
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
                                         <TextBlock Grid.Column="0" Text="Drums1" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
                                         <Slider Grid.Column="1" Value="{Binding Drums1Volume}" Minimum="0" Maximum="1"/>

@@ -105,20 +105,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item != null)
                 {
-                    // RIGHT-CLICK: Open config popup instead of dragging
-                    var properties = e.GetCurrentPoint(sender as Control).Properties;
-                    if (properties.IsRightButtonPressed)
+                    // Check which button was pressed
+                    var pointerPoint = e.GetCurrentPoint(sender as Control);
+
+                    // RIGHT-CLICK: Open config popup
+                    if (pointerPoint.Properties.IsRightButtonPressed)
                     {
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"🎯 RIGHT-CLICK on item: {item.Name} - Opening config popup"
-                        );
                         ShowItemConfigPopup(item, sender as Control);
                         e.Handled = true;
                         return;
                     }
 
-                    // LEFT-CLICK: Start drag operation
+                    // LEFT-CLICK ONLY: Start drag operation
+                    if (!pointerPoint.Properties.IsLeftButtonPressed)
+                    {
+                        return; // Not left click, ignore
+                    }
                     _draggedItem = item;
                     _isDragging = true;
                     _originalDragSource = sender as Control;
@@ -653,24 +655,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnItemDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
-        {
-            Models.FilterItem? item = null;
-
-            if (sender is Grid grid)
-            {
-                item = grid.DataContext as Models.FilterItem;
-            }
-            else if (sender is Border border)
-            {
-                item = border.DataContext as Models.FilterItem;
-            }
-
-            if (item != null)
-            {
-                ShowItemConfigPopup(item, sender as Control);
-            }
-        }
+        // REMOVED: Double-click handler - right-click is the only way to configure items
 
         private void ShowItemConfigPopup(Models.FilterItem item, Control? sourceControl)
         {
@@ -716,51 +701,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             popup.IsOpen = true;
         }
 
-        // Category list for pagination
-        private readonly string[] _categories = new[]
-        {
-            "Favorites",
-            "Legendary",
-            "Rare",
-            "Uncommon",
-            "Common",
-            "Voucher",
-            "Tarot",
-            "Planet",
-            "Spectral",
-            "PlayingCards",
-            "Tag",
-            "Boss",
-        };
-        private int _currentCategoryIndex = 1; // Start at Legendary
-
-        private void OnPreviousCategory(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            _currentCategoryIndex--;
-            if (_currentCategoryIndex < 0)
-                _currentCategoryIndex = _categories.Length - 1;
-
-            SetCurrentCategory();
-        }
-
-        private void OnNextCategory(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            _currentCategoryIndex++;
-            if (_currentCategoryIndex >= _categories.Length)
-                _currentCategoryIndex = 0;
-
-            SetCurrentCategory();
-        }
-
-        private void SetCurrentCategory()
-        {
-            var vm =
-                DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm != null)
-            {
-                vm.SetCategory(_categories[_currentCategoryIndex]);
-            }
-        }
+        // No pagination - categories are now directly clickable in left nav
 
         private void OnCategoryClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
@@ -805,6 +746,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.SelectedMust.Clear();
                 vm.SelectedShould.Clear();
                 vm.SelectedMustNot.Clear();
+            }
+        }
+
+        private void OnFavoritesClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm != null)
+            {
+                // Show favorites by setting category to "Joker" and then filtering for favorites
+                vm.SetCategory("Joker");
+                vm.SelectedCategory = "Favorites";
+                DebugLogger.Log("VisualBuilderTab", "Showing favorites");
             }
         }
 
@@ -894,8 +847,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Reset search filter
                     vm.SearchFilter = "";
 
-                    // Reset to page 1 (Jokers)
-                    vm.CurrentPageIndex = 0;
+                    // Reset to first category (Joker)
+                    vm.SetCategory("Joker");
                 }
                 dialog.Close();
             };

@@ -1294,11 +1294,8 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var baseDir =
-                    System.IO.Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
-                var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                // JsonItemFilters is in the project root, not the bin directory
+                var filtersDir = "JsonItemFilters";
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
 
                 if (!System.IO.File.Exists(filterPath))
@@ -1345,15 +1342,12 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Delete a filter
         /// </summary>
-        private async Task DeleteFilter(string filterId)
+        private void DeleteFilter(string filterId)
         {
             try
             {
-                var baseDir =
-                    System.IO.Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
-                var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                // JsonItemFilters is in the project root, not the bin directory
+                var filtersDir = "JsonItemFilters";
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
 
                 if (System.IO.File.Exists(filterPath))
@@ -1373,8 +1367,6 @@ namespace BalatroSeedOracle.Views
             {
                 DebugLogger.LogError("BalatroMainMenu", $"Error deleting filter: {ex.Message}");
             }
-
-            await Task.CompletedTask;
         }
 
         #endregion

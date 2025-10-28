@@ -44,30 +44,57 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public ObservableCollection<FilterItem> FilteredItems { get; }
 
+        // Main category selection (6 main categories)
+        [ObservableProperty]
+        private string _selectedMainCategory = "Joker";
+
+        // Subcategory tracking within each main category
         [ObservableProperty]
         private string _selectedCategory = "Legendary";
 
-        // Pagination state
+        // Grouped items for the new UI
+        public class ItemGroup : ObservableObject
+        {
+            public string GroupName { get; set; } = "";
+            public ObservableCollection<FilterItem> Items { get; set; } = new();
+        }
+
         [ObservableProperty]
-        private int _currentPageIndex = 0; // 0=Jokers, 1=Consumables, 2=Map, 3=Cards
+        private ObservableCollection<ItemGroup> _groupedItems = new();
 
-        public string CurrentPageTitle =>
-            CurrentPageIndex switch
+        // Helper button visibility properties
+        [ObservableProperty]
+        private bool _isJokerCategorySelected = true;
+
+        [ObservableProperty]
+        private bool _isConsumableCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isSkipTagCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isBossCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isVoucherCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isStandardCardCategorySelected = false;
+
+        // Scroll-to-view trigger property
+        private string? _scrollToGroupName;
+        public string? ScrollToGroupName
+        {
+            get => _scrollToGroupName;
+            private set
             {
-                0 => "JOKERS",
-                1 => "CONSUMABLES",
-                2 => "MAP",
-                3 => "CARDS",
-                _ => "JOKERS",
-            };
-
-        public string PageIndicator => $"{CurrentPageIndex + 1}/4";
-
-        // Page visibility helpers (for XAML binding)
-        public bool IsJokersPage => CurrentPageIndex == 0;
-        public bool IsConsumablesPage => CurrentPageIndex == 1;
-        public bool IsMapPage => CurrentPageIndex == 2;
-        public bool IsCardsPage => CurrentPageIndex == 3;
+                if (_scrollToGroupName != value)
+                {
+                    _scrollToGroupName = value;
+                    OnPropertyChanged(nameof(ScrollToGroupName));
+                }
+            }
+        }
 
         // Edition/Enhancement/Seal toggles
         [ObservableProperty]
@@ -83,18 +110,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string CurrentCategoryDisplay =>
             SelectedCategory switch
             {
-                "Favorites" => "🔥 Favorites",
-                "Legendary" => "🏆 Legendary",
-                "Rare" => "💎 Rare",
-                "Uncommon" => "🔸 Uncommon",
-                "Common" => "⚪ Common",
-                "Voucher" => "🎟️ Voucher",
-                "Tarot" => "🔮 Tarot",
-                "Planet" => "🪐 Planet",
-                "Spectral" => "👻 Spectral",
-                "PlayingCards" => "🃏 Playing Cards",
-                "Tag" => "🏷️ Tag",
-                "Boss" => "👹 Boss",
+                "Favorites" => "Favorites",
+                "Legendary" => "Legendary",
+                "Rare" => "Rare",
+                "Uncommon" => "Uncommon",
+                "Common" => "Common",
+                "Voucher" => "Voucher",
+                "Tarot" => "Tarot",
+                "Planet" => "Planet",
+                "Spectral" => "Spectral",
+                "PlayingCards" => "Playing Cards",
+                "Tag" => "Tag",
+                "Boss" => "Boss",
                 _ => SelectedCategory,
             };
 
@@ -138,6 +165,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FilteredBosses = new ObservableCollection<FilterItem>();
 
             FilteredItems = new ObservableCollection<FilterItem>();
+            GroupedItems = new ObservableCollection<ItemGroup>();
 
             // Initialize categories with proper data template approach
             Categories = new ObservableCollection<CategoryViewModel>
@@ -145,61 +173,61 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 new()
                 {
                     Name = "Legendary",
-                    DisplayName = "🏆 Legendary",
+                    DisplayName = "Legendary",
                     Items = FilteredJokers,
                 },
                 new()
                 {
                     Name = "Rare",
-                    DisplayName = "💎 Rare",
+                    DisplayName = "Rare",
                     Items = FilteredJokers,
                 },
                 new()
                 {
                     Name = "Uncommon",
-                    DisplayName = "🔸 Uncommon",
+                    DisplayName = "Uncommon",
                     Items = FilteredJokers,
                 },
                 new()
                 {
                     Name = "Common",
-                    DisplayName = "⚪ Common",
+                    DisplayName = "Common",
                     Items = FilteredJokers,
                 },
                 new()
                 {
                     Name = "Voucher",
-                    DisplayName = "🎟️ Voucher",
+                    DisplayName = "Voucher",
                     Items = FilteredVouchers,
                 },
                 new()
                 {
                     Name = "Tarot",
-                    DisplayName = "🔮 Tarot",
+                    DisplayName = "Tarot",
                     Items = FilteredTarots,
                 },
                 new()
                 {
                     Name = "Planet",
-                    DisplayName = "🪐 Planet",
+                    DisplayName = "Planet",
                     Items = FilteredPlanets,
                 },
                 new()
                 {
                     Name = "Spectral",
-                    DisplayName = "👻 Spectral",
+                    DisplayName = "Spectral",
                     Items = FilteredSpectrals,
                 },
                 new()
                 {
                     Name = "Tag",
-                    DisplayName = "🏷️ Tag",
+                    DisplayName = "Tag",
                     Items = FilteredTags,
                 },
                 new()
                 {
                     Name = "Boss",
-                    DisplayName = "👹 Boss",
+                    DisplayName = "Boss",
                     Items = FilteredBosses,
                 },
             };
@@ -242,7 +270,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Auto-clear search when switching tabs for clean navigation
             SearchFilter = "";
-            SelectedCategory = category;
+            SelectedMainCategory = category;
+
+            // Update visibility flags
+            IsJokerCategorySelected = category == "Joker";
+            IsConsumableCategorySelected = category == "Consumable";
+            IsSkipTagCategorySelected = category == "SkipTag";
+            IsBossCategorySelected = category == "Boss";
+            IsVoucherCategorySelected = category == "Voucher";
+            IsStandardCardCategorySelected = category == "StandardCard";
+
+            // Rebuild grouped items
+            RebuildGroupedItems();
+
             OnPropertyChanged(nameof(CurrentCategoryDisplay));
 
             // Ensure collections are populated when switching categories
@@ -250,6 +290,67 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 ApplyFilter();
             }
+        }
+
+        private void RebuildGroupedItems()
+        {
+            GroupedItems.Clear();
+
+            switch (SelectedMainCategory)
+            {
+                case "Joker":
+                    // Add groups: Legendary, Rare, Uncommon, Common
+                    AddGroup("LEGENDARY JOKERS", FilteredJokers.Where(j => j.Type == "SoulJoker"));
+                    AddGroup(
+                        "RARE JOKERS",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare")
+                    );
+                    AddGroup(
+                        "UNCOMMON JOKERS",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon")
+                    );
+                    AddGroup(
+                        "COMMON JOKERS",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common")
+                    );
+                    break;
+
+                case "Consumable":
+                    AddGroup("TAROT CARDS", FilteredTarots);
+                    AddGroup("PLANET CARDS", FilteredPlanets);
+                    AddGroup("SPECTRAL CARDS", FilteredSpectrals);
+                    break;
+
+                case "SkipTag":
+                    // For now, just show all tags (ante filtering can be added later)
+                    AddGroup("SKIP TAGS - ANY ANTE", FilteredTags);
+                    break;
+
+                case "Boss":
+                    // For now, show all bosses (regular/finisher split can be added later)
+                    AddGroup("BOSS BLINDS", FilteredBosses);
+                    break;
+
+                case "Voucher":
+                    // For now, show all vouchers (base/upgrade split can be added later)
+                    AddGroup("VOUCHERS", FilteredVouchers);
+                    break;
+
+                case "StandardCard":
+                    // Playing cards logic (to be implemented later)
+                    AddGroup("PLAYING CARDS", new List<FilterItem>());
+                    break;
+            }
+        }
+
+        private void AddGroup(string groupName, IEnumerable<FilterItem> items)
+        {
+            var group = new ItemGroup
+            {
+                GroupName = groupName,
+                Items = new ObservableCollection<FilterItem>(items)
+            };
+            GroupedItems.Add(group);
         }
 
         private void RefreshFilteredItems()
@@ -315,7 +416,146 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 FilteredItems.Add(item);
             }
+
+            // Also rebuild grouped items after filtering
+            RebuildGroupedItems();
         }
+
+        #region Scroll-to-View Commands
+
+        // Joker Commands
+        [RelayCommand]
+        private void ScrollToLegendary()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Legendary requested");
+            ScrollToGroupName = "LEGENDARY JOKERS";
+        }
+
+        [RelayCommand]
+        private void ScrollToRare()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Rare requested");
+            ScrollToGroupName = "RARE JOKERS";
+        }
+
+        [RelayCommand]
+        private void ScrollToUncommon()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Uncommon requested");
+            ScrollToGroupName = "UNCOMMON JOKERS";
+        }
+
+        [RelayCommand]
+        private void ScrollToCommon()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Common requested");
+            ScrollToGroupName = "COMMON JOKERS";
+        }
+
+        // Consumable Commands
+        [RelayCommand]
+        private void ScrollToTarot()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Tarot requested");
+            ScrollToGroupName = "TAROT CARDS";
+        }
+
+        [RelayCommand]
+        private void ScrollToPlanet()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Planet requested");
+            ScrollToGroupName = "PLANET CARDS";
+        }
+
+        [RelayCommand]
+        private void ScrollToSpectral()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Spectral requested");
+            ScrollToGroupName = "SPECTRAL CARDS";
+        }
+
+        // Skip Tag Commands
+        [RelayCommand]
+        private void ScrollToAnyAnte()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Any Ante tags requested");
+            ScrollToGroupName = "SKIP TAGS - ANY ANTE";
+        }
+
+        [RelayCommand]
+        private void ScrollToAnte2Plus()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Ante 2+ tags requested");
+            ScrollToGroupName = "SKIP TAGS - ANTE 2+";
+        }
+
+        // Boss Commands
+        [RelayCommand]
+        private void ScrollToRegularBoss()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Regular Boss requested");
+            ScrollToGroupName = "BOSS BLINDS";
+        }
+
+        [RelayCommand]
+        private void ScrollToFinisherBoss()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Finisher Boss requested");
+            ScrollToGroupName = "FINISHER BOSS BLINDS";
+        }
+
+        // Voucher Commands
+        [RelayCommand]
+        private void ScrollToBaseVoucher()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Base Voucher requested");
+            ScrollToGroupName = "BASE VOUCHERS";
+        }
+
+        [RelayCommand]
+        private void ScrollToUpgradeVoucher()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Upgrade Voucher requested");
+            ScrollToGroupName = "UPGRADE VOUCHERS";
+        }
+
+        // Standard Card Commands
+        [RelayCommand]
+        private void ScrollToSpade()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Spades requested");
+            ScrollToGroupName = "SPADES";
+        }
+
+        [RelayCommand]
+        private void ScrollToClub()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Clubs requested");
+            ScrollToGroupName = "CLUBS";
+        }
+
+        [RelayCommand]
+        private void ScrollToHeart()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Hearts requested");
+            ScrollToGroupName = "HEARTS";
+        }
+
+        [RelayCommand]
+        private void ScrollToDiamond()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Diamonds requested");
+            ScrollToGroupName = "DIAMONDS";
+        }
+
+        [RelayCommand]
+        private void ScrollToEnhanced()
+        {
+            DebugLogger.Log("VisualBuilderTab", "Scroll to Enhanced requested");
+            ScrollToGroupName = "ENHANCED CARDS";
+        }
+
+        #endregion
 
         #region Commands
 
@@ -326,48 +566,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand RemoveFromMustCommand { get; }
         public ICommand RemoveFromShouldCommand { get; }
         public ICommand RemoveFromMustNotCommand { get; }
-
-        // Page navigation commands
-        [RelayCommand]
-        private void NextPage()
-        {
-            if (CurrentPageIndex < 3)
-            {
-                CurrentPageIndex++;
-                OnPropertyChanged(nameof(PageIndicator));
-                OnPropertyChanged(nameof(CurrentPageTitle));
-                OnPropertyChanged(nameof(IsJokersPage));
-                OnPropertyChanged(nameof(IsConsumablesPage));
-                OnPropertyChanged(nameof(IsMapPage));
-                OnPropertyChanged(nameof(IsCardsPage));
-            }
-        }
-
-        [RelayCommand]
-        private void PreviousPage()
-        {
-            if (CurrentPageIndex > 0)
-            {
-                CurrentPageIndex--;
-                OnPropertyChanged(nameof(PageIndicator));
-                OnPropertyChanged(nameof(CurrentPageTitle));
-                OnPropertyChanged(nameof(IsJokersPage));
-                OnPropertyChanged(nameof(IsConsumablesPage));
-                OnPropertyChanged(nameof(IsMapPage));
-                OnPropertyChanged(nameof(IsCardsPage));
-            }
-        }
-
-        // Returns list of categories visible on current page
-        public List<string> VisibleCategories =>
-            CurrentPageIndex switch
-            {
-                0 => new List<string> { "Favorites", "Legendary", "Rare", "Uncommon", "Common" }, // JOKERS
-                1 => new List<string> { "Tarot", "Planet", "Spectral" }, // CONSUMABLES
-                2 => new List<string> { "Voucher", "Tag", "Boss" }, // MAP
-                3 => new List<string> { "PlayingCards" }, // CARDS (will need suit subcategories)
-                _ => new List<string>(),
-            };
 
         #endregion
 

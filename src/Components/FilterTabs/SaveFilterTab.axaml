@@ -193,7 +193,6 @@
                             <TextBlock Text="✓"
                                        FontSize="16"
                                        Foreground="{StaticResource White}"
-                                       FontWeight="Bold"
                                        VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding TestResultMessage}"
                                        FontSize="12"
@@ -217,7 +216,7 @@
                             <TextBlock Text="✗"
                                        FontSize="16"
                                        Foreground="{StaticResource White}"
-                                       FontWeight="Bold"
+                                      
                                        VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding TestResultMessage}"
                                        FontSize="12"

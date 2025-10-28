@@ -184,7 +184,7 @@
 
                             <!-- Shadow Flicker Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Shadow Flicker" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Shadow Flicker" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding ShadowFlickerSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
@@ -201,7 +201,7 @@
 
                             <!-- Spin Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Spin" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Spin" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding SpinSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
@@ -218,7 +218,7 @@
 
                             <!-- Twirl Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Twirl" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Twirl" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding TwirlSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
@@ -235,7 +235,7 @@
 
                             <!-- Zoom Thump Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Zoom Thump" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Zoom Thump" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding ZoomThumpSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
@@ -252,7 +252,7 @@
 
                             <!-- Color Saturation Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Color Saturation" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Color Saturation" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding ColorSaturationSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
@@ -269,7 +269,7 @@
 
                             <!-- Beat Pulse Effect -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Beat Pulse" Foreground="#4a4a4a" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Beat Pulse" Foreground="#4a4a4a" FontSize="12"/>
                                 <ComboBox SelectedIndex="{Binding BeatPulseSource}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBoxItem Content="None"/>
                                     <ComboBoxItem Content="Drums (Beat detect)"/>
