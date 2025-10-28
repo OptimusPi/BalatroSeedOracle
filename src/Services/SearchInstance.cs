@@ -5,18 +5,18 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
 using System.Threading;
 using System.Threading.Tasks;
-using DuckDB.NET.Data;
-using Motely;
-using Motely.Filters;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
-using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
+using DuckDB.NET.Data;
+using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
+using Motely;
+using Motely.Filters;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
+using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
 
 namespace BalatroSeedOracle.Services
 {
@@ -39,18 +39,21 @@ namespace BalatroSeedOracle.Services
         private IMotelySearch? _currentSearch;
         private DateTime _searchStartTime;
         private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
-        private readonly ConcurrentQueue<BalatroSeedOracle.Models.SearchResult> _pendingResults = new();
+        private readonly ConcurrentQueue<BalatroSeedOracle.Models.SearchResult> _pendingResults =
+            new();
         private readonly List<string> _consoleHistory = new();
         private readonly object _consoleHistoryLock = new();
         private volatile int _resultCount = 0;
         private readonly List<string> _recentSeeds = new();
         private readonly object _recentSeedsLock = new();
         private Task? _searchTask;
-        private bool _preventStateSave = false;  // Flag to prevent saving state when icon is removed
+        private bool _preventStateSave = false; // Flag to prevent saving state when icon is removed
 
         // Persistent DuckDB connection for database operations
         private readonly DuckDBConnection _connection;
-        private static readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender = new();
+        private static readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender =
+            new();
+
         // Track last successful manual flush (for diagnostics only)
         private DateTime _lastAppenderFlush = DateTime.UtcNow;
 
@@ -70,7 +73,9 @@ namespace BalatroSeedOracle.Services
         public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
         public string FilterName { get; private set; } = "Unknown";
+
         public Motely.Filters.MotelyJsonConfig? GetFilterConfig() => _currentConfig;
+
         public int ResultCount => _resultCount;
         public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
         public string DatabasePath => _dbPath;
@@ -117,7 +122,8 @@ namespace BalatroSeedOracle.Services
                 throw new ArgumentException("dbPath is required", nameof(dbPath));
 
             var dir = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
             _dbPath = dbPath;
             _connectionString = $"Data Source={_dbPath}";
             // Open persistent connection immediately (simple, no EnsureConnection later)
@@ -156,19 +162,28 @@ namespace BalatroSeedOracle.Services
             if (string.IsNullOrEmpty(_dbPath))
             {
                 var filterName = Path.GetFileNameWithoutExtension(configPath);
-                var searchResultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
+                var searchResultsDir = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "SearchResults"
+                );
                 Directory.CreateDirectory(searchResultsDir);
                 _dbPath = Path.Combine(searchResultsDir, $"{filterName}.db");
                 _connectionString = $"Data Source={_dbPath}";
             }
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database configured with {_columnNames.Count} columns at {_dbPath}");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Database configured with {_columnNames.Count} columns at {_dbPath}"
+            );
 
             InitializeDatabase();
         }
 
-        private string FormatColumnName(Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause should)
+        private string FormatColumnName(
+            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause should
+        )
         {
-            if (should == null) return "should";
+            if (should == null)
+                return "should";
 
             // FIXED: Handle both single value and values array
             string name;
@@ -207,7 +222,9 @@ namespace BalatroSeedOracle.Services
             if (string.IsNullOrEmpty(name))
                 name = "column";
 
-            var safeName = System.Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9_]", "_").ToLower();
+            var safeName = System
+                .Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9_]", "_")
+                .ToLower();
 
             if (char.IsDigit(safeName[0]))
                 safeName = "col_" + safeName;
@@ -220,33 +237,43 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var columnDefs = new List<string> { "seed VARCHAR PRIMARY KEY", "score INT" };
-                for (int i = 2; i < _columnNames.Count; i++) columnDefs.Add($"{_columnNames[i]} INT");
+                for (int i = 2; i < _columnNames.Count; i++)
+                    columnDefs.Add($"{_columnNames[i]} INT");
 
                 using (var createTable = _connection.CreateCommand())
                 {
-                    createTable.CommandText = $@"CREATE TABLE IF NOT EXISTS results (
+                    createTable.CommandText =
+                        $@"CREATE TABLE IF NOT EXISTS results (
                         {string.Join(",\n                        ", columnDefs)}
                     )";
                     createTable.ExecuteNonQuery();
                 }
                 using (var createIndex = _connection.CreateCommand())
                 {
-                    createIndex.CommandText = "CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);";
+                    createIndex.CommandText =
+                        "CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);";
                     createIndex.ExecuteNonQuery();
                 }
                 using (var createMeta = _connection.CreateCommand())
                 {
-                    createMeta.CommandText = "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )";
+                    createMeta.CommandText =
+                        "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )";
                     createMeta.ExecuteNonQuery();
                 }
                 // Appenders created per-thread as needed - no global appender!
                 // DuckDB PRIMARY KEY handles duplicates automatically
                 _dbInitialized = true;
-                DebugLogger.Log($"SearchInstance[{_searchId}]", $"Database initialized with {_columnNames.Count} columns");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    $"Database initialized with {_columnNames.Count} columns"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to initialize database: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to initialize database: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -260,7 +287,13 @@ namespace BalatroSeedOracle.Services
                 var appender = _threadAppender.Value;
                 if (appender != null)
                 {
-                    var closeMethod = appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    var closeMethod = appender
+                        .GetType()
+                        .GetMethod(
+                            "Close",
+                            System.Reflection.BindingFlags.Public
+                                | System.Reflection.BindingFlags.Instance
+                        );
                     closeMethod?.Invoke(appender, null);
                     // Recreate appender for continued use
                     _threadAppender.Value = _connection.CreateAppender("results");
@@ -269,13 +302,17 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"ForceFlush failed: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"ForceFlush failed: {ex.Message}"
+                );
             }
         }
 
         private void AddSearchResult(SearchResult result)
         {
-            if (!_dbInitialized) return;
+            if (!_dbInitialized)
+                return;
 
             try
             {
@@ -294,7 +331,8 @@ namespace BalatroSeedOracle.Services
                 int tallyCount = _columnNames.Count - 2;
                 for (int i = 0; i < tallyCount; i++)
                 {
-                    int val = (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
+                    int val =
+                        (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
                     row.AppendValue(val);
                 }
                 row.EndRow();
@@ -304,20 +342,28 @@ namespace BalatroSeedOracle.Services
                 // DuckDB PRIMARY KEY handles duplicates automatically
                 if (!ex.Message.Contains("PRIMARY KEY") && !ex.Message.Contains("Duplicate key"))
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Insert failed: {ex.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Insert failed: {ex.Message}"
+                    );
                 }
             }
         }
 
-        public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetResultsPageAsync(int offset, int limit)
+        public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetResultsPageAsync(
+            int offset,
+            int limit
+        )
         {
             var list = new List<BalatroSeedOracle.Models.SearchResult>();
-            if (!_dbInitialized) return list;
+            if (!_dbInitialized)
+                return list;
 
             // Rely on row.EndRow() visibility; do NOT close appender mid-search.
 
             using var cmd = _connection.CreateCommand();
-            cmd.CommandText = $"SELECT * FROM results ORDER BY score DESC LIMIT {limit} OFFSET {offset}";
+            cmd.CommandText =
+                $"SELECT * FROM results ORDER BY score DESC LIMIT {limit} OFFSET {offset}";
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -341,7 +387,14 @@ namespace BalatroSeedOracle.Services
                         }
                     }
                 }
-                list.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
+                list.Add(
+                    new BalatroSeedOracle.Models.SearchResult
+                    {
+                        Seed = seed,
+                        TotalScore = score,
+                        Scores = scores,
+                    }
+                );
             }
             return list;
         }
@@ -355,14 +408,22 @@ namespace BalatroSeedOracle.Services
         /// <param name="orderBy">seed | score | tally{n}</param>
         /// <param name="ascending">True for ASC, false for DESC</param>
         /// <param name="limit">Max rows to return (default 1000)</param>
-        public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit = 1000)
+        public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetTopResultsAsync(
+            string orderBy,
+            bool ascending,
+            int limit = 1000
+        )
         {
             var results = new List<BalatroSeedOracle.Models.SearchResult>();
-            if (limit <= 0) return results;
+            if (limit <= 0)
+                return results;
 
             if (!_dbInitialized)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync called before DB init complete");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "GetTopResultsAsync called before DB init complete"
+                );
                 return results;
             }
 
@@ -373,8 +434,10 @@ namespace BalatroSeedOracle.Services
             string resolvedColumn = "score"; // default
             if (!string.IsNullOrEmpty(orderBy))
             {
-                if (orderBy.Equals("seed", StringComparison.OrdinalIgnoreCase)) resolvedColumn = "seed";
-                else if (orderBy.Equals("score", StringComparison.OrdinalIgnoreCase)) resolvedColumn = "score";
+                if (orderBy.Equals("seed", StringComparison.OrdinalIgnoreCase))
+                    resolvedColumn = "seed";
+                else if (orderBy.Equals("score", StringComparison.OrdinalIgnoreCase))
+                    resolvedColumn = "score";
                 else if (orderBy.StartsWith("tally", StringComparison.OrdinalIgnoreCase))
                 {
                     if (int.TryParse(orderBy.Substring(5), out int tallyIndex))
@@ -389,14 +452,16 @@ namespace BalatroSeedOracle.Services
                 else
                 {
                     // If a raw column name supplied and matches list, accept
-                    if (_columnNames.Contains(orderBy)) resolvedColumn = orderBy;
+                    if (_columnNames.Contains(orderBy))
+                        resolvedColumn = orderBy;
                 }
             }
 
             // Rely on row.EndRow() visibility; appender stays open during active search.
 
             using var cmd = _connection.CreateCommand();
-            cmd.CommandText = $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT {limit}";
+            cmd.CommandText =
+                $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT {limit}";
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -420,11 +485,21 @@ namespace BalatroSeedOracle.Services
                         }
                     }
                 }
-                results.Add(new BalatroSeedOracle.Models.SearchResult { Seed = seed, TotalScore = score, Scores = scores });
+                results.Add(
+                    new BalatroSeedOracle.Models.SearchResult
+                    {
+                        Seed = seed,
+                        TotalScore = score,
+                        Scores = scores,
+                    }
+                );
             }
             if (results.Count == 0)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "GetTopResultsAsync returned 0 rows");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "GetTopResultsAsync returned 0 rows"
+                );
             }
             return results;
         }
@@ -452,20 +527,26 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized) return 0;
+                if (!_dbInitialized)
+                    return 0;
                 var count = await GetResultCountAsync();
-                if (count == 0) return 0;
+                if (count == 0)
+                    return 0;
 
                 // Use DuckDB native CSV export - MUCH faster and simpler!
                 using var cmd = _connection.CreateCommand();
-                cmd.CommandText = $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{filePath.Replace("'", "''")}' (HEADER true, DELIMITER ',')";
+                cmd.CommandText =
+                    $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{filePath.Replace("'", "''")}' (HEADER true, DELIMITER ',')";
                 await cmd.ExecuteNonQueryAsync();
 
                 return count;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to export results: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to export results: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -474,16 +555,21 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized) return null;
+                if (!_dbInitialized)
+                    return null;
                 using var cmd = _connection.CreateCommand();
                 cmd.CommandText = "SELECT value FROM search_meta WHERE key='last_batch'";
                 var val = await cmd.ExecuteScalarAsync();
-                if (val == null) return null;
+                if (val == null)
+                    return null;
                 return ulong.TryParse(val.ToString(), out var batch) ? batch : null;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to get last batch: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to get last batch: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -492,15 +578,20 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized) return;
+                if (!_dbInitialized)
+                    return;
                 using var cmd = _connection.CreateCommand();
-                cmd.CommandText = "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)";
+                cmd.CommandText =
+                    "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)";
                 cmd.Parameters.Add(new DuckDBParameter(batchNumber.ToString()));
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to save last batch: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to save last batch: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -515,7 +606,10 @@ namespace BalatroSeedOracle.Services
             CancellationToken cancellationToken = default
         )
         {
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"StartSearchFromFileAsync ENTERED! configPath={configPath}");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"StartSearchFromFileAsync ENTERED! configPath={configPath}"
+            );
 
             if (_isRunning)
             {
@@ -538,21 +632,35 @@ namespace BalatroSeedOracle.Services
 
                     if (filterModified > dbModified)
                     {
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Filter modified since last search - invalidating database");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"Filter modified since last search - invalidating database"
+                        );
                         try
                         {
                             File.Delete(_dbPath);
-                            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Deleted outdated database: {_dbPath}");
+                            DebugLogger.LogImportant(
+                                $"SearchInstance[{_searchId}]",
+                                $"Deleted outdated database: {_dbPath}"
+                            );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to delete outdated database: {ex.Message}");
+                            DebugLogger.LogError(
+                                $"SearchInstance[{_searchId}]",
+                                $"Failed to delete outdated database: {ex.Message}"
+                            );
                         }
                     }
                 }
 
                 // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
-                if (!Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(configPath, out var ouijaConfig))
+                if (
+                    !Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
+                        configPath,
+                        out var ouijaConfig
+                    )
+                )
                 {
                     throw new Exception($"Failed to load config from {configPath}");
                 }
@@ -597,27 +705,48 @@ namespace BalatroSeedOracle.Services
                 };
 
                 // Database should already be configured by StartSearchAsync
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database properly configured with {_columnNames.Count} columns");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Database properly configured with {_columnNames.Count} columns"
+                );
 
                 // Register direct callback with Motely.Filters.MotelyJsonFilterDesc
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Registering OnResultFound callback");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    "Registering OnResultFound callback"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses"
+                );
 
                 // Log the actual filter content for debugging
                 if (ouijaConfig.Must != null)
                 {
                     foreach (var must in ouijaConfig.Must)
                     {
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  MUST: Type={must.Type}, Value={must.Value}");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"  MUST: Type={must.Type}, Value={must.Value}"
+                        );
                     }
                 }
                 if (ouijaConfig.Should != null)
                 {
                     foreach (var should in ouijaConfig.Should)
                     {
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  SHOULD: Type={should.Type}, Value={should.Value}, Score={should.Score}");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"  SHOULD: Type={should.Type}, Value={should.Value}, Score={should.Score}"
+                        );
                     }
                 }
 
@@ -676,12 +805,24 @@ namespace BalatroSeedOracle.Services
             CancellationToken cancellationToken = default
         )
         {
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"StartSearchAsync ENTERED! ConfigPath={criteria.ConfigPath}");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"StartSearchAsync ENTERED! ConfigPath={criteria.ConfigPath}"
+            );
 
             // Load the config from file
             if (string.IsNullOrEmpty(criteria.ConfigPath))
             {
-                throw new ArgumentException("Config path is required");
+                var errorMsg = "Config path is required but was null or empty";
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
+                throw new ArgumentException(errorMsg);
+            }
+
+            if (!System.IO.File.Exists(criteria.ConfigPath))
+            {
+                var errorMsg = $"Config file not found: {criteria.ConfigPath}";
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
+                throw new System.IO.FileNotFoundException(errorMsg, criteria.ConfigPath);
             }
 
             DebugLogger.Log(
@@ -690,36 +831,75 @@ namespace BalatroSeedOracle.Services
             );
 
             // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
-            if (!Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(criteria.ConfigPath, out var config))
+            if (
+                !Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
+                    criteria.ConfigPath,
+                    out var config
+                )
+            )
             {
-                throw new Exception($"Failed to load config from {criteria.ConfigPath}");
+                var errorMsg = $"Failed to load or parse config from {criteria.ConfigPath}";
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
+                throw new Exception(errorMsg);
             }
 
+            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Config loaded successfully: {config.Name}");
+
             // DEBUG: Log what was actually deserialized
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"JSON DESERIALIZATION RESULT:");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Name: '{config.Name}'");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Must: {(config.Must?.Count ?? 0)} items");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.Should: {(config.Should?.Count ?? 0)} items");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Config.MustNot: {(config.MustNot?.Count ?? 0)} items");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"JSON DESERIALIZATION RESULT:"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Name: '{config.Name}'"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Must: {(config.Must?.Count ?? 0)} items"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Should: {(config.Should?.Count ?? 0)} items"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.MustNot: {(config.MustNot?.Count ?? 0)} items"
+            );
 
             string? rawJsonForDebug = null; // only load if needed
 
             if (config.Should != null && config.Should.Count > 0)
             {
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  First Should item: Type='{config.Should[0].Type}', Value='{config.Should[0].Value}'");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"  First Should item: Type='{config.Should[0].Type}', Value='{config.Should[0].Value}'"
+                );
             }
             else
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  PROBLEM: Should array is null or empty after deserialization!");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"  PROBLEM: Should array is null or empty after deserialization!"
+                );
                 try
                 {
                     rawJsonForDebug = System.IO.File.ReadAllText(criteria.ConfigPath);
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  Raw JSON length: {rawJsonForDebug.Length} characters");
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  First 500 chars of JSON: {rawJsonForDebug.Substring(0, Math.Min(500, rawJsonForDebug.Length))}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"  Raw JSON length: {rawJsonForDebug.Length} characters"
+                    );
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"  First 500 chars of JSON: {rawJsonForDebug.Substring(0, Math.Min(500, rawJsonForDebug.Length))}"
+                    );
                 }
                 catch (Exception rx)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"  Failed to read raw JSON for debug: {rx.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"  Failed to read raw JSON for debug: {rx.Message}"
+                    );
                 }
             }
 
@@ -729,23 +909,44 @@ namespace BalatroSeedOracle.Services
 
             // CRITICAL: Configure the SearchHistoryService BEFORE anything else!
             // This must happen before StartSearchFromFileAsync to ensure proper database schema
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Configuring SearchHistoryService with filter config");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Filter config loaded: Name='{config.Name}'");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Must clauses: {config.Must?.Count ?? 0}");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  Should clauses: {config.Should?.Count ?? 0}");
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  MustNot clauses: {config.MustNot?.Count ?? 0}");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                "Configuring SearchHistoryService with filter config"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Filter config loaded: Name='{config.Name}'"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Must clauses: {config.Must?.Count ?? 0}"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Should clauses: {config.Should?.Count ?? 0}"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  MustNot clauses: {config.MustNot?.Count ?? 0}"
+            );
 
             if (config.Should != null && config.Should.Count > 0)
             {
                 for (int i = 0; i < config.Should.Count; i++)
                 {
                     var should = config.Should[i];
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"    Should[{i}]: Type={should.Type}, Value={should.Value}, Score={should.Score}");
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"    Should[{i}]: Type={should.Type}, Value={should.Value}, Score={should.Score}"
+                    );
                 }
             }
 
             SetupDatabase(config, criteria.ConfigPath);
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Database configured with {_columnNames.Count} columns");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Database configured with {_columnNames.Count} columns"
+            );
 
             // Auto-resume logic now that DB is initialized
             if (criteria.StartBatch == 0 && !criteria.EnableDebugOutput)
@@ -756,12 +957,18 @@ namespace BalatroSeedOracle.Services
                     if (last.HasValue && last.Value > 0)
                     {
                         criteria.StartBatch = last.Value;
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Resuming from saved batch {last.Value:N0}");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"Resuming from saved batch {last.Value:N0}"
+                        );
                     }
                 }
                 catch (Exception resumeEx)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Resume check failed: {resumeEx.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Resume check failed: {resumeEx.Message}"
+                    );
                 }
             }
 
@@ -776,11 +983,16 @@ namespace BalatroSeedOracle.Services
                 StartBatch = criteria.StartBatch,
                 EndBatch = criteria.EndBatch,
                 DebugMode = criteria.EnableDebugOutput,
-                DebugSeed = criteria.DebugSeed
+                DebugSeed = criteria.DebugSeed,
             };
 
             // Call the main search method with the file path
-            await StartSearchFromFileAsync(criteria.ConfigPath, searchConfig, progress, cancellationToken);
+            await StartSearchFromFileAsync(
+                criteria.ConfigPath,
+                searchConfig,
+                progress,
+                cancellationToken
+            );
         }
 
         public void PauseSearch()
@@ -800,7 +1012,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_isRunning)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running, cannot resume");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "Search already running, cannot resume"
+                );
                 return;
             }
 
@@ -823,17 +1038,17 @@ namespace BalatroSeedOracle.Services
                 Stake = resumeState.Stake,
                 StartBatch = resumeState.LastCompletedBatch + 1,
                 EndBatch = resumeState.EndBatch,
-                EnableDebugOutput = false
+                EnableDebugOutput = false,
             };
-            
+
             // Update our saved config path
             ConfigPath = resumeState.ConfigPath ?? string.Empty;
-            
+
             DebugLogger.Log(
                 $"SearchInstance[{_searchId}]",
                 $"Resuming search from batch {resumeCriteria.StartBatch} to {resumeCriteria.EndBatch}"
             );
-            
+
             // Restart the search from the saved position
             StartSearchAsync(resumeCriteria).ConfigureAwait(false);
         }
@@ -851,15 +1066,23 @@ namespace BalatroSeedOracle.Services
 
                 _preventStateSave = preventStateSave;
 
-
                 // Flush and close thread-local appenders
                 try
                 {
                     var appender = _threadAppender.Value;
                     if (appender != null)
                     {
-                        DebugLogger.Log($"SearchInstance[{_searchId}]", "Closing thread-local DuckDB appender...");
-                        var closeMethod = appender.GetType().GetMethod("Close", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        DebugLogger.Log(
+                            $"SearchInstance[{_searchId}]",
+                            "Closing thread-local DuckDB appender..."
+                        );
+                        var closeMethod = appender
+                            .GetType()
+                            .GetMethod(
+                                "Close",
+                                System.Reflection.BindingFlags.Public
+                                    | System.Reflection.BindingFlags.Instance
+                            );
                         closeMethod?.Invoke(appender, null);
                         appender.Dispose();
                         _threadAppender.Value = null;
@@ -867,7 +1090,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error closing appenders: {ex.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Error closing appenders: {ex.Message}"
+                    );
                 }
 
                 // Flush any pending search state to disk before stopping (unless prevented)
@@ -890,7 +1116,10 @@ namespace BalatroSeedOracle.Services
                         // Wait up to 1 second for the task to complete
                         if (!_searchTask.Wait(1000))
                         {
-                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search task did not complete within timeout");
+                            DebugLogger.LogError(
+                                $"SearchInstance[{_searchId}]",
+                                "Search task did not complete within timeout"
+                            );
                         }
                     }
                     catch (AggregateException)
@@ -922,16 +1151,25 @@ namespace BalatroSeedOracle.Services
                         if (!disposeTask.Wait(TimeSpan.FromMilliseconds(200)))
                         {
                             // Don't wait, just log and continue
-                            DebugLogger.LogError($"SearchInstance[{_searchId}]", "Search disposal timed out (abandoning)");
+                            DebugLogger.LogError(
+                                $"SearchInstance[{_searchId}]",
+                                "Search disposal timed out (abandoning)"
+                            );
                         }
                         else
                         {
-                            DebugLogger.Log($"SearchInstance[{_searchId}]", "Search disposed successfully");
+                            DebugLogger.Log(
+                                $"SearchInstance[{_searchId}]",
+                                "Search disposed successfully"
+                            );
                         }
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing search: {ex.Message}");
+                        DebugLogger.LogError(
+                            $"SearchInstance[{_searchId}]",
+                            $"Error disposing search: {ex.Message}"
+                        );
                     }
                     finally
                     {
@@ -941,16 +1179,35 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private Dictionary<FilterCategory, List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>> GroupClausesByCategory(List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses)
+        private Dictionary<
+            FilterCategory,
+            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+        > GroupClausesByCategory(
+            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses
+        )
         {
             // Early validation - no messy checks later
             if (clauses == null || clauses.Count == 0)
-                return new Dictionary<FilterCategory, List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>>();
+                return new Dictionary<
+                    FilterCategory,
+                    List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+                >();
 
-            var clausesByCategory = new Dictionary<FilterCategory, List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>>();
+            var clausesByCategory =
+                new Dictionary<
+                    FilterCategory,
+                    List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
+                >();
 
             foreach (var clause in clauses)
             {
+                // Skip logical operators (And/Or) - they're handled in scoring, not filtering
+                if (clause.ItemTypeEnum == MotelyFilterItemType.And || clause.ItemTypeEnum == MotelyFilterItemType.Or)
+                {
+                    DebugLogger.Log($"SearchInstance[{_searchId}]", $"Skipping logical operator clause: {clause.ItemTypeEnum}");
+                    continue;
+                }
+
                 FilterCategory category = clause.ItemTypeEnum switch
                 {
                     MotelyFilterItemType.SoulJoker => FilterCategory.SoulJoker,
@@ -960,21 +1217,32 @@ namespace BalatroSeedOracle.Services
                     MotelyFilterItemType.PlanetCard => FilterCategory.PlanetCard,
                     MotelyFilterItemType.SpectralCard => FilterCategory.SpectralCard,
                     MotelyFilterItemType.PlayingCard => FilterCategory.PlayingCard,
-                    MotelyFilterItemType.SmallBlindTag or MotelyFilterItemType.BigBlindTag => FilterCategory.Tag,
-                    _ => throw new ArgumentException($"Unsupported filter item type: {clause.ItemTypeEnum}")
+                    MotelyFilterItemType.Boss => FilterCategory.Boss,
+                    MotelyFilterItemType.SmallBlindTag or MotelyFilterItemType.BigBlindTag =>
+                        FilterCategory.Tag,
+                    _ => throw new ArgumentException(
+                        $"Unsupported filter item type: {clause.ItemTypeEnum}"
+                    ),
                 };
 
                 if (!clausesByCategory.ContainsKey(category))
                 {
-                    clausesByCategory[category] = new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>();
+                    clausesByCategory[category] =
+                        new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>();
                 }
                 clausesByCategory[category].Add(clause);
             }
 
-            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Clause analysis: {clausesByCategory.Count} categories found");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Clause analysis: {clausesByCategory.Count} categories found"
+            );
             foreach (var kvp in clausesByCategory)
             {
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"  {kvp.Key}: {kvp.Value.Count} clauses");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"  {kvp.Key}: {kvp.Value.Count} clauses"
+                );
             }
 
             return clausesByCategory;
@@ -996,7 +1264,10 @@ namespace BalatroSeedOracle.Services
                 // Pre-flight validation
                 if (config == null)
                 {
-                    throw new ArgumentNullException(nameof(config), "Search configuration cannot be null");
+                    throw new ArgumentNullException(
+                        nameof(config),
+                        "Search configuration cannot be null"
+                    );
                 }
 
                 try
@@ -1005,15 +1276,16 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (ArgumentException ex)
                 {
-                    progress?.Report(new SearchProgress
-                    {
-                        Message = $"Filter validation failed:\n{ex.Message}",
-                        HasError = true,
-                        IsComplete = true
-                    });
+                    progress?.Report(
+                        new SearchProgress
+                        {
+                            Message = $"Filter validation failed:\n{ex.Message}",
+                            HasError = true,
+                            IsComplete = true,
+                        }
+                    );
                     throw;
                 }
-
 
                 // Cancellation is fully implemented via CancellationToken
 
@@ -1021,23 +1293,41 @@ namespace BalatroSeedOracle.Services
                 Motely.DebugLogger.IsEnabled = criteria.EnableDebugOutput;
                 if (criteria.EnableDebugOutput)
                 {
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Debug mode enabled - Motely DebugLogger activated");
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        "Debug mode enabled - Motely DebugLogger activated"
+                    );
                 }
 
                 // Create filter descriptor with new API
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Creating MotelyJsonFilterDesc with config: {config.Name ?? "unnamed"}");
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Creating MotelyJsonFilterDesc with config: {config.Name ?? "unnamed"}"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses"
+                );
 
                 // Combine all clauses for the new API
                 var allClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-                if (config.Must != null) allClauses.AddRange(config.Must);
-                if (config.Should != null) allClauses.AddRange(config.Should);
-                if (config.MustNot != null) allClauses.AddRange(config.MustNot);
+                if (config.Must != null)
+                    allClauses.AddRange(config.Must);
+                if (config.Should != null)
+                    allClauses.AddRange(config.Should);
+                if (config.MustNot != null)
+                    allClauses.AddRange(config.MustNot);
 
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔧 TOTAL CLAUSES FOR MOTELY: {allClauses.Count}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"🔧 TOTAL CLAUSES FOR MOTELY: {allClauses.Count}"
+                );
                 foreach (var clause in allClauses)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔧   Clause: Type={clause.Type}, Value={clause.Value}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"🔧   Clause: Type={clause.Type}, Value={clause.Value}"
+                    );
                 }
 
                 // Group clauses by category for specialized vectorized filters
@@ -1048,82 +1338,187 @@ namespace BalatroSeedOracle.Services
                     throw new Exception("No valid clauses found for filtering");
                 }
 
-                // Create base filter with detected category
-                var categories = clausesByCategory.Keys.ToList();
-                var primaryCategory = categories[0];
-                var primaryClauses = clausesByCategory[primaryCategory];
-
-                // Use shared SpecializedFilterFactory
-                var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(primaryCategory, primaryClauses);
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Optimized filter: {primaryCategory} with {primaryClauses.Count} clauses");
-
-                // Create scoring config (only SHOULD clauses for scoring)  
+                // Create scoring config (only SHOULD clauses for scoring)
                 var scoringConfig = new MotelyJsonConfig
                 {
                     Name = config.Name,
                     Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                     Should = config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 };
 
                 // Propagate top-level scoring mode and initialize computed fields
                 scoringConfig.Mode = config.Mode;
                 scoringConfig.PostProcess();
 
-                Action<MotelySeedScoreTally> dummyCallback = _ => { }; // Empty callback for interface
-                var scoreDesc = new MotelyJsonSeedScoreDesc(scoringConfig, criteria.MinScore, criteria.MinScore == 0, dummyCallback);
-
-                // Use interface approach for specialized filter compatibility
-                var searchSettings = Motely.Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
-                    .WithThreadCount(criteria.ThreadCount)
-                    .WithBatchCharacterCount(criteria.BatchSize)
-                    .WithStartBatchIndex((long)criteria.StartBatch)
-                    .WithEndBatchIndex((long)criteria.EndBatch)
-                    .WithSeedScoreProvider(scoreDesc);
-
-
-                // Chain additional specialized filters for remaining categories
-                for (int i = 1; i < categories.Count; i++)
+                // Create result callback that writes to DuckDB
+                Action<MotelySeedScoreTally> resultCallback = (result) =>
                 {
-                    var category = categories[i];
-                    var clauses = clausesByCategory[category];
-                    var additionalFilter = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(category, clauses);
-                    searchSettings.WithAdditionalFilter(additionalFilter);
+                    try
+                    {
+                        // Increment result counter
+                        Interlocked.Increment(ref _resultCount);
 
-                    DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Chained filter: {category} with {clauses.Count} clauses");
+                        // Convert Motely result to SearchResult
+                        var searchResult = new SearchResult
+                        {
+                            Seed = result.Seed,
+                            TotalScore = result.Score,
+                            Scores = result.TallyColumns?.ToArray()
+                        };
+
+                        // Write to DuckDB
+                        AddSearchResult(searchResult);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            $"SearchInstance[{_searchId}]",
+                            $"Failed to process result {result.Seed}: {ex.Message}"
+                        );
+                    }
+                };
+
+                var scoreDesc = new MotelyJsonSeedScoreDesc(
+                    scoringConfig,
+                    criteria.MinScore,
+                    criteria.MinScore == 0,
+                    resultCallback
+                );
+
+                // Detect how many filter categories we have
+                var categories = clausesByCategory.Keys.ToList();
+
+                IMotelySearch search;
+
+                // BYPASS BROKEN CHAINING: Use composite filter for multiple categories
+                if (categories.Count > 1)
+                {
+                    // Multiple categories - use composite filter to avoid broken chaining
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"[COMPOSITE] Creating composite filter with {categories.Count} filter types"
+                    );
+
+                    // Get MUST clauses only (no Should/MustNot for filtering)
+                    var mustClauses = config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+
+                    var compositeFilter = new MotelyCompositeFilterDesc(mustClauses);
+                    var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
+
+                    // Apply all search settings
+                    compositeSettings = compositeSettings
+                        .WithThreadCount(criteria.ThreadCount)
+                        .WithBatchCharacterCount(criteria.BatchSize)
+                        .WithStartBatchIndex((long)criteria.StartBatch)
+                        .WithEndBatchIndex((long)criteria.EndBatch);
+
+                    // Apply deck/stake if specified
+                    if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck compositeDeck))
+                        compositeSettings = compositeSettings.WithDeck(compositeDeck);
+                    if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake compositeStake))
+                        compositeSettings = compositeSettings.WithStake(compositeStake);
+
+                    // Apply scoring if needed
+                    bool compositeNeedsScoring = (config.Should?.Count > 0);
+                    if (compositeNeedsScoring)
+                    {
+                        compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+                        compositeSettings = compositeSettings.WithCsvOutput(true);
+                    }
+
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"Starting composite search with {criteria.ThreadCount} threads"
+                    );
+
+                    // Start search with composite filter (no chaining needed!)
+                    search = compositeSettings.WithSequentialSearch().Start();
                 }
+                else
+                {
+                    // Single category - use optimized specialized filter
+                    var primaryCategory = categories[0];
+                    var primaryClauses = clausesByCategory[primaryCategory];
 
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Starting search with {criteria.ThreadCount} threads");
+                    var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(
+                        primaryCategory,
+                        primaryClauses
+                    );
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"Optimized single-category filter: {primaryCategory} with {primaryClauses.Count} clauses"
+                    );
 
-                // Create search with specialized filters
-                var search = searchSettings.Start();
+                    // Use interface approach for specialized filter compatibility
+                    var searchSettings = Motely
+                        .Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
+                        .WithThreadCount(criteria.ThreadCount)
+                        .WithBatchCharacterCount(criteria.BatchSize)
+                        .WithStartBatchIndex((long)criteria.StartBatch)
+                        .WithEndBatchIndex((long)criteria.EndBatch)
+                        .WithSeedScoreProvider(scoreDesc);
+
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"Starting single-category search with {criteria.ThreadCount} threads"
+                    );
+
+                    // Create search with single specialized filter
+                    search = searchSettings.Start();
+                }
                 _currentSearch = search;
 
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Specialized search created with {primaryCategory} filter");
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}");
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🚀 Search started! New status: {_currentSearch.Status}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"🚀 Search created with {categories.Count} filter category(ies): {string.Join(", ", categories)}"
+                );
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"🚀 Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}"
+                );
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"🚀 Search started! New status: {_currentSearch.Status}"
+                );
 
                 // Wait for search completion
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"🔄 Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}");
-                while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"🔄 Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}"
+                );
+                while (
+                    _currentSearch.Status == MotelySearchStatus.Running
+                    && !cancellationToken.IsCancellationRequested
+                    && _isRunning
+                )
                 {
                     // Report progress
                     var completedBatches = _currentSearch.CompletedBatchCount;
-                    var progressPercent = ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch)) * 100.0;
+                    var progressPercent =
+                        ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch))
+                        * 100.0;
 
                     // Calculate speed - account for StartBatch offset and edge cases
                     var elapsed = DateTime.UtcNow - _searchStartTime;
                     var actualBatchesProcessed = Math.Max(0, completedBatches); // Ensure non-negative
-                    var seedsSearched = (ulong)(actualBatchesProcessed * Math.Pow(35, criteria.BatchSize));
-                    
+                    var seedsSearched = (ulong)(
+                        actualBatchesProcessed * Math.Pow(35, criteria.BatchSize)
+                    );
+
                     // Prevent division by zero and negative/invalid elapsed time
-                    var seedsPerMs = elapsed.TotalMilliseconds > 0 ? seedsSearched / elapsed.TotalMilliseconds : 0;
-                    
+                    var seedsPerMs =
+                        elapsed.TotalMilliseconds > 0
+                            ? seedsSearched / elapsed.TotalMilliseconds
+                            : 0;
+
                     // Debug logging for negative seeds/ms issue
                     if (seedsPerMs < 0)
                     {
-                        DebugLogger.LogError($"SearchInstance[{_searchId}]", 
-                            $"Negative seeds/ms detected: seedsSearched={seedsSearched}, elapsed={elapsed.TotalMilliseconds}ms, completedBatches={completedBatches}");
+                        DebugLogger.LogError(
+                            $"SearchInstance[{_searchId}]",
+                            $"Negative seeds/ms detected: seedsSearched={seedsSearched}, elapsed={elapsed.TotalMilliseconds}ms, completedBatches={completedBatches}"
+                        );
                         seedsPerMs = 0; // Reset to 0 to avoid displaying negative values
                     }
 
@@ -1133,9 +1528,9 @@ namespace BalatroSeedOracle.Services
                         PercentComplete = progressPercent,
                         SeedsPerMillisecond = seedsPerMs,
                         Message = $"Searched {completedBatches:N0} batches",
-                        ResultsFound = _resultCount
+                        ResultsFound = _resultCount,
                     };
-                    
+
                     progress?.Report(currentProgress);
                     ProgressUpdated?.Invoke(this, currentProgress);
 
@@ -1145,12 +1540,18 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (OperationCanceledException)
                     {
-                        DebugLogger.LogImportant($"SearchInstance[{_searchId}]", "Search cancelled");
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            "Search cancelled"
+                        );
                         break;
                     }
                 }
 
-                DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"Search completed with status: {_currentSearch.Status}");
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search completed with status: {_currentSearch.Status}"
+                );
             }
             catch (OperationCanceledException)
             {
@@ -1158,25 +1559,33 @@ namespace BalatroSeedOracle.Services
                 var cancelMessage = "Search cancelled by user";
                 DebugLogger.Log($"SearchInstance[{_searchId}]", cancelMessage);
                 AddToConsole($"⚠️ {cancelMessage}");
-                progress?.Report(new SearchProgress
-                {
-                    Message = cancelMessage,
-                    HasError = false,
-                    IsComplete = true
-                });
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = cancelMessage,
+                        HasError = false,
+                        IsComplete = true,
+                    }
+                );
             }
             catch (OutOfMemoryException oom)
             {
                 // Critical memory error
-                var memoryError = "Search failed: Out of memory. Try reducing batch size or thread count.";
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Out of memory: {oom.Message}");
+                var memoryError =
+                    "Search failed: Out of memory. Try reducing batch size or thread count.";
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Out of memory: {oom.Message}"
+                );
                 AddToConsole($"❌ {memoryError}");
-                progress?.Report(new SearchProgress
-                {
-                    Message = memoryError,
-                    HasError = true,
-                    IsComplete = true
-                });
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = memoryError,
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -1186,10 +1595,13 @@ namespace BalatroSeedOracle.Services
                     ArgumentException => $"Invalid search parameters: {ex.Message}",
                     InvalidOperationException => $"Search configuration error: {ex.Message}",
                     System.IO.IOException => $"File system error: {ex.Message}",
-                    _ => $"Unexpected error: {ex.Message}"
+                    _ => $"Unexpected error: {ex.Message}",
                 };
 
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"RunSearchInProcess exception: {ex}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"RunSearchInProcess exception: {ex}"
+                );
                 AddToConsole($"❌ {userMessage}");
 
                 // Log stack trace for debugging
@@ -1198,12 +1610,14 @@ namespace BalatroSeedOracle.Services
                     AddToConsole($"Stack trace:\n{ex.StackTrace}");
                 }
 
-                progress?.Report(new SearchProgress
-                {
-                    Message = userMessage,
-                    HasError = true,
-                    IsComplete = true
-                });
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = userMessage,
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
             }
             finally
             {
@@ -1216,11 +1630,13 @@ namespace BalatroSeedOracle.Services
 
         private void SaveSearchState(ulong completedBatch, ulong totalBatches, ulong endBatch)
         {
-            if (_preventStateSave) return; // Don't save if we're removing the icon
+            if (_preventStateSave)
+                return; // Don't save if we're removing the icon
 
             try
             {
-                if (_currentConfig == null || _currentSearchConfig == null) return;
+                if (_currentConfig == null || _currentSearchConfig == null)
+                    return;
 
                 var state = new SearchResumeState
                 {
@@ -1233,24 +1649,29 @@ namespace BalatroSeedOracle.Services
                     Deck = _currentSearchConfig.Deck,
                     Stake = _currentSearchConfig.Stake,
                     LastActiveTime = DateTime.UtcNow,
-                    TotalBatches = totalBatches
+                    TotalBatches = totalBatches,
                 };
 
                 _userProfileService?.SaveSearchState(state);
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to save search state: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to save search state: {ex.Message}"
+                );
             }
         }
-
 
         public void Dispose()
         {
             // First stop the search if it's running
             if (_isRunning)
             {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Dispose called while running - forcing stop");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    "Dispose called while running - forcing stop"
+                );
                 StopSearch();
 
                 // Wait a bit for graceful shutdown
@@ -1265,12 +1686,13 @@ namespace BalatroSeedOracle.Services
                     // Give it one more chance to complete
                     _searchTask.Wait(100);
                 }
-                catch { /* ignore */ }
+                catch
+                { /* ignore */
+                }
                 _searchTask = null;
             }
 
             _cancellationTokenSource?.Dispose();
-
 
             // Dispose thread-local appenders and connection
             try
@@ -1300,7 +1722,9 @@ namespace BalatroSeedOracle.Services
                         _currentSearch.Dispose();
                     }
                 }
-                catch { /* ignore disposal errors */ }
+                catch
+                { /* ignore disposal errors */
+                }
                 _currentSearch = null;
             }
 
