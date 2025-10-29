@@ -93,6 +93,46 @@
         <SolidColorBrush x:Key="ResponsiveCardRed">#ff4c40</SolidColorBrush>
         <SolidColorBrush x:Key="ResponsiveCardRedHover">#a02721</SolidColorBrush>
 
+        <!-- Additional colors for UI elements -->
+        <SolidColorBrush x:Key="NeonGreen">#00FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGold">#FFD700</SolidColorBrush>
+        <SolidColorBrush x:Key="LightGrey2">#CCCCCC</SolidColorBrush>
+        <SolidColorBrush x:Key="Cyan">#00FFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="CyanHighlight">#6ECFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="CardBrown">#8B7355</SolidColorBrush>
+        <SolidColorBrush x:Key="CardCream">#F4E4C1</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGrey2">#1a1a1a</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGrey3">#2a2a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryDarkGrey2">#1A1D23</SolidColorBrush>
+        <SolidColorBrush x:Key="SlateGrey">#8FA5B0</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBorderGrey">#4A5A6A</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleViolet">#2a1a4a</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkPurple">#1a0a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleMuted">#4a3a6a</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightRed">#FF5050</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGreen">#40C853</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGreenTeal">#2A8A3A</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryDarkTeal">#1A3A3A</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorDarkBg">#1e1e1e</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorHeaderBg">#2d2d30</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorBorderBg">#3e3e42</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorButtonBg">#404045</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorStatusBg">#252526</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorTextGrey">#cccccc</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorLineNumbers">#888888</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleButton">#6f42c1</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGreenEditor">#27ca3f</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentNeonGreen">#2200FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentNeonGreen2">#4400FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark1">#11000000</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark2">#11001100</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark3">#00000033</SolidColorBrush>
+        <SolidColorBrush x:Key="SliderGrey">#404040</SolidColorBrush>
+        <SolidColorBrush x:Key="SuccessGreen">#51cf66</SolidColorBrush>
+        <SolidColorBrush x:Key="ErrorRed">#ff6b6b</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalOverlay">#80000000</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightRed2">#FF0000</SolidColorBrush>
+
         <LinearGradientBrush x:Key="GoldGradient1" StartPoint="0%,0%" EndPoint="100%,100%">
             <GradientStop Color="#f3d078" Offset="0"/>
             <GradientStop Color="#eac058" Offset="1"/>

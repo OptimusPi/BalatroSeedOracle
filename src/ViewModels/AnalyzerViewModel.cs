@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
@@ -139,6 +141,30 @@ public partial class AnalyzerViewModel : ObservableObject
     {
         // Placeholder for Ante 9+ support
         await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task CopyBlueprintUrlAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CurrentSeed))
+            return;
+
+        try
+        {
+            // Format: https://miaklwalker.github.io/Blueprint/?seed={SEED}&deck={DECK}+Deck&antes={MAX_ANTE}&stake={STAKE}+Stake
+            var deckName = SelectedDeck.ToString();
+            var stakeName = SelectedStake.ToString();
+            var maxAnte = CurrentAnalysis?.Antes.Count ?? 8;
+
+            var url = $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
+
+            await ClipboardService.CopyToClipboardAsync(url);
+            Helpers.DebugLogger.Log("AnalyzerViewModel", $"Copied Blueprint URL to clipboard: {url}");
+        }
+        catch (Exception ex)
+        {
+            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Failed to copy Blueprint URL: {ex.Message}");
+        }
     }
 
     public void SetSeeds(IEnumerable<string> seeds)

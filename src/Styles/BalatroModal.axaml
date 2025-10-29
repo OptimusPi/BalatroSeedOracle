@@ -13,7 +13,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 8 0 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
     </Style>
 
     <!-- Precise modal with exact south-only shadow - Medium grey background -->
@@ -24,7 +24,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 0 0 #1a1a1a"/>
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
     </Style>
 
     <!-- Inner content panel - Dark grey with no borders like in Balatro -->

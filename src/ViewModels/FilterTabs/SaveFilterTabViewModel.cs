@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Media;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -14,24 +13,44 @@ using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
-    public class SaveFilterTabViewModel : BaseViewModel
+    public partial class SaveFilterTabViewModel : ObservableObject
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
 
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SaveCurrentFilterCommand))]
+        [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ExportFilterCommand))]
         private string _filterName = "";
+
+        [ObservableProperty]
         private string _filterDescription = "";
+
+        [ObservableProperty]
         private string _currentFileName = "_UNSAVED_CREATION.json";
+
+        [ObservableProperty]
         private string _lastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+
+        [ObservableProperty]
         private string _statusMessage = "Ready to save filter";
+
+        [ObservableProperty]
         private IBrush _statusColor = Brushes.Gray;
 
-        // Test feedback properties
+        [ObservableProperty]
         private bool _isTestRunning = false;
+
+        [ObservableProperty]
         private bool _showTestSuccess = false;
+
+        [ObservableProperty]
         private bool _showTestError = false;
+
+        [ObservableProperty]
         private string _testResultMessage = "";
 
         public SaveFilterTabViewModel(
@@ -45,98 +64,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _configurationService = configurationService;
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
-
-            // Initialize commands
-            SaveCommand = new AsyncRelayCommand(SaveCurrentFilterAsync, CanSave);
-            SaveAsCommand = new AsyncRelayCommand(SaveAsAsync, CanSave);
-            ExportCommand = new AsyncRelayCommand(ExportFilterAsync, CanSave);
-            TestFilterCommand = new AsyncRelayCommand(TestFilterAsync);
         }
-
-        #region Properties
-
-        public string FilterName
-        {
-            get => _filterName;
-            set
-            {
-                if (SetProperty(ref _filterName, value))
-                {
-                    ((AsyncRelayCommand)SaveCommand).NotifyCanExecuteChanged();
-                    ((AsyncRelayCommand)SaveAsCommand).NotifyCanExecuteChanged();
-                    ((AsyncRelayCommand)ExportCommand).NotifyCanExecuteChanged();
-                }
-            }
-        }
-
-        public string FilterDescription
-        {
-            get => _filterDescription;
-            set => SetProperty(ref _filterDescription, value);
-        }
-
-        public string CurrentFileName
-        {
-            get => _currentFileName;
-            set => SetProperty(ref _currentFileName, value);
-        }
-
-        public string LastModified
-        {
-            get => _lastModified;
-            set => SetProperty(ref _lastModified, value);
-        }
-
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
-        public IBrush StatusColor
-        {
-            get => _statusColor;
-            set => SetProperty(ref _statusColor, value);
-        }
-
-        public bool IsTestRunning
-        {
-            get => _isTestRunning;
-            set => SetProperty(ref _isTestRunning, value);
-        }
-
-        public bool ShowTestSuccess
-        {
-            get => _showTestSuccess;
-            set => SetProperty(ref _showTestSuccess, value);
-        }
-
-        public bool ShowTestError
-        {
-            get => _showTestError;
-            set => SetProperty(ref _showTestError, value);
-        }
-
-        public string TestResultMessage
-        {
-            get => _testResultMessage;
-            set => SetProperty(ref _testResultMessage, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SaveCommand { get; }
-        public ICommand SaveAsCommand { get; }
-        public ICommand ExportCommand { get; }
-        public ICommand TestFilterCommand { get; }
-
-        #endregion
 
         #region Command Implementations - Copied from original FiltersModal
 
-        private async Task SaveCurrentFilterAsync()
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task SaveCurrentFilter()
         {
             try
             {
@@ -173,7 +106,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
-        private async Task SaveAsAsync()
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task SaveAs()
         {
             try
             {
@@ -208,7 +142,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
-        private async Task ExportFilterAsync()
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task ExportFilter()
         {
             try
             {
@@ -270,7 +205,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Logic moved to shared FilterConfigurationService
 
-        private async Task TestFilterAsync()
+        [RelayCommand]
+        private async Task TestFilter()
         {
             try
             {

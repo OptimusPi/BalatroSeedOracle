@@ -34,7 +34,7 @@
 
         <!-- Popup Overlay -->
         <Panel IsVisible="{Binding CurrentPopup, Converter={x:Static ObjectConverters.IsNotNull}}"
-               Background="#80000000"
+               Background="{StaticResource ModalOverlay}"
                ZIndex="100">
             <ContentControl Content="{Binding CurrentPopup}"
                             HorizontalAlignment="Center"

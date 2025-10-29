@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -38,29 +39,33 @@ namespace BalatroSeedOracle.Views.Modals
             _deckImage = this.FindControl<Image>("DeckImage");
             _stakeOverlayImage = this.FindControl<Image>("StakeOverlayImage");
 
-            // Load default deck (Red Deck with White Stake)
-            LoadDeckAndStake("Red Deck", "White");
+            // Load default deck (Red with White Stake) - SpriteService expects SHORT deck names!
+            LoadDeckAndStake("Red", "White");
         }
 
         private void LoadDeckAndStake(string deckName, string stakeName)
         {
-            // Get deck items with stake overlay from factory
-            var deckItems = PanelItemFactory.CreateDeckItemsWithStake(stakeName);
+            // Use SpriteService to load deck and stake images
+            var spriteService = SpriteService.Instance;
 
-            // Find the requested deck
-            var deckItem = deckItems.Find(item => item.Title == deckName);
-            if (deckItem != null && deckItem.GetImage != null)
+            // Get deck image (400x200 size for proper display)
+            var deckImage = spriteService.GetDeckImage(deckName, 400, 200);
+            if (deckImage != null && _deckImage != null)
             {
-                var image = deckItem.GetImage();
-                if (_deckImage != null)
-                {
-                    _deckImage.Source = image;
-                }
-                if (_stakeOverlayImage != null)
-                {
-                    _stakeOverlayImage.Source = image;
-                }
+                _deckImage.Source = deckImage as Bitmap;
             }
+
+            // Get stake overlay image (same size as deck)
+            var stakeImage = spriteService.GetStakeImage(stakeName, 400, 200);
+            if (stakeImage != null && _stakeOverlayImage != null)
+            {
+                _stakeOverlayImage.Source = stakeImage as Bitmap;
+            }
+
+            DebugLogger.Log(
+                "FilterSelectionModal",
+                $"Loaded deck image: {deckName}, stake overlay: {stakeName}"
+            );
         }
 
         private void InitializeComponent()
@@ -136,12 +141,9 @@ namespace BalatroSeedOracle.Views.Modals
             var deckName = filter.DeckName ?? "Red";
             var stakeName = filter.StakeName ?? "White";
 
-            // Convert short deck names to full display names (e.g., "Red" -> "Red Deck")
-            // PanelItemFactory expects full names like "Red Deck", but config stores "Red"
-            if (!deckName.EndsWith(" Deck", StringComparison.OrdinalIgnoreCase))
-            {
-                deckName = $"{deckName} Deck";
-            }
+            // SpriteService expects SHORT deck names (just "Red", not "Red Deck")
+            // Filter JSON stores short names like "Red", "Anaglyph", etc.
+            // NO need to add " Deck" suffix!
 
             DebugLogger.Log(
                 "FilterSelectionModal",

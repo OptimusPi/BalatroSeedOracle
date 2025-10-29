@@ -86,7 +86,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -132,7 +132,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -173,7 +173,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -214,7 +214,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -255,7 +255,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -296,7 +296,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -337,7 +337,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
@@ -378,7 +378,7 @@
                                               Foreground="White">
                                     <ToggleButton.Styles>
                                         <Style Selector="ToggleButton">
-                                            <Setter Property="Background" Value="#404040"/>
+                                            <Setter Property="Background" Value="{StaticResource SliderGrey}"/>
                                         </Style>
                                         <Style Selector="ToggleButton:checked">
                                             <Setter Property="Background" Value="{StaticResource Red}"/>

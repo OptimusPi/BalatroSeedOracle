@@ -3,66 +3,35 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
-    public class JsonEditorTabViewModel : BaseViewModel
+    public partial class JsonEditorTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+
+        [ObservableProperty]
         private string _jsonContent = "";
+
+        [ObservableProperty]
         private string _validationStatus = "Ready";
+
+        [ObservableProperty]
         private IBrush _validationStatusColor = Brushes.Gray;
 
         public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
 
-            // Initialize commands
-            GenerateFromVisualCommand = new RelayCommand(GenerateFromVisual);
-            ApplyToVisualCommand = new RelayCommand(ApplyToVisual);
-            ValidateJsonCommand = new RelayCommand(ValidateJson);
-            FormatJsonCommand = new RelayCommand(FormatJson);
-
             // Set default JSON content
             JsonContent = GetDefaultJsonContent();
         }
-
-        #region Properties
-
-        public string JsonContent
-        {
-            get => _jsonContent;
-            set => SetProperty(ref _jsonContent, value);
-        }
-
-        public string ValidationStatus
-        {
-            get => _validationStatus;
-            set => SetProperty(ref _validationStatus, value);
-        }
-
-        public IBrush ValidationStatusColor
-        {
-            get => _validationStatusColor;
-            set => SetProperty(ref _validationStatusColor, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand GenerateFromVisualCommand { get; }
-        public ICommand ApplyToVisualCommand { get; }
-        public ICommand ValidateJsonCommand { get; }
-        public ICommand FormatJsonCommand { get; }
-
-        #endregion
 
         #region Command Implementations
 
@@ -164,6 +133,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
         private void GenerateFromVisual()
         {
             try
@@ -266,6 +236,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
         private void ApplyToVisual()
         {
             try
@@ -374,6 +345,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
         private void ValidateJson()
         {
             if (ValidateJsonSyntax())
@@ -388,6 +360,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
         private void FormatJson()
         {
             try

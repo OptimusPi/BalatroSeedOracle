@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.FilterTabs.SaveFilterTab"
              x:DataType="vm:SaveFilterTabViewModel">
 
@@ -18,6 +19,8 @@
                 <RowDefinition Height="Auto"/>  <!-- Filter Name -->
                 <RowDefinition Height="10"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Description -->
+                <RowDefinition Height="20"/>    <!-- Spacer -->
+                <RowDefinition Height="Auto"/>  <!-- Preferred Deck & Stake -->
                 <RowDefinition Height="20"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Current Filter Info -->
                 <RowDefinition Height="20"/>    <!-- Spacer -->
@@ -48,8 +51,8 @@
             
             <!-- Description Input -->
             <StackPanel Grid.Row="4">
-                <TextBlock Text="Description" 
-                           FontSize="14" 
+                <TextBlock Text="Description"
+                           FontSize="14"
                            Foreground="{StaticResource White}"
                            FontFamily="{StaticResource BalatroFont}"
                            Margin="0,0,0,5"/>
@@ -60,9 +63,47 @@
                          FontSize="14"
                          Height="60"/>
             </StackPanel>
-            
+
+            <!-- Preferred Deck & Stake -->
+            <StackPanel Grid.Row="6">
+                <TextBlock Text="Preferred Deck &amp; Stake"
+                           FontSize="14"
+                           Foreground="{StaticResource White}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Margin="0,0,0,5"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="(Deck/stake this filter was designed for)"
+                           FontSize="10"
+                           Foreground="{StaticResource LightGrey}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Deck Selector -->
+                <controls:SpinnerControl Label="Deck"
+                                        SpinnerType="deck"
+                                        Value="{Binding $parent[UserControl].DataContext.SelectedDeckIndex}"
+                                        Minimum="0"
+                                        Maximum="14"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding $parent[UserControl].DataContext.DeckDisplayValues}"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,0,0,8"/>
+
+                <!-- Stake Selector -->
+                <controls:SpinnerControl Label="Stake"
+                                        SpinnerType="stake"
+                                        Value="{Binding $parent[UserControl].DataContext.SelectedStakeIndex}"
+                                        Minimum="0"
+                                        Maximum="7"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding $parent[UserControl].DataContext.StakeDisplayValues}"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,0,0,0"/>
+            </StackPanel>
+
             <!-- Current Filter Info -->
-            <Border Grid.Row="6"
+            <Border Grid.Row="8"
                     Background="{StaticResource DarkBackground}"
                     BorderThickness="2"
                     BorderBrush="{StaticResource ModalBorder}"

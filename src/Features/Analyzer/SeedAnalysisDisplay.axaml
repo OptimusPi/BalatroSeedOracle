@@ -9,6 +9,8 @@
         <conv:ShopItemSpriteConverter x:Key="ShopItemSpriteConverter"/>
         <conv:BoosterPackSpriteConverter x:Key="BoosterPackSpriteConverter"/>
         <conv:TagSpriteConverter x:Key="TagSpriteConverter"/>
+        <conv:BossSpriteConverter x:Key="BossSpriteConverter"/>
+        <conv:VoucherSpriteConverter x:Key="VoucherSpriteConverter"/>
     </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto, *">
@@ -37,23 +39,57 @@
                                            Foreground="{StaticResource White}"
                                            HorizontalAlignment="Center"/>
 
-                                <!-- Boss & Voucher Row -->
-                                <Grid ColumnDefinitions="*,*" Margin="0,6">
-                                    <StackPanel Grid.Column="0" Spacing="4">
-                                        <TextBlock Text="BOSS"
-                                                   
-                                                   Foreground="{StaticResource TextInactive}"/>
-                                        <TextBlock Text="{Binding BossName}"
-                                                   Foreground="{StaticResource White}"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="4">
-                                        <TextBlock Text="VOUCHER"
-                                                   
-                                                   Foreground="{StaticResource TextInactive}"/>
-                                        <TextBlock Text="{Binding VoucherName}"
-                                                   Foreground="{StaticResource White}"/>
-                                    </StackPanel>
-                                </Grid>
+                                <!-- Boss & Voucher Row with Sprites -->
+                                <WrapPanel Orientation="Horizontal" Margin="0,8">
+                                    <!-- Boss -->
+                                    <Border Background="{StaticResource VeryDarkBackground}"
+                                            BorderThickness="0"
+                                            CornerRadius="6"
+                                            Padding="12"
+                                            Margin="4">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="BOSS"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextInactive}"
+                                                       HorizontalAlignment="Center"/>
+                                            <Image Source="{Binding Boss, Converter={StaticResource BossSpriteConverter}}"
+                                                   Width="68"
+                                                   Height="68"
+                                                   Stretch="Uniform"/>
+                                            <TextBlock Text="{Binding BossName}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="100"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Voucher -->
+                                    <Border Background="{StaticResource VeryDarkBackground}"
+                                            BorderThickness="0"
+                                            CornerRadius="6"
+                                            Padding="12"
+                                            Margin="4"
+                                            IsVisible="{Binding HasVoucher}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="VOUCHER"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextInactive}"
+                                                       HorizontalAlignment="Center"/>
+                                            <Image Source="{Binding Voucher, Converter={StaticResource VoucherSpriteConverter}}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"/>
+                                            <TextBlock Text="{Binding VoucherName}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="100"/>
+                                        </StackPanel>
+                                    </Border>
+                                </WrapPanel>
 
                                 <!-- Skip Tags with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">

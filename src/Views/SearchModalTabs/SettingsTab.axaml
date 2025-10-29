@@ -18,7 +18,7 @@
                         Background="{StaticResource Blue}"
                         CornerRadius="8,8,0,0"
                         Padding="12,8">
-                    <TextBlock Text="Deck &amp; Stake"
+                    <TextBlock Text="Preferred Deck &amp; Stake"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="14"
                                Foreground="{StaticResource White}"
@@ -36,10 +36,12 @@
                         <Grid Width="400" Height="200">
                             <Image Name="DeckImage"
                                    Width="400"
-                                   Height="200"/>
+                                   Height="200"
+                                   Stretch="Uniform"/>
                             <Image Name="StakeOverlayImage"
                                    Width="400"
                                    Height="200"
+                                   Stretch="Uniform"
                                    IsVisible="True"/>
                         </Grid>
                     </Viewbox>
@@ -49,15 +51,15 @@
                         <TextBlock Name="DeckNameText"
                                    Text="{Binding DeckSelection}"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="16"
-                                  
+                                   FontSize="18"
+                                   FontWeight="Bold"
                                    Foreground="{StaticResource Black}"/>
                         <TextBlock Name="DeckDescriptionText"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   Foreground="{StaticResource LightGrey}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource DarkGrey}"
                                    TextWrapping="Wrap"
-                                   Text="{Binding DeckAndStakeSelector.SelectedDeckDescription}"/>
+                                   Text="Loading..."/>
                     </StackPanel>
                 </Grid>
             </Grid>

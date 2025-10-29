@@ -350,4 +350,88 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts a MotelyBossBlind enum to its sprite image
+    /// </summary>
+    public class BossSpriteConverter : IValueConverter
+    {
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            if (value == null)
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                var bossName = value.ToString();
+                if (string.IsNullOrEmpty(bossName))
+                    return null;
+
+                return spriteService.GetBossImage(bossName);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BossSpriteConverter", $"Failed to get boss sprite for '{value}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts a MotelyVoucher enum to its sprite image
+    /// </summary>
+    public class VoucherSpriteConverter : IValueConverter
+    {
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            if (value == null)
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                var voucherName = value.ToString();
+                if (string.IsNullOrEmpty(voucherName) || voucherName == "None")
+                    return null;
+
+                return spriteService.GetVoucherImage(voucherName);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VoucherSpriteConverter", $"Failed to get voucher sprite for '{value}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

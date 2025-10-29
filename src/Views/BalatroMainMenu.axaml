@@ -10,22 +10,22 @@
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
-             x:CompileBindings="False">
+             x:CompileBindings="True">
 
     <UserControl.Styles>
         <!-- Modal panel style - Clean Balatro style (NO pixel borders!) -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="#4a5f6d"/>
+            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="BorderBrush" Value="#7090a0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LightGrey}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="BoxShadow" Value="0 8 24 0 #99000000"/>
+            <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
         </Style>
 
         <!-- Inner content panel - Clean background, no borders -->
         <Style Selector="Border.inner-panel">
-            <Setter Property="Background" Value="#3e5562"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="24"/>
@@ -81,7 +81,7 @@
         <Popup x:Name="VolumePopup"
                IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
                Placement="Top"
-               PlacementTarget="{Binding #MusicToggleButton}"
+               PlacementTarget="{Binding ElementName=MusicToggleButton}"
                VerticalOffset="-10"
                IsLightDismissEnabled="True">
             <Border Background="{StaticResource ContainerDarkPrecise}"
@@ -368,10 +368,35 @@
         <Grid x:Name="ModalContainer"
               IsVisible="False"
               ZIndex="100"
-              Background="{StaticResource SemiTransparentBlack}"
               VerticalAlignment="Stretch"
               HorizontalAlignment="Stretch"
-              Margin="0"/>
+              Margin="0">
+
+            <!-- Overlay dimmer - fades in -->
+            <Border x:Name="ModalOverlay"
+                    Background="{StaticResource SemiTransparentBlack}"
+                    Opacity="0">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity"
+                                        Duration="0:0:0.3"
+                                        Easing="LinearEasing"/>
+                    </Transitions>
+                </Border.Transitions>
+            </Border>
+
+            <!-- Modal content wrapper - slides up -->
+            <ContentControl x:Name="ModalContentWrapper">
+                <ContentControl.Transitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="RenderTransform"
+                                                      Duration="0:0:0.3"
+                                                      Easing="QuadraticEaseOut"/>
+                    </Transitions>
+                </ContentControl.Transitions>
+            </ContentControl>
+
+        </Grid>
 
     </Grid>
 </UserControl>

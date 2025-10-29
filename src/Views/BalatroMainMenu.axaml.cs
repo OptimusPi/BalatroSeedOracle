@@ -26,6 +26,8 @@ namespace BalatroSeedOracle.Views
     {
         // View-only references (no business logic state)
         private Grid? _modalContainer;
+        private Border? _modalOverlay;
+        private ContentControl? _modalContentWrapper;
         private Control? _background;
         private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
 
@@ -65,6 +67,8 @@ namespace BalatroSeedOracle.Views
 
             // Get view-only control references
             _modalContainer = this.FindControl<Grid>("ModalContainer");
+            _modalOverlay = this.FindControl<Border>("ModalOverlay");
+            _modalContentWrapper = this.FindControl<ContentControl>("ModalContentWrapper");
             _background = this.FindControl<Control>("BackgroundControl");
             _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
             // _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay"); // REMOVED: VibeOut feature removed
@@ -297,7 +301,11 @@ namespace BalatroSeedOracle.Views
                     }
                 };
 
-                this.ShowModal("🎰 SEED SEARCH", searchContent);
+                // Show SearchModal as main modal content (replaces FilterSelectionModal)
+                var modal = new StandardModal("🎰 SEED SEARCH");
+                modal.SetContent(searchContent);
+                modal.BackClicked += (s, e) => HideModalContent();
+                ShowModalContent(modal, "🎰 SEED SEARCH");
             }
             catch (Exception ex)
             {
@@ -311,49 +319,78 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show filters modal (for creating/managing filters) - now uses FilterSelectionModal as gateway
         /// </summary>
-        public async void ShowFiltersModal()
+        public void ShowFiltersModal()
         {
-            var result = await this.ShowFilterSelectionModal(
+            // Create FilterSelectionModal with Edit/Copy/Delete actions enabled
+            var filterSelectionModal = new FilterSelectionModal();
+            var filterSelectionVM = new FilterSelectionModalViewModel(
+                enableSearch: false,
                 enableEdit: true,
                 enableCopy: true,
-                enableDelete: true
+                enableDelete: true,
+                enableAnalyze: false
             );
+            filterSelectionModal.DataContext = filterSelectionVM;
 
-            // CRITICAL: Reset IsModalVisible when FilterSelectionModal closes, even if cancelled
-            if (ViewModel != null)
+            // Handle modal close event
+            filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
-                ViewModel.IsModalVisible = false;
-            }
+                var result = filterSelectionVM.Result;
 
-            if (result.Cancelled)
-                return;
-
-            switch (result.Action)
-            {
-                case Models.FilterAction.CreateNew:
-                    // Open designer with blank filter
-                    ShowFiltersModalDirect();
-                    break;
-                case Models.FilterAction.Edit:
-                    // Open designer with selected filter loaded
-                    if (result.FilterId != null)
-                        ShowFiltersModalDirect(result.FilterId);
-                    break;
-                case Models.FilterAction.Copy:
-                    // Clone the filter and open designer
-                    if (result.FilterId != null)
+                if (result.Cancelled)
+                {
+                    // Reset IsModalVisible and hide modal
+                    if (ViewModel != null)
                     {
-                        var clonedId = await CloneFilter(result.FilterId);
-                        if (!string.IsNullOrEmpty(clonedId))
-                            ShowFiltersModalDirect(clonedId);
+                        ViewModel.IsModalVisible = false;
                     }
-                    break;
-                case Models.FilterAction.Delete:
-                    // Delete the filter
-                    if (result.FilterId != null)
-                        DeleteFilter(result.FilterId);
-                    break;
-            }
+                    HideModalContent();
+                    return;
+                }
+
+                // Handle different actions - ShowFiltersModalDirect will replace the modal content directly
+                switch (result.Action)
+                {
+                    case Models.FilterAction.CreateNew:
+                        // Open designer with blank filter (replaces current modal)
+                        ShowFiltersModalDirect();
+                        break;
+                    case Models.FilterAction.Edit:
+                        // Open designer with selected filter loaded (replaces current modal)
+                        if (result.FilterId != null)
+                        {
+                            ShowFiltersModalDirect(result.FilterId);
+                        }
+                        break;
+                    case Models.FilterAction.Copy:
+                        // Clone the filter and open designer (replaces current modal)
+                        if (result.FilterId != null)
+                        {
+                            var clonedId = await CloneFilter(result.FilterId);
+                            if (!string.IsNullOrEmpty(clonedId))
+                            {
+                                ShowFiltersModalDirect(clonedId);
+                            }
+                        }
+                        break;
+                    case Models.FilterAction.Delete:
+                        // Delete the filter and close modal
+                        if (result.FilterId != null)
+                        {
+                            DeleteFilter(result.FilterId);
+                        }
+                        // Reset IsModalVisible and hide modal
+                        if (ViewModel != null)
+                        {
+                            ViewModel.IsModalVisible = false;
+                        }
+                        HideModalContent();
+                        break;
+                }
+            };
+
+            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal)
+            ShowModalContent(filterSelectionModal, "🎨 SELECT FILTER");
         }
 
         /// <summary>
@@ -528,11 +565,11 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show a UserControl as a modal overlay with smooth transition
+        /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
         /// </summary>
         public void ShowModalContent(UserControl content, string? title = null)
         {
-            if (_modalContainer == null)
+            if (_modalContainer == null || _modalOverlay == null || _modalContentWrapper == null)
                 return;
 
             // Close any open popups when opening a modal
@@ -541,20 +578,45 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsVolumePopupOpen = false;
             }
 
-            // IMPORTANT: Only clear if we're showing a fresh modal (container was hidden)
-            // If transitioning between modals, just replace the content to avoid flicker
-            if (!_modalContainer.IsVisible || _modalContainer.Children.Count == 0)
+            // Update title immediately
+            if (!string.IsNullOrEmpty(title))
             {
-                _modalContainer.Children.Clear();
-            }
-            else
-            {
-                // Replace existing modal content (no flicker!)
-                _modalContainer.Children.Clear();
+                SetTitle(title);
             }
 
-            _modalContainer.Children.Add(content);
+            // Store active content reference
+            _activeModalContent = content;
+
+            // Set initial states BEFORE making visible
+            // Overlay: Start transparent
+            _modalOverlay.Opacity = 0;
+
+            // Content: Start below the screen
+            var windowHeight = this.Bounds.Height;
+            _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse($"translateY({windowHeight}px)");
+
+            // Set the content in the wrapper
+            _modalContentWrapper.Content = content;
+
+            // Make container visible
             _modalContainer.IsVisible = true;
+
+            // Enable modal state
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = true;
+            }
+
+            // Trigger animations by changing properties
+            // The transitions defined in XAML will handle the smooth animation
+            Dispatcher.UIThread.Post(() =>
+            {
+                // Fade in overlay (0 → 1)
+                _modalOverlay.Opacity = 1;
+
+                // Slide up content (translateY: windowHeight → 0)
+                _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(0px)");
+            }, DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -562,10 +624,12 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private async void TransitionToNewModal(UserControl newContent, string? title)
         {
-            if (_modalContainer == null || _modalContainer.Children.Count == 0)
+            if (_modalContainer == null || _modalContentWrapper == null || _modalContentWrapper.Content == null)
                 return;
 
-            var oldContent = _modalContainer.Children[0];
+            var oldContent = _modalContentWrapper.Content as Control;
+            if (oldContent == null)
+                return;
 
             // Gravity fall with bounce - modal falls completely out of view
             var fallAnimation = new Avalonia.Animation.Animation
@@ -632,9 +696,8 @@ namespace BalatroSeedOracle.Views
             oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
             await fallAnimation.RunAsync(oldContent);
-            await Task.Delay(200); // Brief pause before new modal appears
 
-            _modalContainer.Children.Clear();
+            _modalContentWrapper.Content = null;
             ShowModalWithAnimation(newContent, title);
         }
 
@@ -643,12 +706,13 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private async void ShowModalWithAnimation(UserControl content, string? title)
         {
-            if (_modalContainer == null)
+            if (_modalContainer == null || _modalContentWrapper == null || _modalOverlay == null)
                 return;
 
-            _modalContainer.Children.Add(content);
+            _modalContentWrapper.Content = content;
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
+            _modalOverlay.Opacity = 1; // Keep overlay visible during transition
 
             if (!string.IsNullOrEmpty(title))
             {
@@ -712,10 +776,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void HideModalContent()
         {
-            if (_modalContainer == null)
+            if (_modalContainer == null || _modalContentWrapper == null)
                 return;
 
-            // PERFORMANCE FIX: Defer Children.Clear() to prevent audio crackling
+            // PERFORMANCE FIX: Defer content clearing to prevent audio crackling
             // FiltersModal has thousands of controls - clearing synchronously blocks UI thread
             // which causes audio buffer underruns
             _modalContainer.IsVisible = false;
@@ -728,11 +792,11 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsModalVisible = false;
             }
 
-            // Clear on background thread to avoid blocking audio
+            // Clear content on background thread to avoid blocking audio
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    _modalContainer.Children.Clear();
+                    _modalContentWrapper.Content = null;
                 },
                 DispatcherPriority.Background
             );
@@ -1255,9 +1319,9 @@ namespace BalatroSeedOracle.Views
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
 
-            if (_modalContainer != null && _modalContainer.Children.Count > 0)
+            if (_modalContentWrapper != null && _modalContentWrapper.Content != null)
             {
-                var modal = _modalContainer.Children[0] as StandardModal;
+                var modal = _modalContentWrapper.Content as StandardModal;
                 if (modal != null)
                 {
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");

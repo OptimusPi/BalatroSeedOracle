@@ -88,7 +88,7 @@
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center"
-                   Background="#FF0000">
+                   Background="{StaticResource BrightRed2}">
                 <TextBlock Text="🔥 Nuke Everything 🔥" 
                            FontSize="20"
                            Foreground="White"

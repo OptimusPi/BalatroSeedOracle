@@ -127,6 +127,12 @@ namespace BalatroSeedOracle.ViewModels
                 };
         }
 
+        // Deck/Stake display values for spinners
+        public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
+
+        // Generate stake display values from BalatroData (strip " Stake" suffix for display)
+        public string[] StakeDisplayValues { get; } = BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
+
         // Deck/Stake index helpers
         public int SelectedDeckIndex
         {

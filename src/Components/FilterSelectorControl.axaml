@@ -136,8 +136,8 @@
                                     <Border Grid.Column="2"
                                             Width="20" Height="20"
                                             CornerRadius="10"
-                                            Background="#40C853"
-                                            BorderBrush="#2A8A3A"
+                                            Background="{StaticResource BrightGreen}"
+                                            BorderBrush="{StaticResource DarkGreenTeal}"
                                             BorderThickness="1"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
@@ -266,7 +266,7 @@
 
                     <!-- Description (FULL, not truncated!) - Dark Balatro style -->
                     <Border Grid.Row="2"
-                            Background="#1A3A3A"
+                            Background="{StaticResource VeryDarkTeal}"
                             BorderThickness="0"
                             CornerRadius="6"
                             Padding="12,8"
@@ -277,7 +277,7 @@
                             <TextBlock Text="{Binding SelectedFilterDescription}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="13"
-                                       Foreground="#FFFFFF"
+                                       Foreground="{StaticResource White}"
                                        TextWrapping="Wrap"
                                        LineHeight="18"
                                        Opacity="0.9"/>
@@ -316,7 +316,7 @@
                                 </Style>
 
                                 <Style Selector="TabItem:selected">
-                                    <Setter Property="Background" Value="#FF5050"/>
+                                    <Setter Property="Background" Value="{StaticResource BrightRed}"/>
                                     <Setter Property="Foreground" Value="{StaticResource White}"/>
                                 </Style>
 
@@ -332,7 +332,7 @@
 
                         <!-- Must Have -->
                         <TabItem Header="Must Have">
-                            <Border Background="#F4E4C1"
+                            <Border Background="{StaticResource CardCream}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -351,7 +351,7 @@
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
                                                             Background="{StaticResource White}"
-                                                            BorderBrush="#8B7355"
+                                                            BorderBrush="{StaticResource CardBrown}"
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
@@ -369,7 +369,7 @@
                                         <TextBlock Text="No items required"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="#8B7355"
+                                                   Foreground="{StaticResource CardBrown}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"
@@ -381,7 +381,7 @@
 
                         <!-- Should Have -->
                         <TabItem Header="Should Have">
-                            <Border Background="#F4E4C1"
+                            <Border Background="{StaticResource CardCream}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -399,7 +399,7 @@
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
                                                             Background="{StaticResource White}"
-                                                            BorderBrush="#8B7355"
+                                                            BorderBrush="{StaticResource CardBrown}"
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
@@ -416,7 +416,7 @@
                                         <TextBlock Text="No recommended items"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="#8B7355"
+                                                   Foreground="{StaticResource CardBrown}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"
@@ -428,7 +428,7 @@
 
                         <!-- Must Not -->
                         <TabItem Header="Must Not">
-                            <Border Background="#F4E4C1"
+                            <Border Background="{StaticResource CardCream}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -446,7 +446,7 @@
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
                                                             Background="{StaticResource White}"
-                                                            BorderBrush="#8B7355"
+                                                            BorderBrush="{StaticResource CardBrown}"
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
@@ -473,7 +473,7 @@
                                         <TextBlock Text="No banned items"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="#8B7355"
+                                                   Foreground="{StaticResource CardBrown}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"

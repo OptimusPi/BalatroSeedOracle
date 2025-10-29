@@ -175,7 +175,7 @@
                         <!-- Submission Message - Success -->
                         <TextBlock Text="{Binding SubmissionMessage}"
                                    FontSize="12"
-                                   Foreground="#51cf66"
+                                   Foreground="{StaticResource SuccessGreen}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,10"
                                    TextWrapping="Wrap"
@@ -184,7 +184,7 @@
                         <!-- Submission Message - Error -->
                         <TextBlock Text="{Binding SubmissionMessage}"
                                    FontSize="12"
-                                   Foreground="#ff6b6b"
+                                   Foreground="{StaticResource ErrorRed}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,10"
                                    TextWrapping="Wrap"

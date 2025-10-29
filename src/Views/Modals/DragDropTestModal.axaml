@@ -29,7 +29,7 @@
                                FontFamily="{StaticResource BalatroFont}"
                                
                                Foreground="{StaticResource White}"/>
-                    <Border Background="#1a1a1a" Padding="10" CornerRadius="8">
+                    <Border Background="{StaticResource DarkGrey2}" Padding="10" CornerRadius="8">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <!-- TEST: StackPanel items WITHOUT CardDragBehavior (like standalone test) -->
                             <StackPanel Name="Item1Stack" Width="71" Height="95" Background="{StaticResource Blue}" Cursor="Hand">
@@ -61,7 +61,7 @@
                                
                                Foreground="{StaticResource White}"/>
                     <Border Name="DropZone"
-                            Background="#2a2a2a"
+                            Background="{StaticResource DarkGrey3}"
                             BorderBrush="{StaticResource Purple}"
                             BorderThickness="2"
                             MinHeight="200"

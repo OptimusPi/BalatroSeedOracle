@@ -21,13 +21,6 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <!-- Overlay background -->
-        <Border x:Name="OverlayBackground"
-                Background="{StaticResource SemiTransparentBlack}"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                IsHitTestVisible="False" />
-
         <!-- Modal positioning grid -->
         <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
@@ -215,11 +208,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -268,11 +269,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -292,14 +301,14 @@
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Stretch="Uniform"/>
                                                             <!-- Red X overlay -->
-                                                            <Border Background="#88FF0000"
+                                                            <Border Background="{StaticResource BrightRed}"
                                                                     CornerRadius="4"
                                                                     Opacity="0.6">
                                                                 <TextBlock Text="X"
                                                                            FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="24"
                                                                           
-                                                                           Foreground="#FF0000"
+                                                                           Foreground="{StaticResource BrightRed2}"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"/>
                                                             </Border>
@@ -352,11 +361,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -376,14 +393,14 @@
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Stretch="Uniform"/>
                                                             <!-- Red X overlay -->
-                                                            <Border Background="#88FF0000"
+                                                            <Border Background="{StaticResource BrightRed}"
                                                                     CornerRadius="4"
                                                                     Opacity="0.6">
                                                                 <TextBlock Text="X"
                                                                            FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="24"
                                                                           
-                                                                           Foreground="#FF0000"
+                                                                           Foreground="{StaticResource BrightRed2}"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"/>
                                                             </Border>
@@ -443,11 +460,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -492,11 +517,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -541,11 +574,19 @@
                                                         <Grid Width="36" Height="48" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="36" Height="48"
-                                                                   Stretch="Uniform"/>
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
                                                                    Width="36" Height="48"
                                                                    Stretch="Uniform"
-                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -727,7 +768,7 @@
                                     <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowFilterTab}">
                                         <!-- Filter Description Box (LEFT COLUMN - NO SCROLL) -->
                                         <Border Grid.Column="0"
-                                                    Background="#FFFFFF"
+                                                    Background="{StaticResource White}"
                                                     CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
@@ -756,14 +797,14 @@
                                                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
                                                                 <TextBlock FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="14"
-                                                                           Foreground="#333333"
+                                                                           Foreground="{StaticResource BodyText}"
                                                                            HorizontalAlignment="Right">
                                                                     <Run Text="by "/>
                                                                     <Run Text="{Binding FilterAuthor}"/>
                                                                 </TextBlock>
                                                                 <TextBlock FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="11"
-                                                                           Foreground="#666666"
+                                                                           Foreground="{StaticResource LightGrey}"
                                                                            HorizontalAlignment="Right">
                                                                     <Run Text="{Binding CreatedDate}"/>
                                                                 </TextBlock>
@@ -782,7 +823,7 @@
 
                                             <!-- Filter Criteria Box (Must[]) (RIGHT COLUMN - WITH SCROLL) -->
                                             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                                                <Border Background="#FFFFFF"
+                                                <Border Background="{StaticResource White}"
                                                         CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
@@ -962,7 +1003,7 @@
                                     <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowScoreTab}">
                                             <!-- Left Column: Scoring Description -->
                                             <Border Grid.Column="0"
-                                                    Background="#FFFFFF"
+                                                    Background="{StaticResource White}"
                                                     CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->
@@ -1014,7 +1055,7 @@
 
                                             <!-- Right Column: Scoring Criteria (Should[]) - WITH SCROLL -->
                                             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                                                <Border Background="#FFFFFF"
+                                                <Border Background="{StaticResource White}"
                                                         CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
                                                     <!-- Header -->

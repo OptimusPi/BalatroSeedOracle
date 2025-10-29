@@ -55,7 +55,7 @@
     <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="CornerRadius" Value="12"/>
     <Setter Property="Padding" Value="20"/>
-    <Setter Property="BoxShadow" Value="0 4 0 0 #1a1a1a"/>
+    <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
   </Style>
   <Style Selector="Button.btn-red-precise">
     <Setter Property="Background" Value="{StaticResource Red}"/>

@@ -1,9 +1,7 @@
 using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Windows.Input;
+using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -11,54 +9,21 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// View model for displaying search results in the DataGrid
     /// </summary>
-    public class SearchResultViewModel : INotifyPropertyChanged
+    public partial class SearchResultViewModel : ObservableObject
     {
-        private int _index;
-        private string _seed = "";
-        private int _score;
-        private string _details = "";
+        [ObservableProperty]
+        private int index;
 
-        public int Index
-        {
-            get => _index;
-            set
-            {
-                _index = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private string seed = "";
 
-        public string Seed
-        {
-            get => _seed;
-            set
-            {
-                _seed = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ScoreFormatted))]
+        [NotifyPropertyChangedFor(nameof(ScoreTooltip))]
+        private int score;
 
-        public int Score
-        {
-            get => _score;
-            set
-            {
-                _score = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(ScoreFormatted));
-                OnPropertyChanged(nameof(ScoreTooltip));
-            }
-        }
-
-        public string Details
-        {
-            get => _details;
-            set
-            {
-                _details = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private string details = "";
 
         /// <summary>
         /// Formatted score display (with thousands separator)
@@ -70,23 +35,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string ScoreTooltip => $"Total Score: {ScoreFormatted}";
 
-        /// <summary>
-        /// Command to copy seed to clipboard
-        /// </summary>
-        public ICommand CopyCommand { get; }
-
-        /// <summary>
-        /// Command to view detailed seed analysis
-        /// </summary>
-        public ICommand ViewCommand { get; }
-
-        public SearchResultViewModel()
-        {
-            CopyCommand = new RelayCommand<string>(CopySeed);
-            ViewCommand = new RelayCommand<SearchResultViewModel>(ViewDetails);
-        }
-
-        private async void CopySeed(string? seed)
+        [RelayCommand]
+        private async Task CopySeed(string? seed)
         {
             if (string.IsNullOrEmpty(seed))
                 return;
@@ -115,19 +65,13 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        [RelayCommand]
         private void ViewDetails(SearchResultViewModel? result)
         {
             if (result == null)
                 return;
 
             DebugLogger.Log("SearchResultViewModel", $"View details for seed: {result.Seed}");
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

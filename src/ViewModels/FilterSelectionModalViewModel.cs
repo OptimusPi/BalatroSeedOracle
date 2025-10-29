@@ -268,18 +268,34 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Implements IModalBackNavigable - Navigate back through tabs
+        /// Implements IModalBackNavigable - Navigate back through internal state
         /// </summary>
         public bool TryGoBack()
         {
-            // If we're not on the first tab, go back one tab
+            // Priority 1: If viewing filter details, go back to initial page (placeholder)
+            if (SelectedFilter != null)
+            {
+                // Clear selection to return to "Please select or create new" page
+                SelectedFilter = null;
+                FilterList.SelectedFilter = null;
+
+                // Reset to first tab when returning to initial page
+                if (ActiveTabIndex > 0)
+                {
+                    TabControl.SwitchTabCommand.Execute(0);
+                }
+
+                return true; // We handled the back navigation
+            }
+
+            // Priority 2: If on initial page with tabs visible, navigate tabs
             if (ActiveTabIndex > 0)
             {
                 TabControl.SwitchTabCommand.Execute(ActiveTabIndex - 1);
                 return true; // We handled the back navigation
             }
 
-            // We're on the first tab, can't go back further
+            // Priority 3: On initial page, first tab - allow modal to close
             return false; // Let the modal close
         }
     }

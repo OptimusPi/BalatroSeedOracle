@@ -13,7 +13,7 @@
 
         <!-- JSON Editor - Balatro Style (NO BORDER!) -->
         <Border Grid.Row="0"
-                Background="#1e1e1e"
+                Background="{StaticResource EditorDarkBg}"
                 BorderThickness="0"
                 CornerRadius="12"
                 Padding="0"
@@ -26,8 +26,8 @@
                 
                 <!-- Editor Header Bar -->
                 <Border Grid.Row="0"
-                        Background="#2d2d30"
-                        BorderBrush="#3e3e42"
+                        Background="{StaticResource EditorHeaderBg}"
+                        BorderBrush="{StaticResource EditorBorderBg}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="12,12,0,0"
                         Padding="12,8">
@@ -39,7 +39,7 @@
                         
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="📄 filter.json" 
-                                       Foreground="#cccccc" 
+                                       Foreground="{StaticResource EditorTextGrey}" 
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"
                                        VerticalAlignment="Center"/>
@@ -51,19 +51,19 @@
                                     Command="{Binding FormatJsonCommand}"
                                     Width="28" Height="24"
                                     FontSize="14"
-                                    Background="#404045"
+                                    Background="{StaticResource EditorButtonBg}"
                                     BorderThickness="0"
                                     CornerRadius="4"
-                                    Foreground="#FFD700"/>
+                                    Foreground="{StaticResource BrightGold}"/>
                             <Button Content="✓" 
                                     ToolTip.Tip="Validate JSON"
                                     Command="{Binding ValidateJsonCommand}"
                                     Width="28" Height="24"
                                     FontSize="14"
-                                    Background="#404045"
+                                    Background="{StaticResource EditorButtonBg}"
                                     BorderThickness="0"
                                     CornerRadius="4"
-                                    Foreground="#27ca3f"/>
+                                    Foreground="{StaticResource BrightGreenEditor}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -75,9 +75,9 @@
                                        ShowLineNumbers="True"
                                        FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
                                        FontSize="16"
-                                       Background="#1e1e1e"
-                                       Foreground="#ffffff"
-                                       LineNumbersForeground="#888888"
+                                       Background="{StaticResource EditorDarkBg}"
+                                       Foreground="{StaticResource White}"
+                                       LineNumbersForeground="{StaticResource EditorLineNumbers}"
                                        Margin="0"
                                        Padding="12,8"
                                        HorizontalScrollBarVisibility="Auto"
@@ -87,7 +87,7 @@
         
         <!-- Status Bar (Balatro flat style) -->
         <Border Grid.Row="1"
-                Background="#252526"
+                Background="{StaticResource EditorStatusBg}"
                 BorderThickness="0"
                 Padding="12,6"
                 Margin="0,8,0,0"
@@ -110,7 +110,7 @@
                 <!-- Status Text -->
                 <TextBlock Grid.Column="1"
                            Text="{Binding ValidationStatus}"
-                           Foreground="#cccccc"
+                           Foreground="{StaticResource EditorTextGrey}"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="12"
                            VerticalAlignment="Center"/>
@@ -119,7 +119,7 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                     <Button Content="💾 Save"
                             ToolTip.Tip="Save current filter"
-                            Background="#6f42c1"
+                            Background="{StaticResource PurpleButton}"
                             Foreground="White"
                             BorderThickness="0"
                             CornerRadius="6"

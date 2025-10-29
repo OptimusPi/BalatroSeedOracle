@@ -4,7 +4,10 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab">
+             xmlns:models="using:BalatroSeedOracle.Models"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
+             x:DataType="vm:VisualBuilderTabViewModel"
+             x:CompileBindings="True">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -28,7 +31,7 @@
 
             <!-- Clear button inside search box (right side) -->
             <Button Content="×"
-                    Command="{Binding ClearSearchCommand}"
+                    Click="OnClearSearch"
                     Background="Transparent"
                     Foreground="{StaticResource White}"
                     FontSize="24"
@@ -94,7 +97,7 @@
                                   HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
                                     <StackPanel Margin="0,0,0,16">
                                         <!-- Subcategory Header -->
                                         <Border Background="{StaticResource DarkBackground}"
@@ -113,9 +116,9 @@
                                         <!-- Items in Group -->
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
+                                                <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="8,6" Width="80" Height="110">
+                                                    <Grid Margin="0,6" Width="80" Height="110">
                                                         <!-- LAYER 1: Visual card that rotates (Z-Index 0, BOTTOM) -->
                                                         <StackPanel ZIndex="0"
                                                                     Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
@@ -180,7 +183,7 @@
 
                 <!-- Return Overlay - Shows when dragging from drop zones -->
                 <Border Name="ReturnOverlay"
-                        Background="#CC1A1D23"
+                        Background="{StaticResource SemiTransparentBlack}"
                         BorderBrush="{StaticResource Orange}"
                         BorderThickness="3"
                         CornerRadius="8"
@@ -229,7 +232,7 @@
                         <!-- Bottom: White Drop Area -->
                         <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedMust}" Margin="12">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate DataType="models:FilterItem">
                                     <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image (BIGGER) -->
                                         <Image Source="{Binding ItemImage}"
@@ -315,7 +318,7 @@
                         <!-- Bottom: White Drop Area -->
                         <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedShould}" Margin="12">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate DataType="models:FilterItem">
                                     <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image (BIGGER) -->
                                         <Image Source="{Binding ItemImage}"
@@ -401,7 +404,7 @@
                         <!-- Bottom: White Drop Area -->
                         <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate DataType="models:FilterItem">
                                     <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
                                         <!-- Main card image (BIGGER) -->
                                         <Image Source="{Binding ItemImage}"

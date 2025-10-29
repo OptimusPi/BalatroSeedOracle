@@ -5,13 +5,6 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <!-- Overlay background (not clickable - modals only close via back button) -->
-        <Border x:Name="OverlayBackground"
-                Background="{StaticResource SemiTransparentBlack}"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                IsHitTestVisible="False" />
-
         <!-- Modal positioning grid -->
         <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
@@ -64,13 +57,6 @@
                             HorizontalAlignment="Stretch"
                             Margin="0"/>
 
-                    <!-- Subtle silver/light grey bottom edge highlight (inside Border so it clips to corners) -->
-                    <Rectangle Grid.Row="1"
-                               VerticalAlignment="Bottom"
-                               Height="2"
-                               Fill="{StaticResource ModalBorderSouth}"
-                               Margin="0,0,0,0"
-                               IsHitTestVisible="False"/>
                 </Grid>
             </Border>
         </Grid>

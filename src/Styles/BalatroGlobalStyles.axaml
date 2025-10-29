@@ -38,7 +38,7 @@
                 <Grid>
                     <!-- Dark drop shadow - creates 3D effect -->
                     <Border Name="DropShadow"
-                            Background="#00000033"
+                            Background="{StaticResource TransparentDark3}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Margin="2,2,0,0"/>
                     <!-- Dark bottom shadow -->
@@ -205,7 +205,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
         <Setter Property="BorderThickness" Value="3" />
         <Setter Property="Padding" Value="20" />
-        <Setter Property="BoxShadow" Value="0 4 8 0 #777e89" />
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}" />
     </Style>
     
     <!-- Card-like container (like the Common Sets area) - Dark inner panel -->
@@ -469,7 +469,7 @@
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="MinWidth" Value="24"/>
         <Setter Property="Height" Value="24"/>
-        <Setter Property="BoxShadow" Value="0 2 8 0 #4C000000"/>
+        <Setter Property="BoxShadow" Value="0 2 8 0 #22222222"/>
         <Setter Property="BorderBrush" Value="{StaticResource White}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
