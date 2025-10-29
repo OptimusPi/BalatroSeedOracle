@@ -75,6 +75,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        private void OnCardPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
+        {
+            // Play subtle card hover sound
+            SoundEffectService.Instance.PlayCardHover();
+
+            // No rotation code needed - the BalatroCardSwayBehavior handles all animation
+            // The invisible hitbox (sender) never rotates, preventing seizure-inducing flicker
+        }
+
         private void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             // Prevent starting a new drag if one is already in progress or animating
@@ -85,8 +94,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 Models.FilterItem? item = null;
 
-                // Handle Image, StackPanel, Grid, and Border elements
-                if (sender is Image image)
+                // Handle Border (invisible hitbox), Image, StackPanel, and Grid elements
+                if (sender is Border border)
+                {
+                    item = border.DataContext as Models.FilterItem;
+                }
+                else if (sender is Image image)
                 {
                     item = image.DataContext as Models.FilterItem;
                 }
@@ -97,10 +110,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 else if (sender is Grid grid)
                 {
                     item = grid.DataContext as Models.FilterItem;
-                }
-                else if (sender is Border border)
-                {
-                    item = border.DataContext as Models.FilterItem;
                 }
 
                 if (item != null)
@@ -190,6 +199,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     DebugLogger.Log("VisualBuilderTab", "No item found for drop zone drag");
                     return;
+                }
+
+                // Check which button was pressed - only handle left-click for dragging
+                var pointerPoint = e.GetCurrentPoint(grid);
+                if (!pointerPoint.Properties.IsLeftButtonPressed)
+                {
+                    return; // Not left click, ignore
                 }
 
                 var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
@@ -1021,10 +1037,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 Text = item.DisplayName,
                                 Foreground = Brushes.White,
-                                FontSize = 10,
+                                FontSize = 12,
                                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                                 Margin = new Avalonia.Thickness(0, 4, 0, 0),
-                                Opacity = 0.9,
+                                Opacity = 1,
                             },
                         },
                     },

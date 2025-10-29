@@ -93,7 +93,6 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#1A1D23"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <Style Selector="TextBlock.strip-value-text">
@@ -101,7 +100,6 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource LightCream}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
         </Style>
 
@@ -155,7 +153,7 @@
                                        Foreground="{StaticResource MediumGrey}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,2"/>
-                            <TextBlock Text="{Binding LoadedConfig.Name, FallbackValue='No filter loaded'}"
+                            <TextBlock Text="{Binding LoadedConfig.Name}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="12"
                                        Foreground="{StaticResource Gold}"
@@ -241,16 +239,6 @@
                                                 IsVisible="{Binding IsBatchSizeVisible}"
                                                 Margin="0,0,0,8"/>
 
-                        <!-- Continue Checkbox (All Seeds only) -->
-                        <CheckBox Name="ContinueCheckBox"
-                                  Content="Continue from last position"
-                                  IsChecked="{Binding ContinueFromLast}"
-                                  Foreground="{StaticResource White}"
-                                  FontFamily="{StaticResource BalatroFont}"
-                                  FontSize="11"
-                                  IsVisible="{Binding IsContinueVisible}"
-                                  Margin="0,0,0,8"/>
-
                         <!-- Seed Input (Single Seed only) -->
                         <StackPanel IsVisible="{Binding IsSeedInputVisible}"
                                     Margin="0,0,0,8">
@@ -289,22 +277,6 @@
                                                 IsVisible="{Binding IsWordListVisible}"
                                                 Margin="0,0,0,8"/>
 
-                        <Rectangle Height="1"
-                                   Fill="{StaticResource DarkBorder}"
-                                   Margin="0,0,0,8"
-                                   HorizontalAlignment="Stretch"/>
-
-                        <!-- Min Score (Always Visible) -->
-                        <controls:SpinnerControl Name="MinScoreSpinner"
-                                                Label="Min Score"
-                                                SpinnerType="min-score"
-                                                Value="{Binding MinScore}"
-                                                Minimum="0"
-                                                Maximum="5"
-                                                AllowAuto="True"
-                                                HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"
-                                                Margin="0,0,0,0"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -329,35 +301,71 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              Text="{Binding ConsoleText}"/>
 
-                    <!-- Buttons row -->
-                    <StackPanel Grid.Row="1"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                Spacing="12"
-                                Margin="0,12,0,0">
-                        <!-- COOK button -->
-                        <Button Name="CookButton"
-                                Content="{Binding CookButtonText}"
-                                Classes="cook-button"
-                                Classes.stop="{Binding IsSearching}"
-                                Command="{Binding ToggleSearchCommand}"
-                                FontFamily="{StaticResource BalatroFont}"
-                                FontSize="26"
-                                Height="56"
-                                MinWidth="240"/>
+                    <!-- Bottom controls area -->
+                    <Grid Grid.Row="1" Margin="0,12,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <!-- Clear Console button -->
-                        <Button Content="Clear Console"
-                                Command="{Binding ClearConsoleCommand}"
-                                FontFamily="{StaticResource BalatroFont}"
-                                FontSize="14"
-                                Height="40"
-                                MinWidth="120"
-                                Background="{StaticResource DarkGrey}"
-                                Foreground="{StaticResource White}"
-                                CornerRadius="6"
-                                Cursor="Hand"/>
-                    </StackPanel>
+                        <!-- Top row: Min Score and Continue Checkbox -->
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Spacing="16"
+                                    Margin="0,0,0,8">
+                            <!-- Min Score Spinner -->
+                            <controls:SpinnerControl Name="MinScoreSpinner"
+                                                    Label="Min Score"
+                                                    SpinnerType="min-score"
+                                                    Value="{Binding MinScore}"
+                                                    Minimum="0"
+                                                    Maximum="5"
+                                                    AllowAuto="True"
+                                                    Width="180"
+                                                    ShadowDirection="south-east"/>
+
+                            <!-- Continue Checkbox -->
+                            <CheckBox Name="ContinueCheckBox"
+                                      Content="Continue from last position"
+                                      IsChecked="{Binding ContinueFromLast}"
+                                      Foreground="{StaticResource White}"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="11"
+                                      IsVisible="{Binding IsContinueVisible}"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Bottom row: Buttons -->
+                        <StackPanel Grid.Row="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Spacing="12">
+                            <!-- COOK button -->
+                            <Button Name="CookButton"
+                                    Content="{Binding CookButtonText}"
+                                    Classes="cook-button"
+                                    Classes.stop="{Binding IsSearching}"
+                                    Command="{Binding ToggleSearchCommand}"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="24"
+                                    Height="52"
+                                    MinWidth="200"/>
+
+                            <!-- Clear Console button (compact square) -->
+                            <Button Content="X"
+                                    Command="{Binding ClearConsoleCommand}"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="20"
+                                    Width="52"
+                                    Height="52"
+                                    Background="{StaticResource Gold}"
+                                    Foreground="{StaticResource DarkGrey}"
+                                    CornerRadius="6"
+                                    Cursor="Hand"
+                                    ToolTip.Tip="Clear Console"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -380,7 +388,7 @@
                                 <TextBlock Text="Progress" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0.00}%', FallbackValue='0.00%'}"
+                                <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0.00}%'}"
                                            Classes="strip-value-text gold"/>
                             </Border>
                         </Grid>
@@ -393,7 +401,7 @@
                                 <TextBlock Text="Speed" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding SearchSpeed, FallbackValue='0 seeds/s'}"
+                                <TextBlock Text="{Binding SearchSpeed}"
                                            Classes="strip-value-text gold"/>
                             </Border>
                         </Grid>
@@ -406,7 +414,7 @@
                                 <TextBlock Text="Seeds" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding SeedsProcessed, StringFormat='{}{0:N0}', FallbackValue='0'}"
+                                <TextBlock Text="{Binding SeedsProcessed, StringFormat='{}{0:N0}'}"
                                            Classes="strip-value-text"/>
                             </Border>
                         </Grid>
@@ -419,7 +427,7 @@
                                 <TextBlock Text="Time" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding TimeElapsed, FallbackValue='00:00:00'}"
+                                <TextBlock Text="{Binding TimeElapsed}"
                                            Classes="strip-value-text"/>
                             </Border>
                         </Grid>
@@ -432,7 +440,7 @@
                                 <TextBlock Text="ETA" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding EstimatedTimeRemaining, FallbackValue='--:--:--'}"
+                                <TextBlock Text="{Binding EstimatedTimeRemaining}"
                                            Classes="strip-value-text cyan"/>
                             </Border>
                         </Grid>
@@ -445,7 +453,7 @@
                                 <TextBlock Text="Found" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding ResultsCount, StringFormat='{}{0:N0}', FallbackValue='0'}"
+                                <TextBlock Text="{Binding ResultsCount, StringFormat='{}{0:N0}'}"
                                            Classes="strip-value-text green"/>
                             </Border>
                         </Grid>
@@ -458,7 +466,7 @@
                                 <TextBlock Text="Rate" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding FindRate, FallbackValue='0.00%'}"
+                                <TextBlock Text="{Binding FindRate}"
                                            Classes="strip-value-text"/>
                             </Border>
                         </Grid>
@@ -471,7 +479,7 @@
                                 <TextBlock Text="Rarity" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding Rarity, FallbackValue='--'}"
+                                <TextBlock Text="{Binding Rarity}"
                                            Classes="strip-value-text gold"/>
                             </Border>
                         </Grid>

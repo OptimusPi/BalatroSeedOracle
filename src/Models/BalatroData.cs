@@ -399,12 +399,16 @@ namespace BalatroSeedOracle.Models
                 { "yorick", "Yorick" },
                 { "chicot", "Chicot" },
                 { "perkeo", "Perkeo" },
-                // Wildcard entries
-                { "anyjoker", "Any Joker" },
-                { "anycommon", "Any Common" },
-                { "anyuncommon", "Any Uncommon" },
-                { "anyrare", "Any Rare" },
-                { "anylegendary", "Any Legendary" },
+                // Wildcard entries (prefixed to avoid confusion with actual items)
+                { "wildcard_joker", "Any Joker" },
+                { "wildcard_jokercommon", "Any Common Joker" },
+                { "wildcard_jokeruncommon", "Any Uncommon Joker" },
+                { "wildcard_jokerrare", "Any Rare Joker" },
+                { "wildcard_jokerlegendary", "Any Legendary" },
+                { "wildcard_souljoker", "Any Legendary" }, // SoulJoker = Legendary in UI
+                { "wildcard_tarot", "Any Tarot" },
+                { "wildcard_spectral", "Any Spectral" },
+                { "wildcard_planet", "Any Planet" },
             };
 
             if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))

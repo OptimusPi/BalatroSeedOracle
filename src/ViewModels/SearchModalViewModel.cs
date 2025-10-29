@@ -99,28 +99,11 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _selectedStakeIndex = 0;
 
-        public string[] DeckDisplayValues { get; } =
-            new[]
-            {
-                "Red Deck",
-                "Blue Deck",
-                "Yellow Deck",
-                "Green Deck",
-                "Black Deck",
-                "Magic Deck",
-                "Nebula Deck",
-                "Ghost Deck",
-                "Abandoned Deck",
-                "Checkered Deck",
-                "Zodiac Deck",
-                "Painted Deck",
-                "Anaglyph Deck",
-                "Plasma Deck",
-                "Erratic Deck",
-            };
+        // Generate deck display values from BalatroData to ensure order matches
+        public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
 
-        public string[] StakeDisplayValues { get; } =
-            new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+        // Generate stake display values from BalatroData (strip " Stake" suffix for display)
+        public string[] StakeDisplayValues { get; } = BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
 
         [ObservableProperty]
         private string _selectedWordList = "None";
@@ -209,7 +192,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _findRate = "0.00%";
 
         [ObservableProperty]
-        private string _rarity = "1 in 0";
+        private string _rarity = "--";
 
         // Search button dynamic properties
         public string CookButtonText => IsSearching ? "STOP SEARCH" : "START SEARCH";

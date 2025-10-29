@@ -1187,7 +1187,7 @@
                                                                        FontSize="14"
                                                                        Foreground="{StaticResource LightGrey}"
                                                                        TextWrapping="Wrap"
-                                                                       Text="Start with no extra bonuses"/>
+                                                                       Text="{Binding DeckAndStakeSelector.SelectedDeckDescription}"/>
                                                         </StackPanel>
                                                     </Grid>
                                                 </Grid>
@@ -1229,6 +1229,10 @@
                                                             <Run Text=" -Orange Stake or Higher is required to filter for Jokers with Perishable Sticker"/>
                                                             <LineBreak />
                                                             <Run Text=" -Gold Stake, the highest, is required to filter for Jokers with Rental Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -This cute Blue Label at the top with the White Text is nifty. Let's add some more text. Scrolling is fun!"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -If you ever havin' a bad day it's okay to take a break and just breathe. And remember..... pifreak loves you!"/>
                                                         </TextBlock>
                                                     </ScrollViewer>
                                                 </Grid>
@@ -1338,16 +1342,15 @@
         </Style>
 
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="#8b0000"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="#660000"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">
             <!-- No background change - only triangle indicates selection -->
-            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
         <!-- Special blue styling for CREATE NEW FILTER -->

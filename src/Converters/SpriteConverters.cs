@@ -43,8 +43,9 @@ namespace BalatroSeedOracle.Converters
                     _ => null,
                 };
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("ShopItemSpriteConverter", $"Failed to get sprite for '{item.ItemName}' (Type: {item.TypeCategory}): {ex.Message}");
                 return null;
             }
         }
@@ -80,8 +81,9 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return spriteService.GetBoosterImage(pack.PackSpriteKey);
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("BoosterPackSpriteConverter", $"Failed to get booster sprite for '{pack.PackSpriteKey}': {ex.Message}");
                 return null;
             }
         }
@@ -117,8 +119,9 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return spriteService.GetTagImage(tag.TagSpriteKey);
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("TagSpriteConverter", $"Failed to get tag sprite for '{tag.TagSpriteKey}': {ex.Message}");
                 return null;
             }
         }
@@ -154,8 +157,9 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return spriteService.GetItemImage(itemType);
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("ItemTypeToSpriteConverter", $"Failed to get item sprite for type '{itemType}': {ex.Message}");
                 return null;
             }
         }
@@ -248,8 +252,9 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return spriteService.GetJokerSoulImage(itemName);
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("ItemNameToSoulFaceConverter", $"Failed to get soul sprite for '{itemName}': {ex.Message}");
                 return null;
             }
         }

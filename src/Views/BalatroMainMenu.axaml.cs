@@ -185,54 +185,75 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show search modal - now uses FilterSelectionModal as gateway
         /// </summary>
-        private async void ShowSearchModal()
+        private void ShowSearchModal()
         {
-            var result = await this.ShowFilterSelectionModal(enableSearch: true, enableEdit: true);
+            // Create FilterSelectionModal and show it as main modal content (NOT as a dialog)
+            var filterSelectionModal = new FilterSelectionModal();
+            var filterSelectionVM = new FilterSelectionModalViewModel(
+                enableSearch: true,
+                enableEdit: true,
+                enableCopy: false,
+                enableDelete: false,
+                enableAnalyze: false
+            );
+            filterSelectionModal.DataContext = filterSelectionVM;
 
-            // CRITICAL: Reset IsModalVisible when FilterSelectionModal closes, even if cancelled
-            if (ViewModel != null)
+            // Wire up ModalCloseRequested to handle user actions
+            filterSelectionVM.ModalCloseRequested += (s, e) =>
             {
-                ViewModel.IsModalVisible = false;
-            }
+                var result = filterSelectionVM.Result;
 
-            if (result.Cancelled)
-                return;
-
-            switch (result.Action)
-            {
-                case Models.FilterAction.Search:
-                    if (result.FilterId != null)
+                if (result.Cancelled)
+                {
+                    // User hit back/cancel - close modal
+                    HideModalContent();
+                    if (ViewModel != null)
                     {
-                        // Resolve filter id (filename without extension) to full path in JsonItemFilters
-                        var filtersDir = System.IO.Path.Combine(
-                            System.IO.Directory.GetCurrentDirectory(),
-                            "JsonItemFilters"
-                        );
-                        var configPath = System.IO.Path.Combine(
-                            filtersDir,
-                            result.FilterId + ".json"
-                        );
-                        this.ShowSearchModal(configPath);
+                        ViewModel.IsModalVisible = false;
                     }
-                    break;
+                    return;
+                }
 
-                case Models.FilterAction.Edit:
-                    // User clicked "Edit this Filter" from search modal - open designer
-                    if (result.FilterId != null)
-                        ShowFiltersModalDirect(result.FilterId);
-                    break;
+                switch (result.Action)
+                {
+                    case Models.FilterAction.Search:
+                        if (result.FilterId != null)
+                        {
+                            // Resolve filter id to full path
+                            var filtersDir = System.IO.Path.Combine(
+                                System.IO.Directory.GetCurrentDirectory(),
+                                "JsonItemFilters"
+                            );
+                            var configPath = System.IO.Path.Combine(
+                                filtersDir,
+                                result.FilterId + ".json"
+                            );
+                            // TRANSITION to SearchModal (no flicker - just content swap)
+                            ShowSearchModalWithFilter(configPath);
+                        }
+                        break;
 
-                case Models.FilterAction.CreateNew:
-                    // User clicked "Create New Filter" from search modal - open designer
-                    ShowFiltersModalDirect();
-                    break;
-            }
+                    case Models.FilterAction.Edit:
+                        if (result.FilterId != null)
+                            ShowFiltersModalDirect(result.FilterId);
+                        else
+                            ShowFiltersModalDirect(); // CreateNew
+                        break;
+
+                    case Models.FilterAction.CreateNew:
+                        ShowFiltersModalDirect();
+                        break;
+                }
+            };
+
+            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal - it has its own Back button!)
+            ShowModalContent(filterSelectionModal, "🔍 SELECT FILTER");
         }
 
         /// <summary>
         /// Show search modal with a specific filter loaded (overload for FilterSelectionModal flow)
         /// </summary>
-        private void ShowSearchModal(string configPath)
+        private void ShowSearchModalWithFilter(string configPath)
         {
             try
             {
@@ -330,7 +351,7 @@ namespace BalatroSeedOracle.Views
                 case Models.FilterAction.Delete:
                     // Delete the filter
                     if (result.FilterId != null)
-                        await DeleteFilter(result.FilterId);
+                        DeleteFilter(result.FilterId);
                     break;
             }
         }

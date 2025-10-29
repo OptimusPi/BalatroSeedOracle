@@ -101,7 +101,7 @@
 
                 <!-- Status Icon -->
                 <Border Grid.Column="0"
-                        Background="{Binding ValidationStatusColor, FallbackValue=#FFD700}"
+                        Background="{Binding ValidationStatusColor}"
                         Width="8" Height="8"
                         CornerRadius="4"
                         Margin="0,0,8,0"
@@ -109,7 +109,7 @@
 
                 <!-- Status Text -->
                 <TextBlock Grid.Column="1"
-                           Text="{Binding ValidationStatus, FallbackValue='Ready'}"
+                           Text="{Binding ValidationStatus}"
                            Foreground="#cccccc"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="12"

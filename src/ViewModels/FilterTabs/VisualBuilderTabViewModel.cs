@@ -348,7 +348,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             var group = new ItemGroup
             {
                 GroupName = groupName,
-                Items = new ObservableCollection<FilterItem>(items)
+                Items = new ObservableCollection<FilterItem>(items),
             };
             GroupedItems.Add(group);
         }
@@ -771,13 +771,34 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         Type = "Joker",
                         Category = "Favorite",
                         IsFavorite = true,
-                        DisplayName = FormatDisplayName(favoriteName),
+                        DisplayName = BalatroData.GetDisplayNameFromSprite(favoriteName),
                         ItemImage = spriteService.GetJokerImage(favoriteName),
                     };
                     AllJokers.Add(item);
                 }
 
-                // Load Soul Jokers FIRST (they appear at top as legendary)
+                // Add wildcard joker entries FIRST (at the very top)
+                var wildcardJokers = new[]
+                {
+                    ("Wildcard_Joker", "Joker", "Common"),
+                    ("Wildcard_JokerCommon", "Joker", "Common"),
+                    ("Wildcard_JokerUncommon", "Joker", "Uncommon"),
+                    ("Wildcard_JokerRare", "Joker", "Rare"),
+                    ("Wildcard_JokerLegendary", "SoulJoker", "Legendary")
+                };
+                foreach (var (name, type, category) in wildcardJokers)
+                {
+                    AllJokers.Add(new FilterItem
+                    {
+                        Name = name,
+                        Type = type,
+                        Category = category,
+                        DisplayName = BalatroData.GetDisplayNameFromSprite(name),
+                        ItemImage = spriteService.GetJokerImage("joker"), // Use basic joker as placeholder
+                    });
+                }
+
+                // Load Soul Jokers SECOND (after wildcards)
                 var legendaryJokers = new[] { "Triboulet", "Yorick", "Chicot", "Perkeo", "Canio" };
                 foreach (var legendaryName in legendaryJokers)
                 {
@@ -786,7 +807,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         Name = legendaryName,
                         Type = "SoulJoker",
                         Category = "Legendary",
-                        DisplayName = FormatDisplayName(legendaryName),
+                        DisplayName = BalatroData.GetDisplayNameFromSprite(legendaryName),
                         ItemImage = spriteService.GetJokerImage(legendaryName),
                     };
                     AllJokers.Add(item);
@@ -821,7 +842,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             Name = jokerName,
                             Type = "Joker",
                             Category = rarity, // Actual rarity from BalatroData
-                            DisplayName = FormatDisplayName(jokerName),
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(jokerName),
                             ItemImage = spriteService.GetJokerImage(jokerName),
                         };
                         AllJokers.Add(item);
@@ -837,7 +858,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = tagName,
                             Type = "SmallBlindTag",
-                            DisplayName = FormatDisplayName(tagName),
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(tagName),
                             ItemImage = spriteService.GetTagImage(tagName),
                         };
                         AllTags.Add(item);
@@ -853,7 +874,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = voucherName,
                             Type = "Voucher",
-                            DisplayName = FormatDisplayName(voucherName),
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(voucherName),
                             ItemImage = spriteService.GetVoucherImage(voucherName),
                         };
                         AllVouchers.Add(item);
@@ -861,15 +882,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Tarots from BalatroData
+                // Add wildcard tarot entry FIRST (at the very top)
+                AllTarots.Add(new FilterItem
+                {
+                    Name = "Wildcard_Tarot",
+                    Type = "Tarot",
+                    DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Tarot"),
+                    ItemImage = spriteService.GetTarotImage("TheFool"), // Use The Fool as placeholder
+                });
+
                 if (BalatroData.TarotCards?.Keys != null)
                 {
                     foreach (var tarotName in BalatroData.TarotCards.Keys)
                     {
+                        // Skip old wildcard entries - we have Wildcard_ prefixed ones now
+                        if (tarotName == "any" || tarotName == "*")
+                            continue;
+
                         var item = new FilterItem
                         {
                             Name = tarotName,
                             Type = "Tarot",
-                            DisplayName = FormatDisplayName(tarotName),
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(tarotName),
                             ItemImage = spriteService.GetTarotImage(tarotName),
                         };
                         AllTarots.Add(item);
@@ -879,12 +913,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Load Planets from BalatroData
                 try
                 {
+                    // Add wildcard planet entry FIRST (at the very top)
+                    AllPlanets.Add(new FilterItem
+                    {
+                        Name = "Wildcard_Planet",
+                        Type = "Planet",
+                        DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Planet"),
+                        ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Use Pluto as placeholder
+                    });
+
                     if (BalatroData.PlanetCards?.Keys != null)
                     {
-                        // Filter out wildcard duplicates: "any", "*", "anyplanet" all map to "Any Planet"
-                        // Only keep "anyplanet" as the canonical wildcard
-                        var seenAnyPlanet = false;
-
                         DebugLogger.Log(
                             "VisualBuilderTab",
                             $"Loading {BalatroData.PlanetCards.Keys.Count} planets"
@@ -894,22 +933,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             try
                             {
                                 // Skip duplicate "Any Planet" wildcards
-                                if (planetName == "any" || planetName == "*")
+                                if (planetName == "any" || planetName == "*" || planetName == "anyplanet")
                                     continue;
-
-                                // Only add one "Any Planet" wildcard
-                                if (planetName == "anyplanet")
-                                {
-                                    if (seenAnyPlanet)
-                                        continue;
-                                    seenAnyPlanet = true;
-                                }
 
                                 var item = new FilterItem
                                 {
                                     Name = planetName,
                                     Type = "Planet",
-                                    DisplayName = FormatDisplayName(planetName),
+                                    DisplayName = BalatroData.GetDisplayNameFromSprite(planetName),
                                     ItemImage = spriteService.GetPlanetCardImage(planetName),
                                 };
                                 AllPlanets.Add(item);
@@ -933,15 +964,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Spectrals from BalatroData
+                // Add wildcard spectral entry FIRST (at the very top)
+                AllSpectrals.Add(new FilterItem
+                {
+                    Name = "Wildcard_Spectral",
+                    Type = "Spectral",
+                    DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Spectral"),
+                    ItemImage = spriteService.GetSpectralImage("Familiar"), // Use Familiar as placeholder
+                });
+
                 if (BalatroData.SpectralCards?.Keys != null)
                 {
                     foreach (var spectralName in BalatroData.SpectralCards.Keys)
                     {
+                        // Skip old wildcard entries - we have Wildcard_ prefixed ones now
+                        if (spectralName == "any" || spectralName == "*")
+                            continue;
+
                         var item = new FilterItem
                         {
                             Name = spectralName,
                             Type = "Spectral",
-                            DisplayName = FormatDisplayName(spectralName),
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(spectralName),
                             ItemImage = spriteService.GetSpectralImage(spectralName),
                         };
                         AllSpectrals.Add(item);
@@ -961,7 +1005,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 {
                                     Name = bossName,
                                     Type = "Boss",
-                                    DisplayName = FormatDisplayName(bossName),
+                                    DisplayName = BalatroData.GetDisplayNameFromSprite(bossName),
                                     ItemImage = spriteService.GetBossImage(bossName),
                                 };
                                 AllBosses.Add(item);
@@ -1105,7 +1149,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var joker in AllJokers)
             {
-                if (string.IsNullOrEmpty(filter) || joker.Name.ToLowerInvariant().Contains(filter))
+                if (string.IsNullOrEmpty(filter)
+                    || joker.Name.ToLowerInvariant().Contains(filter)
+                    || joker.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredJokers.Add(joker);
                 }
@@ -1113,7 +1159,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var tag in AllTags)
             {
-                if (string.IsNullOrEmpty(filter) || tag.Name.ToLowerInvariant().Contains(filter))
+                if (string.IsNullOrEmpty(filter)
+                    || tag.Name.ToLowerInvariant().Contains(filter)
+                    || tag.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredTags.Add(tag);
                 }
@@ -1121,9 +1169,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var voucher in AllVouchers)
             {
-                if (
-                    string.IsNullOrEmpty(filter) || voucher.Name.ToLowerInvariant().Contains(filter)
-                )
+                if (string.IsNullOrEmpty(filter)
+                    || voucher.Name.ToLowerInvariant().Contains(filter)
+                    || voucher.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredVouchers.Add(voucher);
                 }
@@ -1131,7 +1179,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var tarot in AllTarots)
             {
-                if (string.IsNullOrEmpty(filter) || tarot.Name.ToLowerInvariant().Contains(filter))
+                if (string.IsNullOrEmpty(filter)
+                    || tarot.Name.ToLowerInvariant().Contains(filter)
+                    || tarot.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredTarots.Add(tarot);
                 }
@@ -1139,7 +1189,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var planet in AllPlanets)
             {
-                if (string.IsNullOrEmpty(filter) || planet.Name.ToLowerInvariant().Contains(filter))
+                if (string.IsNullOrEmpty(filter)
+                    || planet.Name.ToLowerInvariant().Contains(filter)
+                    || planet.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredPlanets.Add(planet);
                 }
@@ -1147,10 +1199,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var spectral in AllSpectrals)
             {
-                if (
-                    string.IsNullOrEmpty(filter)
+                if (string.IsNullOrEmpty(filter)
                     || spectral.Name.ToLowerInvariant().Contains(filter)
-                )
+                    || spectral.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredSpectrals.Add(spectral);
                 }
@@ -1158,7 +1209,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var boss in AllBosses)
             {
-                if (string.IsNullOrEmpty(filter) || boss.Name.ToLowerInvariant().Contains(filter))
+                if (string.IsNullOrEmpty(filter)
+                    || boss.Name.ToLowerInvariant().Contains(filter)
+                    || boss.DisplayName.ToLowerInvariant().Contains(filter))
                 {
                     FilteredBosses.Add(boss);
                 }

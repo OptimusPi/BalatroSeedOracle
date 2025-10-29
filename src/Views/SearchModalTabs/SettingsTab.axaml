@@ -47,7 +47,7 @@
                     <!-- Deck name and description -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
                         <TextBlock Name="DeckNameText"
-                                   Text="{Binding DeckSelection, FallbackValue='Red Deck'}"
+                                   Text="{Binding DeckSelection}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="16"
                                   
@@ -57,7 +57,7 @@
                                    FontSize="14"
                                    Foreground="{StaticResource LightGrey}"
                                    TextWrapping="Wrap"
-                                   Text="Start with no extra bonuses"/>
+                                   Text="{Binding DeckAndStakeSelector.SelectedDeckDescription}"/>
                     </StackPanel>
                 </Grid>
             </Grid>

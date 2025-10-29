@@ -40,9 +40,9 @@
                         BorderBrush="{StaticResource ModalBorder}"
                         BorderThickness="4"
                         BoxShadow="{StaticResource StandardModalShadow}"
-                        ClipToBounds="False"
-                        Padding="4,4,4,0">
-                
+                        ClipToBounds="True"
+                        Padding="4,4,4,4">
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>    <!-- Content -->
@@ -63,17 +63,16 @@
                             Classes="back-button"
                             HorizontalAlignment="Stretch"
                             Margin="0"/>
+
+                    <!-- Subtle silver/light grey bottom edge highlight (inside Border so it clips to corners) -->
+                    <Rectangle Grid.Row="1"
+                               VerticalAlignment="Bottom"
+                               Height="2"
+                               Fill="{StaticResource ModalBorderSouth}"
+                               Margin="0,0,0,0"
+                               IsHitTestVisible="False"/>
                 </Grid>
             </Border>
-
-            <!-- Subtle silver/light grey bottom edge (Balatro style) -->
-            <Rectangle VerticalAlignment="Bottom"
-                       Height="1"
-                       Fill="{StaticResource ModalBorderSouth}"
-                       Margin="4,0,4,4"
-                       RadiusX="20"
-                       RadiusY="20"
-                       IsHitTestVisible="False"/>
         </Grid>
         </Grid>
     </Grid>

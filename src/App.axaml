@@ -70,8 +70,8 @@
         <SolidColorBrush x:Key="ItemConfigMediumBg">#424e54</SolidColorBrush>
         <SolidColorBrush x:Key="MainBackground">#7A9E9F</SolidColorBrush>
         <SolidColorBrush x:Key="Border">#7A9E9F</SolidColorBrush>
-        <SolidColorBrush x:Key="Background">#B8D8D8</SolidColorBrush>
-        <SolidColorBrush x:Key="LightContentBackground">#B8D8D8</SolidColorBrush>
+        <SolidColorBrush x:Key="Background">#5f8a8d</SolidColorBrush>
+        <SolidColorBrush x:Key="LightContentBackground">#5f8a8d</SolidColorBrush>
         <SolidColorBrush x:Key="AccentGreen">#35bd86</SolidColorBrush>
         <SolidColorBrush x:Key="TerminalBackground">#374244</SolidColorBrush>
         <SolidColorBrush x:Key="TerminalGreen">#35bd86</SolidColorBrush>

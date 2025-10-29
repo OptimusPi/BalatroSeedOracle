@@ -19,6 +19,19 @@ namespace BalatroSeedOracle.Services
         private static SpriteService _instance = null!;
         public static SpriteService Instance => _instance ??= new SpriteService();
 
+        /// <summary>
+        /// Normalizes a sprite name for consistent lookup: trims whitespace, removes spaces and underscores, converts to lowercase.
+        /// This ensures "Red Deck", "red_deck", "RedDeck", and "reddeck" all map to the same key.
+        /// </summary>
+        private static string NormalizeSpriteName(string name)
+        {
+            return name
+                .Trim()
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToLowerInvariant();
+        }
+
         private Dictionary<string, SpritePosition> jokerPositions = null!;
         private Dictionary<string, SpritePosition> tagPositions = null!;
         private Dictionary<string, SpritePosition> tarotPositions = null!;
@@ -281,11 +294,7 @@ namespace BalatroSeedOracle.Services
                             && val.TryGetProperty("y", out var yEl)
                         )
                         {
-                            var normalizedKey = keyOriginal
-                                .Trim()
-                                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                                .Replace("_", string.Empty, StringComparison.Ordinal)
-                                .ToLowerInvariant();
+                            var normalizedKey = NormalizeSpriteName(keyOriginal);
 
                             var pos = new SpritePosition
                             {
@@ -426,7 +435,7 @@ namespace BalatroSeedOracle.Services
             throw new FileNotFoundException($"Asset not found: {avaresUri}");
         }
 
-        private static IImage? GetSpriteImage(
+        private static IImage GetSpriteImage(
             string name_in,
             Dictionary<string, SpritePosition> positions,
             Bitmap? spriteSheet,
@@ -435,20 +444,25 @@ namespace BalatroSeedOracle.Services
             string category
         )
         {
-            if (string.IsNullOrEmpty(name_in) || positions == null || spriteSheet == null)
-            {
-                return null;
-            }
+            // FAIL LOUDLY: If basic preconditions aren't met, the app is fundamentally broken
+            System.Diagnostics.Debug.Assert(!string.IsNullOrEmpty(name_in), $"[SPRITE SERVICE] name_in is null or empty for category '{category}'");
+            System.Diagnostics.Debug.Assert(positions != null, $"[SPRITE SERVICE] positions dictionary is null for category '{category}'");
+            System.Diagnostics.Debug.Assert(spriteSheet != null, $"[SPRITE SERVICE] spriteSheet is null for category '{category}' - assets failed to load!");
 
-            // Simple approach: just convert to lowercase and remove all spaces
-            string name = name_in
-                .Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            if (string.IsNullOrEmpty(name_in))
+                throw new ArgumentException($"Sprite name cannot be null or empty (category: {category})", nameof(name_in));
+
+            if (positions == null)
+                throw new InvalidOperationException($"Sprite positions dictionary is null for category '{category}' - SpriteService failed to initialize properly!");
+
+            if (spriteSheet == null)
+                throw new InvalidOperationException($"Sprite sheet is null for category '{category}' - Assets failed to load! Check that all sprite assets are present.");
+
+            // Normalize the sprite name for consistent lookup
+            string name = NormalizeSpriteName(name_in);
 
             // Try the normalized name
-            if (positions!.TryGetValue(name, out var pos))
+            if (positions.TryGetValue(name, out var pos))
             {
                 int x = pos.Pos.X * spriteWidth;
                 int y = pos.Pos.Y * spriteHeight;
@@ -475,7 +489,9 @@ namespace BalatroSeedOracle.Services
                     }
                 }
 
-                return null;
+                // FAIL LOUDLY: Missing sprite data means the JSON metadata is incomplete or sprite name is wrong
+                var availableKeys = string.Join(", ", positions.Keys.Where(k => k.Contains(name.Substring(0, Math.Min(3, name.Length)), StringComparison.OrdinalIgnoreCase)).Take(5));
+                throw new KeyNotFoundException($"Sprite '{name_in}' (normalized: '{name}') not found in {category} positions. Similar keys: {availableKeys}");
             }
         }
 
@@ -568,11 +584,7 @@ namespace BalatroSeedOracle.Services
         )
         {
             ArgumentNullException.ThrowIfNull(name_in);
-            var name = name_in
-                .Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            var name = NormalizeSpriteName(name_in);
             BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'"
@@ -730,7 +742,7 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            // Handle wildcard values (Any, *, etc.) - return a placeholder or null
+            // Handle wildcard values (Any, *, etc.) - return a transparent placeholder
             if (
                 name.Equals("Any", StringComparison.OrdinalIgnoreCase)
                 || name == "*"
@@ -738,8 +750,14 @@ namespace BalatroSeedOracle.Services
                 || name.Equals("None", StringComparison.OrdinalIgnoreCase)
             )
             {
-                // TODO: Return a wildcard placeholder image
-                return null;
+                // Return a 1x1 transparent bitmap as placeholder
+                var bitmap = new Avalonia.Media.Imaging.WriteableBitmap(
+                    new Avalonia.PixelSize(1, 1),
+                    new Avalonia.Vector(96, 96),
+                    Avalonia.Platform.PixelFormat.Bgra8888,
+                    Avalonia.Platform.AlphaFormat.Premul
+                );
+                return bitmap;
             }
 
             // Strip unique key suffix (#1, #2, etc.) from duplicate items
@@ -769,10 +787,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // Normalize the name for lookup
-            var normalizedName = name.Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            var normalizedName = NormalizeSpriteName(name);
 
             // Check jokers first (most common)
             if (jokerPositions.ContainsKey(normalizedName))
@@ -877,10 +892,7 @@ namespace BalatroSeedOracle.Services
         // New methods for deck, enhancement, and seal sprites
         public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
-            var normalized = name.Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            var normalized = NormalizeSpriteName(name);
             if (!deckPositions.TryGetValue(normalized, out var pos))
             {
                 DebugLogger.LogError(
@@ -1067,9 +1079,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // SmallBlind and BigBlind are not actual bosses - they're tags
-            var normalizedName = name.Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            var normalizedName = NormalizeSpriteName(name);
             if (normalizedName == "smallblind" || normalizedName == "bigblind")
             {
                 return GetTagImage(name); // Redirect to tag images
@@ -1140,10 +1150,7 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            var normalizedName = blindType
-                .Trim()
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .ToLowerInvariant();
+            var normalizedName = NormalizeSpriteName(blindType);
             if (!blindPositions.TryGetValue(normalizedName, out var position))
             {
                 return null;
@@ -1354,11 +1361,7 @@ namespace BalatroSeedOracle.Services
 
             foreach (var kvp in sprites)
             {
-                var normalizedKey = kvp
-                    .Key.Trim()
-                    .Replace(" ", string.Empty, StringComparison.Ordinal)
-                    .Replace("_", string.Empty, StringComparison.Ordinal)
-                    .ToLowerInvariant();
+                var normalizedKey = NormalizeSpriteName(kvp.Key);
 
                 result[normalizedKey] = new SpritePosition
                 {

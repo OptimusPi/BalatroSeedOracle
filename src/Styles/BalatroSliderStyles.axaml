@@ -34,7 +34,7 @@
                                                 Cursor="Hand">
                                             <Border.Styles>
                                                 <Style Selector="Border:pointerover">
-                                                    <Setter Property="Background" Value="#8b0000"/>
+                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
                                                 </Style>
                                             </Border.Styles>
                                         </Border>

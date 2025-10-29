@@ -224,8 +224,7 @@
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">
-            <Setter Property="Background" Value="#660000"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
         <!-- Special blue styling for CREATE NEW FILTER -->

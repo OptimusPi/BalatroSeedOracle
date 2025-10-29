@@ -51,11 +51,14 @@ namespace BalatroSeedOracle.Services
 
         // Persistent DuckDB connection for database operations
         private readonly DuckDBConnection _connection;
-        private static readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender =
-            new();
+        private readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender = new();
 
         // Track last successful manual flush (for diagnostics only)
         private DateTime _lastAppenderFlush = DateTime.UtcNow;
+
+        // COUNT(*) caching for performance
+        private volatile int _cachedResultCount = -1; // -1 means not cached
+        private readonly object _countCacheLock = new();
 
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -254,6 +257,19 @@ namespace BalatroSeedOracle.Services
                         "CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);";
                     createIndex.ExecuteNonQuery();
                 }
+
+                // Create indexes for all tally columns to accelerate sorting
+                for (int i = 2; i < _columnNames.Count; i++)
+                {
+                    var columnName = _columnNames[i];
+                    using (var createTallyIndex = _connection.CreateCommand())
+                    {
+                        createTallyIndex.CommandText =
+                            $"CREATE INDEX IF NOT EXISTS idx_{columnName} ON results({columnName} DESC);";
+                        createTallyIndex.ExecuteNonQuery();
+                    }
+                }
+
                 using (var createMeta = _connection.CreateCommand())
                 {
                     createMeta.CommandText =
@@ -309,6 +325,14 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        private void InvalidateCountCache()
+        {
+            lock (_countCacheLock)
+            {
+                _cachedResultCount = -1;
+            }
+        }
+
         private void AddSearchResult(SearchResult result)
         {
             if (!_dbInitialized)
@@ -336,6 +360,9 @@ namespace BalatroSeedOracle.Services
                     row.AppendValue(val);
                 }
                 row.EndRow();
+
+                // Invalidate count cache after successful insert
+                InvalidateCountCache();
             }
             catch (Exception ex)
             {
@@ -362,8 +389,9 @@ namespace BalatroSeedOracle.Services
             // Rely on row.EndRow() visibility; do NOT close appender mid-search.
 
             using var cmd = _connection.CreateCommand();
-            cmd.CommandText =
-                $"SELECT * FROM results ORDER BY score DESC LIMIT {limit} OFFSET {offset}";
+            cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";
+            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
+            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(offset));
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -460,8 +488,11 @@ namespace BalatroSeedOracle.Services
             // Rely on row.EndRow() visibility; appender stays open during active search.
 
             using var cmd = _connection.CreateCommand();
+            // Column name is validated against _columnNames whitelist, safe to interpolate
+            // LIMIT is parameterized for safety
             cmd.CommandText =
-                $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT {limit}";
+                $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT ?";
+            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -514,13 +545,25 @@ namespace BalatroSeedOracle.Services
             if (!_dbInitialized)
                 throw new InvalidOperationException("Database not initialized");
 
+            // Check cache first
+            if (_cachedResultCount >= 0)
+                return _cachedResultCount;
+
             // Force flush to ensure all buffered results are counted
             ForceFlush();
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM results";
             var v = await cmd.ExecuteScalarAsync();
-            return v == null ? 0 : Convert.ToInt32(v);
+            var count = v == null ? 0 : Convert.ToInt32(v);
+
+            // Cache the result
+            lock (_countCacheLock)
+            {
+                _cachedResultCount = count;
+            }
+
+            return count;
         }
 
         public async Task<int> ExportResultsAsync(string filePath)

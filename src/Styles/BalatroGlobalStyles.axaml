@@ -301,7 +301,7 @@
     <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
@@ -500,7 +500,7 @@
         <Setter Property="Background" Value="{StaticResource Red}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="20"/>
         <Setter Property="MinHeight" Value="46"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="MinWidth" Value="128"/>

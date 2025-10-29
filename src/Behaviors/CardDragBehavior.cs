@@ -73,7 +73,10 @@ namespace BalatroSeedOracle.Behaviors
             // PROPER SOLUTION: Find the first child control to apply transforms to
             // The parent (AssociatedObject) keeps its static hitbox for pointer events
             // Only the visual child gets transformed, preventing hitbox rotation issues
-            if (AssociatedObject is Avalonia.Controls.Decorator decorator && decorator.Child is Control child)
+            if (
+                AssociatedObject is Avalonia.Controls.Decorator decorator
+                && decorator.Child is Control child
+            )
             {
                 _visualChild = child;
             }
@@ -95,11 +98,7 @@ namespace BalatroSeedOracle.Behaviors
             _transformGroup.Children.Add(_rotateTransform);
 
             // Apply transforms to the VISUAL CHILD, not the parent container
-            _visualChild.RenderTransformOrigin = new RelativePoint(
-                0.5,
-                0.5,
-                RelativeUnit.Relative
-            );
+            _visualChild.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
             _visualChild.RenderTransform = _transformGroup;
 
             // Attach pointer events to the PARENT (which has static hitbox)
