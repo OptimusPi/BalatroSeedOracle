@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Avalonia.Media;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
@@ -65,7 +66,6 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<FilterItemViewModel> _filterItems = new();
 
-        // Separate collections for each tab (Balatro Challenges style)
         [ObservableProperty]
         private ObservableCollection<FilterItemViewModel> _mustHaveItems = new();
 
@@ -101,9 +101,9 @@ namespace BalatroSeedOracle.ViewModels
 
         // Dynamic text for the SELECT button in SearchModal
         [ObservableProperty]
-        private string _selectButtonText = "SEARCH WITH THIS FILTER";
+        private string _selectButtonText = "Search Seeds with this Filter";
 
-        // Triangle X position for downward-pointing triangle above tabs (Balatro Challenges style)
+        // Triangle X position for downward-pointing triangle above tabs
         [ObservableProperty]
         private double _selectedTabTriangleX = 30; // Initial position for first tab
 
@@ -364,7 +364,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Label = "Description",
                             Value = desc,
-                            Color = "#FFFFFF",
+                            Color = UIColors.White,
                         }
                     );
                     SelectedFilterDescription = desc;
@@ -385,7 +385,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Label = "Must Have",
                             Value = $"{mustProp.GetArrayLength()} items",
-                            Color = "#ff4c40",
+                            Color = UIColors.MustHaveColor,
                         }
                     );
                 }
@@ -407,7 +407,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Label = "Should Have",
                             Value = $"{shouldProp.GetArrayLength()} items",
-                            Color = "#0093ff",
+                            Color = UIColors.ShouldHaveColor,
                         }
                     );
                 }
@@ -429,7 +429,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Label = "Must Not Have",
                             Value = $"{mustNotProp.GetArrayLength()} items",
-                            Color = "#ff9800",
+                            Color = UIColors.BannedColor,
                         }
                     );
                 }
@@ -444,7 +444,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Label = "Target Seeds",
                             Value = seedCountProp.GetInt32().ToString(),
-                            Color = "#ffd700",
+                            Color = UIColors.InfoColor,
                         }
                     );
             }

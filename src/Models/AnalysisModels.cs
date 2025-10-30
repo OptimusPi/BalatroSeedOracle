@@ -50,11 +50,11 @@ namespace BalatroSeedOracle.Models
     public class ShopItemModel
     {
         public MotelyItemTypeCategory TypeCategory { get; set; }
-        public object ItemValue { get; set; } = null!;
+        public MotelyItemType ItemType { get; set; }
         public MotelyItemEdition Edition { get; set; }
         public bool HasEdition => Edition != MotelyItemEdition.None;
 
-        public string ItemName => ItemValue?.ToString() ?? "";
+        public string ItemName => FormatUtils.FormatDisplayName(ItemType.ToString());
         public string EditionName => Edition.ToString();
 
         // For sprite binding
@@ -63,20 +63,7 @@ namespace BalatroSeedOracle.Models
         public bool IsPlanet => TypeCategory == MotelyItemTypeCategory.PlanetCard;
         public bool IsSpectral => TypeCategory == MotelyItemTypeCategory.SpectralCard;
 
-        public string SpriteKey
-        {
-            get
-            {
-                return TypeCategory switch
-                {
-                    MotelyItemTypeCategory.Joker => $"joker_{ItemValue?.ToString()}",
-                    MotelyItemTypeCategory.TarotCard => $"tarot_{ItemValue?.ToString()}",
-                    MotelyItemTypeCategory.PlanetCard => $"planet_{ItemValue?.ToString()}",
-                    MotelyItemTypeCategory.SpectralCard => $"spectral_{ItemValue?.ToString()}",
-                    _ => "",
-                };
-            }
-        }
+        public string SpriteKey => ItemType.ToString().ToLowerInvariant();
 
         public IBrush EditionColor
         {

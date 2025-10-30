@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -9,6 +10,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
@@ -233,17 +235,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (vm.SelectedMust.Contains(item))
                 {
                     _sourceDropZone = "MustDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM MUST: {item.Name}");
+                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Must zone: {item.Name}");
                 }
                 else if (vm.SelectedShould.Contains(item))
                 {
                     _sourceDropZone = "ShouldDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM SHOULD: {item.Name}");
+                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Should zone: {item.Name}");
                 }
                 else if (vm.SelectedMustNot.Contains(item))
                 {
                     _sourceDropZone = "MustNotDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"🎯 DRAG FROM MUST NOT: {item.Name}");
+                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from MustNot zone: {item.Name}");
                 }
 
                 // Now start the drag operation
@@ -403,6 +405,54 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        /// <summary>
+        /// Find if the cursor is over a FilterOperatorControl within a drop zone.
+        /// Returns the FilterOperatorItem if found, otherwise null.
+        /// </summary>
+        private Models.FilterOperatorItem? FindOperatorAtPosition(
+            Avalonia.Point cursorPos,
+            string zoneName,
+            ViewModels.FilterTabs.VisualBuilderTabViewModel vm
+        )
+        {
+            if (_topLevel == null)
+                return null;
+
+            // Get the appropriate collection based on zone
+            System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection = zoneName switch
+            {
+                "MustDropZone" => vm.SelectedMust,
+                "ShouldDropZone" => vm.SelectedShould,
+                "MustNotDropZone" => vm.SelectedMustNot,
+                _ => null
+            };
+
+            if (collection == null)
+                return null;
+
+            // Find all FilterOperatorControls in the visual tree
+            var operators = collection.OfType<Models.FilterOperatorItem>();
+
+            foreach (var operatorItem in operators)
+            {
+                // Find all FilterOperatorControl visuals
+                var operatorControls = this.GetVisualDescendants()
+                    .OfType<Components.FilterOperatorControl>()
+                    .Where(c => c.DataContext == operatorItem);
+
+                foreach (var operatorControl in operatorControls)
+                {
+                    // Check if cursor is over this operator control
+                    if (IsPointOverControl(cursorPos, operatorControl, _topLevel))
+                    {
+                        return operatorItem;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private void RemoveDragOverClassExcept(Border? exceptZone)
         {
             var mustZone = this.FindControl<Border>("MustDropZone");
@@ -435,7 +485,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG RELEASED");
+                DebugLogger.Log("VisualBuilderTab", "Manual drag operation released");
 
                 // Remove all visual feedback
                 RemoveDragOverClassExcept(null);
@@ -568,18 +618,53 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // Play card drop sound
                         SoundEffectService.Instance.PlayCardDrop();
 
-                        // Add to target zone (allows duplicates from shelf!)
-                        switch (zoneName)
+                        // Check if dropping onto an operator (nested drop zone)
+                        var targetOperator = FindOperatorAtPosition(cursorPos, zoneName, vm);
+
+                        if (targetOperator != null && _draggedItem is not Models.FilterOperatorItem)
                         {
-                            case "MustDropZone":
-                                vm.AddToMustCommand.Execute(_draggedItem);
-                                break;
-                            case "ShouldDropZone":
-                                vm.AddToShouldCommand.Execute(_draggedItem);
-                                break;
-                            case "MustNotDropZone":
-                                vm.AddToMustNotCommand.Execute(_draggedItem);
-                                break;
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"📦 Adding {_draggedItem.Name} to {targetOperator.OperatorType} operator"
+                            );
+                            // Add to operator's children instead of main zone
+                            targetOperator.Children.Add(_draggedItem);
+                        }
+                        else if (_draggedItem is Models.FilterOperatorItem)
+                        {
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
+                            );
+                            // Add operator to zone (operators can't go inside operators)
+                            switch (zoneName)
+                            {
+                                case "MustDropZone":
+                                    vm.AddToMustCommand.Execute(_draggedItem);
+                                    break;
+                                case "ShouldDropZone":
+                                    vm.AddToShouldCommand.Execute(_draggedItem);
+                                    break;
+                                case "MustNotDropZone":
+                                    vm.AddToMustNotCommand.Execute(_draggedItem);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            // Add to target zone (allows duplicates from shelf!)
+                            switch (zoneName)
+                            {
+                                case "MustDropZone":
+                                    vm.AddToMustCommand.Execute(_draggedItem);
+                                    break;
+                                case "ShouldDropZone":
+                                    vm.AddToShouldCommand.Execute(_draggedItem);
+                                    break;
+                                case "MustNotDropZone":
+                                    vm.AddToMustNotCommand.Execute(_draggedItem);
+                                    break;
+                            }
                         }
                     }
                 }
@@ -911,7 +996,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {
-            DebugLogger.Log("VisualBuilderTab", $"🫡 CreateDragAdorner beginning,.......");
+            DebugLogger.Log("VisualBuilderTab", $"Creating drag adorner for item: {item?.Name}");
 
             try
             {
@@ -1002,7 +1087,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 imageGrid.Children.Add(
                     new Image
                     {
-                        Source = item.ItemImage,
+                        Source = item.ItemImage!,  // Non-null: every FilterItem must have an image
                         Width = 71,
                         Height = 95,
                         Stretch = Stretch.Uniform,

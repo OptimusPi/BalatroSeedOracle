@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
@@ -161,7 +162,7 @@ namespace BalatroSeedOracle.Views.Modals
                 new DoubleTransition
                 {
                     Property = Border.OpacityProperty,
-                    Duration = TimeSpan.FromMilliseconds(200),
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.FastAnimationDurationMs),
                     Easing = new CubicEaseOut(),
                 },
             };
@@ -171,28 +172,28 @@ namespace BalatroSeedOracle.Views.Modals
                 new DoubleTransition
                 {
                     Property = Border.OpacityProperty,
-                    Duration = TimeSpan.FromMilliseconds(250),
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.StandardAnimationDurationMs),
                     Easing = new CubicEaseOut(),
                 },
                 new ThicknessTransition
                 {
                     Property = Border.MarginProperty,
-                    Duration = TimeSpan.FromMilliseconds(320),
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.SlowAnimationDurationMs),
                     Easing = new BackEaseOut(),
                 },
             };
 
             // Start from offscreen and transparent
-            overlay.Opacity = 0;
-            modalBorder.Opacity = 0;
-            modalBorder.Margin = new Thickness(0, -24, 0, 24);
+            overlay.Opacity = UIConstants.InvisibleOpacity;
+            modalBorder.Opacity = UIConstants.InvisibleOpacity;
+            modalBorder.Margin = new Thickness(0, UIConstants.ModalSlideOffsetY, 0, UIConstants.ModalSlideOffsetBottomMargin);
 
             // Animate to final state on next UI tick
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    overlay.Opacity = 1;
-                    modalBorder.Opacity = 1;
+                    overlay.Opacity = UIConstants.FullOpacity;
+                    modalBorder.Opacity = UIConstants.FullOpacity;
                     modalBorder.Margin = new Thickness(0, 0, 0, 0);
                 },
                 DispatcherPriority.Render

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -30,6 +32,9 @@ namespace BalatroSeedOracle.Components
         private const double MinimumDragDistance = 5;
         private string _currentBreakpoint = "desktop";
         private System.Threading.Timer? _soulAnimationTimer;
+
+        // Animation state
+        private ScaleTransform? _cardScaleTransform;
 
         public static readonly StyledProperty<string> ItemNameProperty = AvaloniaProperty.Register<
             ResponsiveCard,
@@ -123,6 +128,14 @@ namespace BalatroSeedOracle.Components
             _cardBorder.PointerPressed += OnPointerPressed;
             _cardBorder.PointerMoved += OnPointerMoved;
             _cardBorder.PointerReleased += OnPointerReleased;
+            _cardBorder.PointerEntered += OnPointerEntered;
+            _cardBorder.PointerExited += OnPointerExited;
+
+            // Get reference to the scale transform from XAML (part of TransformGroup)
+            if (_cardBorder.RenderTransform is TransformGroup transformGroup && transformGroup.Children.Count > 0)
+            {
+                _cardScaleTransform = transformGroup.Children[0] as ScaleTransform;
+            }
 
             // Listen for parent size changes to update breakpoint
             this.AttachedToVisualTree += OnAttachedToVisualTree;
@@ -262,6 +275,128 @@ namespace BalatroSeedOracle.Components
             }
         }
 
+        private void OnPointerEntered(object? sender, PointerEventArgs e)
+        {
+            PlayHoverThudAnimation();
+        }
+
+        private void OnPointerExited(object? sender, PointerEventArgs e)
+        {
+            // Reset scale smoothly when pointer exits
+            AnimateScale(1.0, TimeSpan.FromMilliseconds(150));
+        }
+
+        private void PlayHoverThudAnimation()
+        {
+            // Balatro-style "thud" effect: 1.0 -> 1.05 -> 1.0
+            // Uses a bounce-like easing for that satisfying "plop" feel
+            if (_cardScaleTransform == null) return;
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(200),
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(0.0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(0.4), // Peak at 40% (80ms)
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.05),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.05)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(1.0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        }
+                    }
+                }
+            };
+
+            animation.RunAsync(_cardScaleTransform);
+        }
+
+        private void PlayGrabJuiceAnimation()
+        {
+            // Quick grab juice: scale to 1.1 fast, then settle back to 1.0
+            if (_cardScaleTransform == null) return;
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(250),
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(0.0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(0.3), // Quick pop to 1.1
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.1),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.1)
+                        }
+                    },
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(1.0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        }
+                    }
+                }
+            };
+
+            animation.RunAsync(_cardScaleTransform);
+        }
+
+        private void AnimateScale(double targetScale, TimeSpan duration)
+        {
+            if (_cardScaleTransform == null) return;
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = duration,
+                Children =
+                {
+                    new Avalonia.Animation.KeyFrame
+                    {
+                        Cue = new Avalonia.Animation.Cue(1.0),
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, targetScale),
+                            new Setter(ScaleTransform.ScaleYProperty, targetScale)
+                        }
+                    }
+                }
+            };
+
+            animation.RunAsync(_cardScaleTransform);
+        }
+
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var pointer = e.GetCurrentPoint(this);
@@ -305,6 +440,9 @@ namespace BalatroSeedOracle.Components
                 {
                     _isDragging = true;
 
+                    // Play grab juice animation for that satisfying Balatro feel
+                    PlayGrabJuiceAnimation();
+
                     var dragData = new DataObject();
                     dragData.Set("balatro-item", $"{Category}|{ItemName}");
 
@@ -312,7 +450,7 @@ namespace BalatroSeedOracle.Components
                         this,
                         new CardDragEventArgs(ItemName, Category, dragData)
                     );
-                    DebugLogger.Log($"👋 Started dragging {ItemName} from {Category}");
+                    DebugLogger.Log("ResponsiveCard", $"Started dragging item: {ItemName} from category: {Category}");
 
                     try
                     {
@@ -322,7 +460,8 @@ namespace BalatroSeedOracle.Components
                     {
                         // Clean up drag visual state when drag ends
                         this.Classes.Remove("is-dragging");
-                        this.RenderTransform = null; // Reset any transforms
+                        // Reset scale transform back to normal
+                        AnimateScale(1.0, TimeSpan.FromMilliseconds(150));
                         // Don't reset Width/Height to prevent layout shifts
                         _isDragging = false;
                         _dragStartPoint = null;

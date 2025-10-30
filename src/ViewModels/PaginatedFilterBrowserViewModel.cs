@@ -167,6 +167,35 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _allFilters.Clear();
 
+                // Try to use the cache service first for performance
+                var filterCache = ServiceHelper.GetService<Services.IFilterCacheService>();
+                if (filterCache != null)
+                {
+                    DebugLogger.Log(
+                        "PaginatedFilterBrowserViewModel",
+                        $"Loading filters from cache ({filterCache.Count} cached)"
+                    );
+
+                    var cachedFilters = filterCache.GetAllFilters();
+                    foreach (var cached in cachedFilters)
+                    {
+                        var filterItem = ConvertCachedFilterToBrowserItem(cached);
+                        if (filterItem != null)
+                        {
+                            _allFilters.Add(filterItem);
+                        }
+                    }
+
+                    UpdateCurrentPage();
+                    return;
+                }
+
+                // Fallback to disk loading if cache not available
+                DebugLogger.Log(
+                    "PaginatedFilterBrowserViewModel",
+                    "Cache service not available, loading from disk"
+                );
+
                 var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
                 if (!Directory.Exists(filtersDir))
                 {
@@ -198,6 +227,64 @@ namespace BalatroSeedOracle.ViewModels
                     "PaginatedFilterBrowserViewModel",
                     $"Error loading filters: {ex.Message}"
                 );
+            }
+        }
+
+        /// <summary>
+        /// Converts a cached filter to a FilterBrowserItem for display.
+        /// This is much faster than parsing from disk since the config is already in memory.
+        /// </summary>
+        private FilterBrowserItem? ConvertCachedFilterToBrowserItem(
+            Services.CachedFilter cachedFilter
+        )
+        {
+            try
+            {
+                var config = cachedFilter.Config;
+                if (config == null || string.IsNullOrEmpty(config.Name))
+                    return null;
+
+                var item = new FilterBrowserItem
+                {
+                    Name = config.Name,
+                    Description = config.Description ?? "",
+                    Author = config.Author ?? "Unknown",
+                    DateCreated = config.DateCreated ?? cachedFilter.LastModified,
+                    FilePath = cachedFilter.FilePath,
+                    MustCount = config.Must?.Count ?? 0,
+                    ShouldCount = config.Should?.Count ?? 0,
+                    MustNotCount = config.MustNot?.Count ?? 0,
+                    DeckName = config.Deck ?? "Red",
+                    StakeName = config.Stake ?? "White",
+                };
+
+                // Parse Must items
+                if (config.Must != null)
+                {
+                    item.Must = ParseItemCollections(config.Must);
+                }
+
+                // Parse Should items
+                if (config.Should != null)
+                {
+                    item.Should = ParseItemCollections(config.Should);
+                }
+
+                // Parse MustNot items
+                if (config.MustNot != null)
+                {
+                    item.MustNot = ParseItemCollections(config.MustNot);
+                }
+
+                return item;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "PaginatedFilterBrowserViewModel",
+                    $"Error converting cached filter {cachedFilter.FilterId}: {ex.Message}"
+                );
+                return null;
             }
         }
 

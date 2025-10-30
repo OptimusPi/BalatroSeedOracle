@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -22,7 +24,7 @@ namespace BalatroSeedOracle.Behaviors
         /// Ambient tilt strength (0.2 = Balatro default)
         /// </summary>
         public static readonly StyledProperty<double> AmbientTiltProperty =
-            AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(nameof(AmbientTilt), 0.2);
+            AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(nameof(AmbientTilt), UIConstants.CardAmbientTiltRadians);
 
         public double AmbientTilt
         {
@@ -41,18 +43,23 @@ namespace BalatroSeedOracle.Behaviors
             _cardId = new Random().NextDouble() * 100;
             _startTime = DateTime.Now;
 
-            // Set up render transform
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                0.5,
-                0.5,
-                RelativeUnit.Relative
-            );
-            AssociatedObject.RenderTransform = new RotateTransform();
+            // Set up render transform if not already set
+            // If there's already a TransformGroup (from ResponsiveCard setup), we'll use that
+            // Otherwise create a new RotateTransform
+            if (AssociatedObject.RenderTransform == null)
+            {
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
+                AssociatedObject.RenderTransform = new RotateTransform();
+            }
 
             // Start animation timer (60 FPS like Balatro)
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67), // ~60 FPS
+                Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // ~60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
             _animationTimer.Start();
@@ -68,7 +75,23 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnAnimationTick(object? sender, EventArgs e)
         {
-            if (AssociatedObject?.RenderTransform is not RotateTransform rotateTransform)
+            if (AssociatedObject == null)
+                return;
+
+            // Find the RotateTransform - either standalone or in a TransformGroup
+            RotateTransform? rotateTransform = null;
+
+            if (AssociatedObject.RenderTransform is RotateTransform rotate)
+            {
+                rotateTransform = rotate;
+            }
+            else if (AssociatedObject.RenderTransform is TransformGroup group)
+            {
+                // Look for RotateTransform in the group (should be second child in ResponsiveCard)
+                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+            }
+
+            if (rotateTransform == null)
                 return;
 
             // Calculate elapsed time (like G.TIMERS.REAL in Balatro)
@@ -80,12 +103,11 @@ namespace BalatroSeedOracle.Behaviors
 
             // Tilt amount based on cos wave (creates breathing effect)
             // self.tilt_var.amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-            var tilt_factor = 0.3;
-            var tilt_amt = AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * tilt_factor;
+            var tilt_amt = AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
 
             // Apply rotation (convert to degrees)
             // Balatro rotates in radians, we need degrees
-            rotateTransform.Angle = tilt_amt * 10; // Scale for visibility
+            rotateTransform.Angle = tilt_amt * UIConstants.CardRotationToDegrees; // Scale for visibility
         }
     }
 }

@@ -2,7 +2,7 @@
     "GeneralSettings": {
         "NetProjectPath": "BalatroSeedOracle.csproj",
         "ApplicationName": "Balatro Seed Oracle",
-        "Version": "1.1.4",
+        "Version": "2.0.0",
         "PackageName": {
             "$type": "msbuild",
             "property": "AssemblyName"
@@ -13,8 +13,10 @@
         }
     },
     "LinuxSettings": {
+        "AppIcon": "BalatroSeedOracle.ico",
         "Maintainer": "OptimusPi",
-        "CreateBinSymlink": "True"
+        "CreateBinSymlink": "True",
+        "DesktopCategory": "Game"
     },
     "Win32Settings": {
         "InstallerIcon": "BalatroSeedOracle.ico",
@@ -30,7 +32,10 @@
         "Permissions": {
             "Network": "DayLatro website is updated by the DayLatro widget in Balatro seed Oracle."
         },
-        "SigningCredentialsType": "AdHoc"
+        "AppIcon": "BalatroSeedOracle.ico",
+        "SigningCredentialsType": "AdHoc",
+        "NotaryCredentialsType": "AppleAccount",
+        "DmgBackground": "BalatroSeedOracle.tif"
     },
     "PublishSettings": {
         "PublishSingleFile": "True",

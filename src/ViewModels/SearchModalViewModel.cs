@@ -1400,7 +1400,8 @@ namespace BalatroSeedOracle.ViewModels
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
-            TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
+            // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
+            // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
         }

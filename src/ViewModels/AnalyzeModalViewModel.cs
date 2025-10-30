@@ -189,7 +189,7 @@ namespace BalatroSeedOracle.ViewModels
                                 new ShopItemModel
                                 {
                                     TypeCategory = shopItem.TypeCategory,
-                                    ItemValue = shopItem.Value,
+                                    ItemType = shopItem.Type,
                                     Edition = shopItem.Edition,
                                 }
                             );

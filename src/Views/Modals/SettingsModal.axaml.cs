@@ -13,8 +13,6 @@ namespace BalatroSeedOracle.Views.Modals
     /// </summary>
     public partial class SettingsModal : UserControl
     {
-        public event EventHandler? CloseRequested;
-
         public SettingsModal()
         {
             InitializeComponent();
@@ -23,11 +21,6 @@ namespace BalatroSeedOracle.Views.Modals
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void OnCloseClick(object? sender, RoutedEventArgs e)
-        {
-            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnWordListsClick(object? sender, RoutedEventArgs e)

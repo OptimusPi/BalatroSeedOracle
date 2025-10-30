@@ -29,23 +29,23 @@ namespace BalatroSeedOracle.Converters
                 return item.TypeCategory switch
                 {
                     Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(
-                        item.ItemName
+                        item.SpriteKey
                     ),
                     Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
-                        item.ItemName
+                        item.SpriteKey
                     ),
                     Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetTarotImage(
-                        item.ItemName
+                        item.SpriteKey
                     ),
                     Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetTarotImage(
-                        item.ItemName
+                        item.SpriteKey
                     ),
                     _ => null,
                 };
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ShopItemSpriteConverter", $"Failed to get sprite for '{item.ItemName}' (Type: {item.TypeCategory}): {ex.Message}");
+                DebugLogger.LogError("ShopItemSpriteConverter", $"Failed to get sprite for '{item.SpriteKey}' (ItemName: {item.ItemName}, Type: {item.TypeCategory}): {ex.Message}");
                 return null;
             }
         }
@@ -237,14 +237,28 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            string? itemName = value switch
+            string? itemName = null;
+            bool isSoulJoker = false;
+
+            switch (value)
             {
-                string str => str,
-                ItemConfig config => config.ItemName,
-                _ => null,
-            };
+                case string str:
+                    itemName = str;
+                    break;
+                case ItemConfig config:
+                    itemName = config.ItemName;
+                    // Check both IsSoulJoker property AND ItemType == "SoulJoker"
+                    isSoulJoker = config.IsSoulJoker || config.ItemType == "SoulJoker";
+                    break;
+                default:
+                    return null;
+            }
 
             if (string.IsNullOrEmpty(itemName))
+                return null;
+
+            // Only get soul face if it's marked as a soul joker
+            if (!isSoulJoker)
                 return null;
 
             try

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -26,12 +27,6 @@ namespace BalatroSeedOracle.Behaviors
         private RotateTransform? _rotateTransform;
         private ScaleTransform? _scaleTransform;
         private Control? _visualChild; // The actual visual content that gets transformed
-        private const double TILT_FACTOR = 0.3;
-        private const double AMBIENT_TILT = 0.2;
-
-        // Balatro juice effect frequencies (from card.lua)
-        private const double JUICE_BOUNCE_FREQUENCY = 50.8; // Scale oscillation frequency
-        private const double JUICE_WOBBLE_FREQUENCY = 40.8; // Rotation wobble frequency
 
         /// <summary>
         /// Enable/disable all animations
@@ -51,7 +46,7 @@ namespace BalatroSeedOracle.Behaviors
         /// Juice intensity on grab (0.4 = Balatro default)
         /// </summary>
         public static readonly StyledProperty<double> JuiceAmountProperty =
-            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(JuiceAmount), 0.4);
+            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(JuiceAmount), UIConstants.CardJuiceScaleFactor);
 
         public double JuiceAmount
         {
@@ -92,7 +87,7 @@ namespace BalatroSeedOracle.Behaviors
 
             // Set up transform group with rotation and scale
             _rotateTransform = new RotateTransform();
-            _scaleTransform = new ScaleTransform(1.0, 1.0);
+            _scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
             _transformGroup = new TransformGroup();
             _transformGroup.Children.Add(_scaleTransform);
             _transformGroup.Children.Add(_rotateTransform);
@@ -111,7 +106,7 @@ namespace BalatroSeedOracle.Behaviors
             // Create animation timer but don't start it yet
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67), // 60 FPS
+                Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // 60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
         }
@@ -159,8 +154,8 @@ namespace BalatroSeedOracle.Behaviors
                     _rotateTransform.Angle = 0;
                 if (_scaleTransform != null)
                 {
-                    _scaleTransform.ScaleX = 1.0;
-                    _scaleTransform.ScaleY = 1.0;
+                    _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor;
+                    _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor;
                 }
             }
         }
@@ -202,8 +197,8 @@ namespace BalatroSeedOracle.Behaviors
                     _rotateTransform.Angle = 0;
                 if (_scaleTransform != null)
                 {
-                    _scaleTransform.ScaleX = 1.0;
-                    _scaleTransform.ScaleY = 1.0;
+                    _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor;
+                    _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor;
                 }
             }
         }
@@ -243,7 +238,7 @@ namespace BalatroSeedOracle.Behaviors
                     / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
-                tiltAmount = Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * TILT_FACTOR;
+                tiltAmount = Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * UIConstants.CardTiltFactorRadians;
 
                 // Tilt angle based on drag direction
                 tiltAngle = Math.Atan2(dy, dx);
@@ -259,7 +254,7 @@ namespace BalatroSeedOracle.Behaviors
                 var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
-                tiltAmount = Math.Abs(offsetY + offsetX - 1) * TILT_FACTOR;
+                tiltAmount = Math.Abs(offsetY + offsetX - 1) * UIConstants.CardTiltFactorRadians;
 
                 // Tilt angle towards cursor
                 tiltAngle = Math.Atan2(offsetY, offsetX);
@@ -271,17 +266,17 @@ namespace BalatroSeedOracle.Behaviors
                 tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-                tiltAmount = AMBIENT_TILT * (0.5 + Math.Cos(tiltAngle)) * TILT_FACTOR;
+                tiltAmount = UIConstants.CardAmbientTiltRadians * (0.5 + Math.Cos(tiltAngle)) * UIConstants.CardTiltFactorRadians;
             }
 
             // Apply rotation (convert radians to degrees)
-            _rotateTransform.Angle = tiltAmount * 10;
+            _rotateTransform.Angle = tiltAmount * UIConstants.CardRotationToDegrees;
 
             // Apply juice effect (bounce/wiggle on pickup)
             if (_juiceStartTime.HasValue)
             {
                 var juiceElapsed = (DateTime.Now - _juiceStartTime.Value).TotalSeconds;
-                var juiceDuration = 0.4; // Balatro default
+                var juiceDuration = UIConstants.JuiceDurationSeconds;
 
                 if (juiceElapsed < juiceDuration)
                 {
@@ -292,16 +287,16 @@ namespace BalatroSeedOracle.Behaviors
 
                     // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
                     var scaleJuice =
-                        JuiceAmount * Math.Sin(JUICE_BOUNCE_FREQUENCY * juiceElapsed) * decayScale;
-                    _scaleTransform.ScaleX = 1.0 + scaleJuice;
-                    _scaleTransform.ScaleY = 1.0 + scaleJuice;
+                        JuiceAmount * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed) * decayScale;
+                    _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor + scaleJuice;
+                    _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor + scaleJuice;
 
                     // Rotation wobble: r_amt * sin(FREQUENCY*t) * decay^2
                     var rotationJuice =
-                        (JuiceAmount * 0.6)
-                        * Math.Sin(JUICE_WOBBLE_FREQUENCY * juiceElapsed)
+                        (JuiceAmount * UIConstants.CardJuiceRotationFactor)
+                        * Math.Sin(UIConstants.JuiceWobbleFrequency * juiceElapsed)
                         * decayRotation;
-                    _rotateTransform.Angle += rotationJuice * 10; // Add to tilt rotation
+                    _rotateTransform.Angle += rotationJuice * UIConstants.CardRotationToDegrees; // Add to tilt rotation
                 }
                 else
                 {

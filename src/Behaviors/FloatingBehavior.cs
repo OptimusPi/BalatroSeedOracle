@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -21,18 +22,18 @@ namespace BalatroSeedOracle.Behaviors
     {
         // Balatro's exact parameters from animatedsprite.lua
         public static readonly StyledProperty<double> RotationAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(RotationAmplitude), 0.02);
+            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(RotationAmplitude), UIConstants.CardSwayRotationAmplitude);
 
         public static readonly StyledProperty<double> VerticalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(VerticalAmplitude), 0.3);
+            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(VerticalAmplitude), UIConstants.FloatingVerticalAmplitude);
 
         public static readonly StyledProperty<double> HorizontalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(HorizontalAmplitude), 0.2);
+            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(HorizontalAmplitude), UIConstants.FloatingHorizontalAmplitude);
 
         public static readonly StyledProperty<double> FrequencyProperty = AvaloniaProperty.Register<
             FloatingBehavior,
             double
-        >(nameof(Frequency), 0.666);
+        >(nameof(Frequency), UIConstants.FloatingFrequency);
 
         public static readonly StyledProperty<bool> EnabledProperty = AvaloniaProperty.Register<
             FloatingBehavior,
@@ -129,7 +130,7 @@ namespace BalatroSeedOracle.Behaviors
             // Start animation at 60 FPS (matches Balatro's animation rate)
             _animationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16.67), // ~60 FPS
+                Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // ~60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
             _animationTimer.Start();

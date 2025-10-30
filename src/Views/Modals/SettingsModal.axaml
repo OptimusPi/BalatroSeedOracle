@@ -140,12 +140,6 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Footer Button -->
-        <Button Grid.Row="4"
-                Name="CloseButton"
-                Content="Close"
-                Classes="btn-blue"
-                HorizontalAlignment="Stretch"
-                Click="OnCloseClick"/>
+        <!-- Footer removed - StandardModal provides the Back button -->
     </Grid>
 </UserControl>

@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Behaviors
@@ -170,11 +171,11 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.Source = deckBackSprite as Bitmap;
 
                 // Create ScaleTransform for animation (this is what Avalonia can actually animate!)
-                var scaleTransform = new ScaleTransform(1.0, 1.0);
+                var scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
                 AssociatedObject.RenderTransform = scaleTransform;
                 AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
-                var pinchDuration = TimeSpan.FromMilliseconds(125);
+                var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
 
                 // Step 2: Pinch in (ScaleX: 1 → 0)
                 var pinchIn = new Avalonia.Animation.Animation
@@ -188,7 +189,7 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, 0.0)
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.InvisibleOpacity)
                             }
                         }
                     }
@@ -211,7 +212,7 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0)
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor)
                             }
                         }
                     }
@@ -222,7 +223,7 @@ namespace BalatroSeedOracle.Behaviors
                 // Step 5: Juice up! (both X and Y scale bounce)
                 var juiceUp = new Avalonia.Animation.Animation
                 {
-                    Duration = TimeSpan.FromMilliseconds(300),
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.MediumAnimationDurationMs),
                     Easing = new ElasticEaseOut(),
                     Children =
                     {
@@ -231,8 +232,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(0),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                                new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor)
                             }
                         },
                         new Avalonia.Animation.KeyFrame
@@ -240,8 +241,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(0.5),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.3),
-                                new Setter(ScaleTransform.ScaleYProperty, 1.3)
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.CardFlipJuiceScalePeak),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.CardFlipJuiceScalePeak)
                             }
                         },
                         new Avalonia.Animation.KeyFrame
@@ -249,8 +250,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                                new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor)
                             }
                         }
                     }

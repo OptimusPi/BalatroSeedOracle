@@ -58,12 +58,8 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeJokers()
         {
-            // Add wildcard entries first
-            Jokers["anylegendary"] = "Any Legendary Joker";
-            Jokers["anyrare"] = "Any Rare Joker";
-            Jokers["anyuncommon"] = "Any Uncommon Joker";
-            Jokers["anycommon"] = "Any Common Joker";
-            Jokers["anyjoker"] = "Any Joker";
+            // Wildcard entries are in the Favorites section now
+            // Old "any*" entries removed - use "Wildcard_Joker *" instead
 
             // Common Jokers
             foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
@@ -401,6 +397,30 @@ namespace BalatroSeedOracle.Models
                 { "perkeo", "Perkeo" },
             };
 
+            // Handle Wildcard_* names first
+            if (spriteName.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                // "Wildcard_Joker" -> "Any Joker"
+                // "Wildcard_JokerLegendary" -> "Any Legendary"
+                // "Wildcard_Tarot" -> "Any Tarot"
+                var suffix = spriteName.Substring(9); // Remove "Wildcard_" prefix
+
+                // Handle special cases
+                if (suffix.Equals("Joker", StringComparison.OrdinalIgnoreCase))
+                    return "Any Joker";
+                if (suffix.Equals("JokerCommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Common";
+                if (suffix.Equals("JokerUncommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Uncommon";
+                if (suffix.Equals("JokerRare", StringComparison.OrdinalIgnoreCase))
+                    return "Any Rare";
+                if (suffix.Equals("JokerLegendary", StringComparison.OrdinalIgnoreCase))
+                    return "Any Legendary";
+
+                // For other types, just format as "Any <Type>"
+                return "Any " + FormatDisplayName(suffix);
+            }
+
             if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))
             {
                 return displayName;
@@ -550,29 +570,24 @@ namespace BalatroSeedOracle.Models
             {
                 JokersByRarity["Common"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Common"].Add("anycommon");
-            JokersByRarity["Common"].Add("anyjoker");
 
             JokersByRarity["Uncommon"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
             {
                 JokersByRarity["Uncommon"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Uncommon"].Add("anyuncommon");
 
             JokersByRarity["Rare"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerRare>())
             {
                 JokersByRarity["Rare"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Rare"].Add("anyrare");
 
             JokersByRarity["Legendary"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {
                 JokersByRarity["Legendary"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Legendary"].Add("anylegendary");
         }
     }
 }

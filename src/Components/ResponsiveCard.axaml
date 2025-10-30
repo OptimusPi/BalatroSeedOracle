@@ -40,7 +40,14 @@
             MinWidth="80"
             MinHeight="72"
             Cursor="Hand"
-            IsHitTestVisible="True">
+            IsHitTestVisible="True"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                <RotateTransform Angle="0"/>
+            </TransformGroup>
+        </Border.RenderTransform>
         <i:Interaction.Behaviors>
             <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
         </i:Interaction.Behaviors>

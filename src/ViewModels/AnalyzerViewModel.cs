@@ -451,7 +451,7 @@ public partial class AnalyzerViewModel : ObservableObject
                     new ShopItemModel
                     {
                         TypeCategory = item.TypeCategory,
-                        ItemValue = item.Value,
+                        ItemType = item.Type,
                         Edition = item.Edition,
                     }
                 );

@@ -14,6 +14,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<IConfigurationService, ConfigurationService>();
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<IFilterConfigurationService, FilterConfigurationService>();
+            services.AddSingleton<IFilterCacheService, FilterCacheService>();
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();

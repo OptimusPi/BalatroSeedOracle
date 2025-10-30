@@ -1,0 +1,88 @@
+<UserControl
+    x:Class="BalatroSeedOracle.Components.FilterOperatorControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:BalatroSeedOracle.Models"
+    x:DataType="models:FilterOperatorItem">
+
+    <Border
+        Padding="4"
+        Background="{StaticResource DarkTealGrey}"
+        BorderBrush="{StaticResource Blue}"
+        BorderThickness="2"
+        CornerRadius="8"
+        MinWidth="120"
+        MinHeight="80">
+
+        <Grid RowDefinitions="Auto,*">
+            <!-- Operator Label Header -->
+            <Border
+                Grid.Row="0"
+                Padding="8,4"
+                Background="{StaticResource Blue}"
+                CornerRadius="4"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,0,4">
+                <TextBlock
+                    Text="{Binding OperatorType}"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource White}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Drop Zone for Children -->
+            <Border
+                Grid.Row="1"
+                Name="ChildrenDropZone"
+                Padding="4"
+                Background="{StaticResource Black}"
+                BorderBrush="{StaticResource TealGrey}"
+                BorderThickness="1"
+                CornerRadius="4"
+                MinHeight="60"
+                DragDrop.AllowDrop="True">
+
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl
+                        Name="ChildrenItemsControl"
+                        ItemsSource="{Binding Children}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Small card representation -->
+                                <Border
+                                    Margin="2"
+                                    Padding="2"
+                                    Background="{StaticResource TealGrey}"
+                                    BorderBrush="{StaticResource Blue}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Width="50"
+                                    Height="66"
+                                    ToolTip.Tip="{Binding DisplayName}">
+                                    <Grid>
+                                        <Image
+                                            Source="{Binding ItemImage}"
+                                            Width="46"
+                                            Height="62"
+                                            Stretch="Uniform"
+                                            Opacity="0.9" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

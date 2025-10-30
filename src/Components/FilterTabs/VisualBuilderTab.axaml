@@ -5,23 +5,39 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True">
 
-    <Grid>
+    <Grid VerticalAlignment="Stretch">
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
-        <Grid Margin="16,0,16,16">
+        <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="460"/>   <!-- Center: Grouped Items (5 jokers wide: 5*80 + scrollbar = 460) -->
                 <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - Search + Categories (NO PAGINATION) -->
-            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,*">
-                <!-- Search bar at top -->
+            <!-- LEFT COLUMN - Filter Name + Search + Categories -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
+                <!-- Filter Name Display at top -->
                 <Border Grid.Row="0"
+                        Background="{StaticResource DarkTealGrey}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="12,8">
+                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </Border>
+
+                <!-- Search bar -->
+                <Border Grid.Row="2"
                         Background="{StaticResource ModalGrey}"
                         BorderBrush="{StaticResource Blue}"
                         BorderThickness="2"
@@ -38,8 +54,9 @@
                              FontSize="13"/>
                 </Border>
 
-                <StackPanel Grid.Row="2" Spacing="1" Name="CategoryNav" DragDrop.AllowDrop="True">
-                    <Button Content="Favorites"
+                <StackPanel Grid.Row="4" Spacing="8" Name="CategoryNav" DragDrop.AllowDrop="True">
+                    <!-- Category buttons without section headers -->
+                    <Button Content="Special"
                             Classes="nav-button"
                             Click="OnCategoryClick"
                             Tag="Favorites"
@@ -54,23 +71,16 @@
                             Click="OnCategoryClick"
                             Tag="Consumable"
                             HorizontalAlignment="Stretch"/>
-                    <!-- Skip Tag and Boss side-by-side -->
-                    <Grid ColumnDefinitions="*,4,*">
-                        <Button Grid.Column="0"
-                                Content="Skip Tags"
-                                Classes="nav-button"
-                                Click="OnCategoryClick"
-                                Tag="SkipTag"
-                                MinWidth="90"
-                                HorizontalAlignment="Stretch"/>
-                        <Button Grid.Column="2"
-                                Content="Boss Blind"
-                                Classes="nav-button"
-                                Click="OnCategoryClick"
-                                Tag="Boss"
-                                MinWidth="90"
-                                HorizontalAlignment="Stretch"/>
-                    </Grid>
+                    <Button Content="Skip Tags"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="SkipTag"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Boss Blind"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Boss"
+                            HorizontalAlignment="Stretch"/>
                     <Button Content="Voucher"
                             Classes="nav-button"
                             Click="OnCategoryClick"
@@ -143,43 +153,81 @@
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
                                                     <Grid Margin="0,6" Width="80" Height="110">
-                                                        <!-- LAYER 1: Visual card that rotates (Z-Index 0, BOTTOM) -->
-                                                        <StackPanel ZIndex="0"
-                                                                    Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
-                                                                    IsHitTestVisible="False">
-                                                            <!-- Balatro-style sway behavior attached here -->
-                                                            <i:Interaction.Behaviors>
-                                                                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2"/>
-                                                            </i:Interaction.Behaviors>
+                                                        <!-- Conditional rendering for operators vs cards -->
+                                                        <ContentControl Content="{Binding}" ZIndex="0">
+                                                            <ContentControl.DataTemplates>
+                                                                <!-- Template for FilterOperatorItem -->
+                                                                <DataTemplate DataType="models:FilterOperatorItem">
+                                                                    <StackPanel Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                                                                                IsHitTestVisible="False">
+                                                                        <!-- Simple box visual for operators -->
+                                                                        <Border Background="{StaticResource DarkTealGrey}"
+                                                                                BorderBrush="{StaticResource Blue}"
+                                                                                BorderThickness="2"
+                                                                                CornerRadius="6"
+                                                                                Width="70"
+                                                                                Height="50"
+                                                                                HorizontalAlignment="Center">
+                                                                            <TextBlock Text="{Binding OperatorType}"
+                                                                                       FontSize="18"
+                                                                                       FontWeight="Bold"
+                                                                                       Foreground="{StaticResource Blue}"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Center"
+                                                                                       FontFamily="{StaticResource BalatroFont}"/>
+                                                                        </Border>
 
-                                                            <Grid>
-                                                                <!-- Main card image (SMALLER) -->
-                                                                <Image Source="{Binding ItemImage}"
-                                                                       Width="57"
-                                                                       Height="76"
-                                                                       Stretch="Uniform"
-                                                                       HorizontalAlignment="Center"/>
+                                                                        <!-- Name below -->
+                                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                                   Foreground="{StaticResource White}"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="11"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   TextAlignment="Center"
+                                                                                   Margin="0,6,0,0"/>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
 
-                                                                <!-- Legendary soul face overlay (only for SoulJoker type) -->
-                                                                <Image Source="{Binding SoulFaceImage}"
-                                                                       Width="57"
-                                                                       Height="76"
-                                                                       Stretch="Uniform"
-                                                                       HorizontalAlignment="Center"
-                                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                            </Grid>
+                                                                <!-- Template for regular FilterItem -->
+                                                                <DataTemplate DataType="models:FilterItem">
+                                                                    <StackPanel Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                                                                                IsHitTestVisible="False">
+                                                                        <!-- Balatro-style sway behavior attached here -->
+                                                                        <i:Interaction.Behaviors>
+                                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2"/>
+                                                                        </i:Interaction.Behaviors>
 
-                                                            <!-- Simple name below -->
-                                                            <TextBlock Text="{Binding DisplayName}"
-                                                                       Foreground="{StaticResource White}"
-                                                                       FontFamily="{StaticResource BalatroFont}"
-                                                                       FontSize="11"
-                                                                       HorizontalAlignment="Center"
-                                                                       TextAlignment="Center"
-                                                                       TextWrapping="Wrap"
-                                                                       Margin="0,3,0,0"
-                                                                       MaxWidth="80"/>
-                                                        </StackPanel>
+                                                                        <Grid>
+                                                                            <!-- Main card image (SMALLER) -->
+                                                                            <Image Source="{Binding ItemImage}"
+                                                                                   Width="57"
+                                                                                   Height="76"
+                                                                                   Stretch="Uniform"
+                                                                                   HorizontalAlignment="Center"/>
+
+                                                                            <!-- Legendary soul face overlay (only for SoulJoker type) -->
+                                                                            <Image Source="{Binding SoulFaceImage}"
+                                                                                   Width="57"
+                                                                                   Height="76"
+                                                                                   Stretch="Uniform"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                        </Grid>
+
+                                                                        <!-- Simple name below -->
+                                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                                   Foreground="{StaticResource White}"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="11"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   TextAlignment="Center"
+                                                                                   TextWrapping="Wrap"
+                                                                                   Margin="0,3,0,0"
+                                                                                   MaxWidth="80"/>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ContentControl.DataTemplates>
+                                                        </ContentControl>
 
                                                         <!-- LAYER 2: Invisible hitbox that NEVER rotates (Z-Index 1, TOP) -->
                                                         <Border ZIndex="1"
@@ -223,94 +271,113 @@
                 </Border>
             </Grid>
 
-            <!-- RIGHT COLUMN - Drop Zones (Balatro Challenges Style) -->
-            <StackPanel Grid.Column="2" Spacing="12" VerticalAlignment="Top" Margin="5,0,0,0">
+            <!-- RIGHT COLUMN - Drop Zones -->
+            <Grid Grid.Column="2" Margin="5,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>   <!-- MUST HAVE - 33% -->
+                    <RowDefinition Height="12"/>  <!-- Spacing -->
+                    <RowDefinition Height="*"/>   <!-- SHOULD HAVE - 33% -->
+                    <RowDefinition Height="12"/>  <!-- Spacing -->
+                    <RowDefinition Height="*"/>   <!-- BANNED ITEMS - 33% -->
+                </Grid.RowDefinitions>
                 <!-- MUST HAVE Zone -->
                 <Border Name="MustDropZone"
+                        Grid.Row="0"
                         Background="{StaticResource White}"
                         BorderThickness="0"
                         CornerRadius="8"
-                        MinHeight="120"
-                        MaxHeight="220"
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
-                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
+                            <ColumnDefinition Width="*"/>      <!-- White content area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Blue Vertical Label -->
-                        <Border Grid.Column="0"
-                                Background="{StaticResource Blue}"
-                                CornerRadius="6,0,0,6"
-                                VerticalAlignment="Stretch">
-                            <TextBlock Text="Must Have"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource White}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                <TextBlock.RenderTransform>
-                                    <RotateTransform Angle="-90"/>
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
-                        </Border>
+                        <!-- Left: Vertical Rotated Label -->
+                        <TextBlock Grid.Column="0"
+                                   Text="MUST HAVE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0">
+                            <TextBlock.RenderTransform>
+                                <RotateTransform Angle="-90"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
 
                         <!-- Right: White Drop Area -->
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMust}" Margin="12">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <i:Interaction.Behaviors>
-                                <behaviors:FannedHandBehavior/>
+                                <behaviors:CategoryGroupedLayoutBehavior/>
                             </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image -->
-                                        <Image Source="{Binding ItemImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"/>
+                                    <!-- Render operator or regular card based on Type property -->
+                                    <ContentControl Content="{Binding}">
+                                        <ContentControl.DataTemplates>
+                                            <!-- Template for FilterOperatorItem -->
+                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                                <components:FilterOperatorControl/>
+                                            </DataTemplate>
 
-                                        <!-- Soul face overlay for legendary jokers -->
-                                        <Image Source="{Binding SoulFaceImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"
-                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            <!-- Template for regular FilterItem -->
+                                            <DataTemplate DataType="models:FilterItem">
+                                                <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                            <!-- Main card image -->
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="57"
+                                                   Height="76"
+                                                   Stretch="Uniform"/>
 
-                                        <!-- Hover-only Remove Button -->
-                                        <Button Content="×"
-                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
-                                                CommandParameter="{Binding}"
-                                                Background="{StaticResource Red}"
-                                                Foreground="White"
-                                                FontSize="12"
-                                                Width="18"
-                                                Height="18"
-                                                CornerRadius="9"
-                                                Padding="0"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Margin="0,-6,-6,0"
-                                                IsVisible="False"
-                                                Name="RemoveButton">
-                                            <Button.Styles>
-                                                <Style Selector="Button:pointerover">
-                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                            <!-- Soul face overlay for legendary jokers -->
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="57"
+                                                   Height="76"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                            <!-- Hover-only Remove Button -->
+                                            <Button Content="×"
+                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="{StaticResource Red}"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    Width="18"
+                                                    Height="18"
+                                                    CornerRadius="9"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,-6,-6,0"
+                                                    IsVisible="False"
+                                                    Name="RemoveButton">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+
+                                            <Grid.Styles>
+                                                <Style Selector="Grid:pointerover">
+                                                    <Setter Property="Panel.ZIndex" Value="100"/>
                                                 </Style>
-                                            </Button.Styles>
-                                        </Button>
-
-                                        <Grid.Styles>
-                                            <Style Selector="Grid:pointerover">
-                                                <Setter Property="Panel.ZIndex" Value="100"/>
-                                            </Style>
-                                            <Style Selector="Grid:pointerover Button#RemoveButton">
-                                                <Setter Property="IsVisible" Value="True"/>
-                                            </Style>
-                                        </Grid.Styles>
-                                    </Grid>
+                                                <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                    <Setter Property="IsVisible" Value="True"/>
+                                                </Style>
+                                            </Grid.Styles>
+                                        </Grid>
+                                            </DataTemplate>
+                                        </ContentControl.DataTemplates>
+                                    </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
@@ -322,6 +389,7 @@
 
                         <!-- Drop indicator overlay for MUST -->
                         <Border Name="MustDropOverlay"
+                                Grid.Column="0"
                                 Grid.ColumnSpan="2"
                                 Background="{StaticResource SemiTransparentBlack}"
                                 BorderBrush="{StaticResource Blue}"
@@ -342,90 +410,102 @@
 
                 <!-- SHOULD HAVE Zone -->
                 <Border Name="ShouldDropZone"
+                        Grid.Row="2"
                         Background="{StaticResource White}"
                         BorderThickness="0"
                         CornerRadius="8"
-                        MinHeight="120"
-                        MaxHeight="220"
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
-                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
+                            <ColumnDefinition Width="*"/>      <!-- White content area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Blue Vertical Label -->
-                        <Border Grid.Column="0"
-                                Background="{StaticResource Blue}"
-                                CornerRadius="6,0,0,6"
-                                VerticalAlignment="Stretch">
-                            <TextBlock Text="Should Have"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource White}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                <TextBlock.RenderTransform>
-                                    <RotateTransform Angle="-90"/>
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
-                        </Border>
+                        <!-- Left: Vertical Rotated Label -->
+                        <TextBlock Grid.Column="0"
+                                   Text="SHOULD HAVE"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0">
+                            <TextBlock.RenderTransform>
+                                <RotateTransform Angle="-90"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
 
                         <!-- Right: White Drop Area -->
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedShould}" Margin="12">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <i:Interaction.Behaviors>
-                                <behaviors:FannedHandBehavior/>
+                                <behaviors:CategoryGroupedLayoutBehavior/>
                             </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image -->
-                                        <Image Source="{Binding ItemImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"/>
+                                    <!-- Render operator or regular card based on Type property -->
+                                    <ContentControl Content="{Binding}">
+                                        <ContentControl.DataTemplates>
+                                            <!-- Template for FilterOperatorItem -->
+                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                                <components:FilterOperatorControl/>
+                                            </DataTemplate>
 
-                                        <!-- Soul face overlay for legendary jokers -->
-                                        <Image Source="{Binding SoulFaceImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"
-                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            <!-- Template for regular FilterItem -->
+                                            <DataTemplate DataType="models:FilterItem">
+                                                <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                                    <!-- Main card image -->
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Width="57"
+                                                           Height="76"
+                                                           Stretch="Uniform"/>
 
-                                        <!-- Hover-only Remove Button -->
-                                        <Button Content="×"
-                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
-                                                CommandParameter="{Binding}"
-                                                Background="{StaticResource Red}"
-                                                Foreground="White"
-                                                FontSize="12"
-                                                Width="18"
-                                                Height="18"
-                                                CornerRadius="9"
-                                                Padding="0"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Margin="0,-6,-6,0"
-                                                IsVisible="False"
-                                                Name="RemoveButton">
-                                            <Button.Styles>
-                                                <Style Selector="Button:pointerover">
-                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                </Style>
-                                            </Button.Styles>
-                                        </Button>
+                                                    <!-- Soul face overlay for legendary jokers -->
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Width="57"
+                                                           Height="76"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
-                                        <Grid.Styles>
-                                            <Style Selector="Grid:pointerover">
-                                                <Setter Property="Panel.ZIndex" Value="100"/>
-                                            </Style>
-                                            <Style Selector="Grid:pointerover Button#RemoveButton">
-                                                <Setter Property="IsVisible" Value="True"/>
-                                            </Style>
-                                        </Grid.Styles>
-                                    </Grid>
+                                                    <!-- Hover-only Remove Button -->
+                                                    <Button Content="×"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="White"
+                                                            FontSize="12"
+                                                            Width="18"
+                                                            Height="18"
+                                                            CornerRadius="9"
+                                                            Padding="0"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Margin="0,-6,-6,0"
+                                                            IsVisible="False"
+                                                            Name="RemoveButton">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+
+                                                    <Grid.Styles>
+                                                        <Style Selector="Grid:pointerover">
+                                                            <Setter Property="Panel.ZIndex" Value="100"/>
+                                                        </Style>
+                                                        <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </Style>
+                                                    </Grid.Styles>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ContentControl.DataTemplates>
+                                    </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
@@ -437,6 +517,7 @@
 
                         <!-- Drop indicator overlay for SHOULD -->
                         <Border Name="ShouldDropOverlay"
+                                Grid.Column="0"
                                 Grid.ColumnSpan="2"
                                 Background="{StaticResource SemiTransparentBlack}"
                                 BorderBrush="{StaticResource Blue}"
@@ -455,92 +536,104 @@
                     </Grid>
                 </Border>
 
-                <!-- MUST NOT HAVE Zone -->
+                <!-- BANNED ITEMS Zone -->
                 <Border Name="MustNotDropZone"
+                        Grid.Row="4"
                         Background="{StaticResource White}"
                         BorderThickness="0"
                         CornerRadius="8"
-                        MinHeight="120"
-                        MaxHeight="220"
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
-                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
+                            <ColumnDefinition Width="*"/>      <!-- White content area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Blue Vertical Label -->
-                        <Border Grid.Column="0"
-                                Background="{StaticResource Blue}"
-                                CornerRadius="6,0,0,6"
-                                VerticalAlignment="Stretch">
-                            <TextBlock Text="Must Not Have"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource White}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                <TextBlock.RenderTransform>
-                                    <RotateTransform Angle="-90"/>
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
-                        </Border>
+                        <!-- Left: Vertical Rotated Label -->
+                        <TextBlock Grid.Column="0"
+                                   Text="BANNED ITEMS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0">
+                            <TextBlock.RenderTransform>
+                                <RotateTransform Angle="-90"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
 
                         <!-- Right: White Drop Area -->
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <i:Interaction.Behaviors>
-                                <behaviors:FannedHandBehavior/>
+                                <behaviors:CategoryGroupedLayoutBehavior/>
                             </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image -->
-                                        <Image Source="{Binding ItemImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"/>
+                                    <!-- Render operator or regular card based on Type property -->
+                                    <ContentControl Content="{Binding}">
+                                        <ContentControl.DataTemplates>
+                                            <!-- Template for FilterOperatorItem -->
+                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                                <components:FilterOperatorControl/>
+                                            </DataTemplate>
 
-                                        <!-- Soul face overlay for legendary jokers -->
-                                        <Image Source="{Binding SoulFaceImage}"
-                                               Width="57"
-                                               Height="76"
-                                               Stretch="Uniform"
-                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            <!-- Template for regular FilterItem -->
+                                            <DataTemplate DataType="models:FilterItem">
+                                                <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                                    <!-- Main card image -->
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Width="57"
+                                                           Height="76"
+                                                           Stretch="Uniform"/>
 
-                                        <!-- Hover-only Remove Button -->
-                                        <Button Content="×"
-                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
-                                                CommandParameter="{Binding}"
-                                                Background="{StaticResource Red}"
-                                                Foreground="White"
-                                                FontSize="12"
-                                                Width="18"
-                                                Height="18"
-                                                CornerRadius="9"
-                                                Padding="0"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Margin="0,-6,-6,0"
-                                                IsVisible="False"
-                                                Name="RemoveButton">
-                                            <Button.Styles>
-                                                <Style Selector="Button:pointerover">
-                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                </Style>
-                                            </Button.Styles>
-                                        </Button>
+                                                    <!-- Soul face overlay for legendary jokers -->
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Width="57"
+                                                           Height="76"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
-                                        <Grid.Styles>
-                                            <Style Selector="Grid:pointerover">
-                                                <Setter Property="Panel.ZIndex" Value="100"/>
-                                            </Style>
-                                            <Style Selector="Grid:pointerover Button#RemoveButton">
-                                                <Setter Property="IsVisible" Value="True"/>
-                                            </Style>
-                                        </Grid.Styles>
-                                    </Grid>
+                                                    <!-- Hover-only Remove Button -->
+                                                    <Button Content="×"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="White"
+                                                            FontSize="12"
+                                                            Width="18"
+                                                            Height="18"
+                                                            CornerRadius="9"
+                                                            Padding="0"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Margin="0,-6,-6,0"
+                                                            IsVisible="False"
+                                                            Name="RemoveButton">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+
+                                                    <Grid.Styles>
+                                                        <Style Selector="Grid:pointerover">
+                                                            <Setter Property="Panel.ZIndex" Value="100"/>
+                                                        </Style>
+                                                        <Style Selector="Grid:pointerover Button#RemoveButton">
+                                                            <Setter Property="IsVisible" Value="True"/>
+                                                        </Style>
+                                                    </Grid.Styles>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ContentControl.DataTemplates>
+                                    </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
@@ -552,6 +645,7 @@
 
                         <!-- Drop indicator overlay for MUST NOT -->
                         <Border Name="MustNotDropOverlay"
+                                Grid.Column="0"
                                 Grid.ColumnSpan="2"
                                 Background="{StaticResource SemiTransparentBlack}"
                                 BorderBrush="{StaticResource Red}"
@@ -559,7 +653,7 @@
                                 CornerRadius="8"
                                 IsVisible="False"
                                 IsHitTestVisible="False">
-                            <TextBlock Text="Drop in MUST NOT HAVE"
+                            <TextBlock Text="Drop in BANNED ITEMS"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="18"
                                        Foreground="{StaticResource Red}"
@@ -570,7 +664,7 @@
                     </Grid>
                 </Border>
 
-            </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

@@ -14,6 +14,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
@@ -275,6 +276,18 @@ namespace BalatroSeedOracle.Views
                 if (!string.IsNullOrEmpty(configPath) && System.IO.File.Exists(configPath))
                 {
                     await searchContent.ViewModel.LoadFilterAsync(configPath);
+
+                    // DEBUG ASSERT: Filter MUST be loaded
+                    if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
+                    {
+                        throw new InvalidOperationException(
+                            $"ASSERT FAILED: Filter did not load! Path: {configPath}"
+                        );
+                    }
+
+                    // Open directly to Search tab (index 0 since Preferred Deck tab was removed)
+                    searchContent.ViewModel.SelectedTabIndex = 0;
+
                     Helpers.DebugLogger.Log(
                         "BalatroMainMenu",
                         $"✅ Filter loaded: {System.IO.Path.GetFileName(configPath)}"
@@ -285,6 +298,9 @@ namespace BalatroSeedOracle.Views
                     Helpers.DebugLogger.LogError(
                         "BalatroMainMenu",
                         $"❌ Filter not found: {configPath}"
+                    );
+                    throw new InvalidOperationException(
+                        $"ASSERT FAILED: Filter file does not exist! Path: {configPath}"
                     );
                 }
 
@@ -354,13 +370,13 @@ namespace BalatroSeedOracle.Views
                 {
                     case Models.FilterAction.CreateNew:
                         // Open designer with blank filter (replaces current modal)
-                        ShowFiltersModalDirect();
+                        await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect());
                         break;
                     case Models.FilterAction.Edit:
                         // Open designer with selected filter loaded (replaces current modal)
                         if (result.FilterId != null)
                         {
-                            ShowFiltersModalDirect(result.FilterId);
+                            await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(result.FilterId));
                         }
                         break;
                     case Models.FilterAction.Copy:
@@ -370,7 +386,8 @@ namespace BalatroSeedOracle.Views
                             var clonedId = await CloneFilter(result.FilterId);
                             if (!string.IsNullOrEmpty(clonedId))
                             {
-                                ShowFiltersModalDirect(clonedId);
+                                // Ensure UI operations happen on UI thread
+                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(clonedId));
                             }
                         }
                         break;
@@ -380,12 +397,15 @@ namespace BalatroSeedOracle.Views
                         {
                             DeleteFilter(result.FilterId);
                         }
-                        // Reset IsModalVisible and hide modal
-                        if (ViewModel != null)
+                        // Reset IsModalVisible and hide modal - ensure on UI thread
+                        await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            ViewModel.IsModalVisible = false;
-                        }
-                        HideModalContent();
+                            if (ViewModel != null)
+                            {
+                                ViewModel.IsModalVisible = false;
+                            }
+                            HideModalContent();
+                        });
                         break;
                 }
             };
@@ -397,10 +417,11 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show filters modal directly (internal use - called after filter selection)
         /// </summary>
-        private void ShowFiltersModalDirect(string? filterId = null)
+        private async void ShowFiltersModalDirect(string? filterId = null)
         {
             var filtersModal = new Modals.FiltersModal();
 
+            // Load the filter data FIRST if provided
             if (!string.IsNullOrEmpty(filterId) && filtersModal.ViewModel != null)
             {
                 var filtersDir = System.IO.Path.Combine(
@@ -410,14 +431,25 @@ namespace BalatroSeedOracle.Views
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
                 filtersModal.ViewModel.CurrentFilterPath = filterPath;
-                _ = filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
+
+                Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"🔄 Loading filter for editing: {filterPath}"
+                );
+
+                await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
+
+                Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"✅ Filter loaded for editing: {filterId}"
+                );
             }
 
+            // THEN show the modal with loaded content
             var modal = new StandardModal("🎨 FILTER DESIGNER");
             modal.SetContent(filtersModal);
             modal.BackClicked += (s, e) => HideModalContent();
-
-            ShowModalContent(modal, "🎨 FILTER DESIGNER");
+            ShowModalContent(modal);
         }
 
         /// <summary>
@@ -592,7 +624,7 @@ namespace BalatroSeedOracle.Views
             var windowHeight = this.Bounds.Height;
 
             // Set initial states BEFORE making visible or adding content
-            _modalOverlay.Opacity = 0;
+            _modalOverlay.Opacity = UIConstants.InvisibleOpacity;
             _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse($"translateY({windowHeight}px)");
 
             // Set the content in the wrapper
@@ -615,7 +647,7 @@ namespace BalatroSeedOracle.Views
             Dispatcher.UIThread.Post(() =>
             {
                 // Fade in overlay (0 → 1)
-                _modalOverlay.Opacity = 1;
+                _modalOverlay.Opacity = UIConstants.FullOpacity;
 
                 // Slide up content from below screen (translateY: windowHeight → 0)
                 _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(0px)");
@@ -637,7 +669,7 @@ namespace BalatroSeedOracle.Views
             // Gravity fall with bounce - modal falls completely out of view
             var fallAnimation = new Avalonia.Animation.Animation
             {
-                Duration = TimeSpan.FromMilliseconds(800), // Smooth gravity fall
+                Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs), // Smooth gravity fall
                 Easing = new ExponentialEaseIn(), // Gravity acceleration
                 Children =
                 {
@@ -715,7 +747,7 @@ namespace BalatroSeedOracle.Views
             _modalContentWrapper.Content = content;
             _modalContainer.IsVisible = true;
             _activeModalContent = content;
-            _modalOverlay.Opacity = 1; // Keep overlay visible during transition
+            _modalOverlay.Opacity = UIConstants.FullOpacity; // Keep overlay visible during transition
 
             if (!string.IsNullOrEmpty(title))
             {
@@ -725,7 +757,7 @@ namespace BalatroSeedOracle.Views
             // Smooth gravity bounce - rises from below with elastic bounce
             var popAnimation = new Avalonia.Animation.Animation
             {
-                Duration = TimeSpan.FromMilliseconds(600), // Smooth rise with bounce
+                Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs), // Smooth rise with bounce
                 Easing = new ElasticEaseOut(), // Bouncy landing
                 Children =
                 {
@@ -1129,7 +1161,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows the search modal for an existing search instance
         /// </summary>
-        public void ShowSearchModalForInstance(string searchId, string? configPath = null)
+        public async void ShowSearchModalForInstance(string searchId, string? configPath = null)
         {
             try
             {
@@ -1141,11 +1173,11 @@ namespace BalatroSeedOracle.Views
                 var searchContent = new SearchModal();
                 // Set the MainMenu reference so CREATE NEW FILTER button works
                 searchContent.ViewModel.MainMenu = this;
-                _ = searchContent.ViewModel.ConnectToExistingSearch(searchId);
+                await searchContent.ViewModel.ConnectToExistingSearch(searchId);
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    _ = searchContent.ViewModel.LoadFilterAsync(configPath);
+                    await searchContent.ViewModel.LoadFilterAsync(configPath);
                 }
 
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>

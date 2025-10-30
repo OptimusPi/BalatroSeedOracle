@@ -24,6 +24,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isLoading = true;
 
+        // Expose parent's FilterName for display
+        public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
+
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
         public ObservableCollection<FilterItem> AllTags { get; }
@@ -146,6 +149,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public VisualBuilderTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
+
+            // Subscribe to parent's property changes to update FilterName
+            if (_parentViewModel != null)
+            {
+                _parentViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
+                    {
+                        OnPropertyChanged(nameof(FilterName));
+                    }
+                };
+            }
 
             // Initialize collections
             AllJokers = new ObservableCollection<FilterItem>();
@@ -298,6 +313,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             switch (SelectedMainCategory)
             {
+                case "Favorites":
+                    // Section 1: Favorite Items (user's frequently used items)
+                    var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
+                    AddGroup("FAVORITE ITEMS", favoriteItems);
+
+                    // Section 2: Filter Operators (OR/AND)
+                    var operators = new List<FilterItem>
+                    {
+                        new FilterOperatorItem("OR")
+                        {
+                            DisplayName = "OR",
+                            Type = "Operator",
+                            Category = "Operator"
+                        },
+                        new FilterOperatorItem("AND")
+                        {
+                            DisplayName = "AND",
+                            Type = "Operator",
+                            Category = "Operator"
+                        }
+                    };
+                    AddGroup("FILTER OPERATORS", operators);
+
+                    // Section 3: Wildcards
+                    var wildcards = AllJokers.Where(j => j.Name.StartsWith("Wildcard_")).ToList();
+                    wildcards.AddRange(AllTarots.Where(t => t.Name.StartsWith("Wildcard_")));
+                    wildcards.AddRange(AllPlanets.Where(p => p.Name.StartsWith("Wildcard_")));
+                    wildcards.AddRange(AllSpectrals.Where(s => s.Name.StartsWith("Wildcard_")));
+                    AddGroup("WILDCARDS", wildcards);
+                    break;
+
                 case "Joker":
                     // Add groups: Legendary, Rare, Uncommon, Common
                     AddGroup("LEGENDARY JOKERS", FilteredJokers.Where(j => j.Type == "SoulJoker"));
@@ -358,18 +404,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // CROSS-CATEGORY SEARCH - If searching, search ALL items regardless of category
             if (!string.IsNullOrEmpty(SearchFilter))
             {
-                FilteredItems.Clear();
+                // Clear and rebuild GroupedItems with search results
+                GroupedItems.Clear();
 
                 // Search across ALL categories when filter is active
+                var searchResults = new List<FilterItem>();
+
                 var allCollections = new[]
                 {
-                    FilteredJokers,
-                    FilteredVouchers,
-                    FilteredTarots,
-                    FilteredPlanets,
-                    FilteredSpectrals,
-                    FilteredTags,
-                    FilteredBosses,
+                    AllJokers,
+                    AllVouchers,
+                    AllTarots,
+                    AllPlanets,
+                    AllSpectrals,
+                    AllTags,
+                    AllBosses,
                 };
 
                 foreach (var collection in allCollections)
@@ -385,10 +434,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             ) == true
                         )
                         {
-                            FilteredItems.Add(item);
+                            searchResults.Add(item);
                         }
                     }
                 }
+
+                // Display all search results in a single "SEARCH RESULTS" group
+                AddGroup("SEARCH RESULTS", searchResults);
                 return;
             }
 
@@ -581,15 +633,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Sync with parent ViewModel if available
                 if (_parentViewModel != null)
                 {
-                    var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
+                    // Special handling for operators
+                    if (item is FilterOperatorItem operatorItem)
                     {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                    _parentViewModel.SelectedMust.Add(itemKey);
+                        SyncOperatorToParent(operatorItem, "Must");
+                    }
+                    else
+                    {
+                        var itemKey = _parentViewModel.GenerateNextItemKey();
+                        var itemConfig = new ItemConfig
+                        {
+                            ItemKey = itemKey,
+                            ItemType = item.Type,
+                            ItemName = item.Name,
+                        };
+                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                        _parentViewModel.SelectedMust.Add(itemKey);
+                    }
                 }
 
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST");
@@ -609,15 +669,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Sync with parent ViewModel if available
                 if (_parentViewModel != null)
                 {
-                    var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
+                    // Special handling for operators
+                    if (item is FilterOperatorItem operatorItem)
                     {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                    _parentViewModel.SelectedShould.Add(itemKey);
+                        SyncOperatorToParent(operatorItem, "Should");
+                    }
+                    else
+                    {
+                        var itemKey = _parentViewModel.GenerateNextItemKey();
+                        var itemConfig = new ItemConfig
+                        {
+                            ItemKey = itemKey,
+                            ItemType = item.Type,
+                            ItemName = item.Name,
+                        };
+                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                        _parentViewModel.SelectedShould.Add(itemKey);
+                    }
                 }
 
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
@@ -637,15 +705,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Sync with parent ViewModel if available
                 if (_parentViewModel != null)
                 {
-                    var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
+                    // Special handling for operators
+                    if (item is FilterOperatorItem operatorItem)
                     {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                    _parentViewModel.SelectedMustNot.Add(itemKey);
+                        SyncOperatorToParent(operatorItem, "MustNot");
+                    }
+                    else
+                    {
+                        var itemKey = _parentViewModel.GenerateNextItemKey();
+                        var itemConfig = new ItemConfig
+                        {
+                            ItemKey = itemKey,
+                            ItemType = item.Type,
+                            ItemName = item.Name,
+                        };
+                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                        _parentViewModel.SelectedMustNot.Add(itemKey);
+                    }
                 }
 
                 DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
@@ -688,6 +764,66 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Trigger auto-sync to JSON Editor
                 NotifyJsonEditorOfChanges();
+            }
+        }
+
+        /// <summary>
+        /// Syncs a FilterOperatorItem to the parent's collections, expanding children appropriately.
+        /// OR operators → Multiple Should clauses (one per child)
+        /// AND operators → Single Must clause with all children
+        /// </summary>
+        private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
+        {
+            if (_parentViewModel == null)
+                return;
+
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Syncing {operatorItem.OperatorType} operator with {operatorItem.Children.Count} children to {targetZone}"
+            );
+
+            if (operatorItem.OperatorType == "OR")
+            {
+                // OR operator: Add each child as a separate Should clause
+                foreach (var child in operatorItem.Children)
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = child.Type,
+                        ItemName = child.Name,
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedShould.Add(itemKey);
+                }
+            }
+            else if (operatorItem.OperatorType == "AND")
+            {
+                // AND operator: Add all children to the target zone (they must all match)
+                var targetCollection = targetZone switch
+                {
+                    "Must" => _parentViewModel.SelectedMust,
+                    "Should" => _parentViewModel.SelectedShould,
+                    "MustNot" => _parentViewModel.SelectedMustNot,
+                    _ => null
+                };
+
+                if (targetCollection != null)
+                {
+                    foreach (var child in operatorItem.Children)
+                    {
+                        var itemKey = _parentViewModel.GenerateNextItemKey();
+                        var itemConfig = new ItemConfig
+                        {
+                            ItemKey = itemKey,
+                            ItemType = child.Type,
+                            ItemName = child.Name,
+                        };
+                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                        targetCollection.Add(itemKey);
+                    }
+                }
             }
         }
 
@@ -780,21 +916,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Add wildcard joker entries FIRST (at the very top)
                 var wildcardJokers = new[]
                 {
-                    ("Wildcard_Joker", "Joker", "Common"),
-                    ("Wildcard_JokerCommon", "Joker", "Common"),
-                    ("Wildcard_JokerUncommon", "Joker", "Uncommon"),
-                    ("Wildcard_JokerRare", "Joker", "Rare"),
-                    ("Wildcard_JokerLegendary", "SoulJoker", "Legendary")
+                    ("Wildcard_Joker", "Any Joker", "Joker", "Common"),
+                    ("Wildcard_JokerCommon", "Any Common", "Joker", "Common"),
+                    ("Wildcard_JokerUncommon", "Any Uncommon", "Joker", "Uncommon"),
+                    ("Wildcard_JokerRare", "Any Rare", "Joker", "Rare"),
+                    ("Wildcard_JokerLegendary", "Any Legendary", "SoulJoker", "Legendary")
                 };
-                foreach (var (name, type, category) in wildcardJokers)
+                foreach (var (name, displayName, type, category) in wildcardJokers)
                 {
                     AllJokers.Add(new FilterItem
                     {
                         Name = name,
                         Type = type,
                         Category = category,
-                        DisplayName = BalatroData.GetDisplayNameFromSprite(name),
-                        ItemImage = spriteService.GetJokerImage("joker"), // Use basic joker as placeholder
+                        DisplayName = displayName,
+                        ItemImage = spriteService.GetJokerImage(name), // Use wildcard name to get mystery sprite
                     });
                 }
 
@@ -887,8 +1023,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     Name = "Wildcard_Tarot",
                     Type = "Tarot",
-                    DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Tarot"),
-                    ItemImage = spriteService.GetTarotImage("TheFool"), // Use The Fool as placeholder
+                    DisplayName = "Any Tarot",
+                    ItemImage = spriteService.GetTarotImage("Wildcard_Tarot"), // Will use anytarot base + mystery overlay
                 });
 
                 if (BalatroData.TarotCards?.Keys != null)
@@ -918,8 +1054,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         Name = "Wildcard_Planet",
                         Type = "Planet",
-                        DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Planet"),
-                        ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Use Pluto as placeholder
+                        DisplayName = "Any Planet",
+                        ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Planets don't have wildcard sprites, use Pluto
                     });
 
                     if (BalatroData.PlanetCards?.Keys != null)
@@ -969,8 +1105,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     Name = "Wildcard_Spectral",
                     Type = "Spectral",
-                    DisplayName = BalatroData.GetDisplayNameFromSprite("Wildcard_Spectral"),
-                    ItemImage = spriteService.GetSpectralImage("Familiar"), // Use Familiar as placeholder
+                    DisplayName = "Any Spectral",
+                    ItemImage = spriteService.GetSpectralImage("Familiar"), // Spectrals don't have wildcard sprites, use Familiar
                 });
 
                 if (BalatroData.SpectralCards?.Keys != null)

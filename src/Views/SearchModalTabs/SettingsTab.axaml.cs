@@ -62,14 +62,14 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             var deckImage = SpriteService.Instance.GetDeckImage(deckName);
             if (deckImage != null)
             {
-                _deckImage.Source = deckImage as Bitmap;
+                _deckImage.Source = deckImage;
             }
 
             // Load stake overlay image
             var stakeImage = SpriteService.Instance.GetStakeImage(stakeName);
             if (stakeImage != null)
             {
-                _stakeOverlayImage.Source = stakeImage as Bitmap;
+                _stakeOverlayImage.Source = stakeImage;
             }
 
             // Update deck description

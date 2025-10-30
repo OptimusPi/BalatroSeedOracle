@@ -40,6 +40,12 @@ namespace BalatroSeedOracle.Services
                         }
                     );
                     await File.WriteAllTextAsync(filePath, json);
+
+                    // Invalidate cache for this filter (use ServiceHelper to avoid circular dependency)
+                    var filterId = Path.GetFileNameWithoutExtension(filePath);
+                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
+                    filterCache?.InvalidateFilter(filterId);
+
                     return true;
                 }
 
@@ -60,6 +66,21 @@ namespace BalatroSeedOracle.Services
                 if (!File.Exists(filePath))
                     return null;
 
+                // For MotelyJsonConfig, try cache first for better performance
+                if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
+                {
+                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
+                    if (filterCache != null)
+                    {
+                        var cached = filterCache.GetFilterByPath(filePath);
+                        if (cached != null)
+                        {
+                            return cached as T;
+                        }
+                    }
+                }
+
+                // Fallback to disk loading
                 return await Task.Run(() =>
                 {
                     if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))

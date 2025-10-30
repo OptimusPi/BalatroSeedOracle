@@ -37,9 +37,62 @@ public static class UIConstants
     // Grid Proportions
     public const string StandardGridProportion = "0.95*";
 
-    // Animation/Timing
+    // Animation/Timing - Core intervals
     public const int DefaultDelayMs = 100;
     public const int SearchUpdateIntervalMs = 100;
+    public const double AnimationFrameRateMs = 16.67; // 60 FPS standard
+    public const int AnimationUpdateRateMs = 16; // ~60 FPS for timers
+
+    // Animation Durations (in milliseconds)
+    public const int QuickAnimationDurationMs = 125; // Card flip pinch
+    public const int FastAnimationDurationMs = 200; // Modal overlay fade
+    public const int StandardAnimationDurationMs = 250; // Standard transitions
+    public const int MediumAnimationDurationMs = 300; // Card flip reveal
+    public const int SlowAnimationDurationMs = 320; // Modal content slide
+    public const int JuiceDurationMs = 400; // Juice effect on card grab
+    public const int BounceAnimationDurationMs = 600; // Modal rise with bounce
+    public const int GravityAnimationDurationMs = 800; // Modal gravity fall
+    public const double JuiceDurationSeconds = 0.4; // Juice duration in seconds for math
+
+    // Animation Durations (in seconds for TimeSpan)
+    public const double StandardTimeoutSeconds = 1.0;
+    public const double NetworkTimeoutSeconds = 10.0;
+    public const double WidgetTimerIntervalSeconds = 5.0;
+
+    // Scale Factors
+    public const double DefaultScaleFactor = 1.0;
+    public const double CardJuiceScaleFactor = 0.4; // Scale bounce on card grab
+    public const double CardJuiceRotationFactor = 0.6; // Rotation wobble multiplier
+    public const double CardFlipJuiceScalePeak = 1.3; // Peak scale during flip juice animation
+
+    // Rotation Constants (in degrees unless noted)
+    public const double CardTiltFactorRadians = 0.3; // Tilt strength multiplier
+    public const double CardAmbientTiltRadians = 0.2; // Idle breathing tilt
+    public const double CardRotationToDegrees = 10.0; // Convert tilt amount to degrees
+    public const double CardSwayRotationAmplitude = 0.02; // ~1.15° max wobble
+
+    // Physics Constants
+    public const double JuiceBounceFrequency = 50.8; // Scale oscillation Hz
+    public const double JuiceWobbleFrequency = 40.8; // Rotation wobble Hz
+    public const double FloatingFrequency = 0.666; // ~1.5 second cycle
+    public const double FloatingVerticalAmplitude = 0.3; // 30% breathing variation
+    public const double FloatingHorizontalAmplitude = 0.2; // 20% sway variation
+
+    // Opacity Values
+    public const double FullOpacity = 1.0;
+    public const double DisabledOpacity = 0.8;
+    public const double InvisibleOpacity = 0.0;
+
+    // Modal Animation Offsets
+    public const double ModalSlideOffsetY = -24; // Initial Y offset for slide-up
+    public const double ModalSlideOffsetBottomMargin = 24; // Bottom margin during animation
+
+    // Shadow Offsets (in pixels)
+    public const double ShadowOffsetSmallX = 1;
+    public const double ShadowOffsetSmallY = 2;
+    public const double ShadowOffsetMediumX = 2;
+    public const double ShadowOffsetMediumY = 4;
+    public const double ShadowOffsetLargeX = 3;
 
     // File Extensions
     public static readonly string[] ConfigFilePatterns = ["*.json"];

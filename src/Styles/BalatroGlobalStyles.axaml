@@ -297,7 +297,10 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
-    
+    <Style Selector="Button:not(.SystemCaptionButton).btn-back:pointerover">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
+
     <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />

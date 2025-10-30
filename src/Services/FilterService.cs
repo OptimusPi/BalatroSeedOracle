@@ -59,6 +59,12 @@ namespace BalatroSeedOracle.Services
                 if (_configurationService.FileExists(filePath))
                 {
                     await Task.Run(() => File.Delete(filePath));
+
+                    // Remove from cache (use ServiceHelper to avoid circular dependency)
+                    var filterId = Path.GetFileNameWithoutExtension(filePath);
+                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
+                    filterCache?.RemoveFilter(filterId);
+
                     return true;
                 }
                 return false;

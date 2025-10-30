@@ -22,7 +22,7 @@ public partial class App : Application
     {
         try
         {
-            DebugLogger.Log("Initializing services...");
+            DebugLogger.Log("App", "Initializing application services");
 
             // Ensure required directories exist
             EnsureDirectoriesExist();
@@ -31,6 +31,9 @@ public partial class App : Application
             var services = new ServiceCollection();
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
+
+            // Initialize filter cache on startup for fast filter access
+            InitializeFilterCache();
 
             // Line below is needed to remove Avalonia data validation.
             // Without this line you will get duplicate validations from both Avalonia and CT
@@ -45,8 +48,8 @@ public partial class App : Application
                 {
                     var audioManager =
                         _serviceProvider.GetRequiredService<Services.SoundFlowAudioManager>();
-                    DebugLogger.Log("App", "🎵 Starting 8-track audio with SoundFlow...");
-                    DebugLogger.Log("App", $"🎵 Audio manager initialized: {audioManager}");
+                    DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
+                    DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
                 }
                 catch (Exception ex)
                 {
@@ -56,7 +59,7 @@ public partial class App : Application
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
 
-                DebugLogger.Log("MainWindow created successfully");
+                DebugLogger.Log("App", "MainWindow created successfully");
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -88,6 +91,10 @@ public partial class App : Application
             // Stop audio
             var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
             audioManager?.Dispose();
+
+            // Dispose filter cache
+            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
+            filterCache?.Dispose();
 
             // Get the search manager and stop all active searches
             var searchManager = _serviceProvider?.GetService<Services.SearchManager>();
@@ -124,6 +131,28 @@ public partial class App : Application
         // ClipboardService is static, no need to register
     }
 
+    private void InitializeFilterCache()
+    {
+        try
+        {
+            DebugLogger.Log("App", "Initializing filter cache...");
+            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
+            if (filterCache != null)
+            {
+                filterCache.Initialize();
+                DebugLogger.Log("App", $"Filter cache initialized with {filterCache.Count} filters");
+            }
+            else
+            {
+                DebugLogger.LogError("App", "FilterCacheService not found in DI container");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to initialize filter cache: {ex.Message}");
+        }
+    }
+
     private void EnsureDirectoriesExist()
     {
         try
@@ -136,7 +165,7 @@ public partial class App : Application
             if (!System.IO.Directory.Exists(jsonFiltersDir))
             {
                 System.IO.Directory.CreateDirectory(jsonFiltersDir);
-                DebugLogger.Log($"Created directory: {jsonFiltersDir}");
+                DebugLogger.Log("App", $"Created directory: {jsonFiltersDir}");
             }
 
             // Create other required directories
@@ -147,7 +176,7 @@ public partial class App : Application
             if (!System.IO.Directory.Exists(searchResultsDir))
             {
                 System.IO.Directory.CreateDirectory(searchResultsDir);
-                DebugLogger.Log($"Created directory: {searchResultsDir}");
+                DebugLogger.Log("App", $"Created directory: {searchResultsDir}");
             }
         }
         catch (Exception ex)

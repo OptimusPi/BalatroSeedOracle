@@ -45,26 +45,25 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void LoadDeckAndStake(string deckName, string stakeName)
         {
-            // Use SpriteService to load deck and stake images
+            // Use SpriteService to get the composite deck + stake sticker image
             var spriteService = SpriteService.Instance;
 
-            // Get deck image (400x200 size for proper display)
-            var deckImage = spriteService.GetDeckImage(deckName, 400, 200);
-            if (deckImage != null && _deckImage != null)
+            // Get the deck with stake sticker already composited
+            var compositedImage = spriteService.GetDeckWithStakeSticker(deckName, stakeName);
+            if (compositedImage != null && _deckImage != null)
             {
-                _deckImage.Source = deckImage as Bitmap;
+                _deckImage.Source = compositedImage;
             }
 
-            // Get stake overlay image (same size as deck)
-            var stakeImage = spriteService.GetStakeImage(stakeName, 400, 200);
-            if (stakeImage != null && _stakeOverlayImage != null)
+            // Hide the overlay image since we're using the composited version
+            if (_stakeOverlayImage != null)
             {
-                _stakeOverlayImage.Source = stakeImage as Bitmap;
+                _stakeOverlayImage.IsVisible = false;
             }
 
             DebugLogger.Log(
                 "FilterSelectionModal",
-                $"Loaded deck image: {deckName}, stake overlay: {stakeName}"
+                $"Loaded composited deck image: {deckName} with {stakeName} stake sticker"
             );
         }
 

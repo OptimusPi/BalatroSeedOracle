@@ -159,7 +159,6 @@
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroPreciseColors.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroSliderStyles.axaml" />
 
         <Style Selector="TextBlock.balatro-triangle">

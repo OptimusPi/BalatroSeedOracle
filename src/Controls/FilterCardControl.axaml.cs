@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
@@ -220,7 +221,7 @@ namespace BalatroSeedOracle.Controls
                     Source = _debuffedOverlay,
                     Width = 24,
                     Height = 24,
-                    Opacity = 0.8,
+                    Opacity = UIConstants.DisabledOpacity,
                 };
                 panel.Children.Add(overlay);
             }

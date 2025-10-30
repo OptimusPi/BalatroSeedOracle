@@ -1003,8 +1003,10 @@ namespace BalatroSeedOracle.ViewModels
 
                     if (config != null)
                     {
-                        LoadedConfig = config;
                         CurrentFilterPath = filterPath;
+
+                        // CRITICAL: Load the config into state (populates SelectedMust/Should/MustNot)
+                        LoadConfigIntoState(config);
 
                         // Update deck and stake selection indices
                         if (!string.IsNullOrEmpty(config.Deck))
