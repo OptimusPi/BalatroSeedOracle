@@ -165,6 +165,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // CREATE GHOST IMAGE
                     CreateDragAdorner(item, _dragStartPosition);
 
+                    // Show ALL drop zone overlays when dragging from center
+                    ShowDropZoneOverlays();
+
                     // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
                     // Capturing to sender (the small image) would prevent us from getting events outside its bounds
                 }
@@ -201,8 +204,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return;
                 }
 
-                // Check which button was pressed - only handle left-click for dragging
+                // Check which button was pressed
                 var pointerPoint = e.GetCurrentPoint(grid);
+
+                // RIGHT-CLICK: Open config popup
+                if (pointerPoint.Properties.IsRightButtonPressed)
+                {
+                    ShowItemConfigPopup(item, grid);
+                    e.Handled = true;
+                    return;
+                }
+
+                // LEFT-CLICK ONLY: Start drag operation
                 if (!pointerPoint.Properties.IsLeftButtonPressed)
                 {
                     return; // Not left click, ignore
@@ -259,7 +272,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Create ghost
                 CreateDragAdorner(item, _dragStartPosition);
 
-                // Show "Return to shelf" overlay IMMEDIATELY when dragging from drop zones
+                // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones
                 if (_sourceDropZone != null)
                 {
                     var returnOverlay = this.FindControl<Border>("ReturnOverlay");
@@ -271,6 +284,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             "✅ Showing return overlay immediately on drag start"
                         );
                     }
+
+                    // Show overlays for OTHER drop zones (not the source)
+                    ShowDropZoneOverlays(_sourceDropZone);
                 }
             }
             catch (Exception ex)
@@ -1120,6 +1136,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _topLevel = null;
                     DebugLogger.Log("VisualBuilderTab", "Ghost image removed and disposed");
                 }
+
+                // Hide all drop zone overlays when drag ends
+                HideAllDropZoneOverlays();
             }
             catch (Exception ex)
             {
@@ -1128,6 +1147,56 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     $"Failed to remove drag adorner: {ex.Message}"
                 );
             }
+        }
+
+        /// <summary>
+        /// Show drop zone overlays. If excludeZone is specified, that zone won't show its overlay.
+        /// Also shows Favorites overlay.
+        /// </summary>
+        private void ShowDropZoneOverlays(string? excludeZone = null)
+        {
+            if (excludeZone != "MustDropZone")
+            {
+                var mustOverlay = this.FindControl<Border>("MustDropOverlay");
+                if (mustOverlay != null) mustOverlay.IsVisible = true;
+            }
+
+            if (excludeZone != "ShouldDropZone")
+            {
+                var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
+                if (shouldOverlay != null) shouldOverlay.IsVisible = true;
+            }
+
+            if (excludeZone != "MustNotDropZone")
+            {
+                var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
+                if (mustNotOverlay != null) mustNotOverlay.IsVisible = true;
+            }
+
+            // Always show Favorites overlay during drag
+            var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");
+            if (favoritesOverlay != null) favoritesOverlay.IsVisible = true;
+        }
+
+        /// <summary>
+        /// Hide all drop zone overlays including Favorites
+        /// </summary>
+        private void HideAllDropZoneOverlays()
+        {
+            var mustOverlay = this.FindControl<Border>("MustDropOverlay");
+            if (mustOverlay != null) mustOverlay.IsVisible = false;
+
+            var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
+            if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+
+            var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
+            if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+
+            var returnOverlay = this.FindControl<Border>("ReturnOverlay");
+            if (returnOverlay != null) returnOverlay.IsVisible = false;
+
+            var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");
+            if (favoritesOverlay != null) favoritesOverlay.IsVisible = false;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

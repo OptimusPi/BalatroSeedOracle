@@ -302,18 +302,13 @@
                              Text="{Binding ConsoleText}"/>
 
                     <!-- Bottom controls area -->
-                    <Grid Grid.Row="1" Margin="0,12,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Top row: Min Score and Continue Checkbox -->
-                        <StackPanel Grid.Row="0"
-                                    Orientation="Horizontal"
-                                    HorizontalAlignment="Center"
-                                    Spacing="16"
-                                    Margin="0,0,0,8">
+                    <!-- Single row: Min Score on left, Continue checkbox center, COOK button on right -->
+                    <StackPanel Grid.Row="1"
+                                Margin="0,12,0,0"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Spacing="16"
+                                VerticalAlignment="Center">
                             <!-- Min Score Spinner -->
                             <controls:SpinnerControl Name="MinScoreSpinner"
                                                     Label="Min Score"
@@ -333,14 +328,9 @@
                                       FontFamily="{StaticResource BalatroFont}"
                                       FontSize="11"
                                       IsVisible="{Binding IsContinueVisible}"
-                                      VerticalAlignment="Center"/>
-                        </StackPanel>
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,16,0"/>
 
-                        <!-- Bottom row: Buttons -->
-                        <StackPanel Grid.Row="1"
-                                    Orientation="Horizontal"
-                                    HorizontalAlignment="Center"
-                                    Spacing="12">
                             <!-- COOK button -->
                             <Button Name="CookButton"
                                     Content="{Binding CookButtonText}"
@@ -351,21 +341,7 @@
                                     FontSize="24"
                                     Height="52"
                                     MinWidth="200"/>
-
-                            <!-- Clear Console button (compact square) -->
-                            <Button Content="X"
-                                    Command="{Binding ClearConsoleCommand}"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    FontSize="20"
-                                    Width="52"
-                                    Height="52"
-                                    Background="{StaticResource Gold}"
-                                    Foreground="{StaticResource DarkGrey}"
-                                    CornerRadius="6"
-                                    Cursor="Hand"
-                                    ToolTip.Tip="Clear Console"/>
-                        </StackPanel>
-                    </Grid>
+                    </StackPanel>
                 </Grid>
             </Border>
 

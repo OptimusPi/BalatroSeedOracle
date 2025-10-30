@@ -16,6 +16,8 @@ namespace BalatroSeedOracle.ViewModels
         public bool EnableDelete { get; }
         public bool EnableAnalyze { get; }
 
+        // DEBUG: Add comprehensive logging
+
         // Child ViewModel for paginated filter list
         public PaginatedFilterBrowserViewModel FilterList { get; }
 
@@ -76,6 +78,8 @@ namespace BalatroSeedOracle.ViewModels
             EnableCopy = enableCopy;
             EnableDelete = enableDelete;
             EnableAnalyze = enableAnalyze;
+
+            DebugLogger.Log("FilterSelectionModalVM", $"🔵 CONSTRUCTOR: EnableSearch={EnableSearch}, EnableEdit={EnableEdit}, EnableCopy={EnableCopy}");
 
             // Create child ViewModel for filter list
             FilterList = new PaginatedFilterBrowserViewModel();
@@ -138,8 +142,15 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Search()
         {
+            DebugLogger.Log("FilterSelectionModal", "🔵 Search() called");
+
             if (SelectedFilter == null)
+            {
+                DebugLogger.Log("FilterSelectionModal", "❌ SelectedFilter is null");
                 return;
+            }
+
+            DebugLogger.Log("FilterSelectionModal", $"✅ SelectedFilter: {SelectedFilter.Name}, ID: {SelectedFilter.FilterId}");
 
             if (SelectedFilter.IsCreateNew)
             {
@@ -155,6 +166,7 @@ namespace BalatroSeedOracle.ViewModels
                 FilterId = SelectedFilter.FilterId,
             };
 
+            DebugLogger.Log("FilterSelectionModal", $"🚀 Invoking ModalCloseRequested with FilterId: {SelectedFilter.FilterId}");
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
         }
 

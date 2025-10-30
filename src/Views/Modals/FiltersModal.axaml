@@ -12,11 +12,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Balatro-style button tabs with bouncing triangle indicator -->
-        <components:BalatroTabControl Name="TabHeader"
-                                      Grid.Row="0"
-                                      HorizontalAlignment="Center"
-                                      Margin="0,0,0,2"/>
+        <!-- Header row: Just tabs centered -->
+        <Grid Grid.Row="0" Margin="0,0,0,2">
+            <!-- Balatro-style button tabs -->
+            <components:BalatroTabControl Name="TabHeader"
+                                          HorizontalAlignment="Center"/>
+        </Grid>
 
         <!-- Content area: let inner tabs provide their own dark panels (match SearchModal) -->
         <Border Grid.Row="1"

@@ -958,13 +958,13 @@ namespace BalatroSeedOracle.ViewModels
             TabControl.Tabs.Add(
                 new BalatroTabItem
                 {
-                    Title = "VISUAL BUILDER",
+                    Title = "Visual Builder",
                     Index = 0,
                     IsActive = true,
                 }
             );
-            TabControl.Tabs.Add(new BalatroTabItem { Title = "JSON EDITOR", Index = 1 });
-            TabControl.Tabs.Add(new BalatroTabItem { Title = "SAVE", Index = 2 });
+            TabControl.Tabs.Add(new BalatroTabItem { Title = "JSON Editor", Index = 1 });
+            TabControl.Tabs.Add(new BalatroTabItem { Title = "Save", Index = 2 });
 
             // Wire up tab selection
             TabControl.TabChanged += (sender, newIndex) =>

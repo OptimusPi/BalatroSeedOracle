@@ -10,79 +10,103 @@
              x:CompileBindings="True">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>  <!-- Top Search Bar -->
-            <RowDefinition Height="12"/>    <!-- Spacer -->
-            <RowDefinition Height="*"/>     <!-- Main Content Area -->
-        </Grid.RowDefinitions>
-
-        <!-- TOP SEARCH BAR - Row 1 (Left side, same width as category buttons) -->
-        <Grid Grid.Row="0" Margin="16,20,16,0" HorizontalAlignment="Left" Width="200">
-            <TextBox Name="SearchBox"
-                     Text="{Binding SearchFilter}"
-                     Watermark="Search items..."
-                     MinHeight="45"
-                     FontSize="16"
-                     BorderThickness="0"
-                     Background="{StaticResource DarkBackground}"
-                     CornerRadius="8"
-                     VerticalContentAlignment="Center"
-                     Padding="12,8,50,8"/>
-
-            <!-- Clear button inside search box (right side) -->
-            <Button Content="×"
-                    Click="OnClearSearch"
-                    Background="Transparent"
-                    Foreground="{StaticResource White}"
-                    FontSize="24"
-                    Width="40"
-                    Height="40"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Margin="0,0,4,0"
-                    Cursor="Hand"
-                    IsVisible="{Binding SearchFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-        </Grid>
-
-        <!-- MAIN CONTENT AREA - Row 3 -->
-        <Grid Grid.Row="2" Margin="16,0,16,16">
+        <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
+        <Grid Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="460"/>   <!-- Center: Grouped Items (5 jokers wide: 5*80 + scrollbar = 460) -->
                 <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - 7 Main Categories (NO PAGINATION) -->
-            <StackPanel Grid.Column="0" Spacing="1" Margin="0,0,8,0">
-                <Button Content="Favorites"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Favorites"/>
-                <Button Content="Joker"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Joker"/>
-                <Button Content="Consumable"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Consumable"/>
-                <Button Content="Skip Tag"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="SkipTag"/>
-                <Button Content="Boss"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Boss"/>
-                <Button Content="Voucher"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Voucher"/>
-                <Button Content="Standard Card"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="StandardCard"/>
-            </StackPanel>
+            <!-- LEFT COLUMN - Search + Categories (NO PAGINATION) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,*">
+                <!-- Search bar at top -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource ModalGrey}"
+                        BorderBrush="{StaticResource Blue}"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Padding="8,4">
+                    <TextBox Name="SearchBox"
+                             Watermark="Search items..."
+                             Text="{Binding SearchFilter, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource White}"
+                             Padding="4"
+                             VerticalContentAlignment="Center"
+                             FontSize="13"/>
+                </Border>
+
+                <StackPanel Grid.Row="2" Spacing="1" Name="CategoryNav" DragDrop.AllowDrop="True">
+                    <Button Content="Favorites"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Favorites"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Joker"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Joker"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Consumable"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Consumable"
+                            HorizontalAlignment="Stretch"/>
+                    <!-- Skip Tag and Boss side-by-side -->
+                    <Grid ColumnDefinitions="*,4,*">
+                        <Button Grid.Column="0"
+                                Content="Skip Tags"
+                                Classes="nav-button"
+                                Click="OnCategoryClick"
+                                Tag="SkipTag"
+                                MinWidth="90"
+                                HorizontalAlignment="Stretch"/>
+                        <Button Grid.Column="2"
+                                Content="Boss Blind"
+                                Classes="nav-button"
+                                Click="OnCategoryClick"
+                                Tag="Boss"
+                                MinWidth="90"
+                                HorizontalAlignment="Stretch"/>
+                    </Grid>
+                    <Button Content="Voucher"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Voucher"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Standard Card"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="StandardCard"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <!-- Favorites drop overlay - covers category nav area only -->
+                <Border Grid.Row="2"
+                        Name="FavoritesDropOverlay"
+                        Background="{StaticResource SemiTransparentBlack}"
+                        BorderBrush="{StaticResource Red}"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False">
+                    <TextBlock FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource Red}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               FontWeight="Bold">
+                        <Run Text="ADD"/>
+                        <LineBreak/>
+                        <Run Text="TO"/>
+                        <LineBreak/>
+                        <Run Text="FAVORITES"/>
+                    </TextBlock>
+                </Border>
+            </Grid>
 
             <!-- CENTER COLUMN - Grouped Scrollable Items (NO PAGINATION) -->
             <Grid Grid.Column="1" Margin="8,0">
@@ -200,7 +224,7 @@
             </Grid>
 
             <!-- RIGHT COLUMN - Drop Zones (Balatro Challenges Style) -->
-            <StackPanel Grid.Column="2" Spacing="12" VerticalAlignment="Top">
+            <StackPanel Grid.Column="2" Spacing="12" VerticalAlignment="Top" Margin="5,0,0,0">
                 <!-- MUST HAVE Zone -->
                 <Border Name="MustDropZone"
                         Background="{StaticResource White}"
@@ -211,30 +235,38 @@
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>   <!-- Blue header -->
-                            <RowDefinition Height="*"/>       <!-- White content area -->
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
+                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Top: Blue Header -->
-                        <Border Grid.Row="0"
+                        <!-- Left: Blue Vertical Label -->
+                        <Border Grid.Column="0"
                                 Background="{StaticResource Blue}"
-                                CornerRadius="6,6,0,0"
-                                Padding="12,8">
+                                CornerRadius="6,0,0,6"
+                                VerticalAlignment="Stretch">
                             <TextBlock Text="Must Have"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        Foreground="{StaticResource White}"
                                        HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="-90"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
                         </Border>
 
-                        <!-- Bottom: White Drop Area -->
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedMust}" Margin="12">
+                        <!-- Right: White Drop Area -->
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMust}" Margin="12">
+                            <i:Interaction.Behaviors>
+                                <behaviors:FannedHandBehavior/>
+                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image (BIGGER) -->
+                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="57"
                                                Height="76"
@@ -271,6 +303,9 @@
                                         </Button>
 
                                         <Grid.Styles>
+                                            <Style Selector="Grid:pointerover">
+                                                <Setter Property="Panel.ZIndex" Value="100"/>
+                                            </Style>
                                             <Style Selector="Grid:pointerover Button#RemoveButton">
                                                 <Setter Property="IsVisible" Value="True"/>
                                             </Style>
@@ -280,10 +315,28 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
+                                    <Canvas/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
+
+                        <!-- Drop indicator overlay for MUST -->
+                        <Border Name="MustDropOverlay"
+                                Grid.ColumnSpan="2"
+                                Background="{StaticResource SemiTransparentBlack}"
+                                BorderBrush="{StaticResource Blue}"
+                                BorderThickness="3"
+                                CornerRadius="8"
+                                IsVisible="False"
+                                IsHitTestVisible="False">
+                            <TextBlock Text="Drop in MUST HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Blue}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Border>
                     </Grid>
                 </Border>
 
@@ -297,30 +350,38 @@
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>   <!-- Blue header -->
-                            <RowDefinition Height="*"/>       <!-- White content area -->
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
+                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Top: Blue Header -->
-                        <Border Grid.Row="0"
+                        <!-- Left: Blue Vertical Label -->
+                        <Border Grid.Column="0"
                                 Background="{StaticResource Blue}"
-                                CornerRadius="6,6,0,0"
-                                Padding="12,8">
+                                CornerRadius="6,0,0,6"
+                                VerticalAlignment="Stretch">
                             <TextBlock Text="Should Have"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        Foreground="{StaticResource White}"
                                        HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="-90"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
                         </Border>
 
-                        <!-- Bottom: White Drop Area -->
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedShould}" Margin="12">
+                        <!-- Right: White Drop Area -->
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedShould}" Margin="12">
+                            <i:Interaction.Behaviors>
+                                <behaviors:FannedHandBehavior/>
+                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image (BIGGER) -->
+                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="57"
                                                Height="76"
@@ -357,6 +418,9 @@
                                         </Button>
 
                                         <Grid.Styles>
+                                            <Style Selector="Grid:pointerover">
+                                                <Setter Property="Panel.ZIndex" Value="100"/>
+                                            </Style>
                                             <Style Selector="Grid:pointerover Button#RemoveButton">
                                                 <Setter Property="IsVisible" Value="True"/>
                                             </Style>
@@ -366,10 +430,28 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
+                                    <Canvas/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
+
+                        <!-- Drop indicator overlay for SHOULD -->
+                        <Border Name="ShouldDropOverlay"
+                                Grid.ColumnSpan="2"
+                                Background="{StaticResource SemiTransparentBlack}"
+                                BorderBrush="{StaticResource Blue}"
+                                BorderThickness="3"
+                                CornerRadius="8"
+                                IsVisible="False"
+                                IsHitTestVisible="False">
+                            <TextBlock Text="Drop in SHOULD HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Blue}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Border>
                     </Grid>
                 </Border>
 
@@ -383,30 +465,38 @@
                         Padding="0"
                         DragDrop.AllowDrop="True">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>   <!-- Blue header -->
-                            <RowDefinition Height="*"/>       <!-- White content area -->
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>   <!-- Blue label on LEFT - fixed width -->
+                            <ColumnDefinition Width="*"/>    <!-- White content area -->
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Top: Blue Header -->
-                        <Border Grid.Row="0"
+                        <!-- Left: Blue Vertical Label -->
+                        <Border Grid.Column="0"
                                 Background="{StaticResource Blue}"
-                                CornerRadius="6,6,0,0"
-                                Padding="12,8">
+                                CornerRadius="6,0,0,6"
+                                VerticalAlignment="Stretch">
                             <TextBlock Text="Must Not Have"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        Foreground="{StaticResource White}"
                                        HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="-90"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
                         </Border>
 
-                        <!-- Bottom: White Drop Area -->
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
+                        <!-- Right: White Drop Area -->
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
+                            <i:Interaction.Behaviors>
+                                <behaviors:FannedHandBehavior/>
+                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:FilterItem">
-                                    <Grid Margin="6" Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
-                                        <!-- Main card image (BIGGER) -->
+                                    <Grid Width="57" Height="76" Cursor="Hand" PointerPressed="OnDropZoneItemPointerPressed">
+                                        <!-- Main card image -->
                                         <Image Source="{Binding ItemImage}"
                                                Width="57"
                                                Height="76"
@@ -443,6 +533,9 @@
                                         </Button>
 
                                         <Grid.Styles>
+                                            <Style Selector="Grid:pointerover">
+                                                <Setter Property="Panel.ZIndex" Value="100"/>
+                                            </Style>
                                             <Style Selector="Grid:pointerover Button#RemoveButton">
                                                 <Setter Property="IsVisible" Value="True"/>
                                             </Style>
@@ -452,10 +545,28 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
+                                    <Canvas/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
+
+                        <!-- Drop indicator overlay for MUST NOT -->
+                        <Border Name="MustNotDropOverlay"
+                                Grid.ColumnSpan="2"
+                                Background="{StaticResource SemiTransparentBlack}"
+                                BorderBrush="{StaticResource Red}"
+                                BorderThickness="3"
+                                CornerRadius="8"
+                                IsVisible="False"
+                                IsHitTestVisible="False">
+                            <TextBlock Text="Drop in MUST NOT HAVE"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Red}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"/>
+                        </Border>
                     </Grid>
                 </Border>
 

@@ -59,10 +59,10 @@ namespace BalatroSeedOracle.Models
         private static void InitializeJokers()
         {
             // Add wildcard entries first
-            Jokers["anylegendary"] = "Any Legendary";
-            Jokers["anyrare"] = "Any Rare";
-            Jokers["anyuncommon"] = "Any Uncommon";
-            Jokers["anycommon"] = "Any Common";
+            Jokers["anylegendary"] = "Any Legendary Joker";
+            Jokers["anyrare"] = "Any Rare Joker";
+            Jokers["anyuncommon"] = "Any Uncommon Joker";
+            Jokers["anycommon"] = "Any Common Joker";
             Jokers["anyjoker"] = "Any Joker";
 
             // Common Jokers
@@ -190,21 +190,21 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeDecks()
         {
-            Decks["Red"] = "Red Deck";
-            Decks["Blue"] = "Blue Deck";
-            Decks["Yellow"] = "Yellow Deck";
-            Decks["Green"] = "Green Deck";
-            Decks["Black"] = "Black Deck";
-            Decks["Magic"] = "Magic Deck";
-            Decks["Nebula"] = "Nebula Deck";
-            Decks["Ghost"] = "Ghost Deck";
-            Decks["Abandoned"] = "Abandoned Deck";
-            Decks["Checkered"] = "Checkered Deck";
-            Decks["Zodiac"] = "Zodiac Deck";
-            Decks["Painted"] = "Painted Deck";
-            Decks["Anaglyph"] = "Anaglyph Deck";
-            Decks["Plasma"] = "Plasma Deck";
-            Decks["Erratic"] = "Erratic Deck";
+            Decks["Red"] = "Red";
+            Decks["Blue"] = "Blue";
+            Decks["Yellow"] = "Yellow";
+            Decks["Green"] = "Green";
+            Decks["Black"] = "Black";
+            Decks["Magic"] = "Magic";
+            Decks["Nebula"] = "Nebula";
+            Decks["Ghost"] = "Ghost";
+            Decks["Abandoned"] = "Abandoned";
+            Decks["Checkered"] = "Checkered";
+            Decks["Zodiac"] = "Zodiac";
+            Decks["Painted"] = "Painted";
+            Decks["Anaglyph"] = "Anaglyph";
+            Decks["Plasma"] = "Plasma";
+            Decks["Erratic"] = "Erratic";
         }
 
         public static readonly Dictionary<string, string> DeckDescriptions = new()
@@ -399,16 +399,6 @@ namespace BalatroSeedOracle.Models
                 { "yorick", "Yorick" },
                 { "chicot", "Chicot" },
                 { "perkeo", "Perkeo" },
-                // Wildcard entries (prefixed to avoid confusion with actual items)
-                { "wildcard_joker", "Any Joker" },
-                { "wildcard_jokercommon", "Any Common Joker" },
-                { "wildcard_jokeruncommon", "Any Uncommon Joker" },
-                { "wildcard_jokerrare", "Any Rare Joker" },
-                { "wildcard_jokerlegendary", "Any Legendary" },
-                { "wildcard_souljoker", "Any Legendary" }, // SoulJoker = Legendary in UI
-                { "wildcard_tarot", "Any Tarot" },
-                { "wildcard_spectral", "Any Spectral" },
-                { "wildcard_planet", "Any Planet" },
             };
 
             if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))

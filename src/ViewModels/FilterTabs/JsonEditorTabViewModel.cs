@@ -102,8 +102,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
                 }
 
-                // Update JSON content silently
-                JsonContent = JsonSerializer.Serialize(
+                // Update JSON content silently using FilterSerializationService for proper formatting
+                var serializationService = ServiceHelper.GetService<FilterSerializationService>();
+                JsonContent = serializationService?.SerializeConfig(config) ?? JsonSerializer.Serialize(
                     config,
                     new JsonSerializerOptions
                     {

@@ -205,6 +205,7 @@ namespace BalatroSeedOracle.Views
             // Wire up ModalCloseRequested to handle user actions
             filterSelectionVM.ModalCloseRequested += (s, e) =>
             {
+                DebugLogger.Log("BalatroMainMenu", "🔵 ShowSearchModal: ModalCloseRequested event FIRED!");
                 var result = filterSelectionVM.Result;
 
                 if (result.Cancelled)
@@ -257,7 +258,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show search modal with a specific filter loaded (overload for FilterSelectionModal flow)
         /// </summary>
-        private void ShowSearchModalWithFilter(string configPath)
+        private async void ShowSearchModalWithFilter(string configPath)
         {
             try
             {
@@ -270,10 +271,10 @@ namespace BalatroSeedOracle.Views
                 // Set the MainMenu reference so CREATE NEW FILTER button works
                 searchContent.ViewModel.MainMenu = this;
 
-                // CRITICAL: Load the selected filter immediately!
+                // CRITICAL: Load the selected filter immediately AND WAIT FOR IT!
                 if (!string.IsNullOrEmpty(configPath) && System.IO.File.Exists(configPath))
                 {
-                    _ = searchContent.ViewModel.LoadFilterAsync(configPath);
+                    await searchContent.ViewModel.LoadFilterAsync(configPath);
                     Helpers.DebugLogger.Log(
                         "BalatroMainMenu",
                         $"✅ Filter loaded: {System.IO.Path.GetFileName(configPath)}"
@@ -587,12 +588,11 @@ namespace BalatroSeedOracle.Views
             // Store active content reference
             _activeModalContent = content;
 
-            // Set initial states BEFORE making visible
-            // Overlay: Start transparent
-            _modalOverlay.Opacity = 0;
-
-            // Content: Start below the screen
+            // CRITICAL: Calculate window height and set initial transform FIRST
             var windowHeight = this.Bounds.Height;
+
+            // Set initial states BEFORE making visible or adding content
+            _modalOverlay.Opacity = 0;
             _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse($"translateY({windowHeight}px)");
 
             // Set the content in the wrapper
@@ -607,14 +607,17 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsModalVisible = true;
             }
 
-            // Trigger animations by changing properties
+            // Force layout update to ensure initial state is rendered
+            _modalContainer.UpdateLayout();
+
+            // Trigger animations by changing properties after a delay
             // The transitions defined in XAML will handle the smooth animation
             Dispatcher.UIThread.Post(() =>
             {
                 // Fade in overlay (0 → 1)
                 _modalOverlay.Opacity = 1;
 
-                // Slide up content (translateY: windowHeight → 0)
+                // Slide up content from below screen (translateY: windowHeight → 0)
                 _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(0px)");
             }, DispatcherPriority.Render);
         }

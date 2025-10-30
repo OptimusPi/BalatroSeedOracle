@@ -1053,12 +1053,12 @@
                                                 </Grid>
                                             </Border>
 
-                                            <!-- Right Column: Scoring Criteria (Should[]) - WITH SCROLL -->
-                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                                                <Border Background="{StaticResource White}"
-                                                        CornerRadius="8">
+                                            <!-- Right Column: Scoring Criteria (Should[]) - Fixed header, scrolling content -->
+                                            <Border Grid.Column="2"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
                                                 <Grid RowDefinitions="Auto,*">
-                                                    <!-- Header -->
+                                                    <!-- Header (Fixed) -->
                                                     <Border Grid.Row="0"
                                                             Background="{StaticResource Blue}"
                                                             CornerRadius="8,8,0,0"
@@ -1069,8 +1069,9 @@
                                                                    Foreground="White"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Content -->
-                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                    <!-- Content (Scrollable) -->
+                                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                                        <StackPanel Margin="15" Spacing="10">
                                                         <!-- Header Row -->
                                                         <Grid ColumnDefinitions="3*,*" Margin="0,0,0,5">
                                                             <TextBlock Grid.Column="0"
@@ -1175,10 +1176,10 @@
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
-                                                    </StackPanel>
+                                                        </StackPanel>
+                                                    </ScrollViewer>
                                                 </Grid>
                                             </Border>
-                                            </ScrollViewer>
                                         </Grid>
 
                                     <!-- PREFERRED DECK TAB CONTENT (two-column layout) -->
@@ -1320,7 +1321,8 @@
                                                 FontSize="18"
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding CopyCommand}"
-                                                IsVisible="{Binding EnableCopy}"/>
+                                                IsVisible="{Binding EnableCopy}"
+                                                IsHitTestVisible="{Binding EnableCopy}"/>
 
                                         <Button Content="Search Seeds using this Filter"
                                                 Classes="btn-blue"
@@ -1328,7 +1330,8 @@
                                                 FontSize="18"
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding SearchCommand}"
-                                                IsVisible="{Binding EnableSearch}"/>
+                                                IsVisible="{Binding EnableSearch}"
+                                                IsHitTestVisible="{Binding EnableSearch}"/>
                                     </Grid>
 
                                     <Grid Grid.Column="2" ColumnDefinitions="*,6,*">

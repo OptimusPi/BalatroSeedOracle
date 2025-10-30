@@ -75,12 +75,15 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnDataContextChanged(object? sender, EventArgs e)
         {
+            DebugLogger.Log("FilterSelectionModal", "🔵 DataContext changed!");
+
             // Unsubscribe from old ViewModel if any
             if (sender is FilterSelectionModal modal)
             {
                 var oldVm = modal.DataContext as FilterSelectionModalViewModel;
                 if (oldVm != null)
                 {
+                    DebugLogger.Log("FilterSelectionModal", "  Unsubscribing from old ViewModel");
                     oldVm.ModalCloseRequested -= OnModalCloseRequested;
                     oldVm.PropertyChanged -= OnViewModelPropertyChanged;
                     oldVm.DeleteConfirmationRequested -= OnDeleteConfirmationRequested;
@@ -90,6 +93,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var newVm = modal.DataContext as FilterSelectionModalViewModel;
                 if (newVm != null)
                 {
+                    DebugLogger.Log("FilterSelectionModal", $"  Subscribing to new ViewModel - EnableSearch={newVm.EnableSearch}");
                     newVm.ModalCloseRequested += OnModalCloseRequested;
                     newVm.PropertyChanged += OnViewModelPropertyChanged;
                     newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
@@ -99,6 +103,10 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         UpdateDeckAndStake(newVm.SelectedFilter);
                     }
+                }
+                else
+                {
+                    DebugLogger.LogError("FilterSelectionModal", "  ❌ NEW DATACONTEXT IS NOT FilterSelectionModalViewModel!");
                 }
             }
         }

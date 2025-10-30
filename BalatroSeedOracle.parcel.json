@@ -1,7 +1,7 @@
 {
   "displayName": "Balatro Seed Oracle",
   "publisher": "pifreak",
-  "version": "1.0.0",
+  "version": "auto",
   "identifier": "com.pifreak.balatroseedoracle",
   "description": "Balatro seed searching and analysis tool powered by Motely",
   "icon": "src/Assets/icon.png",
