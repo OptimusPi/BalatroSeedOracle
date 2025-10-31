@@ -30,6 +30,25 @@ namespace BalatroSeedOracle.Services
         private float _bassIntensity = 0f;
         private float _smoothedMelodySaturation = 0f;
 
+        // Event-triggered effects
+        private float _eventEffectIntensity = 0f;
+        private float _eventZoomPunch = 0f;
+        private float _eventContrastBoost = 0f;
+
+        public MusicToVisualizerHandler()
+        {
+            // Subscribe to visualizer events
+            var eventManager = VisualizerEventManager.Instance;
+            eventManager.SeedFound += OnSeedFound;
+            eventManager.HighScore += OnHighScore;
+            eventManager.SearchComplete += OnSearchComplete;
+            eventManager.FrequencyBreakpointHit += OnFrequencyBreakpointHit;
+            eventManager.BeatDetected += OnBeatDetected;
+            eventManager.DropDetected += OnDropDetected;
+
+            DebugLogger.Log("MusicToVisualizerHandler", "Subscribed to VisualizerEventManager events");
+        }
+
         // Shader parameters (controllable via settings)
         private float _contrast = 2.0f;
         private float _spinAmount = 0.3f;
@@ -488,6 +507,9 @@ namespace BalatroSeedOracle.Services
                         shadowFlickerIntensity * intensityScale
                     );
                 }
+                // Apply event-driven contrast boost
+                audioContrast += _eventContrastBoost;
+                _eventContrastBoost *= 0.9f; // Decay event effect
 
                 float audioSpinAmount = _spinAmount;
                 if (_spinRangeMax != _spinRangeMin)
@@ -509,12 +531,14 @@ namespace BalatroSeedOracle.Services
                     );
                 }
 
-                // Zoom punch effect
+                // Zoom punch effect (audio + events)
                 if (zoomThumpIntensity > 0.5f)
                 {
                     float punchStrength = (zoomThumpIntensity - 0.5f) * 2.0f;
                     _zoomPunch += punchStrength * 10.0f * intensityScale;
                 }
+                _zoomPunch += _eventZoomPunch;
+                _eventZoomPunch *= 0.8f; // Decay event effect
                 _zoomPunch *= 0.85f;
 
                 // Saturation mapping
@@ -565,11 +589,105 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles seed found events - triggers a visual flash effect
+        /// </summary>
+        private void OnSeedFound(object? sender, SeedFoundEventArgs e)
+        {
+            DebugLogger.Log("MusicToVisualizerHandler", $"Seed found event: {e.Seed} (score={e.Score})");
+            _eventZoomPunch += 15.0f;
+            _eventContrastBoost += 2.0f;
+        }
+
+        /// <summary>
+        /// Handles high score events - triggers an intense flash effect
+        /// </summary>
+        private void OnHighScore(object? sender, HighScoreEventArgs e)
+        {
+            DebugLogger.Log("MusicToVisualizerHandler",
+                $"High score event: {e.Seed} (score={e.Score}, PR={e.IsPersonalRecord})");
+            _eventZoomPunch += e.IsPersonalRecord ? 30.0f : 20.0f;
+            _eventContrastBoost += e.IsPersonalRecord ? 4.0f : 3.0f;
+        }
+
+        /// <summary>
+        /// Handles search complete events - triggers a completion effect
+        /// </summary>
+        private void OnSearchComplete(object? sender, SearchCompleteEventArgs e)
+        {
+            DebugLogger.Log("MusicToVisualizerHandler",
+                $"Search complete event: {e.MatchesFound}/{e.TotalSearched} in {e.Duration.TotalSeconds:F1}s");
+            _eventZoomPunch += 10.0f;
+            _eventEffectIntensity += 0.5f;
+        }
+
+        /// <summary>
+        /// Handles frequency breakpoint hit events - applies specified effect
+        /// </summary>
+        private void OnFrequencyBreakpointHit(object? sender, FrequencyBreakpointEventArgs e)
+        {
+            DebugLogger.Log("MusicToVisualizerHandler",
+                $"Frequency breakpoint hit: {e.BreakpointName} - {e.EffectName} @ {e.EffectIntensity}");
+
+            // Apply effect based on effect name
+            switch (e.EffectName.ToLowerInvariant())
+            {
+                case "pulse":
+                case "zoom":
+                    _eventZoomPunch += e.EffectIntensity * 10.0f;
+                    break;
+                case "flash":
+                case "contrast":
+                    _eventContrastBoost += e.EffectIntensity * 2.0f;
+                    break;
+                case "spin":
+                    _rotationVelocity += e.EffectIntensity * 5.0f;
+                    break;
+                default:
+                    _eventEffectIntensity += e.EffectIntensity;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles beat detected events
+        /// </summary>
+        private void OnBeatDetected(object? sender, BeatDetectedEventArgs e)
+        {
+            // Beat detection is already handled in the main render loop
+            // This is here for extensibility
+        }
+
+        /// <summary>
+        /// Handles drop detected events - triggers an intense effect
+        /// </summary>
+        private void OnDropDetected(object? sender, DropDetectedEventArgs e)
+        {
+            DebugLogger.Log("MusicToVisualizerHandler",
+                $"Drop detected: intensity={e.Intensity:F2}, freq={e.FrequencyHz}Hz");
+            _eventZoomPunch += e.Intensity * 25.0f;
+            _eventContrastBoost += e.Intensity * 3.0f;
+        }
+
+        #endregion
+
         public void Dispose()
         {
             if (_isDisposed)
                 return;
             _isDisposed = true;
+
+            // Unsubscribe from events
+            var eventManager = VisualizerEventManager.Instance;
+            eventManager.SeedFound -= OnSeedFound;
+            eventManager.HighScore -= OnHighScore;
+            eventManager.SearchComplete -= OnSearchComplete;
+            eventManager.FrequencyBreakpointHit -= OnFrequencyBreakpointHit;
+            eventManager.BeatDetected -= OnBeatDetected;
+            eventManager.DropDetected -= OnDropDetected;
+
             _shaderBuilder?.Dispose();
             _shaderBuilder = null;
         }

@@ -232,6 +232,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Runs a quick synchronous search for testing filters
         /// Returns results directly instead of fire-and-forget
+        /// Uses the in-memory config overload - no file I/O required!
         /// </summary>
         public async Task<QuickSearchResults> RunQuickSearchAsync(
             SearchCriteria criteria,
@@ -265,8 +266,8 @@ namespace BalatroSeedOracle.Services
                 {
                     searchInstance = new SearchInstance(tempSearchId, tempDbPath);
 
-                    // Start the search with the criteria
-                    var searchTask = searchInstance.StartSearchAsync(criteria);
+                    // Start the search with the in-memory config (no file I/O!)
+                    var searchTask = searchInstance.StartSearchAsync(criteria, config);
 
                     // Wait for either completion or max results
                     var timeoutTask = Task.Delay(5000); // 5 second timeout for quick test

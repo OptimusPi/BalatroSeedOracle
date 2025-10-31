@@ -25,8 +25,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private static string NormalizeSpriteName(string name)
         {
-            return name
-                .Trim()
+            return name.Trim()
                 .Replace(" ", string.Empty, StringComparison.Ordinal)
                 .Replace("_", string.Empty, StringComparison.Ordinal)
                 .ToLowerInvariant();
@@ -445,18 +444,34 @@ namespace BalatroSeedOracle.Services
         )
         {
             // FAIL LOUDLY: If basic preconditions aren't met, the app is fundamentally broken
-            System.Diagnostics.Debug.Assert(!string.IsNullOrEmpty(name_in), $"[SPRITE SERVICE] name_in is null or empty for category '{category}'");
-            System.Diagnostics.Debug.Assert(positions != null, $"[SPRITE SERVICE] positions dictionary is null for category '{category}'");
-            System.Diagnostics.Debug.Assert(spriteSheet != null, $"[SPRITE SERVICE] spriteSheet is null for category '{category}' - assets failed to load!");
+            System.Diagnostics.Debug.Assert(
+                !string.IsNullOrEmpty(name_in),
+                $"[SPRITE SERVICE] name_in is null or empty for category '{category}'"
+            );
+            System.Diagnostics.Debug.Assert(
+                positions != null,
+                $"[SPRITE SERVICE] positions dictionary is null for category '{category}'"
+            );
+            System.Diagnostics.Debug.Assert(
+                spriteSheet != null,
+                $"[SPRITE SERVICE] spriteSheet is null for category '{category}' - assets failed to load!"
+            );
 
             if (string.IsNullOrEmpty(name_in))
-                throw new ArgumentException($"Sprite name cannot be null or empty (category: {category})", nameof(name_in));
+                throw new ArgumentException(
+                    $"Sprite name cannot be null or empty (category: {category})",
+                    nameof(name_in)
+                );
 
             if (positions == null)
-                throw new InvalidOperationException($"Sprite positions dictionary is null for category '{category}' - SpriteService failed to initialize properly!");
+                throw new InvalidOperationException(
+                    $"Sprite positions dictionary is null for category '{category}' - SpriteService failed to initialize properly!"
+                );
 
             if (spriteSheet == null)
-                throw new InvalidOperationException($"Sprite sheet is null for category '{category}' - Assets failed to load! Check that all sprite assets are present.");
+                throw new InvalidOperationException(
+                    $"Sprite sheet is null for category '{category}' - Assets failed to load! Check that all sprite assets are present."
+                );
 
             // Normalize the sprite name for consistent lookup
             string name = NormalizeSpriteName(name_in);
@@ -490,8 +505,20 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // FAIL LOUDLY: Missing sprite data means the JSON metadata is incomplete or sprite name is wrong
-                var availableKeys = string.Join(", ", positions.Keys.Where(k => k.Contains(name.Substring(0, Math.Min(3, name.Length)), StringComparison.OrdinalIgnoreCase)).Take(5));
-                throw new KeyNotFoundException($"Sprite '{name_in}' (normalized: '{name}') not found in {category} positions. Similar keys: {availableKeys}");
+                var availableKeys = string.Join(
+                    ", ",
+                    positions
+                        .Keys.Where(k =>
+                            k.Contains(
+                                name.Substring(0, Math.Min(3, name.Length)),
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                        .Take(5)
+                );
+                throw new KeyNotFoundException(
+                    $"Sprite '{name_in}' (normalized: '{name}') not found in {category} positions. Similar keys: {availableKeys}"
+                );
             }
         }
 
@@ -519,7 +546,10 @@ namespace BalatroSeedOracle.Services
 
                 if (baseJoker == null)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to get base joker sprite for wildcard '{name}'");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to get base joker sprite for wildcard '{name}'"
+                    );
                     return null;
                 }
 
@@ -528,14 +558,20 @@ namespace BalatroSeedOracle.Services
                     ? "MysteryLegendary"
                     : "MysteryGeneric";
 
-                DebugLogger.Log("SpriteService", $"Wildcard detected: '{name}' -> base joker + {mysterySprite} overlay");
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"Wildcard detected: '{name}' -> base joker + {mysterySprite} overlay"
+                );
 
                 // Get the mystery face from the special sprites (it's 142x190)
                 var mysteryFace = GetSpecialImage(mysterySprite, 142, 190);
 
                 if (mysteryFace == null)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to get mystery sprite '{mysterySprite}' for wildcard '{name}'");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to get mystery sprite '{mysterySprite}' for wildcard '{name}'"
+                    );
                     // Return just the base joker if mystery face fails
                     return baseJoker;
                 }
@@ -715,7 +751,10 @@ namespace BalatroSeedOracle.Services
 
                 if (baseTarot == null)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to get base tarot sprite for wildcard '{name}'");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to get base tarot sprite for wildcard '{name}'"
+                    );
                     return null;
                 }
 
@@ -725,7 +764,10 @@ namespace BalatroSeedOracle.Services
 
                 if (mysteryFace == null)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to get mystery sprite '{mysterySprite}' for wildcard tarot '{name}'");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to get mystery sprite '{mysterySprite}' for wildcard tarot '{name}'"
+                    );
                     return baseTarot;
                 }
 
@@ -1082,7 +1124,12 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Composites two images together (overlay on top of base)
         /// </summary>
-        private IImage? CompositeImages(IImage baseImage, IImage overlayImage, int width, int height)
+        private IImage? CompositeImages(
+            IImage baseImage,
+            IImage overlayImage,
+            int width,
+            int height
+        )
         {
             try
             {
@@ -1101,14 +1148,24 @@ namespace BalatroSeedOracle.Services
                     // Draw base image
                     ctx.DrawImage(
                         baseBitmap,
-                        new Avalonia.Rect(0, 0, baseBitmap.PixelSize.Width, baseBitmap.PixelSize.Height),
+                        new Avalonia.Rect(
+                            0,
+                            0,
+                            baseBitmap.PixelSize.Width,
+                            baseBitmap.PixelSize.Height
+                        ),
                         new Avalonia.Rect(0, 0, width, height)
                     );
 
                     // Draw overlay image on top
                     ctx.DrawImage(
                         overlayBitmap,
-                        new Avalonia.Rect(0, 0, overlayBitmap.PixelSize.Width, overlayBitmap.PixelSize.Height),
+                        new Avalonia.Rect(
+                            0,
+                            0,
+                            overlayBitmap.PixelSize.Width,
+                            overlayBitmap.PixelSize.Height
+                        ),
                         new Avalonia.Rect(0, 0, width, height)
                     );
                 }

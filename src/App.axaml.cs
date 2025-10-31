@@ -140,7 +140,10 @@ public partial class App : Application
             if (filterCache != null)
             {
                 filterCache.Initialize();
-                DebugLogger.Log("App", $"Filter cache initialized with {filterCache.Count} filters");
+                DebugLogger.Log(
+                    "App",
+                    $"Filter cache initialized with {filterCache.Count} filters"
+                );
             }
             else
             {

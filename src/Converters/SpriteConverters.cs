@@ -34,10 +34,10 @@ namespace BalatroSeedOracle.Converters
                     Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
                         item.SpriteKey
                     ),
-                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetTarotImage(
+                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetPlanetCardImage(
                         item.SpriteKey
                     ),
-                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetTarotImage(
+                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(
                         item.SpriteKey
                     ),
                     _ => null,
@@ -45,7 +45,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ShopItemSpriteConverter", $"Failed to get sprite for '{item.SpriteKey}' (ItemName: {item.ItemName}, Type: {item.TypeCategory}): {ex.Message}");
+                DebugLogger.LogError(
+                    "ShopItemSpriteConverter",
+                    $"Failed to get sprite for '{item.SpriteKey}' (ItemName: {item.ItemName}, Type: {item.TypeCategory}): {ex.Message}"
+                );
                 return null;
             }
         }
@@ -83,7 +86,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BoosterPackSpriteConverter", $"Failed to get booster sprite for '{pack.PackSpriteKey}': {ex.Message}");
+                DebugLogger.LogError(
+                    "BoosterPackSpriteConverter",
+                    $"Failed to get booster sprite for '{pack.PackSpriteKey}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -121,7 +127,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TagSpriteConverter", $"Failed to get tag sprite for '{tag.TagSpriteKey}': {ex.Message}");
+                DebugLogger.LogError(
+                    "TagSpriteConverter",
+                    $"Failed to get tag sprite for '{tag.TagSpriteKey}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -159,7 +168,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ItemTypeToSpriteConverter", $"Failed to get item sprite for type '{itemType}': {ex.Message}");
+                DebugLogger.LogError(
+                    "ItemTypeToSpriteConverter",
+                    $"Failed to get item sprite for type '{itemType}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -268,7 +280,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ItemNameToSoulFaceConverter", $"Failed to get soul sprite for '{itemName}': {ex.Message}");
+                DebugLogger.LogError(
+                    "ItemNameToSoulFaceConverter",
+                    $"Failed to get soul sprite for '{itemName}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -391,7 +406,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BossSpriteConverter", $"Failed to get boss sprite for '{value}': {ex.Message}");
+                DebugLogger.LogError(
+                    "BossSpriteConverter",
+                    $"Failed to get boss sprite for '{value}': {ex.Message}"
+                );
                 return null;
             }
         }
@@ -433,7 +451,10 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VoucherSpriteConverter", $"Failed to get voucher sprite for '{value}': {ex.Message}");
+                DebugLogger.LogError(
+                    "VoucherSpriteConverter",
+                    $"Failed to get voucher sprite for '{value}': {ex.Message}"
+                );
                 return null;
             }
         }

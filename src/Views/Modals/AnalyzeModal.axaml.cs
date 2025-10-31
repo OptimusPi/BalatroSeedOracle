@@ -17,8 +17,6 @@ namespace BalatroSeedOracle.Views.Modals
     {
         private AnalyzeModalViewModel? ViewModel => DataContext as AnalyzeModalViewModel;
         private DeckAndStakeSelector? _deckAndStakeSelector;
-        private Components.BalatroTabControl? _tabHeader;
-        private bool _suppressHeaderSync = false;
 
         public AnalyzeModal()
         {
@@ -36,39 +34,6 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Get deck/stake selector component
             _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
-
-            // Wire up Balatro-style tab header
-            _tabHeader = this.FindControl<Components.BalatroTabControl>("TabHeader");
-            if (_tabHeader != null)
-            {
-                // Initialize header tabs
-                _tabHeader.SetTabs("DECK/STAKE", "ANALYZE");
-
-                // Forward header changes to ViewModel
-                _tabHeader.TabChanged += (s, tabIndex) =>
-                {
-                    if (ViewModel == null)
-                        return;
-                    _suppressHeaderSync = true;
-                    ViewModel.ActiveTab = (Models.AnalyzeModalTab)tabIndex;
-                    _suppressHeaderSync = false;
-                };
-
-                // Sync header when ViewModel changes ActiveTab programmatically
-                if (ViewModel != null)
-                {
-                    ViewModel.PropertyChanged += (s, e) =>
-                    {
-                        if (!_suppressHeaderSync && e.PropertyName == nameof(ViewModel.ActiveTab))
-                        {
-                            _tabHeader.SwitchToTab((int)ViewModel.ActiveTab);
-                        }
-                    };
-
-                    // Ensure initial selection matches ViewModel
-                    _tabHeader.SwitchToTab((int)ViewModel.ActiveTab);
-                }
-            }
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

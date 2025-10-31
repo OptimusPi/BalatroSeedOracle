@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
@@ -580,7 +581,7 @@
                             <TextBlock Text="AUDIO TRIGGERS" Foreground="{StaticResource White}" FontSize="16" Margin="0,12,0,4"/>
                             <TextBlock Text="Map audio tracks to shader effects" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,4"/>
 
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Shadow Flicker" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="14" MinWidth="120"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="{Binding ShadowFlickerSource}" HorizontalAlignment="Stretch" FontSize="13">
                                     <ComboBoxItem>Bass1</ComboBoxItem>
@@ -616,6 +617,42 @@
                                     <ComboBoxItem>Melody1</ComboBoxItem>
                                     <ComboBoxItem>Melody2</ComboBoxItem>
                                 </ComboBox>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Twirl" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="14"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1" SelectedIndex="{Binding TwirlSource}" HorizontalAlignment="Stretch" FontSize="13">
+                                    <ComboBoxItem>Bass1</ComboBoxItem>
+                                    <ComboBoxItem>Bass2</ComboBoxItem>
+                                    <ComboBoxItem>Drums1</ComboBoxItem>
+                                    <ComboBoxItem>Drums2</ComboBoxItem>
+                                    <ComboBoxItem>Chords1</ComboBoxItem>
+                                    <ComboBoxItem>Chords2</ComboBoxItem>
+                                    <ComboBoxItem>Melody1</ComboBoxItem>
+                                    <ComboBoxItem>Melody2</ComboBoxItem>
+                                </ComboBox>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Zoom Thump" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="14"/>
+                                <ComboBox Grid.Row="4" Grid.Column="1" SelectedIndex="{Binding ZoomThumpSource}" HorizontalAlignment="Stretch" FontSize="13">
+                                    <ComboBoxItem>Bass1</ComboBoxItem>
+                                    <ComboBoxItem>Bass2</ComboBoxItem>
+                                    <ComboBoxItem>Drums1</ComboBoxItem>
+                                    <ComboBoxItem>Drums2</ComboBoxItem>
+                                    <ComboBoxItem>Chords1</ComboBoxItem>
+                                    <ComboBoxItem>Chords2</ComboBoxItem>
+                                    <ComboBoxItem>Melody1</ComboBoxItem>
+                                    <ComboBoxItem>Melody2</ComboBoxItem>
+                                </ComboBox>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Color Saturation" Foreground="{StaticResource White}" VerticalAlignment="Center" FontSize="14"/>
+                                <ComboBox Grid.Row="5" Grid.Column="1" SelectedIndex="{Binding ColorSaturationSource}" HorizontalAlignment="Stretch" FontSize="13">
+                                    <ComboBoxItem>Bass1</ComboBoxItem>
+                                    <ComboBoxItem>Bass2</ComboBoxItem>
+                                    <ComboBoxItem>Drums1</ComboBoxItem>
+                                    <ComboBoxItem>Drums2</ComboBoxItem>
+                                    <ComboBoxItem>Chords1</ComboBoxItem>
+                                    <ComboBoxItem>Chords2</ComboBoxItem>
+                                    <ComboBoxItem>Melody1</ComboBoxItem>
+                                    <ComboBoxItem>Melody2</ComboBoxItem>
+                                </ComboBox>
                             </Grid>
                         </StackPanel>
 
@@ -625,11 +662,205 @@
 
                                 <!-- Audio Event Triggers -->
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="AUDIO EVENTS" Foreground="{StaticResource White}" FontSize="15"/>
-                                    <CheckBox Content="Seed Found" IsChecked="{Binding SeedFoundTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
-                                    <CheckBox Content="High Score" IsChecked="{Binding HighScoreSeedTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
-                                    <CheckBox Content="Search Done" IsChecked="{Binding SearchCompleteTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
+                                    <TextBlock Text="GAME EVENTS" Foreground="{StaticResource White}" FontSize="15"/>
+                                    <TextBlock Text="Trigger visualizer effects on game events" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,0,0,4"/>
+                                    <CheckBox Content="Seed Found" IsChecked="{Binding EnableSeedFoundTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
+                                    <CheckBox Content="High Score" IsChecked="{Binding EnableHighScoreTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
+                                    <CheckBox Content="Search Done" IsChecked="{Binding EnableSearchCompleteTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
                                 </StackPanel>
+
+                                <!-- Frequency Breakpoints -->
+                                <Expander Header="FREQUENCY BREAKPOINTS" FontSize="14" Foreground="{StaticResource White}">
+                                    <StackPanel Spacing="8" Margin="0,8,0,0">
+                                        <TextBlock Text="Define custom frequency-based audio triggers"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+
+                                        <Button Content="+ Add Breakpoint"
+                                                Classes="btn-blue"
+                                                Command="{Binding AddFrequencyBreakpointCommand}"
+                                                HorizontalAlignment="Left"
+                                                Height="28"
+                                                Padding="12,4"
+                                                FontSize="12"/>
+
+                                        <ItemsControl ItemsSource="{Binding FrequencyBreakpoints}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="8"
+                                                            Margin="0,0,0,6">
+                                                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                                            <!-- Header with Name, Enable and Remove Button -->
+                                                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                                                <CheckBox Grid.Column="0"
+                                                                         Content="Enabled"
+                                                                         IsChecked="{Binding Enabled}"
+                                                                         FontSize="12"
+                                                                         Margin="0,0,8,0"
+                                                                         VerticalAlignment="Center"/>
+                                                                <TextBox Grid.Column="1"
+                                                                         Text="{Binding Name}"
+                                                                         FontSize="13"
+                                                                         Watermark="Breakpoint Name"/>
+                                                                <Button Grid.Column="2"
+                                                                        Content="X"
+                                                                        Classes="btn-red"
+                                                                        Command="{Binding $parent[ItemsControl].((vm:AudioVisualizerSettingsWidgetViewModel)DataContext).RemoveFrequencyBreakpointCommand}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Width="28"
+                                                                        Height="28"
+                                                                        Padding="0"
+                                                                        FontSize="12"
+                                                                        Margin="4,0,0,0"/>
+                                                            </Grid>
+
+                                                            <!-- Frequency Range and Settings -->
+                                                            <Grid Grid.Row="1" ColumnDefinitions="*,*,*,Auto" ColumnSpacing="6">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Text="Start Hz" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding StartHz}" Minimum="20" Maximum="20000" Increment="10" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                                    <TextBlock Text="End Hz" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding EndHz}" Minimum="20" Maximum="20000" Increment="10" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2" Spacing="2">
+                                                                    <TextBlock Text="Threshold" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding Threshold}" Minimum="0" Maximum="1" Increment="0.05" FormatString="0.00" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <CheckBox Grid.Column="3" Content="Log" IsChecked="{Binding UseLogarithmic}" VerticalAlignment="Center" Margin="4,12,0,0" FontSize="11" ToolTip.Tip="Use logarithmic frequency scaling"/>
+                                                            </Grid>
+
+                                                            <!-- Effect and Intensity -->
+                                                            <Grid Grid.Row="2" ColumnDefinitions="*,80,80" ColumnSpacing="6">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Text="Effect" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" Watermark="Effect Name"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                                    <TextBlock Text="Intensity" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <TextBox Text="{Binding EffectIntensity}" FontSize="12" Padding="4"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2" Spacing="2">
+                                                                    <TextBlock Text="Duration (ms)" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <TextBox Text="{Binding DurationMs}" FontSize="12" Padding="4"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No breakpoints defined"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0"
+                                                   IsVisible="{Binding !FrequencyBreakpoints.Count}"/>
+                                    </StackPanel>
+                                </Expander>
+
+                                <!-- Melodic Breakpoints -->
+                                <Expander Header="MELODIC BREAKPOINTS" FontSize="14" Foreground="{StaticResource White}">
+                                    <StackPanel Spacing="8" Margin="0,8,0,0">
+                                        <TextBlock Text="Define melodic/harmonic pattern triggers"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+
+                                        <Button Content="+ Add Melodic Breakpoint"
+                                                Classes="btn-blue"
+                                                Command="{Binding AddMelodicBreakpointCommand}"
+                                                HorizontalAlignment="Left"
+                                                Height="28"
+                                                Padding="12,4"
+                                                FontSize="12"/>
+
+                                        <ItemsControl ItemsSource="{Binding MelodicBreakpoints}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="models:MelodicBreakpoint">
+                                                    <Border Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="8"
+                                                            Margin="0,0,0,6">
+                                                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                                            <!-- Header with Name, Enable and Remove Button -->
+                                                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                                                <CheckBox Grid.Column="0"
+                                                                         Content="Enabled"
+                                                                         IsChecked="{Binding Enabled}"
+                                                                         FontSize="12"
+                                                                         Margin="0,0,8,0"
+                                                                         VerticalAlignment="Center"/>
+                                                                <TextBox Grid.Column="1"
+                                                                         Text="{Binding Name}"
+                                                                         FontSize="13"
+                                                                         Watermark="Melodic Event Name"/>
+                                                                <Button Grid.Column="2"
+                                                                        Content="X"
+                                                                        Classes="btn-red"
+                                                                        Command="{Binding $parent[ItemsControl].((vm:AudioVisualizerSettingsWidgetViewModel)DataContext).RemoveMelodicBreakpointCommand}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Width="28"
+                                                                        Height="28"
+                                                                        Padding="0"
+                                                                        FontSize="12"
+                                                                        Margin="4,0,0,0"/>
+                                                            </Grid>
+
+                                                            <!-- Frequency Range Settings -->
+                                                            <Grid Grid.Row="1" ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Text="Min Hz" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding MinFrequency}" Minimum="20" Maximum="20000" Increment="10" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                                    <TextBlock Text="Max Hz" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding MaxFrequency}" Minimum="20" Maximum="20000" Increment="10" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2" Spacing="2">
+                                                                    <TextBlock Text="Note Count" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding MinNoteCount}" Minimum="1" Maximum="10" Increment="1" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                            </Grid>
+
+                                                            <!-- Sustain and Effect Settings -->
+                                                            <Grid Grid.Row="2" ColumnDefinitions="*,80,80" ColumnSpacing="6">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Text="Effect" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" Watermark="Effect Name"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Spacing="2">
+                                                                    <TextBlock Text="Sustain (ms)" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding SustainMs}" Minimum="10" Maximum="5000" Increment="50" FormatString="0" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2" Spacing="2">
+                                                                    <TextBlock Text="Intensity" Foreground="{StaticResource White}" FontSize="11"/>
+                                                                    <NumericUpDown Value="{Binding EffectIntensity}" Minimum="0" Maximum="2" Increment="0.1" FormatString="0.0" FontSize="12"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No melodic breakpoints defined"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0"
+                                                   IsVisible="{Binding !MelodicBreakpoints.Count}"/>
+                                    </StackPanel>
+                                </Expander>
 
                                 <!-- Per-Track Volume Controls -->
                                 <StackPanel Spacing="6">

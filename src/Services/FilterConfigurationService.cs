@@ -78,6 +78,23 @@ namespace BalatroSeedOracle.Services
         {
             foreach (var item in items)
             {
+                // Check if this is an operator by looking up the config directly
+                if (itemConfigs.ContainsKey(item))
+                {
+                    var itemConfig = itemConfigs[item];
+
+                    // Handle operator items specially
+                    if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
+                    {
+                        var operatorClause = CreateOperatorClause(itemConfig);
+                        if (operatorClause != null)
+                        {
+                            targetList.Add(operatorClause);
+                        }
+                        continue; // Skip normal processing for operators
+                    }
+                }
+
                 // Handle both formats: "Category:Item" and "Category:Item#123"
                 var colonIndex = item.IndexOf(':');
                 if (colonIndex > 0)
@@ -104,6 +121,127 @@ namespace BalatroSeedOracle.Services
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a MotleyJsonFilterClause for an operator (Or/And) with nested child clauses
+        /// </summary>
+        private MotelyJsonConfig.MotleyJsonFilterClause? CreateOperatorClause(ItemConfig operatorConfig)
+        {
+            if (string.IsNullOrEmpty(operatorConfig.OperatorType))
+                return null;
+
+            // Convert "OR"/"AND" to "Or"/"And" for JSON format
+            var operatorType = operatorConfig.OperatorType.ToUpper() == "OR" ? "Or" : "And";
+
+            var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+            {
+                Type = operatorType, // "Or" or "And"
+                Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+            };
+
+            // Set Mode for Or operators (default to "Max" if not specified)
+            if (operatorType == "Or")
+            {
+                operatorClause.Mode = !string.IsNullOrEmpty(operatorConfig.Mode) ? operatorConfig.Mode : "Max";
+            }
+
+            // Convert each child ItemConfig to a MotleyJsonFilterClause
+            if (operatorConfig.Children != null)
+            {
+                foreach (var childConfig in operatorConfig.Children)
+                {
+                    var childClause = ConvertItemConfigToClause(childConfig);
+                    if (childClause != null)
+                    {
+                        operatorClause.Clauses.Add(childClause);
+                    }
+                }
+            }
+
+            DebugLogger.Log(
+                "FilterConfigurationService",
+                $"Created {operatorConfig.OperatorType} operator with {operatorClause.Clauses?.Count ?? 0} children"
+            );
+
+            return operatorClause;
+        }
+
+        /// <summary>
+        /// Converts an ItemConfig to a MotleyJsonFilterClause
+        /// </summary>
+        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertItemConfigToClause(ItemConfig config)
+        {
+            var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+            {
+                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                Min = config.Min,
+            };
+
+            // Map ItemType to Motely type (preserve capitalization for JSON format)
+            var normalizedType = config.ItemType.ToLower();
+            switch (normalizedType)
+            {
+                case "joker":
+                    clause.Type = "Joker";
+                    clause.Value = config.ItemName;
+                    if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                    {
+                        clause.Edition = config.Edition;
+                    }
+                    break;
+
+                case "souljoker":
+                    clause.Type = "SoulJoker";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "tarot":
+                    clause.Type = "TarotCard";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "spectral":
+                    clause.Type = "SpectralCard";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "planet":
+                    clause.Type = "PlanetCard";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "voucher":
+                    clause.Type = "Voucher";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "smallblindtag":
+                case "bigblindtag":
+                case "tag":
+                    clause.Type = config.TagType ?? "SmallBlindTag";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "boss":
+                    clause.Type = "Boss";
+                    clause.Value = config.ItemName;
+                    break;
+
+                case "playingcard":
+                    clause.Type = "PlayingCard";
+                    clause.Value = config.ItemName;
+                    break;
+
+                default:
+                    DebugLogger.LogError(
+                        "FilterConfigurationService",
+                        $"Unknown ItemType: {config.ItemType}"
+                    );
+                    return null;
+            }
+
+            return clause;
         }
 
         // SIMPLIFIED version of CreateFilterItemFromSelection for the service

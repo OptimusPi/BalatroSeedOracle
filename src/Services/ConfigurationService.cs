@@ -107,9 +107,8 @@ namespace BalatroSeedOracle.Services
 
         public string GetTempFilterPath()
         {
-            var baseDir =
-                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                ?? AppDomain.CurrentDomain.BaseDirectory;
+            // Use current working directory so filters are loaded from project root when running with `dotnet run`
+            var baseDir = Environment.CurrentDirectory;
             var filtersDir = Path.Combine(baseDir, "JsonItemFilters");
             EnsureDirectoryExists(filtersDir);
             return Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
@@ -117,9 +116,8 @@ namespace BalatroSeedOracle.Services
 
         public string GetFiltersDirectory()
         {
-            var baseDir =
-                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                ?? AppDomain.CurrentDomain.BaseDirectory;
+            // Use current working directory so filters are loaded from project root when running with `dotnet run`
+            var baseDir = Environment.CurrentDirectory;
             return Path.Combine(baseDir, "JsonItemFilters");
         }
 

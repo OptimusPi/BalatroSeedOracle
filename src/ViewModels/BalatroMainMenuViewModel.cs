@@ -91,6 +91,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVisualizerWidgetVisible = false;
 
+        [ObservableProperty]
+        private bool _isVibeOutMode = false;
+
         private double _previousVolume = 70;
 
         public BalatroMainMenuViewModel()
@@ -171,6 +174,11 @@ namespace BalatroSeedOracle.ViewModels
         /// Raised when author edit mode is activated (for focus request)
         /// </summary>
         public event EventHandler? OnAuthorEditActivated;
+
+        /// <summary>
+        /// Raised when window state should change (for fullscreen vibe mode)
+        /// </summary>
+        public event EventHandler<bool>? WindowStateChangeRequested;
 
         #endregion
 
@@ -308,6 +316,16 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Volume = _previousVolume > 0 ? _previousVolume : 70;
             }
+        }
+
+        [RelayCommand]
+        private void ToggleVibeOutMode()
+        {
+            IsVibeOutMode = !IsVibeOutMode;
+            DebugLogger.Log("BalatroMainMenu", $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}");
+
+            // Request window state change (true = fullscreen, false = normal)
+            WindowStateChangeRequested?.Invoke(this, IsVibeOutMode);
         }
 
         [RelayCommand]

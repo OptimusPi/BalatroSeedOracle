@@ -92,7 +92,10 @@ namespace BalatroSeedOracle.Views.Modals
                 var newVm = modal.DataContext as FilterSelectionModalViewModel;
                 if (newVm != null)
                 {
-                    DebugLogger.Log("FilterSelectionModal", $"  Subscribing to new ViewModel - EnableSearch={newVm.EnableSearch}");
+                    DebugLogger.Log(
+                        "FilterSelectionModal",
+                        $"  Subscribing to new ViewModel - EnableSearch={newVm.EnableSearch}"
+                    );
                     newVm.ModalCloseRequested += OnModalCloseRequested;
                     newVm.PropertyChanged += OnViewModelPropertyChanged;
                     newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
@@ -105,7 +108,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    DebugLogger.LogError("FilterSelectionModal", "  ❌ NEW DATACONTEXT IS NOT FilterSelectionModalViewModel!");
+                    DebugLogger.LogError(
+                        "FilterSelectionModal",
+                        "  ❌ NEW DATACONTEXT IS NOT FilterSelectionModalViewModel!"
+                    );
                 }
             }
         }

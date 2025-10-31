@@ -42,6 +42,11 @@
             <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
         </Style>
 
+        <!-- Keep same background when hovered -->
+        <Style Selector="TextBox.terminal:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
+        </Style>
+
         <!-- Modal content styles -->
         <Style Selector="Border.modal-content-box">
             <Setter Property="Background" Value="{StaticResource DarkTealGrey}"/>

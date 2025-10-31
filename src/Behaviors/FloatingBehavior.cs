@@ -22,13 +22,22 @@ namespace BalatroSeedOracle.Behaviors
     {
         // Balatro's exact parameters from animatedsprite.lua
         public static readonly StyledProperty<double> RotationAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(RotationAmplitude), UIConstants.CardSwayRotationAmplitude);
+            AvaloniaProperty.Register<FloatingBehavior, double>(
+                nameof(RotationAmplitude),
+                UIConstants.CardSwayRotationAmplitude
+            );
 
         public static readonly StyledProperty<double> VerticalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(VerticalAmplitude), UIConstants.FloatingVerticalAmplitude);
+            AvaloniaProperty.Register<FloatingBehavior, double>(
+                nameof(VerticalAmplitude),
+                UIConstants.FloatingVerticalAmplitude
+            );
 
         public static readonly StyledProperty<double> HorizontalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(nameof(HorizontalAmplitude), UIConstants.FloatingHorizontalAmplitude);
+            AvaloniaProperty.Register<FloatingBehavior, double>(
+                nameof(HorizontalAmplitude),
+                UIConstants.FloatingHorizontalAmplitude
+            );
 
         public static readonly StyledProperty<double> FrequencyProperty = AvaloniaProperty.Register<
             FloatingBehavior,

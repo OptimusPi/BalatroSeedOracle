@@ -2,6 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:conv="using:BalatroSeedOracle.Converters"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterListViewModel">
 
@@ -284,54 +288,13 @@
                         </ScrollViewer>
                     </Border>
 
-                    <!-- REAL AvaloniaUI TabControl with Balatro-style tabs and bouncing triangle -->
-                    <Grid Grid.Row="3" Margin="0,0,0,8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="20"/>   <!-- Triangle indicator space -->
-                            <RowDefinition Height="*"/>    <!-- TabControl -->
-                        </Grid.RowDefinitions>
-
-                        <!-- Triangle indicator above active tab (Balatro Challenges style - points DOWN) -->
-                        <Canvas Grid.Row="0" ClipToBounds="False" IsHitTestVisible="False">
-                            <Polygon Points="0,0 16,0 8,12"
-                                     Classes="balatro-triangle balatro-bounce-vertical"
-                                     Canvas.Left="{Binding SelectedTabTriangleX}"
-                                     Canvas.Top="0"
-                                     IsVisible="{Binding IsFilterSelected}"/>
-                        </Canvas>
-
-                        <TabControl Grid.Row="1"
-                                    SelectedIndex="{Binding SelectedTabIndex}">
-
-                            <TabControl.Styles>
-                                <!-- Balatro-style red tab headers (fully rounded and separated) -->
-                                <Style Selector="TabItem">
-                                    <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Background" Value="{StaticResource Red}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                    <Setter Property="Padding" Value="16,8"/>
-                                    <Setter Property="Margin" Value="4,0"/>
-                                    <Setter Property="CornerRadius" Value="8"/>
-                                </Style>
-
-                                <Style Selector="TabItem:selected">
-                                    <Setter Property="Background" Value="{StaticResource BrightRed}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                </Style>
-
-                                <Style Selector="TabItem:pointerover">
-                                    <Setter Property="Background" Value="{StaticResource Orange}"/>
-                                    <Setter Property="Cursor" Value="Hand"/>
-                                </Style>
-
-                                <Style Selector="TabItem:pressed">
-                                    <Setter Property="Background" Value="{StaticResource DarkRed}"/>
-                                </Style>
-                            </TabControl.Styles>
-
-                        <!-- Must Have -->
-                        <TabItem Header="Must Have">
+                    <!-- Reusable BalatroTabControl with automatic triangle positioning -->
+                    <controls:BalatroTabControl Grid.Row="3"
+                                                Margin="0,0,0,8"
+                                                SelectedIndex="{Binding SelectedTabIndex}">
+                        <controls:BalatroTabControl.Items>
+                            <!-- Must Have -->
+                            <TabItem Header="Must Have">
                             <Border Background="{StaticResource CardCream}"
                                     BorderThickness="0"
                                     CornerRadius="8"
@@ -339,7 +302,7 @@
                                     MinHeight="200">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <Grid>
-                                        <!-- Items displayed as cards -->
+                                        <!-- Items displayed as cards with sway animation -->
                                         <ItemsControl ItemsSource="{Binding MustHaveItems}"
                                                       IsVisible="{Binding HasMustHaveItems}">
                                             <ItemsControl.ItemsPanel>
@@ -355,7 +318,17 @@
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
-                                                            BoxShadow="0 2 4 #00000040">
+                                                            BoxShadow="0 2 4 #00000040"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
                                                         <Image Source="{Binding ItemImage}"
                                                                Width="71"
                                                                Height="95"
@@ -403,7 +376,17 @@
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
-                                                            BoxShadow="0 2 4 #00000040">
+                                                            BoxShadow="0 2 4 #00000040"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
                                                         <Image Source="{Binding ItemImage}"
                                                                Width="71"
                                                                Height="95"
@@ -451,7 +434,17 @@
                                                             Margin="4"
                                                             Padding="2"
                                                             Opacity="0.6"
-                                                            BoxShadow="0 2 4 #00000040">
+                                                            BoxShadow="0 2 4 #00000040"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="71"
@@ -482,8 +475,8 @@
                                 </ScrollViewer>
                             </Border>
                         </TabItem>
-                    </TabControl>
-                </Grid>
+                        </controls:BalatroTabControl.Items>
+                    </controls:BalatroTabControl>
 
                     <!-- Action Buttons (context-aware) -->
                     <Grid Grid.Row="4" Margin="0,12,0,8">

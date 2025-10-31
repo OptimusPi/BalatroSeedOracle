@@ -86,6 +86,26 @@ namespace BalatroSeedOracle.Models
         public Dictionary<string, int>? CustomEffects { get; set; }
 
         /// <summary>
+        /// Frequency-based breakpoints for advanced audio reactivity
+        /// </summary>
+        public List<FrequencyBreakpoint>? FrequencyBreakpoints { get; set; }
+
+        /// <summary>
+        /// Melodic/harmonic breakpoints for music-based triggers
+        /// </summary>
+        public List<MelodicBreakpoint>? MelodicBreakpoints { get; set; }
+
+        /// <summary>
+        /// Parameter ranges for shader effect customization
+        /// </summary>
+        public Dictionary<string, ParameterRange>? ParameterRanges { get; set; }
+
+        /// <summary>
+        /// Advanced effect mappings with full parameter control
+        /// </summary>
+        public Dictionary<string, EffectMapping>? EffectMappings { get; set; }
+
+        /// <summary>
         /// Creation timestamp
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

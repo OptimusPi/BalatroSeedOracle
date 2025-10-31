@@ -23,6 +23,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string? _currentModalType;
 
+        [ObservableProperty]
+        private bool _isVibeOutMode = false;
+
         public MainWindowViewModel(
             UserProfileService userProfileService,
             SearchManager searchManager

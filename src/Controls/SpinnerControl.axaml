@@ -45,10 +45,17 @@
         </Style>
         
         <Style Selector="Button.arrow-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
-        
-        <!-- Arrow button inherits pressed behavior from global styles -->
+
+        <Style Selector="Button.arrow-button:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+
+        <!-- Hide shadow when pressed for pressed effect -->
+        <Style Selector="Button.arrow-button:pressed /template/ Border#PART_Shadow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
         
         <!-- Value display badge style -->
         <Style Selector="Button.value-badge">

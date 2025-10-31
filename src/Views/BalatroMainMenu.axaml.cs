@@ -154,6 +154,33 @@ namespace BalatroSeedOracle.Views
                     authorEdit.SelectAll();
                 }
             };
+
+            // Window state change requests (for fullscreen vibe mode)
+            ViewModel.WindowStateChangeRequested += OnWindowStateChangeRequested;
+        }
+
+        /// <summary>
+        /// Handles window state change requests from the ViewModel (for fullscreen vibe mode)
+        /// </summary>
+        private void OnWindowStateChangeRequested(object? sender, bool enterFullscreen)
+        {
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (enterFullscreen)
+                    {
+                        window.WindowState = WindowState.FullScreen;
+                        DebugLogger.Log("BalatroMainMenu", "Entered fullscreen for Vibe Out Mode");
+                    }
+                    else
+                    {
+                        window.WindowState = WindowState.Normal;
+                        DebugLogger.Log("BalatroMainMenu", "Exited fullscreen from Vibe Out Mode");
+                    }
+                }, Avalonia.Threading.DispatcherPriority.Render);
+            }
         }
 
         /// <summary>
@@ -206,7 +233,10 @@ namespace BalatroSeedOracle.Views
             // Wire up ModalCloseRequested to handle user actions
             filterSelectionVM.ModalCloseRequested += (s, e) =>
             {
-                DebugLogger.Log("BalatroMainMenu", "🔵 ShowSearchModal: ModalCloseRequested event FIRED!");
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    "🔵 ShowSearchModal: ModalCloseRequested event FIRED!"
+                );
                 var result = filterSelectionVM.Result;
 
                 if (result.Cancelled)
@@ -376,7 +406,9 @@ namespace BalatroSeedOracle.Views
                         // Open designer with selected filter loaded (replaces current modal)
                         if (result.FilterId != null)
                         {
-                            await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(result.FilterId));
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                                ShowFiltersModalDirect(result.FilterId)
+                            );
                         }
                         break;
                     case Models.FilterAction.Copy:
@@ -387,7 +419,9 @@ namespace BalatroSeedOracle.Views
                             if (!string.IsNullOrEmpty(clonedId))
                             {
                                 // Ensure UI operations happen on UI thread
-                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(clonedId));
+                                await Dispatcher.UIThread.InvokeAsync(() =>
+                                    ShowFiltersModalDirect(clonedId)
+                                );
                             }
                         }
                         break;
@@ -514,6 +548,9 @@ namespace BalatroSeedOracle.Views
 
             // Set up click-away handler for popups (NOT for main modals which have back buttons)
             this.PointerPressed += OnPointerPressedForPopupClickAway;
+
+            // Request focus so keyboard events work (F11, ESC)
+            this.Focus();
         }
 
         /// <summary>
@@ -625,7 +662,22 @@ namespace BalatroSeedOracle.Views
 
             // Set initial states BEFORE making visible or adding content
             _modalOverlay.Opacity = UIConstants.InvisibleOpacity;
-            _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse($"translateY({windowHeight}px)");
+
+            // CRITICAL: Keep content wrapper invisible until transform is applied
+            _modalContentWrapper.Opacity = UIConstants.InvisibleOpacity;
+
+            // Get the existing TranslateTransform from XAML (which has transitions attached!)
+            var translateTransform = _modalContentWrapper.RenderTransform as TranslateTransform;
+            if (translateTransform == null)
+            {
+                // Fallback: create new transform if somehow missing from XAML
+                translateTransform = new TranslateTransform();
+                _modalContentWrapper.RenderTransform = translateTransform;
+            }
+
+            // Set initial Y position to be off-screen at the bottom
+            translateTransform.Y = windowHeight;
+            translateTransform.X = 0;
 
             // Set the content in the wrapper
             _modalContentWrapper.Content = content;
@@ -639,19 +691,22 @@ namespace BalatroSeedOracle.Views
                 ViewModel.IsModalVisible = true;
             }
 
-            // Force layout update to ensure initial state is rendered
-            _modalContainer.UpdateLayout();
-
             // Trigger animations by changing properties after a delay
             // The transitions defined in XAML will handle the smooth animation
-            Dispatcher.UIThread.Post(() =>
-            {
-                // Fade in overlay (0 → 1)
-                _modalOverlay.Opacity = UIConstants.FullOpacity;
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    // Make content wrapper visible now that transform is set
+                    _modalContentWrapper.Opacity = UIConstants.FullOpacity;
 
-                // Slide up content from below screen (translateY: windowHeight → 0)
-                _modalContentWrapper.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(0px)");
-            }, DispatcherPriority.Render);
+                    // Fade in overlay (0 → 1)
+                    _modalOverlay.Opacity = UIConstants.FullOpacity;
+
+                    // Slide up content from below screen (translateY: windowHeight → 0)
+                    translateTransform.Y = 0;
+                },
+                DispatcherPriority.Render
+            );
         }
 
         /// <summary>
@@ -659,7 +714,11 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private async void TransitionToNewModal(UserControl newContent, string? title)
         {
-            if (_modalContainer == null || _modalContentWrapper == null || _modalContentWrapper.Content == null)
+            if (
+                _modalContainer == null
+                || _modalContentWrapper == null
+                || _modalContentWrapper.Content == null
+            )
                 return;
 
             var oldContent = _modalContentWrapper.Content as Control;
@@ -1383,15 +1442,21 @@ namespace BalatroSeedOracle.Views
         {
             base.OnKeyDown(e);
 
-            // REMOVED: VibeOut mode ESC key handler
-            /*
-            // ESC to exit VibeOut mode
+            // F11 to toggle Vibe Out Mode (fullscreen visualizer)
+            if (e.Key == Key.F11)
+            {
+                ViewModel?.ToggleVibeOutModeCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+
+            // ESC to exit Vibe Out Mode
             if (e.Key == Key.Escape && ViewModel?.IsVibeOutMode == true)
             {
-                ViewModel.ExitVibeOutMode();
+                ViewModel.ToggleVibeOutModeCommand.Execute(null);
                 e.Handled = true;
+                return;
             }
-            */
         }
 
         #endregion

@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.Modals.SearchModal"
              x:DataType="vm:SearchModalViewModel">
@@ -13,11 +12,16 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Balatro-style button tabs with bouncing triangle indicator -->
-        <components:BalatroTabControl Name="TabHeader"
-                                      Grid.Row="0"
-                                      HorizontalAlignment="Center"
-                                      Margin="0,0,0,0"/>
+        <!-- Balatro-style tab control with automatic triangle positioning -->
+        <controls:BalatroTabControl Grid.Row="0"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,0"
+                                    SelectedIndex="{Binding SelectedTabIndex}">
+            <controls:BalatroTabControl.Items>
+                <TabItem Header="Search"/>
+                <TabItem Header="Results"/>
+            </controls:BalatroTabControl.Items>
+        </controls:BalatroTabControl>
 
         <!-- Content area: let inner tabs provide their own dark panels -->
         <Border Grid.Row="1"

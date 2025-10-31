@@ -235,17 +235,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (vm.SelectedMust.Contains(item))
                 {
                     _sourceDropZone = "MustDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Must zone: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drag initiated from Must zone: {item.Name}"
+                    );
                 }
                 else if (vm.SelectedShould.Contains(item))
                 {
                     _sourceDropZone = "ShouldDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Should zone: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drag initiated from Should zone: {item.Name}"
+                    );
                 }
                 else if (vm.SelectedMustNot.Contains(item))
                 {
                     _sourceDropZone = "MustNotDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from MustNot zone: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drag initiated from MustNot zone: {item.Name}"
+                    );
                 }
 
                 // Now start the drag operation
@@ -419,13 +428,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return null;
 
             // Get the appropriate collection based on zone
-            System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection = zoneName switch
-            {
-                "MustDropZone" => vm.SelectedMust,
-                "ShouldDropZone" => vm.SelectedShould,
-                "MustNotDropZone" => vm.SelectedMustNot,
-                _ => null
-            };
+            System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection =
+                zoneName switch
+                {
+                    "MustDropZone" => vm.SelectedMust,
+                    "ShouldDropZone" => vm.SelectedShould,
+                    "MustNotDropZone" => vm.SelectedMustNot,
+                    _ => null,
+                };
 
             if (collection == null)
                 return null;
@@ -1087,7 +1097,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 imageGrid.Children.Add(
                     new Image
                     {
-                        Source = item.ItemImage!,  // Non-null: every FilterItem must have an image
+                        Source = item.ItemImage!, // Non-null: every FilterItem must have an image
                         Width = 71,
                         Height = 95,
                         Stretch = Stretch.Uniform,
@@ -1243,24 +1253,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (excludeZone != "MustDropZone")
             {
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-                if (mustOverlay != null) mustOverlay.IsVisible = true;
+                if (mustOverlay != null)
+                    mustOverlay.IsVisible = true;
             }
 
             if (excludeZone != "ShouldDropZone")
             {
                 var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-                if (shouldOverlay != null) shouldOverlay.IsVisible = true;
+                if (shouldOverlay != null)
+                    shouldOverlay.IsVisible = true;
             }
 
             if (excludeZone != "MustNotDropZone")
             {
                 var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-                if (mustNotOverlay != null) mustNotOverlay.IsVisible = true;
+                if (mustNotOverlay != null)
+                    mustNotOverlay.IsVisible = true;
             }
 
             // Always show Favorites overlay during drag
             var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");
-            if (favoritesOverlay != null) favoritesOverlay.IsVisible = true;
+            if (favoritesOverlay != null)
+                favoritesOverlay.IsVisible = true;
         }
 
         /// <summary>
@@ -1269,19 +1283,24 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void HideAllDropZoneOverlays()
         {
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-            if (mustOverlay != null) mustOverlay.IsVisible = false;
+            if (mustOverlay != null)
+                mustOverlay.IsVisible = false;
 
             var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-            if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+            if (shouldOverlay != null)
+                shouldOverlay.IsVisible = false;
 
             var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-            if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+            if (mustNotOverlay != null)
+                mustNotOverlay.IsVisible = false;
 
             var returnOverlay = this.FindControl<Border>("ReturnOverlay");
-            if (returnOverlay != null) returnOverlay.IsVisible = false;
+            if (returnOverlay != null)
+                returnOverlay.IsVisible = false;
 
             var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");
-            if (favoritesOverlay != null) favoritesOverlay.IsVisible = false;
+            if (favoritesOverlay != null)
+                favoritesOverlay.IsVisible = false;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

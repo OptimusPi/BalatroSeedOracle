@@ -34,8 +34,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// The deck name to show on the card back (e.g., "Red", "Anaglyph")
         /// </summary>
-        public static readonly StyledProperty<string> DeckNameProperty =
-            AvaloniaProperty.Register<CardFlipRevealBehavior, string>(nameof(DeckName), "Red");
+        public static readonly StyledProperty<string> DeckNameProperty = AvaloniaProperty.Register<
+            CardFlipRevealBehavior,
+            string
+        >(nameof(DeckName), "Red");
 
         public string DeckName
         {
@@ -58,8 +60,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Delay before starting the flip (useful for staggered animations)
         /// </summary>
-        public static readonly StyledProperty<TimeSpan> DelayProperty =
-            AvaloniaProperty.Register<CardFlipRevealBehavior, TimeSpan>(nameof(Delay), TimeSpan.Zero);
+        public static readonly StyledProperty<TimeSpan> DelayProperty = AvaloniaProperty.Register<
+            CardFlipRevealBehavior,
+            TimeSpan
+        >(nameof(Delay), TimeSpan.Zero);
 
         public TimeSpan Delay
         {
@@ -70,8 +74,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Whether to automatically trigger the flip on attach (default: true)
         /// </summary>
-        public static readonly StyledProperty<bool> AutoTriggerProperty =
-            AvaloniaProperty.Register<CardFlipRevealBehavior, bool>(nameof(AutoTrigger), true);
+        public static readonly StyledProperty<bool> AutoTriggerProperty = AvaloniaProperty.Register<
+            CardFlipRevealBehavior,
+            bool
+        >(nameof(AutoTrigger), true);
 
         public bool AutoTrigger
         {
@@ -82,8 +88,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Whether to watch Image.Source property changes (for converter-based bindings)
         /// </summary>
-        public static readonly StyledProperty<bool> WatchSourceProperty =
-            AvaloniaProperty.Register<CardFlipRevealBehavior, bool>(nameof(WatchSource), false);
+        public static readonly StyledProperty<bool> WatchSourceProperty = AvaloniaProperty.Register<
+            CardFlipRevealBehavior,
+            bool
+        >(nameof(WatchSource), false);
 
         public bool WatchSource
         {
@@ -99,13 +107,14 @@ namespace BalatroSeedOracle.Behaviors
                 return;
 
             // Listen for RevealSprite changes to trigger flip (legacy behavior)
-            this.GetObservable(RevealSpriteProperty).Subscribe(sprite =>
-            {
-                if (AutoTrigger && sprite != null && !WatchSource)
+            this.GetObservable(RevealSpriteProperty)
+                .Subscribe(sprite =>
                 {
-                    TriggerFlip();
-                }
-            });
+                    if (AutoTrigger && sprite != null && !WatchSource)
+                    {
+                        TriggerFlip();
+                    }
+                });
 
             // Listen for Image.Source changes when WatchSource is enabled
             // This supports converter-based bindings like:
@@ -131,7 +140,6 @@ namespace BalatroSeedOracle.Behaviors
         /// </summary>
         public async void TriggerFlip()
         {
-
             if (AssociatedObject == null || _isAnimating)
                 return;
 
@@ -171,9 +179,16 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.Source = deckBackSprite as Bitmap;
 
                 // Create ScaleTransform for animation (this is what Avalonia can actually animate!)
-                var scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
+                var scaleTransform = new ScaleTransform(
+                    UIConstants.DefaultScaleFactor,
+                    UIConstants.DefaultScaleFactor
+                );
                 AssociatedObject.RenderTransform = scaleTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
 
                 var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
 
@@ -189,10 +204,13 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.InvisibleOpacity)
-                            }
-                        }
-                    }
+                                new Setter(
+                                    ScaleTransform.ScaleXProperty,
+                                    UIConstants.InvisibleOpacity
+                                ),
+                            },
+                        },
+                    },
                 };
 
                 await pinchIn.RunAsync(scaleTransform);
@@ -212,10 +230,13 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor)
-                            }
-                        }
-                    }
+                                new Setter(
+                                    ScaleTransform.ScaleXProperty,
+                                    UIConstants.DefaultScaleFactor
+                                ),
+                            },
+                        },
+                    },
                 };
 
                 await pinchOut.RunAsync(scaleTransform);
@@ -232,29 +253,47 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(0),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
-                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor)
-                            }
+                                new Setter(
+                                    ScaleTransform.ScaleXProperty,
+                                    UIConstants.DefaultScaleFactor
+                                ),
+                                new Setter(
+                                    ScaleTransform.ScaleYProperty,
+                                    UIConstants.DefaultScaleFactor
+                                ),
+                            },
                         },
                         new Avalonia.Animation.KeyFrame
                         {
                             Cue = new Cue(0.5),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.CardFlipJuiceScalePeak),
-                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.CardFlipJuiceScalePeak)
-                            }
+                                new Setter(
+                                    ScaleTransform.ScaleXProperty,
+                                    UIConstants.CardFlipJuiceScalePeak
+                                ),
+                                new Setter(
+                                    ScaleTransform.ScaleYProperty,
+                                    UIConstants.CardFlipJuiceScalePeak
+                                ),
+                            },
                         },
                         new Avalonia.Animation.KeyFrame
                         {
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
-                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor)
-                            }
-                        }
-                    }
+                                new Setter(
+                                    ScaleTransform.ScaleXProperty,
+                                    UIConstants.DefaultScaleFactor
+                                ),
+                                new Setter(
+                                    ScaleTransform.ScaleYProperty,
+                                    UIConstants.DefaultScaleFactor
+                                ),
+                            },
+                        },
+                    },
                 };
 
                 await juiceUp.RunAsync(scaleTransform);

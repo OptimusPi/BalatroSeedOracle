@@ -325,14 +325,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             DisplayName = "OR",
                             Type = "Operator",
-                            Category = "Operator"
+                            Category = "Operator",
                         },
                         new FilterOperatorItem("AND")
                         {
                             DisplayName = "AND",
                             Type = "Operator",
-                            Category = "Operator"
-                        }
+                            Category = "Operator",
+                        },
                     };
                     AddGroup("FILTER OPERATORS", operators);
 
@@ -768,9 +768,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
-        /// Syncs a FilterOperatorItem to the parent's collections, expanding children appropriately.
-        /// OR operators → Multiple Should clauses (one per child)
-        /// AND operators → Single Must clause with all children
+        /// Syncs a FilterOperatorItem to the parent's collections as a single operator with nested children.
+        /// Creates a single ItemConfig with OperatorType and Children properties.
         /// </summary>
         private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
         {
@@ -782,48 +781,46 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"Syncing {operatorItem.OperatorType} operator with {operatorItem.Children.Count} children to {targetZone}"
             );
 
-            if (operatorItem.OperatorType == "OR")
+            // Create a single ItemConfig representing the operator with its children
+            var itemKey = _parentViewModel.GenerateNextItemKey();
+            var operatorConfig = new ItemConfig
             {
-                // OR operator: Add each child as a separate Should clause
-                foreach (var child in operatorItem.Children)
-                {
-                    var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = child.Type,
-                        ItemName = child.Name,
-                    };
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                    _parentViewModel.SelectedShould.Add(itemKey);
-                }
-            }
-            else if (operatorItem.OperatorType == "AND")
-            {
-                // AND operator: Add all children to the target zone (they must all match)
-                var targetCollection = targetZone switch
-                {
-                    "Must" => _parentViewModel.SelectedMust,
-                    "Should" => _parentViewModel.SelectedShould,
-                    "MustNot" => _parentViewModel.SelectedMustNot,
-                    _ => null
-                };
+                ItemKey = itemKey,
+                ItemType = "Operator",
+                ItemName = operatorItem.OperatorType,
+                OperatorType = operatorItem.OperatorType,
+                Mode = operatorItem.OperatorType == "OR" ? "Max" : null,
+                Children = new List<ItemConfig>(),
+            };
 
-                if (targetCollection != null)
+            // Convert each child FilterItem to an ItemConfig
+            foreach (var child in operatorItem.Children)
+            {
+                var childConfig = new ItemConfig
                 {
-                    foreach (var child in operatorItem.Children)
-                    {
-                        var itemKey = _parentViewModel.GenerateNextItemKey();
-                        var itemConfig = new ItemConfig
-                        {
-                            ItemKey = itemKey,
-                            ItemType = child.Type,
-                            ItemName = child.Name,
-                        };
-                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                        targetCollection.Add(itemKey);
-                    }
-                }
+                    ItemType = child.Type,
+                    ItemName = child.Name,
+                    // Preserve any additional properties if needed
+                };
+                operatorConfig.Children.Add(childConfig);
+            }
+
+            // Store the operator config
+            _parentViewModel.ItemConfigs[itemKey] = operatorConfig;
+
+            // Add to the appropriate collection based on target zone
+            // OR operators typically go to Should, but respect the targetZone
+            var targetCollection = targetZone switch
+            {
+                "Must" => _parentViewModel.SelectedMust,
+                "Should" => _parentViewModel.SelectedShould,
+                "MustNot" => _parentViewModel.SelectedMustNot,
+                _ => null,
+            };
+
+            if (targetCollection != null)
+            {
+                targetCollection.Add(itemKey);
             }
         }
 
@@ -920,18 +917,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ("Wildcard_JokerCommon", "Any Common", "Joker", "Common"),
                     ("Wildcard_JokerUncommon", "Any Uncommon", "Joker", "Uncommon"),
                     ("Wildcard_JokerRare", "Any Rare", "Joker", "Rare"),
-                    ("Wildcard_JokerLegendary", "Any Legendary", "SoulJoker", "Legendary")
+                    ("Wildcard_JokerLegendary", "Any Legendary", "SoulJoker", "Legendary"),
                 };
                 foreach (var (name, displayName, type, category) in wildcardJokers)
                 {
-                    AllJokers.Add(new FilterItem
-                    {
-                        Name = name,
-                        Type = type,
-                        Category = category,
-                        DisplayName = displayName,
-                        ItemImage = spriteService.GetJokerImage(name), // Use wildcard name to get mystery sprite
-                    });
+                    AllJokers.Add(
+                        new FilterItem
+                        {
+                            Name = name,
+                            Type = type,
+                            Category = category,
+                            DisplayName = displayName,
+                            ItemImage = spriteService.GetJokerImage(name), // Use wildcard name to get mystery sprite
+                        }
+                    );
                 }
 
                 // Load Soul Jokers SECOND (after wildcards)
@@ -1019,13 +1018,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Load Tarots from BalatroData
                 // Add wildcard tarot entry FIRST (at the very top)
-                AllTarots.Add(new FilterItem
-                {
-                    Name = "Wildcard_Tarot",
-                    Type = "Tarot",
-                    DisplayName = "Any Tarot",
-                    ItemImage = spriteService.GetTarotImage("Wildcard_Tarot"), // Will use anytarot base + mystery overlay
-                });
+                AllTarots.Add(
+                    new FilterItem
+                    {
+                        Name = "Wildcard_Tarot",
+                        Type = "Tarot",
+                        DisplayName = "Any Tarot",
+                        ItemImage = spriteService.GetTarotImage("Wildcard_Tarot"), // Will use anytarot base + mystery overlay
+                    }
+                );
 
                 if (BalatroData.TarotCards?.Keys != null)
                 {
@@ -1050,13 +1051,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 try
                 {
                     // Add wildcard planet entry FIRST (at the very top)
-                    AllPlanets.Add(new FilterItem
-                    {
-                        Name = "Wildcard_Planet",
-                        Type = "Planet",
-                        DisplayName = "Any Planet",
-                        ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Planets don't have wildcard sprites, use Pluto
-                    });
+                    AllPlanets.Add(
+                        new FilterItem
+                        {
+                            Name = "Wildcard_Planet",
+                            Type = "Planet",
+                            DisplayName = "Any Planet",
+                            ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Planets don't have wildcard sprites, use Pluto
+                        }
+                    );
 
                     if (BalatroData.PlanetCards?.Keys != null)
                     {
@@ -1069,7 +1072,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             try
                             {
                                 // Skip duplicate "Any Planet" wildcards
-                                if (planetName == "any" || planetName == "*" || planetName == "anyplanet")
+                                if (
+                                    planetName == "any"
+                                    || planetName == "*"
+                                    || planetName == "anyplanet"
+                                )
                                     continue;
 
                                 var item = new FilterItem
@@ -1101,13 +1108,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Load Spectrals from BalatroData
                 // Add wildcard spectral entry FIRST (at the very top)
-                AllSpectrals.Add(new FilterItem
-                {
-                    Name = "Wildcard_Spectral",
-                    Type = "Spectral",
-                    DisplayName = "Any Spectral",
-                    ItemImage = spriteService.GetSpectralImage("Familiar"), // Spectrals don't have wildcard sprites, use Familiar
-                });
+                AllSpectrals.Add(
+                    new FilterItem
+                    {
+                        Name = "Wildcard_Spectral",
+                        Type = "Spectral",
+                        DisplayName = "Any Spectral",
+                        ItemImage = spriteService.GetSpectralImage("Familiar"), // Spectrals don't have wildcard sprites, use Familiar
+                    }
+                );
 
                 if (BalatroData.SpectralCards?.Keys != null)
                 {
@@ -1285,9 +1294,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var joker in AllJokers)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || joker.Name.ToLowerInvariant().Contains(filter)
-                    || joker.DisplayName.ToLowerInvariant().Contains(filter))
+                    || joker.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredJokers.Add(joker);
                 }
@@ -1295,9 +1306,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var tag in AllTags)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || tag.Name.ToLowerInvariant().Contains(filter)
-                    || tag.DisplayName.ToLowerInvariant().Contains(filter))
+                    || tag.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredTags.Add(tag);
                 }
@@ -1305,9 +1318,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var voucher in AllVouchers)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || voucher.Name.ToLowerInvariant().Contains(filter)
-                    || voucher.DisplayName.ToLowerInvariant().Contains(filter))
+                    || voucher.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredVouchers.Add(voucher);
                 }
@@ -1315,9 +1330,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var tarot in AllTarots)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || tarot.Name.ToLowerInvariant().Contains(filter)
-                    || tarot.DisplayName.ToLowerInvariant().Contains(filter))
+                    || tarot.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredTarots.Add(tarot);
                 }
@@ -1325,9 +1342,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var planet in AllPlanets)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || planet.Name.ToLowerInvariant().Contains(filter)
-                    || planet.DisplayName.ToLowerInvariant().Contains(filter))
+                    || planet.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredPlanets.Add(planet);
                 }
@@ -1335,9 +1354,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var spectral in AllSpectrals)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || spectral.Name.ToLowerInvariant().Contains(filter)
-                    || spectral.DisplayName.ToLowerInvariant().Contains(filter))
+                    || spectral.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredSpectrals.Add(spectral);
                 }
@@ -1345,9 +1366,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             foreach (var boss in AllBosses)
             {
-                if (string.IsNullOrEmpty(filter)
+                if (
+                    string.IsNullOrEmpty(filter)
                     || boss.Name.ToLowerInvariant().Contains(filter)
-                    || boss.DisplayName.ToLowerInvariant().Contains(filter))
+                    || boss.DisplayName.ToLowerInvariant().Contains(filter)
+                )
                 {
                     FilteredBosses.Add(boss);
                 }

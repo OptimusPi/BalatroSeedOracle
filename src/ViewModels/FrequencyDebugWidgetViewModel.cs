@@ -1,9 +1,13 @@
 using System;
+using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -30,8 +34,27 @@ namespace BalatroSeedOracle.ViewModels
             "Melody2",
         };
 
+        // Debounced save state
+        private CancellationTokenSource? _saveCancellation;
+        private const int SAVE_DEBOUNCE_MS = 250;
+
+        private static readonly string MetadataDirectory = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Assets",
+            "Audio",
+            "Metadata"
+        );
+
+        private static readonly JsonSerializerOptions JsonOptions =
+            new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, };
+
         [ObservableProperty]
         private int _selectedTrackIndex = 2; // Default to Drums1
+
+        partial void OnSelectedTrackIndexChanged(int value)
+        {
+            LoadMetadataForCurrentTrack();
+        }
 
         [ObservableProperty]
         private double _bassAvg;
@@ -74,11 +97,26 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private double _bassThreshold = 0.5;
 
+        partial void OnBassThresholdChanged(double value)
+        {
+            DebouncedSaveMetadata();
+        }
+
         [ObservableProperty]
         private double _midThreshold = 0.3;
 
+        partial void OnMidThresholdChanged(double value)
+        {
+            DebouncedSaveMetadata();
+        }
+
         [ObservableProperty]
         private double _highThreshold = 0.2;
+
+        partial void OnHighThresholdChanged(double value)
+        {
+            DebouncedSaveMetadata();
+        }
 
         // LED brightness values (0.0 to 1.0, decays naturally)
         [ObservableProperty]
@@ -102,6 +140,12 @@ namespace BalatroSeedOracle.ViewModels
             // Set fixed position for FrequencyDebug widget - fifth position (90px spacing)
             PositionX = 20;
             PositionY = 440;
+
+            // Ensure metadata directory exists
+            EnsureMetadataDirectoryExists();
+
+            // Load metadata for default track
+            LoadMetadataForCurrentTrack();
         }
 
         public void OnAttached(Control ownerControl)
@@ -241,6 +285,166 @@ namespace BalatroSeedOracle.ViewModels
             MidPeakMax = 0;
             HighAvgMax = 0;
             HighPeakMax = 0;
+
+            // Save after resetting
+            DebouncedSaveMetadata();
         }
+
+        #region Metadata Save/Load
+
+        private void EnsureMetadataDirectoryExists()
+        {
+            try
+            {
+                if (!Directory.Exists(MetadataDirectory))
+                {
+                    Directory.CreateDirectory(MetadataDirectory);
+                    DebugLogger.Log(
+                        "FrequencyDebugWidget",
+                        $"Created metadata directory: {MetadataDirectory}"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to create metadata directory: {ex.Message}"
+                );
+            }
+        }
+
+        private string GetMetadataFilePath(string trackName)
+        {
+            return Path.Combine(MetadataDirectory, $"{trackName.ToLower()}.meta.json");
+        }
+
+        private void LoadMetadataForCurrentTrack()
+        {
+            if (SelectedTrackIndex < 0 || SelectedTrackIndex >= _trackNames.Length)
+                return;
+
+            var trackName = _trackNames[SelectedTrackIndex];
+            var filePath = GetMetadataFilePath(trackName);
+
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    var json = File.ReadAllText(filePath);
+                    var metadata = JsonSerializer.Deserialize<TrackMetadata>(json, JsonOptions);
+
+                    if (metadata != null)
+                    {
+                        // Cancel any pending saves before loading to avoid save loop
+                        _saveCancellation?.Cancel();
+                        _saveCancellation?.Dispose();
+                        _saveCancellation = null;
+
+                        // Load values using properties (will trigger property changed but save is cancelled)
+                        BassThreshold = metadata.BassThreshold;
+                        MidThreshold = metadata.MidThreshold;
+                        HighThreshold = metadata.HighThreshold;
+                        BassAvgMax = metadata.BassAvgMax;
+                        BassPeakMax = metadata.BassPeakMax;
+                        MidAvgMax = metadata.MidAvgMax;
+                        MidPeakMax = metadata.MidPeakMax;
+                        HighAvgMax = metadata.HighAvgMax;
+                        HighPeakMax = metadata.HighPeakMax;
+
+                        DebugLogger.Log(
+                            "FrequencyDebugWidget",
+                            $"Loaded metadata for {trackName}"
+                        );
+                    }
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "FrequencyDebugWidget",
+                        $"No metadata file found for {trackName}, using defaults"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to load metadata for {trackName}: {ex.Message}"
+                );
+            }
+        }
+
+        private void DebouncedSaveMetadata()
+        {
+            // Cancel any existing pending save
+            _saveCancellation?.Cancel();
+            _saveCancellation?.Dispose();
+
+            _saveCancellation = new CancellationTokenSource();
+            var token = _saveCancellation.Token;
+
+            Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        // Wait for debounce period (250ms)
+                        await Task.Delay(SAVE_DEBOUNCE_MS, token);
+
+                        // If not cancelled, save the metadata
+                        if (!token.IsCancellationRequested)
+                        {
+                            SaveMetadataForCurrentTrack();
+                        }
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // Expected when user changes value again before save completes
+                    }
+                },
+                token
+            );
+        }
+
+        private void SaveMetadataForCurrentTrack()
+        {
+            if (SelectedTrackIndex < 0 || SelectedTrackIndex >= _trackNames.Length)
+                return;
+
+            var trackName = _trackNames[SelectedTrackIndex];
+            var filePath = GetMetadataFilePath(trackName);
+
+            try
+            {
+                var metadata = new TrackMetadata
+                {
+                    TrackName = trackName,
+                    BassThreshold = BassThreshold,
+                    MidThreshold = MidThreshold,
+                    HighThreshold = HighThreshold,
+                    BassAvgMax = BassAvgMax,
+                    BassPeakMax = BassPeakMax,
+                    MidAvgMax = MidAvgMax,
+                    MidPeakMax = MidPeakMax,
+                    HighAvgMax = HighAvgMax,
+                    HighPeakMax = HighPeakMax,
+                };
+
+                var json = JsonSerializer.Serialize(metadata, JsonOptions);
+                File.WriteAllText(filePath, json);
+
+                DebugLogger.Log("FrequencyDebugWidget", $"Saved metadata for {trackName}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to save metadata for {trackName}: {ex.Message}"
+                );
+            }
+        }
+
+        #endregion
     }
 }

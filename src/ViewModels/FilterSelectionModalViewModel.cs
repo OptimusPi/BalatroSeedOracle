@@ -21,9 +21,6 @@ namespace BalatroSeedOracle.ViewModels
         // Child ViewModel for paginated filter list
         public PaginatedFilterBrowserViewModel FilterList { get; }
 
-        // Tab navigation for details panel
-        public BalatroTabControlViewModel TabControl { get; }
-
         // Selected filter details
         [ObservableProperty]
         private FilterBrowserItem? _selectedFilter;
@@ -46,6 +43,22 @@ namespace BalatroSeedOracle.ViewModels
         public string FilterAuthor => SelectedFilter?.Author ?? "";
         public string FilterDescription => SelectedFilter?.Description ?? "";
         public string CreatedDate => SelectedFilter?.DateCreated.ToString("MMM yyyy") ?? "";
+
+        // Deck details for Preferred Deck tab
+        public string SelectedDeckName => SelectedFilter?.DeckName ?? "Red";
+        public string SelectedDeckDescription
+        {
+            get
+            {
+                if (SelectedFilter == null) return "";
+                var deckName = SelectedFilter.DeckName;
+                if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
+                {
+                    return description;
+                }
+                return "";
+            }
+        }
 
         // Item counts for preview
         public int MustHaveCount => SelectedFilter?.MustCount ?? 0;
@@ -79,7 +92,10 @@ namespace BalatroSeedOracle.ViewModels
             EnableDelete = enableDelete;
             EnableAnalyze = enableAnalyze;
 
-            DebugLogger.Log("FilterSelectionModalVM", $"🔵 CONSTRUCTOR: EnableSearch={EnableSearch}, EnableEdit={EnableEdit}, EnableCopy={EnableCopy}");
+            DebugLogger.Log(
+                "FilterSelectionModalVM",
+                $"🔵 CONSTRUCTOR: EnableSearch={EnableSearch}, EnableEdit={EnableEdit}, EnableCopy={EnableCopy}"
+            );
 
             // Create child ViewModel for filter list
             FilterList = new PaginatedFilterBrowserViewModel();
@@ -92,28 +108,6 @@ namespace BalatroSeedOracle.ViewModels
                     SelectedFilter = FilterList.SelectedFilter;
                 }
             };
-
-            // Initialize tab control with three tabs
-            TabControl = new BalatroTabControlViewModel
-            {
-                Tabs = new ObservableCollection<BalatroTabItem>
-                {
-                    new BalatroTabItem
-                    {
-                        Title = "Filter Info",
-                        Index = 0,
-                        IsActive = true,
-                    },
-                    new BalatroTabItem { Title = "Score Setup", Index = 1 },
-                    new BalatroTabItem { Title = "Preferred Deck", Index = 2 },
-                },
-            };
-
-            // Subscribe to tab changes
-            TabControl.TabChanged += (s, tabIndex) =>
-            {
-                ActiveTabIndex = tabIndex;
-            };
         }
 
         partial void OnSelectedFilterChanged(FilterBrowserItem? value)
@@ -124,6 +118,8 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(FilterAuthor));
             OnPropertyChanged(nameof(FilterDescription));
             OnPropertyChanged(nameof(CreatedDate));
+            OnPropertyChanged(nameof(SelectedDeckName));
+            OnPropertyChanged(nameof(SelectedDeckDescription));
             OnPropertyChanged(nameof(MustHaveCount));
             OnPropertyChanged(nameof(ShouldHaveCount));
             OnPropertyChanged(nameof(MustNotCount));
@@ -150,7 +146,10 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
-            DebugLogger.Log("FilterSelectionModal", $"✅ SelectedFilter: {SelectedFilter.Name}, ID: {SelectedFilter.FilterId}");
+            DebugLogger.Log(
+                "FilterSelectionModal",
+                $"✅ SelectedFilter: {SelectedFilter.Name}, ID: {SelectedFilter.FilterId}"
+            );
 
             if (SelectedFilter.IsCreateNew)
             {
@@ -166,7 +165,10 @@ namespace BalatroSeedOracle.ViewModels
                 FilterId = SelectedFilter.FilterId,
             };
 
-            DebugLogger.Log("FilterSelectionModal", $"🚀 Invoking ModalCloseRequested with FilterId: {SelectedFilter.FilterId}");
+            DebugLogger.Log(
+                "FilterSelectionModal",
+                $"🚀 Invoking ModalCloseRequested with FilterId: {SelectedFilter.FilterId}"
+            );
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
@@ -294,7 +296,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Reset to first tab when returning to initial page
                 if (ActiveTabIndex > 0)
                 {
-                    TabControl.SwitchTabCommand.Execute(0);
+                    ActiveTabIndex = 0;
                 }
 
                 return true; // We handled the back navigation
@@ -303,7 +305,7 @@ namespace BalatroSeedOracle.ViewModels
             // Priority 2: If on initial page with tabs visible, navigate tabs
             if (ActiveTabIndex > 0)
             {
-                TabControl.SwitchTabCommand.Execute(ActiveTabIndex - 1);
+                ActiveTabIndex = ActiveTabIndex - 1;
                 return true; // We handled the back navigation
             }
 

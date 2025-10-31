@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.Modals.FiltersModal"
              x:DataType="vm:FiltersModalViewModel">
 
@@ -12,12 +12,17 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header row: Just tabs centered -->
-        <Grid Grid.Row="0" Margin="0,0,0,2">
-            <!-- Balatro-style button tabs -->
-            <components:BalatroTabControl Name="TabHeader"
-                                          HorizontalAlignment="Center"/>
-        </Grid>
+        <!-- Balatro-style tab control with automatic triangle positioning -->
+        <controls:BalatroTabControl Grid.Row="0"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,2"
+                                    SelectedIndex="{Binding SelectedTabIndex}">
+            <controls:BalatroTabControl.Items>
+                <TabItem Header="Visual Builder"/>
+                <TabItem Header="JSON Editor"/>
+                <TabItem Header="Save"/>
+            </controls:BalatroTabControl.Items>
+        </controls:BalatroTabControl>
 
         <!-- Content area: let inner tabs provide their own dark panels (match SearchModal) -->
         <Border Grid.Row="1"

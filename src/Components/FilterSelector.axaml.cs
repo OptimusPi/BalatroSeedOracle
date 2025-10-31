@@ -113,7 +113,12 @@ namespace BalatroSeedOracle.Components
         {
             var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
             var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
-            var viewModel = new FilterSelectorViewModel(spriteService, configurationService);
+            var filterCacheService = ServiceHelper.GetRequiredService<IFilterCacheService>();
+            var viewModel = new FilterSelectorViewModel(
+                spriteService,
+                configurationService,
+                filterCacheService
+            );
 
             // Wire up ViewModel events to our events for backward compatibility
             viewModel.FilterSelected += (s, e) => FilterSelected?.Invoke(this, e);

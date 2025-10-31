@@ -73,7 +73,7 @@
                                        Name="JsonEditor"
                                        SyntaxHighlighting="Json"
                                        ShowLineNumbers="True"
-                                       FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                                       FontFamily="Consolas,Cascadia Code,Menlo,Courier New,monospace"
                                        FontSize="16"
                                        Background="{StaticResource EditorDarkBg}"
                                        Foreground="{StaticResource White}"

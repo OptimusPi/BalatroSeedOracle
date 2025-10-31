@@ -1,7 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:BalatroSeedOracle.Views"
+        xmlns:vm="using:BalatroSeedOracle.ViewModels"
         x:Class="BalatroSeedOracle.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Title="🃏Balatro Seed BalatroSeedOracle🥠"
         Width="1280"
         Height="720"
@@ -31,10 +33,11 @@
             <!-- Main content -->
             <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
 
-            <!-- Attribution line -->
+            <!-- Attribution line (hidden in Vibe Out Mode) -->
             <Border Grid.Row="1"
                     Background="{StaticResource DarkBackground}"
-                    Padding="4,3">
+                    Padding="4,3"
+                    IsVisible="{Binding !IsVibeOutMode}">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="5">

@@ -190,41 +190,39 @@
 
                                                                 <!-- Template for regular FilterItem -->
                                                                 <DataTemplate DataType="models:FilterItem">
-                                                                    <StackPanel Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
-                                                                                IsHitTestVisible="False">
-                                                                        <!-- Balatro-style sway behavior attached here -->
+                                                                    <Border Background="Transparent"
+                                                                            Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
                                                                         <i:Interaction.Behaviors>
-                                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2"/>
+                                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                                         </i:Interaction.Behaviors>
 
-                                                                        <Grid>
-                                                                            <!-- Main card image (SMALLER) -->
-                                                                            <Image Source="{Binding ItemImage}"
-                                                                                   Width="57"
-                                                                                   Height="76"
-                                                                                   Stretch="Uniform"
-                                                                                   HorizontalAlignment="Center"/>
+                                                                        <StackPanel IsHitTestVisible="False">
+                                                                            <Grid>
+                                                                                <Image Source="{Binding ItemImage}"
+                                                                                       Width="57"
+                                                                                       Height="76"
+                                                                                       Stretch="Uniform"
+                                                                                       HorizontalAlignment="Center"/>
 
-                                                                            <!-- Legendary soul face overlay (only for SoulJoker type) -->
-                                                                            <Image Source="{Binding SoulFaceImage}"
-                                                                                   Width="57"
-                                                                                   Height="76"
-                                                                                   Stretch="Uniform"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                                        </Grid>
+                                                                                <Image Source="{Binding SoulFaceImage}"
+                                                                                       Width="57"
+                                                                                       Height="76"
+                                                                                       Stretch="Uniform"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                            </Grid>
 
-                                                                        <!-- Simple name below -->
-                                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                                   Foreground="{StaticResource White}"
-                                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                                   FontSize="11"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   TextAlignment="Center"
-                                                                                   TextWrapping="Wrap"
-                                                                                   Margin="0,3,0,0"
-                                                                                   MaxWidth="80"/>
-                                                                    </StackPanel>
+                                                                            <TextBlock Text="{Binding DisplayName}"
+                                                                                       Foreground="{StaticResource White}"
+                                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                                       FontSize="11"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       TextAlignment="Center"
+                                                                                       TextWrapping="Wrap"
+                                                                                       Margin="0,3,0,0"
+                                                                                       MaxWidth="80"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </DataTemplate>
                                                             </ContentControl.DataTemplates>
                                                         </ContentControl>

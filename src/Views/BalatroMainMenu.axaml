@@ -10,12 +10,13 @@
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
+             Focusable="True"
              x:CompileBindings="True">
 
     <UserControl.Styles>
         <!-- Modal panel style - Clean Balatro style (NO pixel borders!) -->
         <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBorder}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderBrush" Value="{StaticResource LightGrey}"/>
@@ -84,7 +85,7 @@
                PlacementTarget="{Binding ElementName=MusicToggleButton}"
                VerticalOffset="-10"
                IsLightDismissEnabled="True">
-            <Border Background="{StaticResource ContainerDarkPrecise}"
+            <Border Background="{StaticResource DarkBorder}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="2"
                     CornerRadius="8"
@@ -128,8 +129,8 @@
             </Border>
         </Popup>
         
-        <!-- Desktop widgets layer - widgets use their own ZIndex bindings -->
-        <Grid x:Name="DesktopCanvas" ClipToBounds="False">
+        <!-- Desktop widgets layer - widgets use their own ZIndex bindings (hidden in Vibe Out Mode) -->
+        <Grid x:Name="DesktopCanvas" ClipToBounds="False" IsVisible="{Binding !IsVibeOutMode}">
             <!-- Search Widgets will be added dynamically here -->
 
             <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
@@ -155,8 +156,8 @@
 
         </Grid>
         
-        <!-- Main content that will be blurred when modals are open -->
-        <Grid x:Name="MainContent" ZIndex="5">
+        <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
+        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -379,21 +380,25 @@
                 <Border.Transitions>
                     <Transitions>
                         <DoubleTransition Property="Opacity"
-                                        Duration="0:0:0.3"
-                                        Easing="LinearEasing"/>
+                                        Duration="0:0:0.6"
+                                        Easing="CubicEaseOut"/>
                     </Transitions>
                 </Border.Transitions>
             </Border>
 
-            <!-- Modal content wrapper - slides up -->
+            <!-- Modal content wrapper - slides up with bounce -->
             <ContentControl x:Name="ModalContentWrapper">
-                <ContentControl.Transitions>
-                    <Transitions>
-                        <TransformOperationsTransition Property="RenderTransform"
-                                                      Duration="0:0:0.3"
-                                                      Easing="QuadraticEaseOut"/>
-                    </Transitions>
-                </ContentControl.Transitions>
+                <ContentControl.RenderTransform>
+                    <TranslateTransform X="0" Y="0">
+                        <TranslateTransform.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Y"
+                                                Duration="0:0:0.6"
+                                                Easing="ExponentialEaseOut"/>
+                            </Transitions>
+                        </TranslateTransform.Transitions>
+                    </TranslateTransform>
+                </ContentControl.RenderTransform>
             </ContentControl>
 
         </Grid>

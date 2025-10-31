@@ -33,5 +33,10 @@ namespace BalatroSeedOracle.Models
         public bool IsSoulJoker { get; set; } // For SoulJoker type
         public bool IsMultiValue { get; set; } // For multi-value clauses
         public List<string>? Values { get; set; } // For multi-value clauses
+
+        // Operator-specific fields
+        public string? OperatorType { get; set; } // "Or" or "And"
+        public string? Mode { get; set; } // "Max" for Or operators
+        public List<ItemConfig>? Children { get; set; } // Child items for operators
     }
 }

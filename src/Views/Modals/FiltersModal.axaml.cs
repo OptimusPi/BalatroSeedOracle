@@ -34,13 +34,6 @@ namespace BalatroSeedOracle.Views.Modals
 
                 // Initialize tabs now that we're on the UI thread
                 viewModel.InitializeTabs();
-
-                // Wire up the TabHeader control
-                var tabHeader = this.FindControl<BalatroTabControl>("TabHeader");
-                if (tabHeader != null)
-                {
-                    tabHeader.DataContext = viewModel.TabControl;
-                }
             }
             catch (Exception ex)
             {

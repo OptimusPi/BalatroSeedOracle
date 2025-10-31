@@ -5,28 +5,28 @@
     <Style Selector="TextBox">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="BorderBrush" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
-        <Setter Property="SelectionForegroundBrush" Value="White" />
-        <Setter Property="CaretBrush" Value="White" />
+        <Setter Property="SelectionForegroundBrush" Value="{StaticResource White}" />
+        <Setter Property="CaretBrush" Value="{StaticResource White}" />
     </Style>
         
     <!-- ALL possible TextBox states with dark backgrounds -->
     <Style Selector="TextBox:focus">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
     </Style>
-    
+
     <Style Selector="TextBox:pointerover">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
     </Style>
     
     <Style Selector="TextBox:disabled">
@@ -43,13 +43,13 @@
     
     <Style Selector="TextBox:focus-within">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
     </Style>
-    
+
     <!-- Catch-all for any weird combinations -->
     <Style Selector="TextBox:pointerover:focus, TextBox:focus:pointerover">
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     
@@ -76,6 +76,6 @@
     <!-- Selection styling -->
     <Style Selector="TextBox /template/ TextPresenter#PART_TextPresenter">
         <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
-        <Setter Property="SelectionForegroundBrush" Value="White" />
+        <Setter Property="SelectionForegroundBrush" Value="{StaticResource White}" />
     </Style>
 </Styles>

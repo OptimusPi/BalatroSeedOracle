@@ -40,7 +40,7 @@
 
     <!-- Widget content area (inner panel) -->
     <Style Selector="Border.widget-content">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBorder}"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="12"/>
     </Style>

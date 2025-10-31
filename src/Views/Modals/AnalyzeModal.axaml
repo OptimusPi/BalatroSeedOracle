@@ -143,12 +143,17 @@
             <RowDefinition Height="Auto"/> <!-- Tabs -->
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
-        
-        <!-- Balatro-style tab header -->
-        <components:BalatroTabControl Grid.Row="0"
-                                      Name="TabHeader"
-                                      HorizontalAlignment="Center"
-                                      Margin="0,0,0,2"/>
+
+        <!-- Balatro-style tab control with automatic triangle positioning -->
+        <controls:BalatroTabControl Grid.Row="0"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,2"
+                                    SelectedIndex="{Binding ActiveTab, Converter={x:Static converters:EnumToIntConverter.Instance}}">
+            <controls:BalatroTabControl.Items>
+                <TabItem Header="DECK/STAKE"/>
+                <TabItem Header="ANALYZE"/>
+            </controls:BalatroTabControl.Items>
+        </controls:BalatroTabControl>
         
         <!-- Content panels -->
         <Grid Grid.Row="1">

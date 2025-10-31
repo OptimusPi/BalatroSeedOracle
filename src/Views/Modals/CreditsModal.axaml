@@ -13,8 +13,8 @@
         </Grid.RowDefinitions>
 
         <!-- Credits Section -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource ContainerDarkPrecise}" 
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkBorder}"
                 BorderThickness="0"
                 Margin="20" 
                 CornerRadius="12"

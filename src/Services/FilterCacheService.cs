@@ -102,7 +102,9 @@ namespace BalatroSeedOracle.Services
         public FilterCacheService(IConfigurationService configurationService)
         {
             _configurationService = configurationService;
-            _cache = new ConcurrentDictionary<string, CachedFilter>(StringComparer.OrdinalIgnoreCase);
+            _cache = new ConcurrentDictionary<string, CachedFilter>(
+                StringComparer.OrdinalIgnoreCase
+            );
             _cacheLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             _isInitialized = false;
         }
@@ -124,13 +126,17 @@ namespace BalatroSeedOracle.Services
                 var filtersDir = _configurationService.GetFiltersDirectory();
                 if (!Directory.Exists(filtersDir))
                 {
-                    DebugLogger.Log("FilterCacheService", $"Filters directory does not exist: {filtersDir}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Filters directory does not exist: {filtersDir}"
+                    );
                     Directory.CreateDirectory(filtersDir);
                     _isInitialized = true;
                     return;
                 }
 
-                var filterFiles = Directory.GetFiles(filtersDir, "*.json")
+                var filterFiles = Directory
+                    .GetFiles(filtersDir, "*.json")
                     .Where(f =>
                     {
                         var fileName = Path.GetFileName(f);
@@ -220,9 +226,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 // Return a copy sorted by last modified time (most recent first)
-                return _cache.Values
-                    .OrderByDescending(f => f.LastModified)
-                    .ToList();
+                return _cache.Values.OrderByDescending(f => f.LastModified).ToList();
             }
             finally
             {
@@ -245,7 +249,10 @@ namespace BalatroSeedOracle.Services
                 {
                     // File was deleted, remove from cache
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Removed deleted filter from cache: {filterId}"
+                    );
                     return;
                 }
 
@@ -254,12 +261,18 @@ namespace BalatroSeedOracle.Services
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Invalidated and reloaded filter: {filterId}"
+                    );
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
+                    DebugLogger.LogError(
+                        "FilterCacheService",
+                        $"Failed to reload filter: {filterId}"
+                    );
                 }
             }
             finally

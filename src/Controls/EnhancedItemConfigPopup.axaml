@@ -3,7 +3,7 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Controls.EnhancedItemConfigPopup">
     
-    <Border Background="{StaticResource ContainerDarkPrecise}"
+    <Border Background="{StaticResource DarkBorder}"
             BorderBrush="{StaticResource Gold}"
             BorderThickness="2"
             CornerRadius="8"

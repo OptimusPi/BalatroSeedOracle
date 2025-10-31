@@ -14,6 +14,7 @@ using DuckDB.NET.Data;
 using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
 using Motely;
 using Motely.Filters;
+using Motely.Utils;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
@@ -1041,6 +1042,255 @@ namespace BalatroSeedOracle.Services
             );
         }
 
+        /// <summary>
+        /// Start searching with a config object directly (no file I/O)
+        /// Used for quick in-memory tests of unsaved filters
+        /// </summary>
+        public async Task StartSearchAsync(
+            SearchCriteria criteria,
+            MotelyJsonConfig config,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"StartSearchAsync (in-memory) ENTERED! Config Name={config.Name}"
+            );
+
+            if (config == null)
+            {
+                var errorMsg = "Config object is required but was null";
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
+                throw new ArgumentNullException(nameof(config), errorMsg);
+            }
+
+            DebugLogger.Log(
+                $"SearchInstance[{_searchId}]",
+                $"Using in-memory config: {config.Name}"
+            );
+
+            // DEBUG: Log what was provided
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"IN-MEMORY CONFIG:"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Name: '{config.Name}'"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Must: {(config.Must?.Count ?? 0)} items"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.Should: {(config.Should?.Count ?? 0)} items"
+            );
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"  Config.MustNot: {(config.MustNot?.Count ?? 0)} items"
+            );
+
+            if (config.Should != null && config.Should.Count > 0)
+            {
+                for (int i = 0; i < config.Should.Count; i++)
+                {
+                    var should = config.Should[i];
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"    Should[{i}]: Type={should.Type}, Value={should.Value}, Score={should.Score}"
+                    );
+                }
+            }
+
+            // Store the config info for reference (no file path for in-memory)
+            ConfigPath = string.Empty;
+            FilterName = config.Name ?? "InMemoryTest";
+
+            SetupDatabase(config, $"InMemory_{config.Name}.json");
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Database configured with {_columnNames.Count} columns"
+            );
+
+            // Convert SearchCriteria to SearchConfiguration
+            var searchConfig = new SearchConfiguration
+            {
+                ThreadCount = criteria.ThreadCount,
+                MinScore = criteria.MinScore,
+                BatchSize = criteria.BatchSize,
+                Deck = criteria.Deck ?? "Red",
+                Stake = criteria.Stake ?? "White",
+                StartBatch = criteria.StartBatch,
+                EndBatch = criteria.EndBatch,
+                DebugMode = criteria.EnableDebugOutput,
+                DebugSeed = criteria.DebugSeed,
+            };
+
+            // Call the main search method with the config object
+            await StartSearchFromConfigAsync(
+                config,
+                searchConfig,
+                progress,
+                cancellationToken
+            );
+        }
+
+        /// <summary>
+        /// Private method to run search from a config object (no file loading)
+        /// </summary>
+        private async Task StartSearchFromConfigAsync(
+            MotelyJsonConfig ouijaConfig,
+            SearchConfiguration config,
+            IProgress<SearchProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"StartSearchFromConfigAsync ENTERED! config.Name={ouijaConfig.Name}"
+            );
+
+            if (_isRunning)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
+                return;
+            }
+
+            try
+            {
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    $"Starting search from in-memory config: {ouijaConfig.Name}"
+                );
+
+                _currentConfig = ouijaConfig;
+                _currentSearchConfig = config;
+                FilterName = ouijaConfig.Name ?? "InMemoryFilter";
+                _searchStartTime = DateTime.UtcNow;
+                _isRunning = true;
+
+                _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
+
+                // Clear previous results and pending queue
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _results.Clear();
+                });
+
+                // Clear pending queue
+                while (_pendingResults.TryDequeue(out _)) { }
+
+                // Notify UI that search started
+                SearchStarted?.Invoke(this, EventArgs.Empty);
+
+                // Set up search configuration from the modal
+                var searchCriteria = new SearchCriteria
+                {
+                    ThreadCount = config.ThreadCount,
+                    MinScore = config.MinScore,
+                    BatchSize = config.BatchSize,
+                    Deck = config.Deck ?? "Red",
+                    Stake = config.Stake ?? "White",
+                    StartBatch = config.StartBatch,
+                    EndBatch = config.EndBatch,
+                    EnableDebugOutput = config.DebugMode,
+                    DebugSeed = config.DebugSeed,
+                };
+
+                // Database should already be configured by StartSearchAsync
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Database properly configured with {_columnNames.Count} columns"
+                );
+
+                // Register direct callback with Motely.Filters.MotelyJsonFilterDesc
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    "Registering OnResultFound callback"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses"
+                );
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses"
+                );
+
+                // Log the actual filter content for debugging
+                if (ouijaConfig.Must != null)
+                {
+                    foreach (var must in ouijaConfig.Must)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"  MUST: Type={must.Type}, Value={must.Value}"
+                        );
+                    }
+                }
+                if (ouijaConfig.Should != null)
+                {
+                    foreach (var should in ouijaConfig.Should)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"  SHOULD: Type={should.Type}, Value={should.Value}, Score={should.Score}"
+                        );
+                    }
+                }
+
+                // Run the search using the MotelySearchService pattern
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
+
+                _searchTask = Task.Run(
+                    () =>
+                        RunSearchInProcess(
+                            ouijaConfig,
+                            searchCriteria,
+                            progress,
+                            _cancellationTokenSource.Token
+                        ),
+                    _cancellationTokenSource.Token
+                );
+
+                await _searchTask;
+
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public void PauseSearch()
         {
             if (_isRunning && !_isPaused)
@@ -1225,82 +1475,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private Dictionary<
-            FilterCategory,
-            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
-        > GroupClausesByCategory(
-            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses
-        )
-        {
-            // Early validation - no messy checks later
-            if (clauses == null || clauses.Count == 0)
-                return new Dictionary<
-                    FilterCategory,
-                    List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
-                >();
-
-            var clausesByCategory =
-                new Dictionary<
-                    FilterCategory,
-                    List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>
-                >();
-
-            foreach (var clause in clauses)
-            {
-                // Skip logical operators (And/Or) - they're handled in scoring, not filtering
-                if (
-                    clause.ItemTypeEnum == MotelyFilterItemType.And
-                    || clause.ItemTypeEnum == MotelyFilterItemType.Or
-                )
-                {
-                    DebugLogger.Log(
-                        $"SearchInstance[{_searchId}]",
-                        $"Skipping logical operator clause: {clause.ItemTypeEnum}"
-                    );
-                    continue;
-                }
-
-                FilterCategory category = clause.ItemTypeEnum switch
-                {
-                    MotelyFilterItemType.SoulJoker => FilterCategory.SoulJoker,
-                    MotelyFilterItemType.Joker => FilterCategory.Joker,
-                    MotelyFilterItemType.Voucher => FilterCategory.Voucher,
-                    MotelyFilterItemType.TarotCard => FilterCategory.TarotCard,
-                    MotelyFilterItemType.PlanetCard => FilterCategory.PlanetCard,
-                    MotelyFilterItemType.SpectralCard => FilterCategory.SpectralCard,
-                    MotelyFilterItemType.PlayingCard => FilterCategory.PlayingCard,
-                    MotelyFilterItemType.Boss => FilterCategory.Boss,
-                    MotelyFilterItemType.SmallBlindTag or MotelyFilterItemType.BigBlindTag =>
-                        FilterCategory.Tag,
-                    _ => throw new ArgumentException(
-                        $"Unsupported filter item type: {clause.ItemTypeEnum}"
-                    ),
-                };
-
-                if (!clausesByCategory.ContainsKey(category))
-                {
-                    clausesByCategory[category] =
-                        new List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>();
-                }
-                clausesByCategory[category].Add(clause);
-            }
-
-            DebugLogger.LogImportant(
-                $"SearchInstance[{_searchId}]",
-                $"Clause analysis: {clausesByCategory.Count} categories found"
-            );
-            foreach (var kvp in clausesByCategory)
-            {
-                DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]",
-                    $"  {kvp.Key}: {kvp.Value.Count} clauses"
-                );
-            }
-
-            return clausesByCategory;
-        }
-
-        // Removed - using shared SpecializedFilterFactory instead
+        // Removed - using shared FilterCategoryMapper.GroupClausesByCategory instead
 
         private async Task RunSearchInProcess(
             Motely.Filters.MotelyJsonConfig config,
@@ -1361,29 +1536,62 @@ namespace BalatroSeedOracle.Services
                     $"Config has {config.Must?.Count ?? 0} MUST, {config.Should?.Count ?? 0} SHOULD, {config.MustNot?.Count ?? 0} MUST NOT clauses"
                 );
 
-                // Combine all clauses for the new API
-                var allClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-                if (config.Must != null)
-                    allClauses.AddRange(config.Must);
-                if (config.Should != null)
-                    allClauses.AddRange(config.Should);
-                if (config.MustNot != null)
-                    allClauses.AddRange(config.MustNot);
+                // CRITICAL FIX: Only MUST clauses go to filters - Should clauses are for scoring only!
+                // This matches the proven working reference implementation in JsonSearchExecutor.cs
+                List<MotelyJsonConfig.MotleyJsonFilterClause> mustClauses =
+                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
 
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"🔧 TOTAL CLAUSES FOR MOTELY: {allClauses.Count}"
-                );
-                foreach (var clause in allClauses)
+                // Initialize parsed enums for all MUST clauses with helpful errors
+                for (int i = 0; i < mustClauses.Count; i++)
                 {
-                    DebugLogger.LogError(
+                    var clause = mustClauses[i];
+                    try
+                    {
+                        clause.InitializeParsedEnums();
+                    }
+                    catch (Exception ex)
+                    {
+                        var typeText = string.IsNullOrEmpty(clause.Type) ? "<missing>" : clause.Type;
+                        var valueText = !string.IsNullOrEmpty(clause.Value)
+                            ? clause.Value
+                            : (
+                                clause.Values != null && clause.Values.Length > 0
+                                    ? string.Join(", ", clause.Values)
+                                    : "<none>"
+                            );
+                        throw new ArgumentException(
+                            $"Config error in MUST[{i}] — type: '{typeText}', value(s): '{valueText}'. {ex.Message}\nSuggestion: Add 'type' and 'value' (or 'values'): {{ \"type\": \"Joker\", \"value\": \"Perkeo\" }}"
+                        );
+                    }
+                }
+
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Prepared {mustClauses.Count} MUST clauses for filtering (SHOULD clauses are for scoring only)"
+                );
+                foreach (var clause in mustClauses)
+                {
+                    DebugLogger.LogImportant(
                         $"SearchInstance[{_searchId}]",
-                        $"🔧   Clause: Type={clause.Type}, Value={clause.Value}"
+                        $"  MUST Clause: Type={clause.Type}, Value={clause.Value}"
                     );
                 }
 
-                // Group clauses by category for specialized vectorized filters
-                var clausesByCategory = GroupClausesByCategory(allClauses);
+                // Group MUST clauses by category using shared utility (matches JsonSearchExecutor.cs)
+                var clausesByCategory = FilterCategoryMapper.GroupClausesByCategory(mustClauses);
+
+                // Log the grouped categories (including And/Or if present)
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Grouped into {clausesByCategory.Count} filter categories:"
+                );
+                foreach (var kvp in clausesByCategory)
+                {
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        $"  {kvp.Key}: {kvp.Value.Count} clause(s)"
+                    );
+                }
 
                 if (clausesByCategory.Count == 0)
                 {
@@ -1452,11 +1660,53 @@ namespace BalatroSeedOracle.Services
                         $"[COMPOSITE] Creating composite filter with {categories.Count} filter types"
                     );
 
-                    // Get MUST clauses only (no Should/MustNot for filtering)
-                    var mustClauses =
-                        config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                    // Merge MustNot clauses into mustClauses with IsInverted flag (like JsonSearchExecutor does)
+                    var allRequiredClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(
+                        mustClauses
+                    );
 
-                    var compositeFilter = new MotelyCompositeFilterDesc(mustClauses);
+                    if (config.MustNot != null && config.MustNot.Count > 0)
+                    {
+                        // Initialize parsed enums for MustNot clauses
+                        for (int i = 0; i < config.MustNot.Count; i++)
+                        {
+                            var clause = config.MustNot[i];
+                            try
+                            {
+                                clause.InitializeParsedEnums();
+                            }
+                            catch (Exception ex)
+                            {
+                                var typeText = string.IsNullOrEmpty(clause.Type)
+                                    ? "<missing>"
+                                    : clause.Type;
+                                var valueText = !string.IsNullOrEmpty(clause.Value)
+                                    ? clause.Value
+                                    : (
+                                        clause.Values != null && clause.Values.Length > 0
+                                            ? string.Join(", ", clause.Values)
+                                            : "<none>"
+                                    );
+                                throw new ArgumentException(
+                                    $"Config error in MUSTNOT[{i}] — type: '{typeText}', value(s): '{valueText}'. {ex.Message}"
+                                );
+                            }
+                        }
+
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"   + Including MustNot: {config.MustNot.Count} inverted clauses (exclusion)"
+                        );
+
+                        // Mark mustNot clauses as inverted and add to the composite
+                        foreach (var clause in config.MustNot)
+                        {
+                            clause.IsInverted = true;
+                            allRequiredClauses.Add(clause);
+                        }
+                    }
+
+                    var compositeFilter = new MotelyCompositeFilterDesc(allRequiredClauses);
                     var compositeSettings =
                         new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(
                             compositeFilter
@@ -1504,39 +1754,71 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    // Single category - use optimized specialized filter
+                    // Single category - check if it's And/Or (composite) or specialized filter
                     var primaryCategory = categories[0];
                     var primaryClauses = clausesByCategory[primaryCategory];
 
-                    var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(
-                        primaryCategory,
-                        primaryClauses
-                    );
-                    DebugLogger.LogImportant(
-                        $"SearchInstance[{_searchId}]",
-                        $"Optimized single-category filter: {primaryCategory} with {primaryClauses.Count} clauses"
-                    );
+                    // CRITICAL FIX: And/Or categories need MotelyCompositeFilterDesc, not SpecializedFilterFactory
+                    if (primaryCategory == FilterCategory.And || primaryCategory == FilterCategory.Or)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"Single {primaryCategory} category - using composite filter with {primaryClauses.Count} clauses"
+                        );
 
-                    // Use interface approach for specialized filter compatibility
-                    var searchSettings = Motely
-                        .Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
-                        .WithThreadCount(criteria.ThreadCount)
-                        .WithBatchCharacterCount(criteria.BatchSize)
-                        .WithStartBatchIndex((long)criteria.StartBatch);
+                        var compositeFilter = new MotelyCompositeFilterDesc(primaryClauses);
+                        var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter)
+                            .WithThreadCount(criteria.ThreadCount)
+                            .WithBatchCharacterCount(criteria.BatchSize)
+                            .WithStartBatchIndex((long)criteria.StartBatch);
 
-                    // Only set EndBatch if specified (ulong.MaxValue means infinite)
-                    if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                        searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
+                        if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                            compositeSettings = compositeSettings.WithEndBatchIndex((long)criteria.EndBatch);
 
-                    searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
+                        if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck deck))
+                            compositeSettings = compositeSettings.WithDeck(deck);
+                        if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake stake))
+                            compositeSettings = compositeSettings.WithStake(stake);
 
-                    DebugLogger.LogImportant(
-                        $"SearchInstance[{_searchId}]",
-                        $"Starting single-category search with {criteria.ThreadCount} threads"
-                    );
+                        compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+                        if (config.Should?.Count > 0)
+                            compositeSettings = compositeSettings.WithCsvOutput(true);
 
-                    // Create search with single specialized filter
-                    search = searchSettings.Start();
+                        search = compositeSettings.WithSequentialSearch().Start();
+                    }
+                    else
+                    {
+                        // Regular specialized filter for other categories
+                        var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(
+                            primaryCategory,
+                            primaryClauses
+                        );
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"Optimized single-category filter: {primaryCategory} with {primaryClauses.Count} clauses"
+                        );
+
+                        // Use interface approach for specialized filter compatibility
+                        var searchSettings = Motely
+                            .Utils.SpecializedFilterFactory.CreateSearchSettings(filterDesc)
+                            .WithThreadCount(criteria.ThreadCount)
+                            .WithBatchCharacterCount(criteria.BatchSize)
+                            .WithStartBatchIndex((long)criteria.StartBatch);
+
+                        // Only set EndBatch if specified (ulong.MaxValue means infinite)
+                        if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                            searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
+
+                        searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
+
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"Starting single-category search with {criteria.ThreadCount} threads"
+                        );
+
+                        // Create search with single specialized filter
+                        search = searchSettings.Start();
+                    }
                 }
                 _currentSearch = search;
 

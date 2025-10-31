@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class FilterSelectorViewModel : ObservableObject
     {
         private readonly SpriteService _spriteService;
+        private readonly IFilterCacheService _filterCacheService;
 
         [ObservableProperty]
         private bool _autoLoadEnabled = true;
@@ -77,7 +78,8 @@ namespace BalatroSeedOracle.ViewModels
 
         public FilterSelectorViewModel(
             SpriteService spriteService,
-            IConfigurationService configurationService
+            IConfigurationService configurationService,
+            IFilterCacheService filterCacheService
         )
         {
             _spriteService =
@@ -85,6 +87,8 @@ namespace BalatroSeedOracle.ViewModels
             _configurationService =
                 configurationService
                 ?? throw new ArgumentNullException(nameof(configurationService));
+            _filterCacheService =
+                filterCacheService ?? throw new ArgumentNullException(nameof(filterCacheService));
         }
 
         #region Property Changed Handlers
@@ -115,47 +119,38 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Loads all available filter files from the JsonItemFilters directory
+        /// Loads all available filter files from the FilterCacheService
         /// </summary>
         public async Task LoadAvailableFiltersAsync()
         {
             try
             {
-                var filterItems = new List<(PanelItem? item, DateTime? dateCreated)>();
+                // Use the FilterCacheService instead of reading files manually
+                var allCachedFilters = _filterCacheService.GetAllFilters();
 
-                // Look for .json files in filters directory via configuration service
-                var directory = _configurationService.GetFiltersDirectory();
+                var filterItems = new List<PanelItem>();
 
-                // Ensure directory exists via configuration service
-                _configurationService.EnsureDirectoryExists(directory);
-
-                var rootJsonFiles = Directory.GetFiles(directory, "*.json");
-
-                foreach (var file in rootJsonFiles)
+                foreach (var cached in allCachedFilters)
                 {
-                    var result = await CreateFilterPanelItemWithDateAsync(file);
-                    if (result.item != null)
+                    var item = await CreateFilterPanelItemFromCacheAsync(cached);
+                    if (item != null)
                     {
-                        filterItems.Add(result);
+                        filterItems.Add(item);
                     }
                 }
 
-                // Sort by DateCreated DESC (newest first)
-                var sortedItems = filterItems
-                    .Where(x => x.item != null)
-                    .OrderByDescending(x => x.dateCreated ?? DateTime.MinValue)
-                    .Select(x => x.item!)
-                    .ToList();
+                DebugLogger.Log(
+                    "FilterSelectorViewModel",
+                    $"Found {filterItems.Count} filters from cache"
+                );
 
-                DebugLogger.Log("FilterSelectorViewModel", $"Found {sortedItems.Count} filters");
-
-                FilterItems = sortedItems;
-                HasFilters = sortedItems.Count > 0;
+                FilterItems = filterItems;
+                HasFilters = filterItems.Count > 0;
                 // Default-select the first filter so actions are immediately available
                 if (HasFilters && SelectedFilter == null)
                 {
                     SelectedFilterIndex = 0;
-                    SelectedFilter = sortedItems[0];
+                    SelectedFilter = filterItems[0];
                 }
 
                 // Enable when a selection is present
@@ -175,106 +170,55 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Creates a PanelItem from a filter file path with date metadata
+        /// Creates a PanelItem from a cached filter
         /// </summary>
-        private async Task<(
-            PanelItem? item,
-            DateTime? dateCreated
-        )> CreateFilterPanelItemWithDateAsync(string filterPath)
+        private async Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(
+            Services.CachedFilter cached
+        )
         {
             try
             {
-                var filterContent = await File.ReadAllTextAsync(filterPath);
-
-                // Skip empty files
-                if (string.IsNullOrWhiteSpace(filterContent))
+                var config = cached.Config;
+                if (config == null || string.IsNullOrEmpty(config.Name))
                 {
                     DebugLogger.Log(
                         "FilterSelectorViewModel",
-                        $"Skipping empty filter file: {filterPath}"
+                        $"Skipping filter with no name: {cached.FilterId}"
                     );
-                    return (null, null);
+                    return null;
                 }
 
-                var options = new JsonDocumentOptions
+                // Build description
+                string description = config.Description ?? "No description";
+                if (!string.IsNullOrEmpty(config.Author))
                 {
-                    AllowTrailingCommas = true,
-                    CommentHandling = JsonCommentHandling.Skip,
-                };
-
-                using var doc = JsonDocument.Parse(filterContent, options);
-
-                // Get filter name - skip if no name property
-                if (
-                    !doc.RootElement.TryGetProperty("name", out var nameElement)
-                    || string.IsNullOrEmpty(nameElement.GetString())
-                )
-                {
-                    DebugLogger.Log(
-                        "FilterSelectorViewModel",
-                        $"Filter '{filterPath}' has no 'name' property - skipping"
-                    );
-                    return (null, null);
+                    description = $"by {config.Author}\n{description}";
                 }
-
-                var filterName = nameElement.GetString()!;
-
-                // Get description
-                string description = "No description";
-                if (doc.RootElement.TryGetProperty("description", out var descElement))
-                {
-                    description = descElement.GetString() ?? "No description";
-                }
-
-                // Get author if available
-                string? author = null;
-                if (doc.RootElement.TryGetProperty("author", out var authorElement))
-                {
-                    author = authorElement.GetString();
-                }
-
-                if (!string.IsNullOrEmpty(author))
-                {
-                    description = $"by {author}\n{description}";
-                }
-
-                // Get dateCreated if available
-                DateTime? dateCreated = null;
-                if (doc.RootElement.TryGetProperty("dateCreated", out var dateElement))
-                {
-                    if (DateTime.TryParse(dateElement.GetString(), out var parsedDate))
-                    {
-                        dateCreated = parsedDate;
-                    }
-                }
-
-                // Clone the root element to use after the document is disposed
-                var clonedRoot = doc.RootElement.Clone();
 
                 var item = new PanelItem
                 {
-                    Title = filterName,
+                    Title = config.Name,
                     Description = description,
-                    Value = filterPath,
-                    GetImage = () => CreateFannedPreviewImage(clonedRoot),
+                    Value = cached.FilePath,
+                    GetImage = () => CreateFannedPreviewImageFromConfig(config),
                 };
 
-                return (item, dateCreated);
+                return await Task.FromResult(item);
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "FilterSelectorViewModel",
-                    $"Error parsing filter {filterPath}: {ex.Message}"
+                    $"Error creating panel item from cache for {cached.FilterId}: {ex.Message}"
                 );
-                return (null, null);
+                return null;
             }
         }
 
         /// <summary>
-        /// Creates a fanned preview image showing multiple cards from the filter
+        /// Creates a fanned preview image showing multiple cards from the filter config
         /// </summary>
-        private IImage? CreateFannedPreviewImage(JsonElement filterRoot)
+        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.MotelyJsonConfig config)
         {
             try
             {
@@ -284,16 +228,13 @@ namespace BalatroSeedOracle.ViewModels
                 var previewItems = new List<(string value, string? type)>();
 
                 // Check must items first
-                if (filterRoot.TryGetProperty("must", out var mustItems))
+                if (config.Must != null)
                 {
-                    foreach (var item in mustItems.EnumerateArray())
+                    foreach (var item in config.Must.Take(4))
                     {
-                        if (
-                            item.TryGetProperty("value", out var value)
-                            && item.TryGetProperty("type", out var type)
-                        )
+                        if (!string.IsNullOrEmpty(item.Value))
                         {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            previewItems.Add((item.Value, item.Type));
                             if (previewItems.Count >= 4)
                                 break;
                         }
@@ -301,19 +242,13 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Add should items if we have space
-                if (
-                    previewItems.Count < 4
-                    && filterRoot.TryGetProperty("should", out var shouldItems)
-                )
+                if (previewItems.Count < 4 && config.Should != null)
                 {
-                    foreach (var item in shouldItems.EnumerateArray())
+                    foreach (var item in config.Should)
                     {
-                        if (
-                            item.TryGetProperty("value", out var value)
-                            && item.TryGetProperty("type", out var type)
-                        )
+                        if (!string.IsNullOrEmpty(item.Value))
                         {
-                            previewItems.Add((value.GetString() ?? "", type.GetString()));
+                            previewItems.Add((item.Value, item.Type));
                             if (previewItems.Count >= 4)
                                 break;
                         }
@@ -413,28 +348,23 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error creating fanned preview: {ex.Message}"
                 );
                 // Fallback to single image
-                return GetFilterPreviewImage(filterRoot);
+                return GetFilterPreviewImageFromConfig(config);
             }
         }
 
         /// <summary>
-        /// Gets a fallback single image preview from the filter
+        /// Gets a fallback single image preview from the filter config
         /// </summary>
-        private IImage? GetFilterPreviewImage(JsonElement filterRoot)
+        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.MotelyJsonConfig config)
         {
             try
             {
-                if (filterRoot.TryGetProperty("must", out var items))
+                if (config.Must != null && config.Must.Count > 0)
                 {
-                    foreach (var item in items.EnumerateArray())
+                    var firstItem = config.Must[0];
+                    if (!string.IsNullOrEmpty(firstItem.Value))
                     {
-                        if (
-                            item.TryGetProperty("value", out var value)
-                            && item.TryGetProperty("type", out var type)
-                        )
-                        {
-                            return GetItemImage(value.GetString() ?? "", type.GetString());
-                        }
+                        return GetItemImage(firstItem.Value, firstItem.Type);
                     }
                 }
                 return null;

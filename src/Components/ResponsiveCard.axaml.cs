@@ -132,7 +132,10 @@ namespace BalatroSeedOracle.Components
             _cardBorder.PointerExited += OnPointerExited;
 
             // Get reference to the scale transform from XAML (part of TransformGroup)
-            if (_cardBorder.RenderTransform is TransformGroup transformGroup && transformGroup.Children.Count > 0)
+            if (
+                _cardBorder.RenderTransform is TransformGroup transformGroup
+                && transformGroup.Children.Count > 0
+            )
             {
                 _cardScaleTransform = transformGroup.Children[0] as ScaleTransform;
             }
@@ -290,7 +293,8 @@ namespace BalatroSeedOracle.Components
         {
             // Balatro-style "thud" effect: 1.0 -> 1.05 -> 1.0
             // Uses a bounce-like easing for that satisfying "plop" feel
-            if (_cardScaleTransform == null) return;
+            if (_cardScaleTransform == null)
+                return;
 
             var animation = new Avalonia.Animation.Animation
             {
@@ -303,8 +307,8 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
-                        }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0),
+                        },
                     },
                     new Avalonia.Animation.KeyFrame
                     {
@@ -312,8 +316,8 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.05),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.05)
-                        }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.05),
+                        },
                     },
                     new Avalonia.Animation.KeyFrame
                     {
@@ -321,10 +325,10 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
-                        }
-                    }
-                }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0),
+                        },
+                    },
+                },
             };
 
             animation.RunAsync(_cardScaleTransform);
@@ -333,7 +337,8 @@ namespace BalatroSeedOracle.Components
         private void PlayGrabJuiceAnimation()
         {
             // Quick grab juice: scale to 1.1 fast, then settle back to 1.0
-            if (_cardScaleTransform == null) return;
+            if (_cardScaleTransform == null)
+                return;
 
             var animation = new Avalonia.Animation.Animation
             {
@@ -346,8 +351,8 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
-                        }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0),
+                        },
                     },
                     new Avalonia.Animation.KeyFrame
                     {
@@ -355,8 +360,8 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.1),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.1)
-                        }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.1),
+                        },
                     },
                     new Avalonia.Animation.KeyFrame
                     {
@@ -364,10 +369,10 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
-                        }
-                    }
-                }
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0),
+                        },
+                    },
+                },
             };
 
             animation.RunAsync(_cardScaleTransform);
@@ -375,7 +380,8 @@ namespace BalatroSeedOracle.Components
 
         private void AnimateScale(double targetScale, TimeSpan duration)
         {
-            if (_cardScaleTransform == null) return;
+            if (_cardScaleTransform == null)
+                return;
 
             var animation = new Avalonia.Animation.Animation
             {
@@ -388,10 +394,10 @@ namespace BalatroSeedOracle.Components
                         Setters =
                         {
                             new Setter(ScaleTransform.ScaleXProperty, targetScale),
-                            new Setter(ScaleTransform.ScaleYProperty, targetScale)
-                        }
-                    }
-                }
+                            new Setter(ScaleTransform.ScaleYProperty, targetScale),
+                        },
+                    },
+                },
             };
 
             animation.RunAsync(_cardScaleTransform);
@@ -450,7 +456,10 @@ namespace BalatroSeedOracle.Components
                         this,
                         new CardDragEventArgs(ItemName, Category, dragData)
                     );
-                    DebugLogger.Log("ResponsiveCard", $"Started dragging item: {ItemName} from category: {Category}");
+                    DebugLogger.Log(
+                        "ResponsiveCard",
+                        $"Started dragging item: {ItemName} from category: {Category}"
+                    );
 
                     try
                     {

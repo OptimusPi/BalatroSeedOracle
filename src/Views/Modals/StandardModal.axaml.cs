@@ -186,7 +186,12 @@ namespace BalatroSeedOracle.Views.Modals
             // Start from offscreen and transparent
             overlay.Opacity = UIConstants.InvisibleOpacity;
             modalBorder.Opacity = UIConstants.InvisibleOpacity;
-            modalBorder.Margin = new Thickness(0, UIConstants.ModalSlideOffsetY, 0, UIConstants.ModalSlideOffsetBottomMargin);
+            modalBorder.Margin = new Thickness(
+                0,
+                UIConstants.ModalSlideOffsetY,
+                0,
+                UIConstants.ModalSlideOffsetBottomMargin
+            );
 
             // Animate to final state on next UI tick
             Dispatcher.UIThread.Post(

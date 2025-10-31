@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
@@ -20,54 +19,6 @@ public partial class AnalyzerView : UserControl
 
         // Set up hotkeys
         this.KeyDown += OnKeyDown;
-
-        // Wire up unified Deck & Stake selector (MVVM component)
-        var deckStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckStakeSelector");
-        if (deckStakeSelector != null)
-        {
-            deckStakeSelector.SelectionChanged += (s, selection) =>
-            {
-                if (ViewModel == null)
-                    return;
-
-                var deckEnums = new[]
-                {
-                    MotelyDeck.Red,
-                    MotelyDeck.Blue,
-                    MotelyDeck.Yellow,
-                    MotelyDeck.Green,
-                    MotelyDeck.Black,
-                    MotelyDeck.Magic,
-                    MotelyDeck.Nebula,
-                    MotelyDeck.Ghost,
-                    MotelyDeck.Abandoned,
-                    MotelyDeck.Checkered,
-                    MotelyDeck.Zodiac,
-                    MotelyDeck.Painted,
-                    MotelyDeck.Anaglyph,
-                    MotelyDeck.Plasma,
-                    MotelyDeck.Erratic,
-                };
-
-                var stakeEnums = new[]
-                {
-                    MotelyStake.White,
-                    MotelyStake.Red,
-                    MotelyStake.Green,
-                    MotelyStake.Black,
-                    MotelyStake.Blue,
-                    MotelyStake.Purple,
-                    MotelyStake.Orange,
-                    MotelyStake.Gold,
-                };
-
-                if (selection.deckIndex >= 0 && selection.deckIndex < deckEnums.Length)
-                    ViewModel.SelectedDeck = deckEnums[selection.deckIndex];
-
-                if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeEnums.Length)
-                    ViewModel.SelectedStake = stakeEnums[selection.stakeIndex];
-            };
-        }
 
         // Make control focusable for hotkeys
         this.Focusable = true;

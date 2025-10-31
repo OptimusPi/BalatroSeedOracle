@@ -104,19 +104,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Update JSON content silently using FilterSerializationService for proper formatting
                 var serializationService = ServiceHelper.GetService<FilterSerializationService>();
-                JsonContent = serializationService?.SerializeConfig(config) ?? JsonSerializer.Serialize(
-                    config,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = System
-                            .Text
-                            .Json
-                            .Serialization
-                            .JsonIgnoreCondition
-                            .WhenWritingNull,
-                    }
-                );
+                JsonContent =
+                    serializationService?.SerializeConfig(config)
+                    ?? JsonSerializer.Serialize(
+                        config,
+                        new JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                            DefaultIgnoreCondition = System
+                                .Text
+                                .Json
+                                .Serialization
+                                .JsonIgnoreCondition
+                                .WhenWritingNull,
+                        }
+                    );
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count + config.MustNot.Count;

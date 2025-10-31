@@ -76,12 +76,21 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     
-    <!-- Prevent text selection in all buttons -->
+    <!-- Prevent text selection/highlighting in all buttons -->
     <Style Selector="Button TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
     <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton) /template/ Border#ButtonFace TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     
     <!-- Enhanced red button hover shadow using exact color (precise resource) -->
@@ -97,18 +106,11 @@
         <Setter Property="Background" Value="{StaticResource ModalBorder}" />
     </Style>
     
-    <!-- ALL TextBlocks get Balatro font -->
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="IsHitTestVisible" Value="True" />
-    </Style>
-
-    <!-- Prevent text selection / dragging highlight inside buttons -->
-    <Style Selector="Button TextBlock">
-        <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
     
     <!-- ALL Labels get Balatro font -->
@@ -450,6 +452,14 @@
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
         <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
+    <!-- Keep text white when button is pressed -->
+    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ ContentPresenter">
+        <Setter Property="TextBlock.Foreground" Value="{StaticResource White}"/>
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton):pressed TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
     </Style>
 
     <!-- Disable keyboard navigation for main menu colored buttons -->

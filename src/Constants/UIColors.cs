@@ -26,12 +26,12 @@ namespace BalatroSeedOracle.Constants
         public const string ModalGrey = "#3a5055";
         public const string MediumGrey = "#33464b";
         public const string DarkGrey = "#2e3f42";
-        public const string DarkTealGrey = "#1e2b2d";  // Also used as VeryDarkGrey
+        public const string DarkTealGrey = "#1e2b2d"; // Also used as VeryDarkGrey
 
         // Stats/Status Colors (semantic aliases)
-        public const string MustHaveColor = Red;      // Red for required items
-        public const string ShouldHaveColor = Blue;   // Blue for optional items
-        public const string BannedColor = Orange;     // Orange for banned items
-        public const string InfoColor = Gold;          // Gold for info/stats
+        public const string MustHaveColor = Red; // Red for required items
+        public const string ShouldHaveColor = Blue; // Blue for optional items
+        public const string BannedColor = Orange; // Orange for banned items
+        public const string InfoColor = Gold; // Gold for info/stats
     }
 }

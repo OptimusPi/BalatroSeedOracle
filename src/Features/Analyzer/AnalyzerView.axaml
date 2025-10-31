@@ -4,7 +4,6 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
-             xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
              x:DataType="vm:AnalyzerViewModel">
 
@@ -16,107 +15,123 @@
         <vm:AnalyzerViewModel/>
     </Design.DataContext>
 
-    <!-- Two-column layout: Settings Panel (left) + Analysis Display (right) -->
-    <Grid ColumnDefinitions="220,*">
+    <!-- Compact horizontal layout: Top bar + Full-width content below -->
+    <Grid RowDefinitions="Auto,*">
 
-        <!-- Left: Settings Panel (Fixed Width) -->
-        <Border Grid.Column="0"
+        <!-- Top Horizontal Control Bar -->
+        <Border Grid.Row="0"
                 Background="{StaticResource DarkBackground}"
                 BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="0,0,2,0"
-                Padding="16">
-            <StackPanel Spacing="16">
+                BorderThickness="0,0,0,2"
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto,16,Auto,Auto,16,Auto,*,Auto,16,Auto">
 
-                <!-- Seed Display -->
-                <TextBlock Text="SEED ANALYZER"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
-                           Foreground="{StaticResource Orange}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,8"/>
+                <!-- Current Seed Display -->
+                <StackPanel Grid.Column="0"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="SEED:"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Orange}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CurrentSeed}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
 
-                <Border Background="{StaticResource VeryDarkBackground}"
-                        CornerRadius="6"
-                        Padding="12,8">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Current Seed"
-                                   FontSize="10"
-                                   Foreground="{StaticResource TextInactive}"/>
-                        <TextBlock Text="{Binding CurrentSeed}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="18"
-                                   Foreground="{StaticResource White}"
-                                   TextWrapping="Wrap"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
+                <!-- Deck Spinner -->
+                <controls:SpinnerControl Grid.Column="2"
+                                        Label="Deck"
+                                        SpinnerType="deck"
+                                        Value="{Binding SelectedDeckIndex}"
+                                        Minimum="0"
+                                        Maximum="14"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding DeckDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"/>
 
-                <!-- Deck & Stake Selector (Compact) -->
-                <components:DeckAndStakeSelector x:Name="DeckStakeSelector"
-                                                 HorizontalAlignment="Stretch"/>
+                <!-- Stake Spinner -->
+                <controls:SpinnerControl Grid.Column="3"
+                                        Label="Stake"
+                                        SpinnerType="stake"
+                                        Value="{Binding SelectedStakeIndex}"
+                                        Minimum="0"
+                                        Maximum="7"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding StakeDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0"/>
 
-                <!-- Navigation Info -->
-                <Border Background="{StaticResource VeryDarkBackground}"
-                        CornerRadius="6"
-                        Padding="8">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="{Binding ResultCounter}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   TextWrapping="Wrap"/>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="6"
-                                    HorizontalAlignment="Center">
-                            <Button Content="◀"
-                                    Command="{Binding PreviousResultCommand}"
-                                    IsEnabled="{Binding HasPreviousResult}"
-                                    ToolTip.Tip="Previous Seed (PgUp)"
-                                    Width="40"
-                                    Padding="4"/>
-                            <Button Content="▶"
-                                    Command="{Binding NextResultCommand}"
-                                    IsEnabled="{Binding HasNextResult}"
-                                    ToolTip.Tip="Next Seed (PgDn)"
-                                    Width="40"
-                                    Padding="4"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <!-- Seed Navigation -->
+                <StackPanel Grid.Column="5"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ResultCounter}"
+                               FontSize="12"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Content="◀"
+                            Command="{Binding PreviousResultCommand}"
+                            IsEnabled="{Binding HasPreviousResult}"
+                            ToolTip.Tip="Previous Seed (PgUp)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                    <Button Content="▶"
+                            Command="{Binding NextResultCommand}"
+                            IsEnabled="{Binding HasNextResult}"
+                            ToolTip.Tip="Next Seed (PgDn)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                </StackPanel>
 
                 <!-- Ante Navigation -->
-                <Border Background="{StaticResource VeryDarkBackground}"
-                        CornerRadius="6"
-                        Padding="8">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="{Binding AnteNavigationDisplay}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="6"
-                                    HorizontalAlignment="Center">
-                            <Button Content="▲"
-                                    Command="{Binding ScrollUpAnteCommand}"
-                                    ToolTip.Tip="Previous Ante (↑)"
-                                    Width="40"
-                                    Padding="4"/>
-                            <Button Content="▼"
-                                    Command="{Binding ScrollDownAnteCommand}"
-                                    ToolTip.Tip="Next Ante (↓)"
-                                    Width="40"
-                                    Padding="4"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <StackPanel Grid.Column="7"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="{Binding AnteNavigationDisplay}"
+                               FontSize="12"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Content="▲"
+                            Command="{Binding ScrollUpAnteCommand}"
+                            ToolTip.Tip="Previous Ante (↑)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                    <Button Content="▼"
+                            Command="{Binding ScrollDownAnteCommand}"
+                            ToolTip.Tip="Next Ante (↓)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                </StackPanel>
 
-                <!-- Copy Blueprint URL Button -->
-                <Button Content="COPY URL"
+                <!-- Copy URL Button -->
+                <Button Grid.Column="9"
+                        Content="COPY URL"
                         Command="{Binding CopyBlueprintUrlCommand}"
                         Classes="btn-orange"
-                        HorizontalAlignment="Stretch"
-                        Padding="12,8"
-                        ToolTip.Tip="Copy Blueprint-compatible URL to clipboard">
+                        Padding="16,8"
+                        ToolTip.Tip="Copy Blueprint-compatible URL to clipboard"
+                        VerticalAlignment="Center">
                     <Button.Styles>
                         <Style Selector="Button.btn-orange">
                             <Setter Property="Background" Value="{StaticResource Orange}"/>
@@ -131,14 +146,11 @@
                     </Button.Styles>
                 </Button>
 
-                <!-- Spacer -->
-                <Border Height="20"/>
-
-            </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Right: Main Analysis Display Area -->
-        <Grid Grid.Column="1" RowDefinitions="*">
+        <!-- Full-Width Analysis Display Area -->
+        <Grid Grid.Row="1" RowDefinitions="*">
 
             <!-- Scrollable Antes -->
             <ScrollViewer VerticalScrollBarVisibility="Auto"

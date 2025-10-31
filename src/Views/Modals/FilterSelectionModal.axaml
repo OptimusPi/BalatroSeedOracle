@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
@@ -754,13 +755,16 @@
                                 </Grid>
 
                                 <!-- TAB NAVIGATION (visible when filter selected) -->
-                                <components:BalatroTabControl Grid.Row="1"
-                                                              DataContext="{Binding TabControl}"
-                                                              Margin="0,0,0,10">
-                                    <components:BalatroTabControl.IsVisible>
-                                        <Binding Path="DataContext.ShowDetailsPanel" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-                                    </components:BalatroTabControl.IsVisible>
-                                </components:BalatroTabControl>
+                                <controls:BalatroTabControl Grid.Row="1"
+                                                            Margin="0,0,0,10"
+                                                            SelectedIndex="{Binding ActiveTabIndex}"
+                                                            IsVisible="{Binding ShowDetailsPanel}">
+                                    <controls:BalatroTabControl.Items>
+                                        <TabItem Header="Filter Config"/>
+                                        <TabItem Header="Scoring Config"/>
+                                        <TabItem Header="Preferred Deck"/>
+                                    </controls:BalatroTabControl.Items>
+                                </controls:BalatroTabControl>
 
                                 <!-- TAB CONTENT AREA -->
                                 <Grid Grid.Row="2">
@@ -1219,17 +1223,17 @@
 
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
                                                             <TextBlock Name="DeckNameText"
-                                                                       Text="Red Deck"
+                                                                       Text="{Binding SelectedDeckName}"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="16"
-                                                                      
+
                                                                        Foreground="{StaticResource Black}"/>
                                                             <TextBlock Name="DeckDescriptionText"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="14"
                                                                        Foreground="{StaticResource LightGrey}"
                                                                        TextWrapping="Wrap"
-                                                                       Text="{Binding DeckAndStakeSelector.SelectedDeckDescription}"/>
+                                                                       Text="{Binding SelectedDeckDescription}"/>
                                                         </StackPanel>
                                                     </Grid>
                                                 </Grid>

@@ -35,6 +35,18 @@ public partial class MainWindow : Window
         // Get reference to main menu for cleanup
         _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
 
+        // Sync IsVibeOutMode from MainMenu to MainWindow
+        if (_mainMenu?.ViewModel != null && ViewModel != null)
+        {
+            _mainMenu.ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode))
+                {
+                    ViewModel.IsVibeOutMode = _mainMenu.ViewModel.IsVibeOutMode;
+                }
+            };
+        }
+
         // Handle window closing
         Closing += OnWindowClosing;
 

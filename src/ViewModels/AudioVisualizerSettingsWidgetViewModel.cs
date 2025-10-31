@@ -1,9 +1,11 @@
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -43,6 +45,10 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize shader parameters with default values
             InitializeShaderParameters();
 
+            // Initialize frequency breakpoints collection
+            FrequencyBreakpoints = new ObservableCollection<FrequencyBreakpoint>();
+            MelodicBreakpoints = new ObservableCollection<MelodicBreakpoint>();
+
             // Wire up property change notifications from underlying ViewModel
             _settingsViewModel.PropertyChanged += (s, e) =>
             {
@@ -52,6 +58,107 @@ namespace BalatroSeedOracle.ViewModels
                 }
             };
         }
+
+        #region Frequency Breakpoints
+
+        /// <summary>
+        /// Collection of frequency-based breakpoints for advanced audio reactivity
+        /// </summary>
+        public ObservableCollection<FrequencyBreakpoint> FrequencyBreakpoints { get; }
+
+        /// <summary>
+        /// Collection of melodic breakpoints for music-based triggers
+        /// </summary>
+        public ObservableCollection<MelodicBreakpoint> MelodicBreakpoints { get; }
+
+        [ObservableProperty]
+        private bool _enableSeedFoundTrigger = false;
+
+        [ObservableProperty]
+        private bool _enableHighScoreTrigger = false;
+
+        [ObservableProperty]
+        private bool _enableSearchCompleteTrigger = false;
+
+        /// <summary>
+        /// Adds a new frequency breakpoint with default values
+        /// </summary>
+        [RelayCommand]
+        private void AddFrequencyBreakpoint()
+        {
+            var newBreakpoint = new FrequencyBreakpoint
+            {
+                Name = $"Band {FrequencyBreakpoints.Count + 1}",
+                StartHz = 20f,
+                EndHz = 250f,
+                UseLogarithmic = false,
+                Threshold = 0.5f,
+                Enabled = true,
+                // Backwards compatibility
+                FrequencyHz = 250.0f,
+                AmplitudeThreshold = 0.5f,
+                EffectName = "Pulse",
+                EffectIntensity = 1.0f,
+                DurationMs = 500
+            };
+
+            FrequencyBreakpoints.Add(newBreakpoint);
+            DebugLogger.Log("AudioVisualizerWidget", $"Added frequency breakpoint: {newBreakpoint.Name}");
+        }
+
+        /// <summary>
+        /// Removes a frequency breakpoint from the collection
+        /// </summary>
+        [RelayCommand]
+        private void RemoveFrequencyBreakpoint(FrequencyBreakpoint breakpoint)
+        {
+            if (breakpoint != null)
+            {
+                FrequencyBreakpoints.Remove(breakpoint);
+                DebugLogger.Log("AudioVisualizerWidget", $"Removed frequency breakpoint: {breakpoint.Name}");
+            }
+        }
+
+        /// <summary>
+        /// Adds a new melodic breakpoint with default values
+        /// </summary>
+        [RelayCommand]
+        private void AddMelodicBreakpoint()
+        {
+            var newBreakpoint = new MelodicBreakpoint
+            {
+                Name = $"Melodic {MelodicBreakpoints.Count + 1}",
+                MinFrequency = 200f,
+                MaxFrequency = 2000f,
+                MinNoteCount = 2,
+                SustainMs = 100f,
+                Enabled = true,
+                // Backwards compatibility
+                TargetNoteHz = 440f,
+                FrequencyTolerance = 5.0f,
+                MinDurationMs = 100,
+                EffectName = "ColorShift",
+                EffectIntensity = 1.0f
+            };
+
+            MelodicBreakpoints.Add(newBreakpoint);
+            DebugLogger.Log("AudioVisualizerWidget", $"Added melodic breakpoint: {newBreakpoint.Name}");
+        }
+
+        /// <summary>
+        /// Removes a melodic breakpoint from the collection
+        /// </summary>
+        [RelayCommand]
+        private void RemoveMelodicBreakpoint(MelodicBreakpoint breakpoint)
+        {
+            if (breakpoint != null)
+            {
+                MelodicBreakpoints.Remove(breakpoint);
+                DebugLogger.Log("AudioVisualizerWidget", $"Removed melodic breakpoint: {breakpoint.Name}");
+            }
+        }
+
+        #endregion
 
         #region Shader Parameters - Time
 
@@ -342,6 +449,30 @@ namespace BalatroSeedOracle.ViewModels
                 _settingsViewModel.BeatPulseSource = value;
                 ApplyShaderParameter(menu => menu.ApplyBeatPulseSource(value));
             }
+        }
+
+        [ObservableProperty]
+        private int _twirlSource = 0;
+
+        partial void OnTwirlSourceChanged(int value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyTwirlSource(value));
+        }
+
+        [ObservableProperty]
+        private int _zoomThumpSource = 0;
+
+        partial void OnZoomThumpSourceChanged(int value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyZoomThumpSource(value));
+        }
+
+        [ObservableProperty]
+        private int _colorSaturationSource = 0;
+
+        partial void OnColorSaturationSourceChanged(int value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyColorSaturationSource(value));
         }
 
         // Beat Detection & Sensitivity
@@ -693,6 +824,11 @@ namespace BalatroSeedOracle.ViewModels
                     if (preset.AccentColor.HasValue)
                         AccentColor = preset.AccentColor.Value;
 
+                    // Apply game event triggers
+                    SeedFoundTrigger = preset.SeedFoundTrigger;
+                    HighScoreSeedTrigger = preset.HighScoreSeedTrigger;
+                    SearchCompleteTrigger = preset.SearchCompleteTrigger;
+
                     // Apply effect sources
                     if (preset.CustomEffects != null)
                     {
@@ -700,10 +836,38 @@ namespace BalatroSeedOracle.ViewModels
                             ShadowFlickerSource = sf;
                         if (preset.CustomEffects.TryGetValue("Spin", out int sp))
                             SpinSource = sp;
+                        if (preset.CustomEffects.TryGetValue("BeatPulse", out int bp))
+                            BeatPulseSource = bp;
+                        if (preset.CustomEffects.TryGetValue("Twirl", out int tw))
+                            TwirlSource = tw;
                         if (preset.CustomEffects.TryGetValue("ZoomThump", out int zt))
-                            _zoomThumpSource = zt;
+                            ZoomThumpSource = zt;
                         if (preset.CustomEffects.TryGetValue("ColorSaturation", out int cs))
-                            _colorSaturationSource = cs;
+                            ColorSaturationSource = cs;
+                    }
+
+                    // Load frequency breakpoints
+                    FrequencyBreakpoints.Clear();
+                    if (preset.FrequencyBreakpoints != null)
+                    {
+                        foreach (var breakpoint in preset.FrequencyBreakpoints)
+                        {
+                            FrequencyBreakpoints.Add(breakpoint);
+                        }
+                        DebugLogger.Log("AudioVisualizerWidget",
+                            $"Loaded {preset.FrequencyBreakpoints.Count} frequency breakpoints");
+                    }
+
+                    // Load melodic breakpoints
+                    MelodicBreakpoints.Clear();
+                    if (preset.MelodicBreakpoints != null)
+                    {
+                        foreach (var breakpoint in preset.MelodicBreakpoints)
+                        {
+                            MelodicBreakpoints.Add(breakpoint);
+                        }
+                        DebugLogger.Log("AudioVisualizerWidget",
+                            $"Loaded {preset.MelodicBreakpoints.Count} melodic breakpoints");
                     }
 
                     CurrentPresetName = preset.Name;
@@ -729,13 +893,24 @@ namespace BalatroSeedOracle.ViewModels
                     ThemeIndex = ThemeIndex,
                     MainColor = MainColor,
                     AccentColor = AccentColor,
+                    SeedFoundTrigger = SeedFoundTrigger,
+                    HighScoreSeedTrigger = HighScoreSeedTrigger,
+                    SearchCompleteTrigger = SearchCompleteTrigger,
                     CustomEffects = new System.Collections.Generic.Dictionary<string, int>
                     {
                         ["ShadowFlicker"] = ShadowFlickerSource,
                         ["Spin"] = SpinSource,
-                        ["ZoomThump"] = _zoomThumpSource,
-                        ["ColorSaturation"] = _colorSaturationSource,
+                        ["BeatPulse"] = BeatPulseSource,
+                        ["Twirl"] = TwirlSource,
+                        ["ZoomThump"] = ZoomThumpSource,
+                        ["ColorSaturation"] = ColorSaturationSource,
                     },
+                    FrequencyBreakpoints = FrequencyBreakpoints.Count > 0
+                        ? new System.Collections.Generic.List<FrequencyBreakpoint>(FrequencyBreakpoints)
+                        : null,
+                    MelodicBreakpoints = MelodicBreakpoints.Count > 0
+                        ? new System.Collections.Generic.List<MelodicBreakpoint>(MelodicBreakpoints)
+                        : null,
                 };
 
                 var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
@@ -762,10 +937,6 @@ namespace BalatroSeedOracle.ViewModels
             }
             return null;
         }
-
-        // Private fields for tracking effect sources not exposed as properties
-        private int _zoomThumpSource = 0;
-        private int _colorSaturationSource = 0;
 
         #endregion
 

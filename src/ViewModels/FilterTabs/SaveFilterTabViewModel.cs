@@ -216,7 +216,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ShowTestError = false;
                 TestResultMessage = "";
 
-                // Build the filter configuration from current selections
+                // Build the filter configuration from current selections (in-memory only!)
                 var config = BuildConfigFromCurrentState();
 
                 // Validate the filter name
@@ -229,26 +229,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Persist config to a temp file so search can load it
-                var tempPath = _configurationService.GetTempFilterPath();
-                var saved = await _configurationService.SaveFilterAsync(tempPath, config);
-                if (!saved)
-                {
-                    IsTestRunning = false;
-                    ShowTestError = true;
-                    TestResultMessage = "Failed to save temp filter for testing";
-                    UpdateStatus("Failed to save temp filter for testing", true);
-                    return;
-                }
-
                 // Derive deck/stake from parent selections
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
                 // Build quick test search criteria: BatchSize=7 => only 35 batches total
+                // NO ConfigPath needed - we pass the config object directly!
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    ConfigPath = tempPath,
                     BatchSize = 7, // 7-char batch = only 35 batches total (not billions!)
                     StartBatch = 0,
                     EndBatch = Math.Min(50, GetMaxBatchesForBatchSize(7)), // Stop after 50 batches max
@@ -270,7 +258,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Run quick search and get results
+                // Run quick search with in-memory config (no file I/O!)
                 UpdateStatus(
                     $"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...",
                     false

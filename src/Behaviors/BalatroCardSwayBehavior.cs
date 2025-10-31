@@ -24,7 +24,10 @@ namespace BalatroSeedOracle.Behaviors
         /// Ambient tilt strength (0.2 = Balatro default)
         /// </summary>
         public static readonly StyledProperty<double> AmbientTiltProperty =
-            AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(nameof(AmbientTilt), UIConstants.CardAmbientTiltRadians);
+            AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(
+                nameof(AmbientTilt),
+                UIConstants.CardAmbientTiltRadians
+            );
 
         public double AmbientTilt
         {
@@ -103,7 +106,8 @@ namespace BalatroSeedOracle.Behaviors
 
             // Tilt amount based on cos wave (creates breathing effect)
             // self.tilt_var.amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-            var tilt_amt = AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
+            var tilt_amt =
+                AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
 
             // Apply rotation (convert to degrees)
             // Balatro rotates in radians, we need degrees

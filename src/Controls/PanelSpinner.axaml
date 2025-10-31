@@ -54,7 +54,7 @@
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
             <!-- Match Balatro's inner panel tone and tighter sizing -->
-            <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBorder}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="280"/>

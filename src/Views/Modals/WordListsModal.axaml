@@ -15,8 +15,8 @@
                   Margin="0,0,0,8"/>
 
         <!-- Simple file list at the top -->
-        <Border Background="{StaticResource ContainerDarkPrecise}" 
-                CornerRadius="12" 
+        <Border Background="{StaticResource DarkBorder}"
+                CornerRadius="12"
                 Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>

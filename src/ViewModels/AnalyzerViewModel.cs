@@ -31,6 +31,26 @@ public partial class AnalyzerViewModel : ObservableObject
     private MotelyStake _selectedStake = MotelyStake.White;
 
     [ObservableProperty]
+    private int _selectedDeckIndex = 0;
+
+    [ObservableProperty]
+    private int _selectedStakeIndex = 0;
+
+    // Display values for spinners
+    public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
+    public string[] StakeDisplayValues { get; } =
+    [
+        "White Stake",
+        "Red Stake",
+        "Green Stake",
+        "Black Stake",
+        "Blue Stake",
+        "Purple Stake",
+        "Orange Stake",
+        "Gold Stake",
+    ];
+
+    [ObservableProperty]
     private MotelySeedAnalysis? _currentAnalysis;
 
     [ObservableProperty]
@@ -73,6 +93,30 @@ public partial class AnalyzerViewModel : ObservableObject
     partial void OnSelectedStakeChanged(MotelyStake value)
     {
         _ = AnalyzeCurrentSeedAsync();
+    }
+
+    partial void OnSelectedDeckIndexChanged(int value)
+    {
+        if (value >= 0 && value < DeckDisplayValues.Length)
+        {
+            var deckName = DeckDisplayValues[value].Replace(" Deck", "");
+            if (Enum.TryParse<MotelyDeck>(deckName, out var deck))
+            {
+                SelectedDeck = deck;
+            }
+        }
+    }
+
+    partial void OnSelectedStakeIndexChanged(int value)
+    {
+        if (value >= 0 && value < StakeDisplayValues.Length)
+        {
+            var stakeName = StakeDisplayValues[value].Replace(" Stake", "");
+            if (Enum.TryParse<MotelyStake>(stakeName, out var stake))
+            {
+                SelectedStake = stake;
+            }
+        }
     }
 
     private void UpdateResultCounter()
@@ -156,14 +200,21 @@ public partial class AnalyzerViewModel : ObservableObject
             var stakeName = SelectedStake.ToString();
             var maxAnte = CurrentAnalysis?.Antes.Count ?? 8;
 
-            var url = $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
+            var url =
+                $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
 
             await ClipboardService.CopyToClipboardAsync(url);
-            Helpers.DebugLogger.Log("AnalyzerViewModel", $"Copied Blueprint URL to clipboard: {url}");
+            Helpers.DebugLogger.Log(
+                "AnalyzerViewModel",
+                $"Copied Blueprint URL to clipboard: {url}"
+            );
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Failed to copy Blueprint URL: {ex.Message}");
+            Helpers.DebugLogger.LogError(
+                "AnalyzerViewModel",
+                $"Failed to copy Blueprint URL: {ex.Message}"
+            );
         }
     }
 

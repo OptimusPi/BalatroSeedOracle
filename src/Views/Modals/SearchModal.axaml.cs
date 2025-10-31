@@ -13,8 +13,6 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class SearchModal : UserControl
     {
         public SearchModalViewModel ViewModel { get; }
-        private Components.BalatroTabControl? _tabHeader;
-        private bool _suppressHeaderSync = false;
 
         public event EventHandler? CloseRequested;
 
@@ -48,36 +46,6 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void WireUpComponentEvents()
         {
-            // Balatro-style tab header setup
-            _tabHeader = this.FindControl<Components.BalatroTabControl>("TabHeader");
-            if (_tabHeader != null)
-            {
-                // Initialize tab titles from ViewModel
-                var titles = ViewModel.TabItems.Select(t => t.Header).ToArray();
-                _tabHeader.SetTabs(titles);
-
-                // Sync header when user clicks a tab button
-                _tabHeader.TabChanged += (s, tabIndex) =>
-                {
-                    _suppressHeaderSync = true;
-                    ViewModel.SelectedTabIndex = tabIndex;
-                    ViewModel.UpdateTabVisibility(tabIndex);
-                    _suppressHeaderSync = false;
-                };
-
-                // Sync header when ViewModel changes tab programmatically (e.g., after search)
-                ViewModel.PropertyChanged += (s, e) =>
-                {
-                    if (
-                        !_suppressHeaderSync
-                        && e.PropertyName == nameof(ViewModel.SelectedTabIndex)
-                    )
-                    {
-                        _tabHeader.SwitchToTab(ViewModel.SelectedTabIndex);
-                    }
-                };
-            }
-
             // CREATE NEW FILTER button callback (FilterSelectorControl is created dynamically by ViewModel)
             ViewModel.SetNewFilterRequestedCallback(OpenFiltersModal);
 
@@ -129,9 +97,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // When the user clicks Select, jump to the Search tab
                 deckStakeSelector.DeckSelected += (s, _) =>
                 {
-                    ViewModel.SelectedTabIndex = 1; // Search tab (indices shifted)
-                    ViewModel.UpdateTabVisibility(1);
-                    _tabHeader?.SwitchToTab(1);
+                    ViewModel.SelectedTabIndex = 0; // Search tab is now index 0 (no deck/stake tab anymore)
+                    ViewModel.UpdateTabVisibility(0);
                 };
             }
         }

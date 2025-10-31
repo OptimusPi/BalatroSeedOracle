@@ -13,6 +13,7 @@
         }
     },
     "LinuxSettings": {
+        "InstallDirName": "balatro-seed-oracle",
         "AppIcon": "BalatroSeedOracle.ico",
         "Maintainer": "OptimusPi",
         "CreateBinSymlink": "True",
@@ -20,7 +21,8 @@
     },
     "Win32Settings": {
         "InstallerIcon": "BalatroSeedOracle.ico",
-        "Company": "OptimusPi",
+        "Company": "pifreakLovesYou",
+        "CompanyFolder": "True",
         "InstallerLicense": "LICENSE",
         "IncludeUninstaller": "True"
     },
@@ -33,13 +35,10 @@
             "Network": "DayLatro website is updated by the DayLatro widget in Balatro seed Oracle."
         },
         "AppIcon": "BalatroSeedOracle.ico",
-        "SigningCredentialsType": "AdHoc",
-        "NotaryCredentialsType": "AppleAccount",
         "DmgBackground": "BalatroSeedOracle.tif"
     },
     "PublishSettings": {
         "PublishSingleFile": "True",
-        "PublishAot": "True",
         "PublishReadyToRun": "True",
         "ExtraBuildProperties": {}
     }

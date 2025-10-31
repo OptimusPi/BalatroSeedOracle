@@ -6,10 +6,10 @@
     <!-- Vertical bounce (for tab indicators) - Polygon version -->
     <Style Selector="Polygon.balatro-bounce-vertical">
         <Style.Animations>
-            <Animation Duration="0:0:0.6"
+            <Animation Duration="0:0:0.8"
                        IterationCount="Infinite"
                        PlaybackDirection="Alternate"
-                       Easing="CubicEaseInOut">
+                       Easing="SineEaseInOut">
                 <KeyFrame Cue="0%">
                     <Setter Property="TranslateTransform.Y" Value="0"/>
                 </KeyFrame>
@@ -23,10 +23,10 @@
     <!-- Vertical bounce (for tab indicators) - TextBlock version -->
     <Style Selector="TextBlock.balatro-bounce-vertical">
         <Style.Animations>
-            <Animation Duration="0:0:0.6"
+            <Animation Duration="0:0:0.8"
                        IterationCount="Infinite"
                        PlaybackDirection="Alternate"
-                       Easing="CubicEaseInOut">
+                       Easing="SineEaseInOut">
                 <KeyFrame Cue="0%">
                     <Setter Property="TranslateTransform.Y" Value="0"/>
                 </KeyFrame>

@@ -46,7 +46,10 @@ namespace BalatroSeedOracle.Behaviors
         /// Juice intensity on grab (0.4 = Balatro default)
         /// </summary>
         public static readonly StyledProperty<double> JuiceAmountProperty =
-            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(JuiceAmount), UIConstants.CardJuiceScaleFactor);
+            AvaloniaProperty.Register<CardDragBehavior, double>(
+                nameof(JuiceAmount),
+                UIConstants.CardJuiceScaleFactor
+            );
 
         public double JuiceAmount
         {
@@ -87,7 +90,10 @@ namespace BalatroSeedOracle.Behaviors
 
             // Set up transform group with rotation and scale
             _rotateTransform = new RotateTransform();
-            _scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
+            _scaleTransform = new ScaleTransform(
+                UIConstants.DefaultScaleFactor,
+                UIConstants.DefaultScaleFactor
+            );
             _transformGroup = new TransformGroup();
             _transformGroup.Children.Add(_scaleTransform);
             _transformGroup.Children.Add(_rotateTransform);
@@ -238,7 +244,9 @@ namespace BalatroSeedOracle.Behaviors
                     / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
-                tiltAmount = Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * UIConstants.CardTiltFactorRadians;
+                tiltAmount =
+                    Math.Abs(offsetY + offsetX - 1 + dx + dy - 1)
+                    * UIConstants.CardTiltFactorRadians;
 
                 // Tilt angle based on drag direction
                 tiltAngle = Math.Atan2(dy, dx);
@@ -266,7 +274,10 @@ namespace BalatroSeedOracle.Behaviors
                 tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-                tiltAmount = UIConstants.CardAmbientTiltRadians * (0.5 + Math.Cos(tiltAngle)) * UIConstants.CardTiltFactorRadians;
+                tiltAmount =
+                    UIConstants.CardAmbientTiltRadians
+                    * (0.5 + Math.Cos(tiltAngle))
+                    * UIConstants.CardTiltFactorRadians;
             }
 
             // Apply rotation (convert radians to degrees)
@@ -287,7 +298,9 @@ namespace BalatroSeedOracle.Behaviors
 
                     // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
                     var scaleJuice =
-                        JuiceAmount * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed) * decayScale;
+                        JuiceAmount
+                        * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed)
+                        * decayScale;
                     _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor + scaleJuice;
                     _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor + scaleJuice;
 

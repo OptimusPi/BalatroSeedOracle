@@ -138,7 +138,7 @@
                           HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Name="ResultsContainer" Spacing="0">
                     <!-- Table Header -->
-                    <Border Background="{StaticResource ContainerDarkPrecise}"
+                    <Border Background="{StaticResource DarkBorder}"
                             CornerRadius="6,6,0,0"
                             Padding="0"
                             BorderBrush="{StaticResource ModalBorder}"

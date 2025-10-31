@@ -39,25 +39,15 @@
                                Opacity="0.3"
                                Margin="0,4,0,12"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <Button Content="Word Lists"
+                            Classes="btn-red"
+                            HorizontalAlignment="Stretch"
+                            Click="OnWordListsClick"/>
 
-                        <Button Grid.Column="0"
-                                Content="Word Lists"
-                                Classes="btn-blue"
-                                HorizontalAlignment="Stretch"
-                                Click="OnWordListsClick"/>
-
-                        <Button Grid.Column="2"
-                                Content="Credits"
-                                Classes="btn-orange"
-                                HorizontalAlignment="Stretch"
-                                Click="OnCreditsClick"/>
-                    </Grid>
+                    <Button Content="Credits"
+                            Classes="btn-red"
+                            HorizontalAlignment="Stretch"
+                            Click="OnCreditsClick"/>
                 </StackPanel>
 
                 <!-- File Locations Section -->
@@ -72,71 +62,16 @@
                                Opacity="0.3"
                                Margin="0,4,0,12"/>
 
-                    <TextBlock Text="Access important application directories"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="11"
-                               Foreground="White"
-                               Opacity="0.6"
-                               Margin="0,0,0,6"/>
+                    <Button Content="Open Filters Folder"
+                            Classes="btn-red"
+                            HorizontalAlignment="Stretch"
+                            Click="OnOpenFiltersDirectoryClick"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Column="0"
-                                Content="Open Filters Folder"
-                                Classes="btn-blue"
-                                HorizontalAlignment="Stretch"
-                                Click="OnOpenFiltersDirectoryClick"/>
-
-                        <Button Grid.Column="2"
-                                Content="Open App Folder"
-                                Classes="btn-blue"
-                                HorizontalAlignment="Stretch"
-                                Click="OnOpenAppDirectoryClick"/>
-                    </Grid>
+                    <Button Content="Open App Folder"
+                            Classes="btn-red"
+                            HorizontalAlignment="Stretch"
+                            Click="OnOpenAppDirectoryClick"/>
                 </StackPanel>
-
-                <!-- Info Section -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="ABOUT"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
-                               Foreground="{StaticResource Gold}"/>
-
-                    <Rectangle Height="1"
-                               Fill="{StaticResource ModalBorder}"
-                               Opacity="0.3"
-                               Margin="0,4,0,12"/>
-
-                    <Border Padding="12"
-                            Background="{StaticResource DarkBackground}"
-                            CornerRadius="6">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Balatro Seed Oracle"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource White}"/>
-
-                            <TextBlock Text="A powerful seed filtering and analysis tool for Balatro"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
-                                       Foreground="White"
-                                       Opacity="0.6"
-                                       TextWrapping="Wrap"/>
-
-                            <TextBlock Text="All features are enabled and ready to use."
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
-                                       Foreground="{StaticResource Green}"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
             </StackPanel>
         </ScrollViewer>
 

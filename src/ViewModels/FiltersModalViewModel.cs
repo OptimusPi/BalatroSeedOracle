@@ -131,7 +131,8 @@ namespace BalatroSeedOracle.ViewModels
         public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
 
         // Generate stake display values from BalatroData (strip " Stake" suffix for display)
-        public string[] StakeDisplayValues { get; } = BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
+        public string[] StakeDisplayValues { get; } =
+            BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
 
         // Deck/Stake index helpers
         public int SelectedDeckIndex
@@ -193,9 +194,6 @@ namespace BalatroSeedOracle.ViewModels
 
         public Dictionary<string, List<string>> ItemCategories => _itemCategories;
         public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
-
-        // BalatroTabControl ViewModel for RED NAV TABS
-        public BalatroTabControlViewModel TabControl { get; } = new();
 
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
@@ -952,27 +950,6 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
             // Separate SAVE header with SaveFilterTab content
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
-
-            // Populate BalatroTabControl for RED NAV TABS
-            TabControl.Tabs.Clear();
-            TabControl.Tabs.Add(
-                new BalatroTabItem
-                {
-                    Title = "Visual Builder",
-                    Index = 0,
-                    IsActive = true,
-                }
-            );
-            TabControl.Tabs.Add(new BalatroTabItem { Title = "JSON Editor", Index = 1 });
-            TabControl.Tabs.Add(new BalatroTabItem { Title = "Save", Index = 2 });
-
-            // Wire up tab selection
-            TabControl.TabChanged += (sender, newIndex) =>
-            {
-                SelectedTabIndex = newIndex;
-                UpdateTabVisibility(newIndex);
-                OnPropertyChanged(nameof(CurrentTabContent));
-            };
 
             // Ensure initial tab content and visibility are set
             UpdateTabVisibility(SelectedTabIndex);
