@@ -92,6 +92,19 @@
         <SolidColorBrush x:Key="ResponsiveCardRed">#ff4c40</SolidColorBrush>
         <SolidColorBrush x:Key="ResponsiveCardRedHover">#a02721</SolidColorBrush>
 
+        <!-- Color variants for effects (DropShadowEffect requires Color type, not Brush) -->
+        <Color x:Key="BlueColor">#0093ff</Color>
+        <Color x:Key="GoldColor">#eac058</Color>
+        <Color x:Key="RedColor">#ff4c40</Color>
+
+        <!-- Semi-transparent overlays for drop zones -->
+        <SolidColorBrush x:Key="SemiTransparentBlue">#330093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentGold">#33eac058</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentRed">#33ff4c40</SolidColorBrush>
+
+        <!-- Dramatic backdrop overlay for drag operations -->
+        <SolidColorBrush x:Key="DragBackdropOverlay">#80000000</SolidColorBrush>
+
         <!-- Additional colors for UI elements -->
         <SolidColorBrush x:Key="NeonGreen">#00FF88</SolidColorBrush>
         <SolidColorBrush x:Key="BrightGold">#FFD700</SolidColorBrush>

@@ -20,12 +20,10 @@
             
             <!-- Main modal container - Balatro style with subtle south edge -->
             <Grid Grid.Column="1" Grid.Row="1"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  MinWidth="600"
-                  MinHeight="400"
-                  MaxWidth="1400"
-                  MaxHeight="900">
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Width="1080"
+                  Height="600">
                 <!-- Main border with standard edge -->
                 <Border x:Name="ModalBorder"
                         Background="{StaticResource ModalGrey}"

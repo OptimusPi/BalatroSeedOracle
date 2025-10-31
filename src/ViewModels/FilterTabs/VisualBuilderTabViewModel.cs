@@ -878,20 +878,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 var spriteService = SpriteService.Instance;
 
-                // Load Favorites
-                var favorites = FavoritesService.Instance.GetFavoriteItems();
-                foreach (var fav in favorites)
-                {
-                    var item = new FilterItem
-                    {
-                        Name = fav,
-                        Type = "Joker",
-                        DisplayName = FormatDisplayName(fav),
-                        ItemImage = spriteService.GetJokerImage(fav),
-                    };
-                    AllJokers.Add(item);
-                }
-
                 // Load favorites FIRST (from FavoritesService)
                 var favoritesService = ServiceHelper.GetService<FavoritesService>();
                 var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();

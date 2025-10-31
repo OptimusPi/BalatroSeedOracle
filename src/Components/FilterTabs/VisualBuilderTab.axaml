@@ -13,7 +13,7 @@
     <Grid VerticalAlignment="Stretch">
         <!-- Dramatic backdrop overlay when dragging - dims everything -->
         <Border Name="DragBackdrop"
-                Background="#99000000"
+                Background="{StaticResource DragBackdropOverlay}"
                 IsVisible="False"
                 IsHitTestVisible="False"
                 ZIndex="100">
@@ -292,28 +292,32 @@
                 <!-- MUST HAVE Zone -->
                 <Border Name="MustDropZone"
                         Grid.Row="0"
-                        Background="{StaticResource White}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
+                        MinHeight="150"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
-                            <ColumnDefinition Width="*"/>      <!-- White content area -->
+                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
                         <!-- Left: Vertical Rotated Label -->
                         <TextBlock Grid.Column="0"
                                    Text="MUST HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource Gold}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Blue}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,8,0">
+                                   HorizontalAlignment="Center"
+                                   Margin="0">
                             <TextBlock.RenderTransform>
                                 <RotateTransform Angle="-90"/>
                             </TextBlock.RenderTransform>
+                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
                         </TextBlock>
 
                         <!-- Right: White Drop Area -->
@@ -400,19 +404,19 @@
                         <Border Name="MustDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="#EE1a2332"
+                                Background="{StaticResource SemiTransparentBlue}"
                                 BorderBrush="{StaticResource Blue}"
-                                BorderThickness="5"
+                                BorderThickness="6"
                                 CornerRadius="8"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
                                 ZIndex="200">
                             <Border.Effect>
-                                <DropShadowEffect Color="#4B9FD5"
+                                <DropShadowEffect Color="{StaticResource BlueColor}"
                                                   OffsetX="0"
                                                   OffsetY="0"
-                                                  BlurRadius="20"
-                                                  Opacity="0.9"/>
+                                                  BlurRadius="30"
+                                                  Opacity="1.0"/>
                             </Border.Effect>
                             <Border.Styles>
                                 <Style Selector="Border">
@@ -446,28 +450,32 @@
                 <!-- SHOULD HAVE Zone -->
                 <Border Name="ShouldDropZone"
                         Grid.Row="2"
-                        Background="{StaticResource White}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
+                        MinHeight="150"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
-                            <ColumnDefinition Width="*"/>      <!-- White content area -->
+                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
                         <!-- Left: Vertical Rotated Label -->
                         <TextBlock Grid.Column="0"
                                    Text="SHOULD HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
+                                   FontSize="14"
+                                   FontWeight="Bold"
                                    Foreground="{StaticResource Gold}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,8,0">
+                                   HorizontalAlignment="Center"
+                                   Margin="0">
                             <TextBlock.RenderTransform>
                                 <RotateTransform Angle="-90"/>
                             </TextBlock.RenderTransform>
+                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
                         </TextBlock>
 
                         <!-- Right: White Drop Area -->
@@ -554,19 +562,19 @@
                         <Border Name="ShouldDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="#EE1a2818"
+                                Background="{StaticResource SemiTransparentGold}"
                                 BorderBrush="{StaticResource Gold}"
-                                BorderThickness="5"
+                                BorderThickness="6"
                                 CornerRadius="8"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
                                 ZIndex="200">
                             <Border.Effect>
-                                <DropShadowEffect Color="#F3B63A"
+                                <DropShadowEffect Color="{StaticResource GoldColor}"
                                                   OffsetX="0"
                                                   OffsetY="0"
-                                                  BlurRadius="20"
-                                                  Opacity="0.9"/>
+                                                  BlurRadius="30"
+                                                  Opacity="1.0"/>
                             </Border.Effect>
                             <Border.Styles>
                                 <Style Selector="Border">
@@ -600,28 +608,32 @@
                 <!-- BANNED ITEMS Zone -->
                 <Border Name="MustNotDropZone"
                         Grid.Row="4"
-                        Background="{StaticResource White}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
+                        MinHeight="150"
                         DragDrop.AllowDrop="True">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>   <!-- Vertical label on LEFT -->
-                            <ColumnDefinition Width="*"/>      <!-- White content area -->
+                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
                         <!-- Left: Vertical Rotated Label -->
                         <TextBlock Grid.Column="0"
                                    Text="BANNED ITEMS"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource Gold}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Red}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,8,0">
+                                   HorizontalAlignment="Center"
+                                   Margin="0">
                             <TextBlock.RenderTransform>
                                 <RotateTransform Angle="-90"/>
                             </TextBlock.RenderTransform>
+                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
                         </TextBlock>
 
                         <!-- Right: White Drop Area -->
@@ -708,19 +720,19 @@
                         <Border Name="MustNotDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="#EE321a1a"
+                                Background="{StaticResource SemiTransparentRed}"
                                 BorderBrush="{StaticResource Red}"
-                                BorderThickness="5"
+                                BorderThickness="6"
                                 CornerRadius="8"
                                 IsVisible="False"
                                 IsHitTestVisible="False"
                                 ZIndex="200">
                             <Border.Effect>
-                                <DropShadowEffect Color="#D84848"
+                                <DropShadowEffect Color="{StaticResource RedColor}"
                                                   OffsetX="0"
                                                   OffsetY="0"
-                                                  BlurRadius="20"
-                                                  Opacity="0.9"/>
+                                                  BlurRadius="30"
+                                                  Opacity="1.0"/>
                             </Border.Effect>
                             <Border.Styles>
                                 <Style Selector="Border">
