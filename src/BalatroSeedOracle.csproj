@@ -10,12 +10,12 @@
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <!-- Velopack Configuration -->
     <AssemblyName>BalatroSeedOracle</AssemblyName>
-    <Product>Balatro Seed BalatroSeedOracle</Product>
+    <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright © 2025</Copyright>
-    <Version>1.1.4</Version>
-    <FileVersion>1.1.4</FileVersion>
-    <AssemblyVersion>1.1.4</AssemblyVersion>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
     <!-- Enable more warnings for code quality -->
     <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -28,11 +28,6 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Controls\SelectableItemDisplay.axaml.cs">
-      <DependentUpon>SelectableItemDisplay.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <!-- Copy Audio files to output directory -->
   <ItemGroup>
@@ -59,25 +54,16 @@
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
-    <PackageReference Include="DuckDB.NET.Data" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
-    <PackageReference Include="Egorozh.ColorPicker.Avalonia" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" />
     <PackageReference Include="MessageBox.Avalonia" />
-    <PackageReference Include="NAudio" />
-    <PackageReference Include="NAudio.Vorbis" />
-    <PackageReference Include="NVorbis" />
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
     <PackageReference Include="ClosedXML" />
-    <!-- Velopack for auto-updates and packaging -->
-    <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />

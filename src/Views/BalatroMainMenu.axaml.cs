@@ -352,7 +352,8 @@ namespace BalatroSeedOracle.Views
                 var modal = new StandardModal("🎰 SEED SEARCH");
                 modal.SetContent(searchContent);
                 modal.BackClicked += (s, e) => HideModalContent();
-                ShowModalContent(modal, "🎰 SEED SEARCH");
+                // Keep backdrop visible during transition to prevent flicker
+                ShowModalContent(modal, "🎰 SEED SEARCH", keepBackdrop: true);
             }
             catch (Exception ex)
             {
@@ -483,7 +484,8 @@ namespace BalatroSeedOracle.Views
             var modal = new StandardModal("🎨 FILTER DESIGNER");
             modal.SetContent(filtersModal);
             modal.BackClicked += (s, e) => HideModalContent();
-            ShowModalContent(modal);
+            // Keep backdrop visible during transition to prevent flicker
+            ShowModalContent(modal, keepBackdrop: true);
         }
 
         /// <summary>
@@ -637,7 +639,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
         /// </summary>
-        public void ShowModalContent(UserControl content, string? title = null)
+        public void ShowModalContent(UserControl content, string? title = null, bool keepBackdrop = false)
         {
             if (_modalContainer == null || _modalOverlay == null || _modalContentWrapper == null)
                 return;
@@ -661,7 +663,11 @@ namespace BalatroSeedOracle.Views
             var windowHeight = this.Bounds.Height;
 
             // Set initial states BEFORE making visible or adding content
-            _modalOverlay.Opacity = UIConstants.InvisibleOpacity;
+            // Skip backdrop reset if we're transitioning between modals (prevents flicker)
+            if (!keepBackdrop)
+            {
+                _modalOverlay.Opacity = UIConstants.InvisibleOpacity;
+            }
 
             // CRITICAL: Keep content wrapper invisible until transform is applied
             _modalContentWrapper.Opacity = UIConstants.InvisibleOpacity;
@@ -699,8 +705,11 @@ namespace BalatroSeedOracle.Views
                     // Make content wrapper visible now that transform is set
                     _modalContentWrapper.Opacity = UIConstants.FullOpacity;
 
-                    // Fade in overlay (0 → 1)
-                    _modalOverlay.Opacity = UIConstants.FullOpacity;
+                    // Fade in overlay (0 → 1) only if we're not keeping the backdrop
+                    if (!keepBackdrop)
+                    {
+                        _modalOverlay.Opacity = UIConstants.FullOpacity;
+                    }
 
                     // Slide up content from below screen (translateY: windowHeight → 0)
                     translateTransform.Y = 0;

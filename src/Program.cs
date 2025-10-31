@@ -1,7 +1,6 @@
 using System;
 using Avalonia;
 using Avalonia.ReactiveUI;
-using Velopack;
 
 namespace BalatroSeedOracle;
 
@@ -13,9 +12,6 @@ public class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        // Initialize Velopack
-        VelopackApp.Build().Run();
-
         // Enable debug logging
         Helpers.DebugLogger.SetDebugEnabled(true);
 

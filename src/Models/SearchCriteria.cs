@@ -14,7 +14,9 @@ public class SearchCriteria
     // Tip: this is the seed digits (BatchCharacterCount in Motely)
     public int BatchSize { get; set; } = 2; // Default batch size to 2 digits, 35^2 seeds.
     public ulong StartBatch { get; set; } = 0;
-    public ulong EndBatch { get; set; } = ulong.MaxValue;
+    // Balatro has 8-character base-35 seeds: 35^8 = 2,251,875,390,625 total seeds (~2.25 trillion)
+    // This is the actual maximum, not infinite
+    public ulong EndBatch { get; set; } = 2251875390625;
     public string? Deck { get; set; } = "Red";
     public string? Stake { get; set; } = "White";
 

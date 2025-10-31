@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
-            services.AddSingleton<SoundEffectService>();
+            // services.AddSingleton<SoundEffectService>(); // Removed - NAudio dependency
             services.AddSingleton<SoundFlowAudioManager>();
             // FavoritesService uses a private constructor and singleton Instance
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);

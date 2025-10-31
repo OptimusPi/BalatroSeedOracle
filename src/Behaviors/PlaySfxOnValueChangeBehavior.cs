@@ -102,15 +102,15 @@ namespace BalatroSeedOracle.Behaviors
             _lastPlayTime = now;
 
             // Default to whoosh if specific sound isn't exposed
-            if (string.Equals(Sound, "whoosh", StringComparison.OrdinalIgnoreCase))
-            {
-                SoundEffectService.Instance.PlayWhoosh();
-            }
-            else
-            {
-                // Fallback: use button click for unknown names
-                SoundEffectService.Instance.PlayButtonClick();
-            }
+            // Sound effects disabled - NAudio removed for cross-platform compatibility
+            // if (string.Equals(Sound, "whoosh", StringComparison.OrdinalIgnoreCase))
+            // {
+            //     SoundEffectService.Instance.PlayWhoosh();
+            // }
+            // else
+            // {
+            //     SoundEffectService.Instance.PlayButtonClick();
+            // }
         }
     }
 }

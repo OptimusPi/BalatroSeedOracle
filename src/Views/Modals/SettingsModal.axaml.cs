@@ -66,9 +66,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 var filtersDir = System.IO.Path.Combine(
-                    System.IO.Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? AppDomain.CurrentDomain.BaseDirectory,
+                    AppContext.BaseDirectory,
                     "JsonItemFilters"
                 );
 
@@ -106,10 +104,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var appDir =
-                    System.IO.Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? AppDomain.CurrentDomain.BaseDirectory;
+                var appDir = AppContext.BaseDirectory;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())

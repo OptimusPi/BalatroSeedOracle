@@ -2,8 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab"
-             x:DataType="vm:SearchModalViewModel">
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab">
 
     <UserControl.Styles>
         <!-- Big COOK button style -->

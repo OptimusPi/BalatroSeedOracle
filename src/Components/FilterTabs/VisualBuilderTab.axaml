@@ -11,6 +11,17 @@
              x:CompileBindings="True">
 
     <Grid VerticalAlignment="Stretch">
+        <!-- Dramatic backdrop overlay when dragging - dims everything -->
+        <Border Name="DragBackdrop"
+                Background="#99000000"
+                IsVisible="False"
+                IsHitTestVisible="False"
+                ZIndex="100">
+            <Border.Effect>
+                <BlurEffect Radius="8"/>
+            </Border.Effect>
+        </Border>
+
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -389,19 +400,45 @@
                         <Border Name="MustDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="{StaticResource SemiTransparentBlack}"
+                                Background="#EE1a2332"
                                 BorderBrush="{StaticResource Blue}"
-                                BorderThickness="3"
+                                BorderThickness="5"
                                 CornerRadius="8"
                                 IsVisible="False"
-                                IsHitTestVisible="False">
-                            <TextBlock Text="Drop in MUST HAVE"
+                                IsHitTestVisible="False"
+                                ZIndex="200">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#4B9FD5"
+                                                  OffsetX="0"
+                                                  OffsetY="0"
+                                                  BlurRadius="20"
+                                                  Opacity="0.9"/>
+                            </Border.Effect>
+                            <Border.Styles>
+                                <Style Selector="Border">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="50%">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Border.Styles>
+                            <TextBlock Text="✨ DROP IN MUST HAVE ✨"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
+                                       FontSize="24"
                                        Foreground="{StaticResource Blue}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       FontWeight="ExtraBold"
+                                       TextAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -517,19 +554,45 @@
                         <Border Name="ShouldDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="{StaticResource SemiTransparentBlack}"
-                                BorderBrush="{StaticResource Blue}"
-                                BorderThickness="3"
+                                Background="#EE1a2818"
+                                BorderBrush="{StaticResource Gold}"
+                                BorderThickness="5"
                                 CornerRadius="8"
                                 IsVisible="False"
-                                IsHitTestVisible="False">
-                            <TextBlock Text="Drop in SHOULD HAVE"
+                                IsHitTestVisible="False"
+                                ZIndex="200">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#F3B63A"
+                                                  OffsetX="0"
+                                                  OffsetY="0"
+                                                  BlurRadius="20"
+                                                  Opacity="0.9"/>
+                            </Border.Effect>
+                            <Border.Styles>
+                                <Style Selector="Border">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="50%">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Border.Styles>
+                            <TextBlock Text="💫 DROP IN SHOULD HAVE 💫"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
-                                       Foreground="{StaticResource Blue}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource Gold}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       FontWeight="ExtraBold"
+                                       TextAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -645,19 +708,45 @@
                         <Border Name="MustNotDropOverlay"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Background="{StaticResource SemiTransparentBlack}"
+                                Background="#EE321a1a"
                                 BorderBrush="{StaticResource Red}"
-                                BorderThickness="3"
+                                BorderThickness="5"
                                 CornerRadius="8"
                                 IsVisible="False"
-                                IsHitTestVisible="False">
-                            <TextBlock Text="Drop in BANNED ITEMS"
+                                IsHitTestVisible="False"
+                                ZIndex="200">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#D84848"
+                                                  OffsetX="0"
+                                                  OffsetY="0"
+                                                  BlurRadius="20"
+                                                  Opacity="0.9"/>
+                            </Border.Effect>
+                            <Border.Styles>
+                                <Style Selector="Border">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="50%">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Border.Styles>
+                            <TextBlock Text="⛔ DROP IN BANNED ITEMS ⛔"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
+                                       FontSize="24"
                                        Foreground="{StaticResource Red}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       FontWeight="ExtraBold"
+                                       TextAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>

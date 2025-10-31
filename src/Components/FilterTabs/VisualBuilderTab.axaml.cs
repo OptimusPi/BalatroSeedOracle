@@ -79,8 +79,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnCardPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
         {
-            // Play subtle card hover sound
-            SoundEffectService.Instance.PlayCardHover();
+            // Play subtle card hover sound - disabled (NAudio removed)
+            // SoundEffectService.Instance.PlayCardHover();
 
             // No rotation code needed - the BalatroCardSwayBehavior handles all animation
             // The invisible hitbox (sender) never rotates, preventing seizure-inducing flicker
@@ -158,7 +158,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     );
 
                     // Play card select sound
-                    SoundEffectService.Instance.PlayCardSelect();
+                    // SoundEffectService.Instance.PlayCardSelect();
 
                     // COMPLETELY hide the original card during drag (not just opacity)
                     // This prevents CardDragBehavior from interfering with ghost movement
@@ -277,8 +277,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _dragStartPosition = e.GetPosition(this);
                 }
 
-                // Play sound
-                SoundEffectService.Instance.PlayCardSelect();
+                // Play sound - disabled (NAudio removed)
+                // SoundEffectService.Instance.PlayCardSelect();
 
                 // Create ghost
                 CreateDragAdorner(item, _dragStartPosition);
@@ -583,7 +583,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     break;
                             }
                             // Play trash sound (or card drop)
-                            SoundEffectService.Instance.PlayCardDrop();
+                            // SoundEffectService.Instance.PlayCardDrop();
                         }
                         else
                         {
@@ -626,7 +626,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
 
                         // Play card drop sound
-                        SoundEffectService.Instance.PlayCardDrop();
+                        // SoundEffectService.Instance.PlayCardDrop();
 
                         // Check if dropping onto an operator (nested drop zone)
                         var targetOperator = FindOperatorAtPosition(cursorPos, zoneName, vm);
@@ -1097,7 +1097,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 imageGrid.Children.Add(
                     new Image
                     {
-                        Source = item.ItemImage!, // Non-null: every FilterItem must have an image
+                        Source = item!.ItemImage!, // Non-null: every FilterItem must have an image
                         Width = 71,
                         Height = 95,
                         Stretch = Stretch.Uniform,
@@ -1148,7 +1148,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 Text = item.DisplayName,
                                 Foreground = Brushes.White,
-                                FontSize = 12,
+                                FontSize = 14,
                                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                                 Margin = new Avalonia.Thickness(0, 4, 0, 0),
                                 Opacity = 1,
@@ -1250,6 +1250,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void ShowDropZoneOverlays(string? excludeZone = null)
         {
+            // Show dramatic backdrop that dims everything
+            var backdrop = this.FindControl<Border>("DragBackdrop");
+            if (backdrop != null)
+                backdrop.IsVisible = true;
+
             if (excludeZone != "MustDropZone")
             {
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
@@ -1282,6 +1287,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void HideAllDropZoneOverlays()
         {
+            // Hide dramatic backdrop
+            var backdrop = this.FindControl<Border>("DragBackdrop");
+            if (backdrop != null)
+                backdrop.IsVisible = false;
+
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
             if (mustOverlay != null)
                 mustOverlay.IsVisible = false;

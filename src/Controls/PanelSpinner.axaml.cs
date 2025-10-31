@@ -130,8 +130,8 @@ public partial class PanelSpinner : UserControl
         if (_items.Count == 0)
             return;
 
-        // Play filter switch sound
-        SoundEffectService.Instance.PlayFilterSwitch();
+        // Play filter switch sound - disabled (NAudio removed)
+        // SoundEffectService.Instance.PlayFilterSwitch();
 
         // Circular navigation: if at beginning, wrap to end
         if (_currentIndex > 0)
@@ -150,8 +150,8 @@ public partial class PanelSpinner : UserControl
         if (_items.Count == 0)
             return;
 
-        // Play filter switch sound
-        SoundEffectService.Instance.PlayFilterSwitch();
+        // Play filter switch sound - disabled (NAudio removed)
+        // SoundEffectService.Instance.PlayFilterSwitch();
 
         // Circular navigation: if at end, wrap to beginning
         if (_currentIndex < _items.Count - 1)

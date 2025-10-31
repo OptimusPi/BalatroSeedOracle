@@ -38,6 +38,13 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("FiltersModal", $"Failed to initialize: {ex.Message}");
+                DebugLogger.LogError("FiltersModal", $"Exception type: {ex.GetType().FullName}");
+                DebugLogger.LogError("FiltersModal", $"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    DebugLogger.LogError("FiltersModal", $"Inner exception: {ex.InnerException.Message}");
+                    DebugLogger.LogError("FiltersModal", $"Inner stack trace: {ex.InnerException.StackTrace}");
+                }
                 // Create a minimal fallback
                 DataContext = null;
             }

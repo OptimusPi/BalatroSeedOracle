@@ -140,8 +140,8 @@ namespace BalatroSeedOracle.Services
                 Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
             };
 
-            // Set Mode for Or operators (default to "Max" if not specified)
-            if (operatorType == "Or")
+            // Set Mode for Or/And operators (default to "Max" if not specified)
+            if (operatorType == "Or" || operatorType == "And")
             {
                 operatorClause.Mode = !string.IsNullOrEmpty(operatorConfig.Mode) ? operatorConfig.Mode : "Max";
             }

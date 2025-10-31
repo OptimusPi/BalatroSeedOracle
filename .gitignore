@@ -67,3 +67,11 @@ userprofile.json
 /.specify
 nul
 *.log
+
+# License keys and secrets
+*.license
+avalonia.license
+.env
+.env.*
+**/appsettings.*.json
+!**/appsettings.json

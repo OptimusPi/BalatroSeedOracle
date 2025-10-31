@@ -1,0 +1,71 @@
+name: Parcel Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install Parcel
+      run: dotnet tool install --global AvaloniaUI.Net.Parcel
+
+    - name: Restore dependencies
+      run: dotnet restore src/BalatroSeedOracle.csproj
+
+    - name: Build
+      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
+
+    - name: Package with Parcel
+      run: |
+        cd src
+        parcel pack
+
+    - name: Upload Windows Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-installer
+        path: Parcel/Releases/*.exe
+        if-no-files-found: error
+
+    - name: Upload macOS Bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-bundle
+        path: Parcel/Releases/*.dmg
+        if-no-files-found: warn
+
+    - name: Upload Linux Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-package
+        path: Parcel/Releases/*.deb
+        if-no-files-found: warn
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          Parcel/Releases/*.exe
+          Parcel/Releases/*.dmg
+          Parcel/Releases/*.deb
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

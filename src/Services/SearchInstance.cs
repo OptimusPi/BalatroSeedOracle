@@ -1848,15 +1848,30 @@ namespace BalatroSeedOracle.Services
                 {
                     // Report progress
                     var completedBatches = _currentSearch.CompletedBatchCount;
-                    var progressPercent =
-                        ((double)completedBatches / (criteria.EndBatch - criteria.StartBatch))
-                        * 100.0;
+
+                    // CRITICAL FIX: Calculate progress percentage correctly for infinite searches
+                    // When EndBatch is ulong.MaxValue (infinite search), we can't calculate meaningful percentage
+                    // Instead, show progress based on seeds searched or use indeterminate progress
+                    double progressPercent = 0.0;
+                    var totalBatches = criteria.EndBatch - criteria.StartBatch;
+
+                    if (criteria.EndBatch != ulong.MaxValue && totalBatches > 0)
+                    {
+                        // Finite search - calculate actual percentage
+                        progressPercent = ((double)completedBatches / totalBatches) * 100.0;
+                    }
+                    else
+                    {
+                        // Infinite search - show "running" indicator with batch count instead
+                        // This prevents division by infinity resulting in 0%
+                        progressPercent = Math.Min(99.99, completedBatches * 0.001); // Arbitrary but visible progress
+                    }
 
                     // Calculate speed - account for StartBatch offset and edge cases
                     var elapsed = DateTime.UtcNow - _searchStartTime;
                     var actualBatchesProcessed = Math.Max(0, completedBatches); // Ensure non-negative
                     var seedsSearched = (ulong)(
-                        actualBatchesProcessed * Math.Pow(35, criteria.BatchSize)
+                        actualBatchesProcessed * Math.Pow(35, criteria.BatchSize + 1)
                     );
 
                     // Prevent division by zero and negative/invalid elapsed time
