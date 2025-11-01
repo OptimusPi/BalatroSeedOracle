@@ -130,9 +130,6 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isThreadsVisible = true;
 
         [ObservableProperty]
-        private bool _isBatchSizeVisible = true;
-
-        [ObservableProperty]
         private bool _isContinueVisible = true;
 
         [ObservableProperty]
@@ -215,7 +212,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Set default values
             ThreadCount = Environment.ProcessorCount / 2;
-            BatchSize = 1; // Default batch size (35^2)
+            // BatchSize is now hardcoded to 3 for optimal performance/responsiveness balance
 
             // Initialize dynamic tabs
             InitializeSearchTabs();
@@ -254,7 +251,8 @@ namespace BalatroSeedOracle.ViewModels
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int MaxThreadCount { get; } = Environment.ProcessorCount; // Auto-detect CPU cores
-        public int BatchSize { get; set; } = 3;
+        // BatchSize hardcoded to 3 for optimal performance (35^3 = 42,875 seeds per batch)
+        public int BatchSize => 3;
 
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
@@ -497,7 +495,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             UpdateControlVisibility();
 
-            // Force thread/batch values for Single Seed mode
+            // Force thread count for Single Seed mode (BatchSize is hardcoded to 3)
             if (value == SearchMode.SingleSeed)
             {
                 ThreadCount = 1;
@@ -519,7 +517,6 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case SearchMode.AllSeeds:
                     IsThreadsVisible = true;
-                    IsBatchSizeVisible = true;
                     IsContinueVisible = true;
                     IsSeedInputVisible = false;
                     IsWordListVisible = false;
@@ -527,7 +524,6 @@ namespace BalatroSeedOracle.ViewModels
 
                 case SearchMode.SingleSeed:
                     IsThreadsVisible = false;
-                    IsBatchSizeVisible = false;
                     IsContinueVisible = false;
                     IsSeedInputVisible = true;
                     IsWordListVisible = false;
@@ -535,7 +531,6 @@ namespace BalatroSeedOracle.ViewModels
 
                 case SearchMode.WordList:
                     IsThreadsVisible = true;
-                    IsBatchSizeVisible = true;
                     IsContinueVisible = false; // Wordlists don't support continue
                     IsSeedInputVisible = false;
                     IsWordListVisible = true;

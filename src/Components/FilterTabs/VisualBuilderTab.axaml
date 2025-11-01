@@ -26,8 +26,8 @@
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>   <!-- Left: Category Buttons -->
-                <ColumnDefinition Width="460"/>   <!-- Center: Grouped Items (5 jokers wide: 5*80 + scrollbar = 460) -->
-                <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones -->
+                <ColumnDefinition Width="1.2*"/>  <!-- Center: Grouped Items (takes 1.2x space) -->
+                <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones (takes 1x space) -->
             </Grid.ColumnDefinitions>
 
             <!-- LEFT COLUMN - Filter Name + Search + Categories -->
@@ -68,7 +68,7 @@
                 <StackPanel Grid.Row="4" Spacing="8" Name="CategoryNav" DragDrop.AllowDrop="True">
                     <!-- Category buttons without section headers -->
                     <Button Content="Special"
-                            Classes="nav-button"
+                            Classes="nav-button special"
                             Click="OnCategoryClick"
                             Tag="Favorites"
                             HorizontalAlignment="Stretch"/>
@@ -202,9 +202,13 @@
                                                                 <!-- Template for regular FilterItem -->
                                                                 <DataTemplate DataType="models:FilterItem">
                                                                     <Border Background="Transparent"
-                                                                            Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
+                                                                            Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                                                                            Cursor="Hand"
+                                                                            Width="57"
+                                                                            Height="94">
                                                                         <i:Interaction.Behaviors>
                                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.08"/>
                                                                         </i:Interaction.Behaviors>
 
                                                                         <StackPanel IsHitTestVisible="False">
@@ -280,14 +284,14 @@
                 </Border>
             </Grid>
 
-            <!-- RIGHT COLUMN - Drop Zones -->
+            <!-- RIGHT COLUMN - Drop Zones (Always 1/3 each in size!) -->
             <Grid Grid.Column="2" Margin="5,0,0,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>   <!-- MUST HAVE - 33% -->
-                    <RowDefinition Height="12"/>  <!-- Spacing -->
-                    <RowDefinition Height="*"/>   <!-- SHOULD HAVE - 33% -->
-                    <RowDefinition Height="12"/>  <!-- Spacing -->
-                    <RowDefinition Height="*"/>   <!-- BANNED ITEMS - 33% -->
+                    <RowDefinition Height="1*"/>  <!-- MUST - Always 1/3 -->
+                    <RowDefinition Height="4"/>   <!-- Spacing -->
+                    <RowDefinition Height="1*"/>  <!-- SHOULD - Always 1/3 -->
+                    <RowDefinition Height="4"/>   <!-- Spacing -->
+                    <RowDefinition Height="1*"/>  <!-- CAN'T - Always 1/3 -->
                 </Grid.RowDefinitions>
                 <!-- MUST HAVE Zone -->
                 <Border Name="MustDropZone"
@@ -296,32 +300,59 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        MinHeight="150"
                         DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="32"/>     <!-- Width for vertical label -->
                             <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Vertical Rotated Label -->
-                        <TextBlock Grid.Column="0"
-                                   Text="MUST HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Blue}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Margin="0">
-                            <TextBlock.RenderTransform>
-                                <RotateTransform Angle="-90"/>
-                            </TextBlock.RenderTransform>
-                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
-                        </TextBlock>
+                        <!-- Left: Vertical Rotated Label - Clickable -->
+                        <Border Grid.Column="0"
+                                Background="{StaticResource DarkTealGrey}"
+                                ClipToBounds="True"
+                                Cursor="Hand"
+                                PointerPressed="OnMustLabelClick">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="MUST"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           FontWeight="ExtraBold"
+                                           Foreground="{StaticResource Blue}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,0">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
 
-                        <!-- Right: White Drop Area -->
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMust}" Margin="12">
+                                <!-- Item count badge (visible when collapsed) -->
+                                <Border Background="{StaticResource Blue}"
+                                        CornerRadius="10"
+                                        Padding="6,2"
+                                        Margin="0,4,0,0"
+                                        IsVisible="{Binding !IsMustExpanded}">
+                                    <TextBlock Text="{Binding SelectedMust.Count}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource DarkBackground}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: White Drop Area - Hidden when collapsed -->
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding SelectedMust}"
+                                      Margin="12"
+                                      IsVisible="{Binding IsMustExpanded}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -454,32 +485,59 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        MinHeight="150"
                         DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="32"/>     <!-- Width for vertical label -->
                             <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Vertical Rotated Label -->
-                        <TextBlock Grid.Column="0"
-                                   Text="SHOULD HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Gold}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Margin="0">
-                            <TextBlock.RenderTransform>
-                                <RotateTransform Angle="-90"/>
-                            </TextBlock.RenderTransform>
-                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
-                        </TextBlock>
+                        <!-- Left: Vertical Rotated Label - Clickable -->
+                        <Border Grid.Column="0"
+                                Background="{StaticResource DarkTealGrey}"
+                                ClipToBounds="True"
+                                Cursor="Hand"
+                                PointerPressed="OnShouldLabelClick">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="SHOULD"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           FontWeight="ExtraBold"
+                                           Foreground="{StaticResource Gold}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,0">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
 
-                        <!-- Right: White Drop Area -->
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedShould}" Margin="12">
+                                <!-- Item count badge (visible when collapsed) -->
+                                <Border Background="{StaticResource Gold}"
+                                        CornerRadius="10"
+                                        Padding="6,2"
+                                        Margin="0,4,0,0"
+                                        IsVisible="{Binding !IsShouldExpanded}">
+                                    <TextBlock Text="{Binding SelectedShould.Count}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource DarkBackground}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: White Drop Area - Hidden when collapsed -->
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding SelectedShould}"
+                                      Margin="12"
+                                      IsVisible="{Binding IsShouldExpanded}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -612,32 +670,59 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        MinHeight="150"
                         DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>     <!-- Width for vertical label -->
+                            <ColumnDefinition Width="32"/>     <!-- Width for vertical label -->
                             <ColumnDefinition Width="*"/>      <!-- Drop area -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Vertical Rotated Label -->
-                        <TextBlock Grid.Column="0"
-                                   Text="BANNED ITEMS"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Red}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Margin="0">
-                            <TextBlock.RenderTransform>
-                                <RotateTransform Angle="-90"/>
-                            </TextBlock.RenderTransform>
-                            <TextBlock.RenderTransformOrigin>0.5, 0.5</TextBlock.RenderTransformOrigin>
-                        </TextBlock>
+                        <!-- Left: Vertical Rotated Label - Clickable -->
+                        <Border Grid.Column="0"
+                                Background="{StaticResource DarkTealGrey}"
+                                ClipToBounds="True"
+                                Cursor="Hand"
+                                PointerPressed="OnCantLabelClick">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="CAN'T"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           FontWeight="ExtraBold"
+                                           Foreground="{StaticResource Red}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,0">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="-90"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
 
-                        <!-- Right: White Drop Area -->
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedMustNot}" Margin="12">
+                                <!-- Item count badge (visible when collapsed) -->
+                                <Border Background="{StaticResource Red}"
+                                        CornerRadius="10"
+                                        Padding="6,2"
+                                        Margin="0,4,0,0"
+                                        IsVisible="{Binding !IsCantExpanded}">
+                                    <TextBlock Text="{Binding SelectedMustNot.Count}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: White Drop Area - Hidden when collapsed -->
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding SelectedMustNot}"
+                                      Margin="12"
+                                      IsVisible="{Binding IsCantExpanded}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>

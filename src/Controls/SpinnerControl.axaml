@@ -12,7 +12,7 @@
         <!-- Arrow button style -->
         <Style Selector="Button.arrow-button">
             <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
@@ -62,7 +62,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="MinWidth" Value="60"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -75,7 +75,7 @@
         
         <!-- Value badge drop shadow -->
         <Style Selector="Grid.value-badge-container">
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
         
         <!-- Label style -->
@@ -144,7 +144,7 @@
                 <Border Background="{StaticResource HoverShadow}"
                         CornerRadius="6"
                         HorizontalAlignment="Stretch"
-                        Height="32"
+                        Height="28"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
                 <Button Name="ValueButton"

@@ -167,7 +167,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // CREATE GHOST IMAGE
                     CreateDragAdorner(item, _dragStartPosition);
 
-                    // Show ALL drop zone overlays when dragging from center
+                    // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
 
                     // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
@@ -283,7 +283,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Create ghost
                 CreateDragAdorner(item, _dragStartPosition);
 
-                // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones
+                // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones (zones don't expand, just overlays)
                 if (_sourceDropZone != null)
                 {
                     var returnOverlay = this.FindControl<Border>("ReturnOverlay");
@@ -574,12 +574,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 case "MustDropZone":
                                     vm.SelectedMust.Remove(_draggedItem);
+                                    vm.CollapseToZone("MUST");
                                     break;
                                 case "ShouldDropZone":
                                     vm.SelectedShould.Remove(_draggedItem);
+                                    vm.CollapseToZone("SHOULD");
                                     break;
                                 case "MustNotDropZone":
                                     vm.SelectedMustNot.Remove(_draggedItem);
+                                    vm.CollapseToZone("CANT");
                                     break;
                             }
                             // Play trash sound (or card drop)
@@ -600,7 +603,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             "VisualBuilderTab",
                             $"Dropped to same zone - canceling (item stays where it was)"
                         );
-                        // Item stays in original zone, just clean up
+                        // Item stays in original zone, collapse to that zone
+                        switch (zoneName)
+                        {
+                            case "MustDropZone":
+                                vm.CollapseToZone("MUST");
+                                break;
+                            case "ShouldDropZone":
+                                vm.CollapseToZone("SHOULD");
+                                break;
+                            case "MustNotDropZone":
+                                vm.CollapseToZone("CANT");
+                                break;
+                        }
                     }
                     else
                     {
@@ -651,12 +666,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 case "MustDropZone":
                                     vm.AddToMustCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("MUST");
                                     break;
                                 case "ShouldDropZone":
                                     vm.AddToShouldCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("SHOULD");
                                     break;
                                 case "MustNotDropZone":
                                     vm.AddToMustNotCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("CANT");
                                     break;
                             }
                         }
@@ -667,12 +685,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 case "MustDropZone":
                                     vm.AddToMustCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("MUST");
                                     break;
                                 case "ShouldDropZone":
                                     vm.AddToShouldCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("SHOULD");
                                     break;
                                 case "MustNotDropZone":
                                     vm.AddToMustNotCommand.Execute(_draggedItem);
+                                    vm.CollapseToZone("CANT");
                                     break;
                             }
                         }
@@ -1325,6 +1346,42 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Ensure cleanup on navigation away
             RemoveDragAdorner();
             base.OnDetachedFromVisualTree(e);
+        }
+
+        /// <summary>
+        /// Handle MUST zone label click - expand MUST, collapse others
+        /// </summary>
+        private void OnMustLabelClick(object? sender, PointerPressedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.ExpandMustCommand.Execute(null);
+                DebugLogger.Log("VisualBuilderTab", "MUST zone expanded via label click");
+            }
+        }
+
+        /// <summary>
+        /// Handle SHOULD zone label click - expand SHOULD, collapse others
+        /// </summary>
+        private void OnShouldLabelClick(object? sender, PointerPressedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.ExpandShouldCommand.Execute(null);
+                DebugLogger.Log("VisualBuilderTab", "SHOULD zone expanded via label click");
+            }
+        }
+
+        /// <summary>
+        /// Handle CAN'T zone label click - expand CAN'T, collapse others
+        /// </summary>
+        private void OnCantLabelClick(object? sender, PointerPressedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.ExpandCantCommand.Execute(null);
+                DebugLogger.Log("VisualBuilderTab", "CAN'T zone expanded via label click");
+            }
         }
     }
 }

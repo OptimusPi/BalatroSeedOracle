@@ -24,6 +24,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isLoading = true;
 
+        // Collapsible drop zones - only one expanded at a time
+        [ObservableProperty]
+        private bool _isMustExpanded = true; // Start with MUST expanded
+
+        [ObservableProperty]
+        private bool _isShouldExpanded = false;
+
+        [ObservableProperty]
+        private bool _isCantExpanded = false;
+
+        [ObservableProperty]
+        private bool _isDragging = false; // Track if user is dragging a card
+
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
@@ -35,6 +48,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> AllPlanets { get; }
         public ObservableCollection<FilterItem> AllSpectrals { get; }
         public ObservableCollection<FilterItem> AllBosses { get; }
+        public ObservableCollection<FilterItem> AllWildcards { get; }
 
         // Filtered items (based on search)
         public ObservableCollection<FilterItem> FilteredJokers { get; }
@@ -44,6 +58,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> FilteredPlanets { get; }
         public ObservableCollection<FilterItem> FilteredSpectrals { get; }
         public ObservableCollection<FilterItem> FilteredBosses { get; }
+        public ObservableCollection<FilterItem> FilteredWildcards { get; }
 
         public ObservableCollection<FilterItem> FilteredItems { get; }
 
@@ -170,6 +185,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             AllPlanets = new ObservableCollection<FilterItem>();
             AllSpectrals = new ObservableCollection<FilterItem>();
             AllBosses = new ObservableCollection<FilterItem>();
+            AllWildcards = new ObservableCollection<FilterItem>();
 
             FilteredJokers = new ObservableCollection<FilterItem>();
             FilteredTags = new ObservableCollection<FilterItem>();
@@ -178,6 +194,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FilteredPlanets = new ObservableCollection<FilterItem>();
             FilteredSpectrals = new ObservableCollection<FilterItem>();
             FilteredBosses = new ObservableCollection<FilterItem>();
+            FilteredWildcards = new ObservableCollection<FilterItem>();
 
             FilteredItems = new ObservableCollection<FilterItem>();
             GroupedItems = new ObservableCollection<ItemGroup>();
@@ -336,12 +353,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     };
                     AddGroup("FILTER OPERATORS", operators);
 
-                    // Section 3: Wildcards
-                    var wildcards = AllJokers.Where(j => j.Name.StartsWith("Wildcard_")).ToList();
-                    wildcards.AddRange(AllTarots.Where(t => t.Name.StartsWith("Wildcard_")));
-                    wildcards.AddRange(AllPlanets.Where(p => p.Name.StartsWith("Wildcard_")));
-                    wildcards.AddRange(AllSpectrals.Where(s => s.Name.StartsWith("Wildcard_")));
-                    AddGroup("WILDCARDS", wildcards);
+                    // Section 3: Wildcards (ALL wildcards in one place)
+                    AddGroup("WILDCARDS", FilteredWildcards);
                     break;
 
                 case "Joker":
@@ -605,6 +618,71 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Enhanced requested");
             ScrollToGroupName = "ENHANCED CARDS";
+        }
+
+        /// <summary>
+        /// Expand MUST zone, collapse others
+        /// </summary>
+        [RelayCommand]
+        private void ExpandMust()
+        {
+            IsMustExpanded = true;
+            IsShouldExpanded = false;
+            IsCantExpanded = false;
+        }
+
+        /// <summary>
+        /// Expand SHOULD zone, collapse others
+        /// </summary>
+        [RelayCommand]
+        private void ExpandShould()
+        {
+            IsMustExpanded = false;
+            IsShouldExpanded = true;
+            IsCantExpanded = false;
+        }
+
+        /// <summary>
+        /// Expand CAN'T zone, collapse others
+        /// </summary>
+        [RelayCommand]
+        private void ExpandCant()
+        {
+            IsMustExpanded = false;
+            IsShouldExpanded = false;
+            IsCantExpanded = true;
+        }
+
+        /// <summary>
+        /// Expand all zones (called when dragging starts)
+        /// </summary>
+        public void ExpandAllZones()
+        {
+            IsDragging = true;
+            IsMustExpanded = true;
+            IsShouldExpanded = true;
+            IsCantExpanded = true;
+        }
+
+        /// <summary>
+        /// Collapse to specific zone (called after drop)
+        /// </summary>
+        public void CollapseToZone(string zoneName)
+        {
+            IsDragging = false;
+
+            switch (zoneName)
+            {
+                case "MUST":
+                    ExpandMust();
+                    break;
+                case "SHOULD":
+                    ExpandShould();
+                    break;
+                case "CANT":
+                    ExpandCant();
+                    break;
+            }
         }
 
         #endregion
@@ -878,7 +956,40 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 var spriteService = SpriteService.Instance;
 
-                // Load favorites FIRST (from FavoritesService)
+                // Load ALL WILDCARDS FIRST - they will ONLY appear in Specials category
+                var allWildcards = new[]
+                {
+                    ("Wildcard_Joker", "Any Joker", "Joker"),
+                    ("Wildcard_JokerCommon", "Any Common Joker", "Joker"),
+                    ("Wildcard_JokerUncommon", "Any Uncommon Joker", "Joker"),
+                    ("Wildcard_JokerRare", "Any Rare Joker", "Joker"),
+                    ("Wildcard_JokerLegendary", "Any Legendary Joker", "SoulJoker"),
+                    ("Wildcard_Tarot", "Any Tarot", "Tarot"),
+                    ("Wildcard_Planet", "Any Planet", "Planet"),
+                    ("Wildcard_Spectral", "Any Spectral", "Spectral"),
+                };
+                foreach (var (name, displayName, type) in allWildcards)
+                {
+                    AllWildcards.Add(
+                        new FilterItem
+                        {
+                            Name = name,
+                            Type = type,
+                            Category = "Wildcard",
+                            DisplayName = displayName,
+                            ItemImage = type switch
+                            {
+                                "Joker" or "SoulJoker" => spriteService.GetJokerImage(name),
+                                "Tarot" => spriteService.GetTarotImage(name),
+                                "Planet" => spriteService.GetPlanetCardImage("Pluto"),
+                                "Spectral" => spriteService.GetSpectralImage("Familiar"),
+                                _ => null
+                            }
+                        }
+                    );
+                }
+
+                // Load favorites (from FavoritesService)
                 var favoritesService = ServiceHelper.GetService<FavoritesService>();
                 var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
 
@@ -894,29 +1005,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemImage = spriteService.GetJokerImage(favoriteName),
                     };
                     AllJokers.Add(item);
-                }
-
-                // Add wildcard joker entries FIRST (at the very top)
-                var wildcardJokers = new[]
-                {
-                    ("Wildcard_Joker", "Any Joker", "Joker", "Common"),
-                    ("Wildcard_JokerCommon", "Any Common", "Joker", "Common"),
-                    ("Wildcard_JokerUncommon", "Any Uncommon", "Joker", "Uncommon"),
-                    ("Wildcard_JokerRare", "Any Rare", "Joker", "Rare"),
-                    ("Wildcard_JokerLegendary", "Any Legendary", "SoulJoker", "Legendary"),
-                };
-                foreach (var (name, displayName, type, category) in wildcardJokers)
-                {
-                    AllJokers.Add(
-                        new FilterItem
-                        {
-                            Name = name,
-                            Type = type,
-                            Category = category,
-                            DisplayName = displayName,
-                            ItemImage = spriteService.GetJokerImage(name), // Use wildcard name to get mystery sprite
-                        }
-                    );
                 }
 
                 // Load Soul Jokers SECOND (after wildcards)
@@ -1003,17 +1091,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Tarots from BalatroData
-                // Add wildcard tarot entry FIRST (at the very top)
-                AllTarots.Add(
-                    new FilterItem
-                    {
-                        Name = "Wildcard_Tarot",
-                        Type = "Tarot",
-                        DisplayName = "Any Tarot",
-                        ItemImage = spriteService.GetTarotImage("Wildcard_Tarot"), // Will use anytarot base + mystery overlay
-                    }
-                );
-
                 if (BalatroData.TarotCards?.Keys != null)
                 {
                     foreach (var tarotName in BalatroData.TarotCards.Keys)
@@ -1036,17 +1113,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Load Planets from BalatroData
                 try
                 {
-                    // Add wildcard planet entry FIRST (at the very top)
-                    AllPlanets.Add(
-                        new FilterItem
-                        {
-                            Name = "Wildcard_Planet",
-                            Type = "Planet",
-                            DisplayName = "Any Planet",
-                            ItemImage = spriteService.GetPlanetCardImage("Pluto"), // Planets don't have wildcard sprites, use Pluto
-                        }
-                    );
-
                     if (BalatroData.PlanetCards?.Keys != null)
                     {
                         DebugLogger.Log(
@@ -1093,17 +1159,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Spectrals from BalatroData
-                // Add wildcard spectral entry FIRST (at the very top)
-                AllSpectrals.Add(
-                    new FilterItem
-                    {
-                        Name = "Wildcard_Spectral",
-                        Type = "Spectral",
-                        DisplayName = "Any Spectral",
-                        ItemImage = spriteService.GetSpectralImage("Familiar"), // Spectrals don't have wildcard sprites, use Familiar
-                    }
-                );
-
                 if (BalatroData.SpectralCards?.Keys != null)
                 {
                     foreach (var spectralName in BalatroData.SpectralCards.Keys)
@@ -1275,6 +1330,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FilteredPlanets.Clear();
             FilteredSpectrals.Clear();
             FilteredBosses.Clear();
+            FilteredWildcards.Clear();
 
             var filter = SearchFilter.ToLowerInvariant();
 
@@ -1359,6 +1415,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 )
                 {
                     FilteredBosses.Add(boss);
+                }
+            }
+
+            foreach (var wildcard in AllWildcards)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || wildcard.Name.ToLowerInvariant().Contains(filter)
+                    || wildcard.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredWildcards.Add(wildcard);
                 }
             }
 

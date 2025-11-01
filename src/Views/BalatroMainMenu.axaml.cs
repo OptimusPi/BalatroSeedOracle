@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -400,8 +401,26 @@ namespace BalatroSeedOracle.Views
                 switch (result.Action)
                 {
                     case Models.FilterAction.CreateNew:
-                        // Open designer with blank filter (replaces current modal)
-                        await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect());
+                        // Show filter name input dialog first
+                        var filterName = await ShowFilterNameInputDialog();
+                        if (!string.IsNullOrWhiteSpace(filterName))
+                        {
+                            // Create new filter with the given name
+                            var newFilterId = await CreateNewFilterWithName(filterName);
+                            if (!string.IsNullOrEmpty(newFilterId))
+                            {
+                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(newFilterId));
+                            }
+                        }
+                        else
+                        {
+                            // User cancelled - just close modal
+                            if (ViewModel != null)
+                            {
+                                ViewModel.IsModalVisible = false;
+                            }
+                            HideModalContent();
+                        }
                         break;
                     case Models.FilterAction.Edit:
                         // Open designer with selected filter loaded (replaces current modal)
@@ -413,16 +432,34 @@ namespace BalatroSeedOracle.Views
                         }
                         break;
                     case Models.FilterAction.Copy:
-                        // Clone the filter and open designer (replaces current modal)
+                        // Show dialog to get copy name, then clone and open designer
                         if (result.FilterId != null)
                         {
-                            var clonedId = await CloneFilter(result.FilterId);
-                            if (!string.IsNullOrEmpty(clonedId))
+                            // Get original filter name for default
+                            var originalName = await GetFilterName(result.FilterId);
+                            var defaultCopyName = string.IsNullOrEmpty(originalName)
+                                ? "Filter Copy"
+                                : $"{originalName} Copy";
+
+                            var copyName = await ShowFilterNameInputDialog(defaultCopyName);
+                            if (!string.IsNullOrWhiteSpace(copyName))
                             {
-                                // Ensure UI operations happen on UI thread
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                    ShowFiltersModalDirect(clonedId)
-                                );
+                                var clonedId = await CloneFilterWithName(result.FilterId, copyName);
+                                if (!string.IsNullOrEmpty(clonedId))
+                                {
+                                    await Dispatcher.UIThread.InvokeAsync(() =>
+                                        ShowFiltersModalDirect(clonedId)
+                                    );
+                                }
+                            }
+                            else
+                            {
+                                // User cancelled - just close modal
+                                if (ViewModel != null)
+                                {
+                                    ViewModel.IsModalVisible = false;
+                                }
+                                HideModalContent();
                             }
                         }
                         break;
@@ -454,6 +491,39 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private async void ShowFiltersModalDirect(string? filterId = null)
         {
+            // If no filterId provided (Create New), prompt for filter name first
+            if (string.IsNullOrEmpty(filterId))
+            {
+                var filterName = await ShowFilterNameInputDialog();
+                if (string.IsNullOrEmpty(filterName))
+                {
+                    Helpers.DebugLogger.Log("BalatroMainMenu", "Filter creation cancelled by user");
+                    return; // User cancelled
+                }
+
+                // Create new filter file with user's chosen name
+                var filtersDir = System.IO.Path.Combine(
+                    System.IO.Directory.GetCurrentDirectory(),
+                    "JsonItemFilters"
+                );
+                System.IO.Directory.CreateDirectory(filtersDir);
+
+                // Sanitize filename
+                var sanitizedName = string.Join("_", filterName.Split(System.IO.Path.GetInvalidFileNameChars()));
+                filterId = sanitizedName;
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                // Create default empty filter
+                var defaultFilter = new
+                {
+                    name = filterName,
+                    items = new object[] { }
+                };
+                System.IO.File.WriteAllText(filterPath, System.Text.Json.JsonSerializer.Serialize(defaultFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+                Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterName} ({filterId}.json)");
+            }
+
             var filtersModal = new Modals.FiltersModal();
 
             // Load the filter data FIRST if provided
@@ -480,12 +550,156 @@ namespace BalatroSeedOracle.Views
                 );
             }
 
+            // DEBUG ASSERT: Filter must ALWAYS be loaded when showing designer
+            System.Diagnostics.Debug.Assert(
+                filtersModal.ViewModel != null && !string.IsNullOrEmpty(filterId),
+                "Filter Designer opened without a valid filter! FilterId must be provided."
+            );
+
             // THEN show the modal with loaded content
             var modal = new StandardModal("🎨 FILTER DESIGNER");
             modal.SetContent(filtersModal);
             modal.BackClicked += (s, e) => HideModalContent();
             // Keep backdrop visible during transition to prevent flicker
             ShowModalContent(modal, keepBackdrop: true);
+        }
+
+        /// <summary>
+        /// Show Avalonia input dialog for filter name
+        /// </summary>
+        private async Task<string?> ShowFilterNameInputDialog(string? defaultName = null)
+        {
+            var dialog = new Window
+            {
+                Title = defaultName == null ? "Create New Filter" : "Copy Filter",
+                Width = 400,
+                Height = 200,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                SystemDecorations = SystemDecorations.BorderOnly
+            };
+
+            // Use provided default name, or generate a fun random filter name
+            string defaultText;
+            if (!string.IsNullOrEmpty(defaultName))
+            {
+                defaultText = defaultName;
+            }
+            else
+            {
+                var randomNames = new[]
+                {
+                    "Epic Filter", "Lucky Find", "Mega Search", "Sweet Combo", "Power Play",
+                    "Golden Run", "Chaos Filter", "Master Build", "Pro Strat", "Wildcard Hunt",
+                    "Dream Seed", "Perfect Setup", "Boss Crusher", "Money Maker", "Victory Path"
+                };
+                defaultText = randomNames[new Random().Next(randomNames.Length)];
+            }
+
+            string? result = null;
+            var textBox = new TextBox
+            {
+                Text = defaultText, // Pre-fill with default name
+                Watermark = "Enter filter name...",
+                Margin = new Thickness(20, 10)
+            };
+
+            var okButton = new Button
+            {
+                Content = "CREATE",
+                Width = 100,
+                Margin = new Thickness(5)
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "CANCEL",
+                Width = 100,
+                Margin = new Thickness(5)
+            };
+
+            okButton.Click += (s, e) =>
+            {
+                result = textBox.Text;
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, e) =>
+            {
+                result = null;
+                dialog.Close();
+            };
+
+            var layout = new StackPanel
+            {
+                Spacing = 10,
+                Margin = new Thickness(20)
+            };
+
+            layout.Children.Add(new TextBlock
+            {
+                Text = "Filter Name:",
+                FontWeight = FontWeight.Bold
+            });
+            layout.Children.Add(textBox);
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 10
+            };
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+            layout.Children.Add(buttonPanel);
+
+            dialog.Content = layout;
+
+            await dialog.ShowDialog((Window)this.VisualRoot!);
+            return result;
+        }
+
+        /// <summary>
+        /// Create a new filter with the given name
+        /// </summary>
+        private async Task<string?> CreateNewFilterWithName(string filterName)
+        {
+            try
+            {
+                var filtersDir = System.IO.Path.Combine(
+                    System.IO.Directory.GetCurrentDirectory(),
+                    "JsonItemFilters"
+                );
+
+                System.IO.Directory.CreateDirectory(filtersDir);
+
+                // Generate unique ID
+                var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                // Create minimal valid filter JSON
+                var minimalFilter = new
+                {
+                    filterName = filterName,
+                    filterAuthor = "User",
+                    itemGroups = new object[] { }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(minimalFilter, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                await System.IO.File.WriteAllTextAsync(filterPath, json);
+
+                Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
+                return filterId;
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"Failed to create filter: {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -1484,6 +1698,80 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Clone a filter and return the new filter ID
         /// </summary>
+        /// <summary>
+        /// Get filter name from filter ID
+        /// </summary>
+        private async Task<string> GetFilterName(string filterId)
+        {
+            try
+            {
+                var filtersDir = "JsonItemFilters";
+                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (System.IO.File.Exists(filterPath))
+                {
+                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                    return config?.Name ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error reading filter name: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Clone filter with custom name
+        /// </summary>
+        private async Task<string> CloneFilterWithName(string filterId, string newName)
+        {
+            try
+            {
+                var filtersDir = "JsonItemFilters";
+                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (!System.IO.File.Exists(filterPath))
+                {
+                    DebugLogger.LogError("BalatroMainMenu", $"Filter not found: {filterPath}");
+                    return string.Empty;
+                }
+
+                var json = await System.IO.File.ReadAllTextAsync(filterPath);
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+
+                if (config != null)
+                {
+                    config.Name = newName; // Use custom name from dialog
+                    config.DateCreated = DateTime.UtcNow;
+                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+
+                    // Generate clean ID from name
+                    var cleanName = newName.Replace(" ", "").ToLower();
+                    var newId = $"{cleanName}_{Guid.NewGuid():N}";
+                    var newPath = System.IO.Path.Combine(filtersDir, $"{newId}.json");
+
+                    var newJson = System.Text.Json.JsonSerializer.Serialize(
+                        config,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                    );
+                    await System.IO.File.WriteAllTextAsync(newPath, newJson);
+
+                    DebugLogger.Log("BalatroMainMenu", $"Filter cloned: {filterId} -> {newId} (name: {newName})");
+                    return newId;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Error cloning filter: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        [Obsolete("Use CloneFilterWithName instead")]
         private async Task<string> CloneFilter(string filterId)
         {
             try

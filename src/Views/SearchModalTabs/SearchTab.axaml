@@ -232,17 +232,6 @@
                                                 IsVisible="{Binding IsThreadsVisible}"
                                                 Margin="0,0,0,8"/>
 
-                        <!-- Batch Size (All Seeds, Word List) -->
-                        <controls:SpinnerControl Name="BatchSizeSpinner"
-                                                Label="Batch Size (35^n)"
-                                                Value="{Binding BatchSize}"
-                                                Minimum="0"
-                                                Maximum="3"
-                                                HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"
-                                                IsVisible="{Binding IsBatchSizeVisible}"
-                                                Margin="0,0,0,8"/>
-
                         <!-- Seed Input (Single Seed only) -->
                         <StackPanel IsVisible="{Binding IsSeedInputVisible}"
                                     Margin="0,0,0,8">
@@ -268,18 +257,27 @@
                         </StackPanel>
 
                         <!-- WordList Dropdown (Word List only) -->
-                        <controls:SpinnerControl Name="WordListSpinner"
-                                                Label="Word List"
-                                                SpinnerType="default"
-                                                Value="{Binding SelectedWordListIndex}"
-                                                Minimum="0"
-                                                Maximum="{Binding WordListMaxIndex}"
-                                                ReadOnly="True"
-                                                DisplayValues="{Binding AvailableWordLists}"
-                                                HorizontalAlignment="Stretch"
-                                                ShadowDirection="south-east"
-                                                IsVisible="{Binding IsWordListVisible}"
-                                                Margin="0,0,0,8"/>
+                        <StackPanel IsVisible="{Binding IsWordListVisible}"
+                                    Margin="0,0,0,8">
+                            <TextBlock Text="Word List"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <ComboBox Name="WordListDropdown"
+                                      ItemsSource="{Binding AvailableWordLists}"
+                                      SelectedIndex="{Binding SelectedWordListIndex}"
+                                      HorizontalAlignment="Stretch"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="12"
+                                      Background="{StaticResource DarkTealGrey}"
+                                      Foreground="{StaticResource White}"
+                                      BorderBrush="{StaticResource DarkBorder}"
+                                      BorderThickness="2"
+                                      CornerRadius="4"
+                                      Padding="8,6"/>
+                        </StackPanel>
 
                     </StackPanel>
                 </ScrollViewer>

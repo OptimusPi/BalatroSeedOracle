@@ -325,7 +325,21 @@
     <Style Selector="Button.nav-button.active:pointerover">
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
-    
+
+    <!-- Special (Wildcards) button - yellow-orange variant -->
+    <Style Selector="Button.nav-button.special">
+        <Setter Property="Background" Value="{StaticResource YellowOrange}" />
+    </Style>
+    <Style Selector="Button.nav-button.special:pointerover">
+        <Setter Property="Background" Value="{StaticResource YellowOrangeHover}" />
+    </Style>
+    <Style Selector="Button.nav-button.special.active">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="Button.nav-button.special.active:pointerover">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+
     <!-- Search box style -->
     <Style Selector="TextBox.search-box">
         <Setter Property="FontSize" Value="14" />

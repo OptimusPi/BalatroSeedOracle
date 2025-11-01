@@ -154,10 +154,28 @@ tag"
                 var filePath = Path.Combine(_wordListsPath, fileName);
                 if (File.Exists(filePath) && _textEditor != null)
                 {
-                    _textEditor.Text = File.ReadAllText(filePath);
+                    var fileInfo = new FileInfo(filePath);
+
+                    // Check file size - if over 1MB, just load first 10k lines without counting total
+                    if (fileInfo.Length > 1_000_000) // 1MB
+                    {
+                        var lines = File.ReadLines(filePath).Take(10000).ToList();
+                        _textEditor.Text = string.Join("\n", lines) +
+                            $"\n\n... (showing first {lines.Count:N0} lines only)\n" +
+                            $"Large file ({fileInfo.Length / 1024:N0} KB) - read-only preview.\n" +
+                            $"Use external text editor to view/edit full file.";
+                        _textEditor.IsReadOnly = true;
+                        UpdateStatus($"⚠ Large file - showing preview only (read-only)");
+                    }
+                    else
+                    {
+                        _textEditor.Text = File.ReadAllText(filePath);
+                        _textEditor.IsReadOnly = false;
+                        UpdateStatus($"Loaded: {fileName}");
+                    }
+
                     _currentFile = fileName;
                     _hasUnsavedChanges = false;
-                    UpdateStatus($"Loaded: {fileName}");
                 }
             }
             catch (Exception ex)
