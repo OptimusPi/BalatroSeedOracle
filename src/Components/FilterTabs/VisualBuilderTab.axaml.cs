@@ -333,52 +333,74 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 // Check if we're over a drop zone and provide visual feedback
-                var mustZone = this.FindControl<Border>("MustDropZone");
-                var shouldZone = this.FindControl<Border>("ShouldDropZone");
-                var mustNotZone = this.FindControl<Border>("MustNotDropZone");
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
+                var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
+
+                var mustOverlay = this.FindControl<Border>("MustDropOverlay");
+                var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
+                var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
 
                 if (_topLevel == null)
                     return;
                 var cursorPos = e.GetPosition(_topLevel);
 
-                Border? targetZone = null;
-
+                // Check if over item grid (return to shelf)
                 if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
                 {
-                    targetZone = itemGridBorder;
                     // Show overlay if dragging FROM drop zones (sourceDropZone != null)
                     if (returnOverlay != null && _sourceDropZone != null)
                     {
                         returnOverlay.IsVisible = true;
                     }
-                }
-                else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
-                {
-                    targetZone = mustZone;
-                }
-                else if (IsPointOverControl(cursorPos, shouldZone, _topLevel))
-                {
-                    targetZone = shouldZone;
-                }
-                else if (IsPointOverControl(cursorPos, mustNotZone, _topLevel))
-                {
-                    targetZone = mustNotZone;
-                }
 
-                if (targetZone != null)
+                    // Hide drop zone overlays
+                    if (mustOverlay != null) mustOverlay.IsVisible = false;
+                    if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+                    if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+                }
+                // Check if over drop zone container - determine which third
+                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
                 {
-                    // Add visual feedback
-                    if (!targetZone.Classes.Contains("drag-over"))
+                    // Get position within the drop zone container
+                    var localPos = e.GetPosition(dropZoneContainer);
+                    var containerHeight = dropZoneContainer.Bounds.Height;
+
+                    // Divide into thirds
+                    var thirdHeight = containerHeight / 3.0;
+
+                    // Hide return overlay
+                    if (returnOverlay != null) returnOverlay.IsVisible = false;
+
+                    if (localPos.Y < thirdHeight)
                     {
-                        targetZone.Classes.Add("drag-over");
+                        // Top third - MUST
+                        if (mustOverlay != null) mustOverlay.IsVisible = true;
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
                     }
-                    RemoveDragOverClassExcept(targetZone);
+                    else if (localPos.Y < thirdHeight * 2)
+                    {
+                        // Middle third - SHOULD
+                        if (mustOverlay != null) mustOverlay.IsVisible = false;
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = true;
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+                    }
+                    else
+                    {
+                        // Bottom third - CAN'T
+                        if (mustOverlay != null) mustOverlay.IsVisible = false;
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = true;
+                    }
                 }
                 else
                 {
-                    RemoveDragOverClassExcept(null);
+                    // Not over any drop zone - hide all overlays
+                    if (returnOverlay != null) returnOverlay.IsVisible = false;
+                    if (mustOverlay != null) mustOverlay.IsVisible = false;
+                    if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+                    if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
                 }
             }
             catch (Exception ex)
@@ -518,34 +540,49 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 var cursorPos = e.GetPosition(_topLevel);
 
-                var mustZone = this.FindControl<Border>("MustDropZone");
-                var shouldZone = this.FindControl<Border>("ShouldDropZone");
-                var mustNotZone = this.FindControl<Border>("MustNotDropZone");
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
+                var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
 
                 Border? targetZone = null;
                 string? zoneName = null;
 
+                // Check if over the item grid first (return to shelf)
                 if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
                 {
                     targetZone = itemGridBorder;
                     zoneName = "ItemGridBorder";
                 }
-                else if (IsPointOverControl(cursorPos, mustZone, _topLevel))
+                // Check if over drop zone container - determine which third
+                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
                 {
-                    targetZone = mustZone;
-                    zoneName = "MustDropZone";
-                }
-                else if (IsPointOverControl(cursorPos, shouldZone, _topLevel))
-                {
-                    targetZone = shouldZone;
-                    zoneName = "ShouldDropZone";
-                }
-                else if (IsPointOverControl(cursorPos, mustNotZone, _topLevel))
-                {
-                    targetZone = mustNotZone;
-                    zoneName = "MustNotDropZone";
+                    // Get position within the drop zone container
+                    var localPos = e.GetPosition(dropZoneContainer);
+                    var containerHeight = dropZoneContainer.Bounds.Height;
+
+                    // Divide into thirds
+                    var thirdHeight = containerHeight / 3.0;
+
+                    if (localPos.Y < thirdHeight)
+                    {
+                        // Top third - MUST
+                        zoneName = "MustDropZone";
+                        targetZone = this.FindControl<Border>("MustDropZone");
+                    }
+                    else if (localPos.Y < thirdHeight * 2)
+                    {
+                        // Middle third - SHOULD
+                        zoneName = "ShouldDropZone";
+                        targetZone = this.FindControl<Border>("ShouldDropZone");
+                    }
+                    else
+                    {
+                        // Bottom third - CAN'T
+                        zoneName = "MustNotDropZone";
+                        targetZone = this.FindControl<Border>("MustNotDropZone");
+                    }
+
+                    DebugLogger.Log("VisualBuilderTab", $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Third={thirdHeight:F1}, Zone={zoneName}");
                 }
 
                 if (targetZone != null && zoneName != null)
@@ -1267,7 +1304,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         /// <summary>
         /// Show drop zone overlays. If excludeZone is specified, that zone won't show its overlay.
-        /// Also shows Favorites overlay.
+        /// Also shows Favorites overlay. ONLY shows overlays for EXPANDED drop zones to avoid visual clash.
         /// </summary>
         private void ShowDropZoneOverlays(string? excludeZone = null)
         {
@@ -1276,21 +1313,24 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (backdrop != null)
                 backdrop.IsVisible = true;
 
-            if (excludeZone != "MustDropZone")
+            // Get ViewModel to check expansion states
+            var viewModel = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+
+            if (excludeZone != "MustDropZone" && viewModel?.IsMustExpanded == true)
             {
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
                 if (mustOverlay != null)
                     mustOverlay.IsVisible = true;
             }
 
-            if (excludeZone != "ShouldDropZone")
+            if (excludeZone != "ShouldDropZone" && viewModel?.IsShouldExpanded == true)
             {
                 var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
                 if (shouldOverlay != null)
                     shouldOverlay.IsVisible = true;
             }
 
-            if (excludeZone != "MustNotDropZone")
+            if (excludeZone != "MustNotDropZone" && viewModel?.IsCantExpanded == true)
             {
                 var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
                 if (mustNotOverlay != null)
@@ -1381,6 +1421,45 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 vm.ExpandCantCommand.Execute(null);
                 DebugLogger.Log("VisualBuilderTab", "CAN'T zone expanded via label click");
+            }
+        }
+
+        /// <summary>
+        /// Handle MUST zone hover - expand MUST, collapse others (accordion style)
+        /// </summary>
+        private void OnMustDropZoneHover(object? sender, PointerEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.IsMustExpanded = true;
+                vm.IsShouldExpanded = false;
+                vm.IsCantExpanded = false;
+            }
+        }
+
+        /// <summary>
+        /// Handle SHOULD zone hover - expand SHOULD, collapse others (accordion style)
+        /// </summary>
+        private void OnShouldDropZoneHover(object? sender, PointerEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.IsMustExpanded = false;
+                vm.IsShouldExpanded = true;
+                vm.IsCantExpanded = false;
+            }
+        }
+
+        /// <summary>
+        /// Handle MUST-NOT zone hover - expand MUST-NOT, collapse others (accordion style)
+        /// </summary>
+        private void OnMustNotDropZoneHover(object? sender, PointerEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.IsMustExpanded = false;
+                vm.IsShouldExpanded = false;
+                vm.IsCantExpanded = true;
             }
         }
     }
