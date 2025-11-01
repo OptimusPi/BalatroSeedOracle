@@ -144,7 +144,7 @@
                 <Border Background="{StaticResource HoverShadow}"
                         CornerRadius="6"
                         HorizontalAlignment="Stretch"
-                        Height="28"
+                        Height="27"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
                 <Button Name="ValueButton"
