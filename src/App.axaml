@@ -35,6 +35,8 @@
         <SolidColorBrush x:Key="PureBlack">#374244</SolidColorBrush>
         <SolidColorBrush x:Key="PaleRed">#8f3b36</SolidColorBrush>
         <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
+        <SolidColorBrush x:Key="YellowOrange">#ffb020</SolidColorBrush>
+        <SolidColorBrush x:Key="YellowOrangeHover">#d89518</SolidColorBrush>
         <SolidColorBrush x:Key="PlanetTeal">#00a7ca</SolidColorBrush>
         <SolidColorBrush x:Key="SpectralBlue">#2e76fd</SolidColorBrush>
         <SolidColorBrush x:Key="VoucherOrange">#ff5611</SolidColorBrush>
