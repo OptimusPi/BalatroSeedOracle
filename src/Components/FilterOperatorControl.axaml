@@ -70,12 +70,20 @@
                                     Height="66"
                                     ToolTip.Tip="{Binding DisplayName}">
                                     <Grid>
+                                        <!-- Main card image -->
                                         <Image
                                             Source="{Binding ItemImage}"
                                             Width="46"
                                             Height="62"
                                             Stretch="Uniform"
                                             Opacity="0.9" />
+                                        <!-- Soul face overlay for legendary jokers -->
+                                        <Image
+                                            Source="{Binding SoulFaceImage}"
+                                            Width="46"
+                                            Height="62"
+                                            Stretch="Uniform"
+                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
