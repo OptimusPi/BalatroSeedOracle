@@ -1605,7 +1605,7 @@ namespace BalatroSeedOracle.Services
 
                 if (clausesByCategory.Count == 0)
                 {
-                    throw new Exception("No valid clauses found for filtering");
+                    throw new Exception("Cannot search with an empty filter! Please add at least one item to Must, Should, or MustNot zones in the Visual Builder.");
                 }
 
                 // Create scoring config (only SHOULD clauses for scoring)
@@ -1639,6 +1639,12 @@ namespace BalatroSeedOracle.Services
 
                         // Write to DuckDB
                         AddSearchResult(searchResult);
+
+                        // LOG THE SEED TO CONSOLE for immediate user feedback
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"✅ FOUND SEED: {result.Seed} (Score: {result.Score})"
+                        );
                     }
                     catch (Exception ex)
                     {

@@ -69,6 +69,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isFilterVerified = false;
 
+        // Expose parent's deck/stake properties for binding
+        public int SelectedDeckIndex
+        {
+            get => _parentViewModel.SelectedDeckIndex;
+            set => _parentViewModel.SelectedDeckIndex = value;
+        }
+
+        public int SelectedStakeIndex
+        {
+            get => _parentViewModel.SelectedStakeIndex;
+            set => _parentViewModel.SelectedStakeIndex = value;
+        }
+
+        public string[] DeckDisplayValues => _parentViewModel.DeckDisplayValues;
+        public string[] StakeDisplayValues => _parentViewModel.StakeDisplayValues;
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
@@ -287,9 +303,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // MaxResults = 1 ensures we stop immediately when a match is found
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    BatchSize = 6, // 6-char batch = 1,225 batches (fast validation)
+                    BatchSize = 3, // Default batch size
                     StartBatch = 0,
-                    EndBatch = Math.Min(1225, GetMaxBatchesForBatchSize(6)), // Max 10M seeds or 1,225 batches
+                    EndBatch = Math.Min(46656, GetMaxBatchesForBatchSize(3)), // Max batches for batch size 3
                     Deck = deckName,
                     Stake = stakeName,
                     MinScore = 0,

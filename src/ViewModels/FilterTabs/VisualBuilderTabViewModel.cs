@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
@@ -17,6 +19,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+
+        // Auto-save debouncing
+        private CancellationTokenSource? _autoSaveCts;
+        private const int AutoSaveDebounceMs = 500;
+
+        [ObservableProperty]
+        private string _autoSaveStatus = "";
+
+        [ObservableProperty]
+        private bool _isAutoSaving = false;
 
         [ObservableProperty]
         private string _searchFilter = "";
@@ -153,6 +165,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             public ObservableCollection<FilterItem> Items { get; set; } = new();
         }
 
+        // Operator Tray - permanent OR and AND operators at the top of the shelf
+        public FilterOperatorItem TrayOrOperator { get; }
+        public FilterOperatorItem TrayAndOperator { get; }
+
         // Selected items - these should sync with parent
         public ObservableCollection<FilterItem> SelectedMust { get; }
         public ObservableCollection<FilterItem> SelectedShould { get; }
@@ -264,11 +280,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 },
             };
 
+            // Initialize Operator Tray with permanent OR and AND operators
+            TrayOrOperator = new FilterOperatorItem("OR")
+            {
+                DisplayName = "OR",
+                Type = "Operator",
+                Category = "Operator",
+            };
+            TrayAndOperator = new FilterOperatorItem("AND")
+            {
+                DisplayName = "AND",
+                Type = "Operator",
+                Category = "Operator",
+            };
+
             SelectedMust = new ObservableCollection<FilterItem>();
             SelectedShould = new ObservableCollection<FilterItem>();
             SelectedMustNot = new ObservableCollection<FilterItem>();
 
             ItemConfigs = new Dictionary<string, ItemConfig>();
+
+            // Subscribe to collection changes for auto-save
+            SelectedMust.CollectionChanged += OnZoneCollectionChanged;
+            SelectedShould.CollectionChanged += OnZoneCollectionChanged;
+            SelectedMustNot.CollectionChanged += OnZoneCollectionChanged;
 
             // Initialize commands
             AddToMustCommand = new RelayCommand<FilterItem>(AddToMust);
@@ -814,6 +849,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null)
             {
                 SelectedMust.Remove(item);
+
+                // Sync with parent ViewModel - remove from parent collections
+                if (_parentViewModel != null)
+                {
+                    RemoveItemFromParent(item, _parentViewModel.SelectedMust);
+                }
+
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST");
 
                 // Trigger auto-sync to JSON Editor
@@ -826,6 +868,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null)
             {
                 SelectedShould.Remove(item);
+
+                // Sync with parent ViewModel - remove from parent collections
+                if (_parentViewModel != null)
+                {
+                    RemoveItemFromParent(item, _parentViewModel.SelectedShould);
+                }
+
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
 
                 // Trigger auto-sync to JSON Editor
@@ -838,10 +887,42 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item != null)
             {
                 SelectedMustNot.Remove(item);
+
+                // Sync with parent ViewModel - remove from parent collections
+                if (_parentViewModel != null)
+                {
+                    RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
+                }
+
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
 
                 // Trigger auto-sync to JSON Editor
                 NotifyJsonEditorOfChanges();
+            }
+        }
+
+        /// <summary>
+        /// Removes an item from the parent's collections and ItemConfigs
+        /// </summary>
+        private void RemoveItemFromParent(FilterItem item, ObservableCollection<string> parentCollection)
+        {
+            if (_parentViewModel == null)
+                return;
+
+            // Find the item key in parent's ItemConfigs
+            var itemKey = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
+                kvp.Value.ItemName == item.Name &&
+                kvp.Value.ItemType == item.Type).Key;
+
+            if (!string.IsNullOrEmpty(itemKey))
+            {
+                // Remove from parent's collection
+                parentCollection.Remove(itemKey);
+
+                // Remove from parent's ItemConfigs
+                _parentViewModel.ItemConfigs.Remove(itemKey);
+
+                DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from parent collection");
             }
         }
 
@@ -1474,6 +1555,147 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed item: {item.Name}");
+        }
+
+        #endregion
+
+        #region Auto-Save Functionality
+
+        /// <summary>
+        /// Handles collection changes in drop zones and triggers debounced auto-save
+        /// </summary>
+        private void OnZoneCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Trigger debounced auto-save
+            TriggerAutoSave();
+        }
+
+        /// <summary>
+        /// Triggers a debounced auto-save operation.
+        /// Cancels any pending save and schedules a new one after the debounce delay.
+        /// </summary>
+        private void TriggerAutoSave()
+        {
+            // Cancel any pending auto-save
+            _autoSaveCts?.Cancel();
+            _autoSaveCts?.Dispose();
+            _autoSaveCts = new CancellationTokenSource();
+
+            var token = _autoSaveCts.Token;
+
+            // Schedule auto-save after debounce delay
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(AutoSaveDebounceMs, token);
+
+                    // If not cancelled, perform the save
+                    if (!token.IsCancellationRequested)
+                    {
+                        await PerformAutoSave();
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Expected when debounce is cancelled
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Auto-save error: {ex.Message}");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Performs the actual auto-save operation by calling the parent's SaveFilterTab logic
+        /// </summary>
+        private async Task PerformAutoSave()
+        {
+            if (_parentViewModel == null)
+            {
+                DebugLogger.Log("VisualBuilderTab", "Auto-save skipped: no parent ViewModel");
+                return;
+            }
+
+            try
+            {
+                // Update UI to show saving status
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsAutoSaving = true;
+                    AutoSaveStatus = "Auto-saving...";
+                });
+
+                // Get the filter name from parent
+                var filterName = _parentViewModel.FilterName;
+
+                // Skip auto-save if filter name is empty (unsaved filter)
+                if (string.IsNullOrWhiteSpace(filterName))
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        IsAutoSaving = false;
+                        AutoSaveStatus = "";
+                    });
+                    DebugLogger.Log("VisualBuilderTab", "Auto-save skipped: filter name is empty");
+                    return;
+                }
+
+                // Build config from current state using parent's method
+                var config = _parentViewModel.BuildConfigFromCurrentState();
+
+                // Get configuration service
+                var configService = ServiceHelper.GetService<IConfigurationService>();
+                var filterService = ServiceHelper.GetService<IFilterService>();
+
+                if (configService == null || filterService == null)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", "Auto-save failed: services not available");
+                    return;
+                }
+
+                // Generate filter file path
+                var filePath = filterService.GenerateFilterFileName(filterName);
+
+                // Save the filter
+                var success = await configService.SaveFilterAsync(filePath, config);
+
+                // Update UI with result
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsAutoSaving = false;
+                    if (success)
+                    {
+                        AutoSaveStatus = "Auto-saved";
+                        DebugLogger.Log("VisualBuilderTab", $"Auto-saved filter: {filterName}");
+
+                        // Clear the status after 2 seconds
+                        Task.Delay(2000).ContinueWith(_ =>
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                AutoSaveStatus = "";
+                            });
+                        });
+                    }
+                    else
+                    {
+                        AutoSaveStatus = "Auto-save failed";
+                        DebugLogger.LogError("VisualBuilderTab", "Auto-save failed");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Auto-save exception: {ex.Message}");
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsAutoSaving = false;
+                    AutoSaveStatus = "Auto-save error";
+                });
+            }
         }
 
         #endregion

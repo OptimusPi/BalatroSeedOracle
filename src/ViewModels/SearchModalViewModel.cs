@@ -1123,6 +1123,11 @@ namespace BalatroSeedOracle.ViewModels
                             ? _searchInstance.ColumnNames.Skip(2).ToArray()
                             : Array.Empty<string>();
 
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Loading {existingResults.Count} results with {labels.Length} tally columns"
+                    );
+
                     int idx = 0;
                     foreach (var result in existingResults)
                     {
@@ -1134,6 +1139,39 @@ namespace BalatroSeedOracle.ViewModels
                         SearchResults.Add(result);
                         idx++;
                     }
+
+                    // CRITICAL FIX: Force grid to reinitialize columns after loading results
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        try
+                        {
+                            var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
+                            if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
+                            {
+                                var grid =
+                                    tab.FindControl<BalatroSeedOracle.Controls.SortableResultsGrid>(
+                                        "ResultsGrid"
+                                    );
+                                if (grid != null)
+                                {
+                                    // Force column reinitialization
+                                    grid.ClearResults();
+                                    grid.AddResults(SearchResults);
+                                    DebugLogger.Log(
+                                        "SearchModalViewModel",
+                                        "Forced grid refresh after loading results"
+                                    );
+                                }
+                            }
+                        }
+                        catch (Exception gridEx)
+                        {
+                            DebugLogger.LogError(
+                                "SearchModalViewModel",
+                                $"Failed to refresh grid: {gridEx.Message}"
+                            );
+                        }
+                    });
                 }
 
                 DebugLogger.Log(
@@ -1509,6 +1547,23 @@ namespace BalatroSeedOracle.ViewModels
                 OnPropertyChanged(nameof(ProgressText));
                 OnPropertyChanged(nameof(ResultsCount));
                 PanelText = $"{e.ResultsFound} seeds | {e.PercentComplete:0}%";
+
+                // If results increased since last update, log the new seeds found
+                if (e.ResultsFound > LastKnownResultCount)
+                {
+                    var newSeedsCount = e.ResultsFound - LastKnownResultCount;
+                    if (newSeedsCount == 1)
+                    {
+                        AddConsoleMessage($"Found new seed! Total: {e.ResultsFound}");
+                    }
+                    else
+                    {
+                        AddConsoleMessage(
+                            $"Found {newSeedsCount} new seeds! Total: {e.ResultsFound}"
+                        );
+                    }
+                    LastKnownResultCount = e.ResultsFound;
+                }
             });
         }
 

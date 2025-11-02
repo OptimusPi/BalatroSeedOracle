@@ -30,25 +30,160 @@
                 <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones (takes 1x space) -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - Filter Name + Search + Categories -->
-            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
-                <!-- Filter Name Display at top -->
+            <!-- LEFT COLUMN - Operator Tray + Filter Name + Search + Categories -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,Auto,8,*">
+                <!-- OPERATOR TRAY - Moved to very top, compact horizontal layout -->
                 <Border Grid.Row="0"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="6">
+                    <Grid ColumnDefinitions="*,6,*">
+                        <!-- OR Operator Box -->
+                        <Border Grid.Column="0"
+                                Name="TrayOrOperator"
+                                Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Blue}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="4"
+                                MinHeight="50"
+                                Cursor="Hand"
+                                PointerPressed="OnTrayOrPointerPressed"
+                                DragDrop.AllowDrop="True">
+                            <StackPanel Spacing="2">
+                                <!-- OR Header -->
+                                <Border Background="{StaticResource Blue}"
+                                        CornerRadius="3"
+                                        Padding="3,1">
+                                    <TextBlock Text="OR"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Item Count -->
+                                <TextBlock Text="{Binding TrayOrOperator.Children.Count, StringFormat='{}{0} items'}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="9"
+                                           Foreground="{StaticResource LightGrey}"
+                                           HorizontalAlignment="Center"/>
+
+                                <!-- Mini thumbnails -->
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                              VerticalScrollBarVisibility="Disabled"
+                                              MaxHeight="30">
+                                    <ItemsControl ItemsSource="{Binding TrayOrOperator.Children}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="16" Height="22" Margin="1">
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Stretch="Uniform"/>
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- AND Operator Box -->
+                        <Border Grid.Column="2"
+                                Name="TrayAndOperator"
+                                Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Green}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="4"
+                                MinHeight="50"
+                                Cursor="Hand"
+                                PointerPressed="OnTrayAndPointerPressed"
+                                DragDrop.AllowDrop="True">
+                            <StackPanel Spacing="2">
+                                <!-- AND Header -->
+                                <Border Background="{StaticResource Green}"
+                                        CornerRadius="3"
+                                        Padding="3,1">
+                                    <TextBlock Text="AND"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Item Count -->
+                                <TextBlock Text="{Binding TrayAndOperator.Children.Count, StringFormat='{}{0} items'}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="9"
+                                           Foreground="{StaticResource LightGrey}"
+                                           HorizontalAlignment="Center"/>
+
+                                <!-- Mini thumbnails -->
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                              VerticalScrollBarVisibility="Disabled"
+                                              MaxHeight="30">
+                                    <ItemsControl ItemsSource="{Binding TrayAndOperator.Children}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="16" Height="22" Margin="1">
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Stretch="Uniform"/>
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Filter Name Display with Auto-Save Status -->
+                <Border Grid.Row="2"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"
                         Padding="12,8">
-                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource Gold}"
-                               HorizontalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+
+                        <!-- Auto-Save Status Indicator -->
+                        <TextBlock Text="{Binding AutoSaveStatus}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource Green}"
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding AutoSaveStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    </StackPanel>
                 </Border>
 
                 <!-- Search bar -->
-                <Border Grid.Row="2"
+                <Border Grid.Row="4"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
@@ -70,7 +205,7 @@
                     </TextBox>
                 </Border>
 
-                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                <StackPanel Grid.Row="6" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
                     <!-- Category buttons without section headers -->
                     <Button Content="Special"
                             Classes="nav-button special"
@@ -110,7 +245,7 @@
                 </StackPanel>
 
                 <!-- Favorites drop overlay - covers category nav area only -->
-                <Border Grid.Row="2"
+                <Border Grid.Row="6"
                         Name="FavoritesDropOverlay"
                         Background="{StaticResource SemiTransparentBlack}"
                         BorderBrush="{StaticResource Red}"
@@ -168,7 +303,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="0,6" Width="80" Height="110">
+                                                    <Grid Margin="0,6" Width="95" Height="110">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                         </i:Interaction.Behaviors>
@@ -250,7 +385,7 @@
                                                                 Cursor="Hand"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Width="80"
+                                                                Width="95"
                                                                 Height="110"/>
                                                     </Grid>
                                                 </DataTemplate>

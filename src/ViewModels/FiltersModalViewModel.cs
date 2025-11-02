@@ -588,6 +588,8 @@ namespace BalatroSeedOracle.ViewModels
                     break;
                 case 2:
                     IsSaveTabVisible = true;
+                    // Refresh Save tab data when it becomes visible
+                    RefreshSaveTabData();
                     DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
                     break;
             }
@@ -597,6 +599,28 @@ namespace BalatroSeedOracle.ViewModels
                 "FiltersModalViewModel",
                 $"Final visibility state - Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}"
             );
+        }
+
+        /// <summary>
+        /// Refresh Save tab data when switching to it
+        /// </summary>
+        private void RefreshSaveTabData()
+        {
+            try
+            {
+                // Find the Save tab and refresh its data
+                var saveTab = TabItems.FirstOrDefault(t => t.Content is Components.FilterTabs.SaveFilterTab);
+                if (saveTab?.Content is Components.FilterTabs.SaveFilterTab saveFilterTab &&
+                    saveFilterTab.DataContext is FilterTabs.SaveFilterTabViewModel saveVm)
+                {
+                    saveVm.PreFillFilterData();
+                    DebugLogger.Log("FiltersModalViewModel", "Refreshed Save tab data");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error refreshing Save tab: {ex.Message}");
+            }
         }
 
         /// <summary>

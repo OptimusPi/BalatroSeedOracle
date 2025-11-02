@@ -82,51 +82,26 @@
                 <!-- Deck Selector -->
                 <controls:SpinnerControl Label="Deck"
                                         SpinnerType="deck"
-                                        Value="{Binding $parent[UserControl].DataContext.SelectedDeckIndex}"
+                                        Value="{Binding SelectedDeckIndex}"
                                         Minimum="0"
                                         Maximum="14"
                                         ReadOnly="True"
-                                        DisplayValues="{Binding $parent[UserControl].DataContext.DeckDisplayValues}"
+                                        DisplayValues="{Binding DeckDisplayValues}"
                                         HorizontalAlignment="Stretch"
                                         Margin="0,0,0,8"/>
 
                 <!-- Stake Selector -->
                 <controls:SpinnerControl Label="Stake"
                                         SpinnerType="stake"
-                                        Value="{Binding $parent[UserControl].DataContext.SelectedStakeIndex}"
+                                        Value="{Binding SelectedStakeIndex}"
                                         Minimum="0"
                                         Maximum="7"
                                         ReadOnly="True"
-                                        DisplayValues="{Binding $parent[UserControl].DataContext.StakeDisplayValues}"
+                                        DisplayValues="{Binding StakeDisplayValues}"
                                         HorizontalAlignment="Stretch"
                                         Margin="0,0,0,0"/>
             </StackPanel>
 
-            <!-- Current Filter Info -->
-            <Border Grid.Row="8"
-                    Background="{StaticResource DarkBackground}"
-                    BorderThickness="2"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    CornerRadius="8"
-                    Padding="10">
-                <StackPanel Spacing="6">
-                    <TextBlock Text="CURRENT FILTER" 
-                               FontSize="14" 
-                               Foreground="{StaticResource Gold}"
-                               FontFamily="{StaticResource BalatroFont}"/>
-                    
-                    <TextBlock Text="{Binding CurrentFileName}" 
-                               FontSize="12" 
-                               Foreground="{StaticResource White}"
-                               FontFamily="{StaticResource BalatroFont}"/>
-                    
-                    <TextBlock Text="{Binding LastModified}" 
-                               FontSize="10" 
-                               Foreground="{StaticResource White}"
-                               FontFamily="{StaticResource BalatroFont}"/>
-                </StackPanel>
-            </Border>
-            
             <!-- Action Buttons -->
             <StackPanel Grid.Row="10"
                         Orientation="Vertical"

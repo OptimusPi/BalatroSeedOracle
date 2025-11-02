@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Components.FilterTabs
@@ -57,6 +58,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}"
             );
 
+            // Setup operator tray drop zones
+            SetupOperatorTray();
+
             // Attach pointer handlers to TopLevel so we get events even when pointer moves outside the control
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null)
@@ -74,6 +78,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     "VisualBuilderTab",
                     "Failed to attach pointer handlers - no TopLevel"
                 );
+            }
+        }
+
+        private void SetupOperatorTray()
+        {
+            var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
+            var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
+
+            if (trayOrBorder != null)
+            {
+                trayOrBorder.AddHandler(DragDrop.DragOverEvent, OnTrayOrDragOver);
+                trayOrBorder.AddHandler(DragDrop.DropEvent, OnTrayOrDrop);
+                DebugLogger.Log("VisualBuilderTab", "OR Tray drag/drop handlers attached");
+            }
+
+            if (trayAndBorder != null)
+            {
+                trayAndBorder.AddHandler(DragDrop.DragOverEvent, OnTrayAndDragOver);
+                trayAndBorder.AddHandler(DragDrop.DropEvent, OnTrayAndDrop);
+                DebugLogger.Log("VisualBuilderTab", "AND Tray drag/drop handlers attached");
             }
         }
 
@@ -342,6 +366,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
                 var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
+                var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
+                var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
 
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
                 var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
@@ -351,8 +377,40 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return;
                 var cursorPos = e.GetPosition(_topLevel);
 
+                // Check if over operator tray (only allow non-operators to be dropped)
+                bool isOverTray = false;
+                if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
+                {
+                    if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
+                    {
+                        isOverTray = true;
+                        // Highlight OR tray
+                        if (trayOrBorder != null)
+                            trayOrBorder.BorderThickness = new Avalonia.Thickness(3);
+                        if (trayAndBorder != null)
+                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
+                    }
+                    else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
+                    {
+                        isOverTray = true;
+                        // Highlight AND tray
+                        if (trayAndBorder != null)
+                            trayAndBorder.BorderThickness = new Avalonia.Thickness(3);
+                        if (trayOrBorder != null)
+                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
+                    }
+                    else
+                    {
+                        // Reset tray borders
+                        if (trayOrBorder != null)
+                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
+                        if (trayAndBorder != null)
+                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
+                    }
+                }
+
                 // Check if over item grid (return to shelf)
-                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
+                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel) && !isOverTray)
                 {
                     // Show overlay if dragging FROM drop zones (sourceDropZone != null)
                     if (returnOverlay != null && _sourceDropZone != null)
@@ -589,9 +647,60 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
                 var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
+                var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
+                var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
 
                 Border? targetZone = null;
                 string? zoneName = null;
+
+                // Check if dropped on operator tray (only for non-operators)
+                if (_draggedItem is not FilterOperatorItem)
+                {
+                    if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
+                    {
+                        // Drop into OR tray
+                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into OR tray");
+
+                        var itemCopy = new Models.FilterItem
+                        {
+                            Name = _draggedItem.Name,
+                            Type = _draggedItem.Type,
+                            Category = _draggedItem.Category,
+                            DisplayName = _draggedItem.DisplayName,
+                            ItemImage = _draggedItem.ItemImage,
+                        };
+
+                        vm.TrayOrOperator.Children.Add(itemCopy);
+
+                        // Reset tray border
+                        if (trayOrBorder != null)
+                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
+
+                        return; // Early exit - handled
+                    }
+                    else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
+                    {
+                        // Drop into AND tray
+                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into AND tray");
+
+                        var itemCopy = new Models.FilterItem
+                        {
+                            Name = _draggedItem.Name,
+                            Type = _draggedItem.Type,
+                            Category = _draggedItem.Category,
+                            DisplayName = _draggedItem.DisplayName,
+                            ItemImage = _draggedItem.ItemImage,
+                        };
+
+                        vm.TrayAndOperator.Children.Add(itemCopy);
+
+                        // Reset tray border
+                        if (trayAndBorder != null)
+                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
+
+                        return; // Early exit - handled
+                    }
+                }
 
                 // Check if over the item grid first (return to shelf)
                 if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
@@ -738,12 +847,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             // Add to operator's children instead of main zone
                             targetOperator.Children.Add(_draggedItem);
                         }
-                        else if (_draggedItem is Models.FilterOperatorItem)
+                        else if (_draggedItem is Models.FilterOperatorItem operatorItem)
                         {
                             DebugLogger.Log(
                                 "VisualBuilderTab",
                                 $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
                             );
+
+                            // Check if this is one of the tray operators
+                            bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
+
                             // Add operator to zone (operators can't go inside operators)
                             switch (zoneName)
                             {
@@ -759,6 +872,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     vm.AddToMustNotCommand.Execute(_draggedItem);
                                     vm.CollapseToZone("CANT");
                                     break;
+                            }
+
+                            // Clear the tray operator's children after dropping
+                            if (isTrayOperator)
+                            {
+                                operatorItem.Children.Clear();
+                                DebugLogger.Log(
+                                    "VisualBuilderTab",
+                                    $"Cleared tray operator {operatorItem.OperatorType} children"
+                                );
                             }
                         }
                         else
@@ -1075,6 +1198,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     vm.SelectedShould.Clear();
                     vm.SelectedMustNot.Clear();
 
+                    // Clear operator tray
+                    vm.TrayOrOperator.Children.Clear();
+                    vm.TrayAndOperator.Children.Clear();
+
                     // Reset search filter
                     vm.SearchFilter = "";
 
@@ -1193,43 +1320,100 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return;
                 }
 
-                // Create ghost image - 80% opacity with subtle sway like Balatro
-                // For legendary jokers, layer the soul face on top
-                var imageGrid = new Grid { Width = 71, Height = 95 };
+                // Create ghost image - different for operators vs regular items
+                Control cardContent;
 
-                // Main card image
-                imageGrid.Children.Add(
-                    new Image
-                    {
-                        Source = item!.ItemImage!, // Non-null: every FilterItem must have an image
-                        Width = 71,
-                        Height = 95,
-                        Stretch = Stretch.Uniform,
-                        Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
-                    }
-                );
-
-                // Soul face overlay for legendary jokers
-                if (item.SoulFaceImage != null)
+                if (item is Models.FilterOperatorItem operatorItem)
                 {
+                    // Special visual for operators - show a compact box with children count
+                    var blue = Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
+                    var green = Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
+                    var darkBg = Application.Current?.FindResource("DarkBackground") as IBrush ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
+                    var white = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
+                    var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
+
+                    var operatorBorder = new Border
+                    {
+                        Background = darkBg,
+                        BorderBrush = operatorItem.OperatorType == "OR" ? blue : green,
+                        BorderThickness = new Avalonia.Thickness(2),
+                        CornerRadius = new CornerRadius(8),
+                        Padding = new Avalonia.Thickness(8),
+                        Width = 100,
+                        Child = new StackPanel
+                        {
+                            Spacing = 4,
+                            Children =
+                            {
+                                new Border
+                                {
+                                    Background = operatorItem.OperatorType == "OR" ? blue : green,
+                                    CornerRadius = new CornerRadius(4),
+                                    Padding = new Avalonia.Thickness(6, 3),
+                                    Child = new TextBlock
+                                    {
+                                        Text = operatorItem.OperatorType,
+                                        FontFamily = balatroFont,
+                                        FontSize = 14,
+                                        FontWeight = FontWeight.Bold,
+                                        Foreground = white,
+                                        HorizontalAlignment = HorizontalAlignment.Center,
+                                    }
+                                },
+                                new TextBlock
+                                {
+                                    Text = $"{operatorItem.Children.Count} items",
+                                    FontFamily = balatroFont,
+                                    FontSize = 11,
+                                    Foreground = white,
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    Opacity = 0.7,
+                                }
+                            }
+                        },
+                        Opacity = 0.9,
+                    };
+
+                    cardContent = operatorBorder;
+                }
+                else
+                {
+                    // Regular item - show card image
+                    var imageGrid = new Grid { Width = 71, Height = 95 };
+
+                    // Main card image
                     imageGrid.Children.Add(
                         new Image
                         {
-                            Source = item.SoulFaceImage,
+                            Source = item!.ItemImage!, // Non-null: every FilterItem must have an image
                             Width = 71,
                             Height = 95,
                             Stretch = Stretch.Uniform,
-                            Opacity = 1.0,
+                            Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
                         }
                     );
-                }
 
-                // Create card content that will have physics applied
-                var cardContent = new Border
-                {
-                    Background = Brushes.Transparent,
-                    Child = imageGrid,
-                };
+                    // Soul face overlay for legendary jokers
+                    if (item.SoulFaceImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.SoulFaceImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    cardContent = new Border
+                    {
+                        Background = Brushes.Transparent,
+                        Child = imageGrid,
+                    };
+                }
 
                 // ADD BALATRO-STYLE SWAY PHYSICS TO THE CARD!
                 // Apply the CardDragBehavior for tilt, sway, and juice effects
@@ -1467,5 +1651,207 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.Log("VisualBuilderTab", "CAN'T zone expanded via label click");
             }
         }
+
+        #region Operator Tray Handlers
+
+        /// <summary>
+        /// Handle clicking on OR operator in tray - starts dragging the populated operator
+        /// </summary>
+        private void OnTrayOrPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (_isDragging || _isAnimating)
+                return;
+
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm == null || vm.TrayOrOperator.Children.Count == 0)
+                return;
+
+            var pointerPoint = e.GetCurrentPoint(sender as Control);
+            if (!pointerPoint.Properties.IsLeftButtonPressed)
+                return;
+
+            // Start dragging the OR operator with its children
+            _draggedItem = vm.TrayOrOperator;
+            _isDragging = true;
+            _originalDragSource = sender as Control;
+            _sourceDropZone = null; // From tray, not a drop zone
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null && _originalDragSource != null)
+            {
+                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+            }
+            else
+            {
+                _dragStartPosition = e.GetPosition(this);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children");
+
+            CreateDragAdorner(_draggedItem, _dragStartPosition);
+            ShowDropZoneOverlays();
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle clicking on AND operator in tray - starts dragging the populated operator
+        /// </summary>
+        private void OnTrayAndPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (_isDragging || _isAnimating)
+                return;
+
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm == null || vm.TrayAndOperator.Children.Count == 0)
+                return;
+
+            var pointerPoint = e.GetCurrentPoint(sender as Control);
+            if (!pointerPoint.Properties.IsLeftButtonPressed)
+                return;
+
+            // Start dragging the AND operator with its children
+            _draggedItem = vm.TrayAndOperator;
+            _isDragging = true;
+            _originalDragSource = sender as Control;
+            _sourceDropZone = null;
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null && _originalDragSource != null)
+            {
+                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+            }
+            else
+            {
+                _dragStartPosition = e.GetPosition(this);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children");
+
+            CreateDragAdorner(_draggedItem, _dragStartPosition);
+            ShowDropZoneOverlays();
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle drag over OR tray - allow dropping items INTO the tray
+        /// </summary>
+        private void OnTrayOrDragOver(object? sender, DragEventArgs e)
+        {
+            // Only allow regular FilterItems (not operators) to be dropped here
+            if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
+            {
+                e.DragEffects = DragDropEffects.Copy;
+
+                // Highlight the tray
+                if (sender is Border border)
+                {
+                    border.BorderThickness = new Avalonia.Thickness(3);
+                }
+            }
+            else
+            {
+                e.DragEffects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle dropping an item INTO the OR tray
+        /// </summary>
+        private void OnTrayOrDrop(object? sender, DragEventArgs e)
+        {
+            // Reset visual feedback
+            if (sender is Border border)
+            {
+                border.BorderThickness = new Avalonia.Thickness(2);
+            }
+
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm == null || _draggedItem == null)
+                return;
+
+            // Only allow regular FilterItems (not operators)
+            if (_draggedItem is not FilterOperatorItem)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to OR tray");
+
+                // Add a COPY of the item to the tray (so users can add same item multiple times)
+                var itemCopy = new Models.FilterItem
+                {
+                    Name = _draggedItem.Name,
+                    Type = _draggedItem.Type,
+                    Category = _draggedItem.Category,
+                    DisplayName = _draggedItem.DisplayName,
+                    ItemImage = _draggedItem.ItemImage,
+                };
+
+                vm.TrayOrOperator.Children.Add(itemCopy);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Handle drag over AND tray - allow dropping items INTO the tray
+        /// </summary>
+        private void OnTrayAndDragOver(object? sender, DragEventArgs e)
+        {
+            // Only allow regular FilterItems (not operators) to be dropped here
+            if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
+            {
+                e.DragEffects = DragDropEffects.Copy;
+
+                // Highlight the tray
+                if (sender is Border border)
+                {
+                    border.BorderThickness = new Avalonia.Thickness(3);
+                }
+            }
+            else
+            {
+                e.DragEffects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle dropping an item INTO the AND tray
+        /// </summary>
+        private void OnTrayAndDrop(object? sender, DragEventArgs e)
+        {
+            // Reset visual feedback
+            if (sender is Border border)
+            {
+                border.BorderThickness = new Avalonia.Thickness(2);
+            }
+
+            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            if (vm == null || _draggedItem == null)
+                return;
+
+            // Only allow regular FilterItems (not operators)
+            if (_draggedItem is not FilterOperatorItem)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to AND tray");
+
+                // Add a COPY of the item to the tray (so users can add same item multiple times)
+                var itemCopy = new Models.FilterItem
+                {
+                    Name = _draggedItem.Name,
+                    Type = _draggedItem.Type,
+                    Category = _draggedItem.Category,
+                    DisplayName = _draggedItem.DisplayName,
+                    ItemImage = _draggedItem.ItemImage,
+                };
+
+                vm.TrayAndOperator.Children.Add(itemCopy);
+                e.Handled = true;
+            }
+        }
+
+        #endregion
     }
 }
