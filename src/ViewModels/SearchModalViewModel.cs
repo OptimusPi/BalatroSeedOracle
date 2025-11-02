@@ -1585,17 +1585,17 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Format seed speed with K/M abbreviations
+        /// Format seed speed with K/M abbreviations (no decimals)
         /// </summary>
         private static string FormatSeedSpeed(double seedsPerSecond)
         {
             if (seedsPerSecond >= 1_000_000)
             {
-                return $"{seedsPerSecond / 1_000_000:0.0}M/s";
+                return $"{seedsPerSecond / 1_000_000:0}M/s";
             }
             else if (seedsPerSecond >= 1_000)
             {
-                return $"{seedsPerSecond / 1_000:0.0}K/s";
+                return $"{seedsPerSecond / 1_000:0}K/s";
             }
             else
             {
@@ -1607,11 +1607,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (count >= 1_000_000)
             {
-                return $"{count / 1_000_000.0:0.00}M";
+                return $"{count / 1_000_000.0:0}M";
             }
             else if (count >= 1_000)
             {
-                return $"{count / 1_000.0:0.0}K";
+                return $"{count / 1_000.0:0}K";
             }
             else
             {

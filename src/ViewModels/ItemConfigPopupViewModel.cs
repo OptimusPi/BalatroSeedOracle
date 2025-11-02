@@ -28,6 +28,9 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private string _itemKey = "";
 
     [ObservableProperty]
+    private string _itemType = "";
+
+    [ObservableProperty]
     private string _itemName = "";
 
     [ObservableProperty]
@@ -115,6 +118,7 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     public void Configure(ItemConfig config)
     {
         ItemKey = config.ItemKey;
+        ItemType = config.ItemType;
         // ItemName will be set from the view
         // ItemImage will be set from the view
 
@@ -321,6 +325,7 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         var config = new ItemConfig
         {
             ItemKey = ItemKey,
+            ItemType = ItemType,
             Antes = antes,
             Edition = SelectedEdition,
             Seal = SelectedSeal,
