@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -862,10 +863,12 @@ namespace BalatroSeedOracle.ViewModels
             string itemKey
         )
         {
+            var normalizedType = NormalizeItemType(clause.Type);
+
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemKey,
-                ItemType = clause.Type ?? "Unknown",
+                ItemType = normalizedType,
                 ItemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "",
                 Score = clause.Score,
                 Label = clause.Label,
@@ -877,7 +880,7 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             // Handle special types
-            if (clause.Type == "SoulJoker")
+            if (normalizedType == "SoulJoker")
             {
                 itemConfig.ItemType = "Joker"; // Display as joker in UI
                 itemConfig.IsSoulJoker = true; // Mark as soul joker
@@ -1400,22 +1403,25 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var spriteService = SpriteService.Instance;
 
+                var normalizedType = NormalizeItemType(itemConfig.ItemType);
+                var effectiveType = itemConfig.IsSoulJoker ? "SoulJoker" : normalizedType;
+
                 // Determine category for layout behavior
-                var category = DetermineCategoryFromType(itemConfig.ItemType);
+                var category = DetermineCategoryFromType(effectiveType);
 
                 // Create FilterItem - ItemImage and SoulFaceImage are computed properties based on Type and Name
                 var filterItem = new Models.FilterItem
                 {
                     Name = itemConfig.ItemName,
-                    Type = itemConfig.IsSoulJoker ? "SoulJoker" : itemConfig.ItemType,
+                    Type = effectiveType,
                     Category = category,
                     ItemKey = itemConfig.ItemKey,
                     DisplayName = BalatroData.GetDisplayNameFromSprite(itemConfig.ItemName),
                     // Get appropriate sprite image based on type
-                    ItemImage = itemConfig.ItemType switch
+                    ItemImage = effectiveType switch
                     {
                         "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName),
-                        "SmallBlindTag" => spriteService.GetTagImage(itemConfig.ItemName),
+                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(itemConfig.ItemName),
                         "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
                         "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
                         "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
@@ -1439,14 +1445,50 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private string DetermineCategoryFromType(string itemType)
         {
-            return itemType switch
+            var normalizedType = NormalizeItemType(itemType);
+
+            return normalizedType switch
             {
                 "Joker" or "SoulJoker" => "Jokers",
-                "SmallBlindTag" => "Tags",
+                "SmallBlindTag" or "BigBlindTag" => "Tags",
                 "Boss" => "Bosses",
                 "Voucher" => "Vouchers",
                 "Tarot" or "Planet" or "Spectral" => "Consumables",
                 _ => "Other"
+            };
+        }
+
+        private static string NormalizeItemType(string? type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return "Unknown";
+            }
+
+            var cleaned = new string(type.Where(char.IsLetterOrDigit).ToArray());
+            if (string.IsNullOrEmpty(cleaned))
+            {
+                return "Unknown";
+            }
+
+            var lower = cleaned.ToLowerInvariant();
+
+            return lower switch
+            {
+                "joker" => "Joker",
+                "souljoker" => "SoulJoker",
+                "smallblindtag" => "SmallBlindTag",
+                "bigblindtag" => "BigBlindTag",
+                "tag" => "SmallBlindTag",
+                "boss" => "Boss",
+                "voucher" => "Voucher",
+                "tarot" => "Tarot",
+                "planet" => "Planet",
+                "spectral" => "Spectral",
+                "operator" => "Operator",
+                "playingcard" => "PlayingCard",
+                "standardcard" => "StandardCard",
+                _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(lower),
             };
         }
 
