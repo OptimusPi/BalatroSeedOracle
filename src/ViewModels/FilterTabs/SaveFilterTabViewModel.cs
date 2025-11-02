@@ -41,6 +41,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private IBrush _statusColor = Brushes.Gray;
 
+        // Filter Test State Management (4 states: Idle, Testing, Success, NoMatch)
         [ObservableProperty]
         private bool _isTestRunning = false;
 
@@ -53,6 +54,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _testResultMessage = "";
 
+        [ObservableProperty]
+        private string _foundSeed = "";
+
+        [ObservableProperty]
+        private bool _showFoundSeed = false;
+
+        [ObservableProperty]
+        private int _seedsChecked = 0;
+
+        [ObservableProperty]
+        private double _testElapsedTime = 0.0;
+
+        [ObservableProperty]
+        private bool _isFilterVerified = false;
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
@@ -64,6 +80,36 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _configurationService = configurationService;
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
+
+            // PRE-FILL filter name and description if available
+            PreFillFilterData();
+        }
+
+        /// <summary>
+        /// Pre-fill filter name and description from current filter if available
+        /// </summary>
+        public void PreFillFilterData()
+        {
+            try
+            {
+                // Try to get filter name from parent's loaded config
+                if (_parentViewModel.LoadedConfig != null && !string.IsNullOrWhiteSpace(_parentViewModel.LoadedConfig.Name))
+                {
+                    FilterName = _parentViewModel.LoadedConfig.Name;
+                    FilterDescription = _parentViewModel.LoadedConfig.Description ?? "";
+                    DebugLogger.Log("SaveFilterTab", $"Pre-filled from LoadedConfig: {FilterName}");
+                }
+                // Fall back to loaded filter file name
+                else if (!string.IsNullOrWhiteSpace(_parentViewModel.CurrentFilterPath))
+                {
+                    FilterName = Path.GetFileNameWithoutExtension(_parentViewModel.CurrentFilterPath);
+                    DebugLogger.Log("SaveFilterTab", $"Pre-filled from CurrentFilterPath: {FilterName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SaveFilterTab", $"Error pre-filling filter data: {ex.Message}");
+            }
         }
 
         #region Command Implementations - Copied from original FiltersModal
@@ -210,11 +256,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                // Reset UI state
+                // Reset UI state to Testing
                 IsTestRunning = true;
                 ShowTestSuccess = false;
                 ShowTestError = false;
+                ShowFoundSeed = false;
                 TestResultMessage = "";
+                FoundSeed = "";
+                SeedsChecked = 0;
+                TestElapsedTime = 0.0;
 
                 // Build the filter configuration from current selections (in-memory only!)
                 var config = BuildConfigFromCurrentState();
@@ -233,17 +283,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                // Build quick test search criteria: BatchSize=7 => only 35 batches total
-                // NO ConfigPath needed - we pass the config object directly!
+                // Build quick test search criteria: STOP AFTER 1 SEED FOUND!
+                // MaxResults = 1 ensures we stop immediately when a match is found
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    BatchSize = 7, // 7-char batch = only 35 batches total (not billions!)
+                    BatchSize = 6, // 6-char batch = 1,225 batches (fast validation)
                     StartBatch = 0,
-                    EndBatch = Math.Min(50, GetMaxBatchesForBatchSize(7)), // Stop after 50 batches max
+                    EndBatch = Math.Min(1225, GetMaxBatchesForBatchSize(6)), // Max 10M seeds or 1,225 batches
                     Deck = deckName,
                     Stake = stakeName,
                     MinScore = 0,
-                    MaxResults = 10, // Stop after finding 10 seeds
+                    MaxResults = 1, // STOP AFTER FINDING 1 SEED!
                 };
 
                 // Start search via SearchManager and wait for results
@@ -267,19 +317,36 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Update UI with results
                 IsTestRunning = false;
-                if (results.Success)
+                TestElapsedTime = results.ElapsedTime;
+
+                if (results.Success && results.Count > 0)
                 {
+                    // SUCCESS STATE: Filter found at least 1 matching seed!
                     ShowTestSuccess = true;
-                    TestResultMessage = $"Found {results.Count} seeds in {results.ElapsedTime:F1}s";
-                    UpdateStatus(
-                        $"Test passed: Found {results.Count} seeds in {results.ElapsedTime:F1}s",
-                        false
-                    );
+                    ShowFoundSeed = true;
+                    IsFilterVerified = true;
+
+                    // Extract the seed from results
+                    if (results.Seeds != null && results.Seeds.Count > 0)
+                    {
+                        FoundSeed = results.Seeds[0].ToString() ?? "Unknown";
+                    }
+
+                    TestResultMessage = $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
+                    UpdateStatus($"✓ Filter verified: Found seed {FoundSeed}", false);
+                }
+                else if (results.Success && results.Count == 0)
+                {
+                    // NO MATCH STATE: Filter valid but no seeds found in search range
+                    ShowTestError = true;
+                    TestResultMessage = $"⚠ NO MATCHES FOUND in {results.ElapsedTime:F1}s\nTry different deck/stake or wider search";
+                    UpdateStatus($"⚠ No matching seeds found (searched {criteria.EndBatch} batches)", true);
                 }
                 else
                 {
+                    // ERROR STATE: Search failed
                     ShowTestError = true;
-                    TestResultMessage = $"Test failed: {results.Error}";
+                    TestResultMessage = $"❌ Test failed: {results.Error}";
                     UpdateStatus($"Test failed: {results.Error}", true);
                 }
             }
@@ -287,7 +354,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 IsTestRunning = false;
                 ShowTestError = true;
-                TestResultMessage = $"Error: {ex.Message}";
+                TestResultMessage = $"❌ Error: {ex.Message}";
                 UpdateStatus($"Error testing filter: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Test filter error: {ex.Message}");
             }
@@ -357,6 +424,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StatusColor = isError ? Brushes.Red : Brushes.Green;
 
             DebugLogger.Log("SaveFilterTab", $"Status: {message} (Error: {isError})");
+        }
+
+        [RelayCommand]
+        private async Task CopySeed()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(FoundSeed))
+                {
+                    await ClipboardService.CopyToClipboardAsync(FoundSeed);
+                    UpdateStatus($"✓ Copied seed {FoundSeed} to clipboard", false);
+                    DebugLogger.Log("SaveFilterTab", $"Copied seed to clipboard: {FoundSeed}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Failed to copy seed: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Error copying seed: {ex.Message}");
+            }
         }
 
         #endregion

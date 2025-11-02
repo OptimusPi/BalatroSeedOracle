@@ -199,112 +199,171 @@
                     BorderBrush="{StaticResource ModalBorder}"
                     CornerRadius="8"
                     Padding="15">
-                <StackPanel Spacing="10">
-                    <!-- Loading Spinner -->
+                <StackPanel Spacing="12">
+                    <!-- STATE 1: TESTING - Loading Spinner -->
                     <Border IsVisible="{Binding IsTestRunning}"
                             Background="{StaticResource DarkGray}"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            CornerRadius="6"
-                            Padding="12">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="10"
-                                    HorizontalAlignment="Center">
-                            <ProgressBar IsIndeterminate="True"
-                                         Width="120"
-                                         Height="8"/>
-                            <TextBlock Text="Testing filter..."
-                                       FontSize="12"
-                                       Foreground="{StaticResource White}"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource Gold}"
+                            CornerRadius="8"
+                            Padding="15">
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <TextBlock Text="⚙ TESTING FILTER..."
+                                       FontSize="14"
+                                       Foreground="{StaticResource Gold}"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       VerticalAlignment="Center"/>
+                                       HorizontalAlignment="Center"
+                                       FontWeight="Bold"/>
+                            <ProgressBar IsIndeterminate="True"
+                                         Width="200"
+                                         Height="10"/>
+                            <TextBlock Text="Searching for matching seeds..."
+                                       FontSize="11"
+                                       Foreground="{StaticResource LightGrey}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Success Result -->
+                    <!-- STATE 2: SUCCESS - Filter Verified -->
                     <Border IsVisible="{Binding ShowTestSuccess}"
                             Background="{StaticResource Green}"
-                            BorderThickness="1"
+                            BorderThickness="2"
                             BorderBrush="{StaticResource Gold}"
-                            CornerRadius="6"
-                            Padding="12">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="8"
-                                    HorizontalAlignment="Center">
-                            <TextBlock Text="✓"
+                            CornerRadius="8"
+                            Padding="15">
+                        <StackPanel Spacing="10">
+                            <!-- Success Header -->
+                            <TextBlock Text="✓ FILTER VERIFIED"
                                        FontSize="16"
                                        Foreground="{StaticResource White}"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TestResultMessage}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource White}"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       TextWrapping="Wrap"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+                                       HorizontalAlignment="Center"
+                                       FontWeight="Bold"/>
 
-                    <!-- Error Result -->
-                    <Border IsVisible="{Binding ShowTestError}"
-                            Background="{StaticResource Red}"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource Gold}"
-                            CornerRadius="6"
-                            Padding="12">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="8"
-                                    HorizontalAlignment="Center">
-                            <TextBlock Text="✗"
-                                       FontSize="16"
-                                       Foreground="{StaticResource White}"
-                                      
-                                       VerticalAlignment="Center"/>
+                            <!-- Found Seed Display -->
+                            <Border IsVisible="{Binding ShowFoundSeed}"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource Gold}"
+                                    CornerRadius="6"
+                                    Padding="10">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="FOUND SEED:"
+                                               FontSize="10"
+                                               Foreground="{StaticResource LightGrey}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               HorizontalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="8"
+                                                HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding FoundSeed}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource Gold}"
+                                                   FontFamily="Consolas"
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Content="📋"
+                                                Command="{Binding CopySeedCommand}"
+                                                ToolTip.Tip="Copy seed to clipboard"
+                                                Width="32"
+                                                Height="32"
+                                                Padding="0"
+                                                Classes="copy-btn"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Test Stats -->
                             <TextBlock Text="{Binding TestResultMessage}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource White}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       TextWrapping="Wrap"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Default Ready State (shown when no test is running and no results) -->
-                    <StackPanel Spacing="5">
-                        <StackPanel.IsVisible>
-                            <Binding Path="IsTestRunning" Converter="{x:Static BoolConverters.Not}"/>
-                        </StackPanel.IsVisible>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>  <!-- Status Text -->
-                                <RowDefinition Height="*"/>     <!-- Results Icon -->
-                            </Grid.RowDefinitions>
-
-                            <!-- Status -->
-                            <TextBlock Grid.Row="0"
-                                       Text="Ready to test..."
                                        FontSize="12"
                                        Foreground="{StaticResource White}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        HorizontalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,10"/>
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
 
-                            <!-- Results Icon -->
-                            <Border Grid.Row="1"
-                                    Background="{StaticResource DarkBackground}"
-                                    CornerRadius="30"
-                                    Width="50"
-                                    Height="50"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
+                    <!-- STATE 3: NO MATCH - Warning -->
+                    <Border IsVisible="{Binding ShowTestError}"
+                            Background="{StaticResource Red}"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource Gold}"
+                            CornerRadius="8"
+                            Padding="15">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="⚠ TEST RESULT"
+                                       FontSize="14"
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TestResultMessage}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- STATE 4: IDLE - Ready State -->
+                    <Border IsVisible="{Binding !IsTestRunning}">
+                        <Border.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="!IsTestRunning"/>
+                                <Binding Path="!ShowTestSuccess"/>
+                                <Binding Path="!ShowTestError"/>
+                            </MultiBinding>
+                        </Border.IsVisible>
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Click TEST FILTER to verify your filter"
+                                       FontSize="12"
+                                       Foreground="{StaticResource LightGrey}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+
+                            <!-- Ready Icon -->
+                            <Border Background="{StaticResource DarkGray}"
+                                    BorderThickness="2"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    CornerRadius="50"
+                                    Width="80"
+                                    Height="80"
+                                    HorizontalAlignment="Center">
                                 <TextBlock Text="?"
-                                           FontSize="24"
+                                           FontSize="36"
                                            Foreground="{StaticResource White}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>
-                        </Grid>
-                    </StackPanel>
+
+                            <TextBlock Text="No test results yet"
+                                       FontSize="10"
+                                       Foreground="{StaticResource DarkGrey}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Verification Badge -->
+                    <Border IsVisible="{Binding IsFilterVerified}"
+                            Background="{StaticResource Green}"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource Gold}"
+                            CornerRadius="12"
+                            Padding="8,4"
+                            HorizontalAlignment="Center"
+                            Margin="0,5,0,0">
+                        <TextBlock Text="✓ VERIFIED"
+                                   FontSize="11"
+                                   Foreground="{StaticResource White}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontWeight="Bold"/>
+                    </Border>
                 </StackPanel>
             </Border>
         </Grid>
