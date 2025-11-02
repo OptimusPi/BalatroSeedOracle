@@ -847,11 +847,11 @@ namespace BalatroSeedOracle.ViewModels
                 // CRITICAL FIX: Load results from DuckDB into ObservableCollection
                 await LoadExistingResults();
 
-                AddConsoleMessage($"Search completed. Found {SearchResults.Count} results.");
-                PanelText = $"Search complete: {SearchResults.Count} seeds";
+                AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
+                PanelText = $"Search complete: {ResultsCount} seeds";
                 DebugLogger.Log(
                     "SearchModalViewModel",
-                    $"Search completed with {SearchResults.Count} results"
+                    $"Search completed with {ResultsCount} results"
                 );
             });
         }

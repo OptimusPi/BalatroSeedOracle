@@ -119,10 +119,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Check which button was pressed
                     var pointerPoint = e.GetCurrentPoint(sender as Control);
 
-                    // RIGHT-CLICK: Open config popup
+                    // RIGHT-CLICK on shelf items: Do nothing (no config for shelf items)
                     if (pointerPoint.Properties.IsRightButtonPressed)
                     {
-                        ShowItemConfigPopup(item, sender as Control);
                         e.Handled = true;
                         return;
                     }
@@ -197,22 +196,29 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                var grid = sender as Grid;
-                var item = grid?.DataContext as Models.FilterItem;
+                // The sender is the Border (not Grid), so get its DataContext
+                var control = sender as Control;
+                var item = control?.DataContext as Models.FilterItem;
 
                 if (item == null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", "No item found for drop zone drag");
+                    DebugLogger.Log("VisualBuilderTab", $"No item found for drop zone drag - sender type: {sender?.GetType().Name}");
                     return;
                 }
 
                 // Check which button was pressed
-                var pointerPoint = e.GetCurrentPoint(grid);
+                var pointerPoint = e.GetCurrentPoint(control);
+
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Drop zone item pressed - Left: {pointerPoint.Properties.IsLeftButtonPressed}, Right: {pointerPoint.Properties.IsRightButtonPressed}, Middle: {pointerPoint.Properties.IsMiddleButtonPressed}"
+                );
 
                 // RIGHT-CLICK: Open config popup
                 if (pointerPoint.Properties.IsRightButtonPressed)
                 {
-                    ShowItemConfigPopup(item, grid);
+                    DebugLogger.Log("VisualBuilderTab", $"Opening config popup for {item.Name}");
+                    ShowItemConfigPopup(item, control);
                     e.Handled = true;
                     return;
                 }
@@ -260,7 +266,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Now start the drag operation
                 _draggedItem = item;
                 _isDragging = true;
-                _originalDragSource = grid;
+                _originalDragSource = control;
 
                 // Get position relative to TopLevel
                 var topLevel = TopLevel.GetTopLevel(this);
